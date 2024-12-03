@@ -1,0 +1,187 @@
+
+import 'package:common/model/enum_di_zhi.dart';
+import 'package:common/model/enum_jia_zi.dart';
+import 'package:common/model/enum_month_token.dart';
+import 'package:common/model/enum_twelve_ecliptic_gong.dart';
+import 'package:qizhengsiyu/enums/enum_twenty_eight_xing_xiu.dart';
+import 'package:qizhengsiyu/models/stars_angle.dart';
+import 'package:qizhengsiyu/models/eleven_stars_info.dart';
+import 'package:qizhengsiyu/models/body_life_model.dart';
+
+import 'package:tuple/tuple.dart';
+
+import '../enums/enum_twelve_gong.dart';
+import '../models/star_xiu_type.dart';
+
+class AnShenLiMingService{
+  // 地支在黄道的顺序，逆时针 戌->酉...->子->亥
+  // tatic const List<DiZhi> diZhiAtEclipticGong = [DiZhi.XU,DiZhi.YOU,DiZhi.SHEN,DiZhi.WEI,DiZhi.WU,DiZhi.SI,DiZhi.CHEN,DiZhi.MAO,DiZhi.YIN,DiZhi.CHOU,DiZhi.ZI,DiZhi.HAI];
+  static const Map<MonthToken,DiZhi> sunMonthlyAtGongOrderMapper = {
+    MonthToken.ZI:DiZhi.YIN,
+    MonthToken.CHOU:DiZhi.CHOU,
+    MonthToken.YIN:DiZhi.ZI,
+    MonthToken.MAO:DiZhi.HAI,
+    MonthToken.CHEN:DiZhi.XU,
+    MonthToken.SI:DiZhi.YOU,
+    MonthToken.WU:DiZhi.SHEN,
+    MonthToken.WEI:DiZhi.WEI,
+    MonthToken.SHEN:DiZhi.WU,
+    MonthToken.YOU:DiZhi.SI,
+    MonthToken.XU:DiZhi.CHEN,
+    MonthToken.HAI:DiZhi.MAO,
+  };
+  /// 立命
+  /// 卯时立命 或者为 辰时 寅时 需要根据真太阳时确定
+  /// @return 黄道十二地支宫
+  static EnumTwelveGong settleDownLifeGong(JiaZi monthGanZhi,JiaZi timeGanZhi,double sunAngle,[bool bySunRealTimeLocation = true,DiZhi liMingDiZhi = DiZhi.MAO,]){
+
+    // 获取当前太阳所在宫位
+    final sunMonthlyAtGong;
+    if (bySunRealTimeLocation){
+      sunMonthlyAtGong = sunEnterGongBySunsAngle(sunAngle);
+    }
+    else{
+      sunMonthlyAtGong = sunEnterGongByMonthTokenOnly(monthGanZhi.zhi.asMonthToken);
+    }
+    // 以当前时辰为开始，从当前太阳所在宫顺时针数到 liMingDiZhi 停止的宫位为命宫的序号
+    // 将 timeGanZhi.zhi 作为 DiZhi.listAll 第一个元素
+    List<DiZhi> lists = [...DiZhi.listAll.sublist(timeGanZhi.zhi.index-1),...DiZhi.listAll.sublist(0,timeGanZhi.zhi.index-1)];
+    final liMingIndex = lists.indexOf(liMingDiZhi);
+
+    int countingTimes = lists.sublist(0,liMingIndex).length;
+    List<DiZhi> _lists = [...DiZhi.listAll.sublist(sunMonthlyAtGong.index),...DiZhi.listAll.sublist(0,sunMonthlyAtGong.index)];
+    return EnumTwelveGong.getEnumTwelveGongByZhi(_lists[countingTimes-1]);
+  }
+
+  /// 安身
+  /// 一为太阴为身，太阴所在宫位为身宫，如太阴在酉，酉就是身宫，太阴在辰，辰就是身宫。
+  /// 二为太阴起生时逆数至酉，数法与计算命宫的方法大同小异，即太阴所在宫位加生时逆时针逆数至酉，最后定出的宫位为身宫。
+  /// timeGanZhi 为null时 默认使用“一”
+  static EnumTwelveGong settleDownBodyGong(ElevenStarsInfo lunarInfo,[JiaZi? timeGanZhi,DiZhi liMingDiZhi = DiZhi.YOU]){
+
+    if (timeGanZhi == null){
+      return lunarInfo.enteredGong;
+    }
+    // 获取当前太阳所在宫位
+    // 以当前时辰为开始，从当前太阳所在宫顺时针数到 liMingDiZhi 停止的宫位为命宫的序号
+    // 将 timeGanZhi.zhi 作为 DiZhi.listAll 第一个元素
+    List<DiZhi> lists = [...DiZhi.listAll.sublist(timeGanZhi.zhi.index-1),...DiZhi.listAll.sublist(0,timeGanZhi.zhi.index-1)];
+    final liMingIndex = lists.indexOf(liMingDiZhi);
+
+    int countingTimes = lists.sublist(0,liMingIndex).length;
+    List<DiZhi> _lists = [...DiZhi.listAll.sublist(lunarInfo.enteredGong.index),...DiZhi.listAll.sublist(0,lunarInfo.enteredGong.index)];
+    return EnumTwelveGong.getEnumTwelveGongByZhi(_lists[countingTimes-1]);
+  }
+
+  static EnumTwelveGong sunEnterGongBySunsAngle(double starAngle){
+    /// 如果给定太阳角度，则根据太阳角度计算太阳所在宫位
+    /// 戌0°为黄道0，星盘上所有方向为逆时针
+    if (starAngle % 30 == 0){
+      int passingGongTotal = (starAngle / 30).toInt();
+      return EnumTwelveGong.eclipticSeq[passingGongTotal];
+    }else{
+      int passingGongTotal = (starAngle ~/ 30).toInt();
+      return EnumTwelveGong.eclipticSeq[passingGongTotal];
+    }
+  }
+  static EnumTwelveGong sunEnterGongByMonthTokenOnly(MonthToken monthToken){
+    // 每月太阳所在宫位
+    // 子月在寅，丑月在丑
+    // 寅月在子，卯月在亥
+    // 辰月在戌，巳月在酉
+    // 午月在申，未月在未
+    // 申月在午，酉月在巳
+    // 戌月在辰，亥月在卯
+    return EnumTwelveGong.getEnumTwelveGongByZhi(sunMonthlyAtGongOrderMapper[monthToken]!);
+  }
+
+  /// @params lunarIsBody: true时 太阴落宫为身宫，false时，太阴落宫逆数至酉为申宫
+  static BodyAndLife settleDownBodyAndLife(
+      JiaZi monthGanZhi,
+      JiaZi timeGanZhi,
+      ElevenStarsInfo sunInfo,
+      ElevenStarsInfo lunarInfo,
+      Map<TwentyEightStarInn,StarXiuType> mapper,
+      {
+        DiZhi settleLifeBy = DiZhi.MAO,
+        bool lunarIsBody = false,
+  }){
+    //安身立命
+    // 1. 立命
+    // 1.1. 确定命宫
+    EnumTwelveGong lifeGong = settleDownLifeGong(monthGanZhi,timeGanZhi,sunInfo.angle,true,settleLifeBy,);
+    // 1.2. 确定命度
+    Tuple2<TwentyEightStarInn,double> lifeInn = settleDownLifeInn(sunInfo,lifeGong,mapper);
+    // 2. 安身
+    // 2.1 确立身宫
+    EnumTwelveGong bodyGong = settleDownBodyGong(lunarInfo,lunarIsBody?null:timeGanZhi);
+    // 2.2. 确立身度主
+    Tuple2<TwentyEightStarInn,double> bodyInn = settleDownBodyInn(lunarInfo);
+    return BodyAndLife(
+      lifeGong:lifeGong,
+      lifeGongDegree:sunInfo.enteredGongDegree,
+      lifeStarInn:lifeInn.item1,
+      lifeStarInnDegree:lifeInn.item2,
+      bodyGong:bodyGong,
+      bodyGongDegree:lunarInfo.enteredGongDegree,
+      bodyStarInn:bodyInn.item1,
+      bodyStarInnDegree:bodyInn.item2,
+      lunarLocationIsBody:lunarIsBody
+    );
+  }
+
+  static Tuple2<TwentyEightStarInn,double> settleDownLifeInn(ElevenStarsInfo sunInf,EnumTwelveGong lifeGong,Map<TwentyEightStarInn,StarXiuType> mapper){
+    // 如太阳在卯15度，立命在申，则找申宫15度所在星宿度数，申宫15度约在参水4度，参水4度即为命度。
+    // 又例如太阳在戌10度，立命在亥，找亥宫10度所在星宿度数，约在室火7度，室火7度即为命度。
+
+    double atGongDegree = sunInf.enteredGongDegree;
+    Iterable<MapEntry<TwentyEightStarInn,StarXiuType>> iter = mapper.entries.where((entry){
+      return entry.value.insideGongStartAtDegree.item1 == lifeGong;
+    });
+    MapEntry<TwentyEightStarInn,StarXiuType> result =  iter.firstWhere((e){
+      return e.value.insideGongStartAtDegree.item2 <= atGongDegree && e.value.insideGongEndAtDegree.item2 > atGongDegree;
+    });
+    return Tuple2(result.key, atGongDegree - result.value.insideGongStartAtDegree.item2);
+  }
+
+  /// 安身 身度主
+  /// 人出生在世间，有命亦有身体，命主是因为太阳而定，身主是因为月亮而产生，所以， 就以月亮所在的星宿度的度主为身度主。
+  /// 我们身体的生长要得到身度主星的元气，所 以，刚刚出生时月亮所在星宿度最关紧要。
+  static Tuple2<TwentyEightStarInn,double> settleDownBodyInn(ElevenStarsInfo lunarInfo){
+    return Tuple2(lunarInfo.enteredStarInn, lunarInfo.enteredStarInnDegree);
+  }
+
+  /// item1 inter gong
+  /// item2 enter degree
+  static Tuple2<EnumTwelveGong,double> starEnterGong(double starAngle){
+
+    /// 如果给定太阳角度，则根据太阳角度计算太阳所在宫位
+    /// 戌0°为黄道0，星盘上所有方向为逆时针
+    // List<DiZhi> diZhiAtEclipticGong = [DiZhi.XU,DiZhi.YOU,DiZhi.SHEN,DiZhi.WEI,DiZhi.WU,DiZhi.SI,DiZhi.CHEN,DiZhi.MAO,DiZhi.YIN,DiZhi.CHOU,DiZhi.ZI,DiZhi.HAI];
+    if (starAngle % 30 == 0){
+      int passingGongTotal = (starAngle / 30).toInt();
+      return Tuple2(EnumTwelveGong.eclipticSeq[passingGongTotal],0);
+    }else{
+
+      int passingGongTotal = (starAngle ~/ 30).toInt();
+      double enterGongDegree = starAngle - passingGongTotal* 30;
+      return Tuple2(EnumTwelveGong.eclipticSeq[passingGongTotal],enterGongDegree);
+    }
+  }
+
+  static Tuple2<TwentyEightStarInn,double> starEnterStarInn(double starAngle,Map<TwentyEightStarInn,StarXiuType> mapper){
+
+    if (mapper.entries.first.value.degreeStartAt > starAngle){
+      return Tuple2(mapper.entries.last.key, 360-mapper.entries.last.value.degreeStartAt+starAngle);
+    } else if (mapper.entries.last.value.degreeStartAt < starAngle){
+      return Tuple2(mapper.entries.last.key, starAngle - mapper.entries.last.value.degreeStartAt);
+    }
+    MapEntry<TwentyEightStarInn,StarXiuType> result = mapper
+        .entries
+        .firstWhere((e)=> e.value.degreeStartAt+e.value.totalDegree >= starAngle);
+
+    return Tuple2(result.key, starAngle-result.value.degreeStartAt);
+  }
+
+
+}

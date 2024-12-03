@@ -1,0 +1,89 @@
+以下六壬盘 三传使用不同顺序有不同效果
+以下均为先孟仲法 后涉害法
+丁卯三局
+丁卯九局
+丁卯十二局
+戊辰七局（ 与戊辰六局相冲，都是在与第一课进行涉害，且情况相近，但六局使用缀，而同样为“巳亥”见进行孟仲法，七局则是取孟见机法）
+庚午三局
+庚午五局
+癸酉 六局
+癸酉九局
+己卯三局
+己卯九局
+庚辰三局
+癸未五局
+甲申五局
+己丑五局
+庚寅五局
+辛卯三局
+辛卯九局
+甲午三局
+戊戌七局（与戊辰七局类似）
+己亥九局
+癸卯三局
+甲辰三局
+甲辰五局
+己酉五局
+乙卯三局
+乙卯九局
+癸亥五局
+
+
+
+        if ([JiaZi.DING_MAO].contains(dayJiaZi)&&["三局","九局","十二局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.WU_CHEN].contains(dayJiaZi)&&["七局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GENG_WU].contains(dayJiaZi)&&["三局","五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GUI_YOU].contains(dayJiaZi)&&["六局","九局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JI_MAO].contains(dayJiaZi)&&["三局","九局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GENG_CHEN].contains(dayJiaZi)&&["三局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GUI_WEI].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JIA_SHEN].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JI_CHOU].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GENG_YIN].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.XIN_MAO].contains(dayJiaZi)&&["三局","九局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JIA_WU].contains(dayJiaZi)&&["三局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.WU_XU].contains(dayJiaZi)&&["七局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JI_HAI].contains(dayJiaZi)&&["九局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GUI_MAO].contains(dayJiaZi)&&["三局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JIA_CHEN].contains(dayJiaZi)&&["三局","五局","八局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.JI_YOU].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.YI_MAO].contains(dayJiaZi)&&["三局","九局"].contains(orderInThatDay)){
+          continue;
+        }
+        if ([JiaZi.GUI_HAI].contains(dayJiaZi)&&["五局"].contains(orderInThatDay)){
+          continue;
+        }
