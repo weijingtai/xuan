@@ -2,7 +2,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_stars.dart';
 import 'package:qizhengsiyu/pages/StarsResolver.dart';
-import 'package:qizhengsiyu/pages/balls.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:tuple/tuple.dart';
 
@@ -401,19 +400,7 @@ void main(){
       print(StarsResolver.sortCircularAngles([359,358,350,0,351,240,10]));
     });
   });
-  group("angle ",(){
-    test("resolveAngleDirectly",(){
-      CollisionResolver.resolveAngleDirectly({
-        320.0:1,
-        359.0:1,
-        2.0:1,
-        4.0:1,
-        5.0:1,
-        120:1,
-        123:1,
-      },4.0);
-    });
-  });
+
   group("doResolveSameAngleStars", (){
     double rangeAngle = 4.0;
     test("doResolveSameAngleStars 2", (){
