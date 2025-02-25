@@ -1,7 +1,5 @@
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:common/painter/complete_circle_painter.dart';
-import 'package:common/painter/ring_scale_painter.dart';
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import 'package:el_tooltip/el_tooltip.dart';
@@ -9,24 +7,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_stars.dart';
+import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
-import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 import 'package:sweph/sweph.dart';
 import 'package:tuple/tuple.dart';
 
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tzdata;
 
 import '../enums/enum_twelve_gong.dart';
 import '../models/panel_stars_info.dart';
-import '../models/stars_angle.dart';
 import '../models/observer_position.dart';
 import '../painter/star_xiu_ring_painter.dart';
 import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
 import '../qi_zheng_si_yu_ui_constant_resources.dart';
-import '../widgets/arc_button.dart';
 
 class BeautyPage extends StatefulWidget {
   const BeautyPage({super.key});
@@ -153,12 +147,12 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
   }
   @override
   Widget build(BuildContext context) {
-    double height = MediaQuery.of(context).size.height;
-    double width  = MediaQuery.of(context).size.width;
-    double minSize = height > width ? width : height;
+    // double height = MediaQuery.of(context).size.height;
+    // double width  = MediaQuery.of(context).size.width;
+    // double minSize = height > width ? width : height;
 
     // 黄道十二宫 从白羊开始
-    List<String> zodiacEnglishList = <String>["Ari白羊♈︎", "Tau金牛♉︎", "Gem双子♊︎", "Can巨蟹♋︎", "Leo狮子♌︎", "Vir处女♍︎", "Lib天秤♎︎︎", "Sco天蝎♏︎", "Sag射手♐︎", "Cap摩羯♑︎", "Agu水瓶♒︎", "Pis双鱼♓︎",];
+    // List<String> zodiacEnglishList = <String>["Ari白羊♈︎", "Tau金牛♉︎", "Gem双子♊︎", "Can巨蟹♋︎", "Leo狮子♌︎", "Vir处女♍︎", "Lib天秤♎︎︎", "Sco天蝎♏︎", "Sag射手♐︎", "Cap摩羯♑︎", "Agu水瓶♒︎", "Pis双鱼♓︎",];
     // List<String> zodiacList = <String>["白羊♈︎", "金牛♉︎", "双子♊︎", "巨蟹♋︎", "狮子♌︎", "处女♍︎", "天秤♎︎︎", "天蝎♏︎", "射手♐︎", "摩羯♑︎", "水瓶♒︎", "双鱼♓︎",];
     List<String> zodiacList = <String>["白羊", "金牛", "双子", "巨蟹", "狮子", "处女", "天秤", "天蝎", "射手", "摩羯", "水瓶", "双鱼",];
     // TextStyle zodiacTextStyle = TextStyle(color: Colors.grey, fontSize: 12,fontFamily: 'KaiTi',fontWeight: FontWeight.w300,height: 1.2);
@@ -216,10 +210,10 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
 
     StarsAngle starsAngle = calculateSevenZhengAngle(observerPostion);
 
-    print(starsAngle.toString());
+    // print(starsAngle.toString());
+    // StarsResolver.calculateMinSafeAngle(outerR, innerR, r)
 
-    FiveStarWalkingInfo value = StarWalkingInfoUtils.calculateStarWalkingInfo(EnumStars.Golden,observerPostion,StarsAngle.moirasFiveStartsMapper);
-    print("value ${value.toString()}");
+    // FiveStarWalkingInfo value = StarWalkingInfoUtils.calculateStarWalkingInfo(EnumStars.Golden,observerPostion,StarsAngle.moirasFiveStartsMapper);
     // 使用 dart:math 库中的函数进行转换
     return Scaffold(
       body: Container(
@@ -228,7 +222,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
           alignment: Alignment.center,
           child: Column(
             children: [
-              ArcButton(),
+              // ArcButton(),
               SizedBox(height: 20,),
               Stack(
                 alignment: Alignment.center,
@@ -479,8 +473,9 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
                   // star2(EnumStars.Sun,200.16,64,offsetWidthTimes:0),
                   // star2(EnumStars.Lunar,322.97,64,offsetWidthTimes:0),
 
-                  star2(EnumStars.Sun,starsAngle.sun,64,offsetWidthTimes:0),
-                  star2(EnumStars.Moon,starsAngle.moon,64,offsetWidthTimes:0),
+                  // star2(EnumStars.Sun,starsAngle.sun,64,offsetWidthTimes:0),
+                  // star2(EnumStars.Moon,starsAngle.moon,64,offsetWidthTimes:0),
+                  drawUIStarBody(UIStarModel(star: EnumStars.Sun, priority: 4, originalAngle: 10, rangeAngleEachSide: 4)),
 
                   // star2(EnumStars.Lunar,332.30,64,offsetWidthTimes:0),
                   // star2(EnumStars.Golden,283.98,64,offsetWidthTimes:0),
@@ -730,6 +725,57 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
     final pos = Sweph.swe_calc_ut(jd, HeavenlyBody.SE_MOON, SwephFlag.SEFLG_SWIEPH);
     return 'lat=${pos.latitude.toStringAsFixed(3)} lon=${pos.longitude.toStringAsFixed(3)}';
   }
+  Widget drawUIStarBody(UIStarModel uiStarBody){
+    Color backgroundColor = QiZhengSiYuUIConstantResources.starsColorMap[star]!;
+
+    // print("-------- $oWidth");
+    return Transform.rotate(
+      // angle: (120 * pi) / 180,
+      angle: 0,
+      child: Transform.rotate(
+          angle: (120-uiStarBody.angle) * pi / 180,
+          child: Container(
+            width: 32 + 64,
+            height: 610,
+            alignment: Alignment.topCenter,
+            child: ElTooltip(
+              showModal:false,
+              showChildAboveOverlay:false,
+              content: Text("tooltip"),
+              child: FutureBuilder(
+                future: loadImage(),
+                builder: (ctx,asyncSnap,){
+                  // if (asyncSnap.hasData && asyncSnap.data != null){
+                  //   return CustomPaint(
+                  //     size: Size(32, 650-600-4),
+                  //     painter: PlanetPainter(
+                  //         starName:starName,
+                  //         angle:((360-degree) * pi) / 180,
+                  //         offsetTimes: offsetWidthTimes,
+                  //         image: asyncSnap.data!
+                  //     ),
+                  //   );
+                  // }
+                  // if (asyncSnap.hasError){
+                  //   print(asyncSnap.error);
+                  // }
+                  return CustomPaint(
+                    size: Size(32, 650-600-4),
+                    painter: MyCirclePainter(
+                        starName:uiStarBody.star.singleName,
+                        // angle:((360-degree) * pi) / 180,
+                        angle:((360-(120-uiStarBody.angle)) * pi) / 180,
+                        offsetTimes: 0,
+                        backgroundColor: backgroundColor
+                    ),
+                  );
+                },
+              ),
+            ),
+          )),
+    );
+  }
+
   Widget star2(EnumStars star,double degree,double offsetWidth,{int offsetWidthTimes = 0}){
   Color backgroundColor = QiZhengSiYuUIConstantResources.starsColorMap[star]!;
     double oWidth = offsetWidth;
@@ -790,6 +836,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
           )),
     );
   }
+
   Future<ui.Image> loadImage() async {
     var data = await rootBundle.load('assets/planets/mars-bubbles-50.png'); // Replace with your image path
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),targetHeight: 40,targetWidth: 42);
@@ -841,7 +888,8 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
         child: CustomPaint(
           size: Size(size, size),
           painter: StarXiuRingPainter(
-            ringWidth: ringWidth,
+            outerSize:  size,
+            innerSize: size -ringWidth,
             mapper: QiZhengSiYuConstantResources.TodayStarsSystemMapper,
             sevenZhengColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
           ),
@@ -879,7 +927,8 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
               child: CustomPaint(
                 size: Size(size, size),
                 painter: StarXiuRingPainter(
-                    ringWidth: ringWidth,
+                  outerSize:  size,
+                  innerSize: size -ringWidth,
                     mapper: QiZhengSiYuConstantResources.TodayStarsSystemMapper,
                   sevenZhengColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
                 ),
@@ -1128,7 +1177,7 @@ class TwentyEightStarsCircle extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     // canvas.save();
 
-    canvas.translate(size.width / 2, size.height / 2);
+    canvas.translate(center.dx, center.dy);
     // canvas.translate(center.dx, center.dy);
     canvas.rotate(pi / 4);
 
@@ -1149,7 +1198,7 @@ class TwentyEightStarsCircle extends CustomPainter {
     // double angle = startAngle;
     double arcDrawCircleRadius = innerRadius + (fanRingWidth * 0.5);
     // double textRotationAngle =startAngle + sweepAngle / 2;
-    double textRotationAngle =startAngle;
+    // double textRotationAngle =startAngle;
  
     // 12点方向为起始点
     canvas.rotate(pi - pi/4);
@@ -1349,7 +1398,7 @@ class PlanetPainter extends CustomPainter {
     }
     double centerY = size.height*.5 + (size.height*.05*subCenterHeightTimes);
     Offset center = Offset(centerX,centerY);
-    const radius = 12.0; // Fixed radius
+    // const radius = 12.0; // Fixed radius
 
     // indicator line
     // draw a line from, left edge center to canves center

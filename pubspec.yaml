@@ -76,6 +76,7 @@ dependencies:
   flutter_animate: 4.5.0
   timezone: ^0.9.4
   el_tooltip: ^2.2.1
+  equatable: ^2.0.7
 
   animated_read_more_text: ^0.0.6
 

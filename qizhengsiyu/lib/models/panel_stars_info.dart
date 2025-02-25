@@ -1,9 +1,5 @@
 import 'dart:convert';
 
-import 'package:common/model/enum_di_zhi.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/enums/enum_twenty_eight_xing_xiu.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_stars.dart';
@@ -75,6 +71,8 @@ class PanelStarsInfo{
 
 
 }
+
+
 class StarsAngle{
   final double sun;
   final double moon;
@@ -221,6 +219,7 @@ class StarsAngle{
 class UIStarsAngle{
   final double sun;
   final double uiSunAngle;
+
   final double moon;
   final double uiMoonAngle;
 
