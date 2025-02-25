@@ -9,6 +9,7 @@ import 'package:common/model/enum_twelve_star_seq.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
 import 'package:sweph/sweph.dart';
 
@@ -27,6 +28,7 @@ import '../models/stars_angle.dart';
 import '../models/eleven_stars_info.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_walking_info_utils.dart';
+import 'StarsResolver.dart';
 
 class QiZhengSiYuViewModel extends ChangeNotifier{
 
@@ -41,6 +43,17 @@ class QiZhengSiYuViewModel extends ChangeNotifier{
   // 本命星盘
   StarsAngle? _basicLifeStarsAngle;
   StarsAngle? get basicLifeStarsAngle => _basicLifeStarsAngle;
+
+
+
+  double _baseMiniSafetyAngle = 0;
+  List<UIStarModel> _uiBasicLifeStars = [];
+  List<UIStarModel> get uiBasicLifeStars => _uiBasicLifeStars;
+
+  double _fateMiniSafetyAngle = 0;
+  List<UIStarModel> _uiFateLifeStars = [];
+  List<UIStarModel> get uiFateLifeStars => _uiFateLifeStars;
+
   PanelStarsInfo? _basicLifePanelStarsInfo;
   PanelStarsInfo? get basicLifePanelStarsInfo => _basicLifePanelStarsInfo;
 
@@ -49,7 +62,6 @@ class QiZhengSiYuViewModel extends ChangeNotifier{
   StarsAngle? get fateLifeStarsAngle => _fateLifeStarsAngle;
   PanelStarsInfo? _fateLifePanelStarsInfo;
   PanelStarsInfo? get fateLifePanelStarsInfo => _fateLifePanelStarsInfo;
-
 
 
 
@@ -64,6 +76,14 @@ class QiZhengSiYuViewModel extends ChangeNotifier{
   QiZhengSiYuViewModel(this.context);
 
 
+  void calculateBasicStarsSafetyAngle(double starBodyRadius,double starInnRangeMiddleSize,double basicLifeStarCenterCircleSize){
+    _baseMiniSafetyAngle = StarsResolver.calculateMinSafeAngle(basicLifeStarCenterCircleSize, starInnRangeMiddleSize,starBodyRadius);
+    _baseMiniSafetyAngle = _baseMiniSafetyAngle.ceilToDouble() + 2.0; // 增加2度，使得UI层面更加好看
+  }
+  void calculateFateStarsSafetyAngle(double starBodyRadius,double starInnRangeMiddleSize,double lifeStarCenterCircleSize){
+    _fateMiniSafetyAngle = StarsResolver.calculateMinSafeAngle(lifeStarCenterCircleSize, starInnRangeMiddleSize,starBodyRadius);
+    _fateMiniSafetyAngle = _fateMiniSafetyAngle.ceilToDouble() + 2.0; // 增加2度，使得UI层面更加好看
+  }
   void reset(){
     if (_basicLifeStarsAngle != null){
       _basicLifeStarsAngle = null;
@@ -102,6 +122,9 @@ class QiZhengSiYuViewModel extends ChangeNotifier{
       StarPanelType.ZodiacalSiderealOldStars.mapper,
       isDayOrNight:true
     );
+    _uiBasicLifeStars = calculateUIStars(_basicLifeStarsAngle!,_baseMiniSafetyAngle);
+
+
     if (observerPosition.fateLifeDateTime != null){
       _fateLifeStarsAngle = calculateSevenZhengAngle(observerPosition,observerPosition.fateLifeUtcTime!);
       _fateLifePanelStarsInfo = calculateElevenStartInfo(
@@ -110,7 +133,83 @@ class QiZhengSiYuViewModel extends ChangeNotifier{
           StarPanelType.ZodiacalSiderealOldStars.mapper,
           isDayOrNight:true
       );
+      _uiFateLifeStars = calculateUIStars(_fateLifeStarsAngle!,_fateMiniSafetyAngle);
     }
+  }
+  List<UIStarModel> calculateUIStars(StarsAngle starsAngle,double miniSafetyAngle){
+    List<UIStarModel> unadjustedStarList = [
+      UIStarModel(
+          star: EnumStars.Sun,
+          originalAngle: starsAngle.sun,
+          priority: 4,
+          rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Moon,
+        originalAngle: starsAngle.moon,
+        priority: 3,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+
+      UIStarModel(
+        star: EnumStars.Golden,
+        originalAngle: starsAngle.golden,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Wood,
+        originalAngle: starsAngle.wood,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Water,
+        originalAngle: starsAngle.water,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Fire,
+        originalAngle: starsAngle.fire,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Soil,
+        originalAngle: starsAngle.soil,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+
+
+      UIStarModel(
+        star: EnumStars.Qi,
+        originalAngle: starsAngle.qi,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Bei,
+        originalAngle: starsAngle.lilith,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Luo,
+        originalAngle: starsAngle.southNode,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Ji,
+        originalAngle: starsAngle.northNode,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+    ];
+
+    return StarsResolver.resolveUIStars(unadjustedStarList);
   }
 
 

@@ -8,15 +8,20 @@ import '../enums/enum_twenty_eight_xing_xiu.dart';
 import '../models/star_xiu_type.dart';
 
 class StarXiuRingPainter extends CustomPainter {
-  final double ringWidth;
+
+  double outerSize;
+  double innerSize;
   Map<TwentyEightStarInn,StarXiuType> mapper;
   Map<EnumStars,Color> sevenZhengColorMapper;
 
   double tickLength;
   double longTickLength;
+  double get ringWidth => (outerSize - innerSize) * .5;
 
   StarXiuRingPainter({
-    required this.ringWidth,
+    // required this.ringWidth,
+    required this.outerSize,
+    required this.innerSize,
     required this.mapper,
     required this.sevenZhengColorMapper,
     this.tickLength = 5,
@@ -171,7 +176,6 @@ class StarXiuRingPainter extends CustomPainter {
       ..strokeWidth = .5
       ..style = PaintingStyle.stroke;
     for (StarXiuType starXiuType in mapper.values){
-      print("---${starXiuType.degreeStartAt}");
       final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
       double lineLength = ringWidth;
       final double outerX = centerX + outerRadius * math.cos(angle);
