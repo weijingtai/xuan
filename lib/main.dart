@@ -59,9 +59,9 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: NavigatorGenerator.generateRoute,
       // initialRoute: '/qizhengsiyu',
       // initialRoute: '/one_year',
-      initialRoute: '/qizhengsiyu', // 七政四余
+      // initialRoute: '/qizhengsiyu', // 七政四余
       // in.itialRoute: '/taiyishenshu', // 太乙神数
-      // initialRoute: '/daliuren', // 大六壬
+      initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲
       // initialRoute: '/', // main
       // initialRoute: '/widget_dev', // 奇门遁甲
