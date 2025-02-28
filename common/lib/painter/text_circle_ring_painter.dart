@@ -17,7 +17,6 @@ class TextCircleRingPainter extends CustomPainter {
   double innerPadding = 12;
   double outerPadding = 12;
 
-
   TextCircleRingPainter({
     required this.innerRadius,
     required this.outerRadius,
@@ -26,25 +25,25 @@ class TextCircleRingPainter extends CustomPainter {
     this.textList,
     this.isReverseText = true,
     this.isHorizontalText = true,
-    this.isAntiClockwise= false,
+    this.isAntiClockwise = false,
     this.innerPadding = 12,
     this.outerPadding = 12,
     // this.textStyle = const TextStyle(color: Colors.black, fontSize: 18,height: 1.2),
-  }){
-    if (textList != null && textList!.isNotEmpty){
+  }) {
+    if (textList != null && textList!.isNotEmpty) {
       sweepAngleDegree = 360 / textList!.length;
-    }else{
+    } else {
       sweepAngleDegree = eachAngleDegree ?? 360;
     }
   }
 
-  void debugPaint(Canvas canvas, Size size, Offset center){
+  void debugPaint(Canvas canvas, Size size, Offset center) {
     // canvas.translate(center.dx, center.dy);
     // 给canvas绘制灰色透明度为0.1的背景
     final Paint backgroundPaint = Paint()
       ..color = Colors.grey.withOpacity(.1)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(center, size.width/2, backgroundPaint);
+    canvas.drawCircle(center, size.width / 2, backgroundPaint);
 
     final Paint background2Paint = Paint()
       ..color = Colors.blue.withOpacity(.1)
@@ -62,7 +61,6 @@ class TextCircleRingPainter extends CustomPainter {
     canvas.drawCircle(center, 4, centerPaint);
   }
 
-
   @override
   void paint(Canvas canvas, Size size) {
     double eachDegreeOfPI = pi / 180;
@@ -73,8 +71,7 @@ class TextCircleRingPainter extends CustomPainter {
     // canvas.translate(center.dx, center.dy);
     canvas.rotate(pi / 4);
 
-
-    final res = sweepAngleDegree *0.5 * eachDegreeOfPI;
+    final res = sweepAngleDegree * 0.5 * eachDegreeOfPI;
     final double startAngle = pi / 2 - res;
     final double sweepAngle = sweepAngleDegree * eachDegreeOfPI;
     final fanRingWidth = outerRadius - innerRadius;
@@ -88,13 +85,13 @@ class TextCircleRingPainter extends CustomPainter {
     // 计算每个扇环的中心角度
     // double angle = startAngle;
     double arcDrawCircleRadius = innerRadius + (fanRingWidth * 0.5);
-    double textRotationAngle =startAngle + sweepAngle / 2;
+    double textRotationAngle = startAngle + sweepAngle / 2;
     int total = 360 ~/ sweepAngleDegree;
     if (textList != null && textList!.isNotEmpty) {
       total = textList!.length;
     }
     // 12点方向为起始点
-    canvas.rotate(pi - pi/4);
+    canvas.rotate(pi - pi / 4);
     // 9点方向为起始点 -- not work
     // canvas.rotate(pi/4);
     // 6点方向为起始点 -- not work
@@ -107,17 +104,21 @@ class TextCircleRingPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 
-
     for (int i = 0; i < total; i++) {
       // 绘制扇环
-      Path path = Path()..addArc(Rect.fromCircle(center: Offset.zero, radius: arcDrawCircleRadius), startAngle, sweepAngle,);
+      Path path = Path()
+        ..addArc(
+          Rect.fromCircle(center: Offset.zero, radius: arcDrawCircleRadius),
+          startAngle,
+          sweepAngle,
+        );
       // 绘制一条从圆心到圆环的线
       // path.moveTo(0, 0);
       // path.lineTo(0, -arcDrawCircleRadius);
       // path.close();
 
       // canvas.drawArc(Rect.fromCircle(center: Offset.zero, radius: arcDrawCircleRadius), startAngle, sweepAngle, false, paint);
-      canvas.drawPath(path,paint);
+      canvas.drawPath(path, paint);
 
       // canvas.drawShadow(path, Colors.blue.withOpacity(0.4), 5, false);
 
@@ -125,34 +126,33 @@ class TextCircleRingPainter extends CustomPainter {
         var text = textList![i].data!;
         if (text.length == 1) {
           // 绘制文字
-          paintSingleChar(
-              canvas, size, textList![i], center, textRotationAngle, fanRingWidth);
-        }else{
-          if (isHorizontalText){
+          paintSingleChar(canvas, size, textList![i], center, textRotationAngle,
+              fanRingWidth);
+        } else {
+          if (isHorizontalText) {
             // 绘制文字
-            paintSingleChar(
-                canvas, size, textList![i], center, textRotationAngle, fanRingWidth);
-          }else{
+            paintSingleChar(canvas, size, textList![i], center,
+                textRotationAngle, fanRingWidth);
+          } else {
             // 绘制文字
-            paintVerticalText(
-                canvas, size, textList![i], center,textRotationAngle , fanRingWidth);
+            paintVerticalText(canvas, size, textList![i], center,
+                textRotationAngle, fanRingWidth);
           }
         }
       }
-      if (isAntiClockwise){
-        canvas.rotate(-(pi * 2)/total);
-      }else{
-        canvas.rotate((pi * 2)/total);
+      if (isAntiClockwise) {
+        canvas.rotate(-(pi * 2) / total);
+      } else {
+        canvas.rotate((pi * 2) / total);
       }
     }
 
-    for (int i = 0; i < total;i++){
-      if (i == 0){
-
+    for (int i = 0; i < total; i++) {
+      if (i == 0) {
         // canvas.rotate(- eachDegreeOfPI * 15);
-        canvas.rotate(- eachDegreeOfPI * (sweepAngleDegree / 2));
-      }else{
-        canvas.rotate(- eachDegreeOfPI * sweepAngleDegree);
+        canvas.rotate(-eachDegreeOfPI * (sweepAngleDegree / 2));
+      } else {
+        canvas.rotate(-eachDegreeOfPI * sweepAngleDegree);
       }
       Path borderPath = Path();
       borderPath.moveTo(0, innerRadius);
@@ -160,11 +160,11 @@ class TextCircleRingPainter extends CustomPainter {
       borderPath.close();
       canvas.drawPath(borderPath, borderPaint);
       // break;
-
     }
   }
 
-  void paintSingleChar(Canvas canvas, Size size, Text text, Offset center,double rotationAngle,double yOffset) {
+  void paintSingleChar(Canvas canvas, Size size, Text text, Offset center,
+      double rotationAngle, double yOffset) {
     final textSpan = TextSpan(
       text: text.data!,
       style: text.style,
@@ -177,27 +177,32 @@ class TextCircleRingPainter extends CustomPainter {
       minWidth: 0,
       maxWidth: size.width,
     );
-    Offset offset = isReverseText?Offset(
-      -textPainter.width * 0.5,
-      -innerRadius - innerPadding - textPainter.height +textPainter.height*.1,
-    ):Offset(
-      -textPainter.width * 0.5,
-      innerRadius + innerPadding,
-    );
-    double rotateAngle = isReverseText?pi:0.0;
+    Offset offset = isReverseText
+        ? Offset(
+            -textPainter.width * 0.5,
+            -innerRadius -
+                innerPadding -
+                textPainter.height +
+                textPainter.height * .1,
+          )
+        : Offset(
+            -textPainter.width * 0.5,
+            innerRadius + innerPadding,
+          );
+    double rotateAngle = isReverseText ? pi : 0.0;
     canvas.rotate(rotateAngle);
     textPainter.paint(canvas, offset);
-
   }
 
-  void paintVerticalText(Canvas canvas, Size size, Text text, Offset center,double rotationAngle,double yOffset) {
+  void paintVerticalText(Canvas canvas, Size size, Text text, Offset center,
+      double rotationAngle, double yOffset) {
     // splite text to single char
     List<String> textList = text.data!.split('');
     int totalLength = textList.length;
-    for (int i = 0; i < totalLength;i++){
+    for (int i = 0; i < totalLength; i++) {
       final textSpan = TextSpan(
         text: textList[i],
-        style:  text.style!,
+        style: text.style!,
       );
       final textPainter = TextPainter(
         text: textSpan,
@@ -207,47 +212,55 @@ class TextCircleRingPainter extends CustomPainter {
         minWidth: 0,
         maxWidth: size.width,
       );
-      double rotateAngle = isReverseText?pi:0.0;
-      if (i == 0){
-        Offset offset = isReverseText?Offset(
-          center.dx - outerRadius - (textPainter.size.width *0.5),
-          - innerRadius - innerPadding - (textPainter.size.height * .9 * totalLength),
-        ):Offset(
-          center.dx - outerRadius - (textPainter.size.width *0.5),
-          innerRadius + innerPadding,
-          // innerRadius + innerPadding + textPainter.size.height * 0.1,
-        );
+      double rotateAngle = isReverseText ? pi : 0.0;
+      if (i == 0) {
+        Offset offset = isReverseText
+            ? Offset(
+                center.dx - outerRadius - (textPainter.size.width * 0.5),
+                -innerRadius -
+                    innerPadding -
+                    (textPainter.size.height * .9 * totalLength),
+              )
+            : Offset(
+                center.dx - outerRadius - (textPainter.size.width * 0.5),
+                innerRadius + innerPadding,
+                // innerRadius + innerPadding + textPainter.size.height * 0.1,
+              );
         // canvas.translate(offset.dx, offset.dy);
         // canvas.translate(center.dx, center.dy);
         canvas.rotate(rotateAngle);
         textPainter.paint(canvas, offset);
-      }else{
-        Offset offset = isReverseText?Offset(
-          center.dx - outerRadius - (textPainter.size.width *0.5),
-          - innerRadius - innerPadding - (textPainter.size.height* .9 * (totalLength - i) ),
-        ):Offset(
-          center.dx - outerRadius - (textPainter.size.width *0.5),
-          innerRadius + innerPadding + textPainter.size.height * i,
-          // innerRadius + innerPadding + textPainter.size.height * 0.8 * i,
-        );
+      } else {
+        Offset offset = isReverseText
+            ? Offset(
+                center.dx - outerRadius - (textPainter.size.width * 0.5),
+                -innerRadius -
+                    innerPadding -
+                    (textPainter.size.height * .9 * (totalLength - i)),
+              )
+            : Offset(
+                center.dx - outerRadius - (textPainter.size.width * 0.5),
+                innerRadius + innerPadding + textPainter.size.height * i,
+                // innerRadius + innerPadding + textPainter.size.height * 0.8 * i,
+              );
         // canvas.translate(offset.dx, offset.dy);
         textPainter.paint(canvas, offset);
       }
     }
     canvas.save();
     canvas.restore();
-
   }
 
-  void paintHorizontalText(Canvas canvas, Size size, Text text, Offset center,double rotationAngle,double yOffset) {
+  void paintHorizontalText(Canvas canvas, Size size, Text text, Offset center,
+      double rotationAngle, double yOffset) {
     // splite text to single char
     List<String> textList = text.data!.split('').reversed.toList();
     int totalLength = textList.length;
     canvas.save();
     // canvas.translate(-size.width,-size.height);
     // canvas.translate(0,0);
-    if (totalLength.isEven){
-      for (int i =0;i < totalLength;i++){
+    if (totalLength.isEven) {
+      for (int i = 0; i < totalLength; i++) {
         final textSpan = TextSpan(
           text: textList[i],
           style: text.style!,
@@ -260,50 +273,53 @@ class TextCircleRingPainter extends CustomPainter {
           minWidth: 0,
           maxWidth: size.width,
         );
-        Offset offset = isReverseText?Offset(
-          -textPainter.width * 0.5,
-          -innerRadius - innerPadding - textPainter.height * .5,
-        ):Offset(
-          -textPainter.width * 0.5,
-          innerRadius + innerPadding + textPainter.height * .1,
-        );
-        double rotateAngle = isReverseText?pi:0.0;
-        if (i == 0){
-          offset = isReverseText?Offset(
-            -textPainter.width * 0.5 * 2,
-            -innerRadius - innerPadding - textPainter.height * .5,
-          ):Offset(
-            // -textPainter.width * 0.5,
-            // textPainter.width * - .2,
-            // -textPainter.width,
-            -textPainter.width *0.6,
-            innerRadius + innerPadding  + textPainter.height * .04,
-          );
-          canvas.rotate(rotateAngle-pi * .04);
+        Offset offset = isReverseText
+            ? Offset(
+                -textPainter.width * 0.5,
+                -innerRadius - innerPadding - textPainter.height * .5,
+              )
+            : Offset(
+                -textPainter.width * 0.5,
+                innerRadius + innerPadding + textPainter.height * .1,
+              );
+        double rotateAngle = isReverseText ? pi : 0.0;
+        if (i == 0) {
+          offset = isReverseText
+              ? Offset(
+                  -textPainter.width * 0.5 * 2,
+                  -innerRadius - innerPadding - textPainter.height * .5,
+                )
+              : Offset(
+                  // -textPainter.width * 0.5,
+                  // textPainter.width * - .2,
+                  // -textPainter.width,
+                  -textPainter.width * 0.6,
+                  innerRadius + innerPadding + textPainter.height * .04,
+                );
+          canvas.rotate(rotateAngle - pi * .04);
           // canvas.save();
           // canvas.restore();
-        }else{
-          offset = isReverseText?Offset(
-            textPainter.width * 0.5 * 2,
-            -innerRadius - innerPadding - textPainter.height * .5,
-          ):Offset(
-            -textPainter.width * 1.2,
-            // 0,
-            innerRadius + innerPadding + textPainter.height * .04,
-            // innerRadius + innerPadding + textPainter.height * .04,
-          );
+        } else {
+          offset = isReverseText
+              ? Offset(
+                  textPainter.width * 0.5 * 2,
+                  -innerRadius - innerPadding - textPainter.height * .5,
+                )
+              : Offset(
+                  -textPainter.width * 1.2,
+                  // 0,
+                  innerRadius + innerPadding + textPainter.height * .04,
+                  // innerRadius + innerPadding + textPainter.height * .04,
+                );
           // canvas.rotate(rotateAngle + pi * .02);
           canvas.rotate(rotateAngle + pi * .04);
         }
         textPainter.paint(canvas, offset);
       }
-
     }
     // canvas.save();
     canvas.restore();
   }
-
-
 
   @override
   bool shouldRepaint(CustomPainter old) {
