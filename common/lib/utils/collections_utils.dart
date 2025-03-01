@@ -1,19 +1,36 @@
-
-
-class CollectUtils{
-  static List<String> changeStrSeq(String start,List<String> originalSeq,{bool isReversed =false}){
+class CollectUtils<T> {
+  /// 将给定字符串放到给定list的第一个位置
+  static List<String> changeStrSeq(String start, List<String> originalSeq,
+      {bool isReversed = false}) {
     List<String> oldList = List.from(originalSeq);
-    if (isReversed){
+    if (isReversed) {
       oldList.reversed;
     }
     var timeZhiIndex = oldList.indexOf(start);
     // print(timeZhiIndex);
-    List<String> newDiZhiList = oldList.sublist(timeZhiIndex).toList(growable: true);
+    List<String> newDiZhiList =
+        oldList.sublist(timeZhiIndex).toList(growable: true);
     // print(newDiZhiList);
-    List<String> appendedList = oldList.sublist(0,timeZhiIndex);
+    List<String> appendedList = oldList.sublist(0, timeZhiIndex);
     // print(appendedList);
     newDiZhiList.addAll(appendedList);
     return newDiZhiList;
   }
 
+  /// 将给定类型T放到给定list的第一个位置
+  static List<T> changeSeq<T>(T start, List<T> originalSeq,
+      {bool isReversed = false}) {
+    List<T> oldList = List.from(originalSeq);
+    if (isReversed) {
+      oldList.reversed;
+    }
+    var timeZhiIndex = oldList.indexOf(start);
+    // print(timeZhiIndex);
+    List<T> newDiZhiList = oldList.sublist(timeZhiIndex).toList(growable: true);
+    // print(newDiZhiList);
+    List<T> appendedList = oldList.sublist(0, timeZhiIndex);
+    // print(appendedList);
+    newDiZhiList.addAll(appendedList);
+    return newDiZhiList;
+  }
 }
