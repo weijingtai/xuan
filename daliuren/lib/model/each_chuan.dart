@@ -1,14 +1,11 @@
-import 'package:common/model/enum_di_zhi.dart';
-import 'package:common/model/enum_liu_qin.dart';
-import 'package:common/model/enum_tian_gan.dart';
+import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'enum_gui_ren.dart';
 part 'each_chuan.g.dart';
 
-
 @JsonSerializable()
-class EachChuan{
+class EachChuan {
   int order;
   DiZhi diZhi;
   TianGan? tianGan;
@@ -22,8 +19,7 @@ class EachChuan{
     this.tianGan,
   });
 
-  factory EachChuan.fromJson(Map<String, dynamic> json) => _$EachChuanFromJson(json);
+  factory EachChuan.fromJson(Map<String, dynamic> json) =>
+      _$EachChuanFromJson(json);
   Map<String, dynamic> toJson() => _$EachChuanToJson(this);
-
-
 }

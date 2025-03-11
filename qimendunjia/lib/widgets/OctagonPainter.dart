@@ -14,7 +14,7 @@ class OctagonPainter extends CustomPainter {
       ..strokeWidth = 4;
 
     final path = Path();
-    final angle = (2 * math.pi) / 8;
+    const angle = (2 * math.pi) / 8;
 
     for (int i = 0; i < 8; i++) {
       final x = size.width / 2 + radius * math.cos(i * angle);
@@ -36,14 +36,14 @@ class OctagonPainter extends CustomPainter {
 class Octagon extends StatelessWidget {
   final double radius;
 
-  Octagon({required this.radius});
+  const Octagon({super.key, required this.radius});
 
   @override
   Widget build(BuildContext context) {
     return CustomPaint(
       painter: OctagonPainter(radius: radius),
       child: Container(
-        child: Text("开"),
+        child: const Text("开"),
       ),
     );
   }

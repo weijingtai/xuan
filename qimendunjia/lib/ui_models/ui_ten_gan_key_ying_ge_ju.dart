@@ -1,6 +1,4 @@
-
-import 'package:common/model/enum_hou_tian_gua.dart';
-import 'package:common/model/enum_tian_gan.dart';
+import 'package:common/enums.dart';
 
 import '../model/ten_gan_ke_ying_ge_ju.dart';
 
@@ -29,7 +27,7 @@ class UITenGanKeYingGeJu {
   final TenGanKeYingGeJu? tianPanJiGanDiPanJia; // 天盘存在寄干 时 地盘干为遁甲
   final TenGanKeYingGeJu? tianDunJiaDiPanJi; // 天盘干为遁甲，地盘寄干
 
-  UITenGanKeYingGeJu( {
+  UITenGanKeYingGeJu({
     required this.gongGua,
     required this.tianGan,
     required this.tianGeJu,
@@ -38,10 +36,10 @@ class UITenGanKeYingGeJu {
     required this.isDiGanDunJia,
     required this.tianDunJiaGeJu,
     required this.diDunJiaGeJu,
-    required  this.tianPanJiGan,
-    required  this.tianPanJiGanGeJu,
-    required  this.diPanJiGan,
-    required  this.diPanJiGanGeJu,
+    required this.tianPanJiGan,
+    required this.tianPanJiGanGeJu,
+    required this.diPanJiGan,
+    required this.diPanJiGanGeJu,
     required this.isTianJiGanJia,
     required this.isDiJiGanJia,
     required this.tianJiGanJiaGeJu,

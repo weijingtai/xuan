@@ -1,28 +1,20 @@
-
-
-import 'package:common/model/enum_hou_tian_gua.dart';
-import 'package:common/model/enum_jia_zi.dart';
-import 'package:common/model/enum_tian_gan.dart';
-import 'package:common/model/enum_yin_yang.dart';
-import 'package:lunar/calendar/JieQi.dart';
+import 'package:common/enums.dart';
 import 'package:lunar/calendar/Solar.dart';
 import 'package:qimendunjia/utils/datetime_jie_qi.dart';
 import 'package:tuple/tuple.dart';
 
-import '../model/shi_jia_qi_men.dart';
-
 class ArrangePlateUtils {
-  static final Map<JiaZi,TianGan> jiaZiXunShouMapper = {
-    JiaZi.JIA_ZI:TianGan.WU, // 甲子戊
-    JiaZi.JIA_XU:TianGan.JI, // 甲戌己
-    JiaZi.JIA_SHEN:TianGan.GENG, // 甲申庚
-    JiaZi.JIA_WU:TianGan.XIN, // 甲午辛
-    JiaZi.JIA_CHEN:TianGan.REN, // 甲辰壬
-    JiaZi.JIA_YIN:TianGan.GUI // 甲寅癸
+  static final Map<JiaZi, TianGan> jiaZiXunShouMapper = {
+    JiaZi.JIA_ZI: TianGan.WU, // 甲子戊
+    JiaZi.JIA_XU: TianGan.JI, // 甲戌己
+    JiaZi.JIA_SHEN: TianGan.GENG, // 甲申庚
+    JiaZi.JIA_WU: TianGan.XIN, // 甲午辛
+    JiaZi.JIA_CHEN: TianGan.REN, // 甲辰壬
+    JiaZi.JIA_YIN: TianGan.GUI // 甲寅癸
   };
-  static TianGan getXunShouByJiaZi(JiaZi jiaZi){
+  static TianGan getXunShouByJiaZi(JiaZi jiaZi) {
     TianGan? res = ArrangePlateUtils.jiaZiXunShouMapper[jiaZi];
-    if(res != null){
+    if (res != null) {
       return res;
     }
     throw UnsupportedError("根据符头获取旬首，仅支持 六甲，不支持${jiaZi.name}");
@@ -33,73 +25,84 @@ class ArrangePlateUtils {
   /// tuple.item3 日
   /// tuple.item4 时
   /// tuple.item5 季节
-  static Tuple5<String,String,String,String,String> getGanZhiDateString(DateTime utcDateTime){
-    final lunarCalendar = Solar.fromYmdHms(utcDateTime.year, utcDateTime.month, utcDateTime.day, utcDateTime.hour, utcDateTime.minute, utcDateTime.second).getLunar();
+  static Tuple5<String, String, String, String, String> getGanZhiDateString(
+      DateTime utcDateTime) {
+    final lunarCalendar = Solar.fromYmdHms(
+            utcDateTime.year,
+            utcDateTime.month,
+            utcDateTime.day,
+            utcDateTime.hour,
+            utcDateTime.minute,
+            utcDateTime.second)
+        .getLunar();
     // create date value  only
     String jieQi = utcDateTime.getSolarTerm().toString();
-    return Tuple5(lunarCalendar.getYearInGanZhi(), lunarCalendar.getMonthInGanZhi(), lunarCalendar.getDayInGanZhi(), lunarCalendar.getTimeInGanZhi(), jieQi);
+    return Tuple5(
+        lunarCalendar.getYearInGanZhi(),
+        lunarCalendar.getMonthInGanZhi(),
+        lunarCalendar.getDayInGanZhi(),
+        lunarCalendar.getTimeInGanZhi(),
+        jieQi);
   }
-
 
   //
   // tuple.item1 上元
   // tuple.item2 中元
   // tuple.item3 下元
   // tuple.item4  阴阳遁
-  static int getJuNumber(Tuple4<int,int,int,bool> juTuple, int yunaType){
+  static int getJuNumber(Tuple4<int, int, int, bool> juTuple, int yunaType) {
     int juNumber = -1;
-    if (yunaType == 0){
+    if (yunaType == 0) {
       juNumber = juTuple.item1;
-    }else if (yunaType == 1) {
+    } else if (yunaType == 1) {
       juNumber = juTuple.item2;
-    }else if (yunaType == 2) {
+    } else if (yunaType == 2) {
       juNumber = juTuple.item3;
     }
     return juNumber;
   }
 
   // 阳逆阴顺，宫位顺序
-  static List<int> yangShunYinNiSeq(int firstIndex, bool isYang){
+  static List<int> yangShunYinNiSeq(int firstIndex, bool isYang) {
     List<int> juList = [];
-    if (isYang){
-      juList = List.generate(9, (index) => index+1).toList();
-    }else{
-      juList = List.generate(9, (index) => index+1).reversed.toList();
+    if (isYang) {
+      juList = List.generate(9, (index) => index + 1).toList();
+    } else {
+      juList = List.generate(9, (index) => index + 1).reversed.toList();
     }
     // 让 juNumber成为第一个元素
     int currentIndex = juList.indexOf(firstIndex);
 
     List<int> juList1 = juList.sublist(currentIndex);
-    List<int> juList2 = juList.sublist(0,currentIndex);
+    List<int> juList2 = juList.sublist(0, currentIndex);
     juList = juList1 + juList2;
 
     return juList;
-
   }
 
-
   // 转盘奇门
-  static List<int> turingListSeq(List<int> originalList,int shouldBeFirstIndex){
+  static List<int> turingListSeq(
+      List<int> originalList, int shouldBeFirstIndex) {
     List<int> seq = originalList.toList(growable: true);
-    if (originalList.first != shouldBeFirstIndex){
+    if (originalList.first != shouldBeFirstIndex) {
       int index = originalList.indexOf(shouldBeFirstIndex);
       List<int> seq1 = originalList.sublist(index);
-      List<int> seq2 = originalList.sublist(0,index);
+      List<int> seq2 = originalList.sublist(0, index);
       seq = seq1 + seq2;
     }
     return seq;
   }
-  // 转盘奇门
-  static List<String> turingStringListSeq(List<String> originalList,String shouldBeFirstIndex){
 
+  // 转盘奇门
+  static List<String> turingStringListSeq(
+      List<String> originalList, String shouldBeFirstIndex) {
     List<String> seq = originalList.toList(growable: true);
-    if (originalList.first != shouldBeFirstIndex){
+    if (originalList.first != shouldBeFirstIndex) {
       int index = originalList.indexOf(shouldBeFirstIndex);
       List<String> seq1 = originalList.sublist(index);
-      List<String> seq2 = originalList.sublist(0,index);
+      List<String> seq2 = originalList.sublist(0, index);
       seq = seq1 + seq2;
     }
     return seq;
   }
 }
-

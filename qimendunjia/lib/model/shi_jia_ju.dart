@@ -1,12 +1,8 @@
-
-import 'package:common/model/enum_jia_zi.dart';
-import 'package:common/model/enum_twenty_four_jie_qi.dart';
-import 'package:common/model/enum_yin_yang.dart';
-import 'package:common/module.dart';
+import 'package:common/enums.dart';
 
 import '../enums/enum_three_yuan.dart';
 
-class ShiJiaJu{
+class ShiJiaJu {
   int juNumber;
   JiaZi fuTouJiaZi;
   YinYang yinYangDun;
@@ -20,18 +16,17 @@ class ShiJiaJu{
   int? juDayNumber; // 起局为 局的第几天
 
   DateTime panDateTime;
-  ShiJiaJu({
-    required this.panDateTime,
-    required this.juNumber,
-    required this.fuTouJiaZi,
-    required this.yinYangDun,
-    required this.jieQiAt,
-    this.jieQiStartAt,
-    required this.jieQiEnd,
-    this.jieQiEndAt,
-    required this.atThreeYuan,
-    required this.fourZhuEightChar,
-    this.panJuJieQi,
-    this.juDayNumber
-  });
+  ShiJiaJu(
+      {required this.panDateTime,
+      required this.juNumber,
+      required this.fuTouJiaZi,
+      required this.yinYangDun,
+      required this.jieQiAt,
+      this.jieQiStartAt,
+      required this.jieQiEnd,
+      this.jieQiEndAt,
+      required this.atThreeYuan,
+      required this.fourZhuEightChar,
+      this.panJuJieQi,
+      this.juDayNumber});
 }

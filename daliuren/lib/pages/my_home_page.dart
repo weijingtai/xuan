@@ -4,11 +4,7 @@ import 'dart:convert';
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
-import 'package:common/model/enum_di_zhi.dart';
-import 'package:common/model/enum_jia_zi.dart';
-import 'package:common/model/enum_month_general.dart';
-import 'package:common/model/enum_tian_gan.dart';
-import 'package:common/model/enum_yin_yang.dart';
+import 'package:common/enums.dart';
 import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart';
 import 'package:common/widgets/twenty_four_jie_qi_tag.dart';
@@ -68,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ValueNotifier(null);
   final ValueNotifier<int?> juNumberNotifier = ValueNotifier(null);
 
-  ValueNotifier<bool> _showMonthGeneralJieQi = ValueNotifier(false);
+  final ValueNotifier<bool> _showMonthGeneralJieQi = ValueNotifier(false);
   @override
   void dispose() {
     // TODO: implement dispose
@@ -211,24 +207,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<DaLiuRenPanModel> getPan(
       JiaZi dayJiaZi, JiaZi timeJiaZi, YinYang yinYangDun) async {
-    List<DaLiuRenPanModel> _list;
+    List<DaLiuRenPanModel> list;
     if (yinYangDun.isYang) {
-      _list = await rootBundle
+      list = await rootBundle
           .loadString("assets/da_liu_ren/甲午庚牛羊_阳.json")
           .then(_convertJsonToDaLiuRenPanModel);
     } else {
-      _list = await rootBundle
+      list = await rootBundle
           .loadString("assets/da_liu_ren/甲午庚牛羊_阴.json")
           .then(_convertJsonToDaLiuRenPanModel);
     }
-    var res = _list.firstWhere(
-        (p) => p.dayJiaZi == dayJiaZi && p.shiChen == timeJiaZi.diZhi)!;
+    var res = list.firstWhere(
+        (p) => p.dayJiaZi == dayJiaZi && p.shiChen == timeJiaZi.diZhi);
     // print(res.fourClass.first.tianGan);
     return res;
   }
 
-  Size panSize = Size(400, 400);
-  Size gongSize = Size(400 * .25, 400 * .25);
+  Size panSize = const Size(400, 400);
+  Size gongSize = const Size(400 * .25, 400 * .25);
   @override
   Widget build(BuildContext context) {
     if (panDatetimeNotifier.value == null) {
@@ -254,7 +250,7 @@ class _MyHomePageState extends State<MyHomePage> {
             }
             return child!;
           },
-          child: Text("大六壬"),
+          child: const Text("大六壬"),
         ),
         centerTitle: true,
       ),
@@ -265,17 +261,17 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               pan_base_info(),
-              SizedBox(
+              const SizedBox(
                 height: 16,
               ),
               // 竖屏是使用Column
               main(),
 
-              SizedBox(
+              const SizedBox(
                 height: 32,
               ),
               manuallyJu(),
-              SizedBox(
+              const SizedBox(
                 height: 32,
               ),
               Row(
@@ -294,34 +290,34 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     style: ElevatedButton.styleFrom(
                       // backgroundColor: Colors.green, // Background coloronPrimary: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 15), // Padding
-                      textStyle: TextStyle(fontSize: 18), // Text style
+                      textStyle: const TextStyle(fontSize: 18), // Text style
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text('选择时间'),
+                    child: const Text('选择时间'),
                   ),
-                  SizedBox(width: 24),
+                  const SizedBox(width: 24),
                   ElevatedButton(
                     onPressed: () async {
                       selectedDatetimeNotifier.value = DateTime.now();
                     },
                     style: ElevatedButton.styleFrom(
                       // backgroundColor: Colors.green, // Background coloronPrimary: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 15), // Padding
-                      textStyle: TextStyle(fontSize: 18), // Text style
+                      textStyle: const TextStyle(fontSize: 18), // Text style
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text('现在'),
+                    child: const Text('现在'),
                   ),
-                  SizedBox(width: 24),
+                  const SizedBox(width: 24),
                   ElevatedButton(
                     onPressed: () async {
                       if (panDatetimeNotifier.value == null &&
@@ -347,18 +343,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     style: ElevatedButton.styleFrom(
                       // backgroundColor: Colors.red, // Background coloronPrimary: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 15), // Padding
-                      textStyle: TextStyle(
+                      textStyle: const TextStyle(
                           fontSize: 18, color: Colors.white), // Text style
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text('排盘'),
+                    child: const Text('排盘'),
                   ),
-                  SizedBox(width: 24),
+                  const SizedBox(width: 24),
                   ElevatedButton(
                     onPressed: () async {
                       if (panDatetimeNotifier.value == null &&
@@ -428,18 +424,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     style: ElevatedButton.styleFrom(
                       // backgroundColor: Colors.red, // Background coloronPrimary: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 15), // Padding
-                      textStyle: TextStyle(
+                      textStyle: const TextStyle(
                           fontSize: 18, color: Colors.white), // Text style
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text('干支排盘'),
+                    child: const Text('干支排盘'),
                   ),
-                  SizedBox(width: 24),
+                  const SizedBox(width: 24),
                   ElevatedButton(
                     onPressed: () async {
                       panDatetimeNotifier.value = null;
@@ -454,20 +450,20 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                     style: ElevatedButton.styleFrom(
                       // backgroundColor: Colors.red, // Background coloronPrimary: Colors.white, // Text color
-                      padding: EdgeInsets.symmetric(
+                      padding: const EdgeInsets.symmetric(
                           horizontal: 20, vertical: 15), // Padding
-                      textStyle: TextStyle(
+                      textStyle: const TextStyle(
                           fontSize: 18, color: Colors.white), // Text style
                       shape: RoundedRectangleBorder(
                         borderRadius:
                             BorderRadius.circular(10), // Rounded corners
                       ),
                     ),
-                    child: Text('清除'),
+                    child: const Text('清除'),
                   ),
                 ],
               ),
-              SizedBox(
+              const SizedBox(
                 height: 56,
               )
             ],
@@ -491,7 +487,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
                 builder: (ctx, dateTime, child) =>
                     dateTime != null ? buildCenterPanTime(dateTime) : child!,
-                child: SizedBox()),
+                child: const SizedBox()),
           ),
           SizedBox(
             width: 260,
@@ -502,7 +498,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? buildCenterFourZhu(pan.yearJiaZi, pan.monthJiaZi,
                         pan.dayJiaZi, pan.timeJiaZi)
                     : child!,
-                child: SizedBox()),
+                child: const SizedBox()),
           )
         ],
       );
@@ -519,7 +515,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
                 builder: (ctx, dateTime, child) =>
                     dateTime != null ? buildCenterPanTime(dateTime) : child!,
-                child: SizedBox()),
+                child: const SizedBox()),
           ),
           SizedBox(
             width: 260,
@@ -530,7 +526,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     ? buildCenterFourZhu(pan.yearJiaZi, pan.monthJiaZi,
                         pan.dayJiaZi, pan.timeJiaZi)
                     : child!,
-                child: SizedBox()),
+                child: const SizedBox()),
           )
         ],
       );
@@ -545,7 +541,7 @@ class _MyHomePageState extends State<MyHomePage> {
             width: panSize.width,
             height: panSize.height,
             decoration: BoxDecoration(
-                color: Color.fromRGBO(255, 251, 240, 1),
+                color: const Color.fromRGBO(255, 251, 240, 1),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
@@ -572,18 +568,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 )),
           ),
-          SizedBox(
+          const SizedBox(
             height: 16,
           ),
           ValueListenableBuilder<Tuple2<JiaZi, DiZhi>?>(
               valueListenable: classNumberNotifier,
               builder: (ctx, tuple2, child) {
                 return tuple2 == null
-                    ? SizedBox()
+                    ? const SizedBox()
                     : Container(
                             width: panSize.width,
                             // height: panSize.height,
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 vertical: 24, horizontal: 16),
                             decoration: BoxDecoration(
                                 // color: Colors.blue.withOpacity(.1),
@@ -610,7 +606,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         if (snap.hasData) {
                                           return yu_ding(snap.data!);
                                         } else {
-                                          return SizedBox(
+                                          return const SizedBox(
                                               height: 64,
                                               width: 64,
                                               child:
@@ -627,13 +623,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                           // color: Colors.blue.withOpacity(.1),
                                           height: 128,
                                           width: 64,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
                                                       "assets/icons/tag_virt.png"))),
                                           // child:Image.asset("assets/icons/tag_virt.png",),
                                         ),
-                                        Column(
+                                        const Column(
                                           children: [Text("元"), Text("首")],
                                         ),
                                       ],
@@ -644,15 +640,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             ))
                         .animate()
                         .moveX(
-                            delay: Duration(milliseconds: 1000),
+                            delay: const Duration(milliseconds: 1000),
                             curve: Curves.easeInOutQuint,
-                            duration: Duration(milliseconds: 1000),
+                            duration: const Duration(milliseconds: 1000),
                             begin: -128,
                             end: 0)
                         .fadeIn(
-                            delay: Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 800),
                             curve: Curves.easeInOutQuint,
-                            duration: Duration(milliseconds: 400),
+                            duration: const Duration(milliseconds: 400),
                             begin: 0);
               })
         ],
@@ -666,7 +662,7 @@ class _MyHomePageState extends State<MyHomePage> {
             width: panSize.width,
             height: panSize.height,
             decoration: BoxDecoration(
-                color: Color.fromRGBO(255, 251, 240, 1),
+                color: const Color.fromRGBO(255, 251, 240, 1),
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
@@ -693,18 +689,18 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                 )),
           ),
-          SizedBox(
+          const SizedBox(
             width: 32,
           ),
           ValueListenableBuilder<Tuple2<JiaZi, DiZhi>?>(
               valueListenable: classNumberNotifier,
               builder: (ctx, tuple2, child) {
                 return tuple2 == null
-                    ? SizedBox()
+                    ? const SizedBox()
                     : Container(
                             width: panSize.width,
                             height: panSize.height,
-                            padding: EdgeInsets.symmetric(
+                            padding: const EdgeInsets.symmetric(
                                 vertical: 24, horizontal: 16),
                             decoration: BoxDecoration(
                                 // color: Colors.blue.withOpacity(.1),
@@ -731,7 +727,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                         if (snap.hasData) {
                                           return yu_ding(snap.data!);
                                         } else {
-                                          return SizedBox(
+                                          return const SizedBox(
                                               height: 64,
                                               width: 64,
                                               child:
@@ -748,13 +744,13 @@ class _MyHomePageState extends State<MyHomePage> {
                                           // color: Colors.blue.withOpacity(.1),
                                           height: 128,
                                           width: 64,
-                                          decoration: BoxDecoration(
+                                          decoration: const BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
                                                       "assets/icons/tag_virt.png"))),
                                           // child:Image.asset("assets/icons/tag_virt.png",),
                                         ),
-                                        Column(
+                                        const Column(
                                           children: [Text("元"), Text("首")],
                                         ),
                                       ],
@@ -765,15 +761,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             ))
                         .animate()
                         .moveX(
-                            delay: Duration(milliseconds: 1000),
+                            delay: const Duration(milliseconds: 1000),
                             curve: Curves.easeInOutQuint,
-                            duration: Duration(milliseconds: 1000),
+                            duration: const Duration(milliseconds: 1000),
                             begin: -128,
                             end: 0)
                         .fadeIn(
-                            delay: Duration(milliseconds: 800),
+                            delay: const Duration(milliseconds: 800),
                             curve: Curves.easeInOutQuint,
-                            duration: Duration(milliseconds: 400),
+                            duration: const Duration(milliseconds: 400),
                             begin: 0);
               })
         ],
@@ -783,7 +779,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget manuallyJu() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -795,8 +791,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -814,7 +810,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "年干支",
                 // initialItem: "甲子",
@@ -829,7 +825,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           ShakeMe(
@@ -838,8 +834,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -857,7 +853,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "月干支",
                 // initialItem: "甲子",
@@ -872,7 +868,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           ShakeMe(
@@ -881,8 +877,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -900,7 +896,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "日干支",
                 // initialItem: "甲子",
@@ -915,7 +911,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           ShakeMe(
@@ -924,8 +920,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -943,7 +939,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "时干支",
                 // initialItem: "甲子",
@@ -958,7 +954,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           ShakeMe(
@@ -967,8 +963,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -986,12 +982,12 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "阴阳局",
                 // initialItem: "甲子",
                 // items: List.generate(12, (i)=>"阳遁${ConstResourcesMapper.chineseNumberMapper[i+1]!}局")..addAll(List.generate(12, (i)=>"阴遁${ConstResourcesMapper.chineseNumberMapper[i+1]!}局")),
-                items: ["阳遁", "阴遁"],
+                items: const ["阳遁", "阴遁"],
                 onChanged: (jiaZiStr) {
                   if (jiaZiStr != null) {
                     List<String> splitedList = jiaZiStr.split("");
@@ -1005,7 +1001,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-          SizedBox(
+          const SizedBox(
             width: 12,
           ),
           ShakeMe(
@@ -1014,8 +1010,8 @@ class _MyHomePageState extends State<MyHomePage> {
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
@@ -1033,7 +1029,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           blurRadius: 2)
                     ],
                     searchFieldDecoration:
-                        SearchFieldDecoration(prefixIcon: null)),
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "局数",
                 // initialItem: "甲子",
@@ -1089,7 +1085,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(flex: 3, child: Text("时间：")),
+                    const Flexible(flex: 3, child: Text("时间：")),
                     Flexible(
                         flex: 7,
                         child: Text(
@@ -1103,7 +1099,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(flex: 3, child: Text("农历：")),
+                    const Flexible(flex: 3, child: Text("农历：")),
                     Flexible(
                         flex: 7,
                         child: Text(
@@ -1123,7 +1119,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     Flexible(
                         flex: 7,
                         child: Text(
-                          "${lunar.getPrevJieQi().getSolar().toYmdHms().replaceAll("-", "/")}",
+                          lunar
+                              .getPrevJieQi()
+                              .getSolar()
+                              .toYmdHms()
+                              .replaceAll("-", "/"),
                           style: TextStyle(
                               fontSize: 14, color: Colors.blueGrey.shade800),
                         )),
@@ -1140,7 +1140,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     Flexible(
                         flex: 7,
                         child: Text(
-                          "${lunar.getNextJieQi().getSolar().toYmdHms().replaceAll("-", "/")}",
+                          lunar
+                              .getNextJieQi()
+                              .getSolar()
+                              .toYmdHms()
+                              .replaceAll("-", "/"),
                           style: TextStyle(
                               fontSize: 14, color: Colors.blueGrey.shade800),
                         )),
@@ -1156,14 +1160,14 @@ class _MyHomePageState extends State<MyHomePage> {
         Container(
           child: Text(
             "${yuDing.dayJiaZi.name}日 第${ConstResourcesMapper.chineseNumberMapper[yuDing.juNumber]!} 干上${yuDing.juName.name}",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500),
           ),
         ),
         Container(
           child: RichText(
               text: TextSpan(
                   text: yuDing.body.join(" "),
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87)
@@ -1172,46 +1176,48 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         RichText(
           text: TextSpan(
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
               text: "课义：",
               children: [TextSpan(text: yuDing.meaning)]),
         ),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
         RichText(
           text: TextSpan(
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
               text: "解曰：",
               children: [TextSpan(text: yuDing.explain)]),
         ),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
         RichText(
           text: TextSpan(
-              style: TextStyle(fontSize: 16, color: Colors.black87),
+              style: const TextStyle(fontSize: 16, color: Colors.black87),
               text: "断曰：",
               children: [TextSpan(text: yuDing.predication)]),
         ),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
         ...yuDing.details.entries
             .map((entry) => RichText(
                   text: TextSpan(
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.black87),
                       text: "${entry.key}：",
                       children: [TextSpan(text: entry.value)]),
                 ))
             .toList(),
-        SizedBox(
+        const SizedBox(
           height: 12,
         ),
         ...yuDing.books.entries
             .map((entry) => RichText(
                   text: TextSpan(
-                      style: TextStyle(fontSize: 16, color: Colors.black87),
+                      style:
+                          const TextStyle(fontSize: 16, color: Colors.black87),
                       text: "${entry.key}：",
                       children: [TextSpan(text: entry.value)]),
                 ))
@@ -1236,7 +1242,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return result;
     } catch (e) {
       print(e);
-      throw e;
+      rethrow;
     }
   }
 
@@ -1245,14 +1251,14 @@ class _MyHomePageState extends State<MyHomePage> {
       alignment: Alignment.center,
       children: [
         panel_gong(panModel, gongSize),
-        Container(
+        SizedBox(
           width: gongSize.width * 2,
           height: gongSize.height * 2,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
+              SizedBox(
                 height: gongSize.height,
                 width: gongSize.width,
                 // color: Colors.orange.withOpacity(.2),
@@ -1285,7 +1291,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget panel_center(DaLiuRenKePan daLiuPan, Size gongSize) {
     double width = gongSize.width * 2;
     double height = gongSize.height * 2;
-    return Container(
+    return SizedBox(
       width: width,
       height: height,
       child: Row(
@@ -1335,7 +1341,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                                 image: DecorationImage(
                                     fit: BoxFit.fill,
                                     image: AssetImage(
@@ -1376,7 +1382,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     shadows: [
                                       Shadow(
                                         color: Colors.grey.withOpacity(.5),
-                                        offset: Offset(0, 0),
+                                        offset: const Offset(0, 0),
                                         blurRadius: 2,
                                       )
                                     ]),
@@ -1397,14 +1403,14 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 4,
                   ),
                   ValueListenableBuilder(
                       valueListenable: _showMonthGeneralJieQi,
                       builder: (ctx, show, child) {
                         return AnimatedSwitcher(
-                          duration: Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 200),
                           transitionBuilder: (c, animation) {
                             if ((c.key as ValueKey).value == "jie_qi") {
                               print("display jie_qi");
@@ -1412,11 +1418,13 @@ class _MyHomePageState extends State<MyHomePage> {
                               return c
                                   .animate()
                                   .moveY(
-                                      duration: Duration(milliseconds: 200),
+                                      duration:
+                                          const Duration(milliseconds: 200),
                                       begin: -2,
                                       end: 0)
                                   .fade(
-                                      duration: Duration(milliseconds: 200),
+                                      duration:
+                                          const Duration(milliseconds: 200),
                                       begin: 0,
                                       end: 1);
                             } else {
@@ -1424,24 +1432,26 @@ class _MyHomePageState extends State<MyHomePage> {
                               return c
                                   .animate()
                                   .moveY(
-                                      duration: Duration(milliseconds: 200),
+                                      duration:
+                                          const Duration(milliseconds: 200),
                                       begin: 0,
                                       end: -1)
                                   .fade(
-                                      duration: Duration(milliseconds: 200),
+                                      duration:
+                                          const Duration(milliseconds: 200),
                                       begin: 1,
                                       end: 0);
                             }
                           },
                           child: show
                               ? child
-                              : SizedBox(
+                              : const SizedBox(
                                   key: ValueKey("blank"),
                                 ),
                         );
                       },
                       child: Column(
-                        key: ValueKey("jie_qi"),
+                        key: const ValueKey("jie_qi"),
                         children: [
                           SizedBox(
                               width: 30,
@@ -1454,7 +1464,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                     .withOpacity(.2),
                                 isHor: true,
                               )),
-                          SizedBox(height: 2),
+                          const SizedBox(height: 2),
                           SizedBox(
                               width: 30,
                               child: TwentyFourJieQiTag(
@@ -1524,7 +1534,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Container(
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
                 image: DecorationImage(
                     fit: BoxFit.fill,
                     image: AssetImage("assets/icons/chinese-red-ink-seal.png"),
@@ -1563,7 +1573,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     shadows: [
                       Shadow(
                         color: Colors.grey.withOpacity(.5),
-                        offset: Offset(0, 0),
+                        offset: const Offset(0, 0),
                         blurRadius: 2,
                       )
                     ]),
@@ -1615,7 +1625,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
                 Container(
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       image: DecorationImage(
                           fit: BoxFit.fill,
                           image: AssetImage(
@@ -1657,7 +1667,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           shadows: [
                             Shadow(
                               color: Colors.grey.withOpacity(.5),
-                              offset: Offset(0, 0),
+                              offset: const Offset(0, 0),
                               blurRadius: 2,
                             )
                           ]),
@@ -1718,7 +1728,7 @@ class _MyHomePageState extends State<MyHomePage> {
           if (classTypeList.isNotEmpty)
             ...classTypeList
                 .map((e) => RichText(
-                    strutStyle: StrutStyle(height: 1),
+                    strutStyle: const StrutStyle(height: 1),
                     text: TextSpan(
                       style: eightSeasonTextStyle.copyWith(
                           fontWeight: FontWeight.normal,
@@ -1755,31 +1765,28 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build_four_ke(FourClass fourClass) {
     double diZhiFontSize = gongSize.width * .24;
     double otherFontSize = gongSize.width * .24;
-    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle.copyWith(
-        fontSize: diZhiFontSize,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle.copyWith(
-        fontSize: diZhiFontSize,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    TextStyle guiRenName = guiRenNameTextStyle.copyWith(
-        fontSize: gongSize.width * .14,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    SizedBox intervalSize = SizedBox(width: 6);
+    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle
+        .copyWith(fontSize: diZhiFontSize, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle
+        .copyWith(fontSize: diZhiFontSize, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    TextStyle guiRenName =
+        guiRenNameTextStyle.copyWith(fontSize: gongSize.width * .14, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    SizedBox intervalSize = const SizedBox(width: 6);
     double height = gongSize.height;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1881,34 +1888,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget build_san_chuan(ThreeChuan chuan) {
     double diZhiFontSize = gongSize.width * .24;
-    TextStyle otherStyle = guiRenNameTextStyle.copyWith(
-        fontSize: gongSize.width * .16,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
+    TextStyle otherStyle =
+        guiRenNameTextStyle.copyWith(fontSize: gongSize.width * .16, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
 
     // TextStyle jiaZi = otherStyle.copyWith(fontSize: 20);
-    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle.copyWith(
-        fontSize: gongSize.width * .2,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle.copyWith(
-        fontSize: diZhiFontSize,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
+    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle
+        .copyWith(fontSize: gongSize.width * .2, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle
+        .copyWith(fontSize: diZhiFontSize, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
     // TextStyle sixQing = guiRenNameTextStyle.copyWith(fontSize: gongSize.width * .16,shadows:[Shadow(color: Colors.grey.withOpacity(.5), blurRadius: 2, offset: Offset(0, 0))]);
-    SizedBox offset = SizedBox(width: 4);
+    SizedBox offset = const SizedBox(width: 4);
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1999,7 +2003,7 @@ class _MyHomePageState extends State<MyHomePage> {
               height: 1.0,
               shadows: []),
         ),
-        SizedBox(
+        const SizedBox(
           height: 4,
         ),
         Text(
@@ -2027,7 +2031,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   color: ConstResourcesMapper.zodiacZhiColors[jiaZi.diZhi],
                   fontWeight: FontWeight.w500)),
         ),
-        SizedBox(
+        const SizedBox(
           height: 3,
         ),
         Text(
@@ -2055,22 +2059,22 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.SI]!,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.WU],
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.WEI],
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.SHEN],
@@ -2081,20 +2085,20 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.CHEN]!,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.YOU],
@@ -2105,21 +2109,21 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.MAO],
                 ),
                 // center blank
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.XU],
@@ -2130,22 +2134,22 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.YIN],
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.CHOU],
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.ZI],
                 ),
-                Container(
+                SizedBox(
                   width: gongSize.width,
                   height: gongSize.height,
                   child: gongWidgetMapper[DiZhi.HAI],
@@ -2189,7 +2193,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2203,7 +2207,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2217,7 +2221,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2231,7 +2235,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2246,7 +2250,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2260,7 +2264,7 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Opacity(
           opacity: defaultOpacity,
           child: Container(
-            padding: EdgeInsets.all(4),
+            padding: const EdgeInsets.all(4),
             alignment: Alignment.center,
             decoration: boxDecoration.copyWith(color: getGanColor(gan)),
             child: Text(gan.name, style: fontStyle),
@@ -2278,19 +2282,19 @@ class _MyHomePageState extends State<MyHomePage> {
             Opacity(
               opacity: defaultOpacity,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 alignment: Alignment.center,
                 decoration: boxDecoration.copyWith(color: getGanColor(gan)),
                 child: Text(gan.name, style: fontStyle),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 4,
             ),
             Opacity(
               opacity: defaultOpacity,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 alignment: Alignment.center,
                 decoration: boxDecoration.copyWith(color: getGanColor(gan1)),
                 child: Text(gan1.name, style: fontStyle),
@@ -2310,19 +2314,19 @@ class _MyHomePageState extends State<MyHomePage> {
             Opacity(
               opacity: defaultOpacity,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 alignment: Alignment.center,
                 decoration: boxDecoration.copyWith(color: getGanColor(gan)),
                 child: Text(gan.name, style: fontStyle),
               ),
             ),
-            SizedBox(
+            const SizedBox(
               height: 4,
             ),
             Opacity(
               opacity: defaultOpacity,
               child: Container(
-                padding: EdgeInsets.all(4),
+                padding: const EdgeInsets.all(4),
                 alignment: Alignment.center,
                 decoration: boxDecoration.copyWith(color: getGanColor(gan1)),
                 child: Text(gan1.name, style: fontStyle),
@@ -2332,7 +2336,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     } else {
-      return SizedBox();
+      return const SizedBox();
     }
   }
 
@@ -2442,7 +2446,7 @@ class _MyHomePageState extends State<MyHomePage> {
         width: gongSize.width,
         height: gongSize.height,
         alignment: alignment,
-        padding: EdgeInsets.all(12),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(border: border, borderRadius: radius),
         child: Text(
           diZhi.value,
@@ -2455,14 +2459,14 @@ class _MyHomePageState extends State<MyHomePage> {
   // zhiMangXing
   TextStyle guiRenNameTextStyle = GoogleFonts.maShanZheng(
       fontSize: 24,
-      color: Color.fromRGBO(68, 68, 60, 1), // 墨染
+      color: const Color.fromRGBO(68, 68, 60, 1), // 墨染
       // color: Color.fromRGBO(255, 229, 248, 1), // 墨染
       height: 1.0,
       shadows: [
         Shadow(
             color: Colors.grey.withOpacity(.5),
             blurRadius: 2,
-            offset: Offset(0, 0))
+            offset: const Offset(0, 0))
       ]);
   TextStyle nineGongNumberTextStyle = GoogleFonts.notoSerif(
     color: Colors.black,
@@ -2483,10 +2487,10 @@ class _MyHomePageState extends State<MyHomePage> {
         Shadow(
             color: Colors.grey.withOpacity(.5),
             blurRadius: 2,
-            offset: Offset(0, 0))
+            offset: const Offset(0, 0))
       ]);
   TextStyle eightSeasonTextStyle = GoogleFonts.zhiMangXing(
-      color: Color.fromRGBO(28, 45, 37, 1),
+      color: const Color.fromRGBO(28, 45, 37, 1),
       fontWeight: FontWeight.w200,
       fontSize: 26,
       height: 1,
@@ -2494,7 +2498,7 @@ class _MyHomePageState extends State<MyHomePage> {
         Shadow(
             color: Colors.grey.withOpacity(.5),
             blurRadius: 2,
-            offset: Offset(0, 0))
+            offset: const Offset(0, 0))
       ]);
 
   Widget centerContent(DaLiuRenGong daLiuRenGong, Size gongSize) {
@@ -2511,7 +2515,7 @@ class _MyHomePageState extends State<MyHomePage> {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
+          SizedBox(
               height: gongSize.height * .16,
               width: gongSize.height * .34,
               child: Stack(
@@ -2521,13 +2525,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       ? SizedBox(
                           width: gongSize.height * .34,
                           child: ColorFiltered(
-                              colorFilter: ColorFilter.mode(
+                              colorFilter: const ColorFilter.mode(
                                   Color.fromRGBO(176, 31, 36, .7),
                                   BlendMode.srcIn),
                               child: Image.asset(
                                 "assets/icons/wide-black-ink-radian-line2.png",
                               )))
-                      : SizedBox(),
+                      : const SizedBox(),
                   Text(
                     daLiuRenGong.guiRen.name,
                     style: guiRenNameTextStyle.copyWith(fontSize: godFontSize),
@@ -2565,7 +2569,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     const Expanded(child: SizedBox()),
                     daLiuRenGong.tianGan == null
                         ? buildKongWangCircle(
-                            Color.fromRGBO(25, 44, 59, 1), gongSize.width * .2)
+                            const Color.fromRGBO(25, 44, 59, 1),
+                            gongSize.width * .2)
                         : Text(
                             daLiuRenGong.tianGan!.value,
                             style: ConstUIResourcesMapper.tianGanTextStyle

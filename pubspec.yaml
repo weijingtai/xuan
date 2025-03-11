@@ -52,7 +52,8 @@ dependencies:
   url_strategy: ^0.3.0
   animations: ^2.0.11
   provider: ^6.1.2
-  sweph: ^3.0.1+2.10.3
+  sweph: ^3.2.1+2.10.3
+  flutter_city_picker: ^2.1.1
   
   common:
     path: ./common
@@ -112,6 +113,7 @@ flutter:
     - assets/backgrounds/
     - assets/ephe/
     - assets/
+    - assets/dataset/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -7,14 +7,7 @@ import 'package:aura_box/aura_box.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
-import 'package:common/model/enum_di_zhi.dart';
-import 'package:common/model/enum_hou_tian_gua.dart';
-import 'package:common/model/enum_ji_xiong.dart';
-import 'package:common/model/enum_jia_zi.dart';
-import 'package:common/model/enum_month_token.dart';
-import 'package:common/model/enum_tian_gan.dart';
-import 'package:common/model/enum_twenty_four_jie_qi.dart';
-import 'package:common/model/enum_yin_yang.dart';
+import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart';
 import 'package:flutter/cupertino.dart';
@@ -56,26 +49,26 @@ import '../widgets/ten_gan_ke_ying_yin_zhang.dart';
 
 class BeautifulPage extends StatefulWidget {
   DateTime? panDateTime;
-  BeautifulPage({super.key,this.panDateTime});
+  BeautifulPage({super.key, this.panDateTime});
 
   @override
   State<BeautifulPage> createState() => _BeautifulPageState();
 }
 
-class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateMixin {
-
+class _BeautifulPageState extends State<BeautifulPage>
+    with TickerProviderStateMixin {
   // double baseEachGongSize = 180;
   // Size panSize = Size(590, 590);
   double baseEachGongSize = 256;
-  Offset panOffset = Offset(0, 0);
-  Size panSize = Size(816, 816);
+  Offset panOffset = const Offset(0, 0);
+  Size panSize = const Size(816, 816);
   double eachPaddingSize = 8;
 
-  Map<HouTianGua,UITenGanKeYingGeJu> geJuMapper = {};
+  Map<HouTianGua, UITenGanKeYingGeJu> geJuMapper = {};
   // double totalHeight = 256 * 3+ eachPaddingSize*6;
   // double totalWidth= 256 * 3+ eachPaddingSize*6;
-  final GlobalKey appBarGlobalKey  = GlobalKey();
-  final GlobalKey panelGlobalKey  = GlobalKey();
+  final GlobalKey appBarGlobalKey = GlobalKey();
+  final GlobalKey panelGlobalKey = GlobalKey();
 
   GlobalKey yearGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
   GlobalKey monthGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
@@ -87,135 +80,163 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
 
   late final ValueNotifier<DateTime?> dateTimeValueNotifier;
   late final ValueNotifier<ShiJiaQiMen?> shiJiaZhuanPanQiMenValueNotifier;
-  final ValueNotifier<Map<HouTianGua,Widget>?> guaGongMapperNotifier = ValueNotifier(null);
+  final ValueNotifier<Map<HouTianGua, Widget>?> guaGongMapperNotifier =
+      ValueNotifier(null);
   // final ValueNotifier<HouTianGua?> showGongGuaNotifier= ValueNotifier(null);
-  final ValueNotifier<Tuple3<Offset,MapEntry<HouTianGua,EachGong>,Widget>?> selectedGongWidgetNotifier = ValueNotifier(null);
-
+  final ValueNotifier<Tuple3<Offset, MapEntry<HouTianGua, EachGong>, Widget>?>
+      selectedGongWidgetNotifier = ValueNotifier(null);
 
   final ValueNotifier<double> widthNotifier = ValueNotifier(360);
-  final ValueNotifier<CenterGongJiGongType> jiGongHintNotifier = ValueNotifier(CenterGongJiGongType.ONLY_KUN_GONG);
-  final ValueNotifier<MonthTokenTypeEnum> monthTokenTypeNotifier= ValueNotifier(MonthTokenTypeEnum.ZHU_QI);
-  final ValueNotifier<GodWithGongTypeEnum> godWithGongTypeNotifier= ValueNotifier(GodWithGongTypeEnum.GONG_GUA_ONLY);
-  final ValueNotifier<GongTypeEnum> starGongTypeNotifier= ValueNotifier(GongTypeEnum.GONG_GUA);
-  final ValueNotifier<GongTypeEnum> doorGongTypeNotifier= ValueNotifier(GongTypeEnum.GONG_GUA);
-  final ValueNotifier<GanGongTypeEnum> ganGongTypeNotifier= ValueNotifier(GanGongTypeEnum.WANG_MU);
-  final ValueNotifier<ArrangeType> arrangeTypeNotifier= ValueNotifier(ArrangeType.CHAI_BU);
-  final ValueNotifier<PlateType> plateTypeNotifier= ValueNotifier(PlateType.ZHUAN_PAN);
+  final ValueNotifier<CenterGongJiGongType> jiGongHintNotifier =
+      ValueNotifier(CenterGongJiGongType.ONLY_KUN_GONG);
+  final ValueNotifier<MonthTokenTypeEnum> monthTokenTypeNotifier =
+      ValueNotifier(MonthTokenTypeEnum.ZHU_QI);
+  final ValueNotifier<GodWithGongTypeEnum> godWithGongTypeNotifier =
+      ValueNotifier(GodWithGongTypeEnum.GONG_GUA_ONLY);
+  final ValueNotifier<GongTypeEnum> starGongTypeNotifier =
+      ValueNotifier(GongTypeEnum.GONG_GUA);
+  final ValueNotifier<GongTypeEnum> doorGongTypeNotifier =
+      ValueNotifier(GongTypeEnum.GONG_GUA);
+  final ValueNotifier<GanGongTypeEnum> ganGongTypeNotifier =
+      ValueNotifier(GanGongTypeEnum.WANG_MU);
+  final ValueNotifier<ArrangeType> arrangeTypeNotifier =
+      ValueNotifier(ArrangeType.CHAI_BU);
+  final ValueNotifier<PlateType> plateTypeNotifier =
+      ValueNotifier(PlateType.ZHUAN_PAN);
 
   late final AnimationController _panScaleController;
 
-  TextStyle get twelveDiZhiTextStyle => ConstantUiResourcesOfQiMen.twelveDiZhiTextStyle;
+  TextStyle get twelveDiZhiTextStyle =>
+      ConstantUiResourcesOfQiMen.twelveDiZhiTextStyle;
   TextStyle get tianGanTextStyle => ConstantUiResourcesOfQiMen.tianGanTextStyle;
-  TextStyle get eightDoorTextStyle => ConstantUiResourcesOfQiMen.eightDoorTextStyle;
-  TextStyle get nineStarTextStyle => ConstantUiResourcesOfQiMen.nineStarTextStyle;
+  TextStyle get eightDoorTextStyle =>
+      ConstantUiResourcesOfQiMen.eightDoorTextStyle;
+  TextStyle get nineStarTextStyle =>
+      ConstantUiResourcesOfQiMen.nineStarTextStyle;
   TextStyle get menHuLuFangStyle => ConstantUiResourcesOfQiMen.menHuLuFangStyle;
   TextStyle get panInfoTextStyle => ConstantUiResourcesOfQiMen.panInfoTextStyle;
 
-
-  TextStyle switcherInactivatedStyle = TextStyle(fontSize: 16,color: Color(0xff636f7b),height: 1.0);
-  TextStyle baseActivatedStyle= TextStyle(fontSize: 16,color: Color(0xff636f7b),height: 1.0,fontWeight: FontWeight.w500,shadows: [
-    BoxShadow(
-      color: Colors.grey.withOpacity(0.2),
-      blurRadius: 2.0,
-      spreadRadius: 1.0,
-    )
-  ]);
+  TextStyle switcherInactivatedStyle =
+      const TextStyle(fontSize: 16, color: Color(0xff636f7b), height: 1.0);
+  TextStyle baseActivatedStyle = TextStyle(
+      fontSize: 16,
+      color: const Color(0xff636f7b),
+      height: 1.0,
+      fontWeight: FontWeight.w500,
+      shadows: [
+        BoxShadow(
+          color: Colors.grey.withOpacity(0.2),
+          blurRadius: 2.0,
+          spreadRadius: 1.0,
+        )
+      ]);
   TextStyle get zhuanPanActivatedStyle {
-    return baseActivatedStyle.copyWith(color: Color(0xff6682c0));
-  }
-  TextStyle get feiPanActivatedStyle {
-    return baseActivatedStyle.copyWith(color: Color(0xffdc6c73));
-  }
-  TextStyle get switcherActivatedStyle {
-    return plateTypeNotifier.value == PlateType.ZHUAN_PAN?zhuanPanActivatedStyle:feiPanActivatedStyle;
+    return baseActivatedStyle.copyWith(color: const Color(0xff6682c0));
   }
 
+  TextStyle get feiPanActivatedStyle {
+    return baseActivatedStyle.copyWith(color: const Color(0xffdc6c73));
+  }
+
+  TextStyle get switcherActivatedStyle {
+    return plateTypeNotifier.value == PlateType.ZHUAN_PAN
+        ? zhuanPanActivatedStyle
+        : feiPanActivatedStyle;
+  }
 
   BoxDecoration cardDecoration = BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.all(Radius.circular(16)),
+      borderRadius: const BorderRadius.all(Radius.circular(16)),
       boxShadow: [
-        BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 5,spreadRadius: 5),
-      ]
-  );
+        BoxShadow(
+            color: Colors.grey.withOpacity(.2), blurRadius: 5, spreadRadius: 5),
+      ]);
   // DateTime? selectedDateTime;
-  ValueNotifier<DateTime?> selectedDateTimeNotifier = ValueNotifier(DateTime.now());
+  ValueNotifier<DateTime?> selectedDateTimeNotifier =
+      ValueNotifier(DateTime.now());
   // double baseEachGongSize = 256;
 
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _panScaleController = AnimationController(vsync: this);
 
-    if (widget.panDateTime != null){
+    if (widget.panDateTime != null) {
       dateTimeValueNotifier = ValueNotifier(widget.panDateTime);
-      shiJiaZhuanPanQiMenValueNotifier = ValueNotifier(create(widget.panDateTime!));
+      shiJiaZhuanPanQiMenValueNotifier =
+          ValueNotifier(create(widget.panDateTime!));
       createPanByEachGongWidget(shiJiaZhuanPanQiMenValueNotifier.value!)
-          .then((gongMapper){
+          .then((gongMapper) {
         guaGongMapperNotifier.value = gongMapper;
       });
-
-    }
-    else{
+    } else {
       dateTimeValueNotifier = ValueNotifier(null);
       shiJiaZhuanPanQiMenValueNotifier = ValueNotifier(null);
       guaGongMapperNotifier.value = null;
     }
-    dateTimeValueNotifier.addListener((){
-      if (dateTimeValueNotifier.value != null){
-        shiJiaZhuanPanQiMenValueNotifier.value = create(dateTimeValueNotifier.value!);
-      }else{
-        if (shiJiaZhuanPanQiMenValueNotifier.value != null){
+    dateTimeValueNotifier.addListener(() {
+      if (dateTimeValueNotifier.value != null) {
+        shiJiaZhuanPanQiMenValueNotifier.value =
+            create(dateTimeValueNotifier.value!);
+      } else {
+        if (shiJiaZhuanPanQiMenValueNotifier.value != null) {
           shiJiaZhuanPanQiMenValueNotifier.value = null;
         }
       }
     });
-    shiJiaZhuanPanQiMenValueNotifier.addListener((){
-      if (shiJiaZhuanPanQiMenValueNotifier.value != null){
+    shiJiaZhuanPanQiMenValueNotifier.addListener(() {
+      if (shiJiaZhuanPanQiMenValueNotifier.value != null) {
         createPanByEachGongWidget(shiJiaZhuanPanQiMenValueNotifier.value!)
-            .then((gongMapper){
+            .then((gongMapper) {
           guaGongMapperNotifier.value = gongMapper;
         });
-
-      }else{
+      } else {
         guaGongMapperNotifier.value = null;
       }
     });
-    selectedGongWidgetNotifier.addListener((){
-      if (selectedGongWidgetNotifier.value != null){
+    selectedGongWidgetNotifier.addListener(() {
+      if (selectedGongWidgetNotifier.value != null) {
         _panScaleController.forward();
-      }else{
+      } else {
         _panScaleController.reverse();
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
-        final RenderBox renderPan = panelGlobalKey.currentContext!.findRenderObject() as RenderBox;
-        final RenderBox appBarRender = appBarGlobalKey.currentContext!.findRenderObject() as RenderBox;
-        panOffset = renderPan.localToGlobal(Offset(0, -appBarRender.size.height));
+        final RenderBox renderPan =
+            panelGlobalKey.currentContext!.findRenderObject() as RenderBox;
+        final RenderBox appBarRender =
+            appBarGlobalKey.currentContext!.findRenderObject() as RenderBox;
+        panOffset =
+            renderPan.localToGlobal(Offset(0, -appBarRender.size.height));
         // panOffset = renderPan.localToGlobal(Offset(0,0));
         // start = _getCenter(panKey);
       });
     });
   }
 
-  Future<Map<HouTianGua, Widget>> createPanByEachGongWidget(ShiJiaQiMen pan)async{
-    geJuMapper = await loadTenGanKeYingGeJu(pan.plateType,pan.xunHeaderTianGan,pan.zhiFuGan,pan.gongMapper);
-    Map<HouTianGua,Widget> result = {};
+  Future<Map<HouTianGua, Widget>> createPanByEachGongWidget(
+      ShiJiaQiMen pan) async {
+    geJuMapper = await loadTenGanKeYingGeJu(
+        pan.plateType, pan.xunHeaderTianGan, pan.zhiFuGan, pan.gongMapper);
+    Map<HouTianGua, Widget> result = {};
     print("~~!!!!!!! ${geJuMapper.containsKey(HouTianGua.Center)}");
-    print("~~!!!!!!! ${shiJiaZhuanPanQiMenValueNotifier.value!.gongMapper.containsKey(HouTianGua.Center)}");
-    for (HouTianGua gua in HouTianGua.values){
-      if (pan.plateType == PlateType.ZHUAN_PAN && gua == HouTianGua.Center){
+    print(
+        "~~!!!!!!! ${shiJiaZhuanPanQiMenValueNotifier.value!.gongMapper.containsKey(HouTianGua.Center)}");
+    for (HouTianGua gua in HouTianGua.values) {
+      if (pan.plateType == PlateType.ZHUAN_PAN && gua == HouTianGua.Center) {
         continue;
       }
 
-      result[gua] = buildEachGong(gua,shiJiaZhuanPanQiMenValueNotifier.value!,geJuMapper[gua]!);
+      result[gua] = buildEachGong(
+          gua, shiJiaZhuanPanQiMenValueNotifier.value!, geJuMapper[gua]!);
     }
     return result;
   }
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -243,528 +264,653 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
-        key: appBarGlobalKey,
-        // title: Text("奇门遁甲"),
-        title: ValueListenableBuilder(
-          valueListenable: shiJiaZhuanPanQiMenValueNotifier,
-          builder: (ctx,pan,child){
-            if (pan == null ){
-              return Text("奇门遁甲");
-            }
-            return Text(
-                "转盘·${pan.arrangeType.name} ${pan.yinYangDun.isYin?"阴":"阳"}${ConstResourcesMapper.chineseNumberMapper[pan.juNumber]}局",
-                style: panInfoTextStyle);
-          },
-        ),
-        centerTitle: true,
-        actions: [
-          PopupMenuButton(
-            onSelected: (String item){
-              switch(item){
-                case "showhHint":
-                  showHintNotifier.value = !showHintNotifier.value;
-                  break;
+          key: appBarGlobalKey,
+          // title: Text("奇门遁甲"),
+          title: ValueListenableBuilder(
+            valueListenable: shiJiaZhuanPanQiMenValueNotifier,
+            builder: (ctx, pan, child) {
+              if (pan == null) {
+                return const Text("奇门遁甲");
               }
+              return Text(
+                  "转盘·${pan.arrangeType.name} ${pan.yinYangDun.isYin ? "阴" : "阳"}${ConstResourcesMapper.chineseNumberMapper[pan.juNumber]}局",
+                  style: panInfoTextStyle);
             },
-            itemBuilder: (ctx){
-              return [
-                PopupMenuItem<String>(
-                  value: "showhHint",
-                  child: Text('显示提示'),
-                ),
-              ];
-            },
-          )
-        ]
-      ),
+          ),
+          centerTitle: true,
+          actions: [
+            PopupMenuButton(
+              onSelected: (String item) {
+                switch (item) {
+                  case "showhHint":
+                    showHintNotifier.value = !showHintNotifier.value;
+                    break;
+                }
+              },
+              itemBuilder: (ctx) {
+                return [
+                  const PopupMenuItem<String>(
+                    value: "showhHint",
+                    child: Text('显示提示'),
+                  ),
+                ];
+              },
+            )
+          ]),
       // body: SingleChildScrollView(
-        body: Stack(
-          alignment: Alignment.center,
-          children: [
-            Center(
-              child: SingleChildScrollView(
+      body: Stack(
+        alignment: Alignment.center,
+        children: [
+          Center(
+            child: SingleChildScrollView(
                 child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      buildPanGeJu(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 220,
-                            height: 120,
-                            child: ValueListenableBuilder<DateTime?>(
-                                valueListenable: dateTimeValueNotifier,
-                                // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
-                                builder: (ctx, dateTime, child) => dateTime != null ? buildCenterPanTime(dateTime!):child!,
-                                child: SizedBox()
-                            ),
-                          ),
-                          IntrinsicHeight(
-                            child: Container(
-                              width: 240,
-                              height: 160,
-                              // padding: EdgeInsets.symmetric(vertical: 8,horizontal: 12),
-                              // margin: EdgeInsets.symmetric(vertical: 12,horizontal: 24),
-                              child: ValueListenableBuilder<ShiJiaQiMen?>(
-                                  valueListenable: shiJiaZhuanPanQiMenValueNotifier,
-                                  // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
-                                  builder: (ctx, pan, child) => pan != null ? buildPanInfo(pan) :child!,
-                                  child: SizedBox()
-                              ),
-                            ),
-                          ),
-                          SizedBox(
-                            width: 260,
-                            height: 150,
-                            child: ValueListenableBuilder<ShiJiaQiMen?>(
-                                valueListenable: shiJiaZhuanPanQiMenValueNotifier,
-                                // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
-                                builder: (ctx, pan, child) => pan != null ? buildCenterFourZhu(pan) :child!,
-                                child: SizedBox()
-                            ),
-                          ),
-                        ],
-                      ),
-                      Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          ...tianMenDiHuaRenMenGuiLu(),
-                          Container(
-                              width: panSize.width+36,
-                              height: panSize.height+36,
-                              alignment: Alignment.center,
-                              child: ValueListenableBuilder(
-                                valueListenable:guaGongMapperNotifier,
-                                // child: Container(width:panSize.width,height:panSize.height),
-                                child: buildCreatePan(),
-                                builder: (ctx,guaGongMapper,child){
-                                  if (guaGongMapper == null){
-                                    return child!;
-                                  }
-                                  // return buildPanel(guaGongMapper);
-                                  return ValueListenableBuilder(
-                                      valueListenable: selectedGongWidgetNotifier,
-                                      builder: (ctx,gong,child){
-                                        return buildPanel(guaGongMapper);
-                                      });
-                                },
-                              )
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 24,),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ElevatedButton(
-                            onPressed:  () async {
-                              if (dateTimeValueNotifier.value == null){
-                                if (arrangeTypeNotifier.value == ArrangeType.MANUALLY){
-                                  if ([yearJiaZi,monthJiaZi,dayJiaZi,timeJiaZi,yinYangDun].any((e)=>e == null)) {
-                                    if (yearJiaZi == null) {
-                                      (yearGanZhiShakeKey
-                                          .currentState! as ShakeWidgetState)
-                                          .shake();
-                                    }
-                                    if (monthJiaZi == null) {
-                                      (monthGanZhiShakeKey
-                                          .currentState! as ShakeWidgetState)
-                                          .shake();
-                                    }
-                                    if (dayJiaZi == null) {
-                                      (dayGanZhiShakeKey
-                                          .currentState! as ShakeWidgetState)
-                                          .shake();
-                                    }
-                                    if (timeJiaZi == null) {
-                                      (timeGanZhiShakeKey
-                                          .currentState! as ShakeWidgetState)
-                                          .shake();
-                                    }
-                                    if (yinYangDun == null) {
-                                      (dunGanZhiShakeKey
-                                          .currentState! as ShakeWidgetState)
-                                          .shake();
-                                    }
-                                  }
-                                  else{
-                                    shiJiaZhuanPanQiMenValueNotifier.value = create(DateTime.now());
-                                  }
-                                }else{
-                                  selectedDateTimeNotifier.value ??= DateTime.now();
-                                  dateTimeValueNotifier.value = selectedDateTimeNotifier.value;
-                                }
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white, // Background coloronPrimary: Colors.white, // Text color
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
-                              textStyle: TextStyle(fontSize: 18,color: Colors.black87), // Text style
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10), // Rounded corners
-                              ),
-                            ),
-                            child: Text('排盘'),
-                          ),
-                          SizedBox(width: 12,),
-                          ElevatedButton(
-                            onPressed:  () async {
-                              if (dateTimeValueNotifier.value != null){
-                                selectedDateTimeNotifier.value = null;
-                                dateTimeValueNotifier.value = null;
-                                shiJiaZhuanPanQiMenValueNotifier.value = null;
-                                geJuMapper = {};
-                                yearJiaZi = null;
-                                monthJiaZi = null;
-                                dayJiaZi = null;
-                                timeJiaZi = null;
-                                yinYangDun = null;
-                                juNumber = null;
-                                jieQi = null;
-                              }
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white, // Background coloronPrimary: Colors.white, // Text color
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
-                              textStyle: TextStyle(fontSize: 18,color: Colors.red), // Text style
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10), // Rounded corners
-                              ),
-                            ),
-                            child: Text('清除'),
-                          ),
-                          SizedBox(width: 16,),
-                          selectDateTimeButton()
-                        ],
-                      ),
-                      SizedBox(height: 56,)
-                    ],
-                  )
-              ),
-            ),
-            // buildPositionedGong(HouTianGua.Xun),
-            ValueListenableBuilder(
-                valueListenable: selectedGongWidgetNotifier,
-                builder: (ctx,popup,child){
-                  return BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
-                    child: popup == null ?Container():GestureDetector(
-                      onDoubleTap: (){
-                        selectedGongWidgetNotifier.value = null;
-                        // showGongGuaNotifier.value = null;
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2), // Adjust opacity as needed
-                          borderRadius: BorderRadius.circular(10), // Optional rounded corners
-                        ),
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildPanGeJu(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 220,
+                      height: 120,
+                      child: ValueListenableBuilder<DateTime?>(
+                          valueListenable: dateTimeValueNotifier,
+                          // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
+                          builder: (ctx, dateTime, child) => dateTime != null
+                              ? buildCenterPanTime(dateTime)
+                              : child!,
+                          child: const SizedBox()),
+                    ),
+                    IntrinsicHeight(
+                      child: SizedBox(
+                        width: 240,
+                        height: 160,
+                        // padding: EdgeInsets.symmetric(vertical: 8,horizontal: 12),
+                        // margin: EdgeInsets.symmetric(vertical: 12,horizontal: 24),
+                        child: ValueListenableBuilder<ShiJiaQiMen?>(
+                            valueListenable: shiJiaZhuanPanQiMenValueNotifier,
+                            // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
+                            builder: (ctx, pan, child) =>
+                                pan != null ? buildPanInfo(pan) : child!,
+                            child: const SizedBox()),
                       ),
                     ),
-                  )
-                      .animate(controller: _panScaleController,autoPlay: false)
-                      .fadeIn(delay: Duration(milliseconds: 100),duration: Duration(milliseconds: 200));
-                }),
-            ValueListenableBuilder(
-                valueListenable: selectedGongWidgetNotifier,
-                builder: (ctx, popupGongWidget, child) {
-                  if (popupGongWidget == null){
-                    return Container();
-                  }
-                  HouTianGua gua = popupGongWidget.item2.key;
-                  EachGong gong = popupGongWidget.item2.value;
-                  double offsetY =(panOffset.dy+panSize.width/5) - popupGongWidget.item1.dy;
-                  double offsetX = (panOffset.dx+panSize.height/5) - popupGongWidget.item1.dx;
-                  return Positioned(
-                      left:popupGongWidget.item1.dx,
-                      top: popupGongWidget.item1.dy,
-                      child:Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Column(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                child:popupGongWidget.item3,
+                    SizedBox(
+                      width: 260,
+                      height: 150,
+                      child: ValueListenableBuilder<ShiJiaQiMen?>(
+                          valueListenable: shiJiaZhuanPanQiMenValueNotifier,
+                          // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
+                          builder: (ctx, pan, child) =>
+                              pan != null ? buildCenterFourZhu(pan) : child!,
+                          child: const SizedBox()),
+                    ),
+                  ],
+                ),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ...tianMenDiHuaRenMenGuiLu(),
+                    Container(
+                        width: panSize.width + 36,
+                        height: panSize.height + 36,
+                        alignment: Alignment.center,
+                        child: ValueListenableBuilder(
+                          valueListenable: guaGongMapperNotifier,
+                          // child: Container(width:panSize.width,height:panSize.height),
+                          child: buildCreatePan(),
+                          builder: (ctx, guaGongMapper, child) {
+                            if (guaGongMapper == null) {
+                              return child!;
+                            }
+                            // return buildPanel(guaGongMapper);
+                            return ValueListenableBuilder(
+                                valueListenable: selectedGongWidgetNotifier,
+                                builder: (ctx, gong, child) {
+                                  return buildPanel(guaGongMapper);
+                                });
+                          },
+                        )),
+                  ],
+                ),
+                const SizedBox(
+                  height: 24,
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (dateTimeValueNotifier.value == null) {
+                          if (arrangeTypeNotifier.value ==
+                              ArrangeType.MANUALLY) {
+                            if ([
+                              yearJiaZi,
+                              monthJiaZi,
+                              dayJiaZi,
+                              timeJiaZi,
+                              yinYangDun
+                            ].any((e) => e == null)) {
+                              if (yearJiaZi == null) {
+                                (yearGanZhiShakeKey.currentState!
+                                        as ShakeWidgetState)
+                                    .shake();
+                              }
+                              if (monthJiaZi == null) {
+                                (monthGanZhiShakeKey.currentState!
+                                        as ShakeWidgetState)
+                                    .shake();
+                              }
+                              if (dayJiaZi == null) {
+                                (dayGanZhiShakeKey.currentState!
+                                        as ShakeWidgetState)
+                                    .shake();
+                              }
+                              if (timeJiaZi == null) {
+                                (timeGanZhiShakeKey.currentState!
+                                        as ShakeWidgetState)
+                                    .shake();
+                              }
+                              if (yinYangDun == null) {
+                                (dunGanZhiShakeKey.currentState!
+                                        as ShakeWidgetState)
+                                    .shake();
+                              }
+                            } else {
+                              shiJiaZhuanPanQiMenValueNotifier.value =
+                                  create(DateTime.now());
+                            }
+                          } else {
+                            selectedDateTimeNotifier.value ??= DateTime.now();
+                            dateTimeValueNotifier.value =
+                                selectedDateTimeNotifier.value;
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors
+                            .white, // Background coloronPrimary: Colors.white, // Text color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15), // Padding
+                        textStyle: const TextStyle(
+                            fontSize: 18, color: Colors.black87), // Text style
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
+                        ),
+                      ),
+                      child: const Text('排盘'),
+                    ),
+                    const SizedBox(
+                      width: 12,
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (dateTimeValueNotifier.value != null) {
+                          selectedDateTimeNotifier.value = null;
+                          dateTimeValueNotifier.value = null;
+                          shiJiaZhuanPanQiMenValueNotifier.value = null;
+                          geJuMapper = {};
+                          yearJiaZi = null;
+                          monthJiaZi = null;
+                          dayJiaZi = null;
+                          timeJiaZi = null;
+                          yinYangDun = null;
+                          juNumber = null;
+                          jieQi = null;
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors
+                            .white, // Background coloronPrimary: Colors.white, // Text color
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 15), // Padding
+                        textStyle: const TextStyle(
+                            fontSize: 18, color: Colors.red), // Text style
+                        shape: RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(10), // Rounded corners
+                        ),
+                      ),
+                      child: const Text('清除'),
+                    ),
+                    const SizedBox(
+                      width: 16,
+                    ),
+                    selectDateTimeButton()
+                  ],
+                ),
+                const SizedBox(
+                  height: 56,
+                )
+              ],
+            )),
+          ),
+          // buildPositionedGong(HouTianGua.Xun),
+          ValueListenableBuilder(
+              valueListenable: selectedGongWidgetNotifier,
+              builder: (ctx, popup, child) {
+                return BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5.0, sigmaY: 5.0),
+                  child: popup == null
+                      ? Container()
+                      : GestureDetector(
+                          onDoubleTap: () {
+                            selectedGongWidgetNotifier.value = null;
+                            // showGongGuaNotifier.value = null;
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white
+                                  .withOpacity(0.2), // Adjust opacity as needed
+                              borderRadius: BorderRadius.circular(
+                                  10), // Optional rounded corners
+                            ),
+                          ),
+                        ),
+                )
+                    .animate(controller: _panScaleController, autoPlay: false)
+                    .fadeIn(
+                        delay: const Duration(milliseconds: 100),
+                        duration: const Duration(milliseconds: 200));
+              }),
+          ValueListenableBuilder(
+              valueListenable: selectedGongWidgetNotifier,
+              builder: (ctx, popupGongWidget, child) {
+                if (popupGongWidget == null) {
+                  return Container();
+                }
+                HouTianGua gua = popupGongWidget.item2.key;
+                EachGong gong = popupGongWidget.item2.value;
+                double offsetY = (panOffset.dy + panSize.width / 5) -
+                    popupGongWidget.item1.dy;
+                double offsetX = (panOffset.dx + panSize.height / 5) -
+                    popupGongWidget.item1.dx;
+                return Positioned(
+                        left: popupGongWidget.item1.dx,
+                        top: popupGongWidget.item1.dy,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
                                   decoration: BoxDecoration(
-                                    color: getGongBackgroundColor(popupGongWidget.item2.key),
+                                    color: getGongBackgroundColor(
+                                        popupGongWidget.item2.key),
                                     borderRadius: BorderRadius.circular(36),
                                   ),
-                              )
-                                  .animate(
-                                  onComplete: (ctrl){
-                                    _panScaleController.forward();
-                                  })
-                                  .boxShadow(
-                                duration:Duration(milliseconds: 200),
-                                borderRadius: BorderRadius.circular(36),
-                                begin: BoxShadow(color: Colors.grey.withOpacity(0),blurRadius: 0,spreadRadius: 0),
-                                end: BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 4,spreadRadius: 4),
-                              ),
-                              SizedBox(height: 24,),
-                              Container(
-                                width: baseEachGongSize,
-                                // margin: EdgeInsets.fromLTRB(0, 24, 0, 0),
-                                child: FutureBuilder(
-                                  future:loadDoorStarKeYing(gong.door,gong.star),
-                                  builder: (context, AsyncSnapshot<DoorStarKeYing?> snapshot) {
-                                    if (snapshot.hasData){
-                                      if (snapshot.data == null){
-                                        return Container();
+                                  child: popupGongWidget.item3,
+                                ).animate(onComplete: (ctrl) {
+                                  _panScaleController.forward();
+                                }).boxShadow(
+                                  duration: const Duration(milliseconds: 200),
+                                  borderRadius: BorderRadius.circular(36),
+                                  begin: BoxShadow(
+                                      color: Colors.grey.withOpacity(0),
+                                      blurRadius: 0,
+                                      spreadRadius: 0),
+                                  end: BoxShadow(
+                                      color: Colors.grey.withOpacity(.2),
+                                      blurRadius: 4,
+                                      spreadRadius: 4),
+                                ),
+                                const SizedBox(
+                                  height: 24,
+                                ),
+                                SizedBox(
+                                  width: baseEachGongSize,
+                                  // margin: EdgeInsets.fromLTRB(0, 24, 0, 0),
+                                  child: FutureBuilder(
+                                    future: loadDoorStarKeYing(
+                                        gong.door, gong.star),
+                                    builder: (context,
+                                        AsyncSnapshot<DoorStarKeYing?>
+                                            snapshot) {
+                                      if (snapshot.hasData) {
+                                        if (snapshot.data == null) {
+                                          return Container();
+                                        }
+                                        return IntrinsicHeight(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: cardDecoration,
+                                            child: buildDoorStarKeYing(
+                                                snapshot.data!),
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text("加载中...");
                                       }
-                                      return IntrinsicHeight(
-                                        child: Container(
-                                          padding: EdgeInsets.all(12),
-                                          decoration: cardDecoration,
-                                          child: buildDoorStarKeYing(snapshot.data!),
-                                        ),
-                                      );
-                                    }
-                                    else{
-                                      return Text("加载中...");
-                                    }
-                                  },
+                                    },
+                                  ),
+                                )
+                                    .animate()
+                                    .moveY(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: -128,
+                                        end: 0)
+                                    .fadeIn(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: 0),
+                                const SizedBox(
+                                  height: 24,
                                 ),
-                              )
-                                  .animate()
-                                  .moveY(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),
-                                  begin: -128,end: 0)
-                                  .fadeIn(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),begin: 0),
-
-                              SizedBox(height: 24,),
-                              Container(
-                                width: 256,
-                                child: FutureBuilder(
-                                  future:loadEightDoorKeYing(gong.door,ConstantResourcesOfQiMen.defaultGongMapper[gua]!.defaultDoor),
-                                  builder: (context, AsyncSnapshot<Map<YinYang,EightDoorKeYing>?> snapshot) {
-                                    if (snapshot.hasData){
-                                      if (snapshot.data == null){
-                                        return Container();
+                                SizedBox(
+                                  width: 256,
+                                  child: FutureBuilder(
+                                    future: loadEightDoorKeYing(
+                                        gong.door,
+                                        ConstantResourcesOfQiMen
+                                            .defaultGongMapper[gua]!
+                                            .defaultDoor),
+                                    builder: (context,
+                                        AsyncSnapshot<
+                                                Map<YinYang, EightDoorKeYing>?>
+                                            snapshot) {
+                                      if (snapshot.hasData) {
+                                        if (snapshot.data == null) {
+                                          return Container();
+                                        }
+                                        return IntrinsicHeight(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: cardDecoration,
+                                            child: buildEightDoorKeYing(
+                                                snapshot.data!),
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text("加载中...");
                                       }
-                                      return IntrinsicHeight(
-                                        child: Container(
-                                          padding: EdgeInsets.all(12),
-                                          decoration: cardDecoration,
-                                          child: buildEightDoorKeYing(snapshot.data!),
-                                        ),
-                                      );
-                                    }
-                                    else{
-                                      return Text("加载中...");
-                                    }
-                                  },
+                                    },
+                                  ),
+                                )
+                                    .animate()
+                                    .moveY(
+                                        delay:
+                                            const Duration(milliseconds: 1000),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 1000),
+                                        begin: 128,
+                                        end: 0)
+                                    .fadeIn(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: 0),
+                                const SizedBox(
+                                  height: 24,
                                 ),
-                              )
-                                  .animate()
-                                  .moveY(
-                                  delay: Duration(milliseconds: 1000),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 1000),
-                                  begin: 128,end: 0)
-                                  .fadeIn(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),begin: 0),
-                              SizedBox(height: 24,),
-                              AnimatedContainer(
-                                alignment: Alignment.topCenter,
-                                duration: Duration(milliseconds: 400),
-                                width: 256,
-                                // margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                                child: FutureBuilder(
-                                  future:loadEightDoorGanKeYing(gong.door,gong.tianPan),
-                                  builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                                    if (snapshot.hasData){
-                                      if (snapshot.data == null){
-                                        return Container();
+                                AnimatedContainer(
+                                  alignment: Alignment.topCenter,
+                                  duration: const Duration(milliseconds: 400),
+                                  width: 256,
+                                  // margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                  child: FutureBuilder(
+                                    future: loadEightDoorGanKeYing(
+                                        gong.door, gong.tianPan),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<String?> snapshot) {
+                                      if (snapshot.hasData) {
+                                        if (snapshot.data == null) {
+                                          return Container();
+                                        }
+                                        return IntrinsicHeight(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(12),
+                                            decoration: cardDecoration,
+                                            child: buildDoorGan(
+                                                gong.gongGua,
+                                                gong.tianPan,
+                                                gong.door,
+                                                snapshot.data),
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text("加载中...");
                                       }
-                                      return IntrinsicHeight(
-                                        child: Container(
-                                          padding: EdgeInsets.all(12),
-                                          decoration: cardDecoration,
-                                          child: buildDoorGan(gong.gongGua,gong.tianPan,gong.door,snapshot.data),
-                                        ),
-                                      );
-                                    }
-                                    else{
-                                      return Text("加载中...");
-                                    }
-                                  },
+                                    },
+                                  ),
+                                )
+                                    .animate()
+                                    .moveY(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: -128,
+                                        end: 0)
+                                    .fadeIn(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: 0),
+                                const SizedBox(
+                                  height: 24,
                                 ),
-                              )
-                                  .animate()
-                                  .moveY(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),
-                                  begin: -128,end: 0)
-                                  .fadeIn(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),begin: 0),
-                              SizedBox(height: 24,),
-                              AnimatedContainer(
-                                alignment: Alignment.topCenter,
-                                duration: Duration(milliseconds: 400),
-                                width: 256,
-                                child: FutureBuilder(
-                                  future: Future.wait([
-                                    loadThreeQiRuGong(gong.gongGua, gong.tianPan),
-                                    loadTianPanGanRuGong(gong.gongGua, gong.tianPan),
-                                  ]),
-                                  builder: (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
-                                    if (snapshot.hasData){
-                                      if (snapshot.data?[0] == null && snapshot.data?[1] == null){
-                                        return Container();
+                                AnimatedContainer(
+                                  alignment: Alignment.topCenter,
+                                  duration: const Duration(milliseconds: 400),
+                                  width: 256,
+                                  child: FutureBuilder(
+                                    future: Future.wait([
+                                      loadThreeQiRuGong(
+                                          gong.gongGua, gong.tianPan),
+                                      loadTianPanGanRuGong(
+                                          gong.gongGua, gong.tianPan),
+                                    ]),
+                                    builder: (BuildContext context,
+                                        AsyncSnapshot<List<dynamic>?>
+                                            snapshot) {
+                                      if (snapshot.hasData) {
+                                        if (snapshot.data?[0] == null &&
+                                            snapshot.data?[1] == null) {
+                                          return Container();
+                                        }
+                                        return IntrinsicHeight(
+                                          child: Container(
+                                            width: 256,
+                                            padding: const EdgeInsets.all(12),
+                                            // margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                                            decoration: cardDecoration,
+                                            child: buildQiYiRuGong(
+                                                gong.gongGua,
+                                                gong.tianPan,
+                                                snapshot.data?[0],
+                                                snapshot.data?[1]),
+                                          ),
+                                        );
+                                      } else {
+                                        return const Text("加载中...");
                                       }
-                                      return IntrinsicHeight(
-                                        child: Container(
-                                          width: 256,
-                                          padding: EdgeInsets.all(12),
-                                          // margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                                          decoration: cardDecoration,
-                                          child: buildQiYiRuGong(gong.gongGua,gong.tianPan,snapshot.data?[0],snapshot.data?[1]),
-                                        ),
-                                      );
-                                    }
-                                    else{
-                                      return Text("加载中...");
-                                    }
-                                  },
-                                ),
-                              )
-                                  .animate()
-                                  .moveX(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),
-                                  begin: 128,end: 0)
-                                  .fadeIn(
-                                  delay: Duration(milliseconds: 800),
-                                  curve: Curves.easeInOutQuint,
-                                  duration: Duration(milliseconds: 400),begin: 0),
-                            ],
-                          ),
-                          Container(
-                            width: 500,
-                            child: Scrollbar(
-                              controller: _scrollController,
-                              child: SingleChildScrollView(
-                                controller: _scrollController,
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      // buildExplainList(gua,gong.tianPan,gong.diPan,shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan,popupGongWidget.item2.value.door),
-                                      FutureBuilder(
-                                        future: loadTenGanKeyYing(context,gong.tianPan,gong.diPan),
-                                        builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                                          if (snapshot.hasData){
-                                            if (snapshot.data != null){
-                                              return buildNewExplainList(snapshot.data!,geJuMapper[gong.gongGua]!.tianGeJu);
-                                            }else{
-                                              return Center(child: Text("未找到"));
-                                            }
-                                          }
-                                          else{
-                                            return Center(child: Text("加载中..."));
-                                          }
-                                        },
-                                      ),
-                                      if (gong.tianPanJiGan != null && gong.tianPanJiGan == gong.diPanJiGan)
-                                        FutureBuilder(
-                                          future: loadTenGanKeyYing(context,gong.tianPanJiGan!,gong.diPanJiGan!),
-                                          builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                                            if (snapshot.hasData){
-                                              if (snapshot.data != null){
-                                                return buildNewExplainList(snapshot.data!,geJuMapper[gong.gongGua]!.tianDiJiGanGeJu!);
-                                              }else{
-                                                return Center(child: Text("未找到"));
-                                              }
-                                            }
-                                            else{
-                                              return Center(child: Text("加载中..."));
-                                            }
-                                          },
-                                        ),
-                                      if (gong.tianPanJiGan != null && gong.diPanJiGan == null)
-                                        FutureBuilder(
-                                          future: loadTenGanKeyYing(context,gong.tianPanJiGan!,gong.diPan),
-                                          builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                                            if (snapshot.hasData){
-                                              if (snapshot.data != null){
-                                                return buildNewExplainList(snapshot.data!,geJuMapper[gong.gongGua]!.tianPanJiGanGeJu!);
-                                              }else{
-                                                return Center(child: Text("未找到"));
-                                              }
-                                            }
-                                            else{
-                                              return Center(child: Text("加载中..."));
-                                            }
-                                          },
-                                        ),
-                                      if (gong.tianPanJiGan == null && gong.diPanJiGan != null)
-                                        FutureBuilder(
-                                          future: loadTenGanKeyYing(context,gong.tianPan,gong.diPanJiGan!),
-                                          builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                                            if (snapshot.hasData){
-                                              if (snapshot.data != null){
-                                                return buildNewExplainList(snapshot.data!,geJuMapper[gong.gongGua]!.diPanJiGanGeJu!);
-                                              }else{
-                                                return Center(child: Text("未找到"));
-                                              }
-                                            }
-                                            else{
-                                              return Center(child: Text("加载中..."));
-                                            }
-                                          },
-                                        ),
-                                      buildExplainList2(gua,gong,shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan,popupGongWidget.item2.value.door),
-                                    ]
-                                ),
-                              ),
+                                    },
+                                  ),
+                                )
+                                    .animate()
+                                    .moveX(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: 128,
+                                        end: 0)
+                                    .fadeIn(
+                                        delay:
+                                            const Duration(milliseconds: 800),
+                                        curve: Curves.easeInOutQuint,
+                                        duration:
+                                            const Duration(milliseconds: 400),
+                                        begin: 0),
+                              ],
                             ),
-                          )
-                        ],
-                      )
-                  )
-                      .animate()
-                      .move(
-                      delay: Duration(milliseconds: 250),
-                      duration:Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCirc,
-                      begin: Offset.zero,
-                      end: Offset(offsetX,offsetY));
-
-                }),
-          ],
-        )
-          .animate(controller: _panScaleController,autoPlay:false)
-            .scale(
-            delay: Duration(milliseconds: 100),
-            duration: Duration(milliseconds: 200),
-            curve: Curves.linear,
-            begin: Offset(1, 1), end: Offset(.99, .99))
-            .move(
-            delay: Duration(milliseconds: 100),
-            duration: Duration(milliseconds: 200),
-            curve: Curves.linear,
-            begin: Offset(0, 0),
-            end: Offset(-2, -2)),
+                            SizedBox(
+                              width: 500,
+                              child: Scrollbar(
+                                controller: _scrollController,
+                                child: SingleChildScrollView(
+                                  controller: _scrollController,
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        // buildExplainList(gua,gong.tianPan,gong.diPan,shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan,popupGongWidget.item2.value.door),
+                                        FutureBuilder(
+                                          future: loadTenGanKeyYing(context,
+                                              gong.tianPan, gong.diPan),
+                                          builder: (BuildContext context,
+                                              AsyncSnapshot<TenGanKeYing?>
+                                                  snapshot) {
+                                            if (snapshot.hasData) {
+                                              if (snapshot.data != null) {
+                                                return buildNewExplainList(
+                                                    snapshot.data!,
+                                                    geJuMapper[gong.gongGua]!
+                                                        .tianGeJu);
+                                              } else {
+                                                return const Center(
+                                                    child: Text("未找到"));
+                                              }
+                                            } else {
+                                              return const Center(
+                                                  child: Text("加载中..."));
+                                            }
+                                          },
+                                        ),
+                                        if (gong.tianPanJiGan != null &&
+                                            gong.tianPanJiGan ==
+                                                gong.diPanJiGan)
+                                          FutureBuilder(
+                                            future: loadTenGanKeyYing(
+                                                context,
+                                                gong.tianPanJiGan!,
+                                                gong.diPanJiGan!),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<TenGanKeYing?>
+                                                    snapshot) {
+                                              if (snapshot.hasData) {
+                                                if (snapshot.data != null) {
+                                                  return buildNewExplainList(
+                                                      snapshot.data!,
+                                                      geJuMapper[gong.gongGua]!
+                                                          .tianDiJiGanGeJu!);
+                                                } else {
+                                                  return const Center(
+                                                      child: Text("未找到"));
+                                                }
+                                              } else {
+                                                return const Center(
+                                                    child: Text("加载中..."));
+                                              }
+                                            },
+                                          ),
+                                        if (gong.tianPanJiGan != null &&
+                                            gong.diPanJiGan == null)
+                                          FutureBuilder(
+                                            future: loadTenGanKeyYing(context,
+                                                gong.tianPanJiGan!, gong.diPan),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<TenGanKeYing?>
+                                                    snapshot) {
+                                              if (snapshot.hasData) {
+                                                if (snapshot.data != null) {
+                                                  return buildNewExplainList(
+                                                      snapshot.data!,
+                                                      geJuMapper[gong.gongGua]!
+                                                          .tianPanJiGanGeJu!);
+                                                } else {
+                                                  return const Center(
+                                                      child: Text("未找到"));
+                                                }
+                                              } else {
+                                                return const Center(
+                                                    child: Text("加载中..."));
+                                              }
+                                            },
+                                          ),
+                                        if (gong.tianPanJiGan == null &&
+                                            gong.diPanJiGan != null)
+                                          FutureBuilder(
+                                            future: loadTenGanKeyYing(context,
+                                                gong.tianPan, gong.diPanJiGan!),
+                                            builder: (BuildContext context,
+                                                AsyncSnapshot<TenGanKeYing?>
+                                                    snapshot) {
+                                              if (snapshot.hasData) {
+                                                if (snapshot.data != null) {
+                                                  return buildNewExplainList(
+                                                      snapshot.data!,
+                                                      geJuMapper[gong.gongGua]!
+                                                          .diPanJiGanGeJu!);
+                                                } else {
+                                                  return const Center(
+                                                      child: Text("未找到"));
+                                                }
+                                              } else {
+                                                return const Center(
+                                                    child: Text("加载中..."));
+                                              }
+                                            },
+                                          ),
+                                        buildExplainList2(
+                                            gua,
+                                            gong,
+                                            shiJiaZhuanPanQiMenValueNotifier
+                                                .value!.xunHeaderTianGan,
+                                            popupGongWidget.item2.value.door),
+                                      ]),
+                                ),
+                              ),
+                            )
+                          ],
+                        ))
+                    .animate()
+                    .move(
+                        delay: const Duration(milliseconds: 250),
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCirc,
+                        begin: Offset.zero,
+                        end: Offset(offsetX, offsetY));
+              }),
+        ],
+      )
+          .animate(controller: _panScaleController, autoPlay: false)
+          .scale(
+              delay: const Duration(milliseconds: 100),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.linear,
+              begin: const Offset(1, 1),
+              end: const Offset(.99, .99))
+          .move(
+              delay: const Duration(milliseconds: 100),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.linear,
+              begin: const Offset(0, 0),
+              end: const Offset(-2, -2)),
       // ),
     );
   }
@@ -775,53 +921,58 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
   //   Map<HouTianGua,Widget> gongWidgetMapper = Map.fromEntries(HouTianGua.values.map((g)=>MapEntry(g, buildEachGong(g,pan))));
   //   guaGongMapperNotifier.value = gongWidgetMapper;
   // }
-  Widget buildPanGeJu(){
+  Widget buildPanGeJu() {
     return ValueListenableBuilder(
         valueListenable: shiJiaZhuanPanQiMenValueNotifier,
-        builder: (ctx,pan,child){
+        builder: (ctx, pan, child) {
           List<Widget> list = [];
           if (pan != null) {
             if (EnumMostPopularGeJu.isTianXianShiGe(
-                pan.dayJiaZi, pan.timeJiaZi) != null) {
-              list.add(GeJuPanelTemplateJi1(name: "天显时格",
-                  backgroundColor: Color.fromRGBO(
-                      32, 50, 54, 1),
-                  foregroundColor: Color.fromRGBO(
-                      209, 181, 146, 1)));
+                    pan.dayJiaZi, pan.timeJiaZi) !=
+                null) {
+              list.add(const GeJuPanelTemplateJi1(
+                  name: "天显时格",
+                  backgroundColor: Color.fromRGBO(32, 50, 54, 1),
+                  foregroundColor: Color.fromRGBO(209, 181, 146, 1)));
             }
             if (EnumMostPopularGeJu.isTianFuJiShi(
-                pan.dayJiaZi, pan.timeJiaZi) != null) {
-              if (list.isNotEmpty){
-                list.add(SizedBox(width: 12,));
-              }
-              list.add(GeJuPanelTemplateJi1(name: "天辅吉时",
-                  backgroundColor: Color.fromRGBO(
-                      25, 44, 59, 1),
-                  foregroundColor: Color.fromRGBO(
-                      176, 132, 88, 1)));
-            }
-            if (EnumMostPopularGeJu
-                .isYuNvShouMenByTimeJiaZi(pan.timeJiaZi) !=
+                    pan.dayJiaZi, pan.timeJiaZi) !=
                 null) {
-
-              if (list.isNotEmpty){
-                list.add(SizedBox(width: 12,));
+              if (list.isNotEmpty) {
+                list.add(const SizedBox(
+                  width: 12,
+                ));
               }
-                list.add(GeJuPanelTemplateJi1(
-                    name: "玉女守门",
-                    backgroundColor: Color.fromRGBO(
-                        25, 44, 59, 1),
-                    foregroundColor: Color.fromRGBO(
-                        176, 132, 88, 1)));
+              list.add(const GeJuPanelTemplateJi1(
+                  name: "天辅吉时",
+                  backgroundColor: Color.fromRGBO(25, 44, 59, 1),
+                  foregroundColor: Color.fromRGBO(176, 132, 88, 1)));
             }
-            if (EnumMostPopularGeJu.isWuBuYuShi(pan.dayJiaZi, pan.timeJiaZi) != null){
-              if (list.isNotEmpty){
-                list.add(SizedBox(width: 12,));
+            if (EnumMostPopularGeJu.isYuNvShouMenByTimeJiaZi(pan.timeJiaZi) !=
+                null) {
+              if (list.isNotEmpty) {
+                list.add(const SizedBox(
+                  width: 12,
+                ));
               }
-              list.add(GeJuPanelTemplateXiong1(
-                  name: "五不遇时",
-                  backgroundColor:  Color.fromRGBO(130,78,64,1),
-                  foregroundColor: Color.fromRGBO(88,15,5, 1),size: Size(180,42),));
+              list.add(const GeJuPanelTemplateJi1(
+                  name: "玉女守门",
+                  backgroundColor: Color.fromRGBO(25, 44, 59, 1),
+                  foregroundColor: Color.fromRGBO(176, 132, 88, 1)));
+            }
+            if (EnumMostPopularGeJu.isWuBuYuShi(pan.dayJiaZi, pan.timeJiaZi) !=
+                null) {
+              if (list.isNotEmpty) {
+                list.add(const SizedBox(
+                  width: 12,
+                ));
+              }
+              list.add(const GeJuPanelTemplateXiong1(
+                name: "五不遇时",
+                backgroundColor: Color.fromRGBO(130, 78, 64, 1),
+                foregroundColor: Color.fromRGBO(88, 15, 5, 1),
+                size: Size(180, 42),
+              ));
             }
           }
           return SizedBox(
@@ -834,54 +985,67 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           );
         });
   }
-  List<Widget> tianMenDiHuaRenMenGuiLu(){
+
+  List<Widget> tianMenDiHuaRenMenGuiLu() {
     return [
       Positioned(
         top: 0,
         left: 0,
         child: Transform.rotate(
-          angle: (315)* (pi / 180),
+          angle: (315) * (pi / 180),
           child: Container(
               width: 42,
               height: 42,
               alignment: Alignment.center,
-              child: Text("地户",style: menHuLuFangStyle,)),
+              child: Text(
+                "地户",
+                style: menHuLuFangStyle,
+              )),
         ),
       ),
       Positioned(
         top: 0,
         right: 0,
         child: Transform.rotate(
-          angle: (45)* (pi / 180),
+          angle: (45) * (pi / 180),
           child: Container(
               width: 42,
               height: 42,
               alignment: Alignment.center,
-              child: Text("人路",style: menHuLuFangStyle,)),
+              child: Text(
+                "人路",
+                style: menHuLuFangStyle,
+              )),
         ),
       ),
       Positioned(
         bottom: 0,
         left: 0,
         child: Transform.rotate(
-          angle: (45)* (pi / 180),
+          angle: (45) * (pi / 180),
           child: Container(
               width: 42,
               height: 42,
               alignment: Alignment.center,
-              child: Text("鬼方",style: menHuLuFangStyle,)),
+              child: Text(
+                "鬼方",
+                style: menHuLuFangStyle,
+              )),
         ),
       ),
       Positioned(
         bottom: 0,
         right: 0,
         child: Transform.rotate(
-          angle: 315* (pi / 180),
+          angle: 315 * (pi / 180),
           child: Container(
               width: 42,
               height: 42,
               alignment: Alignment.center,
-              child: Text("天门",style: menHuLuFangStyle,)),
+              child: Text(
+                "天门",
+                style: menHuLuFangStyle,
+              )),
         ),
       ),
     ];
@@ -895,8 +1059,7 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
   int? juNumber;
   TwentyFourJieQi? jieQi;
 
-
-  Color getTianGanColor(TianGan tianGan){
+  Color getTianGanColor(TianGan tianGan) {
     return ConstResourcesMapper.zodiacGanColors[tianGan]!;
   }
   // loadAllExplain() async {
@@ -909,131 +1072,155 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
   // }
 
   ///list.length 为 2 或者为 3是
-  Future<Map<HouTianGua,UITenGanKeYingGeJu>> loadTenGanKeYingGeJu(PlateType plateType, TianGan xunShouGan,TianGan zhiFuGan, Map<HouTianGua,EachGong> gong) async {
-    Map<TianGan, Map<TianGan, TenGanKeYingGeJu>> loadResult = await ReadDataUtils.readTenGanKeYingGeJu();
-    Map<HouTianGua,UITenGanKeYingGeJu> result = {};
+  Future<Map<HouTianGua, UITenGanKeYingGeJu>> loadTenGanKeYingGeJu(
+      PlateType plateType,
+      TianGan xunShouGan,
+      TianGan zhiFuGan,
+      Map<HouTianGua, EachGong> gong) async {
+    Map<TianGan, Map<TianGan, TenGanKeYingGeJu>> loadResult =
+        await ReadDataUtils.readTenGanKeYingGeJu();
+    Map<HouTianGua, UITenGanKeYingGeJu> result = {};
     for (var entry in gong.entries) {
-      if (plateType==PlateType.ZHUAN_PAN && entry.key == HouTianGua.Center){
+      if (plateType == PlateType.ZHUAN_PAN && entry.key == HouTianGua.Center) {
         continue;
       }
-      TenGanKeYingGeJu tianGeJu = loadResult[entry.value.tianPan]![entry.value.diPan]!;
+      TenGanKeYingGeJu tianGeJu =
+          loadResult[entry.value.tianPan]![entry.value.diPan]!;
       TenGanKeYingGeJu? tianDunJiaGeJu;
-      if (entry.value.tianPan == xunShouGan){
+      if (entry.value.tianPan == xunShouGan) {
         tianDunJiaGeJu = loadResult[TianGan.JIA]![entry.value.diPan]!;
       }
       TenGanKeYingGeJu? diDunJiaGeJu;
-      if (entry.value.diPan == xunShouGan){
+      if (entry.value.diPan == xunShouGan) {
         diDunJiaGeJu = loadResult[entry.value.tianPan]![TianGan.JIA]!;
       }
       TenGanKeYingGeJu? diPanJiGeJu;
       TenGanKeYingGeJu? diPanJiJiaGeJu;
       TenGanKeYingGeJu? tianDunJiaDiPanJi;
-      if (entry.value.diPanJiGan != null){
+      if (entry.value.diPanJiGan != null) {
         diPanJiGeJu = loadResult[entry.value.tianPan]![entry.value.diPanJiGan]!;
-        if (entry.value.diPanJiGan == xunShouGan){
+        if (entry.value.diPanJiGan == xunShouGan) {
           diPanJiJiaGeJu = loadResult[entry.value.tianPan]![TianGan.JIA]!;
         }
-        if (entry.value.tianPan == xunShouGan){
+        if (entry.value.tianPan == xunShouGan) {
           tianDunJiaDiPanJi = loadResult[TianGan.JIA]![entry.value.diPanJiGan]!;
         }
       }
       TenGanKeYingGeJu? tianPanJiGeJu;
       TenGanKeYingGeJu? tianPanJiJiaGeJu;
       TenGanKeYingGeJu? tianPanJiGanDiPanJia;
-      if (entry.value.tianPanJiGan != null){
-        tianPanJiGeJu = loadResult[entry.value.tianPanJiGan]![entry.value.diPan]!;
-        if (entry.value.tianPanJiGan == xunShouGan){
+      if (entry.value.tianPanJiGan != null) {
+        tianPanJiGeJu =
+            loadResult[entry.value.tianPanJiGan]![entry.value.diPan]!;
+        if (entry.value.tianPanJiGan == xunShouGan) {
           tianPanJiJiaGeJu = loadResult[TianGan.JIA]![entry.value.diPan]!;
         }
-        if (entry.value.diPan == xunShouGan){
-          tianPanJiGanDiPanJia = loadResult[entry.value.tianPanJiGan]![TianGan.JIA]!;
+        if (entry.value.diPan == xunShouGan) {
+          tianPanJiGanDiPanJia =
+              loadResult[entry.value.tianPanJiGan]![TianGan.JIA]!;
         }
       }
       TenGanKeYingGeJu? tianDiPanJia; // 天地盘相同，且同为“遁干”
-      if (entry.value.tianPan == entry.value.diPan && entry.value.tianPan == xunShouGan){
+      if (entry.value.tianPan == entry.value.diPan &&
+          entry.value.tianPan == xunShouGan) {
         tianDiPanJia = loadResult[TianGan.JIA]![TianGan.JIA]!;
       }
       TenGanKeYingGeJu? tianDiJiGan;
       TenGanKeYingGeJu? tianDiJiaGanJiaGeJu;
       // print("${entry.value.tianPanJiGan != null}=====${entry.value.tianPanJiGan == entry.value.diPanJiGan}");
-      if (entry.value.tianPanJiGan != null && entry.value.tianPanJiGan == entry.value.diPanJiGan){
-
-        tianDiJiGan = loadResult[entry.value.tianPanJiGan]![entry.value.diPanJiGan]!;
-        if (entry.value.tianPanJiGan == xunShouGan){
+      if (entry.value.tianPanJiGan != null &&
+          entry.value.tianPanJiGan == entry.value.diPanJiGan) {
+        tianDiJiGan =
+            loadResult[entry.value.tianPanJiGan]![entry.value.diPanJiGan]!;
+        if (entry.value.tianPanJiGan == xunShouGan) {
           tianDiJiaGanJiaGeJu = loadResult[TianGan.JIA]![TianGan.JIA]!;
         }
       }
 
       result[entry.key] = UITenGanKeYingGeJu(
-        gongGua:entry.key,
-        tianGan:entry.value.tianPan,
-        tianGeJu:tianGeJu,
-        diGan:entry.value.diPan,
-        isTianGanDunJia:entry.value.tianPan == xunShouGan,
-        isDiGanDunJia:entry.value.diPan == xunShouGan,
-        tianDunJiaGeJu:tianDunJiaGeJu,
-        diDunJiaGeJu:diDunJiaGeJu,
-        tianPanJiGan:entry.value.tianPanJiGan,
-        tianPanJiGanGeJu:tianPanJiGeJu,
-        diPanJiGan:entry.value.diPanJiGan,
-        diPanJiGanGeJu:diPanJiGeJu,
-        isTianJiGanJia: entry.value.tianPanJiGan == xunShouGan,
-        isDiJiGanJia:entry.value.diPanJiGan == xunShouGan,
-        tianJiGanJiaGeJu:tianPanJiJiaGeJu,
-        diJiGanJiaGeJu:diPanJiJiaGeJu,
-        tianDiJiGanGeJu:tianDiJiGan,
-        tianDiPanGanGeJu: tianDiPanJia,
-          tianDiJiaGanJiaGeJu:tianDiJiaGanJiaGeJu,
-          tianPanJiGanDiPanJia:tianPanJiGanDiPanJia,
-          tianDunJiaDiPanJi:tianDunJiaDiPanJi
-      );
+          gongGua: entry.key,
+          tianGan: entry.value.tianPan,
+          tianGeJu: tianGeJu,
+          diGan: entry.value.diPan,
+          isTianGanDunJia: entry.value.tianPan == xunShouGan,
+          isDiGanDunJia: entry.value.diPan == xunShouGan,
+          tianDunJiaGeJu: tianDunJiaGeJu,
+          diDunJiaGeJu: diDunJiaGeJu,
+          tianPanJiGan: entry.value.tianPanJiGan,
+          tianPanJiGanGeJu: tianPanJiGeJu,
+          diPanJiGan: entry.value.diPanJiGan,
+          diPanJiGanGeJu: diPanJiGeJu,
+          isTianJiGanJia: entry.value.tianPanJiGan == xunShouGan,
+          isDiJiGanJia: entry.value.diPanJiGan == xunShouGan,
+          tianJiGanJiaGeJu: tianPanJiJiaGeJu,
+          diJiGanJiaGeJu: diPanJiJiaGeJu,
+          tianDiJiGanGeJu: tianDiJiGan,
+          tianDiPanGanGeJu: tianDiPanJia,
+          tianDiJiaGanJiaGeJu: tianDiJiaGanJiaGeJu,
+          tianPanJiGanDiPanJia: tianPanJiGanDiPanJia,
+          tianDunJiaDiPanJi: tianDunJiaDiPanJi);
     }
 
     return result;
   }
 
-
-  Future<DoorStarKeYing?> loadDoorStarKeYing(EightDoorEnum door,NineStarsEnum star) async {
-    Map<EightDoorEnum, Map<NineStarsEnum, DoorStarKeYing>> loadResult = await ReadDataUtils.readDoorStarKeYing();
+  Future<DoorStarKeYing?> loadDoorStarKeYing(
+      EightDoorEnum door, NineStarsEnum star) async {
+    Map<EightDoorEnum, Map<NineStarsEnum, DoorStarKeYing>> loadResult =
+        await ReadDataUtils.readDoorStarKeYing();
     return loadResult[door]?[star];
   }
-  Future<String?> loadEightDoorGanKeYing(EightDoorEnum door,TianGan tianPanGan) async {
-    Map<EightDoorEnum,Map<TianGan,String>> loadResult = await ReadDataUtils.readDoorGanKeYing();
+
+  Future<String?> loadEightDoorGanKeYing(
+      EightDoorEnum door, TianGan tianPanGan) async {
+    Map<EightDoorEnum, Map<TianGan, String>> loadResult =
+        await ReadDataUtils.readDoorGanKeYing();
     return loadResult[door]?[tianPanGan];
   }
-  Future<TenGanKeYing?> loadTenGanKeyYing(BuildContext context, TianGan tianPanGan,TianGan diPanGan) async {
-    Map<TianGan, Map<TianGan, TenGanKeYing>> loadResult = await ReadDataUtils.readTenGanKeYing();
+
+  Future<TenGanKeYing?> loadTenGanKeyYing(
+      BuildContext context, TianGan tianPanGan, TianGan diPanGan) async {
+    Map<TianGan, Map<TianGan, TenGanKeYing>> loadResult =
+        await ReadDataUtils.readTenGanKeYing();
     // if (tianPanGan == TianGan.JIA && diPanGan == TianGan.BING){
     //   print(loadResult[tianPanGan]?[TianGan.BING]);
     // }
     return loadResult[tianPanGan]?[diPanGan];
   }
-  Future<Map<YinYang,EightDoorKeYing>?> loadEightDoorKeYing(EightDoorEnum door,EightDoorEnum fixDoor) async {
+
+  Future<Map<YinYang, EightDoorKeYing>?> loadEightDoorKeYing(
+      EightDoorEnum door, EightDoorEnum fixDoor) async {
     /// YinYang  阳为动应，阴为静应
 
-    try{
-      Map<EightDoorEnum, Map<EightDoorEnum, Map<YinYang,EightDoorKeYing>>> loadResult = await ReadDataUtils.readEightDoorKeYing();
+    try {
+      Map<EightDoorEnum, Map<EightDoorEnum, Map<YinYang, EightDoorKeYing>>>
+          loadResult = await ReadDataUtils.readEightDoorKeYing();
       return loadResult[door]?[fixDoor];
-    }catch(e){
-      throw e;
+    } catch (e) {
+      rethrow;
     }
     return null;
   }
+
   /// 当前只有 三奇入宫
-  Future<QiYiRuGong?> loadThreeQiRuGong(HouTianGua gongGua,TianGan tianPanGan) async {
-    if ([TianGan.YI,TianGan.BING,TianGan.DING].contains(tianPanGan)){
-      Map<HouTianGua, Map<TianGan, QiYiRuGong>> qiYiRuGongMapper = await ReadDataUtils.readQiYiRuGong();
+  Future<QiYiRuGong?> loadThreeQiRuGong(
+      HouTianGua gongGua, TianGan tianPanGan) async {
+    if ([TianGan.YI, TianGan.BING, TianGan.DING].contains(tianPanGan)) {
+      Map<HouTianGua, Map<TianGan, QiYiRuGong>> qiYiRuGongMapper =
+          await ReadDataUtils.readQiYiRuGong();
       return qiYiRuGongMapper[gongGua]![tianPanGan]!;
     }
     return null;
   }
-  Future<String?> loadTianPanGanRuGong(HouTianGua gongGua,TianGan tianPanGan) async {
-    Map<HouTianGua, Map<TianGan, String>> qiYiRuGongMapper = await ReadDataUtils.readQiYiRuGongDisease();
+
+  Future<String?> loadTianPanGanRuGong(
+      HouTianGua gongGua, TianGan tianPanGan) async {
+    Map<HouTianGua, Map<TianGan, String>> qiYiRuGongMapper =
+        await ReadDataUtils.readQiYiRuGongDisease();
     return qiYiRuGongMapper[gongGua]?[tianPanGan];
   }
 
-
-  Widget buildCreatePan(){
+  Widget buildCreatePan() {
     // Size gongAtPanSize = Size(baseEachGongSize+eachPaddingSize*2, baseEachGongSize+eachPaddingSize*2);
     return Container(
         key: panelGlobalKey,
@@ -1048,22 +1235,23 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                 color: Colors.black.withOpacity(0.2),
                 spreadRadius: 5,
                 blurRadius: 7,
-                offset: Offset(1, 1), // changes position of shadow
+                offset: const Offset(1, 1), // changes position of shadow
               )
-            ]
-        ),
-        child:Column(
+            ]),
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 36,),
+            const SizedBox(
+              height: 36,
+            ),
             Center(
               child: ValueListenableBuilder(
                 valueListenable: plateTypeNotifier,
-                builder: (ctx,type,_){
+                builder: (ctx, type, _) {
                   return SlideSwitcher(
                       onSelect: (index) {
-                        switch(index){
+                        switch (index) {
                           case 0:
                             plateTypeNotifier.value = PlateType.ZHUAN_PAN;
                             break;
@@ -1075,34 +1263,40 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                       containerHeight: 56,
                       containerWight: 240,
                       indents: 2,
-                      containerColor:  Color(0xffe4e5eb),
-                      slidersColors: [Color(0xfff7f5f7)],
-                      containerBoxShadow:[
+                      containerColor: const Color(0xffe4e5eb),
+                      slidersColors: const [
+                        Color(0xfff7f5f7)
+                      ],
+                      containerBoxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.2),
                           blurRadius: 2,
-                          spreadRadius:4,
+                          spreadRadius: 4,
                         )
                       ],
                       children: [
                         AnimatedDefaultTextStyle(
-                            style: type != PlateType.ZHUAN_PAN?baseActivatedStyle.copyWith(fontSize: 24):zhuanPanActivatedStyle.copyWith(fontSize: 24),
-                            duration: Duration(milliseconds: 200),
+                            style: type != PlateType.ZHUAN_PAN
+                                ? baseActivatedStyle.copyWith(fontSize: 24)
+                                : zhuanPanActivatedStyle.copyWith(fontSize: 24),
+                            duration: const Duration(milliseconds: 200),
                             child: Text("${PlateType.ZHUAN_PAN.name}法")),
                         AnimatedDefaultTextStyle(
-                            style: type != PlateType.FEI_PAN?baseActivatedStyle.copyWith(fontSize: 24):feiPanActivatedStyle.copyWith(fontSize: 24),
-                            duration: Duration(milliseconds: 200),
+                            style: type != PlateType.FEI_PAN
+                                ? baseActivatedStyle.copyWith(fontSize: 24)
+                                : feiPanActivatedStyle.copyWith(fontSize: 24),
+                            duration: const Duration(milliseconds: 200),
                             child: Text("${PlateType.FEI_PAN.name}法")),
-                      ]
-                  );
+                      ]);
                 },
               ),
             ),
-            SizedBox(height: 20,),
+            const SizedBox(
+              height: 20,
+            ),
             ValueListenableBuilder(
                 valueListenable: arrangeTypeNotifier,
-
-                builder: (ctx,arrangeType, _) {
+                builder: (ctx, arrangeType, _) {
                   return SlideSwitcher(
                       initialIndex: arrangeType.index,
                       onSelect: (index) {
@@ -1111,24 +1305,29 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                       containerHeight: 42,
                       containerWight: 350,
                       indents: 4,
-                      containerColor:  Color(0xffe4e5eb),
-                      slidersColors: [Color(0xfff7f5f7)],
-                      containerBoxShadow:[
+                      containerColor: const Color(0xffe4e5eb),
+                      slidersColors: const [Color(0xfff7f5f7)],
+                      containerBoxShadow: [
                         BoxShadow(
                           color: Colors.grey.withOpacity(0.2),
                           blurRadius: 2,
-                          spreadRadius:4,
+                          spreadRadius: 4,
                         )
                       ],
-                      children: ArrangeType.values.map((t)=>AnimatedDefaultTextStyle(
-                      style: arrangeType != t?switcherInactivatedStyle:switcherActivatedStyle,
-                      duration: Duration(milliseconds: 200),
-                      child: Text("${t.name}法"))).toList()
-                  );
+                      children: ArrangeType.values
+                          .map((t) => AnimatedDefaultTextStyle(
+                              style: arrangeType != t
+                                  ? switcherInactivatedStyle
+                                  : switcherActivatedStyle,
+                              duration: const Duration(milliseconds: 200),
+                              child: Text("${t.name}法")))
+                          .toList());
                 }),
-            SizedBox(height: 16,),
+            const SizedBox(
+              height: 16,
+            ),
             Container(
-                margin: EdgeInsets.all(16),
+                margin: const EdgeInsets.all(16),
                 child: Column(
                   children: [
                     Row(
@@ -1140,452 +1339,608 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
-                              alignment:Alignment.centerLeft,
+                              alignment: Alignment.centerLeft,
                               width: 240,
-                              child:Text("中宫寄宫：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                              child: const Text(
+                                "中宫寄宫：",
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w300,
+                                    color: Colors.black87),
+                              ),
                             ),
                             ValueListenableBuilder(
                                 valueListenable: jiGongHintNotifier,
-                                builder: (ctx,cgg,_){
+                                builder: (ctx, cgg, _) {
                                   return SlideSwitcher(
                                       initialIndex: cgg.index,
                                       onSelect: (index) {
-                                        jiGongHintNotifier.value = CenterGongJiGongType.values[index];
+                                        jiGongHintNotifier.value =
+                                            CenterGongJiGongType.values[index];
                                       },
                                       containerHeight: 36,
                                       containerWight: 240,
                                       indents: 4,
-                                      containerColor:  Color(0xffe4e5eb),
-                                      slidersColors: [Color(0xfff7f5f7)],
-                                      containerBoxShadow:[
+                                      containerColor: const Color(0xffe4e5eb),
+                                      slidersColors: const [Color(0xfff7f5f7)],
+                                      containerBoxShadow: [
                                         BoxShadow(
                                           color: Colors.grey.withOpacity(0.4),
                                         )
                                       ],
-                                      children: CenterGongJiGongType.values.map((t)=>AnimatedDefaultTextStyle(
-                                          style: cgg != t?switcherInactivatedStyle:switcherActivatedStyle,
-                                          duration: Duration(milliseconds: 200),
-                                          child: Text(t.name))).toList()
-                                  );
+                                      children: CenterGongJiGongType.values
+                                          .map((t) => AnimatedDefaultTextStyle(
+                                              style: cgg != t
+                                                  ? switcherInactivatedStyle
+                                                  : switcherActivatedStyle,
+                                              duration: const Duration(
+                                                  milliseconds: 200),
+                                              child: Text(t.name)))
+                                          .toList());
                                 }),
                             Container(
                               alignment: Alignment.center,
                               width: 240,
                               child: ValueListenableBuilder(
                                   valueListenable: jiGongHintNotifier,
-                                  builder: (ctx,hint,_){
+                                  builder: (ctx, hint, _) {
                                     return Text(
-                                        ConstantResourcesOfQiMen.hitCenterGongJiGongMapper[hint]!,
-                                        style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1)
-                                    );
+                                        ConstantResourcesOfQiMen
+                                            .hitCenterGongJiGongMapper[hint]!,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.w300,
+                                            height: 1.1));
                                   }),
                             )
                           ],
                         ),
-                        SizedBox(width: 12,),
+                        const SizedBox(
+                          width: 12,
+                        ),
                         ValueListenableBuilder(
                             valueListenable: jiGongHintNotifier,
-                            builder: (content,jiGong,_)=>ValueListenableBuilder(
-                                valueListenable: arrangeTypeNotifier,
-                                builder: (ctx,arrangeType,_){
-                                  if (arrangeType == ArrangeType.MANUALLY && [CenterGongJiGongType.FOUR_WEI_GONG,CenterGongJiGongType.EIGTH_GONG].contains(jiGong)){
-                                    if (CenterGongJiGongType.EIGTH_GONG == jiGong){
-                                      return Container(
-                                        width: 160,
-                                        height: 48,
-                                        child: CustomDropdown<String>.search(
-                                          decoration: CustomDropdownDecoration(
-                                              closedShadow: [
-                                                BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                            builder: (content, jiGong, _) =>
+                                ValueListenableBuilder(
+                                    valueListenable: arrangeTypeNotifier,
+                                    builder: (ctx, arrangeType, _) {
+                                      if (arrangeType == ArrangeType.MANUALLY &&
+                                          [
+                                            CenterGongJiGongType.FOUR_WEI_GONG,
+                                            CenterGongJiGongType.EIGTH_GONG
+                                          ].contains(jiGong)) {
+                                        if (CenterGongJiGongType.EIGTH_GONG ==
+                                            jiGong) {
+                                          return SizedBox(
+                                            width: 160,
+                                            height: 48,
+                                            child:
+                                                CustomDropdown<String>.search(
+                                              decoration:
+                                                  CustomDropdownDecoration(
+                                                closedShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                      spreadRadius: 1,
+                                                      blurRadius: 2)
+                                                ],
+                                                expandedShadow: [
+                                                  BoxShadow(
+                                                      color: Colors.grey
+                                                          .withOpacity(0.4),
+                                                      spreadRadius: 1,
+                                                      blurRadius: 2)
+                                                ],
+                                              ),
+                                              hintText: "八节",
+                                              // initialItem: "甲子",
+                                              items: const [
+                                                "立春（艮）",
+                                                "春分（震）",
+                                                "立夏（巽）",
+                                                "夏至（离）",
+                                                "立秋（坤）",
+                                                "秋分（兑）",
+                                                "立冬（乾）",
+                                                "冬至（坎）"
                                               ],
-                                              expandedShadow: [
-                                                BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                                              onChanged: (eigthJie) {
+                                                if (eigthJie != null) {
+                                                  jieQi =
+                                                      TwentyFourJieQi.fromName(
+                                                          eigthJie.substring(
+                                                              0, 2));
+                                                } else {
+                                                  jieQi = null;
+                                                }
+                                              },
+                                            ),
+                                          );
+                                        } else {
+                                          return SizedBox(
+                                            width: 160,
+                                            height: 48,
+                                            child:
+                                                CustomDropdown<String>.search(
+                                              decoration: CustomDropdownDecoration(
+                                                  closedShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.4),
+                                                        spreadRadius: 1,
+                                                        blurRadius: 2)
+                                                  ],
+                                                  expandedShadow: [
+                                                    BoxShadow(
+                                                        color: Colors.grey
+                                                            .withOpacity(0.4),
+                                                        spreadRadius: 1,
+                                                        blurRadius: 2)
+                                                  ],
+                                                  searchFieldDecoration:
+                                                      const SearchFieldDecoration(
+                                                          prefixIcon: null)),
+                                              hintText: "四季",
+                                              // initialItem: "甲子",
+                                              items: const [
+                                                "春（艮）",
+                                                "夏（巽）",
+                                                "秋（坤）",
+                                                "冬（乾）"
                                               ],
-                                          ),
-                                          hintText: "八节",
-                                          // initialItem: "甲子",
-                                          items: [
-                                            "立春（艮）",
-                                            "春分（震）",
-                                            "立夏（巽）",
-                                            "夏至（离）",
-                                            "立秋（坤）",
-                                            "秋分（兑）",
-                                            "立冬（乾）",
-                                            "冬至（坎）"
-                                          ],
-                                          onChanged: (eigthJie){
-                                            if (eigthJie != null){
-                                              jieQi = TwentyFourJieQi.fromName(eigthJie.substring(0,2));
-                                            }else{
-                                              jieQi = null;
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    }else{
-                                      return Container(
-                                        width: 160,
-                                        height: 48,
-                                        child: CustomDropdown<String>.search(
-                                          decoration: CustomDropdownDecoration(
-                                              closedShadow: [
-                                                BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
-                                              ],
-                                              expandedShadow: [
-                                                BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
-                                              ],
-                                              searchFieldDecoration: SearchFieldDecoration(
-                                                  prefixIcon: null
-                                              )
-                                          ),
-                                          hintText: "四季",
-                                          // initialItem: "甲子",
-                                          items:[
-                                            "春（艮）",
-                                            "夏（巽）",
-                                            "秋（坤）",
-                                            "冬（乾）"
-                                          ],
-                                          onChanged: (fourSeasons){
-                                            if (fourSeasons != null) {
-                                              switch(FourSeasons.fromName(fourSeasons.split("").first)){
-                                                case FourSeasons.SPRING:
-                                                  jieQi = TwentyFourJieQi.LI_CHUN;
-                                                  break;
-                                                case FourSeasons.SUMMER:
-                                                  jieQi = TwentyFourJieQi.LI_XIA;
-                                                  break;
-                                                case FourSeasons.AUTUMN:
-                                                  jieQi = TwentyFourJieQi.LI_QIU;
-                                                  break;
-                                                case FourSeasons.WINTER:
-                                                  jieQi = TwentyFourJieQi.LI_DONG;
-                                                  break;
-                                              }
-                                            }else{
-                                              jieQi = null;
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    }
-
-                                  }
-                                  return SizedBox();
-                                })
-                        )
+                                              onChanged: (fourSeasons) {
+                                                if (fourSeasons != null) {
+                                                  switch (FourSeasons.fromName(
+                                                      fourSeasons
+                                                          .split("")
+                                                          .first)) {
+                                                    case FourSeasons.SPRING:
+                                                      jieQi = TwentyFourJieQi
+                                                          .LI_CHUN;
+                                                      break;
+                                                    case FourSeasons.SUMMER:
+                                                      jieQi = TwentyFourJieQi
+                                                          .LI_XIA;
+                                                      break;
+                                                    case FourSeasons.AUTUMN:
+                                                      jieQi = TwentyFourJieQi
+                                                          .LI_QIU;
+                                                      break;
+                                                    case FourSeasons.WINTER:
+                                                      jieQi = TwentyFourJieQi
+                                                          .LI_DONG;
+                                                      break;
+                                                  }
+                                                } else {
+                                                  jieQi = null;
+                                                }
+                                              },
+                                            ),
+                                          );
+                                        }
+                                      }
+                                      return const SizedBox();
+                                    }))
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          alignment:Alignment.centerLeft,
+                          alignment: Alignment.centerLeft,
                           width: 240,
-                          child:Text("月令旺衰取法：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                          child: const Text(
+                            "月令旺衰取法：",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black87),
+                          ),
                         ),
                         ValueListenableBuilder(
                             valueListenable: monthTokenTypeNotifier,
-                            builder: (ctx,mt,_){
-
+                            builder: (ctx, mt, _) {
                               return SlideSwitcher(
-
                                   initialIndex: mt.index,
                                   onSelect: (index) {
-                                    monthTokenTypeNotifier.value = MonthTokenTypeEnum.values[index];
+                                    monthTokenTypeNotifier.value =
+                                        MonthTokenTypeEnum.values[index];
                                   },
                                   containerHeight: 36,
                                   containerWight: 240,
                                   indents: 4,
-                                  containerColor:  Color(0xffe4e5eb),
-                                  slidersColors: [Color(0xfff7f5f7)],
-                                  containerBoxShadow:[
+                                  containerColor: const Color(0xffe4e5eb),
+                                  slidersColors: const [Color(0xfff7f5f7)],
+                                  containerBoxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.4),
                                     )
                                   ],
-                                  children: MonthTokenTypeEnum.values.map((t)=>AnimatedDefaultTextStyle(
-                                      style: mt != t?switcherInactivatedStyle:switcherActivatedStyle,
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text(t.name))).toList()
-                              );
+                                  children: MonthTokenTypeEnum.values
+                                      .map((t) => AnimatedDefaultTextStyle(
+                                          style: mt != t
+                                              ? switcherInactivatedStyle
+                                              : switcherActivatedStyle,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Text(t.name)))
+                                      .toList());
                             }),
                         Container(
                           alignment: Alignment.center,
                           width: 240,
                           child: ValueListenableBuilder(
                               valueListenable: monthTokenTypeNotifier,
-                              builder: (ctx,hint,_){
+                              builder: (ctx, hint, _) {
                                 Lunar lunar = Lunar.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
-                                MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.asMonthToken;
+                                MonthToken monthToken =
+                                    DiZhi.getFromValue(monthTokenStr)!
+                                        .asMonthToken;
                                 return RichText(
-                                    text:TextSpan(
-                                        text: ConstantResourcesOfQiMen.monthTokenHintMapper[hint]!,
-                                        style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1),
+                                    text: TextSpan(
+                                        text: ConstantResourcesOfQiMen
+                                            .monthTokenHintMapper[hint]!,
+                                        style: const TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.w300,
+                                            height: 1.1),
                                         children: [
-                                          TextSpan(text: "："),
-                                          TextSpan(text:monthToken.diZhi.name,style: TextStyle(color: ConstResourcesMapper.zodiacZhiColors[monthToken.diZhi]!)),
-                                          // TextSpan(text: "〔月令〕 → "),
-                                          TextSpan(text:" → "),
-                                          TextSpan(
-                                              text:monthToken.majorQi.name,
+                                      const TextSpan(text: "："),
+                                      TextSpan(
+                                          text: monthToken.diZhi.name,
+                                          style: TextStyle(
+                                              color: ConstResourcesMapper
+                                                      .zodiacZhiColors[
+                                                  monthToken.diZhi]!)),
+                                      // TextSpan(text: "〔月令〕 → "),
+                                      const TextSpan(text: " → "),
+                                      TextSpan(
+                                          text: monthToken.majorQi.name,
+                                          style: TextStyle(
+                                            color: ConstResourcesMapper
+                                                    .zodiacGanColors[
+                                                monthToken.majorQi]!,
+                                            fontWeight: hint ==
+                                                    MonthTokenTypeEnum
+                                                        .ZHU_QI_NA_GUA
+                                                ? FontWeight.w300
+                                                : FontWeight.w500,
+                                          )),
+                                      // TextSpan(text:"〔主气〕"),
+                                      hint == MonthTokenTypeEnum.ZHU_QI_NA_GUA
+                                          ? const TextSpan(text: " → ")
+                                          : const TextSpan(text: ""),
+                                      hint == MonthTokenTypeEnum.ZHU_QI_NA_GUA
+                                          ? TextSpan(
+                                              text: monthToken.majorQi.naJiaGua,
                                               style: TextStyle(
-                                                color: ConstResourcesMapper.zodiacGanColors[monthToken.majorQi]!,
-                                                fontWeight: hint==MonthTokenTypeEnum.ZHU_QI_NA_GUA
-                                                    ?FontWeight.w300:FontWeight.w500,
-                                              )),
-                                          // TextSpan(text:"〔主气〕"),
-                                          hint==MonthTokenTypeEnum.ZHU_QI_NA_GUA
-                                              ?TextSpan(text:" → ")
-                                              :TextSpan(text: ""),
-                                          hint==MonthTokenTypeEnum.ZHU_QI_NA_GUA
-                                              ?TextSpan(text:monthToken.majorQi.naJiaGua,style: TextStyle(color: ConstResourcesMapper.zodiacGuaColors[HouTianGua.getGuaByName(monthToken.majorQi.naJiaGua)]!,fontWeight: FontWeight.w500))
-                                              :TextSpan(text: ""),
-                                          // TextSpan(text:"〔纳卦〕"),
-                                        ]
-                                    )
-                                );
+                                                  color: ConstResourcesMapper
+                                                          .zodiacGuaColors[
+                                                      HouTianGua.getGuaByName(
+                                                          monthToken.majorQi
+                                                              .naJiaGua)]!,
+                                                  fontWeight: FontWeight.w500))
+                                          : const TextSpan(text: ""),
+                                      // TextSpan(text:"〔纳卦〕"),
+                                    ]));
                               }),
                         )
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          alignment:Alignment.centerLeft,
+                          alignment: Alignment.centerLeft,
                           width: 240,
-                          child:Text("“神”与“宫”旺衰：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                          child: const Text(
+                            "“神”与“宫”旺衰：",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black87),
+                          ),
                         ),
                         ValueListenableBuilder(
                             valueListenable: godWithGongTypeNotifier,
-                            builder: (ctx,ggt,_){
+                            builder: (ctx, ggt, _) {
                               return SlideSwitcher(
                                   initialIndex: ggt.index,
                                   onSelect: (index) {
-                                    godWithGongTypeNotifier.value = GodWithGongTypeEnum.values[index];
+                                    godWithGongTypeNotifier.value =
+                                        GodWithGongTypeEnum.values[index];
                                   },
                                   containerHeight: 36,
                                   containerWight: 240,
                                   indents: 4,
-                                  containerColor:  Color(0xffe4e5eb),
-                                  slidersColors: [Color(0xfff7f5f7)],
-                                  containerBoxShadow:[
+                                  containerColor: const Color(0xffe4e5eb),
+                                  slidersColors: const [Color(0xfff7f5f7)],
+                                  containerBoxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.4),
                                     )
                                   ],
-                                  children: GodWithGongTypeEnum.values.map((e) =>  AnimatedDefaultTextStyle(
-                                      style: ggt != e?switcherInactivatedStyle:switcherActivatedStyle,
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text(e.name))).toList()
-                              );
+                                  children: GodWithGongTypeEnum.values
+                                      .map((e) => AnimatedDefaultTextStyle(
+                                          style: ggt != e
+                                              ? switcherInactivatedStyle
+                                              : switcherActivatedStyle,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Text(e.name)))
+                                      .toList());
                             }),
                         Container(
                           alignment: Alignment.center,
                           width: 240,
                           child: ValueListenableBuilder(
                               valueListenable: godWithGongTypeNotifier,
-                              builder: (ctx,hint,_){
+                              builder: (ctx, hint, _) {
                                 Lunar lunar = Lunar.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
-                                MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.asMonthToken;
+                                MonthToken monthToken =
+                                    DiZhi.getFromValue(monthTokenStr)!
+                                        .asMonthToken;
                                 return RichText(
-                                    text:TextSpan(
-                                      text: ConstantResourcesOfQiMen.godWithGongTypeMapper[hint]!,
-                                      style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1),
-                                    )
-                                );
+                                    text: TextSpan(
+                                  text: ConstantResourcesOfQiMen
+                                      .godWithGongTypeMapper[hint]!,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w300,
+                                      height: 1.1),
+                                ));
                               }),
                         )
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          alignment:Alignment.centerLeft,
+                          alignment: Alignment.centerLeft,
                           width: 240,
-                          child:Text("“星”与“宫”旺衰：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                          child: const Text(
+                            "“星”与“宫”旺衰：",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black87),
+                          ),
                         ),
                         ValueListenableBuilder(
                             valueListenable: starGongTypeNotifier,
-                            builder: (ctx,gt,_){
+                            builder: (ctx, gt, _) {
                               return SlideSwitcher(
                                   onSelect: (index) {
-                                    starGongTypeNotifier.value = GongTypeEnum.values[index];
+                                    starGongTypeNotifier.value =
+                                        GongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
                                   containerHeight: 36,
                                   containerWight: 240,
                                   indents: 4,
-                                  containerColor:  Color(0xffe4e5eb),
-                                  slidersColors: [Color(0xfff7f5f7)],
-                                  containerBoxShadow:[
+                                  containerColor: const Color(0xffe4e5eb),
+                                  slidersColors: const [Color(0xfff7f5f7)],
+                                  containerBoxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.4),
                                     )
                                   ],
-                                  children: GongTypeEnum.values.map((e) =>  AnimatedDefaultTextStyle(
-                                      style: gt != e?switcherInactivatedStyle:switcherActivatedStyle,
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text(e.name))).toList()
-                              );
+                                  children: GongTypeEnum.values
+                                      .map((e) => AnimatedDefaultTextStyle(
+                                          style: gt != e
+                                              ? switcherInactivatedStyle
+                                              : switcherActivatedStyle,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Text(e.name)))
+                                      .toList());
                             }),
                         Container(
                           alignment: Alignment.center,
                           width: 240,
                           child: ValueListenableBuilder(
                               valueListenable: starGongTypeNotifier,
-                              builder: (ctx,hint,_){
+                              builder: (ctx, hint, _) {
                                 Lunar lunar = Lunar.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
-                                MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.asMonthToken;
+                                MonthToken monthToken =
+                                    DiZhi.getFromValue(monthTokenStr)!
+                                        .asMonthToken;
                                 return RichText(
-                                    text:TextSpan(
-                                      text: ConstantResourcesOfQiMen.gongTypeMapper[hint]!,
-                                      style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1),
-                                    )
-                                );
+                                    text: TextSpan(
+                                  text: ConstantResourcesOfQiMen
+                                      .gongTypeMapper[hint]!,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w300,
+                                      height: 1.1),
+                                ));
                               }),
                         )
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          alignment:Alignment.centerLeft,
+                          alignment: Alignment.centerLeft,
                           width: 240,
-                          child:Text("“门”与“宫”旺衰：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                          child: const Text(
+                            "“门”与“宫”旺衰：",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black87),
+                          ),
                         ),
                         ValueListenableBuilder(
                             valueListenable: doorGongTypeNotifier,
-                            builder: (ctx,gt,_){
+                            builder: (ctx, gt, _) {
                               return SlideSwitcher(
                                   onSelect: (index) {
-                                    doorGongTypeNotifier.value = GongTypeEnum.values[index];
+                                    doorGongTypeNotifier.value =
+                                        GongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
                                   containerHeight: 36,
                                   containerWight: 240,
                                   indents: 4,
-                                  containerColor:  Color(0xffe4e5eb),
-                                  slidersColors: [Color(0xfff7f5f7)],
-                                  containerBoxShadow:[
+                                  containerColor: const Color(0xffe4e5eb),
+                                  slidersColors: const [Color(0xfff7f5f7)],
+                                  containerBoxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.4),
                                     )
                                   ],
-                                  children: GongTypeEnum.values.map((e) =>  AnimatedDefaultTextStyle(
-                                      style: gt != e?switcherInactivatedStyle:switcherActivatedStyle,
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text(e.name))).toList()
-                              );
+                                  children: GongTypeEnum.values
+                                      .map((e) => AnimatedDefaultTextStyle(
+                                          style: gt != e
+                                              ? switcherInactivatedStyle
+                                              : switcherActivatedStyle,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Text(e.name)))
+                                      .toList());
                             }),
                         Container(
                           alignment: Alignment.center,
                           width: 240,
                           child: ValueListenableBuilder(
                               valueListenable: doorGongTypeNotifier,
-                              builder: (ctx,hint,_){
+                              builder: (ctx, hint, _) {
                                 Lunar lunar = Lunar.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 // MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.toMonthToken;
                                 return RichText(
-                                    text:TextSpan(
-                                      text: ConstantResourcesOfQiMen.gongTypeMapper[hint]!,
-                                      style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1),
-                                    )
-                                );
+                                    text: TextSpan(
+                                  text: ConstantResourcesOfQiMen
+                                      .gongTypeMapper[hint]!,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w300,
+                                      height: 1.1),
+                                ));
                               }),
                         )
                       ],
                     ),
-                    SizedBox(height: 12,),
+                    const SizedBox(
+                      height: 12,
+                    ),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(
-                          alignment:Alignment.centerLeft,
+                          alignment: Alignment.centerLeft,
                           width: 240,
-                          child:Text("“干”与“宫”旺衰：",style: TextStyle(fontSize: 16,fontWeight: FontWeight.w300,color: Colors.black87),),
+                          child: const Text(
+                            "“干”与“宫”旺衰：",
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w300,
+                                color: Colors.black87),
+                          ),
                         ),
                         ValueListenableBuilder(
                             valueListenable: ganGongTypeNotifier,
-                            builder: (ctx,gt,_){
+                            builder: (ctx, gt, _) {
                               return SlideSwitcher(
                                   onSelect: (index) {
-                                    ganGongTypeNotifier.value = GanGongTypeEnum.values[index];
+                                    ganGongTypeNotifier.value =
+                                        GanGongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
                                   containerHeight: 36,
                                   containerWight: 240,
                                   indents: 4,
-                                  containerColor:  Color(0xffe4e5eb),
-                                  slidersColors: [Color(0xfff7f5f7)],
-                                  containerBoxShadow:[
+                                  containerColor: const Color(0xffe4e5eb),
+                                  slidersColors: const [Color(0xfff7f5f7)],
+                                  containerBoxShadow: [
                                     BoxShadow(
                                       color: Colors.grey.withOpacity(0.4),
                                     )
                                   ],
-                                  children: GanGongTypeEnum.values.map((e) =>  AnimatedDefaultTextStyle(
-                                      style: gt != e?switcherInactivatedStyle:switcherActivatedStyle,
-                                      duration: Duration(milliseconds: 200),
-                                      child: Text(e.name))).toList()
-                              );
+                                  children: GanGongTypeEnum.values
+                                      .map((e) => AnimatedDefaultTextStyle(
+                                          style: gt != e
+                                              ? switcherInactivatedStyle
+                                              : switcherActivatedStyle,
+                                          duration:
+                                              const Duration(milliseconds: 200),
+                                          child: Text(e.name)))
+                                      .toList());
                             }),
                         Container(
                           alignment: Alignment.center,
                           width: 240,
                           child: ValueListenableBuilder(
                               valueListenable: ganGongTypeNotifier,
-                              builder: (ctx,hint,_){
+                              builder: (ctx, hint, _) {
                                 Lunar lunar = Lunar.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 // MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.toMonthToken;
                                 return RichText(
-                                    text:TextSpan(
-                                      text: ConstantResourcesOfQiMen.ganGongTypeMapper[hint]!,
-                                      style: TextStyle(fontSize: 12,color: Colors.black54,fontWeight: FontWeight.w300,height: 1.1),
-                                    )
-                                );
+                                    text: TextSpan(
+                                  text: ConstantResourcesOfQiMen
+                                      .ganGongTypeMapper[hint]!,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.black54,
+                                      fontWeight: FontWeight.w300,
+                                      height: 1.1),
+                                ));
                               }),
                         )
                       ],
                     ),
-
                   ],
-                )
+                )),
+            const SizedBox(
+              height: 16,
             ),
-            SizedBox(height: 16,),
             ValueListenableBuilder(
                 valueListenable: arrangeTypeNotifier,
-                builder: (ctx, arrangeType, _){
-                  if (arrangeType == ArrangeType.MANUALLY){
+                builder: (ctx, arrangeType, _) {
+                  if (arrangeType == ArrangeType.MANUALLY) {
                     return manuallyJu();
                   }
-                  return SizedBox(height: 48+32,);
+                  return const SizedBox(
+                    height: 48 + 32,
+                  );
                 })
-
           ],
-        )
-    );
+        ));
   }
-  Widget manuallyJu(){
+
+  Widget manuallyJu() {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       alignment: Alignment.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1597,182 +1952,219 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
                 decoration: CustomDropdownDecoration(
                     closedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
                     expandedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
-                    searchFieldDecoration: SearchFieldDecoration(
-                        prefixIcon: null
-                    )
-                ),
+                    searchFieldDecoration:
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "年干支",
                 // initialItem: "甲子",
-                items: JiaZi.listAll.map((e)=>e.name).toList(),
-                onChanged: (jiaZiStr){
-                  if (jiaZiStr !=null){
+                items: JiaZi.listAll.map((e) => e.name).toList(),
+                onChanged: (jiaZiStr) {
+                  if (jiaZiStr != null) {
                     yearJiaZi = JiaZi.getFromGanZhiValue(jiaZiStr);
-                  }else{
+                  } else {
                     yearJiaZi = null;
                   }
                 },
               ),
             ),
           ),
-          SizedBox(width: 12,),
+          const SizedBox(
+            width: 12,
+          ),
           ShakeMe(
             // 4. pass the GlobalKey as an argument
             key: monthGanZhiShakeKey,
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
                 decoration: CustomDropdownDecoration(
                     closedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
                     expandedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
-                    searchFieldDecoration: SearchFieldDecoration(
-                        prefixIcon: null
-                    )
-                ),
+                    searchFieldDecoration:
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "月干支",
                 // initialItem: "甲子",
-                items: JiaZi.listAll.map((e)=>e.name).toList(),
-                onChanged: (jiaZiStr){
-                  if (jiaZiStr !=null){
+                items: JiaZi.listAll.map((e) => e.name).toList(),
+                onChanged: (jiaZiStr) {
+                  if (jiaZiStr != null) {
                     monthJiaZi = JiaZi.getFromGanZhiValue(jiaZiStr);
-                  }else {
+                  } else {
                     monthJiaZi = null;
                   }
                 },
               ),
             ),
           ),
-          SizedBox(width: 12,),
+          const SizedBox(
+            width: 12,
+          ),
           ShakeMe(
             // 4. pass the GlobalKey as an argument
             key: dayGanZhiShakeKey,
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
                 decoration: CustomDropdownDecoration(
                     closedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
                     expandedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
-                    searchFieldDecoration: SearchFieldDecoration(
-                        prefixIcon: null
-                    )
-                ),
+                    searchFieldDecoration:
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "日干支",
                 // initialItem: "甲子",
-                items: JiaZi.listAll.map((e)=>e.name).toList(),
-                onChanged: (jiaZiStr){
-                  if (jiaZiStr !=null){
+                items: JiaZi.listAll.map((e) => e.name).toList(),
+                onChanged: (jiaZiStr) {
+                  if (jiaZiStr != null) {
                     dayJiaZi = JiaZi.getFromGanZhiValue(jiaZiStr);
-                  }else {
+                  } else {
                     dayJiaZi = null;
                   }
                 },
               ),
             ),
           ),
-          SizedBox(width: 12,),
+          const SizedBox(
+            width: 12,
+          ),
           ShakeMe(
             // 4. pass the GlobalKey as an argument
             key: timeGanZhiShakeKey,
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
                 decoration: CustomDropdownDecoration(
                     closedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
                     expandedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
-                    searchFieldDecoration: SearchFieldDecoration(
-                        prefixIcon: null
-                    )
-                ),
+                    searchFieldDecoration:
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "时干支",
                 // initialItem: "甲子",
-                items: JiaZi.listAll.map((e)=>e.name).toList(),
-                onChanged: (jiaZiStr){
-                  if (jiaZiStr !=null){
+                items: JiaZi.listAll.map((e) => e.name).toList(),
+                onChanged: (jiaZiStr) {
+                  if (jiaZiStr != null) {
                     timeJiaZi = JiaZi.getFromGanZhiValue(jiaZiStr);
-                  }else {
+                  } else {
                     timeJiaZi = null;
                   }
-
                 },
               ),
             ),
           ),
-          SizedBox(width: 12,),
+          const SizedBox(
+            width: 12,
+          ),
           ShakeMe(
             // 4. pass the GlobalKey as an argument
             key: dunGanZhiShakeKey,
             // 5. configure the animation parameters
             shakeCount: 3,
             shakeOffset: 10,
-            shakeDuration: Duration(milliseconds: 500),
-            child: Container(
+            shakeDuration: const Duration(milliseconds: 500),
+            child: SizedBox(
               width: 128,
               height: 48,
               child: CustomDropdown<String>.search(
                 decoration: CustomDropdownDecoration(
                     closedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
                     expandedShadow: [
-                      BoxShadow(color: Colors.grey.withOpacity(0.4), spreadRadius: 1, blurRadius: 2)
+                      BoxShadow(
+                          color: Colors.grey.withOpacity(0.4),
+                          spreadRadius: 1,
+                          blurRadius: 2)
                     ],
-                    searchFieldDecoration: SearchFieldDecoration(
-                        prefixIcon: null
-                    )
-                ),
+                    searchFieldDecoration:
+                        const SearchFieldDecoration(prefixIcon: null)),
 
                 hintText: "阴阳遁局",
                 // initialItem: "甲子",
-                items: List.generate(9, (i)=>"阳遁${ConstResourcesMapper.chineseNumberMapper[i+1]!}局")..addAll(List.generate(9, (i)=>"阴遁${ConstResourcesMapper.chineseNumberMapper[i+1]!}局")),
-                onChanged: (jiaZiStr){
-                  if (jiaZiStr !=null){
+                items: List.generate(
+                    9,
+                    (i) =>
+                        "阳遁${ConstResourcesMapper.chineseNumberMapper[i + 1]!}局")
+                  ..addAll(List.generate(
+                      9,
+                      (i) =>
+                          "阴遁${ConstResourcesMapper.chineseNumberMapper[i + 1]!}局")),
+                onChanged: (jiaZiStr) {
+                  if (jiaZiStr != null) {
                     List<String> splitedList = jiaZiStr.split("");
                     String numStr = splitedList[2];
-                    yinYangDun = splitedList.first == "阳" ? YinYang.YANG : YinYang.YIN;
-                    juNumber = ConstResourcesMapper.chineseNumberMapper.entries.firstWhere((e)=>e.value==numStr).key;
-                  }else{
+                    yinYangDun =
+                        splitedList.first == "阳" ? YinYang.YANG : YinYang.YIN;
+                    juNumber = ConstResourcesMapper.chineseNumberMapper.entries
+                        .firstWhere((e) => e.value == numStr)
+                        .key;
+                  } else {
                     yinYangDun = null;
                     juNumber = null;
                   }
@@ -1785,7 +2177,8 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
       ),
     );
   }
-  Widget selectDateTimeButton(){
+
+  Widget selectDateTimeButton() {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -1803,9 +2196,11 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
             }
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white, // Background coloronPrimary: Colors.white, // Text color
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
-            textStyle: TextStyle(fontSize: 18), // Text style
+            backgroundColor: Colors
+                .white, // Background coloronPrimary: Colors.white, // Text color
+            padding: const EdgeInsets.symmetric(
+                horizontal: 20, vertical: 15), // Padding
+            textStyle: const TextStyle(fontSize: 18), // Text style
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10), // Rounded corners
             ),
@@ -1816,15 +2211,21 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
             children: [
               ValueListenableBuilder(
                   valueListenable: selectedDateTimeNotifier,
-                  builder: (ctx,dateTime,_){
+                  builder: (ctx, dateTime, _) {
                     DateFormat dateFormat = DateFormat("yyyy/MM/dd HH:mm");
-                return Text(dateFormat.format(dateTime??DateTime.now()),style: TextStyle(fontSize: 16),);
-              }),
-              Text('选择时间',style: TextStyle(fontSize: 12),)
+                    return Text(
+                      dateFormat.format(dateTime ?? DateTime.now()),
+                      style: const TextStyle(fontSize: 16),
+                    );
+                  }),
+              const Text(
+                '选择时间',
+                style: TextStyle(fontSize: 12),
+              )
             ],
           ),
         ),
-        SizedBox(width: 24),
+        const SizedBox(width: 24),
         ElevatedButton(
           onPressed: () async {
             if (dateTimeValueNotifier.value != null) {
@@ -1841,7 +2242,7 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                   toastAlignment: Alignment.topCenter,
                 ),
               );
-            }else{
+            } else {
               // dateTimeValueNotifier.value = DateTime.now();
               // selectedDateTime = DateTime.now();
               selectedDateTimeNotifier.value = DateTime.now();
@@ -1849,275 +2250,349 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           },
           style: ElevatedButton.styleFrom(
             // backgroundColor: Colors.green, // Background coloronPrimary: Colors.white, // Text color
-            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15), // Padding
-            textStyle: TextStyle(fontSize: 18), // Text style
+            padding: const EdgeInsets.symmetric(
+                horizontal: 20, vertical: 15), // Padding
+            textStyle: const TextStyle(fontSize: 18), // Text style
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(10), // Rounded corners
             ),
           ),
-          child: Text('现在'),
+          child: const Text('现在'),
         ),
       ],
     );
   }
 
-  Widget buildNewExplainList(TenGanKeYing tenGanKeYing,TenGanKeYingGeJu geJu){
+  Widget buildNewExplainList(TenGanKeYing tenGanKeYing, TenGanKeYingGeJu geJu) {
     return ValueListenableBuilder(
         valueListenable: widthNotifier,
-        builder: (ctx,width,_){
+        builder: (ctx, width, _) {
           return AnimatedContainer(
               alignment: Alignment.topCenter,
               height: 640,
-              duration: Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 400),
               width: width,
               child: SingleChildScrollView(
                 child: Column(
                   children: [
-                    buildTenGanKeYingGeJuDetail(geJu,width),
-                    if (tenGanKeYing.yiXiang != null || tenGanKeYing.xiangList != null || tenGanKeYing.thingOnLocation != null)
+                    buildTenGanKeYingGeJuDetail(geJu, width),
+                    if (tenGanKeYing.yiXiang != null ||
+                        tenGanKeYing.xiangList != null ||
+                        tenGanKeYing.thingOnLocation != null)
                       AnimatedContainer(
-                        duration: Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 400),
                         width: width,
-                        padding: EdgeInsets.all(12),
-                        margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                         decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(16)),
                             boxShadow: [
-                              BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 5,spreadRadius: 5),
-                            ]
-                        ),
-                        child:  Column(
+                              BoxShadow(
+                                  color: Colors.grey.withOpacity(.2),
+                                  blurRadius: 5,
+                                  spreadRadius: 5),
+                            ]),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("意象",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
-                            Divider(height: 8,color: Colors.grey,),
-                            tenGanKeYing.yiXiang != null ?Text(tenGanKeYing.yiXiang!,style: TextStyle(fontSize: 14)):SizedBox(),
-                            tenGanKeYing.xiangList != null && tenGanKeYing.xiangList!.isNotEmpty ? Text(tenGanKeYing.xiangList!.join("、"),style: TextStyle(fontSize: 14)):SizedBox(),
-                            tenGanKeYing.thingOnLocation != null ? Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Container(
-                                    alignment: Alignment.topRight,
-                                    child: Text("方位有：",style: TextStyle(fontWeight: FontWeight.w600),)),
-                                SizedBox(height: 8,),
-                                Expanded(
-                                    flex: 7,
-                                    child: Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(tenGanKeYing.thingOnLocation!))
-                                ),
-                              ],
-                            ):SizedBox()
+                            const Text(
+                              "意象",
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const Divider(
+                              height: 8,
+                              color: Colors.grey,
+                            ),
+                            tenGanKeYing.yiXiang != null
+                                ? Text(tenGanKeYing.yiXiang!,
+                                    style: const TextStyle(fontSize: 14))
+                                : const SizedBox(),
+                            tenGanKeYing.xiangList != null &&
+                                    tenGanKeYing.xiangList!.isNotEmpty
+                                ? Text(tenGanKeYing.xiangList!.join("、"),
+                                    style: const TextStyle(fontSize: 14))
+                                : const SizedBox(),
+                            tenGanKeYing.thingOnLocation != null
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                          alignment: Alignment.topRight,
+                                          child: const Text(
+                                            "方位有：",
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.w600),
+                                          )),
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      Expanded(
+                                          flex: 7,
+                                          child: Container(
+                                              alignment: Alignment.centerLeft,
+                                              child: Text(tenGanKeYing
+                                                  .thingOnLocation!))),
+                                    ],
+                                  )
+                                : const SizedBox()
                           ],
                         ),
                       )
                           .animate()
                           .moveX(
-                          delay: Duration(milliseconds: 1000),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),
-                          begin: -128,end: 0)
+                              delay: const Duration(milliseconds: 1000),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: -128,
+                              end: 0)
                           .fadeIn(
-                          delay: Duration(milliseconds: 800),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),begin: 0),
-                    if (tenGanKeYing.others != null && tenGanKeYing.others!.isNotEmpty)
+                              delay: const Duration(milliseconds: 800),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: 0),
+                    if (tenGanKeYing.others != null &&
+                        tenGanKeYing.others!.isNotEmpty)
                       AnimatedContainer(
-                          duration: Duration(milliseconds: 400),
-                          width: width,
-                          padding: EdgeInsets.all(12),
-                          margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.all(Radius.circular(16)),
-
-                              boxShadow: [
-                                BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 5,spreadRadius: 5),
-                              ]
-                          ),
-                          child: buildBuWen(tenGanKeYing.others!)
-                      )
+                              duration: const Duration(milliseconds: 400),
+                              width: width,
+                              padding: const EdgeInsets.all(12),
+                              margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(16)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.grey.withOpacity(.2),
+                                        blurRadius: 5,
+                                        spreadRadius: 5),
+                                  ]),
+                              child: buildBuWen(tenGanKeYing.others!))
                           .animate()
                           .moveX(
-                          delay: Duration(milliseconds: 1200),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),
-                          begin: -128,end: 0)
+                              delay: const Duration(milliseconds: 1200),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: -128,
+                              end: 0)
                           .fadeIn(
-                          delay: Duration(milliseconds: 800),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),begin: 0),
+                              delay: const Duration(milliseconds: 800),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: 0),
                     if (tenGanKeYing.zhu != null)
                       AnimatedContainer(
-                        duration: Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 400),
                         width: width,
-                        padding: EdgeInsets.all(12),
-                        margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                         decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.all(Radius.circular(16)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(16)),
                             boxShadow: [
-                              BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 5,spreadRadius: 5),
-                            ]
-                        ),
+                              BoxShadow(
+                                  color: Colors.grey.withOpacity(.2),
+                                  blurRadius: 5,
+                                  spreadRadius: 5),
+                            ]),
                         child: tenGanKeYingZhuJie(tenGanKeYing.zhu!),
                       )
                           .animate()
                           .moveX(
-                          delay: Duration(milliseconds: 1400),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),
-                          begin: -128,end: 0)
+                              delay: const Duration(milliseconds: 1400),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: -128,
+                              end: 0)
                           .fadeIn(
-                          delay: Duration(milliseconds: 800),
-                          curve: Curves.easeInOutQuint,
-                          duration: Duration(milliseconds: 400),begin: 0),
+                              delay: const Duration(milliseconds: 800),
+                              curve: Curves.easeInOutQuint,
+                              duration: const Duration(milliseconds: 400),
+                              begin: 0),
                   ],
                 ),
-              )
-          );
-        }
-    );
-
+              ));
+        });
   }
 
-  Widget buildExplainList2(HouTianGua gongGua,EachGong gong,TianGan xunShouGan,EightDoorEnum door){
+  Widget buildExplainList2(HouTianGua gongGua, EachGong gong,
+      TianGan xunShouGan, EightDoorEnum door) {
     return ValueListenableBuilder(
         valueListenable: widthNotifier,
-        builder: (ctx,width,_){
+        builder: (ctx, width, _) {
           return AnimatedContainer(
               alignment: Alignment.topCenter,
-              duration: Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 400),
               width: width,
               height: 640,
-              child:SingleChildScrollView(
+              child: SingleChildScrollView(
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-
-                        if (shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan == gong.tianPan
-                            && shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan == gong.diPan )
-                          FutureBuilder(
-                            future: loadTenGanKeyYing(context,TianGan.JIA,TianGan.JIA),
-                            builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                              if (snapshot.hasData){
-                                if (snapshot.data != null){
-                                  return buildTenGanKeYingGeJuDetail(geJuMapper[gong.gongGua]!.tianDiPanGanGeJu!,width);
-                                }else{
-                                  return Center(child: Text("未找到"));
-                                }
-                              }
-                              else{
-                                return Center(child: Text("加载中..."));
-                              }
-                            },
-                          ),
-                        if (shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan == gong.tianPan
-                            && shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan != gong.diPan )
-                          FutureBuilder(
-                            future: loadTenGanKeyYing(context,TianGan.JIA,gong.diPan),
-                            builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                              if (snapshot.hasData){
-                                if (snapshot.data != null){
-                                  return buildTenGanKeYingGeJuDetail(geJuMapper[gong.gongGua]!.tianDunJiaGeJu!,width);
-                                }else{
-                                  return Center(child: Text("未找到"));
-                                }
-                              }
-                              else{
-                                return Center(child: Text("加载中..."));
-                              }
-                            },
-                          ),
-                        if (shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan != gong.tianPan
-                            && shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan == gong.diPan )
-                          FutureBuilder(
-                            future: loadTenGanKeyYing(context,gong.tianPan,TianGan.JIA),
-                            builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                              if (snapshot.hasData){
-                                if (snapshot.data != null){
-                                  return buildTenGanKeYingGeJuDetail(geJuMapper[gong.gongGua]!.diDunJiaGeJu!,width);
-                                }else{
-                                  return Center(child: Text("未找到"));
-                                }
-                              }
-                              else{
-                                return Center(child: Text("加载中..."));
-                              }
-                            },
-                          ),
-                        if (gong.tianPanJiGan != null && gong.diPanJiGan == null && gong.tianPanJiGan == shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan)
-                          FutureBuilder(
-                            future: loadTenGanKeyYing(context,TianGan.JIA,gong.diPan),
-                            builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                              if (snapshot.hasData){
-                                if (snapshot.data != null){
-                                  return buildTenGanKeYingGeJuDetail(geJuMapper[gong.gongGua]!.tianJiGanJiaGeJu!,width);
-                                }else{
-                                  return Center(child: Text("未找到"));
-                                }
-                              }
-                              else{
-                                return Center(child: Text("加载中..."));
-                              }
-                            },
-                          ),
-                        if (gong.tianPanJiGan == null && gong.diPanJiGan != null && gong.diPanJiGan == shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan)
-                          FutureBuilder(
-                            future: loadTenGanKeyYing(context,gong.tianPan,TianGan.JIA),
-                            builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                              if (snapshot.hasData){
-                                if (snapshot.data != null){
-                                  return buildTenGanKeYingGeJuDetail(geJuMapper[gong.gongGua]!.diJiGanJiaGeJu!,width);
-                                }else{
-                                  return Center(child: Text("未找到"));
-                                }
-                              }
-                              else{
-                                return Center(child: Text("加载中..."));
-                              }
-                            },
-                          ),
-
-
-                      ]
-                  )
-              )
-          );
+                    if (shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan ==
+                            gong.tianPan &&
+                        shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan ==
+                            gong.diPan)
+                      FutureBuilder(
+                        future: loadTenGanKeyYing(
+                            context, TianGan.JIA, TianGan.JIA),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              return buildTenGanKeYingGeJuDetail(
+                                  geJuMapper[gong.gongGua]!.tianDiPanGanGeJu!,
+                                  width);
+                            } else {
+                              return const Center(child: Text("未找到"));
+                            }
+                          } else {
+                            return const Center(child: Text("加载中..."));
+                          }
+                        },
+                      ),
+                    if (shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan ==
+                            gong.tianPan &&
+                        shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan !=
+                            gong.diPan)
+                      FutureBuilder(
+                        future:
+                            loadTenGanKeyYing(context, TianGan.JIA, gong.diPan),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              return buildTenGanKeYingGeJuDetail(
+                                  geJuMapper[gong.gongGua]!.tianDunJiaGeJu!,
+                                  width);
+                            } else {
+                              return const Center(child: Text("未找到"));
+                            }
+                          } else {
+                            return const Center(child: Text("加载中..."));
+                          }
+                        },
+                      ),
+                    if (shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan !=
+                            gong.tianPan &&
+                        shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan ==
+                            gong.diPan)
+                      FutureBuilder(
+                        future: loadTenGanKeyYing(
+                            context, gong.tianPan, TianGan.JIA),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              return buildTenGanKeYingGeJuDetail(
+                                  geJuMapper[gong.gongGua]!.diDunJiaGeJu!,
+                                  width);
+                            } else {
+                              return const Center(child: Text("未找到"));
+                            }
+                          } else {
+                            return const Center(child: Text("加载中..."));
+                          }
+                        },
+                      ),
+                    if (gong.tianPanJiGan != null &&
+                        gong.diPanJiGan == null &&
+                        gong.tianPanJiGan ==
+                            shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan)
+                      FutureBuilder(
+                        future:
+                            loadTenGanKeyYing(context, TianGan.JIA, gong.diPan),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              return buildTenGanKeYingGeJuDetail(
+                                  geJuMapper[gong.gongGua]!.tianJiGanJiaGeJu!,
+                                  width);
+                            } else {
+                              return const Center(child: Text("未找到"));
+                            }
+                          } else {
+                            return const Center(child: Text("加载中..."));
+                          }
+                        },
+                      ),
+                    if (gong.tianPanJiGan == null &&
+                        gong.diPanJiGan != null &&
+                        gong.diPanJiGan ==
+                            shiJiaZhuanPanQiMenValueNotifier
+                                .value!.xunHeaderTianGan)
+                      FutureBuilder(
+                        future: loadTenGanKeyYing(
+                            context, gong.tianPan, TianGan.JIA),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            if (snapshot.data != null) {
+                              return buildTenGanKeYingGeJuDetail(
+                                  geJuMapper[gong.gongGua]!.diJiGanJiaGeJu!,
+                                  width);
+                            } else {
+                              return const Center(child: Text("未找到"));
+                            }
+                          } else {
+                            return const Center(child: Text("加载中..."));
+                          }
+                        },
+                      ),
+                  ])));
         });
   }
-  Widget buildTenGanKeYingGeJuDetail(TenGanKeYingGeJu geJu, double width){
+
+  Widget buildTenGanKeYingGeJuDetail(TenGanKeYingGeJu geJu, double width) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 400),
       width: width,
-      padding: EdgeInsets.all(12),
-      margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
           boxShadow: [
-            BoxShadow(color: Colors.grey.withOpacity(.2),blurRadius: 5,spreadRadius: 5),
-          ]
-      ),
+            BoxShadow(
+                color: Colors.grey.withOpacity(.2),
+                blurRadius: 5,
+                spreadRadius: 5),
+          ]),
       child: TenGanKeYingGeJuDetail(geJu: geJu),
     )
         .animate()
         .moveX(
-        delay: Duration(milliseconds: 800),
-        curve: Curves.easeInOutQuint,
-        duration: Duration(milliseconds: 400),
-        begin: -128,end: 0)
+            delay: const Duration(milliseconds: 800),
+            curve: Curves.easeInOutQuint,
+            duration: const Duration(milliseconds: 400),
+            begin: -128,
+            end: 0)
         .fadeIn(
-        delay: Duration(milliseconds: 800),
-        curve: Curves.easeInOutQuint,
-        duration: Duration(milliseconds: 400),begin: 0);
+            delay: const Duration(milliseconds: 800),
+            curve: Curves.easeInOutQuint,
+            duration: const Duration(milliseconds: 400),
+            begin: 0);
   }
-  Widget buildExplainList(HouTianGua gongGua,TianGan tianPanGan,TianGan diPanGan, TianGan xunShouGan,EightDoorEnum door){
-    bool showJiaGan = {tianPanGan,diPanGan}.contains(xunShouGan);
+
+  Widget buildExplainList(HouTianGua gongGua, TianGan tianPanGan,
+      TianGan diPanGan, TianGan xunShouGan, EightDoorEnum door) {
+    bool showJiaGan = {tianPanGan, diPanGan}.contains(xunShouGan);
     double explainWidgetWidth = 320;
     return Container(
       alignment: Alignment.topCenter,
@@ -2130,144 +2605,169 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           children: [
             Container(
               width: explainWidgetWidth,
-              margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+              margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
               child: FutureBuilder(
-                future:loadEightDoorGanKeYing(door,tianPanGan),
-                builder: (BuildContext context, AsyncSnapshot<String?> snapshot) {
-                  if (snapshot.hasData){
-                    if (snapshot.data == null){
+                future: loadEightDoorGanKeYing(door, tianPanGan),
+                builder:
+                    (BuildContext context, AsyncSnapshot<String?> snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data == null) {
                       return Container();
                     }
                     return IntrinsicHeight(
                       child: Container(
-                        padding: EdgeInsets.all(12),
+                        padding: const EdgeInsets.all(12),
                         decoration: cardDecoration,
-                        child: buildDoorGan(gongGua,tianPanGan,door,snapshot.data),
+                        child: buildDoorGan(
+                            gongGua, tianPanGan, door, snapshot.data),
                       ),
                     );
-                  }
-                  else{
-                    return Text("加载中...");
+                  } else {
+                    return const Text("加载中...");
                   }
                 },
               ),
             )
                 .animate()
                 .moveY(
-                delay: Duration(milliseconds: 800),
-                curve: Curves.easeInOutQuint,
-                duration: Duration(milliseconds: 400),
-                begin: -128,end: 0)
+                    delay: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOutQuint,
+                    duration: const Duration(milliseconds: 400),
+                    begin: -128,
+                    end: 0)
                 .fadeIn(
-                delay: Duration(milliseconds: 800),
-                curve: Curves.easeInOutQuint,
-                duration: Duration(milliseconds: 400),begin: 0),
-            Container(
+                    delay: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOutQuint,
+                    duration: const Duration(milliseconds: 400),
+                    begin: 0),
+            SizedBox(
               width: explainWidgetWidth,
               child: FutureBuilder(
                 future: Future.wait([
                   loadThreeQiRuGong(gongGua, tianPanGan),
                   loadTianPanGanRuGong(gongGua, tianPanGan),
                 ]),
-                builder: (BuildContext context, AsyncSnapshot<List<dynamic>?> snapshot) {
-                  if (snapshot.hasData){
-                    if (snapshot.data?[0] == null && snapshot.data?[1] == null){
+                builder: (BuildContext context,
+                    AsyncSnapshot<List<dynamic>?> snapshot) {
+                  if (snapshot.hasData) {
+                    if (snapshot.data?[0] == null &&
+                        snapshot.data?[1] == null) {
                       return Container();
                     }
                     return IntrinsicHeight(
                       child: Container(
                         width: explainWidgetWidth,
-                        padding: EdgeInsets.all(12),
-                        margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
                         decoration: cardDecoration,
-                        child: buildQiYiRuGong(gongGua,tianPanGan,snapshot.data?[0],snapshot.data?[1]),
+                        child: buildQiYiRuGong(gongGua, tianPanGan,
+                            snapshot.data?[0], snapshot.data?[1]),
                       ),
                     );
-                  }
-                  else{
-                    return Text("加载中...");
+                  } else {
+                    return const Text("加载中...");
                   }
                 },
               ),
             )
                 .animate()
                 .moveX(
-                delay: Duration(milliseconds: 800),
-                curve: Curves.easeInOutQuint,
-                duration: Duration(milliseconds: 400),
-                begin: 128,end: 0)
+                    delay: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOutQuint,
+                    duration: const Duration(milliseconds: 400),
+                    begin: 128,
+                    end: 0)
                 .fadeIn(
-                delay: Duration(milliseconds: 800),
-                curve: Curves.easeInOutQuint,
-                duration: Duration(milliseconds: 400),begin: 0),
+                    delay: const Duration(milliseconds: 800),
+                    curve: Curves.easeInOutQuint,
+                    duration: const Duration(milliseconds: 400),
+                    begin: 0),
             if (showJiaGan)
               IntrinsicHeight(
                 child: Container(
-                  width: explainWidgetWidth,
-                  padding: EdgeInsets.all(12),
-                  margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  decoration: cardDecoration,
-                  child: FutureBuilder(
-                    future: loadTenGanKeyYing(context,xunShouGan == tianPanGan?TianGan.JIA:tianPanGan,xunShouGan == diPanGan?TianGan.JIA:diPanGan),
-                    builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                      if (snapshot.hasData){
-                        return buildTenGanKeYing(gongGua,xunShouGan == tianPanGan?TianGan.JIA:tianPanGan,xunShouGan == diPanGan?TianGan.JIA:diPanGan,snapshot.data!);
-                      }
-                      else{
-                        return Text("加载中...");
-                      }
-                    },
-                  )
-              ).animate()
-                  .moveX(
-                  delay: Duration(milliseconds: 800),
-                  curve: Curves.easeInOutQuint,
-                  duration: Duration(milliseconds: 400),
-                  begin: -128,end: 0)
-                  .fadeIn(
-                  curve: Curves.easeInOutQuint,
-                  delay: Duration(milliseconds: 800),
-                  duration: Duration(milliseconds: 400),begin: 0),
-            ),
-
+                        width: explainWidgetWidth,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                        decoration: cardDecoration,
+                        child: FutureBuilder(
+                          future: loadTenGanKeyYing(
+                              context,
+                              xunShouGan == tianPanGan
+                                  ? TianGan.JIA
+                                  : tianPanGan,
+                              xunShouGan == diPanGan ? TianGan.JIA : diPanGan),
+                          builder: (BuildContext context,
+                              AsyncSnapshot<TenGanKeYing?> snapshot) {
+                            if (snapshot.hasData) {
+                              return buildTenGanKeYing(
+                                  gongGua,
+                                  xunShouGan == tianPanGan
+                                      ? TianGan.JIA
+                                      : tianPanGan,
+                                  xunShouGan == diPanGan
+                                      ? TianGan.JIA
+                                      : diPanGan,
+                                  snapshot.data!);
+                            } else {
+                              return const Text("加载中...");
+                            }
+                          },
+                        ))
+                    .animate()
+                    .moveX(
+                        delay: const Duration(milliseconds: 800),
+                        curve: Curves.easeInOutQuint,
+                        duration: const Duration(milliseconds: 400),
+                        begin: -128,
+                        end: 0)
+                    .fadeIn(
+                        curve: Curves.easeInOutQuint,
+                        delay: const Duration(milliseconds: 800),
+                        duration: const Duration(milliseconds: 400),
+                        begin: 0),
+              ),
             IntrinsicHeight(
               child: Container(
-                  width: explainWidgetWidth,
-                  padding: EdgeInsets.all(12),
-                  margin: EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  decoration: cardDecoration,
-                  child: FutureBuilder(
-                    future: loadTenGanKeyYing(context,tianPanGan,diPanGan),
-                    builder: (BuildContext context, AsyncSnapshot<TenGanKeYing?> snapshot) {
-                      if (snapshot.hasData){
-                        return buildTenGanKeYing(gongGua,tianPanGan,diPanGan,snapshot.data!);
-                      }
-                      else{
-                        return Text("加载中...");
-                      }
-                    },
-                  )
-              )
+                      width: explainWidgetWidth,
+                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                      decoration: cardDecoration,
+                      child: FutureBuilder(
+                        future:
+                            loadTenGanKeyYing(context, tianPanGan, diPanGan),
+                        builder: (BuildContext context,
+                            AsyncSnapshot<TenGanKeYing?> snapshot) {
+                          if (snapshot.hasData) {
+                            return buildTenGanKeYing(
+                                gongGua, tianPanGan, diPanGan, snapshot.data!);
+                          } else {
+                            return const Text("加载中...");
+                          }
+                        },
+                      ))
                   .animate()
                   .moveX(
-                  delay: Duration(milliseconds: 1000),
-                  curve: Curves.easeInOutQuint,
-                  duration: Duration(milliseconds: 400),
-                  begin: -128,end: 0)
+                      delay: const Duration(milliseconds: 1000),
+                      curve: Curves.easeInOutQuint,
+                      duration: const Duration(milliseconds: 400),
+                      begin: -128,
+                      end: 0)
                   .fadeIn(
-                  curve: Curves.easeInOutQuint,
-                  delay: Duration(milliseconds: 1000),
-                  duration: Duration(milliseconds: 400),begin: 0),
+                      curve: Curves.easeInOutQuint,
+                      delay: const Duration(milliseconds: 1000),
+                      duration: const Duration(milliseconds: 400),
+                      begin: 0),
             ),
-            SizedBox(height: 24,)
+            const SizedBox(
+              height: 24,
+            )
           ],
         ),
       ),
     );
   }
 
-
-  Widget buildEightDoorKeYing(Map<YinYang,EightDoorKeYing> mapper){
+  Widget buildEightDoorKeYing(Map<YinYang, EightDoorKeYing> mapper) {
     EightDoorKeYing yinKeYing = mapper[YinYang.YIN]!;
     EightDoorKeYing yangKeYing = mapper[YinYang.YANG]!;
     return Column(
@@ -2275,40 +2775,53 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
-            text: TextSpan(
-                style: eightDoorTextStyle,
-                children: [
-                  TextSpan(text: yinKeYing.door.name,style: TextStyle(color:ConstantUiResourcesOfQiMen.eightDoorColorMapper[yinKeYing.door]!)),
-                  TextSpan(text:"遇",style: TextStyle(color: Colors.grey,shadows: [],fontSize: 18)),
-                  TextSpan(text: yinKeYing.fixDoor.name,style: TextStyle(color:ConstantUiResourcesOfQiMen.eightDoorColorMapper[yinKeYing.fixDoor]!))
-                ]
-            ),
+            text: TextSpan(style: eightDoorTextStyle, children: [
+              TextSpan(
+                  text: yinKeYing.door.name,
+                  style: TextStyle(
+                      color: ConstantUiResourcesOfQiMen
+                          .eightDoorColorMapper[yinKeYing.door]!)),
+              const TextSpan(
+                  text: "遇",
+                  style:
+                      TextStyle(color: Colors.grey, shadows: [], fontSize: 18)),
+              TextSpan(
+                  text: yinKeYing.fixDoor.name,
+                  style: TextStyle(
+                      color: ConstantUiResourcesOfQiMen
+                          .eightDoorColorMapper[yinKeYing.fixDoor]!))
+            ]),
           ),
-          Divider(),
+          const Divider(),
           RichText(
             text: TextSpan(
-                style: TextStyle(color: Colors.black54,fontSize: 14,shadows: []),
+                style: const TextStyle(
+                    color: Colors.black54, fontSize: 14, shadows: []),
                 children: [
-                  TextSpan(text:"静应：",style: TextStyle(color: Colors.black87,fontSize: 16)),
+                  const TextSpan(
+                      text: "静应：",
+                      style: TextStyle(color: Colors.black87, fontSize: 16)),
                   TextSpan(text: yinKeYing.description)
-                ]
-            ),
+                ]),
           ),
-          SizedBox(height: 8,),
+          const SizedBox(
+            height: 8,
+          ),
           RichText(
             text: TextSpan(
-                style: TextStyle(color: Colors.black54,fontSize: 14,shadows: []),
+                style: const TextStyle(
+                    color: Colors.black54, fontSize: 14, shadows: []),
                 children: [
-                  TextSpan(text:"动应：",style: TextStyle(color: Colors.black87,fontSize: 16)),
+                  const TextSpan(
+                      text: "动应：",
+                      style: TextStyle(color: Colors.black87, fontSize: 16)),
                   TextSpan(text: yangKeYing.description)
-                ]
-            ),
+                ]),
           ),
-        ]
-    );
+        ]);
   }
 
-  Widget buildDoorStarKeYing(DoorStarKeYing doorStarKeYing){
+  Widget buildDoorStarKeYing(DoorStarKeYing doorStarKeYing) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2321,82 +2834,114 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RichText(
-                    text: TextSpan(
-                        style: tianGanTextStyle,
-                        children: [
-                          TextSpan(text: doorStarKeYing.star.name,style: nineStarTextStyle.copyWith(color: ConstantUiResourcesOfQiMen.nineStarsColorMapper[doorStarKeYing.star]!)),
-                          TextSpan(text:"遇",style: TextStyle(color: Colors.grey,shadows: [],fontSize: 18)),
-                          TextSpan(text: doorStarKeYing.door.name,style: eightDoorTextStyle.copyWith(color:ConstantUiResourcesOfQiMen.eightDoorColorMapper[doorStarKeYing.door]!))
-                        ]
-                    ),
+                    text: TextSpan(style: tianGanTextStyle, children: [
+                      TextSpan(
+                          text: doorStarKeYing.star.name,
+                          style: nineStarTextStyle.copyWith(
+                              color: ConstantUiResourcesOfQiMen
+                                  .nineStarsColorMapper[doorStarKeYing.star]!)),
+                      const TextSpan(
+                          text: "遇",
+                          style: TextStyle(
+                              color: Colors.grey, shadows: [], fontSize: 18)),
+                      TextSpan(
+                          text: doorStarKeYing.door.name,
+                          style: eightDoorTextStyle.copyWith(
+                              color: ConstantUiResourcesOfQiMen
+                                  .eightDoorColorMapper[doorStarKeYing.door]!))
+                    ]),
                   ),
                   Container(
                     width: 180,
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey,width: 1))
-                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: const BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey, width: 1))),
                   ),
-                  Text(doorStarKeYing.description,style: TextStyle(fontSize: 14,height: 1.0),),
+                  Text(
+                    doorStarKeYing.description,
+                    style: const TextStyle(fontSize: 14, height: 1.0),
+                  ),
                 ],
               ),
-              Expanded(child: SizedBox()),
+              const Expanded(child: SizedBox()),
               // Text(doorStarKeYing.jiXiong.name,style: TextStyle(fontSize: 14,height: 1.0),),
               buildJiXiongYinZhang(doorStarKeYing.jiXiong)
             ],
           ),
-        ]
-    );
+        ]);
   }
 
-  Widget buildJiXiongYinZhang(JiXiongEnum jixiong){
-    return Stack(
-      children: [
-        SizedBox(
-          width: 28,
-          height: 42,
-          child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                  ConstResourcesMapper.jiXiongColorMapper[jixiong]!,
-                  BlendMode.srcIn),
-              child: Image.asset("assets/icons/ji_xiong_yin_zhang.png",width: 32,height: 32,)),
-        ),
-        Positioned(
+  Widget buildJiXiongYinZhang(JiXiongEnum jixiong) {
+    return Stack(children: [
+      SizedBox(
+        width: 28,
+        height: 42,
+        child: ColorFiltered(
+            colorFilter: ColorFilter.mode(
+                ConstResourcesMapper.jiXiongColorMapper[jixiong]!,
+                BlendMode.srcIn),
+            child: Image.asset(
+              "assets/icons/ji_xiong_yin_zhang.png",
+              width: 32,
+              height: 32,
+            )),
+      ),
+      Positioned(
         top: 0,
         right: 0,
-          child: Text(jixiong.name.split("").first,style: GoogleFonts.maShanZheng(color: Colors.white,fontSize: 22,height: 1),),
+        child: Text(
+          jixiong.name.split("").first,
+          style: GoogleFonts.maShanZheng(
+              color: Colors.white, fontSize: 22, height: 1),
         ),
-        Positioned(
-          bottom: 0,
-          left: 0,
-          child: Text(jixiong.name.split("").last,style: GoogleFonts.maShanZheng(color: Colors.white,fontSize: 22,height: 1),),
+      ),
+      Positioned(
+        bottom: 0,
+        left: 0,
+        child: Text(
+          jixiong.name.split("").last,
+          style: GoogleFonts.maShanZheng(
+              color: Colors.white, fontSize: 22, height: 1),
         ),
-      ]
-    );
+      ),
+    ]);
   }
-  Widget buildDoorGan(HouTianGua gongGua,TianGan tianPanGan,EightDoorEnum door,String? str){
 
+  Widget buildDoorGan(
+      HouTianGua gongGua, TianGan tianPanGan, EightDoorEnum door, String? str) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RichText(
-            text: TextSpan(
-                style: tianGanTextStyle,
-                children: [
-                  TextSpan(text: tianPanGan.name,style: tianGanTextStyle.copyWith(color:getTianGanColor(tianPanGan))),
-                  TextSpan(text:"入",style: TextStyle(color: Colors.grey)),
-                  TextSpan(text: door.name,style: eightDoorTextStyle.copyWith(color:ConstantUiResourcesOfQiMen.eightDoorColorMapper[door]!))
-                ]
-            ),
+            text: TextSpan(style: tianGanTextStyle, children: [
+              TextSpan(
+                  text: tianPanGan.name,
+                  style: tianGanTextStyle.copyWith(
+                      color: getTianGanColor(tianPanGan))),
+              const TextSpan(text: "入", style: TextStyle(color: Colors.grey)),
+              TextSpan(
+                  text: door.name,
+                  style: eightDoorTextStyle.copyWith(
+                      color: ConstantUiResourcesOfQiMen
+                          .eightDoorColorMapper[door]!))
+            ]),
           ),
-          Divider(color: Colors.grey,),
-          str==null?Container():Text(str,style: TextStyle(fontSize: 14,height: 1.0),),
-        ]
-    );
+          const Divider(
+            color: Colors.grey,
+          ),
+          str == null
+              ? Container()
+              : Text(
+                  str,
+                  style: const TextStyle(fontSize: 14, height: 1.0),
+                ),
+        ]);
   }
-  Widget buildQiYiRuGong(HouTianGua gongGua,TianGan tianPanGan,QiYiRuGong? qiYiGong,String? disease){
 
+  Widget buildQiYiRuGong(HouTianGua gongGua, TianGan tianPanGan,
+      QiYiRuGong? qiYiGong, String? disease) {
     return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2406,45 +2951,83 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               RichText(
-                text: TextSpan(
-                    style: tianGanTextStyle,
-                    children: [
-                      TextSpan(text: tianPanGan.name,style: tianGanTextStyle.copyWith(color:getTianGanColor(tianPanGan))),
-                      TextSpan(text:"入",style: TextStyle(color: Colors.grey)),
-                      TextSpan(text: "${gongGua.name}宫",style: TextStyle(color: ConstResourcesMapper.zodiacGuaColors[gongGua]!))
-                    ]
-                ),
+                text: TextSpan(style: tianGanTextStyle, children: [
+                  TextSpan(
+                      text: tianPanGan.name,
+                      style: tianGanTextStyle.copyWith(
+                          color: getTianGanColor(tianPanGan))),
+                  const TextSpan(
+                      text: "入", style: TextStyle(color: Colors.grey)),
+                  TextSpan(
+                      text: "${gongGua.name}宫",
+                      style: TextStyle(
+                          color:
+                              ConstResourcesMapper.zodiacGuaColors[gongGua]!))
+                ]),
               ),
-              Expanded(child: SizedBox()),
+              const Expanded(child: SizedBox()),
               qiYiGong != null
                   ? Stack(
-                alignment: Alignment.center,
-                    children: [
-                      SizedBox(
-                        width: 86,
-                        height: 32,
-                        child: ColorFiltered(
-                            colorFilter: ColorFilter.mode(
-                                ConstResourcesMapper.jiXiongColorMapper[qiYiGong.geJuJiXiong]!,
-                                BlendMode.srcIn),
-                            child: Image.asset("assets/icons/long_yin_zhang.png",width: 64,height: 20,)),
-                      ),
-                      Text("${qiYiGong.geJuName}",style: GoogleFonts.maShanZheng(fontSize: 18,height: 1.0,color: Colors.white),)
-                    ],
-                  )
-                  :Container(),
-              SizedBox(width: 8,),
-              qiYiGong != null ?Text("${qiYiGong.geJuJiXiong.name}",style: GoogleFonts.maShanZheng(fontSize: 32,height: 1.0,color: ConstResourcesMapper.jiXiongColorMapper[qiYiGong.geJuJiXiong]!,shadows: [Shadow(color: ConstResourcesMapper.jiXiongColorMapper[qiYiGong.geJuJiXiong]!.withOpacity(.4),blurRadius: 4)]),):Container(),
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: 86,
+                          height: 32,
+                          child: ColorFiltered(
+                              colorFilter: ColorFilter.mode(
+                                  ConstResourcesMapper.jiXiongColorMapper[
+                                      qiYiGong.geJuJiXiong]!,
+                                  BlendMode.srcIn),
+                              child: Image.asset(
+                                "assets/icons/long_yin_zhang.png",
+                                width: 64,
+                                height: 20,
+                              )),
+                        ),
+                        Text(
+                          qiYiGong.geJuName,
+                          style: GoogleFonts.maShanZheng(
+                              fontSize: 18, height: 1.0, color: Colors.white),
+                        )
+                      ],
+                    )
+                  : Container(),
+              const SizedBox(
+                width: 8,
+              ),
+              qiYiGong != null
+                  ? Text(
+                      qiYiGong.geJuJiXiong.name,
+                      style: GoogleFonts.maShanZheng(
+                          fontSize: 32,
+                          height: 1.0,
+                          color: ConstResourcesMapper
+                              .jiXiongColorMapper[qiYiGong.geJuJiXiong]!,
+                          shadows: [
+                            Shadow(
+                                color: ConstResourcesMapper
+                                    .jiXiongColorMapper[qiYiGong.geJuJiXiong]!
+                                    .withOpacity(.4),
+                                blurRadius: 4)
+                          ]),
+                    )
+                  : Container(),
             ],
           ),
-          Divider(color: Colors.grey,),
-          qiYiGong==null?Container():Text("${qiYiGong.description}",style: TextStyle(fontSize: 16,height: 1.0),),
-          disease == null ?Container():Text("疾病：$disease")
-        ]
-    );
+          const Divider(
+            color: Colors.grey,
+          ),
+          qiYiGong == null
+              ? Container()
+              : Text(
+                  qiYiGong.description,
+                  style: const TextStyle(fontSize: 16, height: 1.0),
+                ),
+          disease == null ? Container() : Text("疾病：$disease")
+        ]);
   }
 
-  Widget buildTenGanKeYingYinZhang(String geJuName){
+  Widget buildTenGanKeYingYinZhang(String geJuName) {
     List<String> juName = geJuName.split("");
     String yinZhang0 = juName[0];
     String yinZhang1 = juName[1];
@@ -2457,12 +3040,15 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           width: 42,
           height: 42,
           child: ColorFiltered(
-              colorFilter: ColorFilter.mode(
-                  Colors.blueGrey.shade700,
-                  BlendMode.srcIn),
-              child: Image.asset("assets/icons/yin_zhang.png",width: 32,height: 32,)),
+              colorFilter:
+                  ColorFilter.mode(Colors.blueGrey.shade700, BlendMode.srcIn),
+              child: Image.asset(
+                "assets/icons/yin_zhang.png",
+                width: 32,
+                height: 32,
+              )),
         ),
-        Container(
+        SizedBox(
           height: 42,
           width: 42,
           child: Row(
@@ -2472,20 +3058,54 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children:[
-                  Text(yinZhang2,style: GoogleFonts.maShanZheng(height: 1.0,fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
-                  SizedBox(height: 3,),
-                  Text(yinZhang3,style: GoogleFonts.maShanZheng(height: 1.0,fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
+                children: [
+                  Text(
+                    yinZhang2,
+                    style: GoogleFonts.maShanZheng(
+                        height: 1.0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
+                  ),
+                  const SizedBox(
+                    height: 3,
+                  ),
+                  Text(
+                    yinZhang3,
+                    style: GoogleFonts.maShanZheng(
+                        height: 1.0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
+                  ),
                 ],
               ),
-              SizedBox(width: 2,),
+              const SizedBox(
+                width: 2,
+              ),
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children:[
-                  Text(yinZhang0,style: GoogleFonts.maShanZheng(height: 1.0,fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
-                  SizedBox(height: 3,),
-                  Text(yinZhang1,style: GoogleFonts.maShanZheng(height: 1.0,fontSize: 16,fontWeight: FontWeight.w500,color: Colors.white),),
+                children: [
+                  Text(
+                    yinZhang0,
+                    style: GoogleFonts.maShanZheng(
+                        height: 1.0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
+                  ),
+                  const SizedBox(
+                    height: 3,
+                  ),
+                  Text(
+                    yinZhang1,
+                    style: GoogleFonts.maShanZheng(
+                        height: 1.0,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
+                  ),
                 ],
               ),
             ],
@@ -2495,51 +3115,63 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
     );
   }
 
-
-  Widget buildBuWen(List<Map<String,String>> mapper){
+  Widget buildBuWen(List<Map<String, String>> mapper) {
     List<Widget> lists = [];
-    for (int i = 0; i < mapper.length; i++){
+    for (int i = 0; i < mapper.length; i++) {
       lists.add(Row(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
               alignment: Alignment.topRight,
-              child: Text("${mapper[i]["key"]}：",style: TextStyle(fontWeight: FontWeight.w600),)),
+              child: Text(
+                "${mapper[i]["key"]}：",
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              )),
           Expanded(
               flex: 7,
               child: Container(
                   alignment: Alignment.centerLeft,
-                  child: Text("${mapper[i]["content"]}"))
-          ),
+                  child: Text("${mapper[i]["content"]}"))),
         ],
       ));
-      if (i != mapper.length - 1){
-        lists.add(SizedBox(height: 4,));
+      if (i != mapper.length - 1) {
+        lists.add(const SizedBox(
+          height: 4,
+        ));
       }
-
     }
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("卜问",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold),),
-        Divider(height: 8,color: Colors.grey,),
+        const Text(
+          "卜问",
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const Divider(
+          height: 8,
+          color: Colors.grey,
+        ),
         ...lists
       ],
     );
   }
-  Widget tenGanKeYingZhuJie(List<TenGanKeYingZhu> zhuList){
-    TextStyle titleStyle = TextStyle(fontWeight: FontWeight.bold,fontSize: 18);
-    TextStyle contentStyle = TextStyle(fontSize: 16,color: Colors.black87);
-    TextStyle seeMoreStyle = TextStyle(fontSize: 16,
-        color: Colors.blue.shade600,
-        fontWeight: FontWeight.w200);
+
+  Widget tenGanKeYingZhuJie(List<TenGanKeYingZhu> zhuList) {
+    TextStyle titleStyle =
+        const TextStyle(fontWeight: FontWeight.bold, fontSize: 18);
+    TextStyle contentStyle =
+        const TextStyle(fontSize: 16, color: Colors.black87);
+    TextStyle seeMoreStyle = TextStyle(
+        fontSize: 16, color: Colors.blue.shade600, fontWeight: FontWeight.w200);
 
     List<Widget> lists = [];
-    for (var zhu in zhuList){
-      lists.add(Text(zhu.author ?? "注解",style: titleStyle));
-      lists.add(Divider(height: 8,));
+    for (var zhu in zhuList) {
+      lists.add(Text(zhu.author ?? "注解", style: titleStyle));
+      lists.add(const Divider(
+        height: 8,
+      ));
       lists.add(Container(
         child: AnimatedReadMoreText(
           "利静不利动。出行结伴主失散，还容易得病。遇伏吟，不宜动。一动，就出事。如果此格临马星或九天，你不让他动，他肯定也动，一动就倒霉，然后后悔。此格，遇到击刑，也主牢狱、伤灾。遇此格，自己独立出行、独立行事，一般没有大问题。就怕多人出行以及合作做事，则必然出问题。庚+庚，癸+癸，一合作就出事。遇到此格，切忌结伴出行，若结伴出行：一是自己生病；二是与同伴失去联系或分道扬镳。二者必应其一。",
@@ -2555,7 +3187,9 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           expandOnTextTap: true,
         ),
       ));
-      lists.add(SizedBox(height: 8,));
+      lists.add(const SizedBox(
+        height: 8,
+      ));
     }
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -2564,37 +3198,49 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
     );
   }
 
-
-  Widget buildTenGanKeYing(HouTianGua gong,TianGan tianPanGan,TianGan diPanGan,TenGanKeYing tenGanKeying){
+  Widget buildTenGanKeYing(HouTianGua gong, TianGan tianPanGan,
+      TianGan diPanGan, TenGanKeYing tenGanKeying) {
     String shortExplain = tenGanKeying.shortExplain;
     String? longExplain = tenGanKeying.longExplain;
     List<Widget>? zhuList;
-    if (tenGanKeying.zhu != null){
-      var tmp = tenGanKeying.zhu!.map((e) => Text("${e.author ?? "注"}：${e.content}"));
-      zhuList = tmp.map((e)=>[e,SizedBox(height: 8)]).expand((e)=>e).toList();
+    if (tenGanKeying.zhu != null) {
+      var tmp =
+          tenGanKeying.zhu!.map((e) => Text("${e.author ?? "注"}：${e.content}"));
+      zhuList = tmp
+          .map((e) => [e, const SizedBox(height: 8)])
+          .expand((e) => e)
+          .toList();
     }
 
     String? yiXiang;
-    if (tenGanKeying.yiXiang != null){
+    if (tenGanKeying.yiXiang != null) {
       yiXiang = tenGanKeying.yiXiang;
     }
     String? xiangList;
-    if (tenGanKeying.xiangList != null && tenGanKeying.xiangList!.isNotEmpty){
+    if (tenGanKeying.xiangList != null && tenGanKeying.xiangList!.isNotEmpty) {
       xiangList = tenGanKeying.xiangList!.join("，");
     }
     String? diseaseAtGong;
-    if (tenGanKeying.diseaseAtGongMapper != null){
+    if (tenGanKeying.diseaseAtGongMapper != null) {
       diseaseAtGong = tenGanKeying.diseaseAtGongMapper?[gong.name]?.join(" ");
     }
-    List<Map<String,String>>? others = tenGanKeying.others;
+    List<Map<String, String>>? others = tenGanKeying.others;
     List<Widget>? otherInfo;
-    if (others != null){
-      otherInfo = others.map((e) =>RichText(text: TextSpan(
-        text:"${e["key"]}：",style: TextStyle(fontSize: 14,color: Colors.black,fontWeight: FontWeight.bold),
-        children: [
-          TextSpan(text: "${e["content"]}",style: TextStyle(fontWeight: FontWeight.normal))
-        ]
-      ))).toList();
+    if (others != null) {
+      otherInfo = others
+          .map((e) => RichText(
+                  text: TextSpan(
+                      text: "${e["key"]}：",
+                      style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold),
+                      children: [
+                    TextSpan(
+                        text: "${e["content"]}",
+                        style: const TextStyle(fontWeight: FontWeight.normal))
+                  ])))
+          .toList();
     }
     String? thingsOnLocation = tenGanKeying.thingOnLocation;
 
@@ -2610,118 +3256,163 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   RichText(
-                    text: TextSpan(
-                        style: tianGanTextStyle,
-                        children: [
-                          TextSpan(text: tianPanGan.name,style: tianGanTextStyle.copyWith(color:getTianGanColor(tianPanGan))),
-                          TextSpan(text:"+"),
-                          TextSpan(text: diPanGan.name,style: tianGanTextStyle.copyWith(color:getTianGanColor(diPanGan))),
-                        ]
-                    ),
+                    text: TextSpan(style: tianGanTextStyle, children: [
+                      TextSpan(
+                          text: tianPanGan.name,
+                          style: tianGanTextStyle.copyWith(
+                              color: getTianGanColor(tianPanGan))),
+                      const TextSpan(text: "+"),
+                      TextSpan(
+                          text: diPanGan.name,
+                          style: tianGanTextStyle.copyWith(
+                              color: getTianGanColor(diPanGan))),
+                    ]),
                   ),
                   Container(
                     width: 200,
-                    margin: EdgeInsets.symmetric(vertical: 4),
-                    decoration: BoxDecoration(
-                        border: Border(bottom: BorderSide(color: Colors.grey,width: 1))
-                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: const BoxDecoration(
+                        border: Border(
+                            bottom: BorderSide(color: Colors.grey, width: 1))),
                   ),
-                  Container(
+                  SizedBox(
                     width: 200,
-                    child: Text(tenGanKeying.shortExplain,style: TextStyle(fontWeight: FontWeight.w600,fontSize: 12),),
+                    child: Text(
+                      tenGanKeying.shortExplain,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.w600, fontSize: 12),
+                    ),
                   ),
                 ],
               ),
-              SizedBox(width: 4,),
+              const SizedBox(
+                width: 4,
+              ),
               // Text(snapshot.data!.juName,style: TextStyle(height: 1.0,fontSize: 18),)
               buildTenGanKeYingYinZhang(tenGanKeying.juName)
             ],
           ),
-
-          SizedBox(height: 8,),
-          longExplain == null?Container():Text(tenGanKeying.longExplain!),
-          SizedBox(height: 8,),
-          if (zhuList != null)
-            ...zhuList,
-
+          const SizedBox(
+            height: 8,
+          ),
+          longExplain == null ? Container() : Text(tenGanKeying.longExplain!),
+          const SizedBox(
+            height: 8,
+          ),
+          if (zhuList != null) ...zhuList,
           if (xiangList != null)
-            SizedBox(height: 8,),
-
+            const SizedBox(
+              height: 8,
+            ),
           if (xiangList != null)
-            Text("意象",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
+            const Text(
+              "意象",
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+          if (xiangList != null) const Divider(),
           if (xiangList != null)
-            Divider(),
-          if (xiangList != null)
-            Text(xiangList,style: TextStyle(fontWeight: FontWeight.bold,height: 1.0),),
-          SizedBox(height: 4,),
+            Text(
+              xiangList,
+              style: const TextStyle(fontWeight: FontWeight.bold, height: 1.0),
+            ),
+          const SizedBox(
+            height: 4,
+          ),
           if (yiXiang != null)
-            Text("$yiXiang",),
-          diseaseAtGong==null?Container():SizedBox(height: 8,),
-          diseaseAtGong==null?Container():Text("问病",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
-          diseaseAtGong==null?Container():Divider(),
-          if (diseaseAtGong!= null)
-            Text("$diseaseAtGong",style: TextStyle(height: 1.0)),
-
-          otherInfo==null?Container():SizedBox(height: 8,),
-          otherInfo==null?Container():Text("卜问占测",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
-          otherInfo==null?Container():Divider(),
-          if (otherInfo != null)
-            ...otherInfo,
-
-          thingsOnLocation==null?Container():SizedBox(height: 8,),
-          thingsOnLocation==null?Container():Text("方位上有",style: TextStyle(fontSize: 14,fontWeight: FontWeight.bold),),
-          thingsOnLocation==null?Container():Divider(),
+            Text(
+              yiXiang,
+            ),
+          diseaseAtGong == null
+              ? Container()
+              : const SizedBox(
+                  height: 8,
+                ),
+          diseaseAtGong == null
+              ? Container()
+              : const Text(
+                  "问病",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+          diseaseAtGong == null ? Container() : const Divider(),
+          if (diseaseAtGong != null)
+            Text(diseaseAtGong, style: const TextStyle(height: 1.0)),
+          otherInfo == null
+              ? Container()
+              : const SizedBox(
+                  height: 8,
+                ),
+          otherInfo == null
+              ? Container()
+              : const Text(
+                  "卜问占测",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+          otherInfo == null ? Container() : const Divider(),
+          if (otherInfo != null) ...otherInfo,
+          thingsOnLocation == null
+              ? Container()
+              : const SizedBox(
+                  height: 8,
+                ),
+          thingsOnLocation == null
+              ? Container()
+              : const Text(
+                  "方位上有",
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                ),
+          thingsOnLocation == null ? Container() : const Divider(),
           if (thingsOnLocation != null)
-            Text("$thingsOnLocation",style: TextStyle(height: 1),),
-        ]
-    );
+            Text(
+              thingsOnLocation,
+              style: const TextStyle(height: 1),
+            ),
+        ]);
   }
 
-
-  Widget buildPanel(Map<HouTianGua,Widget> mapper){
-
-    Size gongAtPanSize = Size(baseEachGongSize+eachPaddingSize*2, baseEachGongSize+eachPaddingSize*2);
+  Widget buildPanel(Map<HouTianGua, Widget> mapper) {
+    Size gongAtPanSize = Size(baseEachGongSize + eachPaddingSize * 2,
+        baseEachGongSize + eachPaddingSize * 2);
     return Container(
         key: panelGlobalKey,
         width: panSize.width + 2,
         height: panSize.height + 2,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(36),
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(36),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.2),
                 spreadRadius: 5,
                 blurRadius: 7,
-                offset: Offset(1, 1), // changes position of shadow
+                offset: const Offset(1, 1), // changes position of shadow
               )
-            ]
-        ),
-        child:Column(
+            ]),
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(width: 1,color: Colors.black26),
-                )
-            ),
+              decoration: const BoxDecoration(
+                  border: Border(
+                bottom: BorderSide(width: 1, color: Colors.black26),
+              )),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  buildEachGongAtPanel(gongAtPanSize,HouTianGua.Xun,mapper[HouTianGua.Xun]!),
+                  buildEachGongAtPanel(
+                      gongAtPanSize, HouTianGua.Xun, mapper[HouTianGua.Xun]!),
                   Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                           border: Border(
-                              left: BorderSide(width: 1,color: Colors.black26),
-                            right: BorderSide(width: 1,color: Colors.black26),
-                          )
-                      ),
-                      child: buildEachGongAtPanel(gongAtPanSize,HouTianGua.Li,mapper[HouTianGua.Li]!)),
-                  buildEachGongAtPanel(gongAtPanSize,HouTianGua.Kun,mapper[HouTianGua.Kun]!),
+                        left: BorderSide(width: 1, color: Colors.black26),
+                        right: BorderSide(width: 1, color: Colors.black26),
+                      )),
+                      child: buildEachGongAtPanel(gongAtPanSize, HouTianGua.Li,
+                          mapper[HouTianGua.Li]!)),
+                  buildEachGongAtPanel(
+                      gongAtPanSize, HouTianGua.Kun, mapper[HouTianGua.Kun]!),
                 ],
               ),
             ),
@@ -2730,111 +3421,112 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Container(
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                         border: Border(
-                          right:  BorderSide(width: 1,color: Colors.black26),
-                        )
-                    ),
-                    child: buildEachGongAtPanel(gongAtPanSize,HouTianGua.Zhen,mapper[HouTianGua.Zhen]!)),
-                Container(
-                  width:gongAtPanSize.width,
+                      right: BorderSide(width: 1, color: Colors.black26),
+                    )),
+                    child: buildEachGongAtPanel(gongAtPanSize, HouTianGua.Zhen,
+                        mapper[HouTianGua.Zhen]!)),
+                SizedBox(
+                  width: gongAtPanSize.width,
                   height: gongAtPanSize.height,
-                  child: mapper.containsKey(HouTianGua.Center) ?buildEachGongAtPanel(gongAtPanSize,HouTianGua.Center,mapper[HouTianGua.Center]!):null,
+                  child: mapper.containsKey(HouTianGua.Center)
+                      ? buildEachGongAtPanel(gongAtPanSize, HouTianGua.Center,
+                          mapper[HouTianGua.Center]!)
+                      : null,
                 ),
                 Container(
-                  alignment:Alignment.center,
-                  width:gongAtPanSize.width,
+                  alignment: Alignment.center,
+                  width: gongAtPanSize.width,
                   height: gongAtPanSize.height,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                       border: Border(
-                        left: BorderSide(width: 1,color: Colors.black26),
-                      )
-                  ),
-                  child: buildEachGongAtPanel(gongAtPanSize,HouTianGua.Dui,mapper[HouTianGua.Dui]!),
+                    left: BorderSide(width: 1, color: Colors.black26),
+                  )),
+                  child: buildEachGongAtPanel(
+                      gongAtPanSize, HouTianGua.Dui, mapper[HouTianGua.Dui]!),
                 ),
-
               ],
             ),
             Container(
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                   border: Border(
-                    top: BorderSide(width: 1,color: Colors.black26),
-                  )
-              ),
+                top: BorderSide(width: 1, color: Colors.black26),
+              )),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                      child: buildEachGongAtPanel(gongAtPanSize,HouTianGua.Gen,mapper[HouTianGua.Gen]!)),
+                      child: buildEachGongAtPanel(gongAtPanSize, HouTianGua.Gen,
+                          mapper[HouTianGua.Gen]!)),
                   Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                           border: Border(
-                            left: BorderSide(width: 1,color: Colors.black26),
-                            right: BorderSide(width: 1,color: Colors.black26),
-                          )
-                      ),
-                      child: buildEachGongAtPanel(gongAtPanSize,HouTianGua.Kan,mapper[HouTianGua.Kan]!)),
-                  buildEachGongAtPanel(gongAtPanSize,HouTianGua.Qian,mapper[HouTianGua.Qian]!),
+                        left: BorderSide(width: 1, color: Colors.black26),
+                        right: BorderSide(width: 1, color: Colors.black26),
+                      )),
+                      child: buildEachGongAtPanel(gongAtPanSize, HouTianGua.Kan,
+                          mapper[HouTianGua.Kan]!)),
+                  buildEachGongAtPanel(
+                      gongAtPanSize, HouTianGua.Qian, mapper[HouTianGua.Qian]!),
                 ],
               ),
             ),
           ],
-        )
-    );
+        ));
   }
-  Widget buildEachGongAtPanel(Size size,HouTianGua gong,Widget gongWidget){
-    BorderRadius borderRadius =BorderRadius.zero;
-    switch(gong){
+
+  Widget buildEachGongAtPanel(Size size, HouTianGua gong, Widget gongWidget) {
+    BorderRadius borderRadius = BorderRadius.zero;
+    switch (gong) {
       case HouTianGua.Gen:
-        borderRadius = BorderRadius.only(bottomLeft: Radius.circular(36));
+        borderRadius = const BorderRadius.only(bottomLeft: Radius.circular(36));
         break;
       case HouTianGua.Qian:
-        borderRadius = BorderRadius.only(bottomRight: Radius.circular(36));
+        borderRadius =
+            const BorderRadius.only(bottomRight: Radius.circular(36));
         break;
       case HouTianGua.Xun:
-        borderRadius = BorderRadius.only(topLeft: Radius.circular(36));
+        borderRadius = const BorderRadius.only(topLeft: Radius.circular(36));
         break;
       case HouTianGua.Kun:
-        borderRadius = BorderRadius.only(topRight: Radius.circular(36));
+        borderRadius = const BorderRadius.only(topRight: Radius.circular(36));
         break;
       default:
         break;
     }
     return Container(
-        alignment:Alignment.center,
+        alignment: Alignment.center,
         width: size.width,
         height: size.width,
         decoration: BoxDecoration(
-          color: getGongBackgroundColor(gong),
-          borderRadius: borderRadius
-        ),
-        child:gongWidget
-    );
+            color: getGongBackgroundColor(gong), borderRadius: borderRadius),
+        child: gongWidget);
   }
 
-  Color getGongBackgroundColor(HouTianGua gong){
+  Color getGongBackgroundColor(HouTianGua gong) {
     Color backgroundColor;
-    if (shiJiaZhuanPanQiMenValueNotifier.value!.yinYangDun.isYang){
-      if ([HouTianGua.Kan,HouTianGua.Gen,HouTianGua.Zhen,HouTianGua.Xun].contains(gong)){
+    if (shiJiaZhuanPanQiMenValueNotifier.value!.yinYangDun.isYang) {
+      if ([HouTianGua.Kan, HouTianGua.Gen, HouTianGua.Zhen, HouTianGua.Xun]
+          .contains(gong)) {
         // backgroundColor = Colors.grey.withOpacity(.2);
         backgroundColor = Colors.grey.shade100;
-      }else{
+      } else {
         backgroundColor = Colors.white;
       }
-    }
-    else{
-
-      if ([HouTianGua.Kan,HouTianGua.Gen,HouTianGua.Zhen,HouTianGua.Xun].contains(gong)){
+    } else {
+      if ([HouTianGua.Kan, HouTianGua.Gen, HouTianGua.Zhen, HouTianGua.Xun]
+          .contains(gong)) {
         backgroundColor = Colors.white;
-      }else{
+      } else {
         backgroundColor = Colors.grey.shade100;
       }
     }
     return backgroundColor;
   }
 
-  Widget buildCenterPanTime(DateTime time){
+  Widget buildCenterPanTime(DateTime time) {
     Lunar lunar = Lunar.fromDate(time);
     return Card(
         child: Container(
@@ -2847,24 +3539,48 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(flex:3,child: Text("时间：")),
-                      Flexible(flex:7,child: Text(DateFormat("yyyy/MM/dd HH:mm").format(time),style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                      const Flexible(flex: 3, child: Text("时间：")),
+                      Flexible(
+                          flex: 7,
+                          child: Text(
+                            DateFormat("yyyy/MM/dd HH:mm").format(time),
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.blueGrey.shade800),
+                          )),
                     ],
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(flex:3,child: Text("农历：")),
-                      Flexible(flex:7,child: Text("${lunar.getYearInGanZhi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                      const Flexible(flex: 3, child: Text("农历：")),
+                      Flexible(
+                          flex: 7,
+                          child: Text(
+                            "${lunar.getYearInGanZhi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时",
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.blueGrey.shade800),
+                          )),
                     ],
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Flexible(flex:3,child: Text("${lunar.getPrevJieQi().getName()}:")),
-                      Flexible(flex:7,child: Text("${lunar.getPrevJieQi().getSolar().toYmdHms().replaceAll("-", "/")}",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                      Flexible(
+                          flex: 3,
+                          child: Text("${lunar.getPrevJieQi().getName()}:")),
+                      Flexible(
+                          flex: 7,
+                          child: Text(
+                            lunar
+                                .getPrevJieQi()
+                                .getSolar()
+                                .toYmdHms()
+                                .replaceAll("-", "/"),
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.blueGrey.shade800),
+                          )),
                     ],
                   ),
                   Row(
@@ -2872,36 +3588,44 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Flexible(flex:3,child: Text("值符门：")),
-                      Flexible(flex:3,child: Text("${lunar.getNextJieQi().getName()}:")),
-                      Flexible(flex:7,child: Text("${lunar.getNextJieQi().getSolar().toYmdHms().replaceAll("-", "/")}",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                      Flexible(
+                          flex: 3,
+                          child: Text("${lunar.getNextJieQi().getName()}:")),
+                      Flexible(
+                          flex: 7,
+                          child: Text(
+                            lunar
+                                .getNextJieQi()
+                                .getSolar()
+                                .toYmdHms()
+                                .replaceAll("-", "/"),
+                            style: TextStyle(
+                                fontSize: 14, color: Colors.blueGrey.shade800),
+                          )),
                     ],
                   )
-                ]
-            )
-        )
-    );
-  }
-  Widget buildCenterFourZhu(ShiJiaQiMen pan){
-    return Card(
-        child: Align(
-          alignment: Alignment.center,
-          child: Padding(
-              padding: const EdgeInsets.all(4.0),
-              child:FourZhuEightChar(
-                year:pan.yearJiaZi,
-                month:pan.monthJiaZi,
-                day:pan.dayJiaZi,
-                chen:pan.timeJiaZi,
-                isColorful: true,
-                zodiacGanColors:ConstResourcesMapper.zodiacGanColors,
-                zodiacZhiColors:ConstResourcesMapper.zodiacZhiColors,
-              )
-          ),
-        )
-    );
+                ])));
   }
 
-  Widget buildCenter(ShiJiaQiMen pan){
+  Widget buildCenterFourZhu(ShiJiaQiMen pan) {
+    return Card(
+        child: Align(
+      alignment: Alignment.center,
+      child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: FourZhuEightChar(
+            year: pan.yearJiaZi,
+            month: pan.monthJiaZi,
+            day: pan.dayJiaZi,
+            chen: pan.timeJiaZi,
+            isColorful: true,
+            zodiacGanColors: ConstResourcesMapper.zodiacGanColors,
+            zodiacZhiColors: ConstResourcesMapper.zodiacZhiColors,
+          )),
+    ));
+  }
+
+  Widget buildCenter(ShiJiaQiMen pan) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -2914,237 +3638,239 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Flexible(
-                flex: 7,
-                child: Container()
-            ),
-            Flexible(
-                flex: 3,
-                child: Container()
-            ),
+            Flexible(flex: 7, child: Container()),
+            Flexible(flex: 3, child: Container()),
           ],
         )
       ],
     );
   }
 
-  Widget buildPanInfo(ShiJiaQiMen pan){
+  Widget buildPanInfo(ShiJiaQiMen pan) {
     return Card(
       child: Container(
-          alignment: Alignment.center,
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                    "转盘·${pan.arrangeType.name} ${pan.yinYangDun.isYin?"阴":"阳"}${ConstResourcesMapper.chineseNumberMapper[pan.juNumber]}局",
-                    style: panInfoTextStyle),
-                Divider(),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(flex:4,child: Text("旬首：")),
-                    Flexible(
-                        flex:6,
-                        child: RichText(
+        alignment: Alignment.center,
+        child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                  "转盘·${pan.arrangeType.name} ${pan.yinYangDun.isYin ? "阴" : "阳"}${ConstResourcesMapper.chineseNumberMapper[pan.juNumber]}局",
+                  style: panInfoTextStyle),
+              const Divider(),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Flexible(flex: 4, child: Text("旬首：")),
+                  Flexible(
+                      flex: 6,
+                      child: RichText(
                           text: TextSpan(
-                            style: TextStyle(fontSize: 18),
-                            children: [
-                              TextSpan(
+                              style: const TextStyle(fontSize: 18),
+                              children: [
+                            TextSpan(
                                 text: pan.xunShou.name.split("").first,
                                 style: tianGanTextStyle.copyWith(
                                     fontSize: 18,
-                                    color: ConstResourcesMapper.zodiacGanColors[TianGan.getFromValue(pan.xunShou.name.split("").first)]!)
-                              ),
-                              TextSpan(
-                                  text: pan.xunShou.name.split("").last,
-                                  style: twelveDiZhiTextStyle.copyWith(
-                                      fontSize: 19,
-                                      color: ConstResourcesMapper.zodiacZhiColors[DiZhi.getFromValue(pan.xunShou.name.split("").last)]!)
-                              ),
-                              TextSpan(
-                                  text: " ${pan.xunHeaderTianGan.name}",
-                                  style: tianGanTextStyle.copyWith(
-                                      fontSize: 18,
-                                      color: ConstResourcesMapper.zodiacGanColors[TianGan.getFromValue(pan.xunHeaderTianGan.name)]!)
-                              )
-                            ]
-                          )
-
-                        )),
-                  ],
-                ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                                    color: ConstResourcesMapper.zodiacGanColors[
+                                        TianGan.getFromValue(pan.xunShou.name
+                                            .split("")
+                                            .first)]!)),
+                            TextSpan(
+                                text: pan.xunShou.name.split("").last,
+                                style: twelveDiZhiTextStyle.copyWith(
+                                    fontSize: 19,
+                                    color: ConstResourcesMapper.zodiacZhiColors[
+                                        DiZhi.getFromValue(pan.xunShou.name
+                                            .split("")
+                                            .last)]!)),
+                            TextSpan(
+                                text: " ${pan.xunHeaderTianGan.name}",
+                                style: tianGanTextStyle.copyWith(
+                                    fontSize: 18,
+                                    color: ConstResourcesMapper.zodiacGanColors[
+                                        TianGan.getFromValue(
+                                            pan.xunHeaderTianGan.name)]!))
+                          ]))),
+                ],
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Flexible(flex: 4, child: Text("节气：")),
+                  Flexible(
+                      flex: 6,
+                      child: RichText(
+                          text: TextSpan(
+                              text: pan.shiJiaJu.panJuJieQi?.name ??
+                                  pan.jieQi.name,
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.blueGrey.shade800),
+                              children: [
+                            TextSpan(
+                                text: "  ${pan.shiJiaJu.atThreeYuan.name}"),
+                            pan.shiJiaJu.juDayNumber == null
+                                ? const TextSpan(text: "")
+                                : TextSpan(
+                                    text: " 第 ${pan.shiJiaJu.juDayNumber!} 天")
+                          ]))),
+                ],
+              ),
+              SizedBox(
+                height: 26,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(flex:4,child: Text("节气：")),
-                    Flexible(flex:6,
-                        child:RichText(
-                            text: TextSpan(
-                                text: pan.shiJiaJu.panJuJieQi?.name ?? pan.jieQi.name,
-                                style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),
-                              children: [
-                                TextSpan(text:"  ${pan.shiJiaJu.atThreeYuan.name}"),
-                                pan.shiJiaJu.juDayNumber == null?TextSpan(text:""):TextSpan(text:" 第 ${pan.shiJiaJu.juDayNumber!} 天")
-                              ]
-                            )
-                        )
-                    ),
-                  ],
-                ),
-                Container(
-                  height: 26,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Flexible(flex:4,child: Text("值符星：")),
-                      // Flexible(flex:6,child: Text("${pan.zhiFuStar.name}星 落 ${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
-                      Flexible(
-                          flex:6,
-                          child: Row(
+                    const Flexible(flex: 4, child: Text("值符星：")),
+                    // Flexible(flex:6,child: Text("${pan.zhiFuStar.name}星 落 ${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                    Flexible(
+                      flex: 6,
+                      child: Row(children: [
+                        SizedBox(
+                          height: 26,
+                          child: Stack(
+                            alignment: Alignment.topCenter,
                             children: [
                               Container(
-                                height: 26,
-                                child: Stack(
-                                  alignment: Alignment.topCenter,
-                                  children: [
-                                    Container(
-                                        width: 48,
-                                        height: 26,
-                                        alignment: Alignment.bottomCenter,
-                                        child: ColorFiltered(
-                                            colorFilter: const ColorFilter.mode(
-                                                Color.fromRGBO(176, 31, 36, .8),
-                                                BlendMode.srcIn),
-                                            child: Image.asset("assets/icons/wide-black-ink-radian-line2.png",))
-                                    ),
-                                    Text(
-                                        "${pan.zhiFuStar.name}星",
-                                        style: nineStarTextStyle.copyWith(fontSize: 18)
-                                    ),
-
-                                  ],
-                                ),
-                              ),
-                              RichText(
-                                  text: TextSpan(
-                                      style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),
-                                      children: [
-                                        TextSpan(
-                                            text:" 落 ",
-                                            style: TextStyle(color: Colors.grey)
-                                        ),
-                                        TextSpan(text:"${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",)
-                                      ]
-                                  )
-                              )
-                            ]
+                                  width: 48,
+                                  height: 26,
+                                  alignment: Alignment.bottomCenter,
+                                  child: ColorFiltered(
+                                      colorFilter: const ColorFilter.mode(
+                                          Color.fromRGBO(176, 31, 36, .8),
+                                          BlendMode.srcIn),
+                                      child: Image.asset(
+                                        "assets/icons/wide-black-ink-radian-line2.png",
+                                      ))),
+                              Text("${pan.zhiFuStar.name}星",
+                                  style:
+                                      nineStarTextStyle.copyWith(fontSize: 18)),
+                            ],
                           ),
-                      )
-                    ],
-                  ),
+                        ),
+                        RichText(
+                            text: TextSpan(
+                                style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.blueGrey.shade800),
+                                children: [
+                              const TextSpan(
+                                  text: " 落 ",
+                                  style: TextStyle(color: Colors.grey)),
+                              TextSpan(
+                                text:
+                                    "${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",
+                              )
+                            ]))
+                      ]),
+                    )
+                  ],
                 ),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(flex:4,child: Text("值符门：")),
-                    Flexible(
-                      flex:6,
-                      child: Row(
+              ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Flexible(flex: 4, child: Text("值符门：")),
+                  Flexible(
+                    flex: 6,
+                    child: Row(children: [
+                      SizedBox(
+                        height: 26,
+                        child: Stack(
+                          alignment: Alignment.topCenter,
                           children: [
                             Container(
-                              height: 26,
-                              child: Stack(
-                                alignment: Alignment.topCenter,
-                                children: [
-                                  Container(
-                                      width: 42,
-                                      height: 26,
-                                      alignment: Alignment.bottomCenter,
-                                      child: ColorFiltered(
-                                          colorFilter: const ColorFilter.mode(
-                                              Color.fromRGBO(176, 31, 36, .8),
-                                              BlendMode.srcIn),
-                                          child: Image.asset("assets/icons/wide-black-ink-radian-line2.png",))
-                                  ),
-                                  Text(
-                                      "${pan.zhiShiDoor.name}",
-                                      style: eightDoorTextStyle.copyWith(fontSize: 18)
-                                  ),
-
-                                ],
-                              ),
-                            ),
-                            RichText(
-                                text: TextSpan(
-                                    style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),
-                                    children: [
-                                      TextSpan(
-                                          text:" 落 ",
-                                          style: TextStyle(color: Colors.grey)
-                                      ),
-                                      TextSpan(text:"${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",)
-                                    ]
-                                )
-                            )
-                          ]
+                                width: 42,
+                                height: 26,
+                                alignment: Alignment.bottomCenter,
+                                child: ColorFiltered(
+                                    colorFilter: const ColorFilter.mode(
+                                        Color.fromRGBO(176, 31, 36, .8),
+                                        BlendMode.srcIn),
+                                    child: Image.asset(
+                                      "assets/icons/wide-black-ink-radian-line2.png",
+                                    ))),
+                            Text(pan.zhiShiDoor.name,
+                                style:
+                                    eightDoorTextStyle.copyWith(fontSize: 18)),
+                          ],
+                        ),
                       ),
-                    )
-                    // Flexible(flex:6,child: Text(" ${pan.zhiShiDoor.name} 落 ${pan.zhiShiDoorAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiShiDoorAtGong.houTianOrder]}宫",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
-                  ],
-                )
-              ]
-          ),
+                      RichText(
+                          text: TextSpan(
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.blueGrey.shade800),
+                              children: [
+                            const TextSpan(
+                                text: " 落 ",
+                                style: TextStyle(color: Colors.grey)),
+                            TextSpan(
+                              text:
+                                  "${pan.zhiFuStarAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiFuStarAtGong.houTianOrder]}宫",
+                            )
+                          ]))
+                    ]),
+                  )
+                  // Flexible(flex:6,child: Text(" ${pan.zhiShiDoor.name} 落 ${pan.zhiShiDoorAtGong.name}${ConstResourcesMapper.chineseNumberMapper[pan.zhiShiDoorAtGong.houTianOrder]}宫",style: TextStyle(fontSize: 14,color: Colors.blueGrey.shade800),)),
+                ],
+              )
+            ]),
       ),
     );
   }
 
-
-  PanArrangeSettings getPanArrageSettings(ArrangeType arrangeType){
-
-   // godWithGongTypeNotifier.v
+  PanArrangeSettings getPanArrageSettings(ArrangeType arrangeType) {
+    // godWithGongTypeNotifier.v
     return PanArrangeSettings(
-      arrangeType: arrangeType,
-      jiGong:jiGongHintNotifier.value,
-      starMonthTokenType: monthTokenTypeNotifier.value,
-      starFourWeiGongType:starGongTypeNotifier.value,
-      doorFourWeiGongType:doorGongTypeNotifier.value,
-      godWithGongTypeEnum: godWithGongTypeNotifier.value,
-        ganGongType: ganGongTypeNotifier.value
-    );
+        arrangeType: arrangeType,
+        jiGong: jiGongHintNotifier.value,
+        starMonthTokenType: monthTokenTypeNotifier.value,
+        starFourWeiGongType: starGongTypeNotifier.value,
+        doorFourWeiGongType: doorGongTypeNotifier.value,
+        godWithGongTypeEnum: godWithGongTypeNotifier.value,
+        ganGongType: ganGongTypeNotifier.value);
   }
-  ShiJiaQiMen create(DateTime panDatetime){
+
+  ShiJiaQiMen create(DateTime panDatetime) {
     ShiJiaJu shiJiaJu;
-    switch(arrangeTypeNotifier.value){
+    switch (arrangeTypeNotifier.value) {
       case ArrangeType.CHAI_BU:
-        shiJiaJu = ChaiBuCalculator(dateTime:panDatetime).calculate();
+        shiJiaJu = ChaiBuCalculator(dateTime: panDatetime).calculate();
         break;
       case ArrangeType.ZHI_RUN:
-        shiJiaJu = ZhiRunCalculator(dateTime:panDatetime).calculate();
+        shiJiaJu = ZhiRunCalculator(dateTime: panDatetime).calculate();
         break;
       case ArrangeType.MAO_SHAN:
-        shiJiaJu = MaoShanCalculator(dateTime:panDatetime).calculate();
+        shiJiaJu = MaoShanCalculator(dateTime: panDatetime).calculate();
         break;
       case ArrangeType.YIN_PAN:
-        shiJiaJu = YinPanCalculator(dateTime:panDatetime).calculate();
+        shiJiaJu = YinPanCalculator(dateTime: panDatetime).calculate();
         break;
       default:
         JiaZi fuTou = ChaiBuCalculator.getFuTouByDayJiaZi(dayJiaZi!);
-        if ([CenterGongJiGongType.ONLY_KUN_GONG,CenterGongJiGongType.KUN_GEN_GONG].contains(jiGongHintNotifier.value)){
-          jieQi = yinYangDun!.isYang?TwentyFourJieQi.DONG_ZHI:TwentyFourJieQi.XIA_ZHI;
+        if ([
+          CenterGongJiGongType.ONLY_KUN_GONG,
+          CenterGongJiGongType.KUN_GEN_GONG
+        ].contains(jiGongHintNotifier.value)) {
+          jieQi = yinYangDun!.isYang
+              ? TwentyFourJieQi.DONG_ZHI
+              : TwentyFourJieQi.XIA_ZHI;
         }
         shiJiaJu = ShiJiaJu(
           juNumber: juNumber!,
-          fuTouJiaZi:fuTou,
-          yinYangDun:yinYangDun!,
-          jieQiAt:jieQi!,
-          jieQiEnd:jieQi!,
-          atThreeYuan:ShiJiaQiMenJuCalculator.getThreeYuanByFuHead(fuTou),
-          fourZhuEightChar:"${yearJiaZi?.name} ${monthJiaZi?.name} ${dayJiaZi?.name} ${timeJiaZi?.name}",
+          fuTouJiaZi: fuTou,
+          yinYangDun: yinYangDun!,
+          jieQiAt: jieQi!,
+          jieQiEnd: jieQi!,
+          atThreeYuan: ShiJiaQiMenJuCalculator.getThreeYuanByFuHead(fuTou),
+          fourZhuEightChar:
+              "${yearJiaZi?.name} ${monthJiaZi?.name} ${dayJiaZi?.name} ${timeJiaZi?.name}",
           panDateTime: panDatetime,
         );
     }
@@ -3153,82 +3879,95 @@ class _BeautifulPageState extends State<BeautifulPage> with TickerProviderStateM
     var shiJiaQiMen = ShiJiaQiMen(
       plateType: plateTypeNotifier.value,
       // panDateTime:panDatetime,
-      shiJiaJu:shiJiaJu,
+      shiJiaJu: shiJiaJu,
       settings: panSettings,
     );
     return shiJiaQiMen;
   }
 
-  Offset gongPositionOffset(HouTianGua gong){
-    final RenderBox renderPan = panelGlobalKey.currentContext!.findRenderObject() as RenderBox;
-    final RenderBox appBarRender = appBarGlobalKey.currentContext!.findRenderObject() as RenderBox;
-    Offset currentPanOffset = renderPan.localToGlobal(Offset(0, -appBarRender.size.height));
+  Offset gongPositionOffset(HouTianGua gong) {
+    final RenderBox renderPan =
+        panelGlobalKey.currentContext!.findRenderObject() as RenderBox;
+    final RenderBox appBarRender =
+        appBarGlobalKey.currentContext!.findRenderObject() as RenderBox;
+    Offset currentPanOffset =
+        renderPan.localToGlobal(Offset(0, -appBarRender.size.height));
     panOffset = currentPanOffset;
 
-    Offset offset = Offset(0, 0);
-    switch(gong){
+    Offset offset = const Offset(0, 0);
+    switch (gong) {
       case HouTianGua.Xun:
         offset = Offset(eachPaddingSize, eachPaddingSize);
         break;
       case HouTianGua.Li:
-        offset = Offset(baseEachGongSize+eachPaddingSize*3+1, eachPaddingSize);
+        offset =
+            Offset(baseEachGongSize + eachPaddingSize * 3 + 1, eachPaddingSize);
         break;
       case HouTianGua.Kun:
-        offset = Offset(baseEachGongSize*2+eachPaddingSize*5+2, eachPaddingSize);
+        offset = Offset(
+            baseEachGongSize * 2 + eachPaddingSize * 5 + 2, eachPaddingSize);
         break;
       case HouTianGua.Zhen:
-        offset = Offset(eachPaddingSize, baseEachGongSize+eachPaddingSize*3 + 1);
+        offset =
+            Offset(eachPaddingSize, baseEachGongSize + eachPaddingSize * 3 + 1);
         break;
       case HouTianGua.Dui:
-        offset = Offset(baseEachGongSize*2+eachPaddingSize*5+2,baseEachGongSize+eachPaddingSize*3+1);
+        offset = Offset(baseEachGongSize * 2 + eachPaddingSize * 5 + 2,
+            baseEachGongSize + eachPaddingSize * 3 + 1);
         break;
       case HouTianGua.Gen:
-        offset = Offset(eachPaddingSize, baseEachGongSize*2+eachPaddingSize*5 + 2);
+        offset = Offset(
+            eachPaddingSize, baseEachGongSize * 2 + eachPaddingSize * 5 + 2);
         break;
       case HouTianGua.Kan:
-        offset = Offset(baseEachGongSize+eachPaddingSize*3+1, baseEachGongSize*2+eachPaddingSize*5+2);
+        offset = Offset(baseEachGongSize + eachPaddingSize * 3 + 1,
+            baseEachGongSize * 2 + eachPaddingSize * 5 + 2);
         break;
       case HouTianGua.Qian:
-        offset = Offset(baseEachGongSize*2+eachPaddingSize*5+2, baseEachGongSize*2+eachPaddingSize*5+2);
+        offset = Offset(baseEachGongSize * 2 + eachPaddingSize * 5 + 2,
+            baseEachGongSize * 2 + eachPaddingSize * 5 + 2);
         break;
       case HouTianGua.Center:
         // TODO: Handle this case.
-        offset = Offset(baseEachGongSize*2+eachPaddingSize*5+2, baseEachGongSize*2+eachPaddingSize*5+2);
+        offset = Offset(baseEachGongSize * 2 + eachPaddingSize * 5 + 2,
+            baseEachGongSize * 2 + eachPaddingSize * 5 + 2);
     }
-    return Offset(offset.dx+currentPanOffset.dx ,offset.dy+currentPanOffset.dy);
+    return Offset(
+        offset.dx + currentPanOffset.dx, offset.dy + currentPanOffset.dy);
   }
-  Widget buildEachGong(HouTianGua gua,ShiJiaQiMen pan,UITenGanKeYingGeJu tenGanGeJu){
 
+  Widget buildEachGong(
+      HouTianGua gua, ShiJiaQiMen pan, UITenGanKeYingGeJu tenGanGeJu) {
     return GestureDetector(
-      onDoubleTap: (){
-        if (selectedGongWidgetNotifier.value?.item2.key == gua){
+      onDoubleTap: () {
+        if (selectedGongWidgetNotifier.value?.item2.key == gua) {
           selectedGongWidgetNotifier.value = null;
-        }else{
+        } else {
           Offset offset = gongPositionOffset(gua);
           selectedGongWidgetNotifier.value = Tuple3(
               offset,
-              MapEntry<HouTianGua,EachGong>(gua, shiJiaZhuanPanQiMenValueNotifier.value!.gongMapper[gua]!),
-              buildEachGong(gua,pan,tenGanGeJu));
+              MapEntry<HouTianGua, EachGong>(gua,
+                  shiJiaZhuanPanQiMenValueNotifier.value!.gongMapper[gua]!),
+              buildEachGong(gua, pan, tenGanGeJu));
         }
       },
-      child:Hero(
+      child: Hero(
           tag: gua.name,
           child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(24)
-            ),
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(24)),
             child: EachGongWidget(
               gua: gua,
               pan: pan,
-              backgroundGong:gua == HouTianGua.Center?null:ConstantResourcesOfQiMen.defaultGongMapper[gua]!,
+              backgroundGong: gua == HouTianGua.Center
+                  ? null
+                  : ConstantResourcesOfQiMen.defaultGongMapper[gua]!,
               gongSize: baseEachGongSize,
               withNormalBorder: false,
               showHintNotifier: showHintNotifier,
-              tenGanKeYingGeJu: tenGanGeJu, gong: pan.gongMapper[gua]!,
+              tenGanKeYingGeJu: tenGanGeJu,
+              gong: pan.gongMapper[gua]!,
             ),
-          )
-      ),
+          )),
     );
   }
-
 }

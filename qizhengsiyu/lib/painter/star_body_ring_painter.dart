@@ -1,10 +1,8 @@
 import 'dart:math';
-import 'dart:ui';
 
-import 'package:flutter/cupertino.dart';
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 
-import '../enums/enum_stars.dart';
 import '../pages/ui_star_model.dart';
 
 class OuterLifeStarRangePainter extends CustomPainter {

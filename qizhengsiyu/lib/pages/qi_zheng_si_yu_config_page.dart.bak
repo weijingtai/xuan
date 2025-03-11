@@ -1,0 +1,233 @@
+import 'package:common/module.dart';
+import 'package:flutter/material.dart';
+
+import 'package:common/enums.dart';
+import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
+import 'package:qizhengsiyu/models/observer_position.dart';
+import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/viewmodels/panel_config_viewmodel.dart';
+
+import '../models/divination_model.dart';
+
+/// 七政四余命盘配置页面
+///
+/// 用于配置命盘的各项参数，包括基本信息、位置信息和自定义配置
+class QiZhengSiYuConfigPage extends StatefulWidget {
+  /// 配置完成后的回调函数
+  final Function(PanelConfig config) onConfigComplete;
+
+  /// 初始配置，用于恢复上次的设置
+  final PanelConfig? initialConfig;
+
+  const QiZhengSiYuConfigPage({
+    Key? key,
+    required this.onConfigComplete,
+    this.initialConfig,
+  }) : super(key: key);
+
+  @override
+  State<QiZhengSiYuConfigPage> createState() => _QiZhengSiYuConfigPageState();
+}
+
+class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+  late PanelConfigViewModel _viewModel;
+
+  // 使用ValueNotifier替代setState
+  late ValueNotifier<PanelConfigViewModel> _configTypeNotifier;
+  // late ValueNotifier<PanelConfigViewModel> _configTypeNotifier;
+
+  // 表单的全局键，用于验证
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+
+    // 初始化ViewModel
+    _viewModel = PanelConfigViewModel(widget.initialConfig);
+
+    // 初始化ValueNotifier
+    _configTypeNotifier =
+        ValueNotifier(widget.initialConfig?.configType ?? ConfigType.destiny);
+
+    // 监听标签页变化
+    _tabController.addListener(() {
+      final newConfigType = _tabController.index == 0
+          ? EnumQueryType.destiny
+          : EnumQueryType.divination;
+
+      // 更新ValueNotifier而不是使用setState
+      // _configTypeNotifier.value = newConfigType;
+      // _viewModel.updateConfigType(newConfigType);
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    _configTypeNotifier.dispose();
+    _viewModel.dispose();
+    super.dispose();
+  }
+
+  /// 提交配置
+  void _submitConfig() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+
+      // 保存配置到本地存储
+      // _viewModel.saveConfigToLocal();
+
+      // 调用回调函数
+      // widget.onConfigComplete(_viewModel.config);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('七政四余命盘配置'),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '命理运势'),
+            Tab(text: '卜问占测'),
+          ],
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: TabBarView(
+          controller: _tabController,
+          children: [
+            // 命理运势配置页
+            _buildDestinyConfigPage(),
+
+            // 占卜事情配置页
+            _buildDivinationConfigPage(),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: ElevatedButton(
+            onPressed: _submitConfig,
+            child: const Text('生成命盘'),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 构建命理运势配置页
+  Widget _buildDestinyConfigPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 第一部分：基本信息
+          ValueListenableBuilder<BasicPersonInfo>(
+            valueListenable: _viewModel.basicInfoNotifier,
+            builder: (context, basicInfo, _) {
+              return Placeholder();
+              // return BasicInfoSection(
+              //   configType: EnumQueryType.destiny,
+              //   onInfoChanged: _viewModel.updateBasicInfo,
+              //   initialInfo: basicInfo,
+              // );
+            },
+          ),
+
+          const Divider(height: 32),
+
+          // 第二部分：位置信息
+          ValueListenableBuilder<Location>(
+            valueListenable: _viewModel.locationNotifier,
+            builder: (context, location, _) {
+              return Placeholder();
+              // return LocationSection(
+              //   onLocationChanged: _viewModel.updateLocation,
+              //   initialLocation: location,
+              // );
+            },
+          ),
+
+          const Divider(height: 32),
+
+          // 第三部分：自定义配置
+          ValueListenableBuilder<PanelConfig>(
+            valueListenable: _viewModel.customConfigNotifier,
+            builder: (context, customConfig, _) {
+              return Placeholder();
+              // return CustomConfigSection(
+              //   onConfigChanged: _viewModel.updateCustomConfig,
+              //   initialConfig: customConfig,
+              // );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建占卜事情配置页
+  Widget _buildDivinationConfigPage() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 第一部分：基本信息
+          ValueListenableBuilder<QiZhengSiYuDivination>(
+            valueListenable: _viewModel.basicInfoNotifier,
+            builder: (context, basicInfo, _) {
+              return Placeholder();
+              // return BasicInfoSection(
+              //   configType: EnumQueryType.divination,
+              //   onInfoChanged: _viewModel.updateBasicInfo,
+              //   initialInfo: basicInfo,
+              // );
+            },
+          ),
+
+          const Divider(height: 32),
+
+          // 第二部分：位置信息
+          ValueListenableBuilder<Location>(
+            valueListenable: _viewModel.locationNotifier,
+            builder: (context, location, _) {
+              return Placeholder();
+              // return LocationSection(
+              // onLocationChanged: _viewModel.updateLocation,
+              // initialLocation: location,
+              // );
+            },
+          ),
+
+          const Divider(height: 32),
+
+          // 第三部分：自定义配置
+          ValueListenableBuilder<PanelConfig>(
+            valueListenable: _viewModel.customConfigNotifier,
+            builder: (context, customConfig, _) {
+              return Placeholder();
+
+              // return CustomConfigSection(
+              // onConfigChanged: _viewModel.updateCustomConfig,
+              // initialConfig: customConfig,
+              // );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 配置类型枚举

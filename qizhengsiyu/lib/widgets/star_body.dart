@@ -63,7 +63,7 @@ class _StarBodyState extends State<StarBody> {
         // "mouse hover ${isOn} ${showTinyInfoNotifier.value} - pinned:${pinned}");
       },
       onDoubleTap: () {
-        widget.allStarsShowNotifier.value = !widget.allStarsShowNotifier.value!;
+        widget.allStarsShowNotifier.value = !widget.allStarsShowNotifier.value;
       },
       onTap: () {
         if (widget.allStarsShowNotifier.value) {

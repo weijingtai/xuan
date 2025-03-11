@@ -3,7 +3,7 @@ PODS:
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
-  - "sweph (3.0.1+2.10.3)":
+  - "sweph (3.2.1+2.10.3)":
     - FlutterMacOS
 
 DEPENDENCIES:
@@ -22,7 +22,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   FlutterMacOS: 8f6f14fa908a6fb3fba0cd85dbd81ec4b251fb24
   path_provider_foundation: 2b6b4c569c0fb62ec74538f866245ac84301af46
-  sweph: 239b8ccfa71ce1b8154bab8d06f05c030ee05979
+  sweph: adfed55dba5deebaa46c338d7d2a745550420e9c
 
 PODFILE CHECKSUM: 236401fc2c932af29a9fcf0e97baeeb2d750d367
 

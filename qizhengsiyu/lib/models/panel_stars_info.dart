@@ -1,18 +1,18 @@
 import 'dart:convert';
 
+import 'package:common/enums.dart';
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_stars.dart';
 import 'eleven_stars_info.dart';
 
-class PanelStarsInfo{
+class PanelStarsInfo {
   final ElevenStarsInfo sun;
   final MoonInfo moon;
 
-  final FiveStarsInfo golden;
-  final FiveStarsInfo wood;
-  final FiveStarsInfo fire;
-  final FiveStarsInfo soil;
+  final FiveStarsInfo Venus;
+  final FiveStarsInfo Jupiter;
+  final FiveStarsInfo Mars;
+  final FiveStarsInfo Saturn;
   final FiveStarsInfo water;
 
   final LouJiStarsInfo ji;
@@ -23,14 +23,13 @@ class PanelStarsInfo{
   final bool isLunarEclipse;
   final bool isSunEclipse;
 
-
   PanelStarsInfo({
     required this.sun,
     required this.moon,
-    required this.golden,
-    required this.wood,
-    required this.fire,
-    required this.soil,
+    required this.Venus,
+    required this.Jupiter,
+    required this.Mars,
+    required this.Saturn,
     required this.water,
     required this.ji,
     required this.luo,
@@ -39,25 +38,24 @@ class PanelStarsInfo{
     required this.isSunLunarTouch,
     required this.isLunarEclipse,
     required this.isSunEclipse,
-
   });
 
-  ElevenStarsInfo getByStar(EnumStars star){
-    switch(star){
+  ElevenStarsInfo getByStar(EnumStars star) {
+    switch (star) {
       case EnumStars.Moon:
         return moon;
       case EnumStars.Sun:
         return sun;
-      case EnumStars.Golden:
-        return golden;
-      case EnumStars.Water:
+      case EnumStars.Venus:
+        return Venus;
+      case EnumStars.Mercury:
         return water;
-      case EnumStars.Wood:
-        return wood;
-      case EnumStars.Fire:
-        return fire;
-      case EnumStars.Soil:
-        return soil;
+      case EnumStars.Jupiter:
+        return Jupiter;
+      case EnumStars.Mars:
+        return Mars;
+      case EnumStars.Saturn:
+        return Saturn;
       case EnumStars.Qi:
         return qi;
       case EnumStars.Bei:
@@ -68,23 +66,20 @@ class PanelStarsInfo{
         return luo;
     }
   }
-
-
 }
 
-
-class StarsAngle{
+class StarsAngle {
   final double sun;
   final double moon;
 
-  final double golden;
-  final double goldenSpeed;
-  final double wood;
-  final double woodSpeed;
-  final double fire;
-  final double fireSpeed;
-  final double soil;
-  final double soilSpeed;
+  final double Venus;
+  final double VenusSpeed;
+  final double Jupiter;
+  final double JupiterSpeed;
+  final double Mars;
+  final double MarsSpeed;
+  final double Saturn;
+  final double SaturnSpeed;
   final double water;
   final double waterSpeed;
 
@@ -93,18 +88,17 @@ class StarsAngle{
   final double lilith;
   final double qi;
 
-
   StarsAngle({
     required this.sun,
     required this.moon,
-    required this.golden,
-    required this.goldenSpeed,
-    required this.wood,
-    required this.woodSpeed,
-    required this.fire,
-    required this.fireSpeed,
-    required this.soil,
-    required this.soilSpeed,
+    required this.Venus,
+    required this.VenusSpeed,
+    required this.Jupiter,
+    required this.JupiterSpeed,
+    required this.Mars,
+    required this.MarsSpeed,
+    required this.Saturn,
+    required this.SaturnSpeed,
     required this.water,
     required this.waterSpeed,
     required this.southNode,
@@ -113,29 +107,29 @@ class StarsAngle{
     required this.qi,
   });
 
-  double getByStar(EnumStars star){
+  double getByStar(EnumStars star) {
     double starAngle = 0;
-    switch(star){
+    switch (star) {
       case EnumStars.Moon:
         starAngle = moon;
         break;
       case EnumStars.Sun:
         starAngle = sun;
         break;
-      case EnumStars.Golden:
-        starAngle = golden;
+      case EnumStars.Venus:
+        starAngle = Venus;
         break;
-      case EnumStars.Water:
+      case EnumStars.Mercury:
         starAngle = water;
         break;
-      case EnumStars.Wood:
-        starAngle = wood;
+      case EnumStars.Jupiter:
+        starAngle = Jupiter;
         break;
-      case EnumStars.Fire:
-        starAngle = fire;
+      case EnumStars.Mars:
+        starAngle = Mars;
         break;
-      case EnumStars.Soil:
-        starAngle = soil;
+      case EnumStars.Saturn:
+        starAngle = Saturn;
         break;
       case EnumStars.Qi:
         starAngle = qi;
@@ -155,23 +149,21 @@ class StarsAngle{
 
   // to json
   Map<String, dynamic> toJson() => {
-    'sun': sun,
-    'lunar': moon,
-    'golden': golden,
-    'wood': wood,
-    'fire': fire,
-    'soil': soil,
-    'water': water,
-    'southNode': southNode,
-    'northNode': northNode,
-    'lilith': lilith,
-    'qi': qi,
-  };
+        'sun': sun,
+        'lunar': moon,
+        'Venus': Venus,
+        'Jupiter': Jupiter,
+        'Mars': Mars,
+        'Saturn': Saturn,
+        'water': water,
+        'southNode': southNode,
+        'northNode': northNode,
+        'lilith': lilith,
+        'qi': qi,
+      };
   // toString print json
   @override
   String toString() => jsonEncode(toJson());
-
-
 
   // # moira 中
   // #   火星迟行 速度节点为“0.409” 大于时为正常速度，小于时为迟行
@@ -204,41 +196,40 @@ class StarsAngle{
   // #   土星留行 速度节点"0.019",大 小于时开始成为“留行”
   // #   土星逆行 节点-0.012°/天
 
-
-
   // tuple6.item1 最快速度，item2 逆行最快，item3 逆行，item4 留行，item5疾行，item6 迟行
-  static Map<EnumStars,Tuple6<double,double,double,double,double?,double?>> moirasFiveStartsMapper ={
-    EnumStars.Fire: Tuple6(0.778, -0.386, -0.077, 0.074, 0.706, 0.409),
-    EnumStars.Golden: Tuple6(1.238, -0.613, -0.115, 0.103, null, 0.709),
-    EnumStars.Wood: Tuple6(0.236, -0.134, 0.022, 0.011, 0.23, 0.048),
-    EnumStars.Water: Tuple6(2.2, -1.348, -0.089, 0.129, 1.499, 0.868),
-    EnumStars.Soil: Tuple6(0.122, -0.075, -0.012, 0.019, null, null),
+  static Map<EnumStars,
+          Tuple6<double, double, double, double, double?, double?>>
+      moirasFiveStartsMapper = {
+    EnumStars.Mars: const Tuple6(0.778, -0.386, -0.077, 0.074, 0.706, 0.409),
+    EnumStars.Venus: const Tuple6(1.238, -0.613, -0.115, 0.103, null, 0.709),
+    EnumStars.Jupiter: const Tuple6(0.236, -0.134, 0.022, 0.011, 0.23, 0.048),
+    EnumStars.Mercury: const Tuple6(2.2, -1.348, -0.089, 0.129, 1.499, 0.868),
+    EnumStars.Saturn: const Tuple6(0.122, -0.075, -0.012, 0.019, null, null),
   };
 }
 
-class UIStarsAngle{
+class UIStarsAngle {
   final double sun;
   final double uiSunAngle;
 
   final double moon;
   final double uiMoonAngle;
 
-  final double golden;
-  final double goldenSpeed;
-  final double uiGoldenAngle;
+  final double Venus;
+  final double VenusSpeed;
+  final double uiVenusAngle;
 
+  final double Jupiter;
+  final double uiJupiterAngle;
+  final double JupiterSpeed;
 
-  final double wood;
-  final double uiWoodAngle;
-  final double woodSpeed;
+  final double Mars;
+  final double uiMarsAngle;
+  final double MarsSpeed;
 
-  final double fire;
-  final double uiFireAngle;
-  final double fireSpeed;
-
-  final double soil;
-  final double uiSoilAngle;
-  final double soilSpeed;
+  final double Saturn;
+  final double uiSaturnAngle;
+  final double SaturnSpeed;
 
   final double water;
   final double uiWaterAngle;
@@ -256,19 +247,17 @@ class UIStarsAngle{
   final double qi;
   final double uiQiAngle;
 
-
-  UIStarsAngle(
-      {
+  UIStarsAngle({
     required this.sun,
     required this.moon,
-    required this.golden,
-    required this.goldenSpeed,
-    required this.wood,
-    required this.woodSpeed,
-    required this.fire,
-    required this.fireSpeed,
-    required this.soil,
-    required this.soilSpeed,
+    required this.Venus,
+    required this.VenusSpeed,
+    required this.Jupiter,
+    required this.JupiterSpeed,
+    required this.Mars,
+    required this.MarsSpeed,
+    required this.Saturn,
+    required this.SaturnSpeed,
     required this.water,
     required this.waterSpeed,
     required this.southNode,
@@ -277,82 +266,83 @@ class UIStarsAngle{
     required this.qi,
     required this.uiSunAngle,
     required this.uiMoonAngle,
-    required this.uiGoldenAngle,
-    required this.uiWoodAngle,
-    required this.uiFireAngle,
-    required this.uiSoilAngle,
+    required this.uiVenusAngle,
+    required this.uiJupiterAngle,
+    required this.uiMarsAngle,
+    required this.uiSaturnAngle,
     required this.uiWaterAngle,
     required this.uiSouthNodeAngle,
     required this.uiNorthNodeAngle,
     required this.uiBeiAngle,
     required this.uiQiAngle,
-      });
+  });
 
-  UIStarsAngle.from(StarsAngle starsAngle,{
+  UIStarsAngle.from(
+    StarsAngle starsAngle, {
     required double? uiSunAngle,
     required double? uiMoonAngle,
-    required double? uiGoldenAngle,
-    required double? uiWoodAngle,
-    required double? uiFireAngle,
-    required double? uiSoilAngle,
+    required double? uiVenusAngle,
+    required double? uiJupiterAngle,
+    required double? uiMarsAngle,
+    required double? uiSaturnAngle,
     required double? uiWaterAngle,
     required double? uiSouthNodeAngle,
     required double? uiNorthNodeAngle,
     required double? uiBeiNodeAngle,
     required double? uiQiAngle,
-  }):this(
-    sun: starsAngle.sun,
-    moon: starsAngle.moon,
-    golden: starsAngle.golden,
-    goldenSpeed: starsAngle.goldenSpeed,
-    wood: starsAngle.wood,
-    woodSpeed: starsAngle.woodSpeed,
-    fire: starsAngle.fire,
-    fireSpeed: starsAngle.fireSpeed,
-    soil: starsAngle.soil,
-    soilSpeed: starsAngle.soilSpeed,
-    water: starsAngle.water,
-    waterSpeed: starsAngle.waterSpeed,
-    southNode: starsAngle.southNode,
-    northNode: starsAngle.northNode,
-    lilith: starsAngle.lilith,
-    qi: starsAngle.qi,
-    uiSunAngle: uiSunAngle??starsAngle.sun,
-    uiMoonAngle: uiMoonAngle??starsAngle.moon,
-    uiGoldenAngle: uiGoldenAngle??starsAngle.golden,
-    uiWoodAngle: uiWoodAngle??starsAngle.wood,
-  uiFireAngle: uiFireAngle??starsAngle.fire,
-  uiSoilAngle: uiSoilAngle??starsAngle.soil,
-  uiWaterAngle: uiWaterAngle??starsAngle.water,
-  uiSouthNodeAngle: uiSouthNodeAngle??starsAngle.southNode,
-  uiNorthNodeAngle: uiNorthNodeAngle??starsAngle.northNode,
-  uiBeiAngle: uiBeiNodeAngle??starsAngle.lilith,
-  uiQiAngle: uiQiAngle??starsAngle.qi,
-  );
+  }) : this(
+          sun: starsAngle.sun,
+          moon: starsAngle.moon,
+          Venus: starsAngle.Venus,
+          VenusSpeed: starsAngle.VenusSpeed,
+          Jupiter: starsAngle.Jupiter,
+          JupiterSpeed: starsAngle.JupiterSpeed,
+          Mars: starsAngle.Mars,
+          MarsSpeed: starsAngle.MarsSpeed,
+          Saturn: starsAngle.Saturn,
+          SaturnSpeed: starsAngle.SaturnSpeed,
+          water: starsAngle.water,
+          waterSpeed: starsAngle.waterSpeed,
+          southNode: starsAngle.southNode,
+          northNode: starsAngle.northNode,
+          lilith: starsAngle.lilith,
+          qi: starsAngle.qi,
+          uiSunAngle: uiSunAngle ?? starsAngle.sun,
+          uiMoonAngle: uiMoonAngle ?? starsAngle.moon,
+          uiVenusAngle: uiVenusAngle ?? starsAngle.Venus,
+          uiJupiterAngle: uiJupiterAngle ?? starsAngle.Jupiter,
+          uiMarsAngle: uiMarsAngle ?? starsAngle.Mars,
+          uiSaturnAngle: uiSaturnAngle ?? starsAngle.Saturn,
+          uiWaterAngle: uiWaterAngle ?? starsAngle.water,
+          uiSouthNodeAngle: uiSouthNodeAngle ?? starsAngle.southNode,
+          uiNorthNodeAngle: uiNorthNodeAngle ?? starsAngle.northNode,
+          uiBeiAngle: uiBeiNodeAngle ?? starsAngle.lilith,
+          uiQiAngle: uiQiAngle ?? starsAngle.qi,
+        );
 
-  double getByStar(EnumStars star){
+  double getByStar(EnumStars star) {
     double starAngle = 0;
-    switch(star){
+    switch (star) {
       case EnumStars.Moon:
         starAngle = moon;
         break;
       case EnumStars.Sun:
         starAngle = sun;
         break;
-      case EnumStars.Golden:
-        starAngle = golden;
+      case EnumStars.Venus:
+        starAngle = Venus;
         break;
-      case EnumStars.Water:
+      case EnumStars.Mercury:
         starAngle = water;
         break;
-      case EnumStars.Wood:
-        starAngle = wood;
+      case EnumStars.Jupiter:
+        starAngle = Jupiter;
         break;
-      case EnumStars.Fire:
-        starAngle = fire;
+      case EnumStars.Mars:
+        starAngle = Mars;
         break;
-      case EnumStars.Soil:
-        starAngle = soil;
+      case EnumStars.Saturn:
+        starAngle = Saturn;
         break;
       case EnumStars.Qi:
         starAngle = qi;
@@ -369,29 +359,30 @@ class UIStarsAngle{
     }
     return starAngle;
   }
-  double getUIAngleByStar(EnumStars star){
+
+  double getUIAngleByStar(EnumStars star) {
     double starAngle = 0;
-    switch(star){
+    switch (star) {
       case EnumStars.Moon:
         starAngle = uiMoonAngle;
         break;
       case EnumStars.Sun:
         starAngle = uiSunAngle;
         break;
-      case EnumStars.Golden:
-        starAngle = uiGoldenAngle;
+      case EnumStars.Venus:
+        starAngle = uiVenusAngle;
         break;
-      case EnumStars.Water:
+      case EnumStars.Mercury:
         starAngle = uiWaterAngle;
         break;
-      case EnumStars.Wood:
-        starAngle = uiWoodAngle;
+      case EnumStars.Jupiter:
+        starAngle = uiJupiterAngle;
         break;
-      case EnumStars.Fire:
-        starAngle = uiFireAngle;
+      case EnumStars.Mars:
+        starAngle = uiMarsAngle;
         break;
-      case EnumStars.Soil:
-        starAngle = uiSoilAngle;
+      case EnumStars.Saturn:
+        starAngle = uiSaturnAngle;
         break;
       case EnumStars.Qi:
         starAngle = uiQiAngle;
@@ -403,32 +394,29 @@ class UIStarsAngle{
         starAngle = uiNorthNodeAngle;
         break;
       case EnumStars.Luo:
-        starAngle = uiSoilAngle;
+        starAngle = uiSaturnAngle;
         break;
     }
     return starAngle;
   }
 
-
   // to json
   Map<String, dynamic> toJson() => {
-    'sun': sun,
-    'lunar': moon,
-    'golden': golden,
-    'wood': wood,
-    'fire': fire,
-    'soil': soil,
-    'water': water,
-    'southNode': southNode,
-    'northNode': northNode,
-    'lilith': lilith,
-    'qi': qi,
-  };
+        'sun': sun,
+        'lunar': moon,
+        'Venus': Venus,
+        'Jupiter': Jupiter,
+        'Mars': Mars,
+        'Saturn': Saturn,
+        'water': water,
+        'southNode': southNode,
+        'northNode': northNode,
+        'lilith': lilith,
+        'qi': qi,
+      };
   // toString print json
   @override
   String toString() => jsonEncode(toJson());
-
-
 
   // # moira 中
   // #   火星迟行 速度节点为“0.409” 大于时为正常速度，小于时为迟行
@@ -460,5 +448,4 @@ class UIStarsAngle{
   // #  土星没有迟与疾
   // #   土星留行 速度节点"0.019",大 小于时开始成为“留行”
   // #   土星逆行 节点-0.012°/天
-
 }

@@ -1,9 +1,5 @@
-import 'package:common/model/enum_di_zhi.dart';
-import 'package:common/model/enum_twelve_star_seq.dart';
-import 'package:common/module.dart';
-
-import 'enum_qi_zheng.dart';
-import 'enum_stars.dart';
+import 'package:common/enums.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 enum EnumDestinyTwelveGong {
   Ming(0, "命宫", true),
@@ -30,30 +26,49 @@ enum EnumDestinyTwelveGong {
 }
 
 enum EnumTwelveGong {
-  Zi(DiZhi.ZI, HouTianGua.Kan, EnumStars.Soil, TwelveStarSeq.Xuang_Xiao,
-      TwelveEclipticGong.AQU, false),
-  Chou(DiZhi.CHOU, HouTianGua.Kan, EnumStars.Soil, TwelveStarSeq.Xing_Ji,
-      TwelveEclipticGong.CAP, false),
-  Yin(DiZhi.YIN, HouTianGua.Gen, EnumStars.Wood, TwelveStarSeq.Xi_Mu,
-      TwelveEclipticGong.SAG, false),
-  Mao(DiZhi.MAO, HouTianGua.Zhen, EnumStars.Fire, TwelveStarSeq.Da_Huo,
-      TwelveEclipticGong.SCO, true),
-  Chen(DiZhi.CHEN, HouTianGua.Xun, EnumStars.Golden, TwelveStarSeq.Shou_Xing,
-      TwelveEclipticGong.LIB, true),
-  Si(DiZhi.SI, HouTianGua.Xun, EnumStars.Water, TwelveStarSeq.Chun_Wei,
-      TwelveEclipticGong.VIR, true),
+  @JsonValue("子")
+  Zi(DiZhi.ZI, HouTianGua.Kan, EnumStars.Saturn, TwelveStarSeq.Xuang_Xiao,
+      TwelveEclipticGong.AQU, false, YinYang.YANG),
+  @JsonValue("丑")
+  Chou(DiZhi.CHOU, HouTianGua.Kan, EnumStars.Saturn, TwelveStarSeq.Xing_Ji,
+      TwelveEclipticGong.CAP, false, YinYang.YIN),
+  @JsonValue("寅")
+  Yin(DiZhi.YIN, HouTianGua.Gen, EnumStars.Jupiter, TwelveStarSeq.Xi_Mu,
+      TwelveEclipticGong.SAG, false, YinYang.YANG),
+
+  @JsonValue("卯")
+  Mao(DiZhi.MAO, HouTianGua.Zhen, EnumStars.Mars, TwelveStarSeq.Da_Huo,
+      TwelveEclipticGong.SCO, true, YinYang.YIN),
+
+  @JsonValue("辰")
+  Chen(DiZhi.CHEN, HouTianGua.Xun, EnumStars.Venus, TwelveStarSeq.Shou_Xing,
+      TwelveEclipticGong.LIB, true, YinYang.YANG),
+
+  @JsonValue("巳")
+  Si(DiZhi.SI, HouTianGua.Xun, EnumStars.Mercury, TwelveStarSeq.Chun_Wei,
+      TwelveEclipticGong.VIR, true, YinYang.YIN),
+
+  @JsonValue("午")
   Wu(DiZhi.WU, HouTianGua.Li, EnumStars.Sun, TwelveStarSeq.Chun_Huo,
-      TwelveEclipticGong.LEO, true),
+      TwelveEclipticGong.LEO, true, YinYang.YANG),
+  @JsonValue("未")
   Wei(DiZhi.WEI, HouTianGua.Kun, EnumStars.Moon, TwelveStarSeq.Chun_Shou,
-      TwelveEclipticGong.CAN, true),
-  Shen(DiZhi.SHEN, HouTianGua.Kun, EnumStars.Water, TwelveStarSeq.Shi_Shen,
-      TwelveEclipticGong.GEM, true),
-  You(DiZhi.YOU, HouTianGua.Dui, EnumStars.Golden, TwelveStarSeq.Da_Liang,
-      TwelveEclipticGong.TAU, false),
-  Xu(DiZhi.XU, HouTianGua.Qian, EnumStars.Fire, TwelveStarSeq.Jiang_Lou,
-      TwelveEclipticGong.ARI, false),
-  Hai(DiZhi.HAI, HouTianGua.Qian, EnumStars.Wood, TwelveStarSeq.Ju_Zi,
-      TwelveEclipticGong.PIS, false);
+      TwelveEclipticGong.CAN, true, YinYang.YIN),
+  @JsonValue("申")
+  Shen(DiZhi.SHEN, HouTianGua.Kun, EnumStars.Mercury, TwelveStarSeq.Shi_Shen,
+      TwelveEclipticGong.GEM, true, YinYang.YANG),
+
+  @JsonValue("酉")
+  You(DiZhi.YOU, HouTianGua.Dui, EnumStars.Venus, TwelveStarSeq.Da_Liang,
+      TwelveEclipticGong.TAU, false, YinYang.YIN),
+
+  @JsonValue("戌")
+  Xu(DiZhi.XU, HouTianGua.Qian, EnumStars.Mars, TwelveStarSeq.Jiang_Lou,
+      TwelveEclipticGong.ARI, false, YinYang.YANG),
+
+  @JsonValue("亥")
+  Hai(DiZhi.HAI, HouTianGua.Qian, EnumStars.Jupiter, TwelveStarSeq.Ju_Zi,
+      TwelveEclipticGong.PIS, false, YinYang.YIN);
 
   final DiZhi zhi;
   final HouTianGua houTianGua;
@@ -62,12 +77,13 @@ enum EnumTwelveGong {
   final TwelveEclipticGong twelveEclipticGong;
 
   final bool isDayOrNight;
+  final YinYang yinYangGong;
   String get fullname => "${zhi.name}${houTianGua.name}${zheng.singleName}";
   static get eclipticSeq =>
       [Xu, You, Shen, Wei, Wu, Si, Chen, Mao, Yin, Chou, Zi, Hai];
 
   const EnumTwelveGong(this.zhi, this.houTianGua, this.zheng, this.starSeq,
-      this.twelveEclipticGong, this.isDayOrNight);
+      this.twelveEclipticGong, this.isDayOrNight, this.yinYangGong);
   static EnumTwelveGong getEnumTwelveGongByZhi(DiZhi zhi) {
     return EnumTwelveGong.values.where((e) => e.zhi == zhi).first;
   }

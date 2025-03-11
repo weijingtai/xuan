@@ -1,12 +1,86 @@
+import 'package:common/datamodel/basic_person_info.dart';
+import 'package:common/enums.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_twenty_eight_xing_xiu.dart';
-import 'star_xiu_type.dart';
+import 'star_hidden_type.dart';
+import 'star_inn_gong_degree.dart';
 
-class QizhengsSiYuPanModel {
+class QiZhengsSiYuPanelModel {
+  BasicPersonInfo basicInfo;
+  PanelCelesticalInfo panelInfo;
+
+  // 是否为真太阳时
+  bool isApparentSolarTime;
+  // 是否为夏令时
+  bool isDayLightSavingTime;
+
+  // 以下是一些关于盘面中细节的阈值设定，如：星体于太阳的角度小于少时被视为“伏藏”
+  StarHiddenType hiddenType; // 星体在太阳周围伏藏的角度，一般为“8”，也有认为“15”
+
+  // 身命
+
+  // 星曜
+
+  // 十二地支宫
+
+  // 化曜 - 科名、科甲之类
+
+  QiZhengsSiYuPanelModel({
+    required this.basicInfo,
+    required this.panelInfo,
+    required this.hiddenType,
+    required this.isApparentSolarTime,
+    required this.isDayLightSavingTime,
+  });
+
+  /// @return
+  /// tuple.item1 角度 入宫 0°为戌宫0° 逆时针
+  /// tuple.item2 入宫度数
+  static Tuple2<EnumTwelveGong, double> calculateStarAngleEnterDiZhiGong(
+      double starAngle) {
+    double enterGongAngle = starAngle.floorToDouble();
+    if (enterGongAngle == 0) {
+      return Tuple2(EnumTwelveGong.Xu, starAngle);
+    }
+    int totalPassedGong = enterGongAngle ~/ 30;
+    double leftAngle = starAngle - 30 * totalPassedGong;
+    return Tuple2(EnumTwelveGong.eclipticSeq[totalPassedGong], leftAngle);
+  }
+
+  /// @return
+  /// tuple.item1 角度 入星宿 入宫 0°为戌宫0° 逆时针
+  /// tuple.item2 入星宿度数
+  static Tuple2<TwentyEightStarInn, double> calculateStarAngleEnterStarInn(
+      double starAngle,
+      StarPanelType type,
+      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper) {
+    int tmpStarAngle = ((starAngle + type.firstAtZeroDegree) * 100).round();
+
+    int previousAngle = tmpStarAngle;
+    for (int i = 0; i < 28; i++) {
+      TwentyEightStarInn starInn = type.starInnOrder[i];
+      StarInnGongDegreeInfo starXiuType = mapper[starInn]!;
+      int angle = previousAngle - (starXiuType.totalDegree * 100).round();
+      if (angle <= 0) {
+        return Tuple2(starInn, (previousAngle * 0.01));
+      }
+      if (i == 27) {
+        if (angle == 0) {
+          return Tuple2(type.starInnOrder.first, 0);
+        }
+        if (angle > 0) {
+          return Tuple2(type.starInnOrder.first, (angle * 0.01));
+        }
+      }
+      previousAngle = angle;
+    }
+
+    return Tuple2(type.starInnOrder.first, 0);
+  }
+
   /// @return
   /// tuple.item1 入宫
   /// tuple.item2 入宫度数
@@ -23,38 +97,39 @@ class QizhengsSiYuPanModel {
   }
 
   /// @return
-  /// tuple.item1 入宫
-  /// tuple.item2 入宫度数
+  /// tuple.item1 入星宿
+  /// tuple.item2 入星宿度数
   static Tuple2<TwentyEightStarInn, double> calculateEnterStarInn(
       UIStarModel star,
       StarPanelType type,
-      Map<TwentyEightStarInn, StarXiuType> mapper) {
+      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper) {
     //
     double starAngle = star.angle;
-    double enterGongAngle = starAngle.floorToDouble();
+    // double enterGongAngle = starAngle.floorToDouble();
+    int enterGongAngle = starAngle.round();
     // if (starAngle <= type.firstAtZeroDegree) {
     // return Tuple2(type.starInnOrder.first, 0);
     // }
 
-    int _tmpStarAngle = ((star.angle + type.firstAtZeroDegree) * 100).floor();
+    int tmpStarAngle = ((star.angle + type.firstAtZeroDegree) * 100).round();
 
-    int previousAngle = _tmpStarAngle;
+    int previousAngle = tmpStarAngle;
     for (int i = 0; i < 28; i++) {
       TwentyEightStarInn starInn = type.starInnOrder[i];
-      StarXiuType starXiuType = mapper[starInn]!;
-      int _angle = previousAngle - (starXiuType.totalDegree * 100).floor();
-      if (_angle <= 0) {
+      StarInnGongDegreeInfo starXiuType = mapper[starInn]!;
+      int angle = previousAngle - (starXiuType.totalDegree * 100).round();
+      if (angle <= 0) {
         return Tuple2(starInn, (previousAngle * 0.01));
       }
       if (i == 27) {
-        if (_angle == 0) {
+        if (angle == 0) {
           return Tuple2(type.starInnOrder.first, 0);
         }
-        if (_angle > 0) {
-          return Tuple2(type.starInnOrder.first, (_angle * 0.01));
+        if (angle > 0) {
+          return Tuple2(type.starInnOrder.first, (angle * 0.01));
         }
       }
-      previousAngle = _angle;
+      previousAngle = angle;
     }
 
     return Tuple2(type.starInnOrder.first, 0);

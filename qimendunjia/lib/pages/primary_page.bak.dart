@@ -24,17 +24,14 @@ class _PrimaryPageState extends State<PrimaryPage> {
     height: 1,
     color: Colors.grey.withOpacity(.2),
   );
-  TextStyle panTianGanTextStyle = TextStyle(
-      fontSize: 24,
-      color: Colors.white,
-      height: 1,
-      shadows: [
-        Shadow(
-          color: Colors.grey.withOpacity(.6),
-          offset: Offset(0, 2),
-          blurRadius: 4,
-        )
-      ]);
+  TextStyle panTianGanTextStyle =
+      TextStyle(fontSize: 24, color: Colors.white, height: 1, shadows: [
+    Shadow(
+      color: Colors.grey.withOpacity(.6),
+      offset: const Offset(0, 2),
+      blurRadius: 4,
+    )
+  ]);
 
   List<List<String>> twoDimensionalList = [
     ["A1", "A2", "A3"],
@@ -46,40 +43,40 @@ class _PrimaryPageState extends State<PrimaryPage> {
       GongFixedContent(
           numberName: "肆",
           guaName: "巽",
-          jieQiData: Tuple3<String, String, String>("立夏", "小满", "芒种")),
+          jieQiData: const Tuple3<String, String, String>("立夏", "小满", "芒种")),
       GongFixedContent(
           numberName: "玖",
           guaName: "离",
-          jieQiData: Tuple3<String, String, String>("夏至", "小暑", "大暑")),
+          jieQiData: const Tuple3<String, String, String>("夏至", "小暑", "大暑")),
       GongFixedContent(
           numberName: "贰",
           guaName: "坤",
-          jieQiData: Tuple3<String, String, String>("立秋", "处暑", "白露")),
+          jieQiData: const Tuple3<String, String, String>("立秋", "处暑", "白露")),
     ],
     [
       GongFixedContent(
           numberName: "叁",
           guaName: "震",
-          jieQiData: Tuple3<String, String, String>("春分", "清明", "谷雨")),
+          jieQiData: const Tuple3<String, String, String>("春分", "清明", "谷雨")),
       GongFixedContent(numberName: "伍", guaName: "中", jieQiData: null),
       GongFixedContent(
           numberName: "柒",
           guaName: "兑",
-          jieQiData: Tuple3<String, String, String>("秋分", "寒露", "霜降")),
+          jieQiData: const Tuple3<String, String, String>("秋分", "寒露", "霜降")),
     ],
     [
       GongFixedContent(
           numberName: "捌",
           guaName: "艮",
-          jieQiData: Tuple3<String, String, String>("立春", "雨水", "惊蛰")),
+          jieQiData: const Tuple3<String, String, String>("立春", "雨水", "惊蛰")),
       GongFixedContent(
           numberName: "壹",
           guaName: "坎",
-          jieQiData: Tuple3<String, String, String>("冬至", "小寒", "大寒")),
+          jieQiData: const Tuple3<String, String, String>("冬至", "小寒", "大寒")),
       GongFixedContent(
           numberName: "陆",
           guaName: "乾",
-          jieQiData: Tuple3<String, String, String>("立冬", "小雪", "大雪")),
+          jieQiData: const Tuple3<String, String, String>("立冬", "小雪", "大雪")),
     ],
   ];
   final List<String> indexList = const [
@@ -105,15 +102,15 @@ class _PrimaryPageState extends State<PrimaryPage> {
     "C3": GlobalKey<CellState>(),
   };
   Map<String, Tuple2<int, int>> mapper = {
-    "A1": Tuple2(0, 0),
-    "A2": Tuple2(0, 1),
-    "A3": Tuple2(0, 2),
-    "B1": Tuple2(1, 0),
-    "B2": Tuple2(1, 1),
-    "B3": Tuple2(1, 2),
-    "C1": Tuple2(2, 0),
-    "C2": Tuple2(2, 1),
-    "C3": Tuple2(2, 2),
+    "A1": const Tuple2(0, 0),
+    "A2": const Tuple2(0, 1),
+    "A3": const Tuple2(0, 2),
+    "B1": const Tuple2(1, 0),
+    "B2": const Tuple2(1, 1),
+    "B3": const Tuple2(1, 2),
+    "C1": const Tuple2(2, 0),
+    "C2": const Tuple2(2, 1),
+    "C3": const Tuple2(2, 2),
   };
 
   List<String> xianTianIndex = [
@@ -304,10 +301,10 @@ class _PrimaryPageState extends State<PrimaryPage> {
       }
     }
 
-    sixXunList.forEach((e) {
+    for (var e in sixXunList) {
       sixXunMapper[e.item1] = Tuple2(e.item2, e.item3);
       debugPrint(sixXunMapper[e.item1]!.item1.toString());
-    });
+    }
   }
 
   @override
@@ -354,7 +351,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
             Container(
                 width: 6 + 256 * 3,
                 height: 6 + 256 * 3,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                     // border: Border.all(color: Colors.grey, width: 1),
                     ),
                 // 使用Row与Column完成一个3*3的单元格
@@ -368,7 +365,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                   child: buildEmptyPlate(),
                 )),
             Container(
-              padding: EdgeInsets.only(top: 8),
+              padding: const EdgeInsets.only(top: 8),
               alignment: Alignment.center,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -403,9 +400,9 @@ class _PrimaryPageState extends State<PrimaryPage> {
                       //   currentIndex = 0;
                       // }
                     },
-                    child: Text("先天"),
+                    child: const Text("先天"),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     width: 8,
                   ),
                   ElevatedButton(
@@ -425,7 +422,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         currentIndex = 0;
                       }
                     },
-                    child: Text("后天"),
+                    child: const Text("后天"),
                   )
                 ],
               ),
@@ -449,8 +446,8 @@ class _PrimaryPageState extends State<PrimaryPage> {
               opacity: .3,
               child: Image.asset("assets/icons/bagua-mirror-64.png")),
           AnimatedDefaultTextStyle(
-            duration: Duration(milliseconds: 500),
-            style: TextStyle(
+            duration: const Duration(milliseconds: 500),
+            style: const TextStyle(
                 fontSize: 24,
                 color: Colors.black54,
                 height: 1.2,
@@ -477,9 +474,9 @@ class _PrimaryPageState extends State<PrimaryPage> {
 
   void debugPrintCurrentPan(List<List<QiMenDunJiaGong>> pan) {
     // print initGongContent as a table
-    pan.forEach((e) {
+    for (var e in pan) {
       debugPrint(e.toString());
-    });
+    }
   }
 
   Widget buildJieQiTag(String? name, {bool isVertical = true}) {
@@ -494,15 +491,16 @@ class _PrimaryPageState extends State<PrimaryPage> {
         width: 24,
         height: 48,
         alignment: Alignment.center,
-        padding: EdgeInsets.only(left: 4, right: 2, bottom: 2),
+        padding: const EdgeInsets.only(left: 4, right: 2, bottom: 2),
         decoration: BoxDecoration(
           // border: Border.all(color: Colors.blueAccent, width: 2),
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
           color: Colors.blueAccent.withOpacity(.2),
         ),
         child: Text(
           name,
-          style: TextStyle(fontSize: 16, color: Colors.black87, height: 1.0),
+          style:
+              const TextStyle(fontSize: 16, color: Colors.black87, height: 1.0),
         ),
       ),
     );
@@ -536,7 +534,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                     Expanded(
                       flex: 2,
                       child: AnimatedDefaultTextStyle(
-                        duration: Duration(milliseconds: 500),
+                        duration: const Duration(milliseconds: 500),
                         style: background_gongName_TextStyle,
                         child: Text(fixed.numberName),
                       ),
@@ -561,15 +559,15 @@ class _PrimaryPageState extends State<PrimaryPage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 buildHouTianGongGuaTag(fixed.guaName),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item3),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item2),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item1),
@@ -581,7 +579,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                     ),
                   ],
                 )),
-            Container(
+            SizedBox(
               width: 256,
               height: 256,
               child: Column(
@@ -600,10 +598,10 @@ class _PrimaryPageState extends State<PrimaryPage> {
                       tianDiYinPan(moving),
                       Container(
                         alignment: Alignment.center,
-                        padding: EdgeInsets.only(left: 24),
-                        child:RichText(
+                        padding: const EdgeInsets.only(left: 24),
+                        child: RichText(
                             text: TextSpan(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 36,
                                     color: Colors.black87,
                                     height: 1.2,
@@ -620,21 +618,19 @@ class _PrimaryPageState extends State<PrimaryPage> {
                                       )
                                     ]),
                                 children: [
-                                  TextSpan(text:moving.eightDoor ?? ""),
-                                ]
-                            )
-                        ),
+                              TextSpan(text: moving.eightDoor ?? ""),
+                            ])),
                       ),
                       moving.eightGod == null
-                          ? Container(
+                          ? SizedBox(
                               height: 72,
                               width: 108,
                             )
-                          : shenStarPart(
-                              moving.eightGod!, moving.nineStar!, moving.nineStar_ji),
+                          : shenStarPart(moving.eightGod!, moving.nineStar!,
+                              moving.nineStar_ji),
                     ],
                   ),
-                  Container(
+                  SizedBox(
                     height: 72,
                     width: 256,
                     child: Row(
@@ -642,7 +638,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Container(),
-                        SizedBox(height:48)
+                        const SizedBox(height: 48)
                         // Container(
                         //   height: 48,
                         //   width: 48,
@@ -684,7 +680,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                   Container(
                     width: 256,
                     alignment: Alignment.centerLeft,
-                    padding: EdgeInsets.only(bottom: 4),
+                    padding: const EdgeInsets.only(bottom: 4),
                     child: Container(
                       width: 72,
                       height: 48,
@@ -694,20 +690,18 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         boxShadow: [
                           BoxShadow(
                             color: Colors.blue.withOpacity(.2),
-                            offset: Offset(0, 2),
+                            offset: const Offset(0, 2),
                             blurRadius: 4,
                             spreadRadius: 2,
                           )
                         ],
                         borderRadius:
-                        BorderRadius.all(Radius.circular(16)),
+                            const BorderRadius.all(Radius.circular(16)),
                       ),
-                      child: AnimatedDefaultTextStyle(
+                      child: const AnimatedDefaultTextStyle(
                         duration: Duration(milliseconds: 500),
                         style: TextStyle(
-                            fontSize: 24,
-                            color: Colors.white,
-                            height: 1.2),
+                            fontSize: 24, color: Colors.white, height: 1.2),
                         child: Text("甲子"),
                       ),
                     ),
@@ -720,22 +714,23 @@ class _PrimaryPageState extends State<PrimaryPage> {
       ),
     );
   }
-  Widget tianDiYinPan(QiMenDunJiaGong moving){
+
+  Widget tianDiYinPan(QiMenDunJiaGong moving) {
     return Container(
         width: 56,
-        height: 108+6,
+        height: 108 + 6,
         alignment: Alignment.center,
         decoration: BoxDecoration(
           // color: Colors.blue,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(.1),
-              offset: Offset(0, 2),
+              offset: const Offset(0, 2),
               blurRadius: 4,
               spreadRadius: 2,
             )
           ],
-          borderRadius: BorderRadius.all(Radius.circular(16)),
+          borderRadius: const BorderRadius.all(Radius.circular(16)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -744,83 +739,98 @@ class _PrimaryPageState extends State<PrimaryPage> {
             Container(
                 width: 56,
                 height: 36,
-                padding: EdgeInsets.only(bottom: 4),
+                padding: const EdgeInsets.only(bottom: 4),
                 alignment: Alignment.bottomCenter,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.only(topLeft: Radius.circular(16),topRight: Radius.circular(16)),
+                  borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16)),
                 ),
                 child: RichText(
-                  text: TextSpan(
-                      children: [
-                        TextSpan(text:moving.tianPan??"",style: panTianGanTextStyle.copyWith(color: Colors.black87,shadows: [
-                          Shadow(
-                            color: Colors.black87.withOpacity(.2),
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                          )
-                        ]),),
-                        TextSpan(text:moving.tianPan_ji??"",style: panTianGanTextStyle.copyWith(fontSize: 16,color: Colors.black87,shadows: [
-                          Shadow(
-                            color: Colors.black87.withOpacity(.2),
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                          )
-                        ]),)
-                      ]
-                  ),
-                )
-            ),
+                  text: TextSpan(children: [
+                    TextSpan(
+                      text: moving.tianPan ?? "",
+                      style: panTianGanTextStyle
+                          .copyWith(color: Colors.black87, shadows: [
+                        Shadow(
+                          color: Colors.black87.withOpacity(.2),
+                          offset: const Offset(0, 2),
+                          blurRadius: 4,
+                        )
+                      ]),
+                    ),
+                    TextSpan(
+                      text: moving.tianPan_ji ?? "",
+                      style: panTianGanTextStyle.copyWith(
+                          fontSize: 16,
+                          color: Colors.black87,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black87.withOpacity(.2),
+                              offset: const Offset(0, 2),
+                              blurRadius: 4,
+                            )
+                          ]),
+                    )
+                  ]),
+                )),
             Container(
                 width: 56,
                 height: 36,
                 alignment: Alignment.center,
-                padding: EdgeInsets.only(bottom: 2),
+                padding: const EdgeInsets.only(bottom: 2),
                 decoration: BoxDecoration(
                   color: Colors.blueGrey.withOpacity(.5),
                 ),
-                child: Text(moving.yinPan??"",style: panTianGanTextStyle.copyWith(color: Colors.deepPurple,shadows: [
-                  Shadow(
-                    color: Colors.deepPurple.withOpacity(.2),
-                    offset: Offset(0, 2),
-                    blurRadius: 4,
-                  )
-                ]))),
+                child: Text(moving.yinPan ?? "",
+                    style: panTianGanTextStyle
+                        .copyWith(color: Colors.deepPurple, shadows: [
+                      Shadow(
+                        color: Colors.deepPurple.withOpacity(.2),
+                        offset: const Offset(0, 2),
+                        blurRadius: 4,
+                      )
+                    ]))),
             Container(
                 width: 56,
                 height: 40,
                 alignment: Alignment.topCenter,
-                padding: EdgeInsets.only(top:8),
-                decoration: BoxDecoration(
+                padding: const EdgeInsets.only(top: 8),
+                decoration: const BoxDecoration(
                   color: Colors.black54,
-                  borderRadius: BorderRadius.only(bottomLeft: Radius.circular(16),bottomRight: Radius.circular(16)),
+                  borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(16),
+                      bottomRight: Radius.circular(16)),
                 ),
                 child: RichText(
-                  text: TextSpan(
-                      children: [
-                        TextSpan(text: moving.diPan??"",style: panTianGanTextStyle.copyWith(color: Colors.white,shadows: [
+                  text: TextSpan(children: [
+                    TextSpan(
+                        text: moving.diPan ?? "",
+                        style: panTianGanTextStyle
+                            .copyWith(color: Colors.white, shadows: [
                           Shadow(
                             color: Colors.white.withOpacity(.2),
-                            offset: Offset(0, 2),
+                            offset: const Offset(0, 2),
                             blurRadius: 4,
                           )
                         ])),
-                        TextSpan(text: moving.diPan_ji??"",style: panTianGanTextStyle.copyWith(fontSize:16,color: Colors.white,shadows: [
-                          Shadow(
-                            color: Colors.white.withOpacity(.2),
-                            offset: Offset(0, 2),
-                            blurRadius: 4,
-                          )
-                        ])),
-
-                      ]
-                  ),
-                )
-
-            )
+                    TextSpan(
+                        text: moving.diPan_ji ?? "",
+                        style: panTianGanTextStyle.copyWith(
+                            fontSize: 16,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Colors.white.withOpacity(.2),
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                              )
+                            ])),
+                  ]),
+                ))
           ],
-        )
-    );
+        ));
   }
 
   @deprecated
@@ -852,7 +862,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                     Expanded(
                       flex: 2,
                       child: AnimatedDefaultTextStyle(
-                        duration: Duration(milliseconds: 500),
+                        duration: const Duration(milliseconds: 500),
                         style: background_gongName_TextStyle,
                         child: Text(fixed.numberName),
                       ),
@@ -864,7 +874,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           moving.eightDoor == null
-                              ? SizedBox(
+                              ? const SizedBox(
                                   width: 48,
                                   height: 48,
                                 )
@@ -877,17 +887,17 @@ class _PrimaryPageState extends State<PrimaryPage> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.blueGrey.withOpacity(.2),
-                                        offset: Offset(0, 2),
+                                        offset: const Offset(0, 2),
                                         blurRadius: 4,
                                         spreadRadius: 2,
                                       )
                                     ],
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(16)),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(16)),
                                   ),
                                   child: AnimatedDefaultTextStyle(
-                                    duration: Duration(milliseconds: 500),
-                                    style: TextStyle(
+                                    duration: const Duration(milliseconds: 500),
+                                    style: const TextStyle(
                                         fontSize: 24,
                                         color: Colors.white,
                                         height: 1.2),
@@ -903,15 +913,15 @@ class _PrimaryPageState extends State<PrimaryPage> {
                               crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 buildHouTianGongGuaTag(fixed.guaName),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item3),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item2),
-                                SizedBox(
+                                const SizedBox(
                                   width: 8,
                                 ),
                                 buildJieQiTag(fixed.jieQiData?.item1),
@@ -923,7 +933,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                     ),
                   ],
                 )),
-            Container(
+            SizedBox(
               width: 256,
               height: 256,
               child: Column(
@@ -943,15 +953,16 @@ class _PrimaryPageState extends State<PrimaryPage> {
                           boxShadow: [
                             BoxShadow(
                               color: Colors.blue.withOpacity(.4),
-                              offset: Offset(0, 2),
+                              offset: const Offset(0, 2),
                               blurRadius: 4,
                               spreadRadius: 2,
                             )
                           ],
-                          borderRadius: BorderRadius.all(Radius.circular(16)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(16)),
                         ),
                         child: AnimatedDefaultTextStyle(
-                          duration: Duration(milliseconds: 500),
+                          duration: const Duration(milliseconds: 500),
                           style: TextStyle(
                               fontSize: 24,
                               color: Colors.white,
@@ -959,7 +970,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                               shadows: [
                                 Shadow(
                                   color: Colors.grey.withOpacity(.6),
-                                  offset: Offset(0, 2),
+                                  offset: const Offset(0, 2),
                                   blurRadius: 4,
                                 )
                               ]),
@@ -968,7 +979,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         ),
                       ),
                       moving.eightShen == null
-                          ? Container(
+                          ? SizedBox(
                               height: 72,
                               width: 86,
                             )
@@ -976,7 +987,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                               moving.eightShen!, moving.nineStar!, null),
                     ],
                   ),
-                  Container(
+                  SizedBox(
                     height: 72,
                     width: 256,
                     child: Row(
@@ -988,14 +999,15 @@ class _PrimaryPageState extends State<PrimaryPage> {
                           height: 48,
                           width: 48,
                           alignment: Alignment.center,
-                          padding: EdgeInsets.only(bottom: 4),
+                          padding: const EdgeInsets.only(bottom: 4),
                           decoration: BoxDecoration(
                             color: Colors.black45,
-                            borderRadius: BorderRadius.all(Radius.circular(24)),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(24)),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(.3),
-                                offset: Offset(0, 1),
+                                offset: const Offset(0, 1),
                                 blurRadius: 4,
                                 spreadRadius: 2,
                               )
@@ -1010,7 +1022,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                                 shadows: [
                                   Shadow(
                                     color: Colors.white.withOpacity(.4),
-                                    offset: Offset(0, 2),
+                                    offset: const Offset(0, 2),
                                     blurRadius: 4,
                                   )
                                 ]),
@@ -1019,7 +1031,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                       ],
                     ),
                   ),
-                  SizedBox(
+                  const SizedBox(
                     height: 72,
                   )
                 ],
@@ -1040,7 +1052,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
       child: Column(
         children: [
           eightShenTag(shenName),
-          SizedBox(
+          const SizedBox(
             height: 6,
           ),
           starTag(starName, jiStarName),
@@ -1055,10 +1067,10 @@ class _PrimaryPageState extends State<PrimaryPage> {
       height: 30,
       width: 72,
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
       decoration: BoxDecoration(
         color: Colors.indigoAccent.withOpacity(.2),
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1070,86 +1082,96 @@ class _PrimaryPageState extends State<PrimaryPage> {
               width: 18,
               height: 18,
             ),
-            SizedBox(
+            const SizedBox(
               width: 2,
             ),
             Text(
               shenName,
-              style: TextStyle(fontSize: 18, color: Colors.black87, height: 1),
+              style: const TextStyle(
+                  fontSize: 18, color: Colors.black87, height: 1),
             ),
           ]),
     );
   }
+
   Widget starTag(String starName, String? jiStar) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 400),
-      height: jiStar == null ? 32 : 32 + 18 +2,
+      duration: const Duration(milliseconds: 400),
+      height: jiStar == null ? 32 : 32 + 18 + 2,
       width: 72,
-      padding: EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
       alignment: Alignment.center,
       decoration: BoxDecoration(
         color: Colors.teal.withOpacity(.2),
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
-      child:Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(starName, style: TextStyle(fontSize: jiStar == null
-              ? 18:16, color: Colors.black87, height: 1),),
+          Text(
+            starName,
+            style: TextStyle(
+                fontSize: jiStar == null ? 18 : 16,
+                color: Colors.black87,
+                height: 1),
+          ),
           jiStar == null
               ? Container()
-              : Container(child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(
-                height: 4,
-              ),
-                Divider(
-                  height: 1,
-                  color: Colors.black12,
-                ),
-                SizedBox(
-                  height: 4,
-                ),
-                Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              : Container(
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Icon(Icons.star,size: 22,color: Colors.amber,),
-                      Image.asset(
-                        "assets/icons/stars-64.png",
-                        width: 14,
-                        height: 14,
+                      const SizedBox(
+                        height: 4,
                       ),
-                      SizedBox(
-                        width: 2,
+                      const Divider(
+                        height: 1,
+                        color: Colors.black12,
                       ),
-                      Text(
-                        "天擒星",
-                        style: TextStyle(
-                            fontSize: 12, color: Colors.black87, height: 1.2),),
-                    ]),
-              ],
-            ),
-          )
+                      const SizedBox(
+                        height: 4,
+                      ),
+                      Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Icon(Icons.star,size: 22,color: Colors.amber,),
+                            Image.asset(
+                              "assets/icons/stars-64.png",
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(
+                              width: 2,
+                            ),
+                            const Text(
+                              "天擒星",
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.black87,
+                                  height: 1.2),
+                            ),
+                          ]),
+                    ],
+                  ),
+                )
         ],
       ),
     );
   }
 
-
   Widget nineStarTag(String starName, {bool withoutTianQin = false}) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 800),
       height: withoutTianQin ? 32 : 32 + 18,
       width: 72,
-      padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
       alignment: Alignment.centerLeft,
       decoration: BoxDecoration(
         color: Colors.teal.withOpacity(.2),
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
       ),
       child: withoutTianQin
           ? Row(
@@ -1158,7 +1180,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
               children: [
                   Text(
                     starName,
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 16, color: Colors.black87, height: 1.1),
                   ),
                 ])
@@ -1179,18 +1201,18 @@ class _PrimaryPageState extends State<PrimaryPage> {
                       // ),
                       Text(
                         starName,
-                        style: TextStyle(
+                        style: const TextStyle(
                             fontSize: 16, color: Colors.black87, height: 1.2),
                       ),
                     ]),
-                SizedBox(
+                const SizedBox(
                   height: 4,
                 ),
-                Divider(
+                const Divider(
                   height: 1,
                   color: Colors.black12,
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 4,
                 ),
                 Row(
@@ -1203,13 +1225,14 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         width: 14,
                         height: 14,
                       ),
-                      SizedBox(
+                      const SizedBox(
                         width: 2,
                       ),
-                    Text(
-                    "天擒星",
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.black87, height: 1.2),),
+                      const Text(
+                        "天擒星",
+                        style: TextStyle(
+                            fontSize: 12, color: Colors.black87, height: 1.2),
+                      ),
                     ]),
               ],
             ),
@@ -1301,11 +1324,12 @@ class _PrimaryPageState extends State<PrimaryPage> {
     }
     return Column(children: rows);
   }
+
   Widget buildEachCell(String value) {
     return Container(
       width: 256,
       height: 256,
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
           // border: Border.all(color: Colors.black, width: 1),
           ),
       child: Center(child: Text(value)),
@@ -1313,7 +1337,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
   }
 
   Widget jieqi() {
-    return Column(
+    return const Column(
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1431,6 +1455,7 @@ class GongFixedContent {
 }
 
 class Cell extends StatefulWidget {
+  @override
   final GlobalKey<CellState> key;
   final String gongName;
   Widget child;

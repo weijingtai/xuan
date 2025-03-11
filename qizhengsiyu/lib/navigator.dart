@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
@@ -7,26 +6,37 @@ import 'package:qizhengsiyu/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/pages/primary_page.dart';
 import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
 
+import 'pages/qi_zheng_si_yu_config_page.dart';
+import 'viewmodels/panel_config_viewmodel.dart';
 
-class NavigatorGenerator{
-  static final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+class NavigatorGenerator {
+  static final RouteObserver<PageRoute> routeObserver =
+      RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
     // "/qizhengsiyu": (context, {arguments}) => PrimaryPage(),
     // "/qizhengsiyu": (context, {arguments}) => BeautyPage(),
     "/qizhengsiyu": (context, {arguments}) => MultiProvider(
-      providers: [
-        ChangeNotifierProvider<QiZhengSiYuViewModel>(create: (context) => QiZhengSiYuViewModel(context)),
-      ],
-      child: BeautyViewPage(),
-      // child: ShiJiaQiMenViewPage(),
-    ),
+          providers: [
+            ChangeNotifierProvider<PanelConfigViewModel>(
+                create: (context) => PanelConfigViewModel(context)),
+          ],
+          child: QiZhengSiYuConfigPage(),
+          // child: ShiJiaQiMenViewPage(),
+        ),
+    "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider<QiZhengSiYuViewModel>(
+                create: (context) => QiZhengSiYuViewModel(context)),
+          ],
+          child: const BeautyViewPage(),
+          // child: ShiJiaQiMenViewPage(),
+        ),
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
-
     final String? name = settings.name;
-    if (name != null && name.isNotEmpty){
+    if (name != null && name.isNotEmpty) {
       final Function? pageContentBuilder = routes[name];
       if (pageContentBuilder != null) {
         final Route route = MaterialPageRoute(
@@ -36,28 +46,29 @@ class NavigatorGenerator{
       } else {
         return _errorPage('Could not found route for $name');
       }
-    }else {
+    } else {
       return _errorPage("Navigator required naviation name.");
     }
-
   }
 
   static Route _errorPage(msg) {
     return MaterialPageRoute(builder: (_) {
       return Scaffold(
-          appBar: AppBar(title: Text('奇门遁甲_未知页面')), body: Center(child: Text(msg)));
+          appBar: AppBar(title: const Text('奇门遁甲_未知页面')),
+          body: Center(child: Text(msg)));
     });
   }
 
   static Route<dynamic> generateRoute1(RouteSettings settings) {
-
     switch (settings.name) {
       case '/qizhengsiyu/primary':
         return PageRouteBuilder(
-            settings: settings, // Pass this to make popUntil(), pushNamedAndRemoveUntil(), works
+            settings:
+                settings, // Pass this to make popUntil(), pushNamedAndRemoveUntil(), works
             // pageBuilder: (_, __, ___) => CreateOrderPage(settings.arguments == null ?null:settings.arguments as CreateOrderPageArgs),
-            pageBuilder: (_, __, ___) => PrimaryPage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            pageBuilder: (_, __, ___) => const PrimaryPage(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);
               const end = Offset.zero;
               const curve = Curves.ease;
@@ -70,14 +81,13 @@ class NavigatorGenerator{
                 position: tween.animate(curvedAnimation),
                 child: child,
               );
-            }
-        );
+            });
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(
-              body: Center(
-                  child: Text('No route defined for ${settings.name}')),
-            ));
+                  body: Center(
+                      child: Text('No route defined for ${settings.name}')),
+                ));
     }
   }
 }

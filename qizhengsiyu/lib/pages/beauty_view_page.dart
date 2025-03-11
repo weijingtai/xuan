@@ -9,7 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:qizhengsiyu/enums/enum_stars.dart';
+import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/circle_indicator_widget.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
@@ -21,7 +21,6 @@ import 'package:tuple/tuple.dart';
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
-import '../enums/enum_twenty_eight_xing_xiu.dart';
 import '../models/panel_stars_info.dart';
 import '../models/stars_angle.dart';
 import '../models/observer_position.dart';
@@ -211,35 +210,35 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     // TODO: implement initState
     super.initState();
     // 0°02′02‘’ 一天
-    _jupiterController =
-        AnimationController(vsync: this, duration: Duration(seconds: 1062))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _jupiterController.repeat();
-            }
-          });
+    _jupiterController = AnimationController(
+        vsync: this, duration: const Duration(seconds: 1062))
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _jupiterController.repeat();
+        }
+      });
 
     // 土星 0°00′59'' 一天
-    _saturnController =
-        AnimationController(vsync: this, duration: Duration(seconds: 2197))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _saturnController.repeat();
-            }
-          });
+    _saturnController = AnimationController(
+        vsync: this, duration: const Duration(seconds: 2197))
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _saturnController.repeat();
+        }
+      });
 
     // 金星 1°33′ 一天
-    _venusController =
-        AnimationController(vsync: this, duration: Duration(seconds: 1393))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _venusController.repeat();
-            }
-          });
+    _venusController = AnimationController(
+        vsync: this, duration: const Duration(seconds: 1393))
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _venusController.repeat();
+        }
+      });
 
     // 水星 4°5′ 一天
     _mercuryController =
-        AnimationController(vsync: this, duration: Duration(seconds: 88))
+        AnimationController(vsync: this, duration: const Duration(seconds: 88))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _mercuryController.repeat();
@@ -248,7 +247,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
     // 火星 0°32′ 一天
     _marsController =
-        AnimationController(vsync: this, duration: Duration(seconds: 675))
+        AnimationController(vsync: this, duration: const Duration(seconds: 675))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _marsController.repeat();
@@ -256,7 +255,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           });
 
     _sunController =
-        AnimationController(vsync: this, duration: Duration(seconds: 360))
+        AnimationController(vsync: this, duration: const Duration(seconds: 360))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _sunController.repeat();
@@ -264,7 +263,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           });
     // 月亮 13°10′35" 一天
     _moonController =
-        AnimationController(vsync: this, duration: Duration(seconds: 27))
+        AnimationController(vsync: this, duration: const Duration(seconds: 27))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _moonController.repeat();
@@ -272,21 +271,21 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           });
 
     _luoHouJiDuController =
-        AnimationController(vsync: this, duration: Duration(seconds: 12))
+        AnimationController(vsync: this, duration: const Duration(seconds: 12))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _luoHouJiDuController.repeat();
             }
           });
     _yueBeiController =
-        AnimationController(vsync: this, duration: Duration(seconds: 18))
+        AnimationController(vsync: this, duration: const Duration(seconds: 18))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _yueBeiController.repeat();
             }
           });
     _ziQiController =
-        AnimationController(vsync: this, duration: Duration(seconds: 14))
+        AnimationController(vsync: this, duration: const Duration(seconds: 14))
           ..addStatusListener((status) {
             if (status == AnimationStatus.completed) {
               _ziQiController.repeat();
@@ -363,7 +362,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       panelSizeDataModel.outerLifeStarRingOuterSize;
 
   /// _destiny12GongListNotifier list#index 对应地支方位 0-子 1-亥 ...
-  ValueNotifier<List<String>> _destiny12GongListNotifier = ValueNotifier([
+  final ValueNotifier<List<String>> _destiny12GongListNotifier = ValueNotifier([
     "命宫",
     "财帛",
     "兄弟",
@@ -391,7 +390,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           color: Colors.black45.withOpacity(.2),
           spreadRadius: 1,
           blurRadius: 1,
-          offset: Offset(1, 1), // changes position of shadow
+          offset: const Offset(1, 1), // changes position of shadow
         )
       ]);
 
@@ -410,7 +409,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     double minSize = height > width ? width : height;
     // double panelMaxSize = minSize * .8;
     double panelMaxSize = 1700;
-    logger.d("盘最大Size为${panelMaxSize}");
+    logger.d("盘最大Size为$panelMaxSize");
     // 星体半径 16
     double starBodyRadius = panelSizeDataModel.starBodyRadius;
     // 本命盘星轨内环
@@ -428,7 +427,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         starBodyRadius, destiny12GongSizeOuter, fateLifeStarOuterSize);
 
     if (isFirst) {
-      Future.delayed(Duration(seconds: 3), () {
+      Future.delayed(const Duration(seconds: 3), () {
         isFirst = false;
         calculatePanel();
       });
@@ -441,7 +440,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
             Container(
-              padding: EdgeInsets.all(15),
+              padding: const EdgeInsets.all(15),
               child: ValueListenableBuilder(
                 valueListenable: showStarHuaJiInfoNotifier,
                 builder: (ctx, show, _) {
@@ -457,7 +456,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 width: panelMaxSize,
                 height: panelMaxSize,
                 alignment: Alignment.center,
-                decoration: BoxDecoration(),
+                decoration: const BoxDecoration(),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -473,7 +472,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                 viewModel.uiFateLifeStars, starBodyRadius),
                           );
                         },
-                        child: CircularProgressIndicator(),
+                        child: const CircularProgressIndicator(),
                       ),
                       const Expanded(child: SizedBox()),
                     ])),
@@ -509,7 +508,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           borderRadius: BorderRadius.circular(centerSize),
           border: Border.all(color: Colors.black, width: 1),
         ),
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -658,7 +657,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     ];
     // TextStyle zodiacTextStyle = TextStyle(color: Colors.grey, fontSize: 12,fontFamily: 'KaiTi',fontWeight: FontWeight.w300,height: 1.2);
     TextStyle zodiacTextStyle = GoogleFonts.longCang(
-        color: Color.fromRGBO(66, 76, 80, 1),
+        color: const Color.fromRGBO(66, 76, 80, 1),
         fontSize: 16,
         fontWeight: FontWeight.normal,
         height: 1.0);
@@ -686,7 +685,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     ];
     // TextStyle starTextStyle = TextStyle(color: Colors.grey, fontSize: 12,fontFamily: 'KaiTi',fontWeight: FontWeight.w300,height: 1.2);
     TextStyle starTextStyle = GoogleFonts.zhiMangXing(
-        color: Color.fromRGBO(80, 97, 109, 1),
+        color: const Color.fromRGBO(80, 97, 109, 1),
         fontSize: 12,
         fontWeight: FontWeight.normal,
         height: 1.0);
@@ -835,7 +834,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   }
 
   Widget innerShenShaRing(double innerSize, double outerSize) {
-    TextStyle textStyle = TextStyle(
+    TextStyle textStyle = const TextStyle(
       fontSize: 18,
       color: Colors.black87,
       height: 1.0,
@@ -930,7 +929,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         alignment: Alignment.centerRight,
         height: 32,
         width: height,
-        padding: EdgeInsets.symmetric(horizontal: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         decoration: BoxDecoration(
             // TODO: DevHelper Color
             color: Colors.blue.withOpacity(.1)),
@@ -943,7 +942,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               child: Container(
                   height: 22,
                   width: 54,
-                  padding: EdgeInsets.symmetric(vertical: 0, horizontal: 4),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 0, horizontal: 4),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(30),
                       color: Colors.teal),
@@ -970,7 +970,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               child: Container(
                   height: 24,
                   width: 56,
-                  padding: EdgeInsets.symmetric(vertical: 2, horizontal: 4),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 2, horizontal: 4),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(32),
                       color: Colors.amber),
@@ -1007,7 +1008,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         alignment: Alignment.center,
         height: height,
         width: 32,
-        padding: EdgeInsets.symmetric(vertical: 6),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         decoration: BoxDecoration(
             // TODO: DevHelper Color
             color: Colors.blue.withOpacity(.1)),
@@ -1020,7 +1021,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               child: Container(
                   height: 56,
                   width: 24,
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(32),
                       color: Colors.teal),
@@ -1047,7 +1049,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               child: Container(
                   height: 56,
                   width: 24,
-                  padding: EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
                   decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(32),
                       color: Colors.cyan),
@@ -1101,7 +1104,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   color: Colors.black38.withOpacity(.3),
                   spreadRadius: 1,
                   blurRadius: 1,
-                  offset: Offset(1, 1), // changes position of shadow
+                  offset: const Offset(1, 1), // changes position of shadow
                 )
               ]),
         ),
@@ -1146,7 +1149,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         const TextStyle(height: 1, color: Colors.black87, fontSize: 12);
     return AnimatedRotation(
       turns: -star.angle / 360,
-      duration: Duration(milliseconds: 400),
+      duration: const Duration(milliseconds: 400),
       child: Container(
         height: basicLifeStarRingOuterSize,
         width: panelSizeDataModel.starBodySize,
@@ -1163,7 +1166,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             AnimatedRotation(
-              duration: Duration(milliseconds: 400),
+              duration: const Duration(milliseconds: 400),
               turns: (star.angle - 120) / 360,
               child: starBody(star),
             ),
@@ -1185,7 +1188,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             color: Colors.black38.withOpacity(.3),
             spreadRadius: 1,
             blurRadius: 1,
-            offset: Offset(1, 1), // changes position of shadow
+            offset: const Offset(1, 1), // changes position of shadow
           )
         ]);
 
@@ -1226,7 +1229,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   color: Colors.black38.withOpacity(.3),
                   spreadRadius: 1,
                   blurRadius: 1,
-                  offset: Offset(1, 1), // changes position of shadow
+                  offset: const Offset(1, 1), // changes position of shadow
                 )
               ]),
         ),
@@ -1238,10 +1241,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       StarsAngle starsAngle, double basicLifeStarCenterCircleSize) {
     double? uiSunAngle;
     double? uiMoonAngle;
-    double? uiGoldenAngle;
-    double? uiWoodAngle;
-    double? uiFireAngle;
-    double? uiSoilAngle;
+    double? uiVenusAngle;
+    double? uiJupiterAngle;
+    double? uiMarsAngle;
+    double? uiSaturnAngle;
     double? uiWaterAngle;
     double? uiSouthNodeAngle;
     double? uiNorthNodeAngle;
@@ -1255,20 +1258,20 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     double acosValue = acos(cosValue);
     double minCollision = acosValue * (180 / pi); // 当小于等于这个值时 两个星体碰撞
 
-    double _diffDegree = 0;
-    if (starsAngle.golden < starsAngle.sun) {
-      _diffDegree = starsAngle.sun - starsAngle.golden;
+    double diffDegree = 0;
+    if (starsAngle.Venus < starsAngle.sun) {
+      diffDegree = starsAngle.sun - starsAngle.Venus;
     } else {
-      _diffDegree = starsAngle.golden - starsAngle.sun;
+      diffDegree = starsAngle.Venus - starsAngle.sun;
     }
-    double needDegreeInTotal = minCollision - _diffDegree;
+    double needDegreeInTotal = minCollision - diffDegree;
     double needDegreeAddEach = needDegreeInTotal * .5;
-    if (starsAngle.golden < starsAngle.sun) {
+    if (starsAngle.Venus < starsAngle.sun) {
       uiSunAngle = starsAngle.sun + needDegreeAddEach;
-      uiGoldenAngle = starsAngle.golden - needDegreeAddEach;
+      uiVenusAngle = starsAngle.Venus - needDegreeAddEach;
     } else {
       uiSunAngle = starsAngle.sun - needDegreeAddEach;
-      uiGoldenAngle = starsAngle.golden + needDegreeAddEach;
+      uiVenusAngle = starsAngle.Venus + needDegreeAddEach;
     }
 
     // create UIStarsAngle from StarsAngle
@@ -1276,10 +1279,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return UIStarsAngle.from(starsAngle,
         uiSunAngle: uiSunAngle,
         uiMoonAngle: uiMoonAngle,
-        uiGoldenAngle: uiGoldenAngle,
-        uiWoodAngle: uiWoodAngle,
-        uiFireAngle: uiFireAngle,
-        uiSoilAngle: uiSoilAngle,
+        uiVenusAngle: uiVenusAngle,
+        uiJupiterAngle: uiJupiterAngle,
+        uiMarsAngle: uiMarsAngle,
+        uiSaturnAngle: uiSaturnAngle,
         uiWaterAngle: uiWaterAngle,
         uiSouthNodeAngle: uiSouthNodeAngle,
         uiNorthNodeAngle: uiNorthNodeAngle,
@@ -1295,11 +1298,11 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return [
       basicLifePanelStar(EnumStars.Sun, uiStarsAngle),
       basicLifePanelStar(EnumStars.Moon, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Golden, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Wood, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Water, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Fire, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Soil, uiStarsAngle),
+      basicLifePanelStar(EnumStars.Venus, uiStarsAngle),
+      basicLifePanelStar(EnumStars.Jupiter, uiStarsAngle),
+      basicLifePanelStar(EnumStars.Mercury, uiStarsAngle),
+      basicLifePanelStar(EnumStars.Mars, uiStarsAngle),
+      basicLifePanelStar(EnumStars.Saturn, uiStarsAngle),
       basicLifePanelStar(EnumStars.Qi, uiStarsAngle),
       basicLifePanelStar(EnumStars.Bei, uiStarsAngle),
       basicLifePanelStar(EnumStars.Ji, uiStarsAngle),
@@ -1311,11 +1314,11 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return [
       fateLifePanelStar(EnumStars.Sun, starsAngle, size),
       fateLifePanelStar(EnumStars.Moon, starsAngle, size),
-      fateLifePanelStar(EnumStars.Golden, starsAngle, size),
-      fateLifePanelStar(EnumStars.Wood, starsAngle, size),
-      fateLifePanelStar(EnumStars.Water, starsAngle, size),
-      fateLifePanelStar(EnumStars.Fire, starsAngle, size),
-      fateLifePanelStar(EnumStars.Soil, starsAngle, size),
+      fateLifePanelStar(EnumStars.Venus, starsAngle, size),
+      fateLifePanelStar(EnumStars.Jupiter, starsAngle, size),
+      fateLifePanelStar(EnumStars.Mercury, starsAngle, size),
+      fateLifePanelStar(EnumStars.Mars, starsAngle, size),
+      fateLifePanelStar(EnumStars.Saturn, starsAngle, size),
       fateLifePanelStar(EnumStars.Qi, starsAngle, size),
       fateLifePanelStar(EnumStars.Bei, starsAngle, size),
       fateLifePanelStar(EnumStars.Ji, starsAngle, size),
@@ -1391,7 +1394,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           child: ElTooltip(
             showModal: false,
             showChildAboveOverlay: false,
-            content: Text("tooltip"),
+            content: const Text("tooltip"),
             child: CustomPaint(
               size: const Size(32, 650 - 600 - 4),
               painter: MyCirclePainter(
@@ -1414,7 +1417,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                           color: Colors.black38.withOpacity(.1),
                           spreadRadius: 1,
                           blurRadius: 1,
-                          offset: Offset(1, 1), // changes position of shadow
+                          offset:
+                              const Offset(1, 1), // changes position of shadow
                         )
                       ])),
             ),
@@ -1435,7 +1439,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           child: ElTooltip(
             showModal: false,
             showChildAboveOverlay: false,
-            content: Text("tooltip"),
+            content: const Text("tooltip"),
             // child: Container(),
             child: CustomPaint(
               size: const Size(32, 48),
@@ -1456,7 +1460,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                           color: Colors.black38.withOpacity(.3),
                           spreadRadius: 1,
                           blurRadius: 1,
-                          offset: Offset(1, 1), // changes position of shadow
+                          offset:
+                              const Offset(1, 1), // changes position of shadow
                         )
                       ])),
             ),
@@ -1480,7 +1485,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           child: ElTooltip(
             showModal: false,
             showChildAboveOverlay: false,
-            content: Text("tooltip"),
+            content: const Text("tooltip"),
             child: FutureBuilder(
               future: loadImage(),
               builder: (
@@ -1508,8 +1513,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                               color: Colors.black38.withOpacity(.3),
                               spreadRadius: 1,
                               blurRadius: 1,
-                              offset:
-                                  Offset(1, 1), // changes position of shadow
+                              offset: const Offset(
+                                  1, 1), // changes position of shadow
                             )
                           ])),
                 );
@@ -1547,7 +1552,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             child: ElTooltip(
               showModal: false,
               showChildAboveOverlay: false,
-              content: Text("tooltip"),
+              content: const Text("tooltip"),
               child: FutureBuilder(
                 future: loadImage(),
                 builder: (
@@ -1589,8 +1594,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                 color: Colors.black38.withOpacity(.1),
                                 spreadRadius: 1,
                                 blurRadius: 1,
-                                offset:
-                                    Offset(1, 1), // changes position of shadow
+                                offset: const Offset(
+                                    1, 1), // changes position of shadow
                               )
                             ])),
                   );
@@ -1632,7 +1637,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             color: Colors.black38.withOpacity(.1),
             spreadRadius: 1,
             blurRadius: 1,
-            offset: Offset(1, 1), // changes position of shadow
+            offset: const Offset(1, 1), // changes position of shadow
           )
         ]);
     return Transform.rotate(
@@ -1646,7 +1651,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           child: ElTooltip(
             showModal: false,
             showChildAboveOverlay: false,
-            content: Text("tooltip"),
+            content: const Text("tooltip"),
             child: FutureBuilder(
               future: loadImage(),
               builder: (
@@ -1654,7 +1659,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 asyncSnap,
               ) {
                 return CustomPaint(
-                  size: Size(32, 650 - 600 - 4),
+                  size: const Size(32, 650 - 600 - 4),
                   painter: MyCirclePainter(
                       starName: walkingInfo.star.singleName,
                       // angle:((360-degree) * pi) / 180,
@@ -1688,7 +1693,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           // height: 560,
           height: 650,
           color: Colors.blue.withOpacity(.1),
-          padding: EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: 8),
           alignment: Alignment.topCenter,
           child: Transform.rotate(
             angle: ((360 - degree) * pi) / 180,
@@ -1702,7 +1707,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               ),
               child: Text(
                 starName,
-                style: TextStyle(
+                style: const TextStyle(
                     fontSize: 18, fontWeight: FontWeight.normal, height: 1),
               ),
             ),
@@ -1727,7 +1732,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           painter: StarXiuRingPainter(
             outerSize: starXiu28RingSizeOuter,
             innerSize: starXiu28RingSizeInner,
-            mapper: QiZhengSiYuConstantResources.TodayStarsSystemMapper,
+            mapper: QiZhengSiYuConstantResources
+                .ZodiacTropicalModernStarsInnSystemMapper,
             sevenZhengColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
           ),
         ));
@@ -1763,7 +1769,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 painter: StarXiuRingPainter(
                   outerSize: starXiu28RingSizeOuter,
                   innerSize: starXiu28RingSizeInner,
-                  mapper: QiZhengSiYuConstantResources.TodayStarsSystemMapper,
+                  mapper: QiZhengSiYuConstantResources
+                      .ZodiacTropicalModernStarsInnSystemMapper,
                   sevenZhengColorMapper:
                       QiZhengSiYuUIConstantResources.zhengColorMap,
                 ),
@@ -1822,7 +1829,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               height: outerSize,
               width: outerSize,
               // color: Colors.blue.withOpacity(.1),
-              padding: EdgeInsets.all(12),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(outerSize),
               ),
@@ -1859,7 +1866,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             height: outerSize,
             width: outerSize,
             // color: Colors.blue.withOpacity(.1),
-            padding: EdgeInsets.all(12),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               // borderRadius: BorderRadius.circular(outerSize),
               color: Colors.yellow.withOpacity(.2),
@@ -1891,7 +1898,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         selectTaiJiDestinyByGongName(gongName);
       },
       child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           width: 64,
           alignment: Alignment.center,
           // decoration: BoxDecoration(
@@ -1902,7 +1909,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               valueListenable: showTaiJiDianButtonNotifier,
               builder: (ctx, show, _) {
                 return AnimatedOpacity(
-                  duration: Duration(milliseconds: 200),
+                  duration: const Duration(milliseconds: 200),
                   opacity: show ? .6 : .2,
                   child: Text(
                     "转太极",
@@ -1927,7 +1934,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Expanded(child: SizedBox()),
+                const Expanded(child: SizedBox()),
                 Text(
                   zhuanTaiJiGongName,
                   style: destinyTextStyle.copyWith(
@@ -1944,7 +1951,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     onTap: () {
                       unselectTaiJiDestiny();
                     },
-                    child: Icon(Icons.dangerous_outlined,
+                    child: const Icon(Icons.dangerous_outlined,
                         size: 14, color: Colors.grey))
               ],
             )),
@@ -1952,11 +1959,11 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     }
     Widget gong = AnimatedOpacity(
         opacity: zhuanTaiJiGongName == null ? 1 : .4,
+        duration: const Duration(milliseconds: 200),
         child: Text(gongName,
             style: destinyTextStyle.copyWith(
               color: gongName == "命宫" ? Colors.red : destinyTextStyle.color,
-            )),
-        duration: Duration(milliseconds: 200));
+            )));
     // Widget gong = Text(
     //   gongName,
     //   style: gongName == "命宫"
@@ -2083,7 +2090,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                     crossAxisAlignment:
                                         CrossAxisAlignment.center,
                                     children: [
-                                      Expanded(child: SizedBox()),
+                                      const Expanded(child: SizedBox()),
                                       // Icon(Icons.dangerous,size: 14,color: Colors.transparent,),
                                       Text(
                                         contentList[i],
@@ -2102,12 +2109,14 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                           onTap: () {
                                             unselectTaiJiDestiny();
                                           },
-                                          child: Icon(Icons.dangerous_outlined,
-                                              size: 14, color: Colors.grey))
+                                          child: const Icon(
+                                              Icons.dangerous_outlined,
+                                              size: 14,
+                                              color: Colors.grey))
                                     ],
                                   )),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 4,
                             )
                           ],
@@ -2137,13 +2146,13 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                     builder: (ctx, isShow, child) {
                                       return isShow
                                           ? child!
-                                          : SizedBox(
+                                          : const SizedBox(
                                               height: 24,
                                             );
                                     },
                                     child: Container(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 4),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 4),
                                       width: 64,
                                       alignment: Alignment.center,
                                       decoration: BoxDecoration(
@@ -2163,7 +2172,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                                     )),
                               ),
                             ),
-                            SizedBox(
+                            const SizedBox(
                               height: 12,
                             )
                           ],
@@ -2307,43 +2316,43 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   /// gongIndex 0-11 子-亥
   void selectTaiJiDestinyByGongName(String selectedGongName) {
     // 根据给定gongIndex
-    List<String> _tmpDefaultList = destinyList.map((d) => d).toList();
-    List<String> _tmpDestinyList =
+    List<String> tmpDefaultList = destinyList.map((d) => d).toList();
+    List<String> tmpDestinyList =
         _destiny12GongListNotifier.value.map((d) => d).toList();
     int selectedIndex = _destiny12GongListNotifier.value
         .indexWhere((x) => x == selectedGongName);
     String taiJiAtGong = _destiny12GongListNotifier.value[selectedIndex];
     logger.i("user select as TaiJi, which is $taiJiAtGong");
-    int index = _tmpDefaultList.indexOf(taiJiAtGong);
+    int index = tmpDefaultList.indexOf(taiJiAtGong);
     // 将_tmpList 从 gongIndex 处分成两个
 
-    List<String> _tmpList1 = _tmpDefaultList.sublist(12 - index);
-    List<String> _tmpList2 = _tmpDefaultList.sublist(0, 12 - index);
-    logger.d("_tmpList1 $_tmpList1");
-    logger.d("_tmpList2 $_tmpList2");
+    List<String> tmpList1 = tmpDefaultList.sublist(12 - index);
+    List<String> tmpList2 = tmpDefaultList.sublist(0, 12 - index);
+    logger.d("_tmpList1 $tmpList1");
+    logger.d("_tmpList2 $tmpList2");
     // 将_tmpList2 拼接在 _tmpList1 前面
-    _selectedTaiJiDestiny12GongListNotifier.value = _tmpList1 + _tmpList2;
+    _selectedTaiJiDestiny12GongListNotifier.value = tmpList1 + tmpList2;
     logger.i(_selectedTaiJiDestiny12GongListNotifier.value);
   }
 
   /// gongIndex 0-11 子-亥
   void selectTaiJiDestiny(int selectedIndex) {
     // 根据给定gongIndex
-    List<String> _tmpDefaultList = destinyList.map((d) => d).toList();
-    List<String> _tmpDestinyList =
+    List<String> tmpDefaultList = destinyList.map((d) => d).toList();
+    List<String> tmpDestinyList =
         _destiny12GongListNotifier.value.map((d) => d).toList();
     String taiJiAtGong = _destiny12GongListNotifier.value[selectedIndex];
     logger
         .i("user select index:$selectedIndex as TaiJi, which is $taiJiAtGong");
-    int index = _tmpDefaultList.indexOf(taiJiAtGong);
+    int index = tmpDefaultList.indexOf(taiJiAtGong);
     // 将_tmpList 从 gongIndex 处分成两个
 
-    List<String> _tmpList1 = _tmpDefaultList.sublist(12 - index);
-    List<String> _tmpList2 = _tmpDefaultList.sublist(0, 12 - index);
-    logger.d("_tmpList1 $_tmpList1");
-    logger.d("_tmpList2 $_tmpList2");
+    List<String> tmpList1 = tmpDefaultList.sublist(12 - index);
+    List<String> tmpList2 = tmpDefaultList.sublist(0, 12 - index);
+    logger.d("_tmpList1 $tmpList1");
+    logger.d("_tmpList2 $tmpList2");
     // 将_tmpList2 拼接在 _tmpList1 前面
-    _selectedTaiJiDestiny12GongListNotifier.value = _tmpList1 + _tmpList2;
+    _selectedTaiJiDestiny12GongListNotifier.value = tmpList1 + tmpList2;
     logger.i(_selectedTaiJiDestiny12GongListNotifier.value);
   }
 

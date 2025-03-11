@@ -1,7 +1,6 @@
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:common/const_resources_mapper.dart';
-import 'package:common/model/enum_ji_xiong.dart';
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -15,13 +14,13 @@ class TenGanKeYingYinZhang extends StatelessWidget {
   late final String yinZhang3;
   TextStyle textStyle;
   Size size;
-  TenGanKeYingYinZhang({super.key,
-    required this.geJuName,
-    required this.jiXiong,
-    this.size = const Size(48,48),
-    this.textStyle = const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.w500)
-
-  }){
+  TenGanKeYingYinZhang(
+      {super.key,
+      required this.geJuName,
+      required this.jiXiong,
+      this.size = const Size(48, 48),
+      this.textStyle = const TextStyle(
+          color: Colors.white, fontSize: 18, fontWeight: FontWeight.w500)}) {
     List<String> juName = geJuName.split("");
     yinZhang0 = juName[0];
     yinZhang1 = juName[1];
@@ -47,7 +46,7 @@ class TenGanKeYingYinZhang extends StatelessWidget {
         Container(
           height: size.height,
           width: size.width,
-          padding: EdgeInsets.all(4),
+          padding: const EdgeInsets.all(4),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -55,17 +54,21 @@ class TenGanKeYingYinZhang extends StatelessWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children:[
+                children: [
                   AutoSizeText(
                     yinZhang2,
-                    style: GoogleFonts.maShanZheng(height: 1.0,fontSize: 18,fontWeight: FontWeight.w500,color: Colors.white),
+                    style: GoogleFonts.maShanZheng(
+                        height: 1.0,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
                     maxLines: 1,
                     maxFontSize: 24,
                     minFontSize: 12,
                   ),
                   AutoSizeText(
                     yinZhang3,
-                    style:textStyle,
+                    style: textStyle,
                     maxLines: 1,
                     maxFontSize: 24,
                     minFontSize: 12,
@@ -75,17 +78,17 @@ class TenGanKeYingYinZhang extends StatelessWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children:[
+                children: [
                   AutoSizeText(
                     yinZhang0,
-                    style:textStyle,
+                    style: textStyle,
                     maxLines: 1,
                     maxFontSize: 24,
                     minFontSize: 12,
                   ),
                   AutoSizeText(
                     yinZhang1,
-                    style:textStyle,
+                    style: textStyle,
                     maxLines: 1,
                     maxFontSize: 24,
                     minFontSize: 12,

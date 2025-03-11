@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 class GradientFlowText extends StatefulWidget {
+  const GradientFlowText({super.key});
+
   @override
   _GradientFlowTextState createState() => _GradientFlowTextState();
 }
 
-class _GradientFlowTextState extends State<GradientFlowText> with SingleTickerProviderStateMixin {
+class _GradientFlowTextState extends State<GradientFlowText>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
   @override
@@ -31,7 +34,7 @@ class _GradientFlowTextState extends State<GradientFlowText> with SingleTickerPr
         return ShaderMask(
           shaderCallback: (bounds) {
             return LinearGradient(
-              colors: [
+              colors: const [
                 Color(0xFFB8860B), // 深金色
                 Color(0xFFC0C0C0), // 银色
                 Color(0xFFD4AF37), // 亮金色
@@ -43,12 +46,23 @@ class _GradientFlowTextState extends State<GradientFlowText> with SingleTickerPr
                 Color(0xFFC0C0C0), // 银色
                 Color(0xFFB8860B), // 深金色
               ],
-              stops: [0.0, 0.1, 0.2, 0.35, 0.5, 0.65, 0.75, 0.85, 0.9, 1.0],
+              stops: const [
+                0.0,
+                0.1,
+                0.2,
+                0.35,
+                0.5,
+                0.65,
+                0.75,
+                0.85,
+                0.9,
+                1.0
+              ],
               begin: Alignment(-1.0 + _controller.value * 2, -1.0),
               end: Alignment(1.0 - _controller.value * 2, 1.0),
             ).createShader(bounds);
           },
-          child: Text(
+          child: const Text(
             '紫金色效果',
             style: TextStyle(
               color: Colors.white,

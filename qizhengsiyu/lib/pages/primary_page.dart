@@ -14,105 +14,111 @@ class _PrimaryPageState extends State<PrimaryPage> {
   @override
   Widget build(BuildContext context) {
     double height = MediaQuery.of(context).size.height;
-    double width  = MediaQuery.of(context).size.width;
+    double width = MediaQuery.of(context).size.width;
     double minSize = height > width ? width : height;
     double size = minSize * 0.75;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('PrimaryPage'),
-      ),
-      body: Container(
-        alignment: Alignment.center,
-        color: Colors.grey.withOpacity(.1),
-        child: Center(
-          child: Container(
-            height: size,
-            width: size,
+        appBar: AppBar(
+          title: const Text('PrimaryPage'),
+        ),
+        body: Container(
             alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(.2),
-              borderRadius: BorderRadius.circular(size/2),
-            ),
+            color: Colors.grey.withOpacity(.1),
             child: Center(
-              child: Stack(
+              child: Container(
+                height: size,
+                width: size,
                 alignment: Alignment.center,
-                children: [
-                  CustomPaint(
-                    size: Size(size, size),
-                    painter: CompleteCirclePainter(color: Colors.blue),
-                  ),
-                  Container(
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(.2),
+                  borderRadius: BorderRadius.circular(size / 2),
+                ),
+                child: Center(
+                  child: Stack(
                     alignment: Alignment.center,
-                    height: size - 64,
-                    width: size - 64,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(.2),
-                      borderRadius: BorderRadius.circular((size - 64)/2),
-                    ),
-                    child: Transform.rotate(
-                      angle: 45 * math.pi / 180,
-                      origin: Offset.zero,
-                      child:CustomPaint(
-                        size: Size(size - 64 , size - 64),
-                        painter: CompleteCirclePainter(
-                          color: Colors.red,
+                    children: [
+                      CustomPaint(
+                        size: Size(size, size),
+                        painter: CompleteCirclePainter(color: Colors.blue),
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        height: size - 64,
+                        width: size - 64,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(.2),
+                          borderRadius: BorderRadius.circular((size - 64) / 2),
+                        ),
+                        child: Transform.rotate(
+                          angle: 45 * math.pi / 180,
+                          origin: Offset.zero,
+                          child: CustomPaint(
+                            size: Size(size - 64, size - 64),
+                            painter: CompleteCirclePainter(
+                              color: Colors.red,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    height: size - 128,
-                    width: size - 128,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(.2),
-                      borderRadius: BorderRadius.circular((size - 128)/2),
-                    ),
-                    child: Transform.rotate(
-                      angle: 60 * math.pi / 180,
-                      origin: Offset.zero,
-                      child:CustomPaint(
-                        size: Size(size - 64 , size - 64),
-                        painter: CompleteCirclePainter(
-                          color: Colors.brown,
-                          degree: 6,
+                      Container(
+                        alignment: Alignment.center,
+                        height: size - 128,
+                        width: size - 128,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(.2),
+                          borderRadius: BorderRadius.circular((size - 128) / 2),
+                        ),
+                        child: Transform.rotate(
+                          angle: 60 * math.pi / 180,
+                          origin: Offset.zero,
+                          child: CustomPaint(
+                            size: Size(size - 64, size - 64),
+                            painter: CompleteCirclePainter(
+                              color: Colors.brown,
+                              degree: 6,
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.center,
-                    height: size - 128 - 64,
-                    width: size - 128 -64,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(.2),
-                      borderRadius: BorderRadius.circular((size - 128)/2),
-                    ),
-                    child: Transform.rotate(
-                      angle: 60 * math.pi / 180,
-                      origin: Offset.zero,
-                      child:CustomPaint(
-                        size: Size(size - 128-64,size - 128-64),
-                        painter: RingScalePainter(
-                          ringWidth: 48,
-                          tickLength: 8,
-                          longTickLength: 16,
-                          longTickAngles: [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300],
+                      Container(
+                        alignment: Alignment.center,
+                        height: size - 128 - 64,
+                        width: size - 128 - 64,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(.2),
+                          borderRadius: BorderRadius.circular((size - 128) / 2),
+                        ),
+                        child: Transform.rotate(
+                          angle: 60 * math.pi / 180,
+                          origin: Offset.zero,
+                          child: CustomPaint(
+                            size: Size(size - 128 - 64, size - 128 - 64),
+                            painter: RingScalePainter(
+                              ringWidth: 48,
+                              tickLength: 8,
+                              longTickLength: 16,
+                              longTickAngles: [
+                                0,
+                                30,
+                                60,
+                                90,
+                                120,
+                                150,
+                                180,
+                                210,
+                                240,
+                                270,
+                                300
+                              ],
+                            ),
+                          ),
                         ),
                       ),
-                    ),
+                    ],
                   ),
-
-
-
-                ],
+                ),
               ),
-            ),
-          ),
-        )
-
-      )
-    );
+            )));
   }
 }
 
@@ -120,17 +126,18 @@ class DividedCircle extends StatelessWidget {
   final int divisions;
   final Widget child;
 
-  DividedCircle({required this.divisions, required this.child});
+  const DividedCircle(
+      {super.key, required this.divisions, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         CustomPaint(
-          size: Size(200, 200),
+          size: const Size(200, 200),
           painter: DividedCirclePainter(divisions: divisions),
         ),
-        Container(
+        SizedBox(
           width: 200,
           height: 200,
           child: child,

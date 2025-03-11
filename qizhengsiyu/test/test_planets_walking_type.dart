@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:qizhengsiyu/enums/enum_stars.dart';
+import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/models/observer_position.dart';
 import 'package:qizhengsiyu/models/panel_stars_info.dart';
 import 'package:qizhengsiyu/models/stars_angle.dart';
+import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 
 void main() {
@@ -18,41 +19,53 @@ void main() {
   //     dateTime: DateTime(2024, 10, 13, 16, 45),
   //     timezone: 'Asia/Shanghai'
   // );
-  test('Fire test', () {
+  test('Mars test', () {
     // 逆、留、迟、常、速、常、迟、留
     // 常、速、常、迟、留、逆、留、迟、
 
-    List<FiveStarWalkingType> list = EnumStars.Fire.fullForwardList;
-    list.forEach((t)=>print(t.name));
+    List<FiveStarWalkingType> list =
+        QiZhengSiYuConstantResources.getFullForwardList(EnumStars.Mars);
+    for (var t in list) {
+      print(t.name);
+    }
 
-    var result = FiveStarWalkingType.changeFirst(FiveStarWalkingType.Normal,list);
-    result.forEach((t)=>print(t.name));
-    FiveStarWalkingType.reverseToPreviousListAndChangeFirst(FiveStarWalkingType.Normal,list).forEach((t)=>print(t.name));
-
-
+    var result =
+        FiveStarWalkingType.changeFirst(FiveStarWalkingType.Normal, list);
+    for (var t in result) {
+      print(t.name);
+    }
+    FiveStarWalkingType.reverseToPreviousListAndChangeFirst(
+            FiveStarWalkingType.Normal, list)
+        .forEach((t) => print(t.name));
   });
-  test('Golden test', () {
+  test('Venus test', () {
     // 逆、留、迟、常、速、常、迟、留
     // 常、速、常、迟、留、逆、留、迟、
 
-    List<FiveStarWalkingType> list = EnumStars.Golden.fullForwardList;
-    list.forEach((t)=>print(t.name));
+    List<FiveStarWalkingType> list =
+        QiZhengSiYuConstantResources.getFullForwardList(EnumStars.Venus);
+    for (var t in list) {
+      print(t.name);
+    }
 
-    var result = FiveStarWalkingType.changeFirst(FiveStarWalkingType.Normal,list);
-    result.forEach((t)=>print(t.name));
-    FiveStarWalkingType.reverseToPreviousListAndChangeFirst(FiveStarWalkingType.Normal,list).forEach((t)=>print(t.name));
-
+    var result =
+        FiveStarWalkingType.changeFirst(FiveStarWalkingType.Normal, list);
+    for (var t in result) {
+      print(t.name);
+    }
+    FiveStarWalkingType.reverseToPreviousListAndChangeFirst(
+            FiveStarWalkingType.Normal, list)
+        .forEach((t) => print(t.name));
   });
 
-  test("Golden speed type test",(){
-    FiveStarWalkingType result = StarWalkingInfoUtils.getWalkingType(0.100,StarsAngle.moirasFiveStartsMapper[EnumStars.Golden]!);
+  test("Venus speed type test", () {
+    FiveStarWalkingType result = StarWalkingInfoUtils.getWalkingType(
+        0.100, StarsAngle.moirasFiveStartsMapper[EnumStars.Venus]!);
     expect(result, FiveStarWalkingType.Stay);
-
-
-    });
-  // test('Golden at datetime test',(){
+  });
+  // test('Venus at datetime test',(){
   //
-  //   StarWalkingInfoUtils.calculateStarWalkingInfo(EnumSevenZheng.Golden,observerPostion,StarsAngle.moirasFiveStartsMapper);
+  //   StarWalkingInfoUtils.calculateStarWalkingInfo(EnumSevenZheng.Venus,observerPostion,StarsAngle.moirasFiveStartsMapper);
   //   nextWalkingType(fiveStar,planetBody,observerSpeed, julianDay, currentFiveStarWalkingType, tuple6, speedStringFixed: _speedStringFixed,timeStep: 1/24);
   // });
 }

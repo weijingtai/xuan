@@ -36,6 +36,8 @@ class WillowBranchPainter extends CustomPainter {
 }
 
 class WillowBranchAnimation extends StatefulWidget {
+  const WillowBranchAnimation({super.key});
+
   @override
   _WillowBranchAnimationState createState() => _WillowBranchAnimationState();
 }

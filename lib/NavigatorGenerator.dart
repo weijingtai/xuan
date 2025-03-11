@@ -6,16 +6,21 @@ import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
 import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
 import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
+import 'package:xuan/pages/city_picker_page.dart';
 import 'package:xuan/pages/one_year_circle.dart';
 import 'package:xuan/pages/root_page.dart';
 
-class NavigatorGenerator{
-  static final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
+class NavigatorGenerator {
+  static final RouteObserver<PageRoute> routeObserver =
+      RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    "/": (context,{arguments}) => RootPage(),
-    "/one_year": (context,{arguments}) => OneYearCircle(),
-    "/widget_dev":(context,{arguments}) => MyHomePage(title: 'widgets dev',),
+    // "/": (context,{arguments}) => RootPage(),
+    "/": (context, {arguments}) => CityPickerPage(),
+    "/one_year": (context, {arguments}) => OneYearCircle(),
+    "/widget_dev": (context, {arguments}) => MyHomePage(
+          title: 'widgets dev',
+        ),
     ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,
     ...TaiYiShenShu.NavigatorGenerator.routes,
@@ -23,9 +28,8 @@ class NavigatorGenerator{
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
-
     final String? name = settings.name;
-    if (name != null && name.isNotEmpty){
+    if (name != null && name.isNotEmpty) {
       final Function? pageContentBuilder = routes[name];
       if (pageContentBuilder != null) {
         final Route route = MaterialPageRoute(
@@ -35,10 +39,9 @@ class NavigatorGenerator{
       } else {
         return _errorPage('Could not found route for $name');
       }
-    }else {
+    } else {
       return _errorPage("Navigator required naviation name.");
     }
-
   }
 
   static Route _errorPage(msg) {
@@ -47,5 +50,4 @@ class NavigatorGenerator{
           appBar: AppBar(title: Text('未知页面')), body: Center(child: Text(msg)));
     });
   }
-
 }

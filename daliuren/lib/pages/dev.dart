@@ -1,4 +1,5 @@
 import 'package:common/const_resources_mapper.dart';
+import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:daliuren/model/each_class.dart';
@@ -45,47 +46,44 @@ class _DevMyWidgetState extends State<DevMyWidget> {
     return fourClass;
   }
 
-  Size gongSize = Size(400 * .25, 400 * .25);
+  Size gongSize = const Size(400 * .25, 400 * .25);
   TextStyle guiRenNameTextStyle = GoogleFonts.maShanZheng(
       fontSize: 24,
-      color: Color.fromRGBO(68, 68, 60, 1), // 墨染
+      color: const Color.fromRGBO(68, 68, 60, 1), // 墨染
       // color: Color.fromRGBO(255, 229, 248, 1), // 墨染
       height: 1.0,
       shadows: [
         Shadow(
             color: Colors.grey.withOpacity(.5),
             blurRadius: 2,
-            offset: Offset(0, 0))
+            offset: const Offset(0, 0))
       ]);
 
   Widget build_four_ke(FourClass fourClass) {
     double diZhiFontSize = gongSize.width * .24;
     double otherFontSize = gongSize.width * .24;
-    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle.copyWith(
-        fontSize: diZhiFontSize,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle.copyWith(
-        fontSize: diZhiFontSize,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    TextStyle guiRenName = guiRenNameTextStyle.copyWith(
-        fontSize: gongSize.width * .14,
-        shadows: [
-          Shadow(
-              color: Colors.grey.withOpacity(.5),
-              blurRadius: 2,
-              offset: Offset(0, 0))
-        ]);
-    SizedBox intervalSize = SizedBox(width: 6);
+    TextStyle tianGanStyle = ConstUIResourcesMapper.tianGanTextStyle
+        .copyWith(fontSize: diZhiFontSize, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    TextStyle diZhiStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle
+        .copyWith(fontSize: diZhiFontSize, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    TextStyle guiRenName =
+        guiRenNameTextStyle.copyWith(fontSize: gongSize.width * .14, shadows: [
+      Shadow(
+          color: Colors.grey.withOpacity(.5),
+          blurRadius: 2,
+          offset: const Offset(0, 0))
+    ]);
+    SizedBox intervalSize = const SizedBox(width: 6);
     double height = gongSize.height;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,

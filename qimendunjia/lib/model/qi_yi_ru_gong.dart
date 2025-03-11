@@ -1,11 +1,10 @@
-import 'package:common/model/enum_hou_tian_gua.dart';
-import 'package:common/model/enum_ji_xiong.dart';
-import 'package:common/model/enum_tian_gan.dart';
+import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'qi_yi_ru_gong.g.dart';
+
 @JsonSerializable()
-class QiYiRuGong{
+class QiYiRuGong {
   // 三奇六仪 入宫
 
   HouTianGua gong;
@@ -21,6 +20,7 @@ class QiYiRuGong{
     required this.geJuJiXiong,
   });
 
-  factory QiYiRuGong.fromJson(Map<String, dynamic> json) => _$QiYiRuGongFromJson(json);
+  factory QiYiRuGong.fromJson(Map<String, dynamic> json) =>
+      _$QiYiRuGongFromJson(json);
   Map<String, dynamic> toJson() => _$QiYiRuGongToJson(this);
 }

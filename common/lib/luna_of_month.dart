@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 class MoonPage extends StatefulWidget {
-  MoonPage({Key? key}) : super(key: key);
+  const MoonPage({Key? key}) : super(key: key);
 
   @override
   _MoonPageState createState() => _MoonPageState();
@@ -30,7 +30,7 @@ class _MoonPageState extends State<MoonPage>
     super.initState();
 
     _controller =
-        AnimationController(duration: Duration(seconds: 4), vsync: this);
+        AnimationController(duration: const Duration(seconds: 4), vsync: this);
 
     _animation = Tween(begin: 100.0, end: 0.0).animate(_controller!)
       ..addListener(() {
@@ -76,7 +76,7 @@ class _MoonPageState extends State<MoonPage>
     _screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text("月亮"),
+        title: const Text("月亮"),
       ),
       body: Container(
         color: Colors.black,
@@ -99,7 +99,13 @@ class _MoonPageState extends State<MoonPage>
               size: Size(_screenWidth, _screenWidth),
             ),
           ),
-          Positioned(top:30,left:20,child: Text("人有悲欢离合，月有阴晴圆缺",style: TextStyle(color: Colors.yellow,fontSize: 18),))
+          const Positioned(
+              top: 30,
+              left: 20,
+              child: Text(
+                "人有悲欢离合，月有阴晴圆缺",
+                style: TextStyle(color: Colors.yellow, fontSize: 18),
+              ))
         ]),
       ),
     );
@@ -114,6 +120,7 @@ class _MoonPageState extends State<MoonPage>
     super.dispose();
   }
 }
+
 class MoonFullShapedPainter extends CustomPainter {
   double width;
 
@@ -125,7 +132,7 @@ class MoonFullShapedPainter extends CustomPainter {
 
   MoonFullShapedPainter(this.width, this.height, this.changeR, this.bigToSmall);
 
-  Paint _paint = Paint()..strokeWidth = 2.0;
+  final Paint _paint = Paint()..strokeWidth = 2.0;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -175,6 +182,7 @@ class MoonFullShapedPainter extends CustomPainter {
     return true;
   }
 }
+
 class MoonLossShapedPainter extends CustomPainter {
   double width;
 
@@ -186,7 +194,7 @@ class MoonLossShapedPainter extends CustomPainter {
 
   MoonLossShapedPainter(this.width, this.height, this.changeR, this.bigToSmall);
 
-  Paint _paint = Paint()..strokeWidth = 2.0;
+  final Paint _paint = Paint()..strokeWidth = 2.0;
 
   @override
   void paint(Canvas canvas, Size size) {

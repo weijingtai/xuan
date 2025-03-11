@@ -1,9 +1,8 @@
-import 'package:common/model/enum_tian_gan.dart';
+import 'package:common/enums/enum_tian_gan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group("纳卦", ()
-  {
+  group("纳卦", () {
     test("天干纳卦", () {
       expect("乾", TianGan.JIA.naJiaGua);
       expect("坤", TianGan.YI.naJiaGua);
@@ -19,8 +18,6 @@ void main() {
 
       expect("乾", TianGan.REN.naJiaGua);
       expect("坤", TianGan.GUI.naJiaGua);
-
-
     });
   });
 }

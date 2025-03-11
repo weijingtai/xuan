@@ -61,6 +61,7 @@ class PieSegmentPainter extends CustomPainter {
             oldDelegate.borderColor != borderColor);
   }
 }
+
 class PieSegmentWidget extends StatelessWidget {
   final double startAngle; // In degrees
   final double sweepAngle; // In degrees
@@ -83,14 +84,14 @@ class PieSegmentWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outerRadius = 60;
-    final innerRadius = 60;
+    const outerRadius = 60;
+    const innerRadius = 60;
     return ClipPath(
-      clipper: clipper ?? _PieSegmentClipper(
-        startAngle: startAngle * pi / 180, // Convert to radians
-        sweepAngle: sweepAngle * pi / 180, // Convert to radians
-      ),
-
+      clipper: clipper ??
+          _PieSegmentClipper(
+            startAngle: startAngle * pi / 180, // Convert to radians
+            sweepAngle: sweepAngle * pi / 180, // Convert to radians
+          ),
       child: CustomPaint(
         painter: PieSegmentPainter(
           startAngle: startAngle * pi / 180,
@@ -113,19 +114,19 @@ class PieSegmentWidget extends StatelessWidget {
       ),
     );
   }
+
   Offset calculateTextPosition(
-      double startAngle,
-      double sweepAngle,
-      double radius,
-      ) {
+    double startAngle,
+    double sweepAngle,
+    double radius,
+  ) {
     final halfSweepAngle = startAngle + sweepAngle / 2;
     const distanceFactor = 1;
     final x = radius * distanceFactor * cos(halfSweepAngle);
-    final y = radius *distanceFactor * sin(halfSweepAngle);
+    final y = radius * distanceFactor * sin(halfSweepAngle);
     return Offset(x, y);
   }
 }
-
 
 // Helper clipper to define the pie shape
 class _PieSegmentClipper extends CustomClipper<Path> {
@@ -162,12 +163,14 @@ class _PieSegmentClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(_PieSegmentClipper oldClipper) =>
       oldClipper.startAngle != startAngle ||
-          oldClipper.sweepAngle != sweepAngle;
+      oldClipper.sweepAngle != sweepAngle;
 }
+
 class FanRingClipper extends CustomClipper<Path> {
   final double startAngle;
   final double sweepAngle;
-  final double innerRadiusRatio; // Ratio of inner radius to outer radius (0.0 to 1.0)
+  final double
+      innerRadiusRatio; // Ratio of inner radius to outer radius (0.0 to 1.0)
 
   FanRingClipper({
     required this.startAngle,
@@ -214,6 +217,6 @@ class FanRingClipper extends CustomClipper<Path> {
   @override
   bool shouldReclip(FanRingClipper oldClipper) =>
       oldClipper.startAngle != startAngle ||
-          oldClipper.sweepAngle != sweepAngle ||
-          oldClipper.innerRadiusRatio != innerRadiusRatio;
+      oldClipper.sweepAngle != sweepAngle ||
+      oldClipper.innerRadiusRatio != innerRadiusRatio;
 }

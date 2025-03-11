@@ -1,15 +1,9 @@
 import 'dart:convert';
 
-import 'package:common/model/enum_di_zhi.dart';
+import 'package:common/enums.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/enums/enum_twenty_eight_xing_xiu.dart';
-import 'package:tuple/tuple.dart';
 
-import '../enums/enum_stars.dart';
-
-
-class StarWalkingInfo{
+class StarWalkingInfo {
   EnumStars star;
   FiveStarWalkingType walkingType;
   double speed;
@@ -25,17 +19,17 @@ class StarWalkingInfo{
 
   // toJson
   Map<String, dynamic> toJson() => {
-    "star":star.name,
-    "walkingType":walkingType.name,
-    "walkingTypeStartAt":walkingTypeStartAt.toString(),
-    "speed":speed,
-    "angle":angle,
-  };
+        "star": star.name,
+        "walkingType": walkingType.name,
+        "walkingTypeStartAt": walkingTypeStartAt.toString(),
+        "speed": speed,
+        "angle": angle,
+      };
   // toString print json
   @override
   String toString() => jsonEncode(toJson());
-
 }
+
 class FiveStarWalkingInfo {
   EnumStars star;
   double angle;
@@ -43,8 +37,7 @@ class FiveStarWalkingInfo {
   DateTime walkingTypeStartAt;
   DateTime walkingTypeEndAt;
 
-
-  String speedThresholdName;  // 阈值使用的参数  单前多为moira
+  String speedThresholdName; // 阈值使用的参数  单前多为moira
   double maxSpeed;
   double retrogradeMaxSpeed;
 
@@ -79,8 +72,4 @@ class FiveStarWalkingInfo {
     this.hiddenStartAt,
     this.hiddenEndAt,
   });
-
 }
-
-
-

@@ -105,9 +105,9 @@ class MyApp extends StatelessWidget {
               //   final Uri uri = Uri.parse(settings.name ?? '/');
               return ConditionalRouteWidget(
                   routesExcluded: const [], // Excluding a page from AutoScale.
-                  builder: (context, child) => child != null
-                      ? child
-                      : ResponsiveScaledBox(
+                  builder: (context, child) =>
+                      child ??
+                      ResponsiveScaledBox(
                           // ResponsiveScaledBox renders its child with a FittedBox set to the `width` value.
                           // Set the fixed width value based on the active breakpoint.
                           width: ResponsiveValue<double>(context,

@@ -30,7 +30,7 @@ class MyCirclePainter extends CustomPainter {
     //   offsetTimes = 0;
     // }
     // Offset center = Offset(size.width*.5-(offsetTimes*size.width*.5),size.height*.5);
-    print("${starName} - ${starAngle}");
+    print("$starName - $starAngle");
     double centerX = size.width * .5 - (offsetTimes * size.width * .5);
     int subCenterHeightTimes = 0;
     if (offsetTimes != 0) {
@@ -95,7 +95,7 @@ class MyCirclePainter extends CustomPainter {
 
     canvas.drawCircle(Offset.zero, radius * .3,
         Paint()..color = textStyle.color!.withOpacity(.3));
-    canvas.drawCircle(Offset(1, 1), radius * .3,
+    canvas.drawCircle(const Offset(1, 1), radius * .3,
         Paint()..color = textStyle.color!.withOpacity(.1));
 
     // canvas draw image from assets
@@ -295,7 +295,7 @@ class StarBodyPainter extends CustomPainter {
 
     int offsetTimes = 0;
     int subCenterHeightTimes = 0;
-    print("${starName} - ${starAngle}");
+    print("$starName - $starAngle");
     double centerX = size.width * .5 - (offsetTimes * size.width * .5);
 
     double centerY =
@@ -360,7 +360,7 @@ class StarBodyPainter extends CustomPainter {
 
     canvas.drawCircle(Offset.zero, radius * .3,
         Paint()..color = textStyle.color!.withOpacity(.3));
-    canvas.drawCircle(Offset(1, 1), radius * .3,
+    canvas.drawCircle(const Offset(1, 1), radius * .3,
         Paint()..color = textStyle.color!.withOpacity(.1));
 
     // canvas draw image from assets

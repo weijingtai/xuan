@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 @Deprecated("not finished")
 class ArcButton extends StatefulWidget {
+  const ArcButton({super.key});
+
   @override
   _ArcButtonState createState() => _ArcButtonState();
 }
@@ -33,9 +35,9 @@ class _ArcButtonState extends State<ArcButton> {
             alignment: Alignment.topCenter,
             // padding: EdgeInsets.only(top: 4),
             color: Colors.orange,
-            child: Text(
+            child: const Text(
               '狮子',
-              style: TextStyle(color: Colors.white,height: 1.2),
+              style: TextStyle(color: Colors.white, height: 1.2),
             ),
           ),
           // child: CustomPaint(
@@ -58,14 +60,13 @@ class _ArcButtonState extends State<ArcButton> {
 }
 
 class ArcPainter extends CustomPainter {
-
   ArcPainter();
 
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromCircle(center: size.center(Offset.zero), radius: 50);
-    final startAngle = -0.5 * 3.14; // 90 degrees in radians
-    final endAngle = 0.5 * 3.14;
+    const startAngle = -0.5 * 3.14; // 90 degrees in radians
+    const endAngle = 0.5 * 3.14;
 
     final paint = Paint()
       ..color = Colors.blue
@@ -81,11 +82,8 @@ class ArcPainter extends CustomPainter {
 }
 
 class ArcClipper extends CustomClipper<Path> {
-
   bool isExpanded;
-  ArcClipper({
-    this.isExpanded = true
-  });
+  ArcClipper({this.isExpanded = true});
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
@@ -99,12 +97,11 @@ class ArcClipper extends CustomClipper<Path> {
     path.lineTo(size.width, size.height);
     path.lineTo(size.width, 0);
 
-    final rect = Rect.fromCircle(center: Offset(50,50), radius: 50);
-    final startAngle = -0.5 * 3.14; // 90 degrees in radians
+    final rect = Rect.fromCircle(center: const Offset(50, 50), radius: 50);
+    const startAngle = -0.5 * 3.14; // 90 degrees in radians
     // final endAngle = isExpanded ? 0.5 * 3.14 : 0.0;
-    final endAngle = 0.5 * 3.14;
+    const endAngle = 0.5 * 3.14;
     path.addArc(rect, startAngle, endAngle);
-
 
     // final paint = Paint()
     //   ..color = Colors.blue
@@ -122,6 +119,7 @@ class ArcClipper extends CustomClipper<Path> {
     return true;
   }
 }
+
 class AnnularClipper extends CustomClipper<Path> {
   final double startAngle;
   final double endAngle;
@@ -138,14 +136,14 @@ class AnnularClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     final path = Path();
-    final rect = Rect.fromCircle(
-        center: size.center(Offset.zero), radius: outerRadius);
+    final rect =
+        Rect.fromCircle(center: size.center(Offset.zero), radius: outerRadius);
 
     path.arcTo(rect, startAngle, endAngle - startAngle, false);
 
     // 添加内部的圆弧
-    final innerRect = Rect.fromCircle(
-        center: size.center(Offset.zero), radius: innerRadius);
+    final innerRect =
+        Rect.fromCircle(center: size.center(Offset.zero), radius: innerRadius);
     path.arcTo(innerRect, endAngle, startAngle - endAngle, false);
 
     return path;

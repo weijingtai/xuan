@@ -3,12 +3,14 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class LinePainterWidget extends StatefulWidget {
+  const LinePainterWidget({super.key});
+
   @override
   _LinePainterWidgetState createState() => _LinePainterWidgetState();
 }
 
-class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProviderStateMixin {
-
+class _LinePainterWidgetState extends State<LinePainterWidget>
+    with TickerProviderStateMixin {
   late AnimationController _redDotPointerController;
   late Animation<double> _redDotPointerAnimation;
 
@@ -22,9 +24,9 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
   final GlobalKey greenDotPointerKey = GlobalKey();
 
   final GlobalKey appBarKey = GlobalKey();
-  Offset start = Offset(0, 0);
-  Offset end = Offset(0, 0);
-  Offset redDotCenter = Offset(0, 0);
+  Offset start = const Offset(0, 0);
+  Offset end = const Offset(0, 0);
+  Offset redDotCenter = const Offset(0, 0);
   @override
   void initState() {
     super.initState();
@@ -32,18 +34,16 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
     _redDotPointerController = AnimationController(
       duration: const Duration(seconds: 60),
       vsync: this,
-    )
-      ..repeat();
-    _redDotPointerAnimation = Tween<double>(begin: 0, end: 2 * pi).animate(_redDotPointerController);
+    )..repeat();
+    _redDotPointerAnimation =
+        Tween<double>(begin: 0, end: 2 * pi).animate(_redDotPointerController);
 
     _greenDotPointController = AnimationController(
       duration: const Duration(seconds: 3),
       vsync: this,
-    )
-      ..repeat();
-    _greenAnimation = Tween<double>(begin: 0, end:2 * pi ).animate(_greenDotPointController);
-
-
+    )..repeat();
+    _greenAnimation =
+        Tween<double>(begin: 0, end: 2 * pi).animate(_greenDotPointController);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
@@ -52,6 +52,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
       });
     });
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -63,8 +64,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            key: appBarKey,
-            title: Text('Draw Line Between Boxes')),
+            key: appBarKey, title: const Text('Draw Line Between Boxes')),
         body: Column(
           children: [
             Container(
@@ -82,7 +82,8 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                         height: 800,
                         decoration: BoxDecoration(
                           color: Colors.blue.withOpacity(.1),
-                          borderRadius: BorderRadius.all(Radius.circular(800)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(800)),
                         ),
                       ),
                       // if (start != null && end != null)
@@ -93,7 +94,6 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                       //         painter: MyPainter(start, end),
                       //       )
                       //   ),
-
 
                       // Positioned(
                       //     top: (1000 - 810) / 2,
@@ -134,17 +134,16 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                           double x2 = radius2 * cos(angle);
                           double y2 = radius2 * sin(angle);
 
-                          var end = Offset(500 + x ,500 + y);
-                          var start = Offset(500 + x2 ,500 + y2);
+                          var end = Offset(500 + x, 500 + y);
+                          var start = Offset(500 + x2, 500 + y2);
                           return Positioned(
-                            // top: 500 + y - 10,
-                            // left: 500 + x - 10,
+                              // top: 500 + y - 10,
+                              // left: 500 + x - 10,
                               top: 0,
                               left: 0,
                               child: CustomPaint(
-                                painter: MyPainter(start, end,Colors.red),
-                              )
-                          );
+                                painter: MyPainter(start, end, Colors.red),
+                              ));
                         },
                       ),
                       // red dot
@@ -164,7 +163,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                               key: redDotPointerKey,
                               width: 4,
                               height: 4,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Colors.red,
                                 shape: BoxShape.circle,
                               ),
@@ -189,12 +188,14 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: Colors.red.withOpacity(.1),
-                                  borderRadius: BorderRadius.all(
+                                  borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                 ),
-                                child: Text("火",style: TextStyle(fontSize: 16,height: 1),),
-                              )
-                          );
+                                child: const Text(
+                                  "火",
+                                  style: TextStyle(fontSize: 16, height: 1),
+                                ),
+                              ));
                           return Positioned(
                             // left: 100 + x - 10,
                             // top: 100 + y - 10,
@@ -204,7 +205,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                               key: redDotPointerKey,
                               width: 20,
                               height: 20,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Colors.red,
                                 shape: BoxShape.circle,
                               ),
@@ -212,7 +213,6 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                           );
                         },
                       ),
-
 
                       AnimatedBuilder(
                         animation: _greenAnimation,
@@ -226,17 +226,16 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                           double x2 = radius2 * cos(angle);
                           double y2 = radius2 * sin(angle);
 
-                          var end = Offset(500 + x ,500 + y);
-                          var start = Offset(500 + x2 ,500 + y2);
+                          var end = Offset(500 + x, 500 + y);
+                          var start = Offset(500 + x2, 500 + y2);
                           return Positioned(
-                            // top: 500 + y - 10,
-                            // left: 500 + x - 10,
+                              // top: 500 + y - 10,
+                              // left: 500 + x - 10,
                               top: 0,
                               left: 0,
                               child: CustomPaint(
-                                painter: MyPainter(start, end,Colors.green),
-                              )
-                          );
+                                painter: MyPainter(start, end, Colors.green),
+                              ));
                         },
                       ),
                       // red dot
@@ -256,7 +255,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                               // key: redDotPointerKey,
                               width: 4,
                               height: 4,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Colors.green,
                                 shape: BoxShape.circle,
                               ),
@@ -281,25 +280,21 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
                                   color: Colors.green.withOpacity(.1),
-                                  borderRadius: BorderRadius.all(
+                                  borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                 ),
-                                child: Text("木",style: TextStyle(fontSize: 16,height: 1),),
-                              )
-                          );
-
+                                child: const Text(
+                                  "木",
+                                  style: TextStyle(fontSize: 16, height: 1),
+                                ),
+                              ));
                         },
                       ),
-
                     ],
                   ),
-                )
-
-            )
-
+                ))
           ],
-        )
-    );
+        ));
   }
 
   Widget body1() {
@@ -307,9 +302,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
       alignment: Alignment.center,
       width: 1000,
       height: 1000,
-      decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(.1)
-      ),
+      decoration: BoxDecoration(color: Colors.grey.withOpacity(.1)),
       child: SizedBox(
         width: 1000,
         height: 1000,
@@ -323,7 +316,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                 key: redStarKey,
                 width: 20,
                 height: 20,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.red,
                   borderRadius: BorderRadius.all(Radius.circular(20)),
                 ),
@@ -336,15 +329,15 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
                 key: redDotPointerKey,
                 width: 20,
                 height: 20,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.green,
                   borderRadius: BorderRadius.all(Radius.circular(20)),
                 ),
               ),
             ),
-            if (start != null && end != null)
+            if (end != null)
               CustomPaint(
-                painter: MyPainter(start, end,Colors.blue),
+                painter: MyPainter(start, end, Colors.blue),
               ),
           ],
         ),
@@ -356,16 +349,17 @@ class _LinePainterWidgetState extends State<LinePainterWidget> with TickerProvid
     // final RenderBox box = key.currentContext?.findRenderObject() as RenderBox;
     // final position = box.localToGlobal(Offset.zero);
     // return position.translate(box.size.width / 2, box.size.height /2);
-    final RenderBox renderBoxRed = key.currentContext!
-        .findRenderObject() as RenderBox;
+    final RenderBox renderBoxRed =
+        key.currentContext!.findRenderObject() as RenderBox;
     final sizeRed = renderBoxRed.size;
-    double appBarHeight = (appBarKey.currentContext!
-        .findRenderObject() as RenderBox).size.height;
+    double appBarHeight =
+        (appBarKey.currentContext!.findRenderObject() as RenderBox).size.height;
 
     final positionRed = renderBoxRed.localToGlobal(Offset(0, -appBarHeight));
     return positionRed + Offset(sizeRed.width / 2, sizeRed.height / 2);
   }
 }
+
 class LinePainter extends CustomPainter {
   final Offset start;
   final Offset end;
@@ -387,12 +381,13 @@ class LinePainter extends CustomPainter {
     return true;
   }
 }
+
 class MyPainter extends CustomPainter {
   final Offset start;
   final Offset end;
   final Color color;
 
-  MyPainter(this.start, this.end,this.color);
+  MyPainter(this.start, this.end, this.color);
 
   @override
   void paint(Canvas canvas, Size size) {

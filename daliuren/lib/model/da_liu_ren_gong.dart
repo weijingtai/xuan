@@ -1,12 +1,12 @@
-import 'package:common/module.dart';
+import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'enum_gui_ren.dart';
 
-
 part 'da_liu_ren_gong.g.dart';
+
 @JsonSerializable()
-class DaLiuRenGong{
+class DaLiuRenGong {
   // String diZhi;
   DiZhi groundPanDiZhi;
   GuiRen guiRen;
@@ -16,14 +16,14 @@ class DaLiuRenGong{
   TianGan? tianGan;
   JiaZi? jiaZi;
 
-
   DaLiuRenGong({
     required this.skyPanDiZhi,
     required this.groundPanDiZhi,
     required this.guiRen,
     this.jiaZi,
     this.tianGan,
-});
-  factory DaLiuRenGong.fromJson(Map<String, dynamic> json) => _$DaLiuRenGongFromJson(json);
+  });
+  factory DaLiuRenGong.fromJson(Map<String, dynamic> json) =>
+      _$DaLiuRenGongFromJson(json);
   Map<String, dynamic> toJson() => _$DaLiuRenGongToJson(this);
 }

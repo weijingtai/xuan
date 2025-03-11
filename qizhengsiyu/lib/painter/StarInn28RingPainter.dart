@@ -1,9 +1,8 @@
 import 'dart:math';
 
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
-
-import '../enums/enum_twenty_eight_xing_xiu.dart';
 
 class Starinn28ringPainter extends CustomPainter {
   static const int TOTAL = 28;
@@ -29,7 +28,7 @@ class Starinn28ringPainter extends CustomPainter {
     this.outerPadding = 12,
     this.textStyle =
         const TextStyle(color: Colors.black, fontSize: 18, height: 1.2),
-  }) {}
+  });
 
   void debugPaint(Canvas canvas, Size size, Offset center) {
     // canvas.translate(center.dx, center.dy);
@@ -67,7 +66,7 @@ class Starinn28ringPainter extends CustomPainter {
     // final res = sweepAngleDegree *0.5 * math.pi / 180;
     // final double startAngle = math.pi / 2 - res;
     // final double sweepAngle = sweepAngleDegree * math.pi / 180;
-    final double startAngle = 0;
+    const double startAngle = 0;
     final fanRingWidth = outerRadius - innerRadius;
 
     final Paint paint = Paint()

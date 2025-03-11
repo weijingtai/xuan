@@ -5,12 +5,11 @@ import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:tuple/tuple.dart';
 
 class StarsResolver {
-
   static double calculateMinSafeAngle(double outerR, double innerR, double r) {
     // 参数校验
-    if (outerR <= innerR) return 360.0;    // 外圈必须大于内圈
-    if (innerR < 0) return 360.0;          // 内圈不能为负
-    if (r <= 0) return 0.0;                // 零或负半径无需安全角度
+    if (outerR <= innerR) return 360.0; // 外圈必须大于内圈
+    if (innerR < 0) return 360.0; // 内圈不能为负
+    if (r <= 0) return 0.0; // 零或负半径无需安全角度
 
     final R = (outerR + innerR) / 2;
     final ratio = r / R;
@@ -18,15 +17,16 @@ class StarsResolver {
     // 处理浮点精度误差
     const epsilon = 1e-10;
     return (ratio >= 1 - epsilon) ? 360.0 : 2 * asin(ratio) * 180 / pi;
-  }// 判断一个角度是否在弧的范围内
+  } // 判断一个角度是否在弧的范围内
+
   /// 根据两个星体解析星座模型
   static UIConstellationModel? doResolve2Stars(List<UIStarModel> stars) {
     if (stars[0].angle == stars[1].angle) {
       return doResolveSameAngleStars(stars);
     }
-    List<UIStarModel> _stars = sortStar(stars);
-    UIStarModel head = _stars[0];
-    UIStarModel tail = _stars[1];
+    List<UIStarModel> stars0 = sortStar(stars);
+    UIStarModel head = stars0[0];
+    UIStarModel tail = stars0[1];
     Tuple3<bool, double?, double?> inRangeTuple = head.inRangeAngle(tail);
 
     if (inRangeTuple.item1) {
@@ -73,22 +73,20 @@ class StarsResolver {
   }
 
   /// 处理星座与星体，调整并加入符合条件的星体
-  static Tuple2<UIConstellationModel,
-      List<UIStarModel>> doResolveConstellationWithStars(
-      UIConstellationModel constellation, List<UIStarModel> stars) {
+  static Tuple2<UIConstellationModel, List<UIStarModel>>
+      doResolveConstellationWithStars(
+          UIConstellationModel constellation, List<UIStarModel> stars) {
     UIConstellationModel currentConstellation = constellation;
     Map<double, UIStarModel> singleStarMap = _createStarMap(stars);
-    List<double> _circularSortedStarsAngle = sortCircularAnglesByGivenCenter(
+    List<double> circularSortedStarsAngle = sortCircularAnglesByGivenCenter(
         singleStarMap.keys.toList(), currentConstellation.centerAngle);
 
-    int centerAngleIndex = _circularSortedStarsAngle.indexOf(
-        currentConstellation.centerAngle);
-    List<double> leftAngles = _circularSortedStarsAngle
-        .sublist(0, centerAngleIndex)
-        .reversed
-        .toList();
-    List<double> rightAngles = _circularSortedStarsAngle.sublist(
-        centerAngleIndex + 1);
+    int centerAngleIndex =
+        circularSortedStarsAngle.indexOf(currentConstellation.centerAngle);
+    List<double> leftAngles =
+        circularSortedStarsAngle.sublist(0, centerAngleIndex).reversed.toList();
+    List<double> rightAngles =
+        circularSortedStarsAngle.sublist(centerAngleIndex + 1);
     List<UIStarModel> addedStars = [];
 
     _processAngles(
@@ -107,20 +105,19 @@ class StarsResolver {
 
   /// 解析一组星体为星座模型
   static List<UIStarModel> resolveUIStars(List<UIStarModel> stars) {
-    List<UIStarModel> _stars = stars.toList();
-    _stars.sort((a, b) => a.originalAngle.compareTo(b.originalAngle));
+    List<UIStarModel> stars0 = stars.toList();
+    stars0.sort((a, b) => a.originalAngle.compareTo(b.originalAngle));
     Map<UIStarModel, Set<UIStarModel>> needHandled = {};
     Set<UIStarModel> singleStar = {};
 
-    _classifyStars(_stars, needHandled, singleStar);
+    _classifyStars(stars0, needHandled, singleStar);
     // _stars.forEach((s)=>print(s));
     // print("needHandled: ${needHandled.length}");
     // print("singleStar: ${singleStar.length}");
     if (needHandled.isEmpty) {
-      return _stars;
+      return stars0;
     }
-    needHandled.forEach((k,v)=>print("$k: ${v.length}"));
-
+    needHandled.forEach((k, v) => print("$k: ${v.length}"));
 
     List<Set<UIStarModel>> connectedStars = findConnectedStars(needHandled);
     connectedStars.sort((a, b) => a.length.compareTo(b.length));
@@ -135,11 +132,13 @@ class StarsResolver {
     // Map<double, UIStarModel> singleStarMap = _createStarMap(singleStar.toList());
     List<UIConstellationModel> addedSingleStarsConstellation = [];
     for (var i = 0; i < constellations.length; i++) {
-      Tuple2<UIConstellationModel,
-          List<UIStarModel>> result = doResolveConstellationWithStars(
-          constellations[i], singleStar.toList());
+      Tuple2<UIConstellationModel, List<UIStarModel>> result =
+          doResolveConstellationWithStars(
+              constellations[i], singleStar.toList());
       if (result.item2.isNotEmpty) {
-        result.item2.forEach((s) => singleStar.remove(s));
+        for (var s in result.item2) {
+          singleStar.remove(s);
+        }
       }
       addedSingleStarsConstellation.add(result.item1);
     }
@@ -148,8 +147,10 @@ class StarsResolver {
       handleTwoConstellationModel(addedSingleStarsConstellation);
     }
 
-    return addedSingleStarsConstellation.map((e) => e.orderedStars).expand((
-        e) => e).toList(growable: true)
+    return addedSingleStarsConstellation
+        .map((e) => e.orderedStars)
+        .expand((e) => e)
+        .toList(growable: true)
       ..addAll(singleStar);
   }
 
@@ -171,10 +172,11 @@ class StarsResolver {
   /// 对星体进行圆周角度排序并保留相同角度的星体
   static List<UIStarModel> sortStarWithCircularAngleKeepSameAngleStars(
       List<UIStarModel> stars) {
-    Map<double, List<UIStarModel>> _starsMapper = _groupStarsByAngle(stars);
-    List<double> circularSortedAngle = sortCircularAngles(
-        _starsMapper.keys.toList());
-    return circularSortedAngle.map((a) => _starsMapper[a]!)
+    Map<double, List<UIStarModel>> starsMapper = _groupStarsByAngle(stars);
+    List<double> circularSortedAngle =
+        sortCircularAngles(starsMapper.keys.toList());
+    return circularSortedAngle
+        .map((a) => starsMapper[a]!)
         .expand((e) => e)
         .toList();
   }
@@ -186,22 +188,22 @@ class StarsResolver {
       if (result != null) {
         return result;
       }
-      throw Exception("${stars.first.star}(${stars.first.angle}) 和 ${stars.last
-          .star}(${stars.last.angle}) 不应该聚群");
+      throw Exception(
+          "${stars.first.star}(${stars.first.angle}) 和 ${stars.last.star}(${stars.last.angle}) 不应该聚群");
     } else {
-      Map<double, List<UIStarModel>> _starsMapper = _groupStarsByAngle(stars);
-      if (_starsMapper.length == 1) {
+      Map<double, List<UIStarModel>> starsMapper = _groupStarsByAngle(stars);
+      if (starsMapper.length == 1) {
         return doResolveSameAngleStars(stars);
       }
-      return sortMultipleInRangeStars(_starsMapper);
+      return sortMultipleInRangeStars(starsMapper);
     }
   }
 
   /// 处理多个相同角度的星体，构建星座模型
   static UIConstellationModel sortMultipleInRangeStars(
       Map<double, List<UIStarModel>> starsMapper) {
-    List<double> circularAngleSorted = sortCircularAngles(
-        starsMapper.keys.toList());
+    List<double> circularAngleSorted =
+        sortCircularAngles(starsMapper.keys.toList());
     if (circularAngleSorted.length % 2 == 1) {
       return _processOddCircularAngles(circularAngleSorted, starsMapper);
     } else {
@@ -229,21 +231,19 @@ class StarsResolver {
   }
 
   /// 根据边缘调整星座左侧星体的角度并加入星座
-  static UIConstellationModel? adjustStarAngleOnLeftByEdge(Edge constellation,
-      UIStarModel starOnLeft) {
-    Tuple3<bool, double?, double?> _tmpInRangeResult = constellation
-        .inRangeAngle(starOnLeft);
-    if (!_tmpInRangeResult.item1) {
-      throw Exception("${starOnLeft.star.starName}(${starOnLeft
-          .angle}) 不在 centerConstellation${constellation
-          .edges} 的角度范围内");
+  static UIConstellationModel? adjustStarAngleOnLeftByEdge(
+      Edge constellation, UIStarModel starOnLeft) {
+    Tuple3<bool, double?, double?> tmpInRangeResult =
+        constellation.inRangeAngle(starOnLeft);
+    if (!tmpInRangeResult.item1) {
+      throw Exception(
+          "${starOnLeft.star.starName}(${starOnLeft.angle}) 不在 centerConstellation${constellation.edges} 的角度范围内");
     }
-    if (_tmpInRangeResult.item3 != null && _tmpInRangeResult.item2 == null) {
-      throw Exception("${starOnLeft.star.starName}(${starOnLeft
-          .angle}) 不在 距离centerConstellation${constellation
-          .edges} rightEdge更近的角度范围内");
+    if (tmpInRangeResult.item3 != null && tmpInRangeResult.item2 == null) {
+      throw Exception(
+          "${starOnLeft.star.starName}(${starOnLeft.angle}) 不在 距离centerConstellation${constellation.edges} rightEdge更近的角度范围内");
     }
-    starOnLeft.toLeftAdjustAngle(_tmpInRangeResult.item2!);
+    starOnLeft.toLeftAdjustAngle(tmpInRangeResult.item2!);
     return constellation.addStar(starOnLeft);
   }
 
@@ -261,20 +261,20 @@ class StarsResolver {
           sortedStars, sortedStars.first);
     }
     if (sortedStars.first.priority == 2) {
-      List<UIStarModel> priority2Stars = sortedStars.where((s) =>
-      s.priority == 2).toList();
+      List<UIStarModel> priority2Stars =
+          sortedStars.where((s) => s.priority == 2).toList();
       if (priority2Stars.length > 1) {
         if (priority2Stars.length % 2 == 1) {
-          List<UIStarModel> _tmpSortedStars = sortStarWithCircularAngle(
-              priority2Stars);
-          int centerIndex = _tmpSortedStars.length ~/ 2;
-          UIStarModel centerStar = _tmpSortedStars[centerIndex];
+          List<UIStarModel> tmpSortedStars =
+              sortStarWithCircularAngle(priority2Stars);
+          int centerIndex = tmpSortedStars.length ~/ 2;
+          UIStarModel centerStar = tmpSortedStars[centerIndex];
           return sortStarWithCircularAngleByCenterStar(sortedStars, centerStar);
         } else {
-          List<UIStarModel> _tmpSortedStars = sortStarWithCircularAngle(
-              priority2Stars);
+          List<UIStarModel> tmpSortedStars =
+              sortStarWithCircularAngle(priority2Stars);
           double centerAngle = UIConstellationModel.calculateMidpointAngle(
-              _tmpSortedStars.first.angle, _tmpSortedStars.last.angle);
+              tmpSortedStars.first.angle, tmpSortedStars.last.angle);
           return sortStarWithCircularAngleByCenterAngle(
               sortedStars, centerAngle);
         }
@@ -287,8 +287,8 @@ class StarsResolver {
   }
 
   /// 根据目标角度将角度列表分为两部分
-  static Tuple2<List<double>, List<double>> splitAngles(List<double> angles,
-      double targetAngle) {
+  static Tuple2<List<double>, List<double>> splitAngles(
+      List<double> angles, double targetAngle) {
     List<double> part1 = [];
     List<double> part2 = [];
     for (double angle in angles) {
@@ -332,8 +332,8 @@ class StarsResolver {
       for (var i = 0; i < stars.length; i++) {
         if (i % 2 == 0) {
           if (leftStars.isEmpty) {
-            leftStars.add(stars[i]
-              ..adjustAngle(stars[i].rangeAngleEachSide / 2 * -1));
+            leftStars.add(
+                stars[i]..adjustAngle(stars[i].rangeAngleEachSide / 2 * -1));
           } else {
             leftStars.add(stars[i]
               ..adjustAngle(
@@ -342,8 +342,8 @@ class StarsResolver {
           }
         } else {
           if (leftStars.isEmpty) {
-            rightStars.add(stars[i]
-              ..adjustAngle(stars[i].rangeAngleEachSide / 2));
+            rightStars
+                .add(stars[i]..adjustAngle(stars[i].rangeAngleEachSide / 2));
           } else {
             rightStars.add(stars[i]
               ..adjustAngle(stars[i].rangeAngleEachSide * rightStars.length +
@@ -359,12 +359,12 @@ class StarsResolver {
 
   /// 对星体进行排序
   static List<UIStarModel> sortStar(List<UIStarModel> stars) {
-    Map<double, List<UIStarModel>> _mapper = _groupStarsByAngle(stars);
-    List<double> sortedAngleResult = sortCircularAngles(
-        stars.map((e) => e.angle).toList());
+    Map<double, List<UIStarModel>> mapper = _groupStarsByAngle(stars);
+    List<double> sortedAngleResult =
+        sortCircularAngles(stars.map((e) => e.angle).toList());
     List<UIStarModel> sortedResult = [];
     for (var angle in sortedAngleResult) {
-      sortedResult.addAll(_mapper[angle]!);
+      sortedResult.addAll(mapper[angle]!);
     }
     return sortedResult;
   }
@@ -398,10 +398,10 @@ class StarsResolver {
       }
     } else {
       if (otherAngle == edges.item1) {
-        return Tuple3(true, 0, null);
+        return const Tuple3(true, 0, null);
       }
       if (otherAngle == edges.item2) {
-        return Tuple3(true, null, 0);
+        return const Tuple3(true, null, 0);
       }
       if (otherAngle > edges.item1 && otherAngle < edges.item2) {
         double leftOffsetAngle = otherAngle - edges.item1;
@@ -421,7 +421,7 @@ class StarsResolver {
           double toRightOffsetAngle = otherAngle - edges.item2;
           return Tuple3(false, null, toRightOffsetAngle);
         } else {
-          return Tuple3(false, null, null);
+          return const Tuple3(false, null, null);
         }
       }
     }
@@ -430,37 +430,34 @@ class StarsResolver {
   /// 根据中心角度对星体进行圆周角度排序并构建星座模型
   static UIConstellationModel sortStarWithCircularAngleByCenterAngle(
       List<UIStarModel> stars, double centerAngle) {
-    Map<double, UIStarModel> _mapper = _createStarMap(stars);
-    List<double> angles = _mapper.keys.toList();
+    Map<double, UIStarModel> mapper = _createStarMap(stars);
+    List<double> angles = mapper.keys.toList();
     angles.remove(centerAngle);
-    List<double> sortedAngle = sortCircularAnglesByGivenCenter(
-        angles, centerAngle);
+    List<double> sortedAngle =
+        sortCircularAnglesByGivenCenter(angles, centerAngle);
     sortedAngle.remove(centerAngle);
-    List<UIStarModel> sortedStars = sortedAngle.map((a) => _mapper[a]!)
-        .toList();
+    List<UIStarModel> sortedStars = sortedAngle.map((a) => mapper[a]!).toList();
     return UIConstellationModel(orderedStars: sortedStars);
   }
 
   /// 根据中心星体对星体进行圆周角度排序并构建星座模型
   static UIConstellationModel sortStarWithCircularAngleByCenterStar(
       List<UIStarModel> stars, UIStarModel centerStar) {
-    Map<double, UIStarModel> _mapper = _createStarMap(stars);
-    List<double> angles = _mapper.keys.toList();
+    Map<double, UIStarModel> mapper = _createStarMap(stars);
+    List<double> angles = mapper.keys.toList();
     angles.remove(centerStar.angle);
-    List<double> sortedAngle = sortCircularAnglesByGivenCenter(
-        angles, centerStar.angle);
-    List<UIStarModel> sortedStars = sortedAngle.map((a) => _mapper[a]!)
-        .toList();
+    List<double> sortedAngle =
+        sortCircularAnglesByGivenCenter(angles, centerStar.angle);
+    List<UIStarModel> sortedStars = sortedAngle.map((a) => mapper[a]!).toList();
     return UIConstellationModel(orderedStars: sortedStars);
   }
 
   /// 对星体进行圆周角度排序
   static List<UIStarModel> sortStarWithCircularAngle(List<UIStarModel> stars) {
-    Map<double, UIStarModel> _mapper = _createStarMap(stars);
-    List<double> angles = _mapper.keys.toList();
+    Map<double, UIStarModel> mapper = _createStarMap(stars);
+    List<double> angles = mapper.keys.toList();
     List<double> sortedAngle = sortCircularAngles(angles);
-    List<UIStarModel> sortedStars = sortedAngle.map((a) => _mapper[a]!)
-        .toList();
+    List<UIStarModel> sortedStars = sortedAngle.map((a) => mapper[a]!).toList();
     return sortedStars;
   }
 
@@ -482,17 +479,17 @@ class StarsResolver {
   }
 
   /// 根据给定中心角度对角度进行圆周排序
-  static List<double> sortCircularAnglesByGivenCenter(List<double> angles,
-      double centerAngle) {
+  static List<double> sortCircularAnglesByGivenCenter(
+      List<double> angles, double centerAngle) {
     return _sortCircularAnglesInternal(angles, centerAngle);
   }
 
   // 辅助方法：创建星体映射
   static Map<double, UIStarModel> _createStarMap(List<UIStarModel> stars) {
     Map<double, UIStarModel> map = {};
-    stars.forEach((s) {
+    for (var s in stars) {
       map[s.angle] = s;
-    });
+    }
     return map;
   }
 
@@ -500,22 +497,22 @@ class StarsResolver {
   static Map<double, List<UIStarModel>> _groupStarsByAngle(
       List<UIStarModel> stars) {
     Map<double, List<UIStarModel>> mapper = {};
-    stars.forEach((s) {
+    for (var s in stars) {
       if (mapper.containsKey(s.angle)) {
         mapper[s.angle]!.add(s);
       } else {
         mapper[s.angle] = [s];
       }
-    });
+    }
     return mapper;
   }
 
-
-
-
   // 辅助方法：处理星座左重叠情况
 
-  static void _handleLeftOverlap(UIConstellationModel constellationI, UIConstellationModel constellationJ, Tuple3<bool, double?, double?> ijCheckResult) {
+  static void _handleLeftOverlap(
+      UIConstellationModel constellationI,
+      UIConstellationModel constellationJ,
+      Tuple3<bool, double?, double?> ijCheckResult) {
     UIStarModel jRightStar = constellationJ.orderedStars.last;
     UIStarModel jLeftStar = constellationJ.orderedStars.first;
     ijCheckResult = checkAngleInRange(constellationI.edges, jRightStar.angle);
@@ -523,7 +520,8 @@ class StarsResolver {
       if (ijCheckResult.item2 != null) {
         constellationJ.toLeftAdjustAngle(ijCheckResult.item2!);
       } else if (ijCheckResult.item3 != null) {
-        throw Exception("constellations[j]的最右侧星体并不是距离 constellations[i] 最左edge的星体，而是最左");
+        throw Exception(
+            "constellations[j]的最右侧星体并不是距离 constellations[i] 最左edge的星体，而是最左");
       } else {
         throw Exception("center overlap j的最右侧星体并不是距离 i 最左edge最近的星体");
       }
@@ -533,7 +531,8 @@ class StarsResolver {
         if (ijCheckResult.item3 != null) {
           constellationJ.toRightAdjustAngle(ijCheckResult.item3!);
         } else if (ijCheckResult.item2 != null) {
-          throw Exception("constellations[j]的最左侧星体并不是距离 constellations[i] 最右edge的星体，而是最左");
+          throw Exception(
+              "constellations[j]的最左侧星体并不是距离 constellations[i] 最右edge的星体，而是最左");
         } else {
           throw Exception("center overlap j的最右侧星体并不是距离 i 最左edge最近的星体");
         }
@@ -542,14 +541,18 @@ class StarsResolver {
   }
 
   // 辅助方法：处理星座右重叠情况
-  static void _handleRightOverlap(UIConstellationModel constellationI, UIConstellationModel constellationJ, Tuple3<bool, double?, double?> ijCheckResult) {
+  static void _handleRightOverlap(
+      UIConstellationModel constellationI,
+      UIConstellationModel constellationJ,
+      Tuple3<bool, double?, double?> ijCheckResult) {
     UIStarModel jLeftStar = constellationJ.orderedStars.first;
     ijCheckResult = checkAngleInRange(constellationI.edges, jLeftStar.angle);
     if (ijCheckResult.item1) {
       if (ijCheckResult.item3 != null) {
         constellationJ.toRightAdjustAngle(ijCheckResult.item3!);
       } else if (ijCheckResult.item2 != null) {
-        throw Exception("constellations[j]的最左侧星体并不是距离 constellations[i] 最右edge的星体，而是最左");
+        throw Exception(
+            "constellations[j]的最左侧星体并不是距离 constellations[i] 最右edge的星体，而是最左");
       } else {
         throw Exception("center overlap j的最右侧星体并不是距离 i 最左edge最近的星体");
       }
@@ -557,18 +560,25 @@ class StarsResolver {
   }
 
   // 辅助方法：处理角度列表
-  static void _processAngles(List<double> angles, UIConstellationModel constellation, Map<double, UIStarModel> starMap, List<UIStarModel> addedStars, bool isLeft) {
+  static void _processAngles(
+      List<double> angles,
+      UIConstellationModel constellation,
+      Map<double, UIStarModel> starMap,
+      List<UIStarModel> addedStars,
+      bool isLeft) {
     if (angles.isNotEmpty) {
       for (var j = 0; j < angles.length; j++) {
         double currentAngle = angles[j];
-        Tuple3<bool, double?, double?> checkResult = checkAngleInRange(constellation.edges, currentAngle);
+        Tuple3<bool, double?, double?> checkResult =
+            checkAngleInRange(constellation.edges, currentAngle);
         if (!checkResult.item1) {
           break;
         }
         if (checkResult.item2 != null && checkResult.item3 != null) {
           throw Exception("singleStar 与 constellation center overlap");
         }
-        if ((isLeft && checkResult.item2 != null) || (!isLeft && checkResult.item3 != null)) {
+        if ((isLeft && checkResult.item2 != null) ||
+            (!isLeft && checkResult.item3 != null)) {
           UIStarModel inRangeStar = starMap[currentAngle]!;
           if (isLeft) {
             inRangeStar.toLeftAdjustAngle(checkResult.item2!);
@@ -583,42 +593,56 @@ class StarsResolver {
   }
 
   // 辅助方法：分类星体
-  static void _classifyStars(List<UIStarModel> stars, Map<UIStarModel, Set<UIStarModel>> needHandled, Set<UIStarModel> singleStar) {
-    stars.forEach((s) {
+  static void _classifyStars(
+      List<UIStarModel> stars,
+      Map<UIStarModel, Set<UIStarModel>> needHandled,
+      Set<UIStarModel> singleStar) {
+    for (var s in stars) {
       Set<UIStarModel> result = s.setupInRangeAngle(stars);
       if (result.isNotEmpty) {
         needHandled[s] = result;
       } else {
         singleStar.add(s);
       }
-    });
+    }
   }
 
   // 辅助方法：处理奇数个圆周角度情况
-  static UIConstellationModel _processOddCircularAngles(List<double> circularAngleSorted, Map<double, List<UIStarModel>> starsMapper) {
+  static UIConstellationModel _processOddCircularAngles(
+      List<double> circularAngleSorted,
+      Map<double, List<UIStarModel>> starsMapper) {
     double centerAngle = circularAngleSorted[circularAngleSorted.length ~/ 2];
     UIConstellationModel centerConstellation;
     if (starsMapper[centerAngle]!.length > 1) {
       centerConstellation = doResolveSameAngleStars(starsMapper[centerAngle]!);
     } else {
-      centerConstellation = UIConstellationModel(orderedStars: starsMapper[centerAngle]!);
+      centerConstellation =
+          UIConstellationModel(orderedStars: starsMapper[centerAngle]!);
     }
 
     int centerIndex = circularAngleSorted.indexOf(centerAngle);
-    List<double> leftCircularAngleSorted = circularAngleSorted.sublist(0, centerIndex).reversed.toList();
-    List<double> rightCircularAngleSorted = circularAngleSorted.sublist(centerIndex + 1);
+    List<double> leftCircularAngleSorted =
+        circularAngleSorted.sublist(0, centerIndex).reversed.toList();
+    List<double> rightCircularAngleSorted =
+        circularAngleSorted.sublist(centerIndex + 1);
 
-    _processSideAngles(leftCircularAngleSorted, centerConstellation, starsMapper, true);
-    _processSideAngles(rightCircularAngleSorted, centerConstellation, starsMapper, false);
+    _processSideAngles(
+        leftCircularAngleSorted, centerConstellation, starsMapper, true);
+    _processSideAngles(
+        rightCircularAngleSorted, centerConstellation, starsMapper, false);
 
     return centerConstellation;
   }
 
   // 辅助方法：处理偶数个圆周角度情况
-  static UIConstellationModel _processEvenCircularAngles(List<double> circularAngleSorted, Map<double, List<UIStarModel>> starsMapper) {
+  static UIConstellationModel _processEvenCircularAngles(
+      List<double> circularAngleSorted,
+      Map<double, List<UIStarModel>> starsMapper) {
     int middleIndex = circularAngleSorted.length ~/ 2;
-    List<double> leftCircularAngleSorted = circularAngleSorted.sublist(0, middleIndex - 1).reversed.toList();
-    List<double> rightCircularAngleSorted = circularAngleSorted.sublist(middleIndex + 1);
+    List<double> leftCircularAngleSorted =
+        circularAngleSorted.sublist(0, middleIndex - 1).reversed.toList();
+    List<double> rightCircularAngleSorted =
+        circularAngleSorted.sublist(middleIndex + 1);
     double middleLeftAngle = circularAngleSorted[middleIndex - 1];
     double middleRightAngle = circularAngleSorted[middleIndex];
 
@@ -628,65 +652,85 @@ class StarsResolver {
     UIConstellationModel centerConstellation;
     if (leftStarCount == rightStarCount) {
       if (leftStarCount > 1) {
-        List<UIStarModel> leftSameAngleStars = starsMapper[middleLeftAngle]!..sort((a, b) => b.priority.compareTo(a.priority));
-        List<UIStarModel> rightSameAngleStars = starsMapper[middleRightAngle]!..sort((a, b) => b.priority.compareTo(a.priority));
+        List<UIStarModel> leftSameAngleStars = starsMapper[middleLeftAngle]!
+          ..sort((a, b) => b.priority.compareTo(a.priority));
+        List<UIStarModel> rightSameAngleStars = starsMapper[middleRightAngle]!
+          ..sort((a, b) => b.priority.compareTo(a.priority));
         UIStarModel leftFirstStar = leftSameAngleStars.first;
         UIStarModel rightFirstStar = rightSameAngleStars.first;
-        double currentLeftRightDiff = calculateMinAngleDifference(leftFirstStar.angle, rightFirstStar.angle);
-        double leftRightStarMinDiffAngle = UIStarModel.getMinDiffAngleOfTwoStar(leftFirstStar, leftFirstStar);
-        double shouldAdjustAngleEachStar = (leftRightStarMinDiffAngle - currentLeftRightDiff) * .5;
+        double currentLeftRightDiff = calculateMinAngleDifference(
+            leftFirstStar.angle, rightFirstStar.angle);
+        double leftRightStarMinDiffAngle =
+            UIStarModel.getMinDiffAngleOfTwoStar(leftFirstStar, leftFirstStar);
+        double shouldAdjustAngleEachStar =
+            (leftRightStarMinDiffAngle - currentLeftRightDiff) * .5;
         leftFirstStar.toLeftAdjustAngle(shouldAdjustAngleEachStar);
         rightFirstStar.toRightAdjustAngle(shouldAdjustAngleEachStar);
-        centerConstellation = UIConstellationModel(orderedStars: [leftFirstStar, rightFirstStar]);
+        centerConstellation =
+            UIConstellationModel(orderedStars: [leftFirstStar, rightFirstStar]);
 
         for (var i = 1; i < leftSameAngleStars.length; i++) {
           UIStarModel sLeft = leftSameAngleStars[i];
-          centerConstellation = adjustStarAngleOnLeft(centerConstellation, sLeft);
+          centerConstellation =
+              adjustStarAngleOnLeft(centerConstellation, sLeft);
           UIStarModel sRight = rightSameAngleStars[i];
-          centerConstellation = adjustStarAngleOnRight(centerConstellation, sRight);
+          centerConstellation =
+              adjustStarAngleOnRight(centerConstellation, sRight);
         }
       } else {
         UIStarModel leftStar = starsMapper[middleLeftAngle]!.first;
         UIStarModel rightStar = starsMapper[middleRightAngle]!.first;
-        double currentLeftRightDiff = calculateMinAngleDifference(leftStar.angle, rightStar.angle);
-        double leftRightStarMinDiffAngle = UIStarModel.getMinDiffAngleOfTwoStar(leftStar, rightStar);
-        double shouldAdjustAngleEachStar = (leftRightStarMinDiffAngle - currentLeftRightDiff) * .5;
+        double currentLeftRightDiff =
+            calculateMinAngleDifference(leftStar.angle, rightStar.angle);
+        double leftRightStarMinDiffAngle =
+            UIStarModel.getMinDiffAngleOfTwoStar(leftStar, rightStar);
+        double shouldAdjustAngleEachStar =
+            (leftRightStarMinDiffAngle - currentLeftRightDiff) * .5;
         leftStar.toLeftAdjustAngle(shouldAdjustAngleEachStar);
         rightStar.toRightAdjustAngle(shouldAdjustAngleEachStar);
-        centerConstellation = UIConstellationModel(orderedStars: [leftStar, rightStar]);
+        centerConstellation =
+            UIConstellationModel(orderedStars: [leftStar, rightStar]);
       }
     } else if (leftStarCount > rightStarCount) {
-      centerConstellation = doResolveSameAngleStars(starsMapper[middleLeftAngle]!);
-      starsMapper[middleRightAngle]!.forEach((s) {
+      centerConstellation =
+          doResolveSameAngleStars(starsMapper[middleLeftAngle]!);
+      for (var s in starsMapper[middleRightAngle]!) {
         centerConstellation = adjustStarAngleOnRight(centerConstellation, s);
-      });
+      }
     } else {
-      centerConstellation = doResolveSameAngleStars(starsMapper[middleRightAngle]!);
-      starsMapper[middleLeftAngle]!.forEach((s) {
+      centerConstellation =
+          doResolveSameAngleStars(starsMapper[middleRightAngle]!);
+      for (var s in starsMapper[middleLeftAngle]!) {
         centerConstellation = adjustStarAngleOnLeft(centerConstellation, s);
-      });
+      }
     }
 
-    _processSideAngles(leftCircularAngleSorted, centerConstellation, starsMapper, true);
-    _processSideAngles(rightCircularAngleSorted, centerConstellation, starsMapper, false);
+    _processSideAngles(
+        leftCircularAngleSorted, centerConstellation, starsMapper, true);
+    _processSideAngles(
+        rightCircularAngleSorted, centerConstellation, starsMapper, false);
 
     return centerConstellation;
   }
 
   // 辅助方法：处理一侧的角度
-  static void _processSideAngles(List<double> angles, UIConstellationModel constellation, Map<double, List<UIStarModel>> starsMapper, bool isLeft) {
+  static void _processSideAngles(
+      List<double> angles,
+      UIConstellationModel constellation,
+      Map<double, List<UIStarModel>> starsMapper,
+      bool isLeft) {
     if (angles.isNotEmpty) {
       for (var angle in angles) {
         List<UIStarModel> sameAngleStars = starsMapper[angle]!;
         if (sameAngleStars.length > 1) {
           sameAngleStars.sort((a, b) => b.priority.compareTo(a.priority));
-          sameAngleStars.forEach((s) {
+          for (var s in sameAngleStars) {
             if (isLeft) {
               constellation = adjustStarAngleOnLeft(constellation, s);
             } else {
               constellation = adjustStarAngleOnRight(constellation, s);
             }
-          });
+          }
         } else {
           UIStarModel star = sameAngleStars.first;
           if (isLeft) {
@@ -700,62 +744,71 @@ class StarsResolver {
   }
 
   // 辅助方法：内部圆周角度排序
-  static List<double> _sortCircularAnglesInternal(List<double> angles, double anchor) {
+  static List<double> _sortCircularAnglesInternal(
+      List<double> angles, double anchor) {
     var lists = angles.toSet().toList()..sort();
     lists.remove(anchor);
-    var zero_to_anchor = anchor;
-    Map<double, double> _anchorLeftMapper = {};
-    Map<double, double> _anchorRightMapper = {};
+    var zeroToAnchor = anchor;
+    Map<double, double> anchorLeftMapper = {};
+    Map<double, double> anchorRightMapper = {};
 
     for (int i = 0; i < lists.length; i++) {
-      final _current = lists[i];
-      if (anchor < _current) {
-        var _toAnchorLeft = 360 - _current + zero_to_anchor;
-        var _toAnchorRight = _current - zero_to_anchor;
-        if (_toAnchorLeft > _toAnchorRight) {
-          _anchorLeftMapper[_toAnchorRight] = _current;
+      final current = lists[i];
+      if (anchor < current) {
+        var toAnchorLeft = 360 - current + zeroToAnchor;
+        var toAnchorRight = current - zeroToAnchor;
+        if (toAnchorLeft > toAnchorRight) {
+          anchorLeftMapper[toAnchorRight] = current;
         } else {
-          _anchorRightMapper[_toAnchorLeft] = _current;
+          anchorRightMapper[toAnchorLeft] = current;
         }
       } else {
-        var _toAnchorLeft = anchor - _current;
-        var _toAnchorRight = 360 - (anchor - _current);
-        if (_toAnchorLeft > _toAnchorRight) {
-          _anchorLeftMapper[_toAnchorRight] = _current;
+        var toAnchorLeft = anchor - current;
+        var toAnchorRight = 360 - (anchor - current);
+        if (toAnchorLeft > toAnchorRight) {
+          anchorLeftMapper[toAnchorRight] = current;
         } else {
-          _anchorRightMapper[_toAnchorLeft] = _current;
+          anchorRightMapper[toAnchorLeft] = current;
         }
       }
     }
 
-    List<double> sortedLeftKeys = _anchorLeftMapper.keys.toList()..sort();
-    List<double> sortedRightKeys = _anchorRightMapper.keys.toList()..sort();
-    List<double> rightNumber = sortedLeftKeys.map((e) => _anchorLeftMapper[e]!).toList();
-    List<double> leftNumbers = sortedRightKeys.reversed.map((e) => _anchorRightMapper[e]!).toList();
+    List<double> sortedLeftKeys = anchorLeftMapper.keys.toList()..sort();
+    List<double> sortedRightKeys = anchorRightMapper.keys.toList()..sort();
+    List<double> rightNumber =
+        sortedLeftKeys.map((e) => anchorLeftMapper[e]!).toList();
+    List<double> leftNumbers =
+        sortedRightKeys.reversed.map((e) => anchorRightMapper[e]!).toList();
     return [...leftNumbers, anchor, ...rightNumber];
   }
 
   // 辅助方法：调整星体角度
-  static UIConstellationModel _adjustStarAngle(UIConstellationModel constellation, UIStarModel star, bool isLeft) {
-    Tuple3<bool, double?, double?> _tmpInRangeResult = constellation.inRangeAngle(star);
-    if (!_tmpInRangeResult.item1) {
-      throw Exception("${star.star.starName}(${star.angle}) 不在 centerConstellation${constellation.edges} 的角度范围内");
+  static UIConstellationModel _adjustStarAngle(
+      UIConstellationModel constellation, UIStarModel star, bool isLeft) {
+    Tuple3<bool, double?, double?> tmpInRangeResult =
+        constellation.inRangeAngle(star);
+    if (!tmpInRangeResult.item1) {
+      throw Exception(
+          "${star.star.starName}(${star.angle}) 不在 centerConstellation${constellation.edges} 的角度范围内");
     }
-    if ((isLeft && _tmpInRangeResult.item3 != null && _tmpInRangeResult.item2 == null) ||
-        (!isLeft && _tmpInRangeResult.item2 != null && _tmpInRangeResult.item3 == null)) {
+    if ((isLeft &&
+            tmpInRangeResult.item3 != null &&
+            tmpInRangeResult.item2 == null) ||
+        (!isLeft &&
+            tmpInRangeResult.item2 != null &&
+            tmpInRangeResult.item3 == null)) {
       throw Exception(isLeft
           ? "${star.star.starName}(${star.angle}) 不在 距离centerConstellation${constellation.edges} rightEdge更近的角度范围内"
           : "${star.star.starName}(${star.angle}) 在但距离centerConstellation${constellation.edges} leftEdge更近的角度范围内");
     }
     if (isLeft) {
-      star.toLeftAdjustAngle(_tmpInRangeResult.item2!);
+      star.toLeftAdjustAngle(tmpInRangeResult.item2!);
     } else {
-      star.toRightAdjustAngle(_tmpInRangeResult.item3!);
+      star.toRightAdjustAngle(tmpInRangeResult.item3!);
     }
     constellation.addStar(star);
     return constellation;
   }
-
 }
 
 class GraphUtils {

@@ -4,14 +4,14 @@ import 'base_ten_gan_ke_ying.dart';
 part 'ten_gan_ke_ying.g.dart';
 
 @JsonSerializable()
-class TenGanKeYing extends BaseTenGanKeYing{
+class TenGanKeYing extends BaseTenGanKeYing {
   String? longExplain;
   List<TenGanKeYingZhu>? zhu;
   String? yiXiang;
   Map<String, List<String>>? diseaseAtGongMapper;
   List<String>? xiangList;
   String? thingOnLocation;
-  List<Map<String,String>>? others;
+  List<Map<String, String>>? others;
   // TODO 取时 others 以及 位置上有什么事物
 
   TenGanKeYing({
@@ -23,12 +23,14 @@ class TenGanKeYing extends BaseTenGanKeYing{
     required this.diseaseAtGongMapper,
     required this.xiangList,
     required this.others,
-  }):super(juName: juName, shortExplain: shortExplain);
+  }) : super(juName: juName, shortExplain: shortExplain);
 
-  factory TenGanKeYing.fromJson(Map<String, dynamic> json) => _$TenGanKeYingFromJson(json);
+  factory TenGanKeYing.fromJson(Map<String, dynamic> json) =>
+      _$TenGanKeYingFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TenGanKeYingToJson(this);
-
 }
+
 @JsonSerializable()
 class TenGanKeYingZhu {
   String? author;

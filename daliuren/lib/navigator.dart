@@ -10,10 +10,10 @@ class NavigatorGenerator {
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    "/daliuren": (context, {arguments}) => MyHomePage(
+    "/daliuren": (context, {arguments}) => const MyHomePage(
           title: "大六壬",
         ),
-    "/daliuren/dev": (context, {arguments}) => DevMyWidget()
+    "/daliuren/dev": (context, {arguments}) => const DevMyWidget()
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -36,7 +36,7 @@ class NavigatorGenerator {
   static Route _errorPage(msg) {
     return MaterialPageRoute(builder: (_) {
       return Scaffold(
-          appBar: AppBar(title: Text('大六壬_未知页面')),
+          appBar: AppBar(title: const Text('大六壬_未知页面')),
           body: Center(child: Text(msg)));
     });
   }
@@ -48,7 +48,7 @@ class NavigatorGenerator {
             settings:
                 settings, // Pass this to make popUntil(), pushNamedAndRemoveUntil(), works
             // pageBuilder: (_, __, ___) => CreateOrderPage(settings.arguments == null ?null:settings.arguments as CreateOrderPageArgs),
-            pageBuilder: (_, __, ___) => MyHomePage(title: "太乙神数"),
+            pageBuilder: (_, __, ___) => const MyHomePage(title: "太乙神数"),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);

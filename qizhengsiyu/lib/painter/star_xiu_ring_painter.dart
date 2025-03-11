@@ -1,32 +1,30 @@
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'dart:math' as math;
 
-import '../enums/enum_stars.dart';
-import '../enums/enum_twenty_eight_xing_xiu.dart';
-import '../models/star_xiu_type.dart';
+import '../models/star_inn_gong_degree.dart';
 
 class StarXiuRingPainter extends CustomPainter {
-
   double outerSize;
   double innerSize;
-  Map<TwentyEightStarInn,StarXiuType> mapper;
-  Map<EnumStars,Color> sevenZhengColorMapper;
+  Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper;
+  Map<EnumStars, Color> sevenZhengColorMapper;
 
   double tickLength;
   double longTickLength;
   double get ringWidth => (outerSize - innerSize) * .5;
 
-  StarXiuRingPainter({
-    // required this.ringWidth,
-    required this.outerSize,
-    required this.innerSize,
-    required this.mapper,
-    required this.sevenZhengColorMapper,
-    this.tickLength = 5,
-    this.longTickLength = 10
-  });
+  StarXiuRingPainter(
+      {
+      // required this.ringWidth,
+      required this.outerSize,
+      required this.innerSize,
+      required this.mapper,
+      required this.sevenZhengColorMapper,
+      this.tickLength = 5,
+      this.longTickLength = 10});
   @override
   void paint(Canvas canvas, Size size) {
     final double centerX = size.width / 2;
@@ -52,9 +50,10 @@ class StarXiuRingPainter extends CustomPainter {
       ..strokeWidth = .5
       ..style = PaintingStyle.stroke;
 
-    final rectCircle = Rect.fromCircle(center: canvasCenter, radius: innerRadius+(ringWidth*.5));
+    final rectCircle = Rect.fromCircle(
+        center: canvasCenter, radius: innerRadius + (ringWidth * .5));
 
-    for (StarXiuType starXiuType in mapper.values){
+    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
       final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
       final double sweepAngle = -starXiuType.totalDegree * math.pi / 180;
 
@@ -65,13 +64,16 @@ class StarXiuRingPainter extends CustomPainter {
         ..strokeWidth = ringWidth - 10; // 调整线宽
       canvas.drawPath(path, paint);
     }
-    for (StarXiuType starXiuType in mapper.values){
+    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
       // double lineLength = ringWidth;
-      drawXingXiuName(canvas,starXiuType,canvasCenter,outerRadius,ringWidth);
+      drawXingXiuName(
+          canvas, starXiuType, canvasCenter, outerRadius, ringWidth);
     }
-    drawScale(canvas,canvasCenter,outerRadius,innerRadius);
+    drawScale(canvas, canvasCenter, outerRadius, innerRadius);
   }
-  void drawScale(Canvas canvas,Offset center,double outerRadius,double innerRadius){
+
+  void drawScale(
+      Canvas canvas, Offset center, double outerRadius, double innerRadius) {
     Paint scalePaint = Paint()
       ..color = Colors.black87
       ..strokeWidth = .5
@@ -84,9 +86,9 @@ class StarXiuRingPainter extends CustomPainter {
       double cosAngle = math.cos(angle);
       double sinAngle = math.sin(angle);
       double length = tickLength;
-      if (i % 15 == 0){
+      if (i % 15 == 0) {
         length = tickLength * 2;
-      }else if (i % 5 == 0){
+      } else if (i % 5 == 0) {
         length = tickLength * 1.5;
       }
       double outerXY = outerRadius - length;
@@ -115,15 +117,22 @@ class StarXiuRingPainter extends CustomPainter {
     }
   }
 
-  void drawXingXiuName(Canvas canvas,StarXiuType starXiuType,Offset canvasCenter, double outerRadius, double lineLength){
-    double _angle = (360 - (starXiuType.degreeStartAt+starXiuType.totalDegree * .5)) * math.pi / 180;
-    final double cosAngle = math.cos(_angle);
-    final double sinAngle = math.sin(_angle);
-    final double _outerX = canvasCenter.dx + outerRadius * cosAngle;
-    final double _outerY = canvasCenter.dy + outerRadius * sinAngle;
-    final double _innerX = canvasCenter.dx + (outerRadius - lineLength) * cosAngle;
-    final double _innerY = canvasCenter.dy + (outerRadius - lineLength) * sinAngle;
-    Offset xingXiuArcRingCenter = Offset((_outerX+_innerX) * .5, (_outerY+_innerY) * .5);
+  void drawXingXiuName(Canvas canvas, StarInnGongDegreeInfo starXiuType,
+      Offset canvasCenter, double outerRadius, double lineLength) {
+    double angle =
+        (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
+            math.pi /
+            180;
+    final double cosAngle = math.cos(angle);
+    final double sinAngle = math.sin(angle);
+    final double outerX = canvasCenter.dx + outerRadius * cosAngle;
+    final double outerY = canvasCenter.dy + outerRadius * sinAngle;
+    final double innerX =
+        canvasCenter.dx + (outerRadius - lineLength) * cosAngle;
+    final double innerY =
+        canvasCenter.dy + (outerRadius - lineLength) * sinAngle;
+    Offset xingXiuArcRingCenter =
+        Offset((outerX + innerX) * .5, (outerY + innerY) * .5);
 
     final textPainter = TextPainter(
       text: TextSpan(
@@ -131,18 +140,17 @@ class StarXiuRingPainter extends CustomPainter {
           style: GoogleFonts.maShanZheng(
               fontSize: 16.0,
               height: 1,
-              color: Color.fromRGBO(55, 53, 52, 1),
+              color: const Color.fromRGBO(55, 53, 52, 1),
               shadows: [
                 BoxShadow(
                   color: Colors.black38.withOpacity(.1),
                   spreadRadius: 1,
                   blurRadius: 1,
-                  offset: Offset(1, 1), // changes position of shadow
+                  offset: const Offset(1, 1), // changes position of shadow
                 )
-              ]
-          )
+              ])
           // style: TextStyle(fontSize: 16.0,height: 1)
-      ),
+          ),
       maxLines: 1,
       textDirection: TextDirection.ltr,
     );
@@ -151,7 +159,7 @@ class StarXiuRingPainter extends CustomPainter {
     canvas.save();
     canvas.translate(xingXiuArcRingCenter.dx, xingXiuArcRingCenter.dy);
     canvas.rotate(-30 * math.pi / 180);
-    textPainter.paint(canvas,offset);
+    textPainter.paint(canvas, offset);
     canvas.restore();
   }
 
@@ -175,14 +183,16 @@ class StarXiuRingPainter extends CustomPainter {
       ..color = Colors.blueAccent
       ..strokeWidth = .5
       ..style = PaintingStyle.stroke;
-    for (StarXiuType starXiuType in mapper.values){
+    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
       final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
       double lineLength = ringWidth;
       final double outerX = centerX + outerRadius * math.cos(angle);
       final double outerY = centerY + outerRadius * math.sin(angle);
-      final double innerX = centerX + (outerRadius - lineLength) * math.cos(angle);
-      final double innerY = centerY + (outerRadius - lineLength) * math.sin(angle);
-      if(starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou){
+      final double innerX =
+          centerX + (outerRadius - lineLength) * math.cos(angle);
+      final double innerY =
+          centerY + (outerRadius - lineLength) * math.sin(angle);
+      if (starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou) {
         canvas.drawLine(
           Offset(outerX, outerY),
           Offset(innerX, innerY),
@@ -193,11 +203,16 @@ class StarXiuRingPainter extends CustomPainter {
         );
 
         // double _angle = (360 - (15.9+5.2)) * math.pi / 180;
-        double _angle = (360 - (starXiuType.degreeStartAt+starXiuType.totalDegree * .5)) * math.pi / 180;
-        final double _outerX = centerX + outerRadius * math.cos(_angle);
-        final double _outerY = centerY + outerRadius * math.sin(_angle);
-        final double _innerX = centerX + (outerRadius - lineLength) * math.cos(_angle);
-        final double _innerY = centerY + (outerRadius - lineLength) * math.sin(_angle);
+        double angle0 =
+            (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
+                math.pi /
+                180;
+        final double outerX0 = centerX + outerRadius * math.cos(angle0);
+        final double outerY0 = centerY + outerRadius * math.sin(angle0);
+        final double innerX0 =
+            centerX + (outerRadius - lineLength) * math.cos(angle0);
+        final double innerY0 =
+            centerY + (outerRadius - lineLength) * math.sin(angle0);
         // canvas.drawLine(
         //   Offset(_outerX, _outerY),
         //   Offset(_innerX, _innerY),
@@ -206,10 +221,13 @@ class StarXiuRingPainter extends CustomPainter {
         //     ..strokeWidth = 1
         //     ..style = PaintingStyle.stroke,
         // );
-        Offset xingXiuArcRingCenter = Offset((_outerX+_innerX) * .5, (_outerY+_innerY) * .5);
+        Offset xingXiuArcRingCenter =
+            Offset((outerX0 + innerX0) * .5, (outerY0 + innerY0) * .5);
         // canvas.drawCircle(Offset((_outerX+_innerX) * .5, (_outerY+_innerY) * .5), 3,  Paint()..color = Colors.black87);
         final textPainter = TextPainter(
-          text: TextSpan(text: starXiuType.starXiu.starName, style: TextStyle(fontSize: 16.0,height: 1)),
+          text: TextSpan(
+              text: starXiuType.starXiu.starName,
+              style: const TextStyle(fontSize: 16.0, height: 1)),
           textDirection: TextDirection.ltr,
         );
         textPainter.layout();
@@ -220,10 +238,9 @@ class StarXiuRingPainter extends CustomPainter {
         canvas.save();
         canvas.translate(xingXiuArcRingCenter.dx, xingXiuArcRingCenter.dy);
         canvas.rotate(angle);
-        textPainter.paint(canvas,offset);
+        textPainter.paint(canvas, offset);
         canvas.restore();
-
-      }else if(starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi){
+      } else if (starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi) {
         canvas.drawLine(
           Offset(outerX, outerY),
           Offset(innerX, innerY),
@@ -239,21 +256,26 @@ class StarXiuRingPainter extends CustomPainter {
           scalePaint,
         );
       }
-
     }
 
     final center = Offset(size.width / 2, size.height / 2);
     final averageRadius = (innerRadius + outerRadius) / 2;
-    final arcRadians = (360 - 10.4+15.9) * (math.pi / 180);
+    const arcRadians = (360 - 10.4 + 15.9) * (math.pi / 180);
     final centerPointAngle = arcRadians / 2;
     final centerPointX = center.dx + averageRadius * math.cos(centerPointAngle);
     final centerPointY = center.dy + averageRadius * math.sin(centerPointAngle);
-    canvas.drawCircle(Offset(centerPointX, centerPointY), 2, Paint()..color = Colors.red);
-
-
+    canvas.drawCircle(
+        Offset(centerPointX, centerPointY), 2, Paint()..color = Colors.red);
   }
 
-  void paint_helper_bak(double angle,double outerRadius,double innerRadius,double centerX,double centerY,StarXiuType starXiuType,Canvas canvas){
+  void paint_helper_bak(
+      double angle,
+      double outerRadius,
+      double innerRadius,
+      double centerX,
+      double centerY,
+      StarInnGongDegreeInfo starXiuType,
+      Canvas canvas) {
     final double cosAngle = math.cos(angle);
     final double sinAngle = math.sin(angle);
 
@@ -263,8 +285,7 @@ class StarXiuRingPainter extends CustomPainter {
     final double innerX = centerX + innerRadius * cosAngle;
     final double innerY = centerY + innerRadius * sinAngle;
 
-    if(starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou){
-
+    if (starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou) {
       // 可以用来绘制 “选择框”
       // canvas.drawArc(
       //     Rect.fromCircle(
@@ -277,7 +298,6 @@ class StarXiuRingPainter extends CustomPainter {
       //       ..strokeWidth = 2
       //       ..style = PaintingStyle.stroke);
 
-
       canvas.drawLine(
         Offset(outerX, outerY),
         Offset(innerX, innerY),
@@ -286,8 +306,7 @@ class StarXiuRingPainter extends CustomPainter {
           ..strokeWidth = 1
           ..style = PaintingStyle.stroke,
       );
-    }
-    else if(starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi){
+    } else if (starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi) {
       canvas.drawLine(
         Offset(outerX, outerY),
         Offset(innerX, innerY),
@@ -296,8 +315,7 @@ class StarXiuRingPainter extends CustomPainter {
           ..strokeWidth = 1
           ..style = PaintingStyle.stroke,
       );
-    }
-    else {
+    } else {
       Paint scalePaint = Paint()
         ..color = Colors.black87
         ..strokeWidth = .5
@@ -308,8 +326,8 @@ class StarXiuRingPainter extends CustomPainter {
         scalePaint,
       );
     }
-
   }
+
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return false;
