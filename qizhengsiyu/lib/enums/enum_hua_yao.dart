@@ -1,7 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:common/utils/collections_utils.dart';
-import 'package:common/enums/enum_stars.dart';
 
 enum EnumGuoLaoHuaYao {
   Lu("禄", EnumTenGods.BiJian),

@@ -10,7 +10,6 @@ import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
 import 'package:sweph/sweph.dart';
 
 import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tzdata;
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_moon_phases.dart';

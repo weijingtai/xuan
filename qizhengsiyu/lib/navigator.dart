@@ -21,7 +21,7 @@ class NavigatorGenerator {
             ChangeNotifierProvider<PanelConfigViewModel>(
                 create: (context) => PanelConfigViewModel(context)),
           ],
-          child: QiZhengSiYuConfigPage(),
+          child: const QiZhengSiYuConfigPage(),
           // child: ShiJiaQiMenViewPage(),
         ),
     "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(

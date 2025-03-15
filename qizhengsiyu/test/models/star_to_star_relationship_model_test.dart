@@ -4,7 +4,6 @@ import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/models/star_to_star_relationship_model.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import '../mock/mock_eleven_stars.dart';
 

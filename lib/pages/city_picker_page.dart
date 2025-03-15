@@ -15,10 +15,10 @@ class CityPickerPage extends StatefulWidget {
   // final Function(GeoLocation location) onLocationSelected;
 
   const CityPickerPage({
-    Key? key,
+    super.key,
     this.initialCode,
     // required this.onLocationSelected,
-  }) : super(key: key);
+  });
 
   @override
   State<CityPickerPage> createState() => _CityPickerPageState();
@@ -221,11 +221,10 @@ class _CityPickerPageState extends State<CityPickerPage> {
         appBar: AppBar(
           title: const Text('选择地区'),
           actions: [
-            if (_selectedProvince != null)
-              TextButton(
-                onPressed: _finishSelection,
-                child: const Text('确定', style: TextStyle(color: Colors.white)),
-              ),
+            TextButton(
+              onPressed: _finishSelection,
+              child: const Text('确定', style: TextStyle(color: Colors.white)),
+            ),
           ],
         ),
         body: Center(
@@ -238,8 +237,7 @@ class _CityPickerPageState extends State<CityPickerPage> {
                     final Location? selectedLocation =
                         await showCityPickerBottomSheet(
                       context: context,
-                      initLocation:
-                          Location.defualtLocation(), // 可选，初始选中的地理位置编码
+                      initLocation: Location.defualtLocation, // 可选，初始选中的地理位置编码
                     );
 // 处理选择结果
                     if (selectedLocation != null) {
@@ -391,7 +389,7 @@ class _CityPickerPageState extends State<CityPickerPage> {
                 builder: (ctx, cities, child) {
                   if (cities == null) return child!;
                   return _buildLocationList(
-                    cities!,
+                    cities,
                     _selectedCity,
                     _selectCity,
                     '选择城市',

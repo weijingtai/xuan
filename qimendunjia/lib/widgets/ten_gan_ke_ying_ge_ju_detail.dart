@@ -18,10 +18,11 @@ class TenGanKeYingGeJuDetail extends StatelessWidget {
   Widget buildTenGanKeYingGeJuDetail(TenGanKeYingGeJu geJu) {
     List<Widget> explainList = [];
     for (int i = 0; i < geJu.explains.length; i++) {
-      if (i != 0)
+      if (i != 0) {
         explainList.add(const SizedBox(
           height: 8,
         ));
+      }
       explainList.add(
         Text(geJu.explains[i],
             overflow: TextOverflow.visible,

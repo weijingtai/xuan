@@ -26,5 +26,6 @@ class QiZhengSiYuDivination extends BasicDivination {
 
   factory QiZhengSiYuDivination.fromJson(Map<String, dynamic> json) =>
       _$QiZhengSiYuDivinationFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$QiZhengSiYuDivinationToJson(this);
 }

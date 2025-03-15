@@ -110,7 +110,7 @@ class _LocationSectionState extends State<LocationSection> {
               ),
               const SizedBox(height: AppTheme.spacing12),
               // 时区选择器
-              Container(child: Text("时区选择"))
+              Container(child: const Text("时区选择"))
               // TimezonePicker(
               //   initialValue: _timezone,
               //   onChanged: (value) {
@@ -184,7 +184,7 @@ class _LocationSectionState extends State<LocationSection> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.info_outline,
                         size: 16,
                         color: AppTheme.primaryColor,

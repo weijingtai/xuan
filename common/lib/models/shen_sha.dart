@@ -1,5 +1,3 @@
-import 'package:common/enums/enum_di_zhi.dart';
-import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_ji_xiong.dart';

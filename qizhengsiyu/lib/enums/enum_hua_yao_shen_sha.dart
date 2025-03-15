@@ -579,26 +579,26 @@ enum EnumHuaYaoShenSha {
       EnumStars.Bei: {}
     };
     // 1. 首先检查“值难”，只有值难一个化曜是基于月支进行的。
-    EnumStars.allStars.forEach((star) {
+    for (var star in EnumStars.allStars) {
       if (EnumHuaYaoShenSha.isZhiNan(monthJiaZi, star) != null) {
         result[star]!.add(EnumHuaYaoShenSha.ZhiNan);
         // 结束forEach
-        return;
+        continue;
       }
-    });
+    }
 
     // 2. 进行其他地支化曜的检测
-    EnumStars.allStars.forEach((star) {
+    for (var star in EnumStars.allStars) {
       Set<EnumHuaYaoShenSha> res = starIsYearZhiShenSha(yearJiaZi.diZhi, star);
       result[star]!.addAll(res);
-    });
+    }
 
     // 3. 进行年干化曜检查
-    EnumStars.allStars.forEach((star) {
+    for (var star in EnumStars.allStars) {
       Set<EnumHuaYaoShenSha> res =
           starIsYearGanShenSha(yearJiaZi.tianGan, star);
       result[star]!.addAll(res);
-    });
+    }
     return result;
   }
 }

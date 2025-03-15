@@ -1,9 +1,5 @@
-import 'dart:ui';
-
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:qimendunjia/enums/enum_eight_door.dart';
-import 'package:qimendunjia/enums/enum_eight_gods.dart';
 import 'package:qimendunjia/enums/enum_nine_stars.dart';
 
 import '../enums/enum_fu_fan_yin.dart';

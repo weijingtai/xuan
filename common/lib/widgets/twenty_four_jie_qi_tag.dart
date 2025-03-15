@@ -1,6 +1,7 @@
-import 'package:common/enums/enum_twenty_four_jie_qi.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import '../enums/enum_twenty_four_jie_qi.dart';
 
 class TwentyFourJieQiTag extends StatelessWidget {
   TwentyFourJieQi jieQi;

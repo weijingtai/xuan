@@ -11,7 +11,7 @@ export 'enums/enum_month_token.dart';
 
 export 'enums/enum_hou_tian_gua.dart';
 export 'enums/enum_twelve_zhang_sheng.dart';
-export 'enums/enum_twenty_four_jie_qi.dart';
+export 'enums/enum_four_seasons.dart';
 export 'enums/enum_twelve_ecliptic_gong.dart';
 export 'enums/enum_twelve_star_seq.dart';
 export 'enums/enum_ji_xiong.dart';
@@ -22,3 +22,4 @@ export 'enums/enum_stars.dart';
 export 'enums/enum_query_type.dart';
 
 export 'enums/enum_device_type.dart';
+export 'enums/enum_twenty_four_jie_qi.dart';

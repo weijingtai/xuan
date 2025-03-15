@@ -1,9 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/enums/enum_stars.dart';
-import 'package:qizhengsiyu/models/observer_position.dart';
 import 'package:qizhengsiyu/models/panel_stars_info.dart';
-import 'package:qizhengsiyu/models/stars_angle.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 

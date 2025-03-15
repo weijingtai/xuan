@@ -2,11 +2,9 @@ import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:lunar/calendar/Lunar.dart';
-import 'package:qimendunjia/enums/enum_arrange_plate_type.dart';
 import 'package:qimendunjia/enums/enum_three_yuan.dart';
 import 'package:qimendunjia/model/shi_jia_ju.dart';
 
-import 'package:qimendunjia/qimendunjia.dart';
 import 'package:qimendunjia/utils/qi_men_ju_calculator.dart';
 import 'package:tuple/tuple.dart';
 

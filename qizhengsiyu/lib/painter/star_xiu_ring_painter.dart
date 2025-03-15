@@ -261,7 +261,7 @@ class StarXiuRingPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final averageRadius = (innerRadius + outerRadius) / 2;
     const arcRadians = (360 - 10.4 + 15.9) * (math.pi / 180);
-    final centerPointAngle = arcRadians / 2;
+    const centerPointAngle = arcRadians / 2;
     final centerPointX = center.dx + averageRadius * math.cos(centerPointAngle);
     final centerPointY = center.dy + averageRadius * math.sin(centerPointAngle);
     canvas.drawCircle(

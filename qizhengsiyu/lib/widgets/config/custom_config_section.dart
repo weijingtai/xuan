@@ -314,7 +314,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                   ),
                   child: Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.info_outline,
                         size: 16,
                         color: AppTheme.primaryColor,

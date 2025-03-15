@@ -1,7 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qimendunjia/enums/enum_eight_gods.dart';
-import 'package:qimendunjia/utils/nine_yi_utils.dart';
 import 'package:tuple/tuple.dart';
 
 void main() {

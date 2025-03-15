@@ -3,14 +3,45 @@ import 'dart:ui';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums/enum_hou_tian_gua.dart';
 import 'package:common/enums/enum_yin_yang.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:common/navigator.dart';
 import 'package:common/widgets/eight_gua_widget.dart';
 import 'package:common/widgets/yao_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:sweph/sweph.dart';
+import 'package:timezone/data/latest.dart' as tz;
 
 import 'line_painter_widget.dart';
 
-void main() => runApp(const MyApp());
+Future<void> initServices() async {
+  // 在这里可以进行其他异步初始化操作
+  // 例如加载配置文件等
+
+  tz.initializeTimeZones();
+  if (kIsWeb) {
+    usePathUrlStrategy();
+  }
+
+  WidgetsFlutterBinding.ensureInitialized();
+  // await initSweph([
+  //   'packages/sweph/assets/ephe/sefstars.txt', // For star position
+  // ]);
+}
+
+void main() async {
+  // runApp(
+  //   MultiProvider(
+  //     providers: [
+  //       ChangeNotifierProvider<ShiJiaQiMenViewModel>(create: (context) => ShiJiaQiMenViewModel(context)),
+  //     ],
+  //     child: const MyApp(),
+  //   ),
+  // );
+  initServices().then((_) {
+    runApp(const MyApp());
+  });
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -24,7 +55,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: false,
       ),
-      home: const MyHomePage(title: 'Common Widgets Dev'),
+      // home: const MyHomePage(title: 'Common Widgets Dev'),
+      initialRoute: '/dev',
+      onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }
 }
@@ -53,7 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // The Flutter framework has been optimized to make rerunning build methods
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return LinePainterWidget();
+    return const LinePainterWidget();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),

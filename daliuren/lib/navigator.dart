@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
-import 'main.dart';
 import 'pages/dev.dart';
 import 'pages/my_home_page.dart';
 

@@ -1,5 +1,4 @@
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:qimendunjia/enums/enum_arrange_plate_type.dart';
 import 'package:qimendunjia/enums/enum_six_geng_ge_ju.dart';
 import 'package:qimendunjia/model/each_gong_wang_shuai.dart';

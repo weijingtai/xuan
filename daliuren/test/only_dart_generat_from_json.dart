@@ -1,15 +1,12 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:daliuren/model/da_liu_ren_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:daliuren/model/da_liu_ren_pan_model.dart';
 import 'package:daliuren/model/each_class.dart';
 import 'package:daliuren/model/enum_gui_ren.dart';
-import 'package:daliuren/model/enum_nine_zong_men.dart';
 import 'package:daliuren/model/four_class.dart';
 import 'package:daliuren/model/three_chuan.dart';
 import 'package:daliuren/model/yu_ding_da_liu_ren.dart';

@@ -4,49 +4,49 @@ import 'package:flutter/material.dart';
 class AppTheme {
   // 尺寸与间距系统
   static const double gridBase = 8.0;
-  static const double spacing4 = gridBase * 0.5;  // 4px
-  static const double spacing8 = gridBase;        // 8px
+  static const double spacing4 = gridBase * 0.5; // 4px
+  static const double spacing8 = gridBase; // 8px
   static const double spacing12 = gridBase * 1.5; // 12px
-  static const double spacing16 = gridBase * 2;   // 16px
-  static const double spacing24 = gridBase * 3;   // 24px
-  static const double spacing32 = gridBase * 4;   // 32px
-  
+  static const double spacing16 = gridBase * 2; // 16px
+  static const double spacing24 = gridBase * 3; // 24px
+  static const double spacing32 = gridBase * 4; // 32px
+
   // 触控目标最小尺寸
   static const double minTouchTarget = 44.0;
-  
+
   // 最大内容宽度
   static const double maxContentWidth = 600.0;
-  
+
   // 圆角
   static const double borderRadius = 16.0;
-  
+
   // 响应式断点
   static const double mobileBreakpoint = 768.0;
   static const double tabletBreakpoint = 1440.0;
-  
+
   // 色彩体系
   static const Color primaryColor = Color(0xFF007AFF); // Apple 蓝
-  static const Color schoolColor = Color(0xFFF5D76E);  // 水墨金
+  static const Color schoolColor = Color(0xFFF5D76E); // 水墨金
   static const Color backgroundColor = Color(0xFFF5F5F5); // 主背景
-  static const Color cardBackground = Colors.white;    // 卡片背景
-  static const Color primaryText = Color(0xFF2E2E48);  // 主文本
+  static const Color cardBackground = Colors.white; // 卡片背景
+  static const Color primaryText = Color(0xFF2E2E48); // 主文本
   static const Color secondaryText = Color(0xFF6C757D); // 次文本
   static const Color disabledText = Color(0xFFADADAD); // 禁用状态
-  
+
   // 按钮状态颜色
   static const Color buttonHoverColor = Color(0xFF0066CC);
   static const Color buttonPressedColor = Color(0xFF005299);
   static const Color buttonDisabledColor = Color(0xFFEFEFEF);
-  
+
   // 阴影
   static List<BoxShadow> get cardShadow => [
-    BoxShadow(
-      color: Colors.black.withOpacity(0.1),
-      blurRadius: 4,
-      offset: const Offset(0, 2),
-    ),
-  ];
-  
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ];
+
   // 获取主题数据
   static ThemeData getThemeData() {
     return ThemeData(
@@ -112,19 +112,19 @@ class AppTheme {
       ),
       segmentedButtonTheme: SegmentedButtonThemeData(
         style: ButtonStyle(
-          backgroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-            if (states.contains(MaterialState.selected)) {
+          backgroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
               return primaryColor;
             }
             return const Color(0xFFF5F5F5);
           }),
-          foregroundColor: MaterialStateProperty.resolveWith<Color>((states) {
-            if (states.contains(MaterialState.selected)) {
+          foregroundColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
               return Colors.white;
             }
             return primaryText;
           }),
-          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
             RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),

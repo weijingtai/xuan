@@ -1,10 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
-import 'package:qizhengsiyu/pages/beauty_page.dart';
 
 import '../enums/enum_panel_system_type.dart';
-import '../enums/enum_twelve_gong.dart';
 import 'star_inn_gong_degree.dart';
 
 part 'panel_system_dateset.g.dart';

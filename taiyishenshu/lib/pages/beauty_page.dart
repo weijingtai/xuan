@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'package:common/painter/complete_circle_painter.dart';
-import 'package:common/painter/ring_scale_painter.dart';
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import 'package:flutter/material.dart';

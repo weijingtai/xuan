@@ -2,7 +2,6 @@ import 'package:common/enums.dart';
 
 import '../model/each_gong.dart';
 import '../model/shi_jia_qi_men.dart';
-import 'enum_six_geng_ge_ju.dart';
 
 enum EnumSixBingGeJu {
   // 六丙

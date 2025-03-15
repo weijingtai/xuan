@@ -1,7 +1,3 @@
-import 'dart:ui';
-
-import 'package:daliuren/pages/my_home_page.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:responsive_framework/responsive_framework.dart';

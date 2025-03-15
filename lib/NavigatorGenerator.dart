@@ -6,9 +6,9 @@ import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
 import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
 import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
+import 'package:common/navigator.dart' as Common;
 import 'package:xuan/pages/city_picker_page.dart';
 import 'package:xuan/pages/one_year_circle.dart';
-import 'package:xuan/pages/root_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -21,6 +21,7 @@ class NavigatorGenerator {
     "/widget_dev": (context, {arguments}) => MyHomePage(
           title: 'widgets dev',
         ),
+    ...Common.NavigatorGenerator.routes,
     ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,
     ...TaiYiShenShu.NavigatorGenerator.routes,

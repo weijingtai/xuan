@@ -622,7 +622,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                             ])),
                       ),
                       moving.eightGod == null
-                          ? SizedBox(
+                          ? const SizedBox(
                               height: 72,
                               width: 108,
                             )
@@ -979,7 +979,7 @@ class _PrimaryPageState extends State<PrimaryPage> {
                         ),
                       ),
                       moving.eightShen == null
-                          ? SizedBox(
+                          ? const SizedBox(
                               height: 72,
                               width: 86,
                             )

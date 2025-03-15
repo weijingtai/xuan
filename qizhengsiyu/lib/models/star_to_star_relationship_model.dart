@@ -308,13 +308,13 @@ class StarToStarRelationshipModel {
           Map<TwentyEightStarInn, Set<ElevenStarsInfo>> res = {};
           Set<ElevenStarsInfo> added = {s};
           added.addAll(enteredStarInn);
-          added.forEach((s) {
+          for (var s in added) {
             if (res.containsKey(s.enteredStarInn)) {
               res[s.enteredStarInn]!.add(s);
             } else {
               res[s.enteredStarInn] = {s};
             }
-          });
+          }
           sameJingMap[innMasterStar] = res;
         }
       }
@@ -358,13 +358,13 @@ class StarToStarRelationshipModel {
           Set<ElevenStarsInfo> added = {s};
           added.addAll(isChongGongSet);
           Map<EnumTwelveGong, Set<ElevenStarsInfo>> res = {};
-          added.forEach((s) {
+          for (var s in added) {
             if (res.containsKey(s.enteredGong)) {
               res[s.enteredGong]!.add(s);
             } else {
               res[s.enteredGong] = {s};
             }
-          });
+          }
           chongGongSet[chong] = res;
         }
       }
@@ -381,13 +381,13 @@ class StarToStarRelationshipModel {
           Set<ElevenStarsInfo> added = {s};
           added.addAll(isHeGongSet);
           Map<EnumTwelveGong, Set<ElevenStarsInfo>> res = {};
-          added.forEach((s) {
+          for (var s in added) {
             if (res.containsKey(s.enteredGong)) {
               res[s.enteredGong]!.add(s);
             } else {
               res[s.enteredGong] = {s};
             }
-          });
+          }
           threeHeGongMap[he] = res;
         }
       }
@@ -407,13 +407,13 @@ class StarToStarRelationshipModel {
           Set<ElevenStarsInfo> added = {s};
           added.addAll(isFourZhengSet);
           Map<EnumTwelveGong, Set<ElevenStarsInfo>> res = {};
-          added.forEach((s) {
+          for (var s in added) {
             if (res.containsKey(s.enteredGong)) {
               res[s.enteredGong]!.add(s);
             } else {
               res[s.enteredGong] = {s};
             }
-          });
+          }
           fourZhengMap[fourZheng] = res;
         }
       }

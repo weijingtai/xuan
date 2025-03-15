@@ -3,16 +3,11 @@ import 'dart:ui';
 
 import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:animated_read_more_text/animated_read_more_text.dart';
-import 'package:aura_box/aura_box.dart';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
-import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
@@ -27,13 +22,11 @@ import 'package:qimendunjia/utils/constant_ui_resources_of_qi_men.dart';
 import 'package:qimendunjia/utils/read_data_utils.dart';
 import 'package:qimendunjia/widgets/ten_gan_ke_ying_ge_ju_detail.dart';
 import 'package:slide_switcher/slide_switcher.dart';
-import 'package:sliding_switch/sliding_switch.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
 import '../enums/enum_most_popular_ge_ju.dart';
 import '../enums/enum_nine_stars.dart';
-import '../model/ConstantQiMenNineGongDataClass.dart';
 import '../model/shi_jia_ju.dart';
 import '../model/door_star_ke_ying.dart';
 import '../model/pan_arrange_settings.dart';
@@ -44,8 +37,6 @@ import '../model/ten_gan_ke_ying_ge_ju.dart';
 import '../ui_models/ui_ten_gan_key_ying_ge_ju.dart';
 import '../utils/qi_men_ju_calculator.dart';
 import '../widgets/each_gong_widget.dart';
-import '../widgets/qi_yi_wang_shuai.dart';
-import '../widgets/ten_gan_ke_ying_yin_zhang.dart';
 
 class BeautifulPage extends StatefulWidget {
   DateTime? panDateTime;

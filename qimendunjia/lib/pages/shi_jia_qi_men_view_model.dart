@@ -1,10 +1,7 @@
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:qimendunjia/enums/enum_most_popular_ge_ju.dart';
-import 'package:qimendunjia/enums/enum_six_geng_ge_ju.dart';
 import 'package:qimendunjia/ui_models/ui_each_gong_model.dart';
-import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
 import '../enums/enum_eight_door.dart';
@@ -19,8 +16,6 @@ import '../model/shi_jia_ju.dart';
 import '../model/shi_jia_qi_men.dart';
 import '../model/ten_gan_ke_ying.dart';
 import '../model/ten_gan_ke_ying_ge_ju.dart';
-import '../ui_models/ui_each_gong_model.dart';
-import '../ui_models/ui_each_gong_model.dart';
 import '../ui_models/ui_pan_meta_model.dart';
 import '../ui_models/ui_ten_gan_key_ying_ge_ju.dart';
 import '../utils/read_data_utils.dart';

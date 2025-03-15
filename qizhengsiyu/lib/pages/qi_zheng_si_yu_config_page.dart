@@ -427,7 +427,7 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
 
   /// 获取滑块未激活状态的文本样式
   TextStyle _getSwitcherInactivatedStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.normal,
       color: AppTheme.secondaryText,
@@ -436,7 +436,7 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
 
   /// 获取滑块激活状态的文本样式
   TextStyle _getSwitcherActivatedStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: AppTheme.primaryColor,

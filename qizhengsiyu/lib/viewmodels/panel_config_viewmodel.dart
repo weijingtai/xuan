@@ -1,5 +1,4 @@
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_gender.dart';
 import 'package:common/module.dart';
 import 'package:flutter/widgets.dart';
 import 'package:qizhengsiyu/enums/enum_panel_ring.dart';

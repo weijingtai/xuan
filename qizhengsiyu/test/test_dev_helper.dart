@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/models/star_inn_gong_degree.dart';
 import 'package:common/enums.dart';
-import 'package:qizhengsiyu/utils/traditional_chinese_equatorial_to_ecliptic.dart';
 
 void main() {
   group('QiZhengSiYuConstantResources 数据序列化测试', () {

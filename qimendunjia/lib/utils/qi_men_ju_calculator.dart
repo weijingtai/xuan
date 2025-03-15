@@ -1,7 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/JieQi.dart';
 import 'package:lunar/calendar/Lunar.dart';
 import 'package:qimendunjia/enums/enum_three_yuan.dart';
 import 'package:qimendunjia/enums/enum_zhi_run_type.dart';

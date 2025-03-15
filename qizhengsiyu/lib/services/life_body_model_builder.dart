@@ -96,7 +96,7 @@ class LifeBodyModelBuilder {
 
     StarInnGongDegreeInfo? xiuType;
     double? enterAngle = 0.0;
-    xiuTypeList.forEach((e) {
+    for (var e in xiuTypeList) {
       if (e.startAtGongDegree.gong == lifeGong &&
           e.endAtGongDegree.gong == lifeGong) {
         // 星宿在当前宫位内
@@ -126,7 +126,7 @@ class LifeBodyModelBuilder {
           }
         }
       }
-    });
+    }
     if (xiuType == null) {
       throw Exception("定命度时，未找到合适的命度");
     }

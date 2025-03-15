@@ -559,7 +559,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                                                       _gongShadowAnimationController
                                                           .value)
                                             ]),
-                                        child: buildEachGong(gongGua!),
+                                        child: buildEachGong(gongGua),
                                       );
                                     }),
                                 const SizedBox(

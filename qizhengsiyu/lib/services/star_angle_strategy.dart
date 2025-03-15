@@ -48,7 +48,7 @@ class EquatorialTropicalStrategy implements StarAngleStrategy {
 
     final swephStar = _getSwephStar(star);
 
-    final result = await Sweph.swe_calc_ut(
+    final result = Sweph.swe_calc_ut(
         julianDay,
         swephStar,
         SwephFlag.SEFLG_TOPOCTR |

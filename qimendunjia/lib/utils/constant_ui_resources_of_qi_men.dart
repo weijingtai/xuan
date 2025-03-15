@@ -1,4 +1,3 @@
-import 'package:common/const_resources_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qimendunjia/enums/enum_eight_door.dart';

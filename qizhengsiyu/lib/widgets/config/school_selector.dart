@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 
 import '../../enums/enum_school.dart';

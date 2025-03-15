@@ -1,24 +1,8 @@
 import 'package:common/enums/enum_month_token.dart';
 import 'package:common/enums/enum_twelve_ecliptic_gong.dart';
+import 'package:common/enums/enum_four_seasons.dart';
+import 'package:common/enums/enum_yin_yang.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import 'enum_yin_yang.dart';
-
-enum FourSeasons {
-  SPRING(0, "春"),
-  SUMMER(1, "夏"),
-  AUTUMN(2, "秋"),
-  WINTER(3, "冬");
-
-  final int order;
-  final String name;
-  const FourSeasons(this.order, this.name);
-
-  // get by name
-  static FourSeasons fromName(String name) {
-    return values.firstWhere((e) => e.name == name);
-  }
-}
 
 enum TwentyFourJieQi {
   @JsonValue("冬至")

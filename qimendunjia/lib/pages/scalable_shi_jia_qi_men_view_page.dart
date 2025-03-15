@@ -531,7 +531,7 @@ class _ScalableShiJiaQiMenViewPageState
                                                       _gongShadowAnimationController
                                                           .value)
                                             ]),
-                                        child: buildEachGong(gongGua!),
+                                        child: buildEachGong(gongGua),
                                       );
                                     }),
                                 const SizedBox(

@@ -16,7 +16,7 @@ DivinationPerson _$DivinationPersonFromJson(Map<String, dynamic> json) =>
           : DateTime.parse(json['birthDateTime'] as String),
       baZi: json['baZi'] == null
           ? null
-          : BaZi.fromJson(json['baZi'] as Map<String, dynamic>),
+          : EightChars.fromJson(json['baZi'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DivinationPersonToJson(DivinationPerson instance) =>

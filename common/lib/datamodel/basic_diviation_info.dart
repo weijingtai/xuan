@@ -1,8 +1,8 @@
-import 'package:common/datamodel/basic_person_info.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_gender.dart';
+import '../models/eight_chars.dart';
 
 part 'basic_diviation_info.g.dart';
 
@@ -13,7 +13,7 @@ class DivinationPerson {
   final JiaZi yearMingJiaZi;
 
   final DateTime? birthDateTime;
-  final BaZi? baZi;
+  final EightChars? baZi;
   DivinationPerson({
     this.name,
     required this.gender,

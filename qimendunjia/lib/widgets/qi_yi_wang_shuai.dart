@@ -4,9 +4,6 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
-import '../utils/constant_ui_resources_of_qi_men.dart';
 
 class QiYiWangShuai extends StatelessWidget {
   final TianGan tianGan;

@@ -1,9 +1,7 @@
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:el_tooltip/el_tooltip.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
@@ -11,12 +9,9 @@ import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
-import 'package:qizhengsiyu/pages/circle_indicator_widget.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
-import 'package:qizhengsiyu/painter/StarInn28RingPainter.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
-import 'package:tuple/tuple.dart';
 
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';

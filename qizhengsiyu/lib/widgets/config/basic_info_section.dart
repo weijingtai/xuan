@@ -1,6 +1,7 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/enums.dart';
 import 'package:common/enums/enum_gender.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
 import 'package:common/module.dart';
 import 'package:flutter_city_picker/city_picker.dart';
@@ -37,17 +38,17 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
     with SingleTickerProviderStateMixin
     implements CityPickerListener {
   AnimationController? _animationController;
-  String _addressProvince = "请选择省";
-  String _addressCity = "请选择市";
-  String _addressArea = "请选择地区";
-  String _addressStreet = "请选择街道";
-  Color _themeColor = Colors.blue;
-  Color _backgroundColor = Colors.white;
-  double _height = 500.0;
-  double _opacity = 0.5;
-  double _corner = 20;
-  bool _dismissible = true;
-  bool _showTabIndicator = true;
+  final String _addressProvince = "请选择省";
+  final String _addressCity = "请选择市";
+  final String _addressArea = "请选择地区";
+  final String _addressStreet = "请选择街道";
+  final Color _themeColor = Colors.blue;
+  final Color _backgroundColor = Colors.white;
+  final double _height = 500.0;
+  final double _opacity = 0.5;
+  final double _corner = 20;
+  final bool _dismissible = true;
+  final bool _showTabIndicator = true;
   // List<AddressNode> _selectProvince = [];
   // List<AddressNode> _selectCity = [];
   // List<AddressNode> _selectArea = [];
@@ -60,13 +61,13 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
 
   late final ValueNotifier<String> _timezoneNotifier;
   late final ValueNotifier<bool> _isTrueSolarNotifier;
-  late final ValueNotifier<bool> auto
+  // late final ValueNotifier<bool> auto;
   // 占卜事情信息
   late String _eventDescription;
   late String _querierName;
   late DateTime _queryDateTime;
 
-  ValueNotifier<DateTime> _selectedBirthTimeNotifier =
+  final ValueNotifier<DateTime> _selectedBirthTimeNotifier =
       ValueNotifier<DateTime>(DateTime.now());
 
   // 表单键
@@ -141,13 +142,13 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
           name: _name,
           birthTime: DateTime.now(),
           gender: _gender,
-          birthLocation: Location.defualtLocation(),
+          birthLocation: Location.defualtLocation,
           trueSolarTime: DateTime.now(),
-          bazi: BaZi(
+          bazi: EightChars(
               year: JiaZi.JIA_ZI,
               month: JiaZi.JIA_ZI,
               day: JiaZi.JIA_ZI,
-              hour: JiaZi.JIA_ZI),
+              time: JiaZi.JIA_ZI),
           hasDaylightSaving: false,
           isTrueSolarTime: true);
       widget.onInfoChanged(info);
@@ -295,7 +296,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
               final Location? selectedLocation =
                   await showCityPickerBottomSheet(
                 context: context,
-                initLocation: Location.defualtLocation(), // 可选，初始选中的地理位置编码
+                initLocation: Location.defualtLocation, // 可选，初始选中的地理位置编码
               );
 // 处理选择结果
               if (selectedLocation != null) {
@@ -306,7 +307,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
                 // '经纬度: (${selectedLocation.latitude}, ${selectedLocation.longitude})');
               }
             },
-            child: Text("选择地区")),
+            child: const Text("选择地区")),
 
         ValueListenableBuilder(
             valueListenable: _timezoneNotifier,
@@ -344,7 +345,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
       corner: _corner,
       backgroundColor: _backgroundColor,
       paddingLeft: 15,
-      titleWidget: Text(
+      titleWidget: const Text(
         '请选择地址',
         style: TextStyle(
           color: Colors.black54,
@@ -353,7 +354,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
         ),
       ),
       selectText: "请选择",
-      closeWidget: Icon(Icons.close),
+      closeWidget: const Icon(Icons.close),
       tabHeight: 40,
       showTabIndicator: _showTabIndicator,
       tabPadding: 15,
@@ -366,19 +367,20 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
       itemHeadBackgroundColor: _backgroundColor,
       itemHeadLineColor: Colors.black,
       itemHeadLineHeight: 0.1,
-      itemHeadTextStyle: TextStyle(fontSize: 15, color: Colors.black),
+      itemHeadTextStyle: const TextStyle(fontSize: 15, color: Colors.black),
       itemHeight: 40,
       indexBarWidth: 28,
       indexBarItemHeight: 20,
       indexBarBackgroundColor: Colors.black12,
-      indexBarTextStyle: TextStyle(fontSize: 14, color: Colors.black54),
+      indexBarTextStyle: const TextStyle(fontSize: 14, color: Colors.black54),
       itemSelectedIconWidget:
           Icon(Icons.done, color: Theme.of(context).primaryColor, size: 16),
       itemSelectedTextStyle: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.bold,
           color: Theme.of(context).primaryColor),
-      itemUnSelectedTextStyle: TextStyle(fontSize: 14, color: Colors.black54),
+      itemUnSelectedTextStyle:
+          const TextStyle(fontSize: 14, color: Colors.black54),
       // initialAddress: initData,
       cityPickerListener: this,
     );
@@ -434,25 +436,19 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
         const SizedBox(width: 24),
         ElevatedButton(
           onPressed: () async {
-            if (_selectedBirthTimeNotifier.value != null) {
-              InteractiveToast.slide(
-                context,
-                // leading: leadingWidget(),
-                title: const Text("不能重复"),
-                // trailing: trailingWidget(),
-                toastStyle: const ToastStyle(titleLeadingGap: 10),
-                toastSetting: const SlidingToastSetting(
-                  animationDuration: Duration(seconds: 1),
-                  displayDuration: Duration(seconds: 2),
-                  toastStartPosition: ToastPosition.top,
-                  toastAlignment: Alignment.topCenter,
-                ),
-              );
-            } else {
-              // dateTimeValueNotifier.value = DateTime.now();
-              // selectedDateTime = DateTime.now();
-              _selectedBirthTimeNotifier.value = DateTime.now();
-            }
+            InteractiveToast.slide(
+              context,
+              // leading: leadingWidget(),
+              title: const Text("不能重复"),
+              // trailing: trailingWidget(),
+              toastStyle: const ToastStyle(titleLeadingGap: 10),
+              toastSetting: const SlidingToastSetting(
+                animationDuration: Duration(seconds: 1),
+                displayDuration: Duration(seconds: 2),
+                toastStartPosition: ToastPosition.top,
+                toastAlignment: Alignment.topCenter,
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             // backgroundColor: Colors.green, // Background coloronPrimary: Colors.white, // Text color
@@ -515,7 +511,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
 
   /// 获取滑块未激活状态的文本样式
   TextStyle _getSwitcherInactivatedStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.normal,
       color: AppTheme.secondaryText,
@@ -524,7 +520,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
 
   /// 获取滑块激活状态的文本样式
   TextStyle _getSwitcherActivatedStyle() {
-    return TextStyle(
+    return const TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.bold,
       color: AppTheme.primaryColor,
@@ -651,7 +647,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
                     ),
               ),
               const SizedBox(height: AppTheme.spacing12),
-              Container(child: Text("选择时间"))
+              Container(child: const Text("选择时间"))
               // DateTimePicker(
               //   initialDateTime: _queryDateTime,
               //   onDateTimeChanged: (dateTime) {

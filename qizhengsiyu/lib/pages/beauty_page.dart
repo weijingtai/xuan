@@ -4,7 +4,6 @@ import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/enums/enum_stars.dart';

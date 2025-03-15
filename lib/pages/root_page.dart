@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:animated_read_more_text/animated_read_more_text.dart';
 import 'package:auto_size_text/auto_size_text.dart';
-import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart';
@@ -16,9 +15,6 @@ import 'package:qimendunjia/model/ten_gan_ke_ying.dart';
 import 'package:qimendunjia/model/ten_gan_ke_ying_ge_ju.dart';
 import 'package:qimendunjia/utils/constant_ui_resources_of_qi_men.dart';
 import 'package:qimendunjia/widgets/ten_gan_ke_ying_yin_zhang.dart';
-import 'package:qimendunjia/widgets/resizable_gong_widget.dart';
-
-import '../widgets/tmp.dart';
 
 class RootPage extends StatefulWidget {
   double defaultEachGongWidth = 256;

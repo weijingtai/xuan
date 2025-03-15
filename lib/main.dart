@@ -1,8 +1,6 @@
-import 'package:common/main.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
@@ -59,7 +57,8 @@ class MyApp extends StatelessWidget {
       onGenerateRoute: NavigatorGenerator.generateRoute,
       // initialRoute: '/qizhengsiyu',
       // initialRoute: '/one_year',
-      initialRoute: '/qizhengsiyu', // 七政四余
+      // initialRoute: '/qizhengsiyu', // 七政四余
+      initialRoute: '/dev', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
       // initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲

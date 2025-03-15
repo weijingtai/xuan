@@ -1,16 +1,11 @@
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
-import 'package:qizhengsiyu/models/observer_position.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
-import 'package:qizhengsiyu/models/stars_angle.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
-import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 
 void main() {
   double testSunangle = 211.02;

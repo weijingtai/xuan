@@ -1,11 +1,6 @@
 import 'dart:ui';
 
 import 'package:common/enums/enum_stars.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:tuple/tuple.dart';
-
-import 'enums/enum_twelve_gong.dart';
-import 'models/star_inn_gong_degree.dart';
 
 class QiZhengSiYuUIConstantResources {
   static final Map<EnumStars, Color> zhengColorMap = {

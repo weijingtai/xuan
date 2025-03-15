@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tuple/tuple.dart';
 
 import 'enums/enum_qi_zheng.dart';
 import 'enums/enum_twelve_gong.dart';

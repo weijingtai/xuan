@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
-import 'package:taiyishenshu/pages/beauty_page.dart';
 import 'package:taiyishenshu/pages/my_home_page.dart';
 import 'package:taiyishenshu/pages/rectangle_pan.dart';
 

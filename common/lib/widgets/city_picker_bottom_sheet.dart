@@ -38,7 +38,7 @@ class CityPickerBottomSheet extends StatefulWidget {
   /// 滚动控制器
   final ScrollController scrollController;
 
-  CityPickerBottomSheet({
+  const CityPickerBottomSheet({
     Key? key,
     required this.initLocation,
     required this.scrollController,
@@ -299,7 +299,7 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
               Row(children: [
                 TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: Text(
+                    child: const Text(
                       "取消",
                       style: TextStyle(color: Colors.grey),
                     )),

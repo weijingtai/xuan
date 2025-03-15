@@ -335,10 +335,9 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
                 ),
               ),
             ),
-            if (end != null)
-              CustomPaint(
-                painter: MyPainter(start, end, Colors.blue),
-              ),
+            CustomPaint(
+              painter: MyPainter(start, end, Colors.blue),
+            ),
           ],
         ),
       ),

@@ -4,6 +4,7 @@ import '../enums/enum_three_yuan.dart';
 
 class ShiJiaJu {
   int juNumber;
+
   JiaZi fuTouJiaZi;
   YinYang yinYangDun;
   TwentyFourJieQi jieQiAt;

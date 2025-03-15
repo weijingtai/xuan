@@ -265,7 +265,7 @@ class FourClass {
 
   String toDebugString() {
     return "四\t三\t二\t一\r\n"
-            "${fourth.sky.value}\t${third.sky.value}\t${second.sky.value}\t${first.sky.value}\r\n" +
+        "${fourth.sky.value}\t${third.sky.value}\t${second.sky.value}\t${first.sky.value}\r\n"
         "${fourth.ground.value}\t${third.ground.value}\t${second.ground.value}\t${first.tianGan.value}(${first.ground.value})";
   }
 

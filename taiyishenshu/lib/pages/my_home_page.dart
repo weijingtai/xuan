@@ -1,7 +1,5 @@
 import 'dart:math';
 
-import 'package:common/painter/text_circle_ring_painter.dart';
-
 import 'package:flutter/material.dart';
 import '../painter/pie_segment_painter.dart';
 
