@@ -605,32 +605,112 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         valueListenable: _selectedBirthTimeNotifier,
         builder: (ctx, dateTime, _) {
           return Container(
-            margin: EdgeInsets.all(18),
+            margin: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
             alignment: Alignment.topCenter,
-            width: 512,
-            height: 200,
-            color: Colors.blue.withAlpha(10),
+            color: Colors.blue.withAlpha(100),
+            padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+            // width: 512,
+            // height: 200,
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(
+                      width: 42 + 24,
+                      height: 32 + 24,
+                    ),
+                    Column(
+                      children: [
+                        Text(
+                          "选择时区：",
+                          style: TextStyle(height: 1, fontSize: 12),
+                        ),
+                        ValueListenableBuilder<String>(
+                            valueListenable: _timezoneNotifier,
+                            builder: (context, timezongStr, _) {
+                              return Container(
+                                width: 200,
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  menuWidth: 200,
+                                  value: timezongStr,
+                                  items: tz.timeZoneDatabase.locations.keys
+                                      .map((String value) {
+                                    return DropdownMenuItem<String>(
+                                      value: value,
+                                      child: Text(value),
+                                    );
+                                  }).toList(),
+                                  onChanged: (String? newValue) {
+                                    if (newValue != null) {
+                                      _timezoneNotifier.value = newValue;
+                                    }
+                                    // 获取当前选定时区的时间
+                                  },
+                                ),
+                              );
+                            }),
+                      ],
+                    ),
+                    Container(
+                      width: 42 + 24,
+                      height: 32 + 24,
+                      // color: Colors.amberAccent.withAlpha(100),
+                      child: ValueListenableBuilder(
+                          valueListenable: _isDSTNotifier,
+                          builder: (context, isDST, _) {
+                            // if (!isDST) {
+                            //   return SizedBox();
+                            // }
+                            return ValueListenableBuilder(
+                              valueListenable: _removeDSTTimeNotifier,
+                              builder: (ctx, isANSI, _) {
+                                return Column(
+                                  children: [
+                                    Text(
+                                      "移除夏令时",
+                                      style: TextStyle(
+                                          height: 1,
+                                          fontSize: 12,
+                                          color: Colors.black87),
+                                    ),
+                                    Transform.scale(
+                                        scale: .8,
+                                        child: Switch(
+                                            value: isANSI,
+                                            onChanged: (boolVal) {
+                                              _removeDSTTimeNotifier.value =
+                                                  boolVal;
+                                              removeDSTTime(boolVal);
+                                            })),
+                                  ],
+                                );
+                              },
+                            );
+                          }),
+                    )
+                  ],
+                ),
+                SizedBox(height: 10),
                 AnimatedContainer(
                     duration: duration,
                     alignment: dateTime == null
                         ? Alignment.bottomCenter
                         : Alignment.topLeft,
-                    color: Colors.red.withAlpha(10),
                     child: AnimatedDefaultTextStyle(
                       duration: duration,
-                      child: Text("请选择命主生辰"),
+                      child: Text("命主生时"),
                       style: dateTime == null
-                          ? TextStyle(fontSize: largeFontSize)
-                          : TextStyle(fontSize: smallFontSize),
+                          ? TextStyle(fontSize: largeFontSize, height: 1.0)
+                          : TextStyle(fontSize: smallFontSize, height: .0),
                     )),
                 AnimatedContainer(
                     duration: duration,
                     height: dateTime == null ? 16 : 80,
-                    color: Colors.amber.withAlpha(10),
                     alignment: Alignment.center,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -654,7 +734,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                               ),
                             Container(
                               width: 64,
-                              color: Colors.grey.withAlpha(20),
                               alignment: Alignment.bottomCenter,
                               child: ValueListenableBuilder(
                                   valueListenable: _isDSTNotifier,
@@ -707,14 +786,14 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 42 + 24,
-                      height: 24,
-                      // color: Colors.amberAccent.withAlpha(100),
-                    ),
+                    // const SizedBox(
+                    //   width: 68,
+                    //   height: 24,
+                    //   // color: Colors.amberAccent.withAlpha(100),
+                    // ),
                     AnimatedContainer(
                       duration: duration,
-                      padding: EdgeInsets.all(4),
+                      padding: const EdgeInsets.all(4),
                       alignment: dateTime == null
                           ? Alignment.topCenter
                           : Alignment.bottomCenter,
@@ -763,43 +842,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                             )),
                       ),
                     ),
-                    Container(
-                      width: 42 + 24,
-                      height: 32 + 24,
-                      // color: Colors.amberAccent.withAlpha(100),
-                      child: ValueListenableBuilder(
-                          valueListenable: _isDSTNotifier,
-                          builder: (context, isDST, _) {
-                            if (!isDST) {
-                              return SizedBox();
-                            }
-                            return ValueListenableBuilder(
-                              valueListenable: _removeDSTTimeNotifier,
-                              builder: (ctx, isANSI, _) {
-                                return Column(
-                                  children: [
-                                    Transform.scale(
-                                        scale: .9,
-                                        child: Switch(
-                                            value: isANSI,
-                                            onChanged: (boolVal) {
-                                              _removeDSTTimeNotifier.value =
-                                                  boolVal;
-                                              removeDSTTime(boolVal);
-                                            })),
-                                    Text(
-                                      "移除夏令时",
-                                      style: TextStyle(
-                                          height: 1,
-                                          fontSize: 12,
-                                          color: Colors.black87),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          }),
-                    )
                   ],
                 )
               ],
