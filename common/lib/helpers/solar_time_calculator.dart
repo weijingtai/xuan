@@ -11,7 +11,9 @@ class SolarTimeCalculator {
     meanSolarTime =
         dateTime.add(Duration(minutes: (longitudeHour * 60).toInt()));
   }
-
+  // static tz.TZDateTime calculateTrueSolarTime(
+  //     tz.TZDateTime meanSolarTime, double longitude) {
+  // }
   DateTime getTrueSolarTime() {
     // 1. 获取设备位置和时区
     // final position = await _getCurrentPosition();
@@ -51,4 +53,22 @@ class SolarTimeCalculator {
     final tz.TZDateTime tzDatetime = tz.TZDateTime.from(datetime, tzLocation);
     return tzLocation.timeZone(tzDatetime.millisecondsSinceEpoch).isDst;
   }
+
+  static int calculateTimeZoneLatitude(tz.TZDateTime tzDate){
+    // tz.TZDateTime tzDate = tz.TZDateTime.now(tz.getLocation("Asia/Shanghai"));
+    // print(tzDate.timeZoneOffset);
+    // print(tzDate2.timeZoneOffset);
+    int inHours = tzDate.timeZoneOffset.inHours;
+    if (tzDate.timeZone.isDst){
+      if (inHours > 0){
+        inHours += 1;
+      }else{
+        inHours -= 1;
+      }
+    }
+    return  15 * inHours;
+  }
 }
+
+
+

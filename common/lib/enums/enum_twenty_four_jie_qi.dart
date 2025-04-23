@@ -98,6 +98,21 @@ enum TwentyFourJieQi {
   static TwentyFourJieQi fromName(String name) {
     return values.firstWhere((element) => element.name == name);
   }
+  // getPrevious
+  TwentyFourJieQi get previous {
+    int _order = order - 1;
+    if (_order < 0){
+      _order = 23;
+    }
+    return values[_order];
+  }
+  TwentyFourJieQi get next{
+    int _order = order + 1;
+    if (_order > 23){
+      _order = 0;
+    }
+    return values[_order];
+  }
 
   /// 获取节
   static List<TwentyFourJieQi> listJie() {
@@ -174,3 +189,5 @@ enum TwentyFourJieQi {
     }
   }
 }
+
+

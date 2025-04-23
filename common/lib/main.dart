@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums/enum_hou_tian_gua.dart';
 import 'package:common/enums/enum_yin_yang.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:common/navigator.dart';
 import 'package:common/widgets/eight_gua_widget.dart';
@@ -11,18 +12,22 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:sweph/sweph.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
+import 'chinese_style_theme.dart';
+import 'chinese_style_theme2.dart';
+import 'common_logger.dart';
 import 'line_painter_widget.dart';
 
 Future<void> initServices() async {
   // 在这里可以进行其他异步初始化操作
   // 例如加载配置文件等
-
+  await FontLoader('NotoSansSC-Regular').load();
   tz.initializeTimeZones();
   if (kIsWeb) {
     usePathUrlStrategy();
   }
-
+  CommonLogger().logger.i("common module is started.");
   WidgetsFlutterBinding.ensureInitialized();
   // await initSweph([
   //   'packages/sweph/assets/ephe/sefstars.txt', // For star position
@@ -38,7 +43,10 @@ void main() async {
   //     child: const MyApp(),
   //   ),
   // );
+
+
   initServices().then((_) {
+
     runApp(const MyApp());
   });
 }
@@ -56,6 +64,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: false,
       ),
       // home: const MyHomePage(title: 'Common Widgets Dev'),
+      // home:ChineseStyleTheme1HomePage(),
+      // home:WidgetExamplePage(),
       initialRoute: '/dev',
       onGenerateRoute: NavigatorGenerator.generateRoute,
     );

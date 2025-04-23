@@ -21,3 +21,7 @@ targets:
           generic_argument_factories: false
           ignore_unannotated: false
           include_if_null: true
+      drift_dev|clean:
+        enabled: true
+      drift_dev|build_queries:
+        enabled: true

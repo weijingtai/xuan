@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
-
+import 'package:sweph/sweph.dart';
+import 'basic_person_info.dart' as my;
 part 'geo_location.g.dart';
 
 enum GeoLevel {
@@ -44,7 +45,7 @@ class GeoLocation {
 
   /// 经度
   final double longitude;
-
+  my.Coordinates get coordinates => my.Coordinates(latitude: latitude, longitude: longitude);
   GeoLocation({
     required this.code,
     required this.parentCode,

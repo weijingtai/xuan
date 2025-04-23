@@ -15,6 +15,43 @@ void main() {
   tz.initializeTimeZones();
   final dateFormat = DateFormat("yyyy-MM-dd HH:mm");
 
+  group("mean solar datetime",(){
+    final now = DateTime.now();
+    test("时间", () {
+      tz.TZDateTime tzDate = tz.TZDateTime.now(tz.getLocation("Asia/Shanghai"));
+      print(tzDate.timeZoneOffset);
+      tz.TZDateTime tzDate2 = tz.TZDateTime.now(tz.getLocation("America/Los_Angeles"));
+      print(tzDate2.timeZoneOffset);
+      expect(tzDate2.timeZone.isDst, true);
+      int inHours = tzDate2.timeZoneOffset.inHours;
+      if (tzDate2.timeZone.isDst){
+        if (inHours > 0){
+          inHours += 1;
+        }else{
+          inHours -= 1;
+        }
+      }
+      print(inHours);
+      int timezonelat = 15 * inHours;
+      print(timezonelat);
+      expect(tzDate.difference(tzDate.toUtc()).inHours,8);
+    });
+
+    test("tzDateTime to DateTime",(){
+      DateTime now = DateTime.now();
+      tz.TZDateTime shanghaiNow= tz.TZDateTime.from(now,tz.getLocation("Asia/Shanghai"));
+      // DateTime convetedNow = DateTime.parse(shanghaiNow.);
+      DateTime converted = DateTime(shanghaiNow.year,shanghaiNow.month,shanghaiNow.day,shanghaiNow.hour,shanghaiNow.minute,shanghaiNow.second,shanghaiNow.millisecond);
+      final df =  DateFormat("yyyy-MM-dd HH:mm:ss");
+      df.format(shanghaiNow);
+      converted = df.parse(df.format(shanghaiNow));
+
+      // expect(shanghaiNow.toIso8601String(),now.toIso8601String());
+      print(now);
+      print(converted);
+      expect(converted == now, isTrue);
+    });
+  });
   group("夏令时", () {
     test("是夏令时 1989-7-1 14:00 'Asia/Shanghai'", () {
       final datetime = dateFormat.parse("1989-7-1 14:00");

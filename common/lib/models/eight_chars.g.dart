@@ -10,7 +10,7 @@ EightChars _$EightCharsFromJson(Map<String, dynamic> json) => EightChars(
       year: $enumDecode(_$JiaZiEnumMap, json['year']),
       month: $enumDecode(_$JiaZiEnumMap, json['month']),
       day: $enumDecode(_$JiaZiEnumMap, json['day']),
-      time: $enumDecode(_$JiaZiEnumMap, json['hour']),
+      time: $enumDecode(_$JiaZiEnumMap, json['time']),
     );
 
 Map<String, dynamic> _$EightCharsToJson(EightChars instance) =>
@@ -18,7 +18,7 @@ Map<String, dynamic> _$EightCharsToJson(EightChars instance) =>
       'year': _$JiaZiEnumMap[instance.year]!,
       'month': _$JiaZiEnumMap[instance.month]!,
       'day': _$JiaZiEnumMap[instance.day]!,
-      'hour': _$JiaZiEnumMap[instance.time]!,
+      'time': _$JiaZiEnumMap[instance.time]!,
     };
 
 const _$JiaZiEnumMap = {

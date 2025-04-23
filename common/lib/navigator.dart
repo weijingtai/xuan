@@ -1,5 +1,6 @@
 import 'package:common/dev_select_datetime_page.dart';
-import 'package:common/widgets/map_screen.dart';
+// import 'package:common/widgets/map_screen.dart.osm.bak';
+import 'package:common/widgets/flutter_map_screen.dart';
 import 'package:flutter/material.dart';
 
 class NavigatorGenerator {
@@ -7,7 +8,8 @@ class NavigatorGenerator {
       RouteObserver<PageRoute>();
   static final routes = {
     "/dev": (context, {arguments}) => const DevEnterPage(),
-    "/common/maps": (context, {arguments}) => MapScreen(arguments["location"])
+    "/common/maps": (context, {arguments}) =>
+        FlutterMapScreen(arguments["location"],seerCoordinate: arguments["myCoordinate"],seekerCoordinate: arguments["seekerCoordinate"])
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

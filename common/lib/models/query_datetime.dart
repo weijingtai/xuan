@@ -1,14 +1,12 @@
+import 'package:common/enums.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tuple/tuple.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 
-import '../data/seventy_two_phenology.dart';
-import '../helpers/solar_time_calculator.dart';
 import 'eight_chars.dart';
+import 'jie_qi_info.dart';
 
+import 'package:equatable/equatable.dart';
 part 'query_datetime.g.dart';
 
 // 1. UTC（协调世界时）
@@ -34,8 +32,8 @@ part 'query_datetime.g.dart';
 enum EnumDatetimeType {
   @JsonValue("阳历")
   standard("标准时间"),
-  @JsonValue("iana")
-  IANA("当地时间"),
+  @JsonValue("移除夏令时")
+  removeDST("移除夏令时"),
   @JsonValue("平太阳时")
   meanSolar("平太阳时"),
   @JsonValue("真太阳时")
@@ -46,163 +44,261 @@ enum EnumDatetimeType {
 }
 
 @JsonSerializable()
-class QueryDateTime {
+// @JsonSerializable(explicitToJson: true)
+class QueryDatetimeModel extends Equatable {
+  // extends DataClass with EquatableMixin {
+  // 公共基础属性
+  final String uuid;
+  final DateTime createdAt;
   final EnumDatetimeType type;
 
+  // 差异化属性（声明为可空）
+  final int? hourAdjusted;  // RemoveDST特有
+  final Location? location; // MeanSolar特有
+  final Coordinates? coordinates; // TrueSolar特有
+
+  // 完整属性列表
+  final String queryUuid;
+  final DateTime? lastUpdatedAt;
+  final DateTime? deletedAt;
+  final String timezoneStr;
   final DateTime datetime;
-  final EightChars bazi;
-  QueryDateTime(
-      {required this.type, required this.datetime, required this.bazi});
+  // final EightChars bazi;
+  final JiaZi yearJiaZi;
+  final JiaZi monthJiaZi;
+  final JiaZi dayJiaZi;
+  final JiaZi timeJiaZi;
 
-  factory QueryDateTime.fromJson(Map<String, dynamic> json) =>
-      _$QueryDateTimeFromJson(json);
+  EightChars get bazi => EightChars(
+      year: yearJiaZi,
+      month: monthJiaZi,
+      day: dayJiaZi,
+      time: timeJiaZi,
+  );
+  final String lunarMonth;
+  final String lunarDay;
+  final JieQiInfo jieQiInfo;
+  final bool isManual;
+  final bool isDst;
 
-  Map<String, dynamic> toJson() => _$QueryDateTimeToJson(this);
-}
 
-@JsonSerializable()
-class NormalQueryDateTime extends QueryDateTime {
-  NormalQueryDateTime({
+
+  // 统一私有构造函数
+  const QueryDatetimeModel({
+    required this.uuid,
+    required this.queryUuid,
+    required this.createdAt,
+    required this.type,
+    this.hourAdjusted,
+    this.location,
+    this.coordinates,
+    required this.timezoneStr,
+    required this.datetime,
+    required this.yearJiaZi,
+    required this.monthJiaZi,
+    required this.dayJiaZi,
+    required this.timeJiaZi,
+    required this.lunarMonth,
+    required this.lunarDay,
+    required this.jieQiInfo,
+    required this.isManual,
+    required this.isDst,
+    this.lastUpdatedAt,
+    this.deletedAt,
+  });
+
+  /// 标准时间工厂方法
+  factory QueryDatetimeModel.standard({
+    required String uuid,
+    required String queryUuid,
+    required DateTime createdAt,
+    required String timezoneStr,
     required DateTime datetime,
     required EightChars bazi,
-  }) : super(datetime: datetime, bazi: bazi, type: EnumDatetimeType.standard);
-  factory NormalQueryDateTime.fromJson(Map<String, dynamic> json) =>
-      _$NormalQueryDateTimeFromJson(json);
+    required String lunarMonth,
+    required String lunarDay,
+    required JieQiInfo jieQiInfo,
+    bool isDst = false,
+  }) {
+    return QueryDatetimeModel(
+      type: EnumDatetimeType.standard,
+      uuid: uuid,
+      queryUuid: queryUuid,
+      createdAt: createdAt,
+      timezoneStr: timezoneStr,
+      datetime: datetime,
+      yearJiaZi:bazi.year,
+      monthJiaZi: bazi.month,
+      dayJiaZi:bazi.day,
+      timeJiaZi:bazi.time,
 
-  @override
-  Map<String, dynamic> toJson() => _$NormalQueryDateTimeToJson(this);
-}
-
-@JsonSerializable()
-class TZNormalQueryDateTime extends QueryDateTime {
-  late final String timezoneName;
-  tz.TZDateTime get tzDateTime =>
-      tz.TZDateTime.from(datetime, tz.getLocation(timezoneName));
-
-  // final String
-  TZNormalQueryDateTime({
-    required this.timezoneName,
-    required DateTime datetime,
-    required EightChars bazi,
-  }) : super(datetime: datetime, bazi: bazi, type: EnumDatetimeType.IANA) {
-    // timezoneLocation = tz.getLocation(timezoneName);
+      lunarMonth: lunarMonth,
+      lunarDay: lunarDay,
+      jieQiInfo: jieQiInfo,
+      isManual: false,
+      isDst: isDst,
+    );
   }
 
-  factory TZNormalQueryDateTime.fromJson(Map<String, dynamic> json) =>
-      _$TZNormalQueryDateTimeFromJson(json);
-
-  @override
-  Map<String, dynamic> toJson() => _$TZNormalQueryDateTimeToJson(this);
-}
-
-@JsonSerializable()
-class MeanSolarQueryDateTime extends QueryDateTime {
-  late final Location location;
-  Coordinates get coordinates => location.coordinates;
-
-  MeanSolarQueryDateTime({
-    required this.location,
+  /// 移除夏令时工厂方法
+  factory QueryDatetimeModel.removeDST({
+    required String uuid,
+    required String queryUuid,
+    required DateTime createdAt,
+    required int hourAdjusted,
+    required String timezoneStr,
     required DateTime datetime,
     required EightChars bazi,
-  }) : super(datetime: datetime, bazi: bazi, type: EnumDatetimeType.meanSolar);
+    required String lunarMonth,
+    required String lunarDay,
+    required JieQiInfo jieQiInfo,
+  }) {
+    assert(hourAdjusted != 0, "移除夏令时必须提供有效的hourAdjusted参数");
 
-  factory MeanSolarQueryDateTime.fromJson(Map<String, dynamic> json) =>
-      _$MeanSolarQueryDateTimeFromJson(json);
+    return QueryDatetimeModel(
+      type: EnumDatetimeType.removeDST,
+      uuid: uuid,
+      queryUuid: queryUuid,
+      createdAt: createdAt,
+      hourAdjusted: hourAdjusted,
+      timezoneStr: timezoneStr,
+      datetime: datetime,
 
-  @override
-  Map<String, dynamic> toJson() => _$MeanSolarQueryDateTimeToJson(this);
-}
+      yearJiaZi:bazi.year,
+      monthJiaZi: bazi.month,
+      dayJiaZi:bazi.day,
+      timeJiaZi:bazi.time,
+      lunarMonth: lunarMonth,
+      lunarDay: lunarDay,
+      jieQiInfo: jieQiInfo,
+      isManual: false,
+      isDst: false,
+    );
+  }
 
-@JsonSerializable()
-class TrueSolarQueryDateTime extends QueryDateTime {
-  final Coordinates coordinates;
-  TrueSolarQueryDateTime({
-    required this.coordinates,
+  /// 平太阳时工厂方法
+  factory QueryDatetimeModel.meanSolar({
+    required String uuid,
+    required String queryUuid,
+    required DateTime createdAt,
+    required Location location,
+    required String timezoneStr,
     required DateTime datetime,
     required EightChars bazi,
-  }) : super(datetime: datetime, bazi: bazi, type: EnumDatetimeType.trueSolar);
-  factory TrueSolarQueryDateTime.fromJson(Map<String, dynamic> json) =>
-      _$TrueSolarQueryDateTimeFromJson(json);
+    required String lunarMonth,
+    required String lunarDay,
+    required JieQiInfo jieQiInfo,
+  }) {
+    return QueryDatetimeModel(
+      type: EnumDatetimeType.meanSolar,
+      uuid: uuid,
+      queryUuid: queryUuid,
+      createdAt: createdAt,
+      location: location,
+      timezoneStr: timezoneStr,
+      datetime: datetime,
+      lunarMonth: lunarMonth,
+      lunarDay: lunarDay,
+      jieQiInfo: jieQiInfo,
+      isManual: false,
+      isDst: false,
+      yearJiaZi: bazi.year,
+      monthJiaZi: bazi.month,
+      dayJiaZi: bazi.day,
+      timeJiaZi: bazi.time,
+    );
+  }
+
+  /// 真太阳时工厂方法
+  factory QueryDatetimeModel.trueSolar({
+    required String uuid,
+    required String queryUuid,
+    required DateTime createdAt,
+    required Coordinates coordinates,
+    required String timezoneStr,
+    required DateTime datetime,
+    required EightChars bazi,
+    required String lunarMonth,
+    required String lunarDay,
+    required JieQiInfo jieQiInfo,
+  }) {
+    return QueryDatetimeModel(
+      type: EnumDatetimeType.trueSolar,
+      uuid: uuid,
+      queryUuid: queryUuid,
+      createdAt: createdAt,
+      coordinates: coordinates,
+      timezoneStr: timezoneStr,
+      datetime: datetime,
+      yearJiaZi: bazi.year,
+      monthJiaZi: bazi.month,
+      dayJiaZi: bazi.day,
+      timeJiaZi: bazi.time,
+      lunarMonth: lunarMonth,
+      lunarDay: lunarDay,
+      jieQiInfo: jieQiInfo,
+      isManual: false,
+      isDst: false,
+    );
+  }
 
   @override
-  Map<String, dynamic> toJson() => _$TrueSolarQueryDateTimeToJson(this);
+  List<Object?> get props => [
+    uuid,
+    type,
+    createdAt,
+   bazi
+  ];
+
+  // clone
+  QueryDatetimeModel clone(
+      {
+        String? uuid,
+        String? queryUuid,
+        DateTime? createdAt,
+        EnumDatetimeType? type,
+        int? hourAdjusted,
+        Location? location,
+        Coordinates? coordinates,
+        String? timezoneStr,
+        DateTime? datetime,
+        EightChars? bazi,
+        String? lunarMonth,
+        String? lunarDay,
+        JieQiInfo? jieQiInfo,
+        bool? isDst,
+        bool? isManual,
+      }
+      ) {
+    return QueryDatetimeModel(
+      uuid: uuid ?? this.uuid,
+      queryUuid: queryUuid ?? this.queryUuid,
+      createdAt: createdAt ?? this.createdAt,
+      type: type ?? this.type,
+      hourAdjusted: hourAdjusted ?? this.hourAdjusted,
+      location: location ?? this.location,
+      coordinates: coordinates ?? this.coordinates,
+      timezoneStr: timezoneStr ?? this.timezoneStr,
+      datetime: datetime ?? this.datetime,
+      yearJiaZi: yearJiaZi,
+      monthJiaZi: monthJiaZi,
+      dayJiaZi: dayJiaZi,
+      timeJiaZi: timeJiaZi,
+      lunarMonth: lunarMonth ?? this.lunarMonth,
+      lunarDay: lunarDay ?? this.lunarDay,
+      jieQiInfo: jieQiInfo ?? this.jieQiInfo,
+      isDst: isDst ?? this.isDst,
+      isManual: isManual ?? this.isManual,
+      lastUpdatedAt: lastUpdatedAt,
+      deletedAt: deletedAt,
+    );
+  }
+
+
+  factory QueryDatetimeModel.fromJson(Map<String, dynamic> json) =>
+      _$QueryDatetimeModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$QueryDatetimeModelToJson(this);
+
+
 }
-
-// class QueryDatetime {
-//   // 1. 普通时间，需要明确时区，使用UTC自动处理夏令时问题，如：中国1986-1991
-//   // 1.1. 明确的时区字段
-//   final DateTime datetime;
-//   final String timezone;
-
-//   // 2. 农历日期，普通时间进行的转换，如：`甲子年 二月廿三`
-//   final int traditionalMonth;
-//   final int traditionalDay;
-
-//   String get traditionalYear => bazi.year.ganZhiStr;
-//   String get traditionalTime => bazi.hour.diZhi.value;
-
-//   // 3. 八字
-//   final EightChars bazi;
-
-//   // 平太阳时
-//   // 平太阳时=标准时间+4×(当地经度−120°）分钟
-//   final DateTime meanSolar;
-//   final EightChars meanSolarBaZi;
-
-//   // 观测点经纬度
-
-//   // 真太阳时
-//   final DateTime trueSolar;
-//   final EightChars trueSolarBaZi;
-
-//   QueryDatetime({
-//     required this.datetime,
-//     required this.timezone,
-//     required this.traditionalMonth,
-//     required this.traditionalDay,
-//     required this.bazi,
-//     required this.meanSolar,
-//     required this.meanSolarBaZi,
-//     required this.trueSolar,
-//     required this.trueSolarBaZi,
-//   });
-// }
-
-// class QueryDatetimeFactory {
-//   static QueryDatetime createByDateTime(
-//       DateTime datetime, String timezone, Coordinates coordinates) {
-//     Tuple4<EightChars, int, int, Phenology> tuple4 =
-//         SolarLunarDateTimeHelper.getEighthChars(datetime);
-
-//     EightChars eightChars = tuple4.item1;
-//     int traditionalMonth = tuple4.item2;
-//     int traditionalDay = tuple4.item3;
-//     Phenology phenology = tuple4.item4;
-//     SolarTimeCalculator solarTimeCalculator = SolarTimeCalculator(
-//       dateTime: datetime,
-//       longitude: coordinates.longitude,
-//     );
-
-//     DateTime meanSolar = solarTimeCalculator.meanSolarTime;
-//     EightChars meanSolarEightChars =
-//         SolarLunarDateTimeHelper.getEighthChars(meanSolar).item1;
-//     DateTime trueSolar = solarTimeCalculator.getTrueSolarTime();
-//     EightChars trueSolarEightChars =
-//         SolarLunarDateTimeHelper.getEighthChars(trueSolar).item1;
-
-//     return QueryDatetime(
-//         datetime: datetime,
-//         timezone: timezone,
-//         traditionalMonth: traditionalMonth,
-//         traditionalDay: traditionalDay,
-//         bazi: eightChars,
-//         meanSolar: meanSolar,
-//         meanSolarBaZi: meanSolarEightChars,
-//         trueSolar: trueSolar,
-//         trueSolarBaZi: trueSolarEightChars);
-//     // return QueryDatetime(
-//     //   datetime: datetime,
-//     //   timezone: timezone,
-//     // );
-//   }
-// }
