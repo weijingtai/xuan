@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:auto_size_text/auto_size_text.dart';
@@ -7,30 +8,2608 @@ import 'package:common/datamodel/basic_person_info.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:common/models/sp_location_datamodel.dart';
 import 'package:common/models/sp_timezone_datamodel.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_input_card.dart';
 import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/web.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:slide_switcher/slide_switcher.dart';
 import 'package:timezone/timezone.dart' as tz;
+import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 // import 'package:timezone_dropdown/timezone_dropdown.dart';
 // import 'package:timezone/data/latest.dart' as tz;
 
+import '../datamodel/location.dart';
 import '../enums/enum_gender.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
-import '../models/query_datetime.dart';
+import '../models/divination_datetime.dart';
 import 'eight_chars_selection_card.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';
+import 'timezone_location_viewmodel.dart';
+
+class QueryTimeInputCard extends StatefulWidget {
+  // final String defaultTimeZone;
+  final PageType defaultPageType;
+  final AppFeatureModule appFeatureModule;
+  final String defaultTimezone;
+  final ValueNotifier<
+          List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>>?>
+      selectableCardsNotifier;
+  const QueryTimeInputCard(
+      {super.key,
+      // required this.defaultTimeZone,
+      required this.defaultPageType,
+      required this.selectableCardsNotifier,
+      required this.defaultTimezone,
+      this.appFeatureModule = AppFeatureModule.Golabel});
+
+  @override
+  State<QueryTimeInputCard> createState() => _QueryTimeInputCardState();
+}
+
+class _QueryTimeInputCardState extends State<QueryTimeInputCard>
+    with SingleTickerProviderStateMixin {
+  TimezoneLocationViewModel get _timezoneLocationViewModel =>
+      context.read<TimezoneLocationViewModel>();
+  final GlobalKey isDSTShakeMeKey = GlobalKey<ShakeWidgetState>();
+  final GlobalKey isGlobalTimezoneChangedShakeMeKey =
+      GlobalKey<ShakeWidgetState>();
+  late AnimationController _controller;
+
+  late PageController _pageController;
+
+  late TextEditingController _nameController;
+
+  late final ValueNotifier<PageType> _tabSelectNotifier;
+
+  late final ValueNotifier<bool> showTimezoneAtTitleNotifier =
+      ValueNotifier(false);
+
+  // late final ValueNotifier<bool> _isSeersLocationNotifier;
+
+  final CommonLogger _commonLogger = CommonLogger();
+  Logger get l => _commonLogger.logger;
+  // late TabController _tabController;
+  // late final ValueNotifier<Coordinates?> _coordinatesValueNotifier;
+
+  DateFormat timeFormat = DateFormat("HH:mm");
+  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
+  DateFormat dateTimeFormat = DateFormat("yyyy-MM-dd HH:mm");
+
+  final ValueNotifier<bool> _isDivinationQuestionNotifier =
+      ValueNotifier<bool>(true);
+  final ValueNotifier<String?> _inputQuestionStrValueNotifier =
+      ValueNotifier<String?>(null);
+  final ValueNotifier<bool> _isExpandedNotifier = ValueNotifier<bool>(false);
+
+  final ValueNotifier<String?> _inputQuestionDetailValueNotifier =
+      ValueNotifier<String?>(null);
+
+  late final ValueNotifier<Tuple2<String, bool>> _nowClockTimeNotifier;
+  late final Timer _nowClockTimer;
+  late final DateFormat secondsFormat;
+
+  @override
+  void initState() {
+    super.initState();
+    _timezoneLocationViewModel.load();
+    // _timezoneLocationViewModel = TimezoneLocationViewModel(
+    //   appFeatureModule: widget.appFeatureModule,
+    // )..load();
+
+    String queryUuid = Uuid().v4();
+    _nameController = TextEditingController();
+    _controller = AnimationController(vsync: this);
+    _tabSelectNotifier = ValueNotifier<PageType>(widget.defaultPageType);
+    _tabSelectNotifier.addListener(() {
+      _pageController.animateToPage(_tabSelectNotifier.value.pageIndex,
+          duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
+      // _pageController.jumpToPage(_tabSelectNotifier.value.pageIndex);
+    });
+
+    _timezoneLocationViewModel.isDefaultTimezoneNotifier.addListener(() {
+      showTimezoneAtTitleNotifier.value =
+          _timezoneLocationViewModel.isDefaultTimezoneNotifier.value;
+    });
+    _pageController =
+        PageController(initialPage: _tabSelectNotifier.value.pageIndex);
+
+    // _removeDSTTimeNotifier = ValueNotifier(false);
+
+    // 监听事件、以及时区变化，实时验算是否为夏令时时间
+    // _DSTBirthTimeNotifier = ValueNotifier(null);
+    // _selectedBirthTimeNotifier = ValueNotifier(null)
+    _timezoneLocationViewModel.selectedTimeNotifier.addListener(() {
+      setNormalAndDSTSelectableCards(queryUuid);
+    });
+    _timezoneLocationViewModel.timezoneNotifier.addListener(() {
+      setNormalAndDSTSelectableCards(queryUuid);
+    });
+
+    _timezoneLocationViewModel.selectedLocationNotifier.addListener(() {
+      Location? selectedLocation =
+          _timezoneLocationViewModel.selectedLocationNotifier.value;
+      if (selectedLocation != null) {
+        setMeanSolarAndTrueSolarSelectableCards(
+            queryUuid, false, selectedLocation);
+        if (_timezoneLocationViewModel
+                .selectedLocationNotifier.value!.coordinates !=
+            null) {
+          l.i("手动校准经纬为 ${_timezoneLocationViewModel.selectedLocationNotifier.value!.coordinates}");
+          setMeanSolarAndTrueSolarSelectableCards(
+              queryUuid, true, selectedLocation);
+        }
+      } else {
+        // 当清除地理位置之后，需要已经存在的card
+        if (widget.selectableCardsNotifier.value != null) {
+          widget.selectableCardsNotifier.value =
+              widget.selectableCardsNotifier.value!.where((e) {
+            return (e.key == EnumDatetimeType.standard ||
+                    e.key == EnumDatetimeType.removeDST) &&
+                !e.value.isManualCalibration;
+          }).toList();
+        }
+      }
+    });
+
+    _nowClockTimeNotifier =
+        ValueNotifier<Tuple2<String, bool>>(getNowClockTime());
+
+    _nowClockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_nowClockTimer.isActive) {
+        _nowClockTimeNotifier.value = getNowClockTime();
+      }
+    });
+    _timezoneLocationViewModel.isDSTNotifier.addListener(() {
+      if (_timezoneLocationViewModel.isDSTNotifier.value) {
+        if (isDSTShakeMeKey.currentState != null &&
+            isDSTShakeMeKey.currentState is ShakeWidgetState) {
+          (isDSTShakeMeKey.currentState as ShakeWidgetState).shake();
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _nameController.dispose();
+    _pageController.dispose();
+
+    showTimezoneAtTitleNotifier.dispose();
+    // _isSeersLocationNotifier.dispose();
+    _isDivinationQuestionNotifier.dispose();
+    _inputQuestionStrValueNotifier.dispose();
+    _inputQuestionDetailValueNotifier.dispose();
+    _isExpandedNotifier.dispose();
+    _nowClockTimeNotifier.dispose();
+    _nowClockTimer.cancel();
+
+    super.dispose();
+  }
+
+  // @return:
+  // Tuple2<String,bool> 第一个元素为时间字符串，第二个元素为是否为夏令时
+  Tuple2<String, bool> getNowClockTime() {
+    // return Tuple2("ok", true);
+    DateFormat secondsFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    tz.TZDateTime tzSelectedBirthTime = tz.TZDateTime.from(
+        DateTime.now(),
+        tz.getLocation(context.read<TimezoneLocationViewModel>().timezone ??
+            widget.defaultTimezone));
+
+    return Tuple2(secondsFormat.format(tzSelectedBirthTime.toDateTime()),
+        tzSelectedBirthTime.timeZone.isDst);
+  }
+
+  void setNormalAndDSTSelectableCards(String queryUuid) {
+    if (_timezoneLocationViewModel.selectedDatetime != null &&
+        _timezoneLocationViewModel.timezoneNotifier.value != null) {
+      // if (widget.selectableCardsNotifier.value?.isNotEmpty ?? false){
+      // }
+      // widget.selectableCardsNotifier.value = [];
+      List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>> result = [];
+
+      String timezoneStr = _timezoneLocationViewModel.timezoneNotifier.value!;
+      DateTime selectedBirthTime = _timezoneLocationViewModel.selectedDatetime!;
+      // check is summary DST
+      final tzSelectedBirthTime =
+          tz.TZDateTime.from(selectedBirthTime, tz.getLocation(timezoneStr));
+      final isDST = tzSelectedBirthTime.timeZone.isDst;
+      final DivinationDatetimeModel normalQueryDateTime =
+          SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
+              queryUuid,
+              selectedBirthTime,
+              timezoneStr,
+              isDST,
+              context
+                  .read<TimezoneLocationViewModel>()
+                  .isSeerLocationNotifier
+                  .value);
+      result.add(MapEntry(EnumDatetimeType.standard, normalQueryDateTime));
+      if (isDST) {
+        // 当前为 DST 时间
+        // 将 selectedBirthTime 转换为非DST时间
+        DateTime nonDSTDateTime =
+            selectedBirthTime.subtract(Duration(hours: 1));
+        DivinationDatetimeModel removeDSTQueryDateTime =
+            SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(
+                queryUuid,
+                nonDSTDateTime,
+                timezoneStr,
+                -1,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        result
+            .add(MapEntry(EnumDatetimeType.removeDST, removeDSTQueryDateTime));
+      }
+      widget.selectableCardsNotifier.value = result;
+    }
+    if (_timezoneLocationViewModel.selectedDatetime == null &&
+        (widget.selectableCardsNotifier.value?.isNotEmpty ?? false)) {
+      widget.selectableCardsNotifier.value = [];
+    }
+  }
+
+  void setMeanSolarAndTrueSolarSelectableCards(
+      String queryUuid, bool isToManual, Location? location) {
+    if (location != null) {
+      EnumDatetimeType meanType = EnumDatetimeType.meanSolar;
+      EnumDatetimeType trueType = EnumDatetimeType.trueSolar;
+      l.i("set meanSolar datetime");
+      // 如果存在前一个 location 的八字，则先移除
+      if ((widget.selectableCardsNotifier.value?.isNotEmpty ?? false)) {
+        if (widget.selectableCardsNotifier.value!
+            .map((e) => e.key)
+            .contains(meanType)) {
+          l.i("there is a ${meanType.name} datetime in selectable card list, remove it before add new");
+          widget.selectableCardsNotifier.value!
+              .removeWhere((element) => element.key == trueType);
+        }
+        if (widget.selectableCardsNotifier.value!
+            .map((e) => e.key)
+            .contains(trueType)) {
+          l.i("there is a ${trueType.name} datetime in selectable card list, remove it before add new");
+          widget.selectableCardsNotifier.value!
+              .removeWhere((element) => element.key == trueType);
+        }
+      }
+
+      if (_timezoneLocationViewModel.selectedDatetime != null &&
+          _timezoneLocationViewModel.timezoneNotifier.value != null) {
+        final tzDateTime = tz.TZDateTime.from(
+            _timezoneLocationViewModel.selectedDatetime!,
+            tz.getLocation(_timezoneLocationViewModel.timezoneNotifier.value!));
+        // print("selectedBirthTime: ${_selectedBirthTimeNotifier.value}");
+        final meanSolarDateTime =
+            SolarLunarDateTimeHelper.calculateMeanSolarQueryDateTimeInfo(
+                queryUuid,
+                tzDateTime,
+                location.address!,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        final trueSolarDateTime =
+            SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
+                queryUuid,
+                meanSolarDateTime.datetime,
+                _timezoneLocationViewModel.timezoneNotifier.value!,
+                location.coordinates!,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        l.i("add new ${isToManual ? "manualMeanSolar" : "meanSolar"} to selectable card");
+        l.t(meanSolarDateTime);
+        l.i("add new ${isToManual ? "manualTrueSolar" : "trueSolar"} to selectable card");
+        l.t(trueSolarDateTime);
+
+        List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>>
+            clonedEntries =
+            widget.selectableCardsNotifier.value!.map((e) => e).toList();
+        widget.selectableCardsNotifier.value = clonedEntries
+          ..addAll([
+            MapEntry(
+                meanType,
+                isToManual
+                    ? meanSolarDateTime.clone(isManualCalibration: true)
+                    : meanSolarDateTime),
+            MapEntry(
+                trueType,
+                isToManual
+                    ? trueSolarDateTime.clone(isManualCalibration: true)
+                    : trueSolarDateTime)
+          ]);
+        // widget.selectableCardsNotifier.value!..add(MapEntry(EnumDatetimeType.meanSolar, meanSolarDateTime));
+      }
+    }
+  }
+
+  // 返回isDefaultTimezone 结果
+  Future<bool> saveLocationDataModel(
+      SPLocationDataModel locationDataModel) async {
+    l.i("save ${locationDataModel.spKey} to SharedPreference");
+    final sp = await SharedPreferences.getInstance();
+    bool result = await sp.setString(
+        locationDataModel.spKey, jsonEncode(locationDataModel.toJson()));
+    if (result) {
+      l.i("save ${locationDataModel.spKey} success.");
+    } else {
+      l.e("save ${locationDataModel.spKey} failed.");
+    }
+    return true;
+  }
+
+  Future<bool> removeLocationDataModel(
+      SPLocationDataModel locationDataModel) async {
+    l.i("save ${locationDataModel.spKey} to SharedPreference");
+    final sp = await SharedPreferences.getInstance();
+
+    bool result = await sp.remove(locationDataModel.spKey);
+    if (result) {
+      l.i("remove ${locationDataModel.spKey} success.");
+    } else {
+      l.e("remove ${locationDataModel.spKey} failed.");
+    }
+    return true;
+  }
+
+  Map<EnumDatetimeType, DivinationDatetimeModel> _mapper = {};
+  void calculateEightChars(String queryUuid, DateTime? datetime) {
+    if (datetime != null) {
+      if (_timezoneLocationViewModel.isDSTNotifier.value) {
+        l.i("出生时间为夏令时时间，根据夏令时时间计算 八字等信息, 同时给出移除夏令时后的时间");
+        final dstDateTime =
+            SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
+                queryUuid,
+                datetime,
+                _timezoneLocationViewModel.timezoneNotifier.value!,
+                true,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        final removedDSTDateTime =
+            SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(
+                queryUuid,
+                datetime,
+                _timezoneLocationViewModel.timezoneNotifier.value!,
+                -1,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        _mapper[EnumDatetimeType.removeDST] = removedDSTDateTime;
+        _mapper[EnumDatetimeType.standard] = dstDateTime;
+      } else {
+        l.i("当前为非夏令时");
+        final normalDateTimeInfo =
+            SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
+                queryUuid,
+                datetime,
+                _timezoneLocationViewModel.timezoneNotifier.value!,
+                false,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        _mapper[EnumDatetimeType.standard] = normalDateTimeInfo;
+      }
+      calculateEightCharByLocation(
+        queryUuid,
+        datetime,
+        _timezoneLocationViewModel.timezoneNotifier.value!,
+        _timezoneLocationViewModel.selectedLocationNotifier.value,
+      );
+    }
+  }
+
+  void calculateEightCharByLocation(String queryUuid, DateTime datetime,
+      String timezoneStr, Location? location) {
+    // 检查用户是否选择了"出生地"，如果选择出生地
+
+    if (location != null) {
+      final tz.TZDateTime result =
+          tz.TZDateTime.from(datetime, tz.getLocation(timezoneStr));
+      final meanDateTimeInfo =
+          SolarLunarDateTimeHelper.calculateMeanSolarQueryDateTimeInfo(
+              queryUuid,
+              result,
+              location.address!,
+              context
+                  .read<TimezoneLocationViewModel>()
+                  .isSeerLocationNotifier
+                  .value);
+      _mapper[EnumDatetimeType.meanSolar] = meanDateTimeInfo;
+      if (location.address!.area != null) {
+        final normalDateTimeInfo =
+            SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
+                queryUuid,
+                meanDateTimeInfo.datetime,
+                timezoneStr,
+                location.coordinates!,
+                context
+                    .read<TimezoneLocationViewModel>()
+                    .isSeerLocationNotifier
+                    .value);
+        _mapper[EnumDatetimeType.trueSolar] = normalDateTimeInfo;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _mainContainer();
+  }
+
+  Widget _mainContainer() {
+    double smallRadius = 8;
+    double largeRadius = 24;
+
+    // 获取屏幕尺寸信息
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+
+    // 计算合适的尺寸
+    final contentWidth = screenWidth > 600 ? 512.0 : screenWidth * 0.9;
+    final contentPadding = screenWidth > 600 ? 16.0 : 8.0;
+
+    return Container(
+      width: contentWidth,
+      padding: EdgeInsets.symmetric(
+          horizontal: contentPadding, vertical: contentPadding),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: contentWidth - (contentPadding * 2),
+            child: ValueListenableBuilder(
+              valueListenable: _tabSelectNotifier,
+              builder: (ctx, selectedTabBarButton, child) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: PageType.values
+                      .map((e) => _buildTabBarButton(
+                          e, smallRadius, selectedTabBarButton))
+                      .toList(),
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder<PageType>(
+            valueListenable: _tabSelectNotifier,
+            builder: (ctx, selectedTabBarButton, child) {
+              return AnimatedContainer(
+                duration: Duration(milliseconds: 300),
+                width: contentWidth - (contentPadding * 2),
+                height: selectedTabBarButton == PageType.datetime ? 480 : 80,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.only(
+                    topRight: Radius.circular(largeRadius),
+                    bottomLeft: Radius.circular(largeRadius),
+                    bottomRight: Radius.circular(largeRadius),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(10),
+                      offset: Offset(1, 2),
+                      blurRadius: 2,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                padding: EdgeInsets.symmetric(horizontal: contentPadding),
+                child: PageView(
+                  controller: _pageController,
+                  clipBehavior: Clip.antiAlias,
+                  physics: BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                    decelerationRate: ScrollDecelerationRate.fast,
+                  ),
+                  onPageChanged: (index) {
+                    _tabSelectNotifier.value = PageType.getFromPageIndex(index);
+                  },
+                  children: [
+                    _buildTimeSelectionContent(),
+                    const Center(child: Text('Content of Tab 2')),
+                    _eightCharsPage()
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  @deprecated
+  Widget _mainContainer2() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 512 - 48,
+          height: 480,
+          child: timeTab(512 - 48),
+        ),
+        // SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildTabBarButton(
+      PageType type, double smallRadius, PageType selected) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 400),
+      height: 32,
+      width: 64,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade400,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(smallRadius),
+          topRight: Radius.circular(smallRadius),
+        ),
+        boxShadow: selected == type
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 2,
+                  spreadRadius: 2,
+                  offset: Offset(2, 2),
+                ),
+              ]
+            : [],
+      ),
+      child: Material(
+        child: Ink(
+          child: InkWell(
+            splashColor: Colors.blue.withOpacity(0.3),
+            highlightColor: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(smallRadius),
+              topRight: Radius.circular(smallRadius),
+            ),
+            onTap: () {
+              _tabSelectNotifier.value = type;
+              _pageController.animateToPage(
+                type.pageIndex,
+                duration: Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+              );
+            },
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 400),
+              alignment: Alignment.center,
+              child: Text(
+                _getTabBarButtonText(type),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              decoration: BoxDecoration(
+                color: selected == type ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(smallRadius),
+                  topRight: Radius.circular(smallRadius),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget timeTab(double width) {
+    return Column(
+      children: <Widget>[
+        ValueListenableBuilder(
+            valueListenable: _tabSelectNotifier,
+            builder: (ctx, tabIndex, _) {
+              return SlideSwitcher(
+                initialIndex: tabIndex.index,
+                onSelect: (index) {
+                  _tabSelectNotifier.value = PageType.getFromPageIndex(index);
+                  _pageController.animateToPage(index,
+                      duration: Duration(milliseconds: 400),
+                      curve: Curves.bounceIn);
+                },
+                containerHeight: 48,
+                containerWight: width,
+                indents: 4,
+                // containerColor: const Color(0xffe4e5eb),
+                slidersColors: const [Color(0xfff7f5f7)],
+                containerBoxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.2),
+                    blurRadius: 2,
+                    spreadRadius: 4,
+                  )
+                ],
+                children: [
+                  Text(
+                    _getTabBarButtonText(PageType.datetime),
+                    style: tabIndex != PageType.datetime
+                        ? _getSwitcherInactivatedStyle()
+                        : _getSwitcherActivatedStyle(Colors.blueAccent),
+                  ),
+                  Text(
+                    _getTabBarButtonText(PageType.chineseTraditional),
+                    style: tabIndex != PageType.chineseTraditional
+                        ? _getSwitcherInactivatedStyle()
+                        : _getSwitcherActivatedStyle(Colors.blueAccent),
+                  ),
+                  Text(
+                    _getTabBarButtonText(PageType.eightChars),
+                    style: tabIndex != PageType.eightChars
+                        ? _getSwitcherInactivatedStyle()
+                        : _getSwitcherActivatedStyle(Colors.blueAccent),
+                  ),
+                ],
+              );
+            }),
+        SizedBox(height: 24),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            // onPageChanged: (index) {
+            // _tabSelectNotifier.value = PageType.getFromPageIndex(index);
+            // },
+            children: <Widget>[
+              // Center(child: Text('Content of Tab 1')),
+              _buildTimeSelectionContent(),
+              const Center(child: Text('Content of Tab 2')),
+              _eightCharsPage()
+            ],
+          ),
+        ),
+        // SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _eightCharsPage() {
+    return EightCharsInput(
+      initEightChars: null,
+    );
+  }
+
+  String _getTabBarButtonText(PageType type) {
+    switch (type) {
+      case PageType.datetime:
+        return "阳历";
+      case PageType.chineseTraditional:
+        return "农历";
+      case PageType.eightChars:
+        return "八字";
+    }
+  }
+
+  TextStyle locationTextStyle = const TextStyle(
+      height: 1,
+      fontSize: 18,
+      color: Colors.black87,
+      fontWeight: FontWeight.w600,
+      fontFamily: "NotoSansSC");
+
+  TextStyle lngLatTextStyle = const TextStyle(
+      fontSize: 14, color: Colors.grey, fontFamily: "NotoSansSC");
+
+  TextStyle titleTextStyle = const TextStyle(
+      fontWeight: FontWeight.w600,
+      fontSize: 16,
+      color: Colors.black87,
+      fontFamily: "NotoSansSC");
+  TextStyle warningSubtitleTextStyle = TextStyle(
+      color: Colors.amber[900]!.withAlpha(180),
+      fontSize: 14,
+      fontFamily: "NotoSansSC");
+
+  Widget _buildTimeSelectionContent() {
+    return Container(
+      alignment: Alignment.center,
+      child: CustomScrollView(
+        slivers: [
+          // timezoneSelectionContent(),
+          SliverToBoxAdapter(
+            child: buildSetTimezoneContentV1(),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.only(top: 12),
+          ),
+          SliverToBoxAdapter(
+            child: buildDateTimeSelectionContent(),
+          ),
+
+          SliverPadding(
+            padding: EdgeInsets.only(top: 12),
+          ),
+          SliverToBoxAdapter(
+            child: buildLocationSelectionContentWithMine(300),
+          ),
+          SliverToBoxAdapter(
+            child: ValueListenableBuilder<Location?>(
+                valueListenable: context
+                    .read<TimezoneLocationViewModel>()
+                    .selectedLocationNotifier,
+                builder: (ctx, selectedLocation, _) =>
+                    buildSelectableLocationList(
+                      300,
+                      selectedLocation,
+                    )),
+          ),
+          // buildLocationSelectionContent(),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSetAtDefaultLocationContent() {
+    return Transform.scale(
+        scale: 0.8,
+        child: InkWell(
+          child: Row(
+            children: [
+              Checkbox(
+                  value: false,
+                  onChanged: (newVal) async {
+                    // await _timezoneLocationViewModel.setAsDefaultLocation();
+                    // _timezoneLocationViewModel.setAsDefaultLocation();
+                  }),
+              Text(
+                "记住这个位置",
+                style: TextStyle(height: 1, fontSize: 16, color: Colors.grey),
+              ),
+            ],
+          ),
+        ));
+    bool setAsDefault = false;
+    return Row(
+      children: [
+        // Transform.scale(
+        // scale: 0.6,
+        // child: Checkbox(value: setAsDefault, onChanged: (newVal) async {})),
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.all(Radius.circular(4)),
+              border: Border.all(color: Colors.teal, width: 1),
+              color: Colors.teal),
+          child: Icon(Icons.check, size: 12, color: Colors.white),
+        ),
+        SizedBox(
+          width: 2,
+        ),
+        Text(
+          "记住这个位置",
+          style:
+              TextStyle(height: 1, fontSize: 12, color: Colors.grey.shade600),
+        )
+      ],
+    );
+  }
+
+  ValueNotifier<bool> isEditorNotifier = ValueNotifier(false);
+
+  Widget buildSelectMyLocation(double width) {
+    return ValueListenableBuilder<Location?>(
+        valueListenable:
+            context.read<TimezoneLocationViewModel>().myLocationNotifier,
+        builder: (ctx, location, child) {
+          if (location == null) {
+            // 没有“我的位置”, 展示为空
+            return SizedBox();
+          }
+          Address address = location.address!;
+          String defaultLocation;
+          if (address.countryId == 45 && address.regionId != 9) {
+            defaultLocation =
+                "${address.countryName}, ${address.province.name}";
+          } else {
+            defaultLocation = address.province.name;
+          }
+          if (address.city != null) {
+            defaultLocation += ", ${address.city!.name}";
+          }
+          if (address.area != null) {
+            defaultLocation += ", ${address.area!.name}";
+          }
+          return ValueListenableBuilder<bool>(
+              valueListenable:
+                  ctx.read<TimezoneLocationViewModel>().isSeerLocationNotifier,
+              builder: (ctx, isSeersLocation, _) {
+                return ValueListenableBuilder(
+                    valueListenable: isEditorNotifier,
+                    builder: (ctx, isEditor, _) {
+                      return InkWell(
+                          onTap: () {
+                            context
+                                .read<TimezoneLocationViewModel>()
+                                .usingSeersLocation(!isSeersLocation);
+                            // .value = !isSeersLocation;
+                            // _isSeersLocationNotifier.value =!isSeersLocation;
+                          },
+                          child: AnimatedContainer(
+                              duration: Duration(milliseconds: 400),
+                              width: width,
+                              height: isEditor ? 72 + 28 : 42,
+                              alignment: Alignment.center,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: isSeersLocation
+                                      ? Border.all(
+                                          color: Colors.black, width: 1)
+                                      : Border.all(
+                                          color: Colors.grey, width: 1),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black.withOpacity(0.1),
+                                        blurRadius: 2,
+                                        spreadRadius: 2)
+                                  ]),
+                              child: ClipRRect(
+                                  child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.center,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: Duration(milliseconds: 200),
+                                        width: 16,
+                                        height: 16,
+                                        padding: EdgeInsets.all(3),
+                                        decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: isSeersLocation
+                                                    ? Colors.black87
+                                                    : Colors.grey,
+                                                width: 1),
+                                            borderRadius:
+                                                BorderRadius.circular(8)),
+                                        child: AnimatedOpacity(
+                                          duration: Duration(milliseconds: 200),
+                                          opacity: isSeersLocation ? 1 : 0,
+                                          child: Container(
+                                            width: 10,
+                                            height: 10,
+                                            decoration: BoxDecoration(
+                                              color: isSeersLocation
+                                                  ? Colors.black
+                                                  : Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        width: 4,
+                                      ),
+                                      AnimatedDefaultTextStyle(
+                                        child: Text("我的位置"),
+                                        style: TextStyle(
+                                            fontSize: 14,
+                                            height: 1.2,
+                                            fontWeight: FontWeight.w600,
+                                            color: isSeersLocation
+                                                ? Colors.black87
+                                                : Colors.grey.shade600),
+                                        duration: Duration(milliseconds: 400),
+                                      ),
+                                      SizedBox(
+                                        width: 4,
+                                      ),
+                                      AnimatedDefaultTextStyle(
+                                          child: Text(defaultLocation),
+                                          style: TextStyle(
+                                              fontSize: 14,
+                                              height: 1.2,
+                                              color: isEditor
+                                                  ? Colors.transparent
+                                                  : Colors.black38),
+                                          duration:
+                                              Duration(milliseconds: 400)),
+                                      Expanded(child: SizedBox()),
+                                      InkWell(
+                                          child: Icon(Icons.edit_document,
+                                              size: 14,
+                                              color:
+                                                  Colors.blueAccent.shade100),
+                                          onTap: () {
+                                            isEditorNotifier.value = !isEditor;
+                                          })
+                                    ],
+                                  ),
+                                  if (isEditor) ...[
+                                    SizedBox(
+                                      height: 12,
+                                    ),
+                                    Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.center,
+                                      children: [
+                                        RichText(
+                                          text: TextSpan(
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  height: 1,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.black87),
+                                              text:
+                                                  "${location.address!.countryName} > ${location.address!.province.name}",
+                                              children: [
+                                                if (location.address!.city !=
+                                                    null)
+                                                  TextSpan(
+                                                      text:
+                                                          " > ${location.address!.city!.name}"),
+                                                if (location.address!.area !=
+                                                    null)
+                                                  TextSpan(
+                                                      text:
+                                                          " > ${location.address!.area!.name}"),
+                                              ]),
+                                        ),
+                                        RichText(
+                                          text: TextSpan(
+                                              style: TextStyle(
+                                                  fontSize: 10,
+                                                  height: 1.2,
+                                                  fontWeight: FontWeight.normal,
+                                                  color: Colors.grey.shade600),
+                                              children: [
+                                                location.preciseCoordinates ==
+                                                        null
+                                                    ? TextSpan(
+                                                        text:
+                                                            "经纬度: (${location.coordinates!.latitude}, ${location.coordinates!.longitude})",
+                                                      )
+                                                    : TextSpan(
+                                                        text:
+                                                            "手动校准: (${location.preciseCoordinates!.latitude.toStringAsFixed(6)}, ${location.preciseCoordinates!.longitude.toStringAsFixed(6)})",
+                                                        style: TextStyle(
+                                                          color:
+                                                              Colors.blueAccent,
+                                                        )),
+                                              ]),
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 12,
+                                    ),
+                                    Row(
+                                      children: [
+                                        InkWell(
+                                          onTap: () async {
+                                            Address? newSelectedAddress =
+                                                await showCityPickerBottomSheet(
+                                              context: ctx,
+                                              initAddress: location.address!,
+                                              myLocationNotifier:
+                                                  _timezoneLocationViewModel
+                                                      .myLocationNotifier,
+                                            );
+                                            if (newSelectedAddress == null) {
+                                              return;
+                                            }
+                                            ctx
+                                                .read<
+                                                    TimezoneLocationViewModel>()
+                                                .updateMyLocation(Location(
+                                                  address: newSelectedAddress,
+                                                ));
+                                          },
+                                          child: Text(
+                                            "修改位置",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              height: 1,
+                                              fontWeight: FontWeight.normal,
+                                              color: const Color.fromRGBO(
+                                                  68, 138, 255, 1),
+                                            ),
+                                          ),
+                                        ),
+                                        Expanded(child: SizedBox()),
+                                        ValueListenableBuilder(
+                                            valueListenable: context
+                                                .read<
+                                                    TimezoneLocationViewModel>()
+                                                .myLocationIsDefaultNotifier,
+                                            builder: (ctx, isDefault, _) {
+                                              return InkWell(
+                                                  onTap: () {
+                                                    ctx
+                                                        .read<
+                                                            TimezoneLocationViewModel>()
+                                                        .setMyLocationAsDefault(
+                                                            !isDefault);
+                                                  },
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .center,
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .center,
+                                                    children: [
+                                                      FlutterSwitch(
+                                                          width: 20,
+                                                          height: 12,
+                                                          padding: 2,
+                                                          toggleSize: 10,
+                                                          showOnOff: false,
+                                                          value: isDefault,
+                                                          onToggle: (newValue) {
+                                                            ctx
+                                                                .read<
+                                                                    TimezoneLocationViewModel>()
+                                                                .setMyLocationAsDefault(
+                                                                    newValue);
+                                                          }),
+                                                      SizedBox(
+                                                        width: 4,
+                                                      ),
+                                                      AnimatedDefaultTextStyle(
+                                                          child: Text("设为默认位置"),
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            height: 1,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .normal,
+                                                            color: isDefault
+                                                                ? Colors.black87
+                                                                : Colors.grey
+                                                                    .shade600,
+                                                          ),
+                                                          duration: Duration(
+                                                              milliseconds:
+                                                                  200)),
+                                                    ],
+                                                  ));
+                                            }),
+                                        Expanded(child: SizedBox()),
+                                        InkWell(
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                                context, '/common/maps',
+                                                arguments: {
+                                                  "seekerLocation": location,
+                                                  "seerLocation": null
+                                                }).then((val) {
+                                              _timezoneLocationViewModel
+                                                  .updateMyLocation(
+                                                      location.copyWith(
+                                                          preciseCoordinates: val
+                                                              as Coordinates));
+                                            });
+                                          },
+                                          child: Text(
+                                            (location.preciseCoordinates ==
+                                                    null)
+                                                ? "地图精准定位"
+                                                : "已精准定位",
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              height: 1,
+                                              fontWeight: FontWeight.normal,
+                                              color: Colors.blueAccent,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                  ]
+                                ],
+                              ))));
+                    });
+              });
+        });
+  }
+
+  Widget buildSelectableLocationList(double width, Location? selectedLocation) {
+    return ValueListenableBuilder<List<Location>>(
+        valueListenable:
+            context.read<TimezoneLocationViewModel>().locationListNotifier,
+        builder: (ctx, locationList, child) {
+          if (locationList.isEmpty) {
+            return SizedBox();
+          }
+          List<Widget> locationListWidget = [];
+          for (var l in locationList) {
+            bool isSelected = selectedLocation == l;
+            locationListWidget.add(InkWell(
+              onTap: () {
+                ctx.read<TimezoneLocationViewModel>().selectLocation(l);
+              },
+              child: Container(
+                width: width,
+                height: 80,
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                    // color: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                        color:
+                            isSelected ? Colors.black87 : Colors.grey.shade600,
+                        width: 1),
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 2,
+                          spreadRadius: 2)
+                    ]),
+                child: Column(
+                  children: [
+                    Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 200),
+                            width: 16,
+                            height: 16,
+                            padding: EdgeInsets.all(3),
+                            decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: isSelected
+                                        ? Colors.black87
+                                        : Colors.grey.shade600,
+                                    width: 1),
+                                borderRadius: BorderRadius.circular(8)),
+                            child: AnimatedOpacity(
+                              duration: Duration(milliseconds: 200),
+                              opacity: isSelected ? 1 : 0,
+                              child: Container(
+                                width: 10,
+                                height: 10,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? Colors.black
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Expanded(
+                            child: SizedBox(),
+                          ),
+                        ]),
+                    buildSelectableLocation(l)
+                  ],
+                ),
+              ),
+            ));
+          }
+
+          return Container(child: Column(children: locationListWidget));
+
+          return ListView.builder(
+            scrollDirection: Axis.vertical,
+            itemCount: locationList.length,
+            itemBuilder: (ctx, index) {
+              if (index == 0) {
+                return buildSelectMyLocation(width);
+              }
+              Location location = locationList[index];
+              // return buildLocationItem(location, width);
+              return ListTile(
+                title: Text(location.address!.province.name),
+                subtitle: Text(location.address!.city!.name),
+                trailing: IconButton(
+                    icon: Icon(Icons.delete),
+                    onPressed: () {
+                      context
+                          .read<TimezoneLocationViewModel>()
+                          .selectLocation(location);
+                    }),
+              );
+            },
+          );
+          return SingleChildScrollView(
+            // shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            child: Container(
+              height: 56,
+              width: width,
+              child: Column(
+                children: locationList
+                    .map((l) => InkWell(
+                          onTap: () {},
+                          child: Container(
+                            width: width,
+                            height: 32,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: Colors.grey.shade600, width: 1),
+                                boxShadow: [
+                                  BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 2,
+                                      spreadRadius: 2)
+                                ]),
+                            child: buildSelectableLocation(l),
+                          ),
+                        ))
+                    .toList(),
+              ),
+            ),
+          );
+        });
+
+    // return Container(
+    //   width: width,
+    //   height: 48,
+    //   alignment: Alignment.topCenter,
+    //   color: Colors.red,
+    //   child: );
+  }
+
+  Widget buildLocationSelectionContentWithMine(double width) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        buildSelectMyLocation(width),
+        SizedBox(
+          height: 12,
+        ),
+        InkWell(
+            onTap: () {
+              doSelectCity(null);
+            },
+            child: DottedBorder(
+              borderType: BorderType.RRect,
+              radius: Radius.circular(12),
+              padding: EdgeInsets.all(6),
+              color: Colors.grey,
+              child: ClipRRect(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Container(
+                          width: width,
+                          height: 32,
+                          alignment: Alignment.center,
+                          child: Text(
+                            "点击选择位置",
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          )),
+                    ],
+                  )),
+            )),
+        SizedBox(
+          height: 12,
+        ),
+      ],
+    );
+  }
+
+  @Deprecated("use buildLocationSelectionContentWithMine")
+  Widget buildLocationSelectionContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ValueListenableBuilder<Location?>(
+            valueListenable:
+                _timezoneLocationViewModel.selectedLocationNotifier,
+            builder: (ctx, location, child) {
+              return Column(
+                children: [
+                  InkWell(
+                      onTap: () => doSelectCity(null),
+                      child: DottedBorder(
+                        borderType: BorderType.RRect,
+                        radius: Radius.circular(12),
+                        padding: EdgeInsets.all(6),
+                        color: Colors.grey,
+                        child: ClipRRect(
+                            borderRadius: BorderRadius.all(Radius.circular(10)),
+                            child: Container(
+                              width: 260,
+                              height: 56,
+                              alignment: Alignment.center,
+                              child: location == null
+                                  ? Text(
+                                      "点击选择位置",
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.grey),
+                                    )
+                                  : buildSelectableLocation(location),
+                            )),
+                      )),
+                  SizedBox(height: 4),
+                  Container(
+                      width: 260,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          buildSetAtDefaultLocationContent(),
+                          Expanded(child: SizedBox()),
+                          // buildIsMyLocationContent(),
+                        ],
+                      ))
+                ],
+              );
+            }),
+        SizedBox(width: 4),
+        Column(
+          children: [
+            InkWell(
+              onTap: () async {},
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                alignment: Alignment.center,
+                height: 24,
+                width: 48,
+                decoration: BoxDecoration(
+                    color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 4,
+                          spreadRadius: 4)
+                    ]),
+                child: Text("选择"),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                // handleDSTTime(DateTime.now(), _timezoneNotifier.value!);
+                // _timezoneLocationViewModel.updateLocation(null);
+                // _locationNotifier.value = null; // clear the location inf
+              },
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                alignment: Alignment.center,
+                height: 24,
+                width: 48,
+                decoration: BoxDecoration(
+                    // color: Colors.grey.shade400,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 4,
+                          spreadRadius: 4)
+                    ]),
+                child: Text("清除"),
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  Widget buildSelectableLocation(Location location) {
+    double largeFontSize = 24;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text.rich(
+              TextSpan(
+                  text:
+                      "${location.address!.countryName}, ${location.address!.province.name}",
+                  children: [
+                    if (location.address!.city != null)
+                      TextSpan(
+                        text: ", ${location.address!.city!.name}",
+                      ),
+                    if (location.address!.area != null)
+                      TextSpan(
+                        text: ", ${location.address!.area!.name}",
+                      ),
+                  ]),
+              style: TextStyle(fontSize: 16, color: Colors.black54, height: 1),
+            ),
+            location.preciseCoordinates == null
+                ? Text(
+                    "行政中心：${location.coordinates?.latitude.toStringAsFixed(4)}° N, ${location.coordinates?.longitude.toStringAsFixed(4)}° W",
+                    style: lngLatTextStyle.copyWith(fontSize: 10),
+                  )
+                : Text(
+                    "手动校准：${location.preciseCoordinates?.latitude.toStringAsFixed(6)}° N, ${location.preciseCoordinates?.longitude.toStringAsFixed(5)}° W",
+                    style: lngLatTextStyle.copyWith(
+                        fontSize: 10, color: Colors.blueAccent),
+                  ),
+          ],
+        ),
+        Padding(
+          padding: EdgeInsets.only(right: 4),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              InkWell(
+                  onTap: () async {
+                    Address? newSelectedAddress =
+                        await showCityPickerBottomSheet(
+                      context: context,
+                      initAddress: location.address!,
+                      myLocationNotifier:
+                          _timezoneLocationViewModel.myLocationNotifier,
+                    );
+                    if (newSelectedAddress == null) {
+                      return;
+                    }
+                    context.read<TimezoneLocationViewModel>().updateLocation(
+                        location,
+                        Location(
+                          address: newSelectedAddress,
+                        ));
+                  },
+                  child: Text(
+                    "修改位置",
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1,
+                      color: Colors.blueAccent,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.blueAccent,
+                    ),
+                  )),
+              Expanded(child: SizedBox()),
+              InkWell(
+                  onTap: () {
+                    // toLngLatSelectPage(location);
+                    Navigator.pushNamed(context, '/common/maps', arguments: {
+                      "seekerLocation": location,
+                      "seerLocation": context
+                          .read<TimezoneLocationViewModel>()
+                          .myLocationNotifier
+                          .value
+                    }).then((val) {
+                      _timezoneLocationViewModel.updateLocation(
+                          location,
+                          location.copyWith(
+                              preciseCoordinates: val as Coordinates));
+                    });
+                  },
+                  child: Text(
+                    "地图精准定位",
+                    style: TextStyle(
+                      fontSize: 10,
+                      height: 1,
+                      color: Colors.blueAccent,
+                      decoration: TextDecoration.underline,
+                      decorationColor: Colors.blueAccent,
+                    ),
+                  ))
+            ],
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget buildCurrentLocation() {
+    double largeFontSize = 24;
+    return Container(
+      height: 56,
+      width: 260,
+      // color: Colors.amber,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                "36.1716° N, 115.1391° W",
+                style: lngLatTextStyle.copyWith(fontSize: 10),
+              ),
+              Text(
+                "Clark County, Las Vegas, NV, USA",
+                style:
+                    TextStyle(fontSize: 16, color: Colors.black54, height: 1),
+              ),
+            ],
+          ),
+          Text.rich(
+            TextSpan(children: [
+              TextSpan(text: "<<点击使用"),
+              TextSpan(
+                  text: "我的位置", style: TextStyle(fontWeight: FontWeight.bold)),
+              TextSpan(text: ">>")
+            ]),
+            style: TextStyle(
+                height: 1,
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: Colors.black87),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget buildDateTimeSelectionContent() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ValueListenableBuilder(
+            valueListenable: _timezoneLocationViewModel.selectedTimeNotifier,
+            builder: (ctx, birthTime, _) {
+              return InkWell(
+                onTap: () async {
+                  if (birthTime == null) {
+                    _nowClockTimer.cancel();
+                    _timezoneLocationViewModel.updateDatetime(tzNow());
+                  } else {
+                    final result = await showBoardDateTimePicker(
+                        context: context,
+                        pickerType: DateTimePickerType.datetime,
+                        initialDate:
+                            _timezoneLocationViewModel.selectedDatetime!);
+                    if (result != null) {
+                      _timezoneLocationViewModel.updateDatetime(result);
+                      // _selectedBirthTimeNotifier.value = result;
+                      // handleDSTTime(result, _timezoneNotifier.value!);
+                    }
+                  }
+                },
+                child: DottedBorder(
+                  borderType: BorderType.RRect,
+                  radius: Radius.circular(12),
+                  padding: EdgeInsets.all(6),
+                  color: Colors.grey,
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                      child: birthTime == null
+                          ? buildNowClockTime()
+                          : buildBirthDatetime(birthTime)),
+                ),
+              );
+            }),
+        SizedBox(width: 4),
+        Column(
+          children: [
+            InkWell(
+              onTap: () async {
+                final result = await showBoardDateTimePicker(
+                    context: context,
+                    pickerType: DateTimePickerType.datetime,
+                    initialDate: _timezoneLocationViewModel.selectedDatetime);
+                if (result != null) {
+                  // _selectedBirthTimeNotifier.value = result;
+                  _timezoneLocationViewModel.updateDatetime(result);
+                }
+              },
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                alignment: Alignment.center,
+                height: 24,
+                width: 48,
+                decoration: BoxDecoration(
+                    color: Colors.blueGrey,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.blueGrey.shade300,
+                          blurRadius: 4,
+                          spreadRadius: 4)
+                    ]),
+                child: Text("选择"),
+              ),
+            ),
+            InkWell(
+              onTap: () {
+                _timezoneLocationViewModel.updateDatetime(tzNow());
+                // _selectedBirthTimeNotifier.value =
+                //     DateTime.now(); // clear the location inf
+              },
+              child: Container(
+                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                alignment: Alignment.center,
+                height: 24,
+                width: 48,
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blueGrey, width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                          color: Colors.blueGrey.shade300,
+                          blurRadius: 4,
+                          spreadRadius: 4)
+                    ]),
+                child: Text("现在"),
+              ),
+            ),
+          ],
+        )
+      ],
+    );
+  }
+
+  DateTime tzNow() {
+    tz.TZDateTime tzSelectedBirthTime = tz.TZDateTime.from(
+        DateTime.now(),
+        tz.getLocation(context.read<TimezoneLocationViewModel>().timezone ??
+            widget.defaultTimezone));
+    return tzSelectedBirthTime.toDateTime();
+  }
+
+  Widget buildNowClockTime() {
+    return Container(
+      height: 56,
+      width: 260,
+      // color: Colors.amber,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ValueListenableBuilder(
+            valueListenable: _nowClockTimeNotifier,
+            builder: (ctx, currentDateTimeStr, _) {
+              return Text.rich(
+                TextSpan(text: currentDateTimeStr.item1, children: [
+                  if (currentDateTimeStr.item2)
+                    TextSpan(
+                        text: "夏令时",
+                        style: TextStyle(color: Colors.red, fontSize: 12))
+                ]),
+                style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.normal,
+                    color: Colors.black54),
+              );
+            },
+          ),
+          Text(
+            "<<点击确认>>",
+            style: TextStyle(
+                height: 1,
+                fontSize: 12,
+                fontWeight: FontWeight.normal,
+                color: Colors.black87),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget timezoneSelectionContent() {
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Container(
+              margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+              alignment: Alignment.center,
+              height: 24,
+              width: 180,
+              decoration: BoxDecoration(
+                  color: Colors.grey.shade400,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.shade300,
+                      blurRadius: 4,
+                      spreadRadius: 4,
+                      offset: Offset(1, 1),
+                    ),
+                  ]),
+              child: ValueListenableBuilder(
+                  valueListenable: _timezoneLocationViewModel.timezoneNotifier,
+                  builder: (ctx, timezoneStr, _) {
+                    return Text(
+                      timezoneStr!,
+                      style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 16,
+                          fontFamily: "NotoSansSC",
+                          shadows: [
+                            Shadow(
+                              color: Colors.grey.shade100.withAlpha(50),
+                              offset: Offset(1, 1),
+                              blurRadius: 2,
+                            ),
+                          ]),
+                    );
+                  })),
+          Container(
+            height: 24,
+            width: 24,
+            decoration: BoxDecoration(
+                color: Colors.grey.shade400,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.shade300,
+                    blurRadius: 4,
+                    spreadRadius: 4,
+                    offset: Offset(1, 1),
+                  ),
+                ]),
+            child: InkWell(
+                onTap: () {
+                  // alertSelectTimezone(
+                  // _timezoneLocationViewModel.timezoneNotifier.value!);
+                },
+                child: Icon(
+                  Icons.settings,
+                  size: 18,
+                )),
+          )
+        ]);
+  }
+
+  // void alertSelectTimezone(String timezoneStr) {
+  //   double totalWidth = 320;
+  //   showDialog(
+  //       context: context,
+  //       builder: (ctx) {
+  //         return AlertDialog(
+  //             title: Text("时区设置"),
+  //             content: Container(
+  //               alignment: Alignment.center,
+  //               width: totalWidth,
+  //               height: 100,
+  //               child: Column(children: [
+  //                 ValueListenableBuilder<SPTimezoneDataModel?>(
+  //                     valueListenable: _spTimezoneDataModelNotifier,
+  //                     builder: (ctx, spTimezoneDataModel, _) {
+  //                       return ValueListenableBuilder<String?>(
+  //                           valueListenable: _localTimezoneNotifier,
+  //                           builder: (ctx, localTimezone, _) {
+  //                             String? defaultTimezone =
+  //                                 spTimezoneDataModel?.isDefaultTimezone != null
+  //                                     ? spTimezoneDataModel?.timezoneStr
+  //                                     : null;
+  //                             return ValueListenableBuilder<String?>(
+  //                                 valueListenable: _timezoneLocationViewModel.timezoneNotifier,
+  //                                 builder: (context, timezoneStr, _) {
+  //                                   return buildTimezoneDropdownList(totalWidth,timezoneStr,localTimezone,defaultTimezone);
+  //                                 });
+  //                           });
+  //                     }),
+  //                 Container(
+  //                   height: 18,
+  //                   width: totalWidth,
+  //                   alignment: Alignment.topCenter,
+  //                   // color: Colors.greenAccent.withAlpha(20),
+  //                   child: ValueListenableBuilder<SPTimezoneDataModel?>(
+  //                     valueListenable: _spTimezoneDataModelNotifier,
+  //                     builder: (context, spTimezoneDataModel, _) {
+  //                       return ValueListenableBuilder<String?>(
+  //                           valueListenable: _localTimezoneNotifier,
+  //                           builder: (ctx, localTimezoneStr, _) {
+  //                             return ValueListenableBuilder<String?>(
+  //                                 valueListenable: _timezoneLocationViewModel
+  //                                     .timezoneNotifier,
+  //                                 builder: (ctx, selectedTimezoneStr, _) {
+  //                                   //  当默认时区是存在的，且当前选择的时区不是默认时区是显示默认时区
+  //                                   if (_spTimezoneDataModelNotifier
+  //                                           .value?.isDefaultTimezone ??
+  //                                       false) {
+  //                                     List<TextSpan> textSpans = [];
+  //                                     if (selectedTimezoneStr !=
+  //                                         _spTimezoneDataModelNotifier
+  //                                             .value?.timezoneStr) {
+  //                                       textSpans = [
+  //                                         const TextSpan(text: "默认时区: "),
+  //                                         TextSpan(
+  //                                             text: _spTimezoneDataModelNotifier
+  //                                                 .value?.timezoneStr!,
+  //                                             style: TextStyle(
+  //                                                 color: Theme.of(ctx)
+  //                                                     .primaryColor))
+  //                                       ];
+  //                                     }
+  //                                     return Container(
+  //                                       padding: EdgeInsets.symmetric(
+  //                                           horizontal: 24),
+  //                                       child: TextButton(
+  //                                           onPressed: () {
+  //                                             if (_spTimezoneDataModelNotifier
+  //                                                     .value
+  //                                                     ?.isDefaultTimezone ??
+  //                                                 false) {
+  //                                               // && _spTimezoneDataModelNotifier.value?.timezoneStr != null){
+  //                                               _timezoneNotifier.value =
+  //                                                   _spTimezoneDataModelNotifier
+  //                                                       .value?.timezoneStr;
+  //                                             }
+  //                                             _timezoneLocationViewModel.updateTimezone(newTimezone)
+  //                                           },
+  //                                           child: Text.rich(
+  //                                             TextSpan(
+  //                                                 style: TextStyle(
+  //                                                     fontSize: 12,
+  //                                                     color: Colors.grey,
+  //                                                     height: 1,
+  //                                                     fontFamily: "NotoSansSC"),
+  //                                                 children: textSpans),
+  //                                           )),
+  //                                     );
+  //                                   } else {
+  //                                     List<TextSpan> textSpans = [];
+  //                                     if (_localTimezoneNotifier.value !=
+  //                                         selectedTimezoneStr) {
+  //                                       textSpans = [
+  //                                         const TextSpan(text: "本地时区: "),
+  //                                         TextSpan(
+  //                                             text: localTimezoneStr,
+  //                                             style: TextStyle(
+  //                                                 color: Colors.black87))
+  //                                       ];
+  //                                     }
+  //                                     return Container(
+  //                                       padding: EdgeInsets.symmetric(
+  //                                           horizontal: 24),
+  //                                       child: TextButton(
+  //                                           onPressed: () {
+  //                                             if (_timezoneNotifier.value !=
+  //                                                 localTimezoneStr) {
+  //                                               _timezoneNotifier.value =
+  //                                                   localTimezoneStr;
+  //                                             }
+  //                                             _timezoneLocationViewModel
+  //                                                 .updateTimezone(
+  //                                                     localTimezoneStr);
+  //                                           },
+  //                                           child: Text.rich(
+  //                                             TextSpan(
+  //                                                 style: TextStyle(
+  //                                                     fontSize: 12,
+  //                                                     color: Colors.grey,
+  //                                                     height: 1,
+  //                                                     fontFamily: "NotoSansSC"),
+  //                                                 children: textSpans),
+  //                                           )),
+  //                                     );
+  //                                   }
+  //                                 });
+  //                           });
+  //                     },
+  //                   ),
+  //                 ),
+  //                 Container(
+  //                   height: 24,
+  //                   width: totalWidth,
+  //                   alignment: Alignment.topCenter,
+  //                   child: Row(
+  //                     mainAxisAlignment: MainAxisAlignment.end,
+  //                     crossAxisAlignment: CrossAxisAlignment.center,
+  //                     children: [
+  //                       buildSetAsDefaultTimezoneContent(),
+  //                       Expanded(child: SizedBox()),
+  //                       buildRemoveDSTContent()
+  //                     ],
+  //                   ),
+  //                 )
+  //               ]),
+  //             ),
+  //             actions: [
+  //               TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: Text("取消")),
+  //               TextButton(
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                   child: Text("确定")),
+  //             ]);
+  //       });
+  // }
+
+  Widget buildSetTimezoneContentV1() {
+    return Container(
+        margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+        alignment: Alignment.topCenter,
+        // color: Colors.blue.withAlpha(100),
+        padding: EdgeInsets.symmetric(horizontal: 4),
+        child: Column(
+          children: [
+            timezoneSelectionContent1(),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                buildSetAsDefaultTimezoneContent(),
+                Expanded(child: SizedBox()),
+                buildRemoveDSTContent()
+              ],
+            )
+          ],
+        ));
+  }
+
+  Widget buildTimezoneDropdownList(double totalWidth, String? selectedTimezone,
+      String? localTimezone, String? defaultTimezone) {
+    return DropdownButton<String?>(
+        isExpanded: true,
+        menuWidth: totalWidth,
+        value: selectedTimezone ?? pleaseSelectTimezoneStr,
+        items: ([
+          pleaseSelectTimezoneStr,
+          ...tz.timeZoneDatabase.locations.keys.toList()
+        ]).map((String value) {
+          return DropdownMenuItem<String>(
+              value: value,
+              child: Text.rich(
+                TextSpan(
+                    style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                        color: Colors.black54,
+                        height: 1),
+                    children: [
+                      TextSpan(
+                          text: value,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87)),
+                      if (localTimezone == value || defaultTimezone == value)
+                        TextSpan(
+                          text: " (",
+                        ),
+                      if (localTimezone == value)
+                        TextSpan(
+                          text: "本地",
+                        ),
+                      if (localTimezone == value && defaultTimezone == value)
+                        TextSpan(text: "/"),
+                      if (defaultTimezone == value)
+                        TextSpan(
+                          text: "默认",
+                        ),
+                      if (localTimezone == value || defaultTimezone == value)
+                        TextSpan(text: ")")
+                    ]),
+              ));
+        }).toList(),
+        onChanged: _timezoneLocationViewModel.updateTimezone);
+  }
+
+  String get pleaseSelectTimezoneStr {
+    return "请选择时区";
+  }
+
+  void doSelectCity(Location? location) async {
+    // 显示城市选择器底部弹窗
+    final Address? newSelectedLocation;
+    if (location != null) {
+      // 显示城市选择器底部弹窗
+      newSelectedLocation = await showCityPickerBottomSheet(
+        context: context,
+        initAddress: location.address!,
+        myLocationNotifier: _timezoneLocationViewModel.myLocationNotifier,
+      );
+    } else {
+      newSelectedLocation = await showCityPickerBottomSheet(
+          context: context,
+          initAddress: Address.defualtAddress,
+          myLocationNotifier: _timezoneLocationViewModel.myLocationNotifier);
+    }
+
+    // 处理选择结果
+    if (newSelectedLocation != null) {
+      // print(selectedLocation.toJson());
+      _timezoneLocationViewModel.addLocation(Location(
+          address: newSelectedLocation,
+          isReverseSpeculation: false,
+          preciseCoordinates: null));
+    }
+  }
+
+  Widget buildCityArea(Location location) {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                location.address!.province.name,
+                style: locationTextStyle,
+              ),
+              Text(
+                " · ",
+                style: locationTextStyle,
+              ),
+              if (location.address!.area != null)
+                Text(
+                  " · ",
+                  style: locationTextStyle,
+                ),
+              if (location.address!.area != null)
+                Text(
+                  location.address!.city!.name,
+                  style: locationTextStyle,
+                ),
+              if (location.address!.area != null)
+                Text(
+                  " · ",
+                  style: locationTextStyle,
+                ),
+              if (location.address!.area != null)
+                Text(
+                  location.address!.area!.name,
+                  style: locationTextStyle,
+                ),
+              IconButton(
+                  onPressed: () => toLngLatSelectPage(null),
+                  icon: Icon(Icons.map_rounded))
+            ],
+          ),
+          Text.rich(
+            TextSpan(
+                style: lngLatTextStyle.copyWith(color: Colors.black87),
+                children: [
+                  TextSpan(
+                      text:
+                          "${location.coordinates!.longitude}, ${location.coordinates!.latitude}")
+                ]),
+          ),
+          Text.rich(
+            TextSpan(
+                text: "(行政中心坐标)",
+                style: lngLatTextStyle.copyWith(color: Colors.black45)),
+          )
+        ]);
+  }
+
+  Widget buildSetAsDefaultTimezoneContent() {
+    return SizedBox(
+      // height: 50,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ValueListenableBuilder(
+              valueListenable:
+                  _timezoneLocationViewModel.isDefaultTimezoneNotifier,
+              builder: (ctx, isDefaultTimezone, _) {
+                return Checkbox(
+                    value: isDefaultTimezone,
+                    onChanged:
+                        _timezoneLocationViewModel.onIsDefaultTimezoneChanged);
+              }),
+          SizedBox(
+            width: 2,
+          ),
+          Text(
+            "设为默认时区",
+            style: TextStyle(fontSize: 12, color: Colors.grey, height: 1),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildRemoveDSTContent() {
+    return Tooltip(
+      message: "开启后当时间为“夏令时”，则自动调整回自然时间",
+      child: Container(
+        child: ValueListenableBuilder(
+          valueListenable: _timezoneLocationViewModel.isDSTNotifier,
+          builder: (context, isDST, _) {
+            return ValueListenableBuilder(
+              valueListenable:
+                  _timezoneLocationViewModel.isAutoHandleDSTNotifier,
+              builder: (ctx, isANSI, _) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    FlutterSwitch(
+                        width: 32,
+                        height: 16,
+                        padding: 2,
+                        value: isANSI,
+                        toggleSize: 12,
+                        showOnOff: false,
+                        onToggle: _timezoneLocationViewModel
+                            .onAutoHandleTimezoneChanged),
+                    SizedBox(
+                      width: 4,
+                    ),
+                    AnimatedDefaultTextStyle(
+                      child: Text("自动移除夏令时"),
+                      style: TextStyle(
+                        height: 1,
+                        fontSize: 12,
+                        color: isANSI ? Colors.black87 : Colors.grey,
+                      ),
+                      duration: Duration(milliseconds: 100),
+                    ),
+                  ],
+                );
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  @Deprecated("已废弃")
+  void toLngLatSelectPage(Location? location) {
+    if (location != null) {
+      Navigator.pushNamed(context, '/common/maps', arguments: {
+        "seekerCoordinate": context
+            .read<TimezoneLocationViewModel>()
+            .myLocationNotifier
+            .value
+            ?.coordinates,
+        "location": location.address,
+        "myCoordinate": Coordinates(
+            longitude: location.coordinates!.longitude,
+            latitude: location.coordinates!.latitude)
+      }).then((val) {
+        if (val != null) {
+          _timezoneLocationViewModel.addLocation(
+              location.copyWith(preciseCoordinates: val as Coordinates));
+        }
+      });
+    } else {
+      InteractiveToast.pop(
+        context,
+        title: const Text("为了便于后续操作请先选择出生地"),
+        toastSetting: const PopupToastSetting(
+          animationDuration: Duration(seconds: 2),
+          displayDuration: Duration(seconds: 20),
+          toastAlignment: Alignment.bottomCenter,
+        ),
+      );
+    }
+  }
+
+  Widget timezoneSelectionContent1() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Column(children: [
+              ValueListenableBuilder<String?>(
+                  valueListenable: _timezoneLocationViewModel.timezoneNotifier,
+                  builder: (context, timezoneStr, _) {
+                    return ValueListenableBuilder<String?>(
+                        valueListenable:
+                            _timezoneLocationViewModel.defaultTimezoneNotifier,
+                        builder: (ctx, defaultTimezone, _) {
+                          return SizedBox(
+                            width: 280,
+                            height: 48,
+                            child: buildTimezoneDropdownList(
+                                256,
+                                timezoneStr,
+                                _timezoneLocationViewModel.localTimezone,
+                                defaultTimezone),
+                          );
+                        });
+                  }),
+              Container(
+                height: 18,
+                width: 280,
+                alignment: Alignment.topCenter,
+                // color: Colors.greenAccent.withAlpha(20),
+                child: ValueListenableBuilder<Tuple2<TimezoneType, String>?>(
+                  valueListenable:
+                      _timezoneLocationViewModel.displayDefaultTimezoneNotifier,
+                  builder: (context, tuple, _) {
+                    if (tuple == null) {
+                      return SizedBox();
+                    }
+                    String hintText;
+                    Color hintTextColor = Colors.grey;
+                    switch (tuple!.item1) {
+                      case TimezoneType.defaultTimezone:
+                        hintText = "默认时区：";
+                        hintTextColor = Colors.grey;
+                        break;
+                      case TimezoneType.localTimezone:
+                        hintText = "本机时区：";
+                        hintTextColor = Colors.grey;
+                        break;
+                      case TimezoneType.globalCountryTimezoneChanged:
+                        hintText = "新位置时区：";
+                        hintTextColor = Colors.pinkAccent;
+                        Future.delayed(Duration(milliseconds: 600), () {
+                          (isGlobalTimezoneChangedShakeMeKey.currentState
+                                  as ShakeWidgetState)
+                              ?.shake();
+                        });
+                    }
+                    TextStyle hintTextStyle = TextStyle(
+                        fontSize: 12,
+                        color: hintTextColor,
+                        height: 1,
+                        fontFamily: "NotoSansSC");
+                    String timezoneStr = tuple!.item2;
+                    return Container(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: ShakeMe(
+                          // 4. pass the GlobalKey as an argument
+                          // 5. configure the animation parameters
+                          shakeCount: 3,
+                          shakeOffset: 12,
+                          shakeDuration: Duration(seconds: 1),
+                          key: isGlobalTimezoneChangedShakeMeKey,
+                          child: TextButton(
+                              onPressed: () {
+                                _timezoneLocationViewModel
+                                    .updateTimezone(timezoneStr);
+                              },
+                              child: Text.rich(
+                                TextSpan(
+                                    text: hintText,
+                                    style: hintTextStyle,
+                                    children: [TextSpan(text: timezoneStr)]),
+                              )),
+                        ));
+                  },
+                ),
+              ),
+            ]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm");
+  Widget selectDateTimeButton() {
+    Duration duration = Duration(milliseconds: 400);
+    double largeFontSize = 28;
+    double smallFontSize = 16;
+    return ValueListenableBuilder(
+        valueListenable: _timezoneLocationViewModel.selectedTimeNotifier,
+        builder: (ctx, dateTime, _) {
+          return ValueListenableBuilder(
+              valueListenable:
+                  _timezoneLocationViewModel.selectedDSTTimeNotifer,
+              builder: (ctx, dstTime, _) {
+                return AnimatedContainer(
+                  duration: Duration.zero,
+                  margin: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                  alignment: Alignment.topCenter,
+                  // color: Colors.blue.withAlpha(100),
+                  padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                  // width: 512,
+                  // height: 200,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 命主生时 title
+                      AnimatedContainer(
+                          duration: duration,
+                          alignment: dateTime == null
+                              ? Alignment.bottomCenter
+                              : Alignment.topLeft,
+                          child: AnimatedDefaultTextStyle(
+                            duration: duration,
+                            child: Text("命主生时"),
+                            style: dateTime == null
+                                ? TextStyle(
+                                    fontSize: smallFontSize,
+                                    height: 1.0,
+                                    color: Colors.black87)
+                                : TextStyle(
+                                    fontSize: smallFontSize,
+                                    height: 1.0,
+                                    color: Colors.black87,
+                                  ),
+                          )),
+                      // 命主生时选择结果
+                      ValueListenableBuilder(
+                          valueListenable:
+                              _timezoneLocationViewModel.isDSTNotifier,
+                          builder: (ctx, dst, _) {
+                            return birthDatetimeResult(dateTime, dstTime, dst);
+                          }),
+                      AnimatedContainer(
+                        duration: duration,
+                        padding: const EdgeInsets.all(4),
+                        alignment: dateTime == null
+                            ? Alignment.topCenter
+                            : Alignment.bottomCenter,
+                        // margin: EdgeInsets.only(top: 12),
+                        child: InkWell(
+                          onTap: () async {
+                            final result = await showBoardDateTimePicker(
+                                context: context,
+                                pickerType: DateTimePickerType.datetime,
+                                initialDate: _timezoneLocationViewModel
+                                    .selectedDatetime);
+                            if (result != null) {
+                              // handleDSTTime(
+                              //     result,
+                              //     _timezoneLocationViewModel
+                              //                   .timezoneNotifier.value!);
+                            }
+                          },
+                          child: AnimatedContainer(
+                              duration: duration,
+                              width: dateTime == null ? 180 : 128,
+                              height: dateTime == null ? 48 : 32,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(100),
+                                  boxShadow: [
+                                    BoxShadow(
+                                        color: Colors.black26.withAlpha(20),
+                                        offset: Offset(1, 1),
+                                        blurRadius: 2,
+                                        spreadRadius: 2)
+                                  ]),
+                              child: AnimatedDefaultTextStyle(
+                                duration: duration,
+                                child: Text(
+                                  "选择时间",
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                style: dateTime == null
+                                    ? TextStyle(fontSize: largeFontSize)
+                                    : TextStyle(fontSize: smallFontSize),
+                              )),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              });
+        });
+  }
+
+  Widget buildBirthDatetime(DateTime dateTime) {
+    return ValueListenableBuilder(
+        valueListenable: _timezoneLocationViewModel.selectedDSTTimeNotifer,
+        builder: (ctx, dstTime, _) {
+          return ValueListenableBuilder(
+              valueListenable: _timezoneLocationViewModel.isDSTNotifier,
+              builder: (ctx, dst, _) {
+                return birthDatetimeResult(dateTime, dstTime, dst);
+              });
+        });
+  }
+
+  Widget birthDatetimeResult(
+      DateTime? dateTime, DateTime? dstTime, bool isDST) {
+    Duration duration = Duration(milliseconds: 400);
+
+    double totalHeight = 56;
+    double smallHeight = 24;
+    double width = 240;
+    double largeFontSize = 24;
+    double smallFontSize = 12;
+    double dstFontSize = 10;
+    return AnimatedContainer(
+      duration: duration,
+      // height: dateTime == null ? 0 : totalHeight,
+      height: totalHeight,
+      width: width,
+      alignment: Alignment.center,
+      // color: Colors.red.withAlpha(100),
+      // decoration: BoxDecoration(
+      //     // color: Colors.white,
+      //     // borderRadius: BorderRadius.circular(100),
+      //     // border: Border.all(color: Colors.black54, width: 1),
+      //     // borderRadius: BorderRadius.circular(12),
+      //     boxShadow: [
+      //       BoxShadow(
+      //           color: Colors.black26.withAlpha(20),
+      //           offset: Offset(1, 1),
+      //           blurRadius: 2,
+      //           spreadRadius: 2)
+      //     ]),
+      child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+              duration: duration,
+              alignment:
+                  dstTime == null ? Alignment.center : Alignment.bottomCenter,
+              height: dstTime == null ? totalHeight : smallHeight,
+              width: width,
+              child: dateTime == null
+                  ? SizedBox()
+                  : AnimatedDefaultTextStyle(
+                      child: Text.rich(TextSpan(
+                          text: dateTimeFormat.format(dateTime),
+                          children: [
+                            if (isDST)
+                              TextSpan(
+                                  text: "夏令时",
+                                  style: TextStyle(
+                                      color: dstTime == null
+                                          ? Colors.red
+                                          : Colors.black38,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: dstFontSize))
+                          ])),
+                      style: dstTime == null
+                          ? TextStyle(
+                              fontSize: largeFontSize,
+                              color: Colors.black87,
+                              height: 1)
+                          : TextStyle(
+                              fontSize: smallFontSize,
+                              color: Colors.black38,
+                              height: 1,
+                              decoration: TextDecoration.lineThrough),
+                      duration: duration),
+            ),
+            AnimatedContainer(
+              duration: duration,
+              height: dstTime == null ? 0 : totalHeight - smallHeight,
+              width: width,
+              alignment: Alignment.topCenter,
+              child: dstTime == null
+                  ? SizedBox()
+                  : AnimatedDefaultTextStyle(
+                      child: Text(dateTimeFormat.format(dstTime)),
+                      style: TextStyle(
+                          fontSize: largeFontSize,
+                          color: Colors.black87,
+                          height: 1),
+                      duration: duration),
+            )
+          ]),
+    );
+  }
+
+  // void handleDSTTime(DateTime? result, String timezoneStr) {
+  //   if (result != null) {
+  //     l.i("handle datetime from DST to normal");
+  //     final tzDateTime =
+  //         tz.TZDateTime.from(result, tz.getLocation(timezoneStr));
+  //     // final isDST = SolarTimeCalculator.checkIsDST(result, timezoneStr);
+  //     if (tzDateTime.timeZone.isDst) {
+  //       l.d("current datetime is DST");
+
+  //       if (_timezoneLocationViewModel?.isAutoHandleDSTNotifier.value ??
+  //           false) {
+  //         DateTime dstDateTime = result;
+  //         DateTime removedDSTDateTime =
+  //             dstDateTime.subtract(Duration(hours: 1));
+  //         _selectedBirthTimeNotifier.value = result;
+  //         // _DSTBirthTimeNotifier.value = removedDSTDateTime; // 保留DST，并显示在UI上
+  //         _timezoneLocationViewModel.isDSTNotifier.value = false;
+  //       } else {
+  //         _selectedBirthTimeNotifier.value = result;
+  //         _timezoneLocationViewModel.isDSTNotifier.value = true;
+  //       }
+  //     } else {
+  //       l.d("current datetime is not DST");
+  //       _selectedBirthTimeNotifier.value = result;
+  //       _timezoneLocationViewModel.isDSTNotifier.value = false;
+  //     }
+  //   }
+  // }
+
+  // void removeDSTTime(bool doRemove) {
+  //   if (_timezoneLocationViewModel.isDSTNotifier.value &&
+  //       _selectedBirthTimeNotifier.value != null) {
+  //     if (doRemove && _DSTBirthTimeNotifier.value == null) {
+  //       DateTime dstDateTime = _selectedBirthTimeNotifier.value!;
+  //       DateTime removedDSTDateTime = dstDateTime.subtract(Duration(hours: 1));
+  //       _selectedBirthTimeNotifier.value = removedDSTDateTime;
+  //       _DSTBirthTimeNotifier.value = dstDateTime;
+  //     } else {
+  //       _selectedBirthTimeNotifier.value = _DSTBirthTimeNotifier.value;
+  //       _DSTBirthTimeNotifier.value = null;
+  //     }
+  //   }
+  // }
+
+  void helpTooltipTapped(EnumDatetimeType datetimeType) {
+    switch (datetimeType) {
+      case EnumDatetimeType.standard:
+        showEnhancedDialog(
+            context,
+            QueryDateTimeHeplperModel
+                .datetimeHelperMapper[EnumDatetimeType.standard]!);
+        break;
+      case EnumDatetimeType.removeDST:
+        throw UnimplementedError();
+      case EnumDatetimeType.meanSolar:
+        showEnhancedDialog(
+            context,
+            QueryDateTimeHeplperModel
+                .datetimeHelperMapper[EnumDatetimeType.meanSolar]!);
+        break;
+      case EnumDatetimeType.trueSolar:
+        showEnhancedDialog(
+            context,
+            QueryDateTimeHeplperModel
+                .datetimeHelperMapper[EnumDatetimeType.trueSolar]!);
+        break;
+      default:
+        throw UnimplementedError();
+    }
+  }
+
+  /// 获取滑块未激活状态的文本样式
+  TextStyle _getSwitcherInactivatedStyle() {
+    return const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.normal,
+        color: Colors.black87,
+        fontFamily: "NotoSansSC"
+        // color: AppTheme.secondaryText,
+        );
+  }
+
+  /// 获取滑块激活状态的文本样式
+  TextStyle _getSwitcherActivatedStyle(Color color) {
+    return TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+        color: color,
+        fontFamily: "NotoSansSC"
+        // color: AppTheme.primaryColor,
+        );
+  }
+}
 
 class QueryDateTimeHeplperModel {
   EnumDatetimeType datetimeType;
@@ -98,1666 +2677,6 @@ enum PageType {
         return eightChars;
       default:
         return datetime;
-    }
-  }
-}
-
-class QueryTimeInputCard extends StatefulWidget {
-  // final String defaultTimeZone;
-  final PageType defaultPageType;
-  final AppFeatureModule appFeatureModule;
-  final ValueNotifier<List<MapEntry<EnumDatetimeType,QueryDatetimeModel>>?> selectableCardsNotifier;
-  const QueryTimeInputCard(
-      {super.key,
-      // required this.defaultTimeZone,
-      required this.defaultPageType,
-        required this.selectableCardsNotifier,
-      this.appFeatureModule = AppFeatureModule.Golabel});
-
-  @override
-  State<QueryTimeInputCard> createState() => _QueryTimeInputCardState();
-}
-
-class _QueryTimeInputCardState extends State<QueryTimeInputCard>
-    with SingleTickerProviderStateMixin {
-  final GlobalKey isDSTShakeMeKey = GlobalKey<ShakeWidgetState>();
-  late AnimationController _controller;
-
-  late PageController _pageController;
-
-  late TextEditingController _nameController;
-
-  late final ValueNotifier<PageType> _tabSelectNotifier;
-
-  late final ValueNotifier<String?> _inputNameNotifier;
-  late final ValueNotifier<Gender> _inputGenderNotifier;
-
-  late final ValueNotifier<DateTime?> _selectedBirthTimeNotifier;
-  late final ValueNotifier<DateTime?> _DSTBirthTimeNotifier;
-
-  late final ValueNotifier<bool> showTimezoneAtTitleNotifier = ValueNotifier(false);
-
-  late final ValueNotifier<bool> _isAutoHandleDSTNotifier = ValueNotifier(false);
-  late final ValueNotifier<bool> _isDefaultTimezoneNotifier = ValueNotifier(false);
-  late final ValueNotifier<String?> _timezoneNotifier = ValueNotifier<String?>(null);
-  // late final ValueNotifier<String?> _lastTimezoneNotifier = ValueNotifier<String?>("America/Los_Angeles");
-  late final ValueNotifier<String?> _localTimezoneNotifier = ValueNotifier<String?>(null);
-  final ValueNotifier<SPTimezoneDataModel?> _spTimezoneDataModelNotifier = ValueNotifier<SPTimezoneDataModel?>(null);
-
-  late final ValueNotifier<bool> _isDSTNotifier = ValueNotifier<bool>(false);
-  late final ValueNotifier<Location?> _locationNotifier;
-
-  final CommonLogger _commonLogger = CommonLogger();
-  Logger get l => _commonLogger.logger;
-  // late TabController _tabController;
-  late final ValueNotifier<Coordinates?> _coordinatesValueNotifier;
-
-  DateFormat timeFormat = DateFormat("HH:mm");
-  DateFormat dateFormat = DateFormat("yyyy-MM-dd");
-  DateFormat dateTimeFormat = DateFormat("yyyy-MM-dd HH:mm");
-
-  @override
-  void initState() {
-    super.initState();
-    String queryUuid = Uuid().v4();
-    _nameController = TextEditingController();
-    _controller = AnimationController(vsync: this);
-    _tabSelectNotifier = ValueNotifier<PageType>(widget.defaultPageType);
-    _tabSelectNotifier.addListener(() {
-      _pageController.animateToPage(_tabSelectNotifier.value.pageIndex,
-          duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
-      // _pageController.jumpToPage(_tabSelectNotifier.value.pageIndex);
-    });
-    _inputNameNotifier = ValueNotifier<String?>(null);
-    _inputGenderNotifier = ValueNotifier<Gender>(Gender.male);
-    _pageController =
-        PageController(initialPage: _tabSelectNotifier.value.pageIndex);
-
-    // _removeDSTTimeNotifier = ValueNotifier(false);
-
-    // 监听事件、以及时区变化，实时验算是否为夏令时时间
-    _DSTBirthTimeNotifier = ValueNotifier(null);
-    _selectedBirthTimeNotifier = ValueNotifier(null)
-      ..addListener(() {
-        if (_selectedBirthTimeNotifier.value != null && _timezoneNotifier.value != null) {
-          checkDST(_selectedBirthTimeNotifier.value!, _timezoneNotifier.value!);
-        }
-        setNormalAndDSTSelectableCards(queryUuid);
-      });
-
-    _spTimezoneDataModelNotifier.addListener((){
-      final timezoneDataModel = _spTimezoneDataModelNotifier.value;
-      _timezoneNotifier.value = timezoneDataModel?.timezoneStr ?? _localTimezoneNotifier.value;
-      _isAutoHandleDSTNotifier.value = timezoneDataModel?.isAutoHandleDST ?? false;
-      _isDefaultTimezoneNotifier.value = timezoneDataModel?.isDefaultTimezone ?? false;
-    });
-    _timezoneNotifier.addListener(() {
-      if (_timezoneNotifier.value != null){
-        if (_selectedBirthTimeNotifier.value != null) {
-          checkDST(_selectedBirthTimeNotifier.value!, _timezoneNotifier.value!);
-        }
-        // 检查是否需要勾选“isDefaultTimeZone”
-        final _spTimezoneDataModel = _spTimezoneDataModelNotifier.value;
-        if (_spTimezoneDataModel != null && (_spTimezoneDataModel.isDefaultTimezone == true)){
-          _isDefaultTimezoneNotifier.value = _spTimezoneDataModel.timezoneStr == _timezoneNotifier.value;
-        }
-
-      }
-    });
-    loadTimezoneDataModelFromShared().then((timezoneDataModel){
-      if (timezoneDataModel !=null){
-        l.d(timezoneDataModel.toJson());
-        _spTimezoneDataModelNotifier.value = timezoneDataModel;
-      }
-
-    });
-    // 获取本地时区时间
-    l.i("get local timezone as selectedTimezone");
-    FlutterTimezone.getLocalTimezone()
-        .then((timezoneName){
-      if (_timezoneNotifier.value == null){
-        _timezoneNotifier.value = timezoneName;
-      }
-      _localTimezoneNotifier.value = timezoneName;
-    });
-
-    _isAutoHandleDSTNotifier.addListener((){
-
-      if (_isAutoHandleDSTNotifier.value){
-        // 检查是否需要将用户选择的时间转换为非DST时间
-        if (_selectedBirthTimeNotifier.value != null && _timezoneNotifier.value != null){
-          handleDSTTime(_selectedBirthTimeNotifier.value!, _timezoneNotifier.value!);
-        }
-      }else{
-        // 不再处理DST时，检查是否需要将用户选择的时间转换为非DST时间
-        unhandleDSTTime();
-
-      }
-
-    });
-    _locationNotifier = ValueNotifier(null)..addListener((){
-      if (_locationNotifier.value !=null){
-        setMeanSolarAndTrueSolarSelectableCards(queryUuid,false);
-      }
-    });
-    _coordinatesValueNotifier = ValueNotifier(null)..addListener((){
-      if (_coordinatesValueNotifier.value != null){
-        l.i("手动校准经纬为 ${_coordinatesValueNotifier.value}");
-        setMeanSolarAndTrueSolarSelectableCards(queryUuid,true);
-      }
-    });
-    // _tabController = TabController(length: 3, vsync: this);
-  }
-  void setNormalAndDSTSelectableCards(String queryUuid){
-    if (_selectedBirthTimeNotifier.value != null && _timezoneNotifier.value != null){
-      // if (widget.selectableCardsNotifier.value?.isNotEmpty ?? false){
-      // }
-      widget.selectableCardsNotifier.value = [];
-      String timezoneStr = _timezoneNotifier.value!;
-      DateTime selectedBirthTime = _selectedBirthTimeNotifier.value!;
-      // check is summary DST
-      final tzSelectedBirthTime = tz.TZDateTime.from(selectedBirthTime, tz.getLocation(timezoneStr));
-      final isDST = tzSelectedBirthTime.timeZone.isDst;
-      final QueryDatetimeModel normalQueryDateTime = SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(queryUuid,selectedBirthTime,timezoneStr, isDST);
-
-      if (isDST){
-        // 当前为 DST 时间
-        // 将 selectedBirthTime 转换为非DST时间
-        DateTime nonDSTDateTime = selectedBirthTime.subtract(Duration(hours: 1));
-        QueryDatetimeModel removeDSTQueryDateTime = SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(queryUuid,nonDSTDateTime, timezoneStr, -1);
-        widget.selectableCardsNotifier.value!.add(MapEntry(EnumDatetimeType.removeDST, removeDSTQueryDateTime));
-      }
-      widget.selectableCardsNotifier.value!.add(MapEntry(EnumDatetimeType.standard, normalQueryDateTime));
-
-
-    }
-    if (_selectedBirthTimeNotifier.value == null && (widget.selectableCardsNotifier.value?.isNotEmpty ?? false)){
-     widget.selectableCardsNotifier.value = [];
-    }
-  }
-
-
-  void setMeanSolarAndTrueSolarSelectableCards(String queryUuid,bool isToManual){
-    if (_locationNotifier.value != null){
-      EnumDatetimeType meanType = EnumDatetimeType.meanSolar;
-      EnumDatetimeType trueType = EnumDatetimeType.trueSolar;
-      final Location location = _locationNotifier.value!;
-      l.i("set meanSolar datetime");
-      // 如果存在前一个 location 的八字，则先移除
-      if ((widget.selectableCardsNotifier.value?.isNotEmpty ?? false )){
-        if (widget.selectableCardsNotifier.value!.map((e)=>e.key).contains(meanType)){
-          l.i("there is a ${meanType.name} datetime in selectable card list, remove it before add new");
-          widget.selectableCardsNotifier.value!.removeWhere((element) => element.key == trueType);
-        }
-        if (widget.selectableCardsNotifier.value!.map((e)=>e.key).contains(trueType)){
-          l.i("there is a ${trueType.name} datetime in selectable card list, remove it before add new");
-          widget.selectableCardsNotifier.value!.removeWhere((element) => element.key == trueType);
-        }
-        
-      }
-
-      if (_selectedBirthTimeNotifier.value != null && _timezoneNotifier.value != null){
-        final tzDateTime = tz.TZDateTime.from(_selectedBirthTimeNotifier.value!, tz.getLocation(_timezoneNotifier.value!));
-        print("selectedBirthTime: ${_selectedBirthTimeNotifier.value}");
-        print("tzDateTime: ${tzDateTime}");
-        final meanSolarDateTime = SolarLunarDateTimeHelper.calculateMeanSolarQueryDateTimeInfo(queryUuid,tzDateTime, location);
-        final trueSolarDateTime = SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(queryUuid,meanSolarDateTime.datetime,_timezoneNotifier.value!, isToManual?_coordinatesValueNotifier.value!:location.coordinates);
-        l.i("add new ${isToManual?"manualMeanSolar":"meanSolar"} to selectable card");
-        l.t(meanSolarDateTime);
-        l.i("add new ${isToManual?"manualTrueSolar":"trueSolar"} to selectable card");
-        l.t(trueSolarDateTime);
-
-        List<MapEntry<EnumDatetimeType, QueryDatetimeModel>> clonedEntries = widget.selectableCardsNotifier.value!.map((e)=>e).toList();
-        widget.selectableCardsNotifier.value = clonedEntries..addAll([
-          MapEntry(meanType, isToManual?meanSolarDateTime.clone(isManual:true):meanSolarDateTime),
-          MapEntry(trueType, isToManual?trueSolarDateTime.clone(isManual:true):trueSolarDateTime)]);
-        // widget.selectableCardsNotifier.value!..add(MapEntry(EnumDatetimeType.meanSolar, meanSolarDateTime));
-      }
-
-    }
-
-  }
-  Future<SPTimezoneDataModel?> loadTimezoneDataModelFromShared([AppFeatureModule appFeatureModule=AppFeatureModule.Golabel]) async{
-    l.i("get ${appFeatureModule.spPrefix}${SPTimezoneDataModel.SharedPreferencesBaseKey} from SharedPreference");
-    final sp = await SharedPreferences.getInstance();
-    var result = sp.getString("${appFeatureModule.spPrefix}${SPTimezoneDataModel.SharedPreferencesBaseKey}");
-    if (result == null){
-      l.i("there is not ${appFeatureModule.spPrefix}${SPTimezoneDataModel.SharedPreferencesBaseKey} in SharedPreference");
-      return null;
-    }
-    l.i("get ${appFeatureModule.spPrefix}${SPTimezoneDataModel.SharedPreferencesBaseKey} from SharedPreference success. [$result]");
-    l.t(result);
-
-    return SPTimezoneDataModel.fromJson(jsonDecode(result));
-  }
-  // 返回isDefaultTimezone 结果
-  Future<bool> saveTimezoneDataModel(SPTimezoneDataModel timezoneDataModel) async{
-    l.i("save ${timezoneDataModel.spKey} to SharedPreference");
-    final sp = await SharedPreferences.getInstance();
-    bool result = await sp.setString(timezoneDataModel.spKey, jsonEncode(timezoneDataModel.toJson()));
-    if (result){
-      l.i("save ${timezoneDataModel.spKey} success.");
-    }else{
-      l.e("save ${timezoneDataModel.spKey} failed.");
-    }
-    return timezoneDataModel.isDefaultTimezone ?? false;
-  }
-  Map<EnumDatetimeType, QueryDatetimeModel> _mapper = {};
-  void calculateEightChars(String queryUuid,DateTime? datetime){
-    if (datetime != null){
-      if (_isDSTNotifier.value){
-        l.i("出生时间为夏令时时间，根据夏令时时间计算 八字等信息, 同时给出移除夏令时后的时间");
-        final dstDateTime = SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(queryUuid,datetime,_timezoneNotifier.value!,true);
-        final removedDSTDateTime = SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(queryUuid,datetime,_timezoneNotifier.value!,-1);
-        _mapper[EnumDatetimeType.removeDST] = removedDSTDateTime;
-        _mapper[EnumDatetimeType.standard] = dstDateTime;
-      }else{
-        l.i("当前为非“夏令时”,");
-        final normalDateTimeInfo = SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(queryUuid,datetime,_timezoneNotifier.value!,false);
-        _mapper[EnumDatetimeType.standard] = normalDateTimeInfo;
-      }
-      calculateEightCharByLocation(queryUuid,datetime,_timezoneNotifier.value!);
-
-    }
-
-  }
-  void calculateEightCharByLocation(String queryUuid,DateTime datetime,String timezoneStr){
-    // 检查用户是否选择了“出生地”，如果选择出生地
-
-    if (_locationNotifier.value != null){
-      final tz.TZDateTime result = tz.TZDateTime.from(datetime, tz.getLocation(timezoneStr));
-      final meanDateTimeInfo = SolarLunarDateTimeHelper.calculateMeanSolarQueryDateTimeInfo(queryUuid,result,_locationNotifier.value!);
-      _mapper[EnumDatetimeType.meanSolar] = meanDateTimeInfo;
-      if (_locationNotifier.value!.area != null){
-        final normalDateTimeInfo = SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(queryUuid,meanDateTimeInfo.datetime,timezoneStr,_locationNotifier.value!.area!.coordinates);
-        _mapper[EnumDatetimeType.trueSolar] = normalDateTimeInfo;
-      }
-    }
-  }
-  @override
-  void dispose() {
-    _controller.dispose();
-    _nameController.dispose();
-    _inputNameNotifier.dispose();
-    _inputGenderNotifier.dispose();
-    _pageController.dispose();
-    _DSTBirthTimeNotifier.dispose();
-    _isDefaultTimezoneNotifier.dispose();
-
-    _spTimezoneDataModelNotifier.dispose();
-
-    _isAutoHandleDSTNotifier.dispose();
-    _timezoneNotifier.dispose();
-    // _lastTimezoneNotifier.dispose();
-    _selectedBirthTimeNotifier.dispose();
-    _locationNotifier.dispose();
-    _isDSTNotifier.dispose();
-    _localTimezoneNotifier.dispose();
-    showTimezoneAtTitleNotifier.dispose();
-    _coordinatesValueNotifier.dispose();
-
-    // _tabController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 512,
-      height: 512 + 128,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              blurRadius: 4,
-              offset: const Offset(2, 2),
-              color: Colors.black45.withAlpha(100),
-            )
-          ]),
-      child: _mainContainer(),
-    );
-  }
-
-  Widget _mainContainer() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
-          width: 512 - 48,
-          height: 64,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SizedBox(width: 200, height: 42, child: _buildNameInput()),
-              _buildGenderSelector(),
-            ],
-          ),
-        ),
-        SizedBox(
-          width: 512 - 48,
-          height: 480,
-          child: timeTab(512 - 48),
-          ),
-        // SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget timeTab(double width) {
-    return Column(
-      children: <Widget>[
-        ValueListenableBuilder(
-            valueListenable: _tabSelectNotifier,
-            builder: (ctx, tabIndex, _) {
-              return SlideSwitcher(
-                initialIndex: tabIndex.index,
-                onSelect: (index) {
-                  _tabSelectNotifier.value = PageType.getFromPageIndex(index);
-                },
-                containerHeight: 48,
-                containerWight: width,
-                indents: 4,
-                // containerColor: const Color(0xffe4e5eb),
-                slidersColors: const [Color(0xfff7f5f7)],
-                containerBoxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
-                    blurRadius: 2,
-                    spreadRadius: 4,
-                  )
-                ],
-                children: [
-                  Text(
-                    "时间",
-                    style: tabIndex != PageType.datetime
-                        ? _getSwitcherInactivatedStyle()
-                        : _getSwitcherActivatedStyle(),
-                  ),
-                  Text(
-                    "农历",
-                    style: tabIndex != PageType.chineseTraditional
-                        ? _getSwitcherInactivatedStyle()
-                        : _getSwitcherActivatedStyle(),
-                  ),
-                  Text(
-                    "八字",
-                    style: tabIndex != PageType.eightChars
-                        ? _getSwitcherInactivatedStyle()
-                        : _getSwitcherActivatedStyle(),
-                  ),
-                ],
-              );
-
-            }),
-        SizedBox(height: 24),
-        Expanded(
-          child: PageView(
-            controller: _pageController,
-            // onPageChanged: (index) {
-            // _tabSelectNotifier.value = PageType.getFromPageIndex(index);
-            // },
-            children: <Widget>[
-              // Center(child: Text('Content of Tab 1')),
-              _buildTimeSelectionContent(),
-              const Center(child: Text('Content of Tab 2')),
-              _eightCharsPage()
-            ],
-          ),
-        ),
-
-
-        // SizedBox(height: 24),
-      ],
-    );
-  }
-
-  Widget _eightCharsPage() {
-    return EightCharsInput(
-      initEightChars: null,
-    );
-  }
-  TextStyle locationTextStyle = const TextStyle(
-      height:1,fontSize: 18, color: Colors.black87, fontWeight: FontWeight.w600,fontFamily: "NotoSansSC");
-  TextStyle lngLatTextStyle =
-  const TextStyle(fontSize: 14, color: Colors.grey,fontFamily: "NotoSansSC");
-
-  TextStyle titleTextStyle =
-  const TextStyle(fontWeight: FontWeight.w600, fontSize: 16,color: Colors.black87,fontFamily: "NotoSansSC");
-  TextStyle warningSubtitleTextStyle =
-  TextStyle(color: Colors.amber[900]!.withAlpha(180), fontSize: 14,fontFamily: "NotoSansSC");
-
-
-  Widget _buildTimeSelectionContent() {
-    return Container(
-        alignment: Alignment.topCenter,
-        // color: Colors.blue,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Container(
-                  margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                  alignment: Alignment.topCenter,
-                  // color: Colors.blue.withAlpha(100),
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: timezoneSelectionContent()
-              ),
-              Container(
-                  margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                  alignment: Alignment.topCenter,
-                  // color: Colors.blue.withAlpha(100),
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: selectDateTimeButton(),
-              ),
-
-              ValueListenableBuilder<Location?>(
-                    valueListenable: _locationNotifier,
-                builder: (ctx,location,_) {
-                  return Container(
-                    alignment: Alignment.center,
-                    padding: EdgeInsets.symmetric(
-                        vertical: 16, horizontal: 24),
-                    child:location != null ?buildCityArea(location):SizedBox(),
-                  );
-                }
-              ),
-
-              ElevatedButton(
-                  onPressed: () async {
-                    // 显示城市选择器底部弹窗
-                    final Location? selectedLocation =
-                    await showCityPickerBottomSheet(
-                      context: context,
-                      initLocation: Location.defualtLocation,
-                    );
-                    // 处理选择结果
-                    if (selectedLocation != null) {
-                      // print(selectedLocation.toJson());
-                      _locationNotifier.value = selectedLocation;
-                    }
-                  },
-                  child: const Text("选择地区")),
-              IconButton(
-                  onPressed: toLngLatSelectPage,
-                  icon: Icon(Icons.map_rounded)),
-
-
-              // ValueListenableBuilder<Location?>(
-              //     valueListenable: _locationNotifier,
-              //     builder: (ctx, location, child) {
-              //       return ExpansionTile(
-              //         subtitle: RichText(
-              //             text: TextSpan(children: [
-              //               location == null
-              //                   ? TextSpan(
-              //                   text: "需出生地", style: warningSubtitleTextStyle)
-              //                   : TextSpan(
-              //                   style: const TextStyle(color: Colors.black54,fontFamily: "NotoSansSC"),
-              //                   text: location.province.name,
-              //                   children: [
-              //                     TextSpan(text: " · ${location.city.name}"),
-              //                     if (location.area != null)
-              //                       TextSpan(
-              //                           text: " · ${location.area!.name}"),
-              //                   ]),
-              //             ])),
-              //         title: RichText(
-              //             text: TextSpan(
-              //                 text: "平太阳时 ",
-              //                 style: titleTextStyle,
-              //                 children: [
-              //                   WidgetSpan(
-              //                       alignment: PlaceholderAlignment.top,
-              //                       child: Tooltip(
-              //                         message: "根据出生地经度进一步精确计算时间",
-              //                         child: InkWell(
-              //                           onTap: () {
-              //                             helpTooltipTapped(
-              //                                 EnumDatetimeType.meanSolar);
-              //                           },
-              //                           child: const Icon(Icons.help,
-              //                               size: 12, color: Colors.grey),
-              //                         ),
-              //                       ))
-              //                 ])),
-              //         children: <Widget>[
-              //           Container(
-              //             padding: EdgeInsets.symmetric(
-              //                 vertical: 16, horizontal: 24),
-              //             child: Column(
-              //               mainAxisAlignment: MainAxisAlignment.center,
-              //               crossAxisAlignment: CrossAxisAlignment.center,
-              //               children: [
-              //                 location != null
-              //                     ? Row(
-              //                   children: [
-              //                     Text(
-              //                       location.province.name,
-              //                       style: locationTextStyle,
-              //                     ),
-              //                     Text(
-              //                       " · ",
-              //                       style: locationTextStyle,
-              //                     ),
-              //                     Text(
-              //                       location.city.name,
-              //                       style: locationTextStyle,
-              //                     ),
-              //                     if (location.area != null)
-              //                       Text(
-              //                         " · ",
-              //                         style: locationTextStyle,
-              //                       ),
-              //                     if (location.area != null)
-              //                       Text(
-              //                         location.area!.name,
-              //                         style: locationTextStyle,
-              //                       ),
-              //                     IconButton(
-              //                         onPressed: toLngLatSelectPage,
-              //                         icon: Icon(Icons.map_rounded))
-              //                   ],
-              //                 )
-              //                     : Text("请选择出生地", style: locationTextStyle),
-              //                 Row(children: [
-              //                   Text(
-              //                     "经度：${location == null ? "??.??????" : location.area?.latitude ?? location.city.latitude}",
-              //                     style: lngLatTextStyle,
-              //                   ),
-              //                   const SizedBox(width: 12),
-              //                   Text(
-              //                     "纬度：${location == null ? "??.??????" : location.area?.longitude ?? location.city.longitude}",
-              //                     style: lngLatTextStyle,
-              //                   ),
-              //                 ])
-              //               ],
-              //             ),
-              //           ),
-              //           ElevatedButton(
-              //               onPressed: () async {
-              //                 // 显示城市选择器底部弹窗
-              //                 final Location? selectedLocation =
-              //                 await showCityPickerBottomSheet(
-              //                   context: context,
-              //                   initLocation: Location.defualtLocation,
-              //                 );
-              //                 // 处理选择结果
-              //                 if (selectedLocation != null) {
-              //                   // print(selectedLocation.toJson());
-              //                   _locationNotifier.value = selectedLocation;
-              //                 }
-              //               },
-              //               child: const Text("选择地区")),
-              //         ],
-              //       );
-              //     }),
-              // ExpansionTile(
-              //   subtitle: RichText(
-              //       text: TextSpan(
-              //           text: "需经纬度", style: warningSubtitleTextStyle)),
-              //   title: RichText(
-              //       text: TextSpan(
-              //           text: "真太阳时 ",
-              //           style: titleTextStyle,
-              //           children: [
-              //             WidgetSpan(
-              //                 alignment: PlaceholderAlignment.top,
-              //                 child: Tooltip(
-              //                   message:
-              //                   "标准时间是指一个国家或地区统一采用的基于时区划分的本地时间，通常以格林尼治时间（GMT）或协调世界时（UTC）为基准。\n如：北京时间(UTC+8,东八区)",
-              //                   child: InkWell(
-              //                     onTap: () {
-              //                       helpTooltipTapped(EnumDatetimeType.meanSolar);
-              //                     },
-              //                     child: const Icon(Icons.help,
-              //                         size: 12, color: Colors.grey),
-              //                   ),
-              //                 ))
-              //           ])),
-              //   children: <Widget>[
-              //     // IconButton(
-              //     //     onPressed: toLngLatSelectPage,
-              //     //     icon: Icon(Icons.map_rounded))
-              //   ],
-              // ),
-
-            ],
-          ),
-        ));
-  }
-  Widget buildCityArea(Location location){
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              location.province.name,
-              style: locationTextStyle,
-            ),
-            Text(
-              " · ",
-              style: locationTextStyle,
-            ),
-            Text(
-              location.city.name,
-              style: locationTextStyle,
-            ),
-            if (location.area != null)
-              Text(
-                " · ",
-                style: locationTextStyle,
-              ),
-            if (location.area != null)
-              Text(
-                location.area!.name,
-                style: locationTextStyle,
-              ),
-            IconButton(
-                onPressed: toLngLatSelectPage,
-                icon: Icon(Icons.map_rounded))
-          ],
-        ),
-        Text.rich(
-          TextSpan(
-            style: lngLatTextStyle.copyWith(color: Colors.black87),
-            children: [
-              TextSpan(
-                  text:"${location.lowestGeoLocation.coordinates.longitude}, ${location.lowestGeoLocation.coordinates.latitude}"
-              )
-            ]
-          ),
-        ),
-        Text.rich(
-          TextSpan(text:"(行政中心坐标)",style: lngLatTextStyle.copyWith(color: Colors.black45)),
-        )
-      ]
-    );
-  }
-  @deprecated
-  Widget _timeSelectionContent() {
-    return Container(
-        alignment: Alignment.topCenter,
-        // color: Colors.blue,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ExpansionTile(
-                initiallyExpanded: showTimezoneAtTitleNotifier.value,
-                onExpansionChanged: (expanded){
-                  showTimezoneAtTitleNotifier.value = !expanded;
-                },
-                subtitle: ValueListenableBuilder(
-                    valueListenable: _isAutoHandleDSTNotifier,
-                    builder: (context, isAutoHandleDST, _) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ClipRect(
-                            child: Container(
-                              padding: EdgeInsets.symmetric(horizontal: 2),
-                              child: AnimatedSwitcher(
-                                duration: Duration(milliseconds: 500),
-                                                    transitionBuilder: (Widget child, Animation<double> animation) {
-                                                      // 上下滑动动画：新组件从上方进入，旧组件从下方退出
-                                                      return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: Offset(0.0, -1.0), // 从上方开始（y轴方向）
-                                end: Offset.zero,          // 移动到中心
-                              ).animate(animation),
-                              child: child,
-                                                      );
-                                },
-                                child: isAutoHandleDST
-                                    ? Text(
-                                  key: ValueKey("isAutoRemoveDST"),
-                                    "移除",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: Colors.black87,fontFamily: "NotoSansSC"))
-                                    :Text(
-                                    key: ValueKey("isNotAutoRemoveDST"),
-                                    "保留",
-                                    style: TextStyle(
-                                        fontWeight: FontWeight.normal,
-                                        color: Colors.black87,fontFamily: "NotoSansSC")),
-                              ),
-                            ),
-                          ),
-                          // SizedBox(width: 4,),
-                          Text("夏令时", style: TextStyle(
-                            color: Colors.redAccent,
-                            fontWeight: FontWeight.normal,fontFamily: "NotoSansSC")),
-                          Tooltip(
-                            message:
-                            "在每年夏季，人为调快1小时(相对于时区标准时间)，以达到充分利用光照的目的。\n如：1986-1991(中国)，1918至今（美国）",
-                            child: InkWell(
-                              onTap: () {
-                                helpTooltipTapped(EnumDatetimeType.meanSolar);
-                              },
-                              child: const Icon(Icons.help,
-                                  size: 12, color: Colors.grey),
-                            ),
-                          )
-                        ],
-                      );
-                    }
-                ),
-                title:ValueListenableBuilder(
-                    valueListenable: _isDefaultTimezoneNotifier,
-                    builder: (context,isDefaultTimeZone,_) {
-                      return ValueListenableBuilder<bool>(
-                        valueListenable: showTimezoneAtTitleNotifier,
-                        builder: (ctx, showTimezoneAtTitle, _) {
-                          if (!showTimezoneAtTitle){
-                            return RichText(text: TextSpan(text:"选择时区 ",style: titleTextStyle));
-                          }
-                          return ValueListenableBuilder(valueListenable: _timezoneNotifier, builder: (ctx,timezoneStr,_){
-                            return RichText(text: TextSpan(text:"选择时区 ",style: titleTextStyle,children: [
-                              TextSpan(text: timezoneStr,style: locationTextStyle),
-                              if (isDefaultTimeZone)
-                                TextSpan(text: "（默认）",style: titleTextStyle.copyWith(color: Colors.black45)),
-                            ]));
-                          });
-                        }
-                      );
-                    }
-                ),
-                children: [
-                  Container(
-                    margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                    alignment: Alignment.topCenter,
-                    // color: Colors.blue.withAlpha(100),
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: timezoneSelectionContent()
-                  )
-                ],
-
-                ),
-              ExpansionTile(
-                initiallyExpanded: true,
-                subtitle: RichText(
-                  text: TextSpan(
-                      text: "请注意",
-                      style: const TextStyle(color: Colors.grey, fontSize: 14,fontFamily: "NotoSansSC"),
-                      children: [
-                        const TextSpan(
-                            text: "夏令时 ",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.redAccent,fontFamily: "NotoSansSC")),
-                        WidgetSpan(
-                            alignment: PlaceholderAlignment.top,
-                            child: Tooltip(
-                              message:
-                                  "在每年夏季，人为调快1小时(相对于时区标准时间)，以达到充分利用光照的目的。\n如：1986-1991(中国)，1918至今（美国）",
-                              child: InkWell(
-                                onTap: () {
-                                  helpTooltipTapped(EnumDatetimeType.meanSolar);
-                                },
-                                child: const Icon(Icons.help,
-                                    size: 12, color: Colors.grey),
-                              ),
-                            )
-                        ),
-                      ]),
-                ),
-                title: RichText(
-                    text: TextSpan(
-                        text: "标准时间 ",
-                        style: titleTextStyle,
-                        children: [
-                      WidgetSpan(
-                          alignment: PlaceholderAlignment.top,
-                          child: Tooltip(
-                            message:
-                                "标准时间是指一个国家或地区统一采用的基于时区划分的本地时间，通常以格林尼治时间（GMT）或协调世界时（UTC）为基准。\n如：北京时间(UTC+8,东八区)",
-                            child: InkWell(
-                              onTap: () {
-                                helpTooltipTapped(EnumDatetimeType.meanSolar);
-                              },
-                              child: const Icon(Icons.help,
-                                  size: 12, color: Colors.grey),
-                            ),
-                          ))
-                    ])),
-                children: [
-                  selectDateTimeButton(),
-                ],
-              ),
-              ValueListenableBuilder<Location?>(
-                  valueListenable: _locationNotifier,
-                  builder: (ctx, location, child) {
-                    return ExpansionTile(
-                      subtitle: RichText(
-                          text: TextSpan(children: [
-                        location == null
-                            ? TextSpan(
-                                text: "需出生地", style: warningSubtitleTextStyle)
-                            : TextSpan(
-                                style: const TextStyle(color: Colors.black54,fontFamily: "NotoSansSC"),
-                                text: location.province.name,
-                                children: [
-                                    TextSpan(text: " · ${location.city.name}"),
-                                    if (location.area != null)
-                                      TextSpan(
-                                          text: " · ${location.area!.name}"),
-                                  ]),
-                      ])),
-                      title: RichText(
-                          text: TextSpan(
-                              text: "平太阳时 ",
-                              style: titleTextStyle,
-                              children: [
-                            WidgetSpan(
-                                alignment: PlaceholderAlignment.top,
-                                child: Tooltip(
-                                  message: "根据出生地经度进一步精确计算时间",
-                                  child: InkWell(
-                                    onTap: () {
-                                      helpTooltipTapped(
-                                          EnumDatetimeType.meanSolar);
-                                    },
-                                    child: const Icon(Icons.help,
-                                        size: 12, color: Colors.grey),
-                                  ),
-                                ))
-                          ])),
-                      children: <Widget>[
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              vertical: 16, horizontal: 24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              location != null
-                                  ? Row(
-                                      children: [
-                                        Text(
-                                          location.province.name,
-                                          style: locationTextStyle,
-                                        ),
-                                        Text(
-                                          " · ",
-                                          style: locationTextStyle,
-                                        ),
-                                        Text(
-                                          location.city.name,
-                                          style: locationTextStyle,
-                                        ),
-                                        if (location.area != null)
-                                          Text(
-                                            " · ",
-                                            style: locationTextStyle,
-                                          ),
-                                        if (location.area != null)
-                                          Text(
-                                            location.area!.name,
-                                            style: locationTextStyle,
-                                          ),
-                                        IconButton(
-                                            onPressed: toLngLatSelectPage,
-                                            icon: Icon(Icons.map_rounded))
-                                      ],
-                                    )
-                                  : Text("请选择出生地", style: locationTextStyle),
-                              Row(children: [
-                                Text(
-                                  "经度：${location == null ? "??.??????" : location.area?.latitude ?? location.city.latitude}",
-                                  style: lngLatTextStyle,
-                                ),
-                                const SizedBox(width: 12),
-                                Text(
-                                  "纬度：${location == null ? "??.??????" : location.area?.longitude ?? location.city.longitude}",
-                                  style: lngLatTextStyle,
-                                ),
-                              ])
-                            ],
-                          ),
-                        ),
-                        ElevatedButton(
-                            onPressed: () async {
-                              // 显示城市选择器底部弹窗
-                              final Location? selectedLocation =
-                                  await showCityPickerBottomSheet(
-                                context: context,
-                                initLocation: Location.defualtLocation,
-                              );
-                              // 处理选择结果
-                              if (selectedLocation != null) {
-                                // print(selectedLocation.toJson());
-                                _locationNotifier.value = selectedLocation;
-                              }
-                            },
-                            child: const Text("选择地区")),
-                      ],
-                    );
-                  }),
-              ExpansionTile(
-                subtitle: RichText(
-                    text: TextSpan(
-                        text: "需经纬度", style: warningSubtitleTextStyle)),
-                title: RichText(
-                    text: TextSpan(
-                        text: "真太阳时 ",
-                        style: titleTextStyle,
-                        children: [
-                      WidgetSpan(
-                          alignment: PlaceholderAlignment.top,
-                          child: Tooltip(
-                            message:
-                                "标准时间是指一个国家或地区统一采用的基于时区划分的本地时间，通常以格林尼治时间（GMT）或协调世界时（UTC）为基准。\n如：北京时间(UTC+8,东八区)",
-                            child: InkWell(
-                              onTap: () {
-                                helpTooltipTapped(EnumDatetimeType.meanSolar);
-                              },
-                              child: const Icon(Icons.help,
-                                  size: 12, color: Colors.grey),
-                            ),
-                          ))
-                    ])),
-                children: <Widget>[
-                  IconButton(
-                      onPressed: toLngLatSelectPage,
-                      icon: Icon(Icons.map_rounded))
-                ],
-              ),
-
-
-              // SingleChildScrollView(
-              //     scrollDirection: Axis.horizontal,
-              //   child:Row(
-              //   children: List.generate(10, (item)=>buildEightCharCard(item,1))
-              //   )
-
-              // )
-            ],
-          ),
-        ));
-  }
-
-  Widget _buildNameInput() {
-    return ValueListenableBuilder(
-        valueListenable: _inputNameNotifier,
-        builder: (ctx, name, _) {
-          return TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                labelText: "命主姓名"),
-            onChanged: (value) {
-              _inputNameNotifier.value = value;
-            },
-          );
-        });
-  }
-
-  Widget _buildGenderSelector() {
-    return Center(
-      child: ValueListenableBuilder(
-        valueListenable: _inputGenderNotifier,
-        builder: (ctx, configType, _) {
-          return SlideSwitcher(
-            initialIndex: configType.index,
-            onSelect: (index) {
-              if (index != configType.index) {
-                _inputGenderNotifier.value = Gender.values[index];
-              }
-            },
-            containerHeight: 42,
-            containerWight: 100,
-            indents: 4,
-            containerColor: Colors.black12.withAlpha(50),
-            slidersColors: const [Color(0xfff7f5f7)],
-            containerBoxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
-                blurRadius: 2,
-                spreadRadius: 4,
-              )
-            ],
-            children: [
-              Text(
-                "男",
-                style: configType != Gender.male
-                    ? _getSwitcherInactivatedStyle()
-                    : _getSwitcherActivatedStyle(),
-              ),
-              Text(
-                "女",
-                style: configType != Gender.female
-                    ? _getSwitcherInactivatedStyle()
-                    : _getSwitcherActivatedStyle(),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-
-  void toLngLatSelectPage() {
-    if (_locationNotifier.value != null) {
-      Navigator.pushNamed(context, '/common/maps',
-          arguments: {"seekerCoordinate":_coordinatesValueNotifier.value,"location": _locationNotifier.value,"myCoordinate":Coordinates(longitude: 114.46091714063846,latitude: 38.04295413918599)}).then((val){
-            if (val!= null) {
-              _coordinatesValueNotifier.value = val! as Coordinates;
-            }
-      });
-    } else {
-      InteractiveToast.pop(
-        context,
-        title: const Text("为了便于后续操作请先选择出生地"),
-        toastSetting: const PopupToastSetting(
-          animationDuration: Duration(seconds: 2),
-          displayDuration: Duration(seconds: 20),
-          toastAlignment: Alignment.bottomCenter,
-        ),
-      );
-    }
-  }
-  Widget timezoneSelectionContent(){
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12.0,vertical: 8),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(
-              // height: 50,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ValueListenableBuilder<String?>(
-                      valueListenable: _timezoneNotifier,
-                      builder: (ctx,timezonStr,_) {
-                        return ValueListenableBuilder(
-                            valueListenable: _isDefaultTimezoneNotifier,
-                            builder: (ctx,isDefaultTimezone,_){
-                              return Checkbox(
-                                  value: isDefaultTimezone,
-                                  onChanged:onIsDefaultTimezoneChanged
-                              );
-                            });
-                      }
-                  ),
-                  SizedBox(width: 2,),
-                  Text("默认",style: TextStyle(fontSize: 12,color: Colors.grey),),
-                ],
-              ),
-            ),
-            Column(
-                children: [
-                  ValueListenableBuilder<SPTimezoneDataModel?>(
-                      valueListenable: _spTimezoneDataModelNotifier,
-                      builder: (ctx,spTimezoneDataModel,_) {
-                        return ValueListenableBuilder<String?>(
-                            valueListenable: _localTimezoneNotifier,
-                            builder: (ctx,localTimezone,_) {
-                              String? defaultTimezone = spTimezoneDataModel?.isDefaultTimezone != null ? spTimezoneDataModel?.timezoneStr: null;
-                              return ValueListenableBuilder<String?>(
-                                  valueListenable: _timezoneNotifier,
-                                  builder: (context, timezoneStr, _) {
-                                    return Container(
-                                      // height: 50,
-                                      width: 240,
-                                      child: DropdownButton<String?>(
-                                          isExpanded: true,
-                                          menuWidth: 240,
-                                          value: timezoneStr,
-                                          items: tz.timeZoneDatabase.locations.keys
-                                              .map((String value) {
-
-                                            return DropdownMenuItem<String>(
-                                                value: value,
-                                                child: Text.rich(TextSpan(
-                                                    style: TextStyle(fontWeight: FontWeight.normal,color: Colors.black54,height: 1),
-                                                    children: [
-                                                      TextSpan(text: value,style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87)),
-                                                      if (localTimezone == value ||defaultTimezone ==value)
-                                                        TextSpan(text: " (",),
-                                                      if (localTimezone == value)
-                                                        TextSpan(
-                                                          text: "本地",
-                                                        ),
-                                                      if (localTimezone == value && defaultTimezone == value)
-                                                        TextSpan(text: "/"),
-                                                      if (defaultTimezone == value)
-                                                        TextSpan(
-                                                          text: "默认",
-                                                        ),
-
-                                                      if (localTimezone == value ||defaultTimezone ==value)
-                                                        TextSpan(text: ")")
-                                                    ]
-                                                ),
-                                                ));
-                                          }).toList(),
-                                          onChanged: onTimezoneSelected
-                                      ),
-                                    );
-                                  });
-                            }
-                        );
-                      }
-                  ),
-                  Container(
-                    height: 18,
-                    width: 256,
-                    alignment: Alignment.topCenter,
-                    // color: Colors.greenAccent.withAlpha(20),
-                    child: ValueListenableBuilder<SPTimezoneDataModel?>(
-                      valueListenable: _spTimezoneDataModelNotifier,
-                      builder: (context, spTimezoneDataModel, _) {
-                        return ValueListenableBuilder<String?>(
-                            valueListenable: _localTimezoneNotifier,
-                            builder: (ctx, localTimezoneStr, _) {
-                              return ValueListenableBuilder<String?>(
-                                  valueListenable: _timezoneNotifier,
-                                  builder: (ctx,selectedTimezoneStr,_){
-                                    //  当默认时区是存在的，且当前选择的时区不是默认时区是显示默认时区
-                                    if (_spTimezoneDataModelNotifier.value?.isDefaultTimezone ?? false){
-                                      List<TextSpan> textSpans = [];
-                                      if (_timezoneNotifier.value != _spTimezoneDataModelNotifier.value?.timezoneStr){
-                                        textSpans = [
-                                          const TextSpan(text: "默认时区: "),
-                                          TextSpan(text: _spTimezoneDataModelNotifier.value?.timezoneStr!,style: TextStyle(color: Theme.of(ctx).primaryColor))
-                                        ];
-                                      }
-                                      return Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 24),
-                                        child: TextButton(
-                                            onPressed: (){
-                                              if (_spTimezoneDataModelNotifier.value?.isDefaultTimezone?? false){
-                                                // && _spTimezoneDataModelNotifier.value?.timezoneStr != null){
-                                                _timezoneNotifier.value = _spTimezoneDataModelNotifier.value?.timezoneStr;
-                                              }
-                                            },
-                                            child: Text.rich(
-                                              TextSpan(
-                                                  style: TextStyle(
-                                                      fontSize: 12, color: Colors.grey,height: 1,fontFamily: "NotoSansSC"),
-                                                  children: textSpans
-                                              ),
-                                            )),
-                                      );
-                                    }else{
-                                      List<TextSpan> textSpans = [];
-                                      if (_localTimezoneNotifier.value != selectedTimezoneStr){
-                                        textSpans = [
-                                          const TextSpan(text: "本地时区: "),
-                                          TextSpan(text: localTimezoneStr,style: TextStyle(color: Colors.black87))
-                                        ];
-                                      }
-                                      return Container(
-                                        padding: EdgeInsets.symmetric(horizontal: 24),
-                                        child: TextButton(
-                                            onPressed: (){
-                                              if (_timezoneNotifier.value != localTimezoneStr){
-                                                _timezoneNotifier.value = localTimezoneStr;
-                                              }
-                                            },
-                                            child: Text.rich(
-                                              TextSpan(
-                                                  style: TextStyle(
-                                                      fontSize: 12, color: Colors.grey,height: 1,fontFamily: "NotoSansSC"),
-                                                  children: textSpans
-                                              ),
-                                            )),
-                                      );
-                                    }
-
-                                  });
-                            }
-                        );
-                      },
-                    ),
-                  ),
-                ]
-            ),
-            Tooltip(
-              message:"开启后当时间为“夏令时”，则自动调整回自然时间",
-              child: Container(
-                // width: 42 + 24,
-                // height: 32 + 24,
-                // color: Colors.amberAccent.withAlpha(100),
-                child: ValueListenableBuilder(
-                    valueListenable: _isDSTNotifier,
-                    builder: (context, isDST, _) {
-                      return ValueListenableBuilder(
-                        valueListenable: _isAutoHandleDSTNotifier,
-                        builder: (ctx, isANSI, _) {
-                          // 当前时区不是夏令时switch 设为不可用
-                          return Column(
-                            children: [
-                              Transform.scale(
-                                  scale: 1,
-                                  child: Switch(
-                                      value: isANSI,
-                                      onChanged: onAutoHandleTimezoneChanged)),
-                              Text(
-                                "移除夏令时",
-                                style: TextStyle(
-                                    height: 1,
-                                    fontSize: 12,
-                                    color: Colors.grey),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    }),
-              ),
-            ),
-
-
-          ],
-        ),
-      ),
-    );
-
-  }
-  void onTimezoneSelected(String? newValue) async{
-
-    // 当 _spTimezoneDataModelNotifier.value != null 是，
-    // 需要检测新选的值是否与 _spTimezoneDataModelNotifier.value?.timezoneStr
-    // 如果不同，且_isDefaultTimezoneNotifier.value == true，则需要在UI上取消 _isDefaultTimezone
-    if (_spTimezoneDataModelNotifier.value != null){
-      final currentSPTZDataModel = _spTimezoneDataModelNotifier.value!;
-      if (currentSPTZDataModel.timezoneStr != newValue && (currentSPTZDataModel.isDefaultTimezone ?? false)){
-        _isDefaultTimezoneNotifier.value = false;
-      }
-    }
-    _timezoneNotifier.value = newValue;
-  }
-  void onIsDefaultTimezoneChanged(bool? newValue) async {
-      // _isDefaultTimezoneNotifier.value = newValue ?? false
-      bool isDefault = newValue ?? false;
-      SPTimezoneDataModel toSavedTimezoneDataModel;
-      if (_spTimezoneDataModelNotifier.value == null){
-        toSavedTimezoneDataModel = SPTimezoneDataModel(
-            appFeatureModule: widget.appFeatureModule,
-            timezoneStr: _timezoneNotifier.value,
-            isAutoHandleDST: _isAutoHandleDSTNotifier.value,
-            isDefaultTimezone: isDefault
-        );
-      }else{
-        toSavedTimezoneDataModel = _spTimezoneDataModelNotifier.value!.copyWith(timezoneStr:_timezoneNotifier.value,isDefaultTimezone: isDefault);
-      }
-      await saveTimezoneDataModel(toSavedTimezoneDataModel);
-      _spTimezoneDataModelNotifier.value = await loadTimezoneDataModelFromShared(widget.appFeatureModule);
-
-  }
-  void onAutoHandleTimezoneChanged(bool? newValue) async {
-    // _isDefaultTimezoneNotifier.value = newValue ?? false
-    bool isAutoHandle = newValue ?? false;
-    SPTimezoneDataModel toSavedTimezoneDataModel;
-    if (_spTimezoneDataModelNotifier.value == null){
-      toSavedTimezoneDataModel = SPTimezoneDataModel(
-          appFeatureModule: widget.appFeatureModule,
-          timezoneStr: _timezoneNotifier.value,
-          isAutoHandleDST: isAutoHandle,
-          isDefaultTimezone: _isDefaultTimezoneNotifier.value
-      );
-    }else{
-      toSavedTimezoneDataModel = _spTimezoneDataModelNotifier.value!.copyWith(timezoneStr:_timezoneNotifier.value,isAutoHandleDST: isAutoHandle);
-    }
-    await saveTimezoneDataModel(toSavedTimezoneDataModel);
-    _spTimezoneDataModelNotifier.value = await loadTimezoneDataModelFromShared(widget.appFeatureModule);
-    // if (_selectedBirthTimeNotifier.value != null){
-
-    // }
-    // if (isAutoHandle){
-    //   if (_selectedBirthTimeNotifier.value != null && _timezoneNotifier.value != null){
-    //     handleDSTTime(_selectedBirthTimeNotifier.value!,_timezoneNotifier.value!);
-    //   }
-    // }else{
-    //   unhandleDSTTime();
-    // }
-  }
-
-  // DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm");
-  Widget selectDateTimeButton() {
-    Duration duration = Duration(milliseconds: 400);
-    double largeFontSize = 28;
-    double smallFontSize = 16;
-    return ValueListenableBuilder(
-        valueListenable: _selectedBirthTimeNotifier,
-        builder: (ctx, dateTime, _) {
-          return ValueListenableBuilder(
-              valueListenable: _DSTBirthTimeNotifier,
-              builder: (ctx, dstTime, _) {
-              return AnimatedContainer(
-                duration: Duration.zero,
-                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-                alignment: Alignment.topCenter,
-                // color: Colors.blue.withAlpha(100),
-                padding: EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                // width: 512,
-                // height: 200,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 命主生时 title
-                    AnimatedContainer(
-                        duration: duration,
-                        alignment: dateTime == null
-                            ? Alignment.bottomCenter
-                            : Alignment.topLeft,
-                        child: AnimatedDefaultTextStyle(
-                          duration: duration,
-                          child: Text("命主生时"),
-                          style: dateTime == null
-                              ? TextStyle(
-                              fontSize: smallFontSize,
-                              height: 1.0,
-                              color: Colors.black87)
-                              : TextStyle(
-                            fontSize: smallFontSize,
-                            height: 1.0,
-                            color: Colors.black87,
-                          ),
-                        )),
-                    // 命主生时选择结果
-                    AnimatedContainer(
-                        duration: duration,
-                        height: dateTime == null ? 0 : 64,
-                        alignment: Alignment.center,
-                        // color: Colors.blueAccent.withAlpha(50),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-
-                        AnimatedContainer(
-                          duration: duration,
-                          height: dstTime==null?0:18,
-                          width: 240,
-                          // color: Colors.redAccent.withAlpha(100),
-                          child: dstTime == null
-                              ? SizedBox()
-                              : Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              SizedBox(width: 16*2,),
-                              Text.rich(
-                                  TextSpan(
-                                      text:"${dateTimeFormat.format(dstTime)} ",
-                                      style: TextStyle(
-                                          height: 1.0,
-                                          color: Colors.black87,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.normal,
-                                          decoration: TextDecoration
-                                              .lineThrough),
-                                      children: [
-                                        TextSpan(text:"夏令时",style: TextStyle(fontSize: 13))
-                                      ]
-                                  )
-                              ),
-                            ],
-                          ),
-                        ),
-                            // SizedBox(height: 4,),
-                            if (dateTime != null)
-                              Row(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Container(
-                                    width: 42,
-                                    alignment: Alignment.center,
-                                  ),
-                                  AnimatedDefaultTextStyle(
-                                      child: Text(dateTimeFormat.format(dateTime)),
-                                      style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87,fontSize: dstTime == null?36:34),
-                                      duration: duration),
-
-                                  // Text(dateTimeFormat.format(dateTime),
-                                  //   style: TextStyle(fontWeight: FontWeight.bold,color: Colors.black87,fontSize: 36),),
-                                  SizedBox(
-                                    width: 42,
-                                    height: 28,
-                                    child: Column(
-                                      mainAxisAlignment: MainAxisAlignment.start,
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        ValueListenableBuilder<bool>(
-                                          valueListenable: _isDSTNotifier,
-                                          builder: (context, isDST, _) {
-                                            return AnimatedSwitcher(
-                                              duration: duration,
-                                              transitionBuilder: (Widget child, Animation<double> animation) {
-                                                final offsetAnimation = Tween<Offset>(
-                                                  begin: const Offset(0.0, -1.0),
-                                                  end: Offset.zero,
-                                                ).animate(CurvedAnimation(
-                                                  parent: animation,
-                                                  curve: Curves.easeInOut,
-                                                ));
-                                                final opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(animation);
-                                                return SlideTransition(
-                                                  position: offsetAnimation,
-                                                  child: FadeTransition(
-                                                    opacity: opacityAnimation,
-                                                    child: child,
-                                                  ),
-                                                );
-                                              },
-                                              child: isDST
-                                                  ? Text(
-                                                "夏令时",
-                                                key: ValueKey(isDST),
-                                                style: TextStyle(
-                                                  color: Colors.red,
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                                  : SizedBox.shrink(key: ValueKey(isDST)),
-                                            );
-                                          },
-                                        ),
-                                        Expanded(child: SizedBox())
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                          ],
-                        )),
-                    AnimatedContainer(
-                      duration: duration,
-                      padding: const EdgeInsets.all(4),
-                      alignment: dateTime == null
-                          ? Alignment.topCenter
-                          : Alignment.bottomCenter,
-                      // margin: EdgeInsets.only(top: 12),
-                      child: InkWell(
-                        onTap: () async {
-                          final result = await showBoardDateTimePicker(
-                            context: context,
-                            pickerType: DateTimePickerType.datetime,
-                            initialDate: _selectedBirthTimeNotifier.value
-                          );
-                          if (result != null) {
-                            handleDSTTime(result,_timezoneNotifier.value!);
-                          }
-                        },
-                        child: AnimatedContainer(
-                            duration: duration,
-                            width: dateTime == null ? 180 : 128,
-                            height: dateTime == null ? 48 : 32,
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(100),
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.black26.withAlpha(20),
-                                      offset: Offset(1, 1),
-                                      blurRadius: 2,
-                                      spreadRadius: 2)
-                                ]),
-                            child: AnimatedDefaultTextStyle(
-                              duration: duration,
-                              child: Text(
-                                "选择时间",
-                                style:
-                                TextStyle(color: Colors.white),
-                              ),
-                              style: dateTime == null
-                                  ? TextStyle(fontSize: largeFontSize)
-                                  : TextStyle(fontSize: smallFontSize),
-                            )),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          );
-        });
-  }
-  void handleDSTTime(DateTime? result,String timezoneStr){
-    if (result != null){
-      l.i("handle datetime from DST to normal");
-      final tzDateTime = tz.TZDateTime.from(result, tz.getLocation(timezoneStr));
-      // final isDST = SolarTimeCalculator.checkIsDST(result, timezoneStr);
-      if (tzDateTime.timeZone.isDst){
-        l.d("current datetime is DST");
-
-        if (_isAutoHandleDSTNotifier.value ?? false){
-          DateTime dstDateTime = result;
-          DateTime removedDSTDateTime = dstDateTime.subtract(Duration(hours: 1));
-          _selectedBirthTimeNotifier.value = removedDSTDateTime;
-          _DSTBirthTimeNotifier.value = result;  // 保留DST，并显示在UI上
-          _isDSTNotifier.value = false;
-        }else{
-          _selectedBirthTimeNotifier.value = result;
-          _isDSTNotifier.value = true;
-        }
-      }else{
-        l.d("current datetime is not DST");
-        _selectedBirthTimeNotifier.value = result;
-        _isDSTNotifier.value = false;
-      }
-    }
-
-  }
-  void unhandleDSTTime(){
-
-    l.i("convert normal back to DST");
-    // 确保当前时间是DST
-    if (_DSTBirthTimeNotifier.value != null){
-      l.t("set _selectedBirthTimeNotifier.value to _DSTBirthTimeNotifier.value");
-      _selectedBirthTimeNotifier.value = _DSTBirthTimeNotifier.value;
-      l.t("set _DSTBirthTimeNotifier.value to null");
-      _DSTBirthTimeNotifier.value = null;
-      l.t("set _isDSTNotifier.value to true");
-      _isDSTNotifier.value = true;
-    }else{
-      l.e("current datetime is not DST, can not back to DST");
-    }
-  }
-
-  void removeDSTTime(bool doRemove) {
-    if (_isDSTNotifier.value && _selectedBirthTimeNotifier.value != null) {
-      if (doRemove && _DSTBirthTimeNotifier.value == null) {
-        DateTime dstDateTime = _selectedBirthTimeNotifier.value!;
-        DateTime removedDSTDateTime = dstDateTime.subtract(Duration(hours: 1));
-        _selectedBirthTimeNotifier.value = removedDSTDateTime;
-        _DSTBirthTimeNotifier.value = dstDateTime;
-      } else {
-        _selectedBirthTimeNotifier.value = _DSTBirthTimeNotifier.value;
-        _DSTBirthTimeNotifier.value = null;
-      }
-    }
-  }
-
-
-
-  void helpTooltipTapped(EnumDatetimeType datetimeType) {
-    switch (datetimeType) {
-      case EnumDatetimeType.standard:
-        showEnhancedDialog(
-            context,
-            QueryDateTimeHeplperModel
-                .datetimeHelperMapper[EnumDatetimeType.standard]!);
-        break;
-      case EnumDatetimeType.removeDST:
-        throw UnimplementedError();
-      case EnumDatetimeType.meanSolar:
-        showEnhancedDialog(
-            context,
-            QueryDateTimeHeplperModel
-                .datetimeHelperMapper[EnumDatetimeType.meanSolar]!);
-        break;
-      case EnumDatetimeType.trueSolar:
-        showEnhancedDialog(
-            context,
-            QueryDateTimeHeplperModel
-                .datetimeHelperMapper[EnumDatetimeType.trueSolar]!);
-        break;
-        default:
-          throw UnimplementedError();
-    }
-  }
-
-  /// 获取滑块未激活状态的文本样式
-  TextStyle _getSwitcherInactivatedStyle() {
-    return const TextStyle(
-        fontSize: 18, fontWeight: FontWeight.normal, color: Colors.black87,fontFamily: "NotoSansSC"
-        // color: AppTheme.secondaryText,
-        );
-  }
-
-  /// 获取滑块激活状态的文本样式
-  TextStyle _getSwitcherActivatedStyle() {
-    return const TextStyle(
-        fontSize: 18, fontWeight: FontWeight.bold, color: Colors.blueGrey,fontFamily: "NotoSansSC"
-        // color: AppTheme.primaryColor,
-        );
-  }
-
-  void checkDST(DateTime datetime, String timezone) {
-    /// 是否为夏令时
-    final isDST = SolarTimeCalculator.checkIsDST(datetime, timezone);
-    if (isDST) {
-      if (isDSTShakeMeKey.currentState != null &&
-          isDSTShakeMeKey.currentState is ShakeWidgetState) {
-        (isDSTShakeMeKey.currentState as ShakeWidgetState).shake();
-      }
-    }
-    if (isDST != _isDSTNotifier.value) {
-      _isDSTNotifier.value = isDST;
     }
   }
 }

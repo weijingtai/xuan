@@ -51,6 +51,7 @@ dependencies:
   provider: ^6.1.4
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
+  dotted_border: ^2.1.0
   
   flutter_map: ^8.1.1
   topojson: ^0.3.0
@@ -63,6 +64,8 @@ dependencies:
   drift: ^2.26.0
   drift_flutter: ^0.2.4
   path_provider: ^2.1.5
+  flutter_switch: ^0.3.2
+  protobuf: ^4.0.0
 #  drift_native: ^2.10.0
 #  dropdown_button2: ^2.3.9
 

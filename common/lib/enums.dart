@@ -17,7 +17,7 @@ export 'enums/enum_twelve_star_seq.dart';
 export 'enums/enum_ji_xiong.dart';
 export 'enums/enum_ten_gods.dart';
 
-export 'enums/enum_twenty_eight_star_inn.dart';
+export 'enums/enum_28_constellations.dart';
 export 'enums/enum_stars.dart';
 export 'enums/enum_query_type.dart';
 

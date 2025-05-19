@@ -31,6 +31,7 @@ ObserverPosition _$ObserverPositionFromJson(Map<String, dynamic> json) =>
       longitude: (json['longitude'] as num).toDouble(),
       altitude: (json['altitude'] as num).toDouble(),
       timezone: json['timezone'] as String,
+      isDayBirth: json['isDayBirth'] as bool? ?? true,
       fateLifeDateTime: json['fateLifeDateTime'] == null
           ? null
           : DateTime.parse(json['fateLifeDateTime'] as String),
@@ -60,6 +61,7 @@ Map<String, dynamic> _$ObserverPositionToJson(ObserverPosition instance) =>
       'monthGanZhi': _$JiaZiEnumMap[instance.monthGanZhi]!,
       'dayGanZhi': _$JiaZiEnumMap[instance.dayGanZhi]!,
       'timeGanZhi': _$JiaZiEnumMap[instance.timeGanZhi]!,
+      'isDayBirth': instance.isDayBirth,
     };
 
 const _$JiaZiEnumMap = {

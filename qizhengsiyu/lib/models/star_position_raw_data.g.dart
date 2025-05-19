@@ -29,7 +29,7 @@ const _$EnumStarsEnumMap = {
   EnumStars.Saturn: '土',
   EnumStars.Venus: '金',
   EnumStars.Jupiter: '木',
-  EnumStars.Qi: '气',
+  EnumStars.Qi: '炁',
   EnumStars.Luo: '罗',
   EnumStars.Ji: '计',
   EnumStars.Bei: '孛',

@@ -925,9 +925,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         height: 32,
         width: height,
         padding: const EdgeInsets.symmetric(horizontal: 6),
-        decoration: BoxDecoration(
-            // TODO: DevHelper Color
-            color: Colors.blue.withOpacity(.1)),
+        // decoration: BoxDecoration(
+        // TODO: DevHelper Color
+        // color: Colors.blue.withOpacity(.1)),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1004,9 +1004,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         height: height,
         width: 32,
         padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-            // TODO: DevHelper Color
-            color: Colors.blue.withOpacity(.1)),
+        // decoration: BoxDecoration(
+        // TODO: DevHelper Color
+        // color: Colors.blue.withOpacity(.1)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -1254,19 +1254,19 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     double minCollision = acosValue * (180 / pi); // 当小于等于这个值时 两个星体碰撞
 
     double diffDegree = 0;
-    if (starsAngle.Venus < starsAngle.sun) {
-      diffDegree = starsAngle.sun - starsAngle.Venus;
+    if (starsAngle.venus < starsAngle.sun) {
+      diffDegree = starsAngle.sun - starsAngle.venus;
     } else {
-      diffDegree = starsAngle.Venus - starsAngle.sun;
+      diffDegree = starsAngle.venus - starsAngle.sun;
     }
     double needDegreeInTotal = minCollision - diffDegree;
     double needDegreeAddEach = needDegreeInTotal * .5;
-    if (starsAngle.Venus < starsAngle.sun) {
+    if (starsAngle.venus < starsAngle.sun) {
       uiSunAngle = starsAngle.sun + needDegreeAddEach;
-      uiVenusAngle = starsAngle.Venus - needDegreeAddEach;
+      uiVenusAngle = starsAngle.venus - needDegreeAddEach;
     } else {
       uiSunAngle = starsAngle.sun - needDegreeAddEach;
-      uiVenusAngle = starsAngle.Venus + needDegreeAddEach;
+      uiVenusAngle = starsAngle.venus + needDegreeAddEach;
     }
 
     // create UIStarsAngle from StarsAngle

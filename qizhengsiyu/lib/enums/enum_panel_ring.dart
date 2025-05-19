@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-enum EnumPanelRing {
+enum UIEnumPanelRing {
   @JsonValue("命主")
   PersonInfo("命主层", "安身立命基础信息，命主八字等"),
   @JsonValue("地支")
@@ -25,7 +25,7 @@ enum EnumPanelRing {
 
   final String name;
   final String description;
-  static List<EnumPanelRing> get moria => const [
+  static List<UIEnumPanelRing> get moria => const [
         PersonInfo,
         DiZhi12Gong,
         TwelveGong,
@@ -37,5 +37,5 @@ enum EnumPanelRing {
         BasicShenSha
       ];
 
-  const EnumPanelRing(this.name, this.description);
+  const UIEnumPanelRing(this.name, this.description);
 }

@@ -4,5 +4,7 @@ enum DateTimeType {
   @JsonValue("solar")
   solar,
   @JsonValue("lunar")
-  lunar
+  lunar,
+  @JsonValue("ganZhi")
+  ganZhi,
 }

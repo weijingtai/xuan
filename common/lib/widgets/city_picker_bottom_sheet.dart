@@ -1,14 +1,19 @@
-import 'package:common/datamodel/basic_person_info.dart';
+import 'package:common/widgets/chinese_city_picker_widget.dart';
+import 'package:common/widgets/world_country_city_picker_page.dart';
 import 'package:flutter/material.dart';
-import 'package:common/datamodel/geo_location.dart';
-import 'package:common/helpers/geo_location_helper.dart';
+
+import '../datamodel/location.dart';
+import '../models/sp_location_datamodel.dart';
 
 /// 显示城市选择器底部弹窗
-Future<Location?> showCityPickerBottomSheet({
+Future<Address?> showCityPickerBottomSheet({
   required BuildContext context,
-  required Location initLocation,
+  required Address initAddress,
+  required ValueNotifier<Location?> myLocationNotifier,
 }) {
-  return showModalBottomSheet<Location>(
+  // 检查 initLocation, 当initLocation 不是中国时，跳转制全球选择器
+
+  return showModalBottomSheet<Address>(
     context: context,
     isScrollControlled: true, // 允许弹窗占据更大空间
     shape: const RoundedRectangleBorder(
@@ -21,8 +26,8 @@ Future<Location?> showCityPickerBottomSheet({
       expand: false,
       builder: (context, scrollController) {
         return CityPickerBottomSheet(
-          initLocation: initLocation,
-          scrollController: scrollController,
+          initAddress: initAddress,
+          myLocationNotifier: myLocationNotifier,
         );
       },
     ),
@@ -33,15 +38,15 @@ Future<Location?> showCityPickerBottomSheet({
 class CityPickerBottomSheet extends StatefulWidget {
   /// 初始选中的地理位置编码
   // final String? initialCode;
-  final Location initLocation;
+  final Address initAddress;
 
   /// 滚动控制器
-  final ScrollController scrollController;
+  final ValueNotifier<Location?> myLocationNotifier;
 
   const CityPickerBottomSheet({
     Key? key,
-    required this.initLocation,
-    required this.scrollController,
+    required this.initAddress,
+    required this.myLocationNotifier,
   }) : super(key: key);
 
   @override
@@ -49,27 +54,15 @@ class CityPickerBottomSheet extends StatefulWidget {
 }
 
 class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
-  // 当前选中的省份
-  final _selectedProvince = ValueNotifier<GeoLocation?>(null);
+  late final PageController _pageController;
 
-  // 当前选中的城市
-  final _selectedCity = ValueNotifier<GeoLocation?>(null);
+  final ValueNotifier<Address?> _newSelectedAddressNotifier =
+      ValueNotifier(null);
 
-  // 当前选中的区县
-  final _selectedCounty = ValueNotifier<GeoLocation?>(null);
+  Address? insideNation;
+  Address? globalNation;
 
-  // 省份列表
-  final _provinces = ValueNotifier<List<GeoLocation>?>(null);
-
-  // 城市列表
-  final _cities = ValueNotifier<List<GeoLocation>?>(null);
-
-  // 区县列表
-  final _counties = ValueNotifier<List<GeoLocation>?>(null);
-
-  // 是否正在加载数据
-  final ValueNotifier<bool> _isLoading = ValueNotifier<bool>(false);
-  final ValueNotifier<bool> _hasError = ValueNotifier<bool>(false);
+  late final ValueNotifier<bool> _isNation;
   // bool _isLoading = true;
 
   // 是否发生错误
@@ -78,153 +71,45 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+
+    if (widget.initAddress.countryId == 45 &&
+        widget.initAddress.regionId == 9) {
+      _isNation = ValueNotifier(true);
+      _pageController = PageController(initialPage: 0);
+      insideNation = widget.initAddress;
+    } else {
+      _isNation = ValueNotifier(false);
+      _pageController = PageController(initialPage: 1);
+      globalNation = widget.initAddress;
+    }
+    _newSelectedAddressNotifier.addListener(() {
+      if (_newSelectedAddressNotifier.value != null) {
+        Address newSelectedAddress = _newSelectedAddressNotifier.value!;
+        if (newSelectedAddress.regionId == 9 &&
+            newSelectedAddress.countryId == 45) {
+          insideNation = newSelectedAddress;
+        } else {
+          globalNation = newSelectedAddress;
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
-    _selectedProvince.dispose();
-    _selectedCity.dispose();
-    _selectedCounty.dispose();
-    _provinces.dispose();
-    _cities.dispose();
-    _counties.dispose();
-    _isLoading.dispose();
-    _hasError.dispose();
+    _isNation.dispose();
+    _newSelectedAddressNotifier.dispose();
+    _pageController.dispose();
     super.dispose();
-  }
-
-  /// 加载地理位置数据
-  Future<void> _loadData() async {
-    _isLoading.value = true;
-    _hasError.value = false;
-    // setState(() {
-    //   _isLoading = true;
-    //   _hasError = false;
-    // });
-
-    try {
-      // 初始化地理位置数据
-      await GeoLocationHelper.initialize();
-
-      // 加载省份列表
-      _provinces.value =
-          GeoLocationHelper.getLocationsByLevel(GeoLevel.province);
-
-      // 如果有初始编码，则设置初始选中项
-      _setInitialSelection(widget.initLocation);
-
-      _isLoading.value = false;
-      // setState(() {
-      // _isLoading = false;
-      // });
-    } catch (e) {
-      print('加载地理位置数据失败: $e');
-      _isLoading.value = false;
-      _hasError.value = true;
-      // setState(() {
-      // _isLoading = false;
-      // _hasError = true;
-      // });
-    }
-  }
-
-  /// 设置初始选中项
-  void _setInitialSelection(Location initLocation) {
-    String code = initLocation.lowestGeoLocation.code;
-    // 获取初始位置
-    final location = GeoLocationHelper.getLocationByCode(code);
-    if (location == null) return;
-
-    // 根据级别设置选中项
-    switch (location.level) {
-      case GeoLevel.county:
-        _selectedCounty.value = location;
-        final city = GeoLocationHelper.getLocationByCode(location.parentCode);
-        if (city != null) {
-          _selectedCity.value = city;
-          final province = GeoLocationHelper.getLocationByCode(city.parentCode);
-          if (province != null) {
-            _selectedProvince.value = province;
-            _loadCities(province.code);
-            _loadCounties(city.code);
-          }
-        }
-        break;
-      case GeoLevel.city:
-        _selectedCity.value = location;
-        final province =
-            GeoLocationHelper.getLocationByCode(location.parentCode);
-        if (province != null) {
-          _selectedProvince.value = province;
-          _loadCities(province.code);
-          _loadCounties(location.code);
-        }
-        break;
-      case GeoLevel.province:
-        _selectedProvince.value = location;
-        _loadCities(location.code);
-        break;
-      default:
-        break;
-    }
-  }
-
-  /// 加载城市列表
-  void _loadCities(String provinceCode) {
-    _cities.value = GeoLocationHelper.getChildLocations(provinceCode);
-  }
-
-  /// 加载区县列表
-  void _loadCounties(String cityCode) {
-    _counties.value = GeoLocationHelper.getChildLocations(cityCode);
-  }
-
-  /// 选择省份
-  void _selectProvince(GeoLocation province) {
-    if (_selectedProvince.value?.code == province.code) return;
-
-    _selectedProvince.value = province;
-    _selectedCity.value = null;
-    _selectedCounty.value = null;
-    _loadCities(province.code);
-    _counties.value = null;
-  }
-
-  /// 选择城市
-  void _selectCity(GeoLocation city) {
-    if (_selectedCity.value?.code == city.code) return;
-
-    _selectedCity.value = city;
-    _selectedCounty.value = null;
-    _loadCounties(city.code);
-  }
-
-  /// 选择区县
-  void _selectCounty(GeoLocation county) {
-    _selectedCounty.value = county;
-    // 选择完区县后自动返回结果
-    // Navigator.of(context).pop(county);
   }
 
   /// 完成选择
   void _finishSelection() {
-    Location newLocation = widget.initLocation.copyWith(
-      province: _selectedProvince.value,
-      city: _selectedCity.value,
-      area: _selectedCounty.value,
-    );
-    Navigator.of(context).pop(newLocation);
-    // 返回最精确的选择结果
-    // if (_selectedCounty.value != null) {
-    //   Navigator.of(context).pop(_selectedCounty.value);
-    // } else if (_selectedCity.value != null) {
-    //   Navigator.of(context).pop(_selectedCity.value);
-    // } else if (_selectedProvince.value != null) {
-    //   Navigator.of(context).pop(_selectedProvince.value);
-    // } else {
-    //   Navigator.of(context).pop();
-    // }
+    if (_newSelectedAddressNotifier.value == null) {
+      Navigator.of(context).pop();
+      return;
+    }
+    Navigator.of(context).pop(_newSelectedAddressNotifier.value);
   }
 
   @override
@@ -240,27 +125,25 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
           _buildHeader(),
 
           // 选择信息面板
-          _buildSelectionInfoPanel(),
-
-          // 列表区域
 
           Expanded(
-            child: ValueListenableBuilder(
-                valueListenable: _isLoading,
-                builder: (ctx, isLoading, child) {
-                  if (isLoading) return child!;
-                  return ValueListenableBuilder(
-                    valueListenable: _hasError,
-                    builder: (ctx, hasError, child2) {
-                      if (hasError) return child2!;
-                      return _buildListsView();
-                    },
-                    child: _buildErrorView(),
-                  );
-                },
-                child: const Center(child: CircularProgressIndicator())),
-          )
-
+              child: PageView(
+                  // controller: widget.scrollController,
+                  controller: _pageController,
+                  physics: const BouncingScrollPhysics(),
+                  children: [
+                ChineseCityPickerWidget(
+                  initAddress: insideNation,
+                  // scrollController: widget.scrollController,
+                  selectedAddressNotifier: _newSelectedAddressNotifier,
+                  myLocationNotifier: widget.myLocationNotifier,
+                ),
+                WorldCountryCityPickerPage(
+                  newSelectedAddressNotifier: _newSelectedAddressNotifier,
+                  initAddress: globalNation,
+                  myLocationNotifier: widget.myLocationNotifier,
+                )
+              ]))
           // 底部确认按钮
           // _buildBottomButton(),
         ],
@@ -288,14 +171,63 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '选择地区',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey.shade800,
-                ),
-              ),
+              SizedBox(
+                  height: 28,
+                  width: 128,
+                  child: ValueListenableBuilder(
+                      valueListenable: _isNation,
+                      builder: (ctx, isNation, _) {
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                _isNation.value = true;
+                                _pageController.animateToPage(0,
+                                    duration: Duration(milliseconds: 200),
+                                    curve: Curves.easeInOut);
+                              },
+                              child: AnimatedDefaultTextStyle(
+                                child: Text(
+                                  "国内城市",
+                                ),
+                                style: _isNation.value
+                                    ? TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 18,
+                                        height: 1)
+                                    : TextStyle(
+                                        color: Colors.blueAccent,
+                                        fontSize: 12,
+                                        height: 1),
+                                duration: Duration(milliseconds: 200),
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            InkWell(
+                                onTap: () {
+                                  _isNation.value = false;
+                                  _pageController.animateToPage(1,
+                                      duration: Duration(milliseconds: 200),
+                                      curve: Curves.easeInOut);
+                                },
+                                child: AnimatedDefaultTextStyle(
+                                  child: Text("全球城市"),
+                                  style: _isNation.value
+                                      ? TextStyle(
+                                          color: Colors.blueAccent,
+                                          fontSize: 12,
+                                          height: 1)
+                                      : TextStyle(
+                                          color: Colors.black87,
+                                          fontSize: 18,
+                                          height: 1),
+                                  duration: Duration(milliseconds: 200),
+                                ))
+                          ],
+                        );
+                      })),
               Row(children: [
                 TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -303,17 +235,19 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
                       "取消",
                       style: TextStyle(color: Colors.grey),
                     )),
-                ValueListenableBuilder(
-                    valueListenable: _selectedCity,
-                    builder: (ctx, city, _) {
+                ValueListenableBuilder<Address?>(
+                    valueListenable: _newSelectedAddressNotifier,
+                    builder: (ctx, address, _) {
                       return TextButton(
-                          onPressed:
-                              city == null ? null : () => _finishSelection(),
+                          onPressed: address?.lowestGeoLocation == null
+                              ? null
+                              : _finishSelection,
                           child: Text(
                             "完成",
                             style: TextStyle(
-                                color:
-                                    city == null ? Colors.grey : Colors.blue),
+                                color: address?.lowestGeoLocation == null
+                                    ? Colors.grey
+                                    : Colors.blue),
                           ));
                     })
               ])
@@ -321,239 +255,6 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
           ),
         ),
       ],
-    );
-  }
-
-  /// 构建错误视图
-  Widget _buildErrorView() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('加载数据失败'),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: _loadData,
-            child: const Text('重试'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 构建列表视图
-  Widget _buildListsView() {
-    return Row(
-      children: [
-        // 第一部分：省份列表
-        Expanded(
-          child: ValueListenableBuilder<List<GeoLocation>?>(
-            valueListenable: _provinces,
-            builder: (ctx, provinces, child) {
-              if (provinces == null) return child!;
-              return _buildLocationList(
-                provinces,
-                _selectedProvince,
-                _selectProvince,
-                '选择省份',
-              );
-            },
-            child: const Center(child: Text('加载中...')),
-          ),
-        ),
-
-        // 分隔线
-        Container(width: 1, color: Colors.grey.shade300),
-
-        // 第二部分：城市列表
-        Expanded(
-          child: ValueListenableBuilder<List<GeoLocation>?>(
-            valueListenable: _cities,
-            builder: (ctx, cities, child) {
-              if (cities == null) return child!;
-              return _buildLocationList(
-                cities,
-                _selectedCity,
-                _selectCity,
-                '选择城市',
-              );
-            },
-            child: const Center(child: Text('请先选择省份')),
-          ),
-        ),
-
-        // 分隔线
-        Container(width: 1, color: Colors.grey.shade300),
-
-        // 第三部分：区县列表
-        Expanded(
-          child: ValueListenableBuilder<List<GeoLocation>?>(
-            valueListenable: _counties,
-            builder: (ctx, counties, child) {
-              if (counties == null) return child!;
-              return _buildLocationList(
-                counties,
-                _selectedCounty,
-                _selectCounty,
-                '选择区县',
-              );
-            },
-            child: const Center(child: Text('请先选择城市')),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 构建选择信息面板
-  Widget _buildSelectionInfoPanel() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        border: Border(
-          bottom: BorderSide(
-            color: Colors.grey.shade300,
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // 使用ValueListenableBuilder监听选择变化
-          ValueListenableBuilder<GeoLocation?>(
-            valueListenable: _selectedProvince,
-            builder: (context, province, _) {
-              return ValueListenableBuilder<GeoLocation?>(
-                valueListenable: _selectedCity,
-                builder: (context, city, _) {
-                  return ValueListenableBuilder<GeoLocation?>(
-                    valueListenable: _selectedCounty,
-                    builder: (context, county, _) {
-                      // 构建地址文本
-                      String addressText = '请选择地区';
-                      String coordinatesText = '';
-
-                      if (province != null) {
-                        addressText = province.name;
-                        coordinatesText =
-                            '经度: ${province.longitude.toStringAsFixed(6)}, 纬度: ${province.latitude.toStringAsFixed(6)}';
-
-                        if (city != null) {
-                          addressText += ' > ${city.name}';
-                          coordinatesText =
-                              '经度: ${city.longitude.toStringAsFixed(6)}, 纬度: ${city.latitude.toStringAsFixed(6)}';
-
-                          if (county != null) {
-                            addressText += ' > ${county.name}';
-                            coordinatesText =
-                                '经度: ${county.longitude.toStringAsFixed(6)}, 纬度: ${county.latitude.toStringAsFixed(6)}';
-                          }
-                        }
-                      }
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            addressText,
-                            style: TextStyle(
-                              fontSize: 15,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
-                          if (province != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              coordinatesText,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                        ],
-                      );
-                    },
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 构建底部确认按钮
-  Widget _buildBottomButton() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 4,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: ValueListenableBuilder<GeoLocation?>(
-        valueListenable: _selectedProvince,
-        builder: (context, province, _) {
-          final bool canConfirm = province != null;
-
-          return ElevatedButton(
-            onPressed: canConfirm ? _finishSelection : null,
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
-              ),
-            ),
-            child: const Text('确定选择'),
-          );
-        },
-      ),
-    );
-  }
-
-  /// 构建位置列表
-  Widget _buildLocationList(
-    List<GeoLocation> locations,
-    ValueNotifier<GeoLocation?> selectedLocationNotifier,
-    Function(GeoLocation) onSelect,
-    String emptyText,
-  ) {
-    if (locations.isEmpty) {
-      return Center(child: Text(emptyText));
-    }
-
-    return ValueListenableBuilder<GeoLocation?>(
-      valueListenable: selectedLocationNotifier,
-      builder: (context, selectedLocation, _) {
-        return ListView.builder(
-          controller: widget.scrollController,
-          itemCount: locations.length,
-          itemBuilder: (context, index) {
-            final location = locations[index];
-            final isSelected = selectedLocation?.code == location.code;
-            return ListTile(
-              title: Text(location.name),
-              selected: isSelected,
-              selectedTileColor: Colors.blue.withOpacity(0.1),
-              trailing: isSelected
-                  ? const Icon(Icons.check, color: Colors.blue)
-                  : null,
-              onTap: () => onSelect(location),
-            );
-          },
-        );
-      },
     );
   }
 }

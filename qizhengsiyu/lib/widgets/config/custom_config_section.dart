@@ -24,10 +24,10 @@ class CustomConfigSection extends StatefulWidget {
 
 class _CustomConfigSectionState extends State<CustomConfigSection> {
   // 星道制式
-  late CoordinateSystem _coordinateSystem;
+  late CelestialCoordinateSystem _coordinateSystem;
 
   // 星宿制式
-  late StarInnSystem _zodiacSystem;
+  late PanelSystemType _panelSystem;
 
   // 流派典籍
   late List<String> _classicBook;
@@ -46,11 +46,11 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
     super.initState();
 
     // 初始化配置
-    _coordinateSystem =
-        widget.initialConfig?.coordinateSystem ?? CoordinateSystem.Ecliptic;
-    _zodiacSystem =
-        widget.initialConfig?.starInnSystem ?? StarInnSystem.Tropical;
-    _classicBook = widget.initialConfig?.classicBooks ?? [];
+    _coordinateSystem = widget.initialConfig?.celestialCoordinateSystem ??
+        CelestialCoordinateSystem.ecliptic;
+    _panelSystem =
+        widget.initialConfig?.panelSystemType ?? PanelSystemType.tropical;
+    // _classicBook = widget.initialConfig?.classicBooks ?? [];
     // _showGods = widget.initialConfig?.sh ?? true;
     // _showPalaces = widget.initialConfig?.showPalaces ?? true;
     // _useTraditionalCalculation =
@@ -99,7 +99,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                     child: _buildRadioTile(
                       title: '黄道制',
                       subtitle: '以黄道十二宫为基础',
-                      value: CoordinateSystem.Ecliptic,
+                      value: CelestialCoordinateSystem.ecliptic,
                       groupValue: _coordinateSystem,
                       onChanged: (value) {
                         setState(() {
@@ -113,7 +113,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                     child: _buildRadioTile(
                       title: '赤道制',
                       subtitle: '以赤道十二宫为基础',
-                      value: CoordinateSystem.Equatorial,
+                      value: CelestialCoordinateSystem.equatorial,
                       groupValue: _coordinateSystem,
                       onChanged: (value) {
                         setState(() {
@@ -154,11 +154,11 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                     child: _buildRadioTile(
                       title: '回归制',
                       subtitle: '春分点为起点',
-                      value: StarInnSystem.Tropical,
-                      groupValue: _zodiacSystem,
+                      value: PanelSystemType.tropical,
+                      groupValue: _panelSystem,
                       onChanged: (value) {
                         setState(() {
-                          _zodiacSystem = value!;
+                          _panelSystem = value!;
                         });
                         _updateConfig();
                       },
@@ -168,11 +168,11 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                     child: _buildRadioTile(
                       title: '恒星制',
                       subtitle: '以实际星座为基础',
-                      value: StarInnSystem.Sidereal,
-                      groupValue: _zodiacSystem,
+                      value: PanelSystemType.sidereal,
+                      groupValue: _panelSystem,
                       onChanged: (value) {
                         setState(() {
-                          _zodiacSystem = value!;
+                          _panelSystem = value!;
                         });
                         _updateConfig();
                       },

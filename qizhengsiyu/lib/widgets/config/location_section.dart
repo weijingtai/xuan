@@ -1,3 +1,4 @@
+import 'package:common/datamodel/location.dart';
 import 'package:flutter/material.dart';
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
@@ -8,7 +9,7 @@ class LocationSection extends StatefulWidget {
   final Function onLocationChanged;
 
   /// 初始位置信息
-  final Location? initialLocation;
+  final Address? initialLocation;
 
   const LocationSection({
     Key? key,

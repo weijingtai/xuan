@@ -41,6 +41,7 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
       Provider.of<PanelConfigViewModel>(context);
 
   // 使用ValueNotifier替代setState
+  // TODO: should remove this
   late ValueNotifier<EnumQueryType> _configTypeNotifier;
 
   // 表单的全局键，用于验证
@@ -61,13 +62,14 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
     // _viewModel = PanelConfigViewModel();
 
     // 初始化ValueNotifier
-    _configTypeNotifier =
-        ValueNotifier(widget.initialConfig?.queryType ?? EnumQueryType.destiny);
+    // _configTypeNotifier =
+    // ValueNotifier(widget.initialConfig?.queryType ?? EnumQueryType.destiny);
+    _configTypeNotifier = ValueNotifier(EnumQueryType.destiny);
 
     // 设置初始流派
-    if (widget.initialConfig != null) {
-      _selectedSchool = widget.initialConfig!.schoolType;
-    }
+    // if (widget.initialConfig != null) {
+    // _selectedSchool = widget.initialConfig!.schoolType;
+    // }
   }
 
   @override

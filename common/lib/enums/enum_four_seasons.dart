@@ -8,7 +8,9 @@ enum FourSeasons {
   @JsonValue("秋")
   AUTUMN(2, "秋"),
   @JsonValue("冬")
-  WINTER(3, "冬");
+  WINTER(3, "冬"),
+  @JsonValue("土")
+  EARTH(4, "土");
 
   final int order;
   final String name;

@@ -1,35 +1,35 @@
 import 'package:drift/drift.dart';
 import '../app_database.dart';
-import '../tables.dart';
+import '../tables/tables.dart';
 
 part 'skills_dao.g.dart';
+
 @DriftAccessor(tables: [Skills])
 class SkillsDao extends DatabaseAccessor<AppDatabase> with _$SkillsDaoMixin {
-  SkillsDao(AppDatabase db) : super(db);
+  final AppDatabase db;
+  SkillsDao(this.db) : super(db);
 
-  // 获取所有技能记录的流
-  Stream<List<Skill>> getAllSkillsStream() {
-    return select(skills).watch();
+  SimpleSelectStatement<$SkillsTable, Skill> _baseSelect() => select(db.skills);
+
+  Future<List<Skill>> getAllSkills() {
+    return (_baseSelect()..where((tbl) => tbl.deletedAt.isNull())).get();
   }
 
-  // 根据 UUID 获取单个技能记录
-  Future<Skill?> getSkillByUuid(int id) {
-    return (select(skills)..where((s) => s.id.equals(id))).getSingleOrNull();
+  Future<Skill?> getSkillById(int id) {
+    return (_baseSelect()..where((t) => t.id.equals(id) & t.deletedAt.isNull()))
+        .getSingleOrNull();
   }
 
-  // 插入技能记录
-  Future<int> insertSkill(SkillsCompanion skill) {
-    return into(skills).insert(skill);
+  Future<int> insertSkill(SkillsCompanion companion) {
+    return into(db.skills).insert(companion);
   }
 
-  // 更新技能记录
-  Future<bool> updateSkill(SkillsCompanion skill) {
-    return update(skills).replace(skill);
+  Future<bool> updateSkill(SkillsCompanion companion) {
+    return update(db.skills).replace(companion);
   }
 
-  // 删除技能记录
-  Future<int> deleteSkill(Skill skill) {
-    return (delete(skills)..where((s) => s.id.equals(skill.id))).go();
+  Future<int> softDeleteSkill(int id) {
+    return (update(db.skills)..where((t) => t.id.equals(id)))
+        .write(SkillsCompanion(deletedAt: Value(DateTime.now())));
   }
 }
-    

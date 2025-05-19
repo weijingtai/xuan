@@ -100,7 +100,7 @@ void main() {
 
 /// 将星宿映射表序列化为JSON文件
 Future<void> _serializeStarInnMapToJson(
-  Map<TwentyEightStarInn, StarInnGongDegreeInfo> starInnMap,
+  Map<Enum28Constellations, ConstellationGongDegreeInfo> starInnMap,
   String filePath,
   String mapName,
 ) async {

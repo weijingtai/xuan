@@ -11,10 +11,12 @@ PanelSystemDataSet _$PanelSystemDataSetFromJson(Map<String, dynamic> json) =>
       name: json['name'] as String,
       calenderName: json['calenderName'] as String,
       features: json['features'] as String,
-      coordinateSystem:
-          $enumDecode(_$CoordinateSystemEnumMap, json['coordinateSystem']),
-      starInnSystem: $enumDecode(_$StarInnSystemEnumMap, json['starInnSystem']),
-      starInnType: $enumDecode(_$StarInnTypeEnumMap, json['starInnType']),
+      coordinateSystem: $enumDecode(
+          _$CelestialCoordinateSystemEnumMap, json['coordinateSystem']),
+      panelSystemType:
+          $enumDecode(_$PanelSystemTypeEnumMap, json['panelSystemType']),
+      constellationSystemType: $enumDecode(
+          _$ConstellationSystemTypeEnumMap, json['constellationSystemType']),
       originPoint:
           EnteredInfo.fromJson(json['originPoint'] as Map<String, dynamic>),
       originPointJieQi:
@@ -24,8 +26,8 @@ PanelSystemDataSet _$PanelSystemDataSetFromJson(Map<String, dynamic> json) =>
           .toList(),
     )..starInnGongDegreeMap =
           (json['starInnGongDegreeMap'] as Map<String, dynamic>).map(
-        (k, e) => MapEntry($enumDecode(_$TwentyEightStarInnEnumMap, k),
-            StarInnGongDegreeInfo.fromJson(e as Map<String, dynamic>)),
+        (k, e) => MapEntry($enumDecode(_$Enum28ConstellationsEnumMap, k),
+            ConstellationGongDegreeInfo.fromJson(e as Map<String, dynamic>)),
       );
 
 Map<String, dynamic> _$PanelSystemDataSetToJson(PanelSystemDataSet instance) =>
@@ -33,30 +35,34 @@ Map<String, dynamic> _$PanelSystemDataSetToJson(PanelSystemDataSet instance) =>
       'name': instance.name,
       'calenderName': instance.calenderName,
       'features': instance.features,
-      'coordinateSystem': _$CoordinateSystemEnumMap[instance.coordinateSystem]!,
-      'starInnSystem': _$StarInnSystemEnumMap[instance.starInnSystem]!,
-      'starInnType': _$StarInnTypeEnumMap[instance.starInnType]!,
+      'coordinateSystem':
+          _$CelestialCoordinateSystemEnumMap[instance.coordinateSystem]!,
+      'panelSystemType': _$PanelSystemTypeEnumMap[instance.panelSystemType]!,
+      'constellationSystemType':
+          _$ConstellationSystemTypeEnumMap[instance.constellationSystemType]!,
       'originPoint': instance.originPoint,
       'originPointJieQi': _$TwentyFourJieQiEnumMap[instance.originPointJieQi]!,
       'descriptionList': instance.descriptionList,
       'starInnGongDegreeMap': instance.starInnGongDegreeMap
-          .map((k, e) => MapEntry(_$TwentyEightStarInnEnumMap[k]!, e)),
+          .map((k, e) => MapEntry(_$Enum28ConstellationsEnumMap[k]!, e)),
     };
 
-const _$CoordinateSystemEnumMap = {
-  CoordinateSystem.Ecliptic: '黄道制',
-  CoordinateSystem.Equatorial: '赤道制',
+const _$CelestialCoordinateSystemEnumMap = {
+  CelestialCoordinateSystem.ecliptic: '黄道制',
+  CelestialCoordinateSystem.equatorial: '赤道制',
+  CelestialCoordinateSystem.skyEquatorial: '赤道制',
+  CelestialCoordinateSystem.pseudoEcliptic: '似黄道恒星制',
 };
 
-const _$StarInnSystemEnumMap = {
-  StarInnSystem.Tropical: '回归制',
-  StarInnSystem.Sidereal: '恒星制',
+const _$PanelSystemTypeEnumMap = {
+  PanelSystemType.tropical: '回归制',
+  PanelSystemType.sidereal: '恒星制',
 };
 
-const _$StarInnTypeEnumMap = {
-  StarInnType.Classical: '古宿',
-  StarInnType.AdjustedClassical: '矫正古宿',
-  StarInnType.Mordern: '今宿',
+const _$ConstellationSystemTypeEnumMap = {
+  ConstellationSystemType.classical: '古宿制',
+  ConstellationSystemType.adjustedClassical: '矫正古宿制',
+  ConstellationSystemType.modern: '今宿制',
 };
 
 const _$TwentyFourJieQiEnumMap = {
@@ -86,33 +92,33 @@ const _$TwentyFourJieQiEnumMap = {
   TwentyFourJieQi.DA_XUE: '大雪',
 };
 
-const _$TwentyEightStarInnEnumMap = {
-  TwentyEightStarInn.Lou_Jin_Gou: '娄',
-  TwentyEightStarInn.Wei_Tu_Zhi: '胃',
-  TwentyEightStarInn.Mao_Ri_Ji: '昴',
-  TwentyEightStarInn.Bi_Yue_Wu: '毕',
-  TwentyEightStarInn.Zi_Huo_Hou: '觜',
-  TwentyEightStarInn.Shen_Shui_Yuan: '参',
-  TwentyEightStarInn.Jing_Mu_Han: '井',
-  TwentyEightStarInn.Gui_Jin_Yang: '鬼',
-  TwentyEightStarInn.Liu_Tu_Zhang: '柳',
-  TwentyEightStarInn.Xing_Ri_Ma: '星',
-  TwentyEightStarInn.Zhang_Yue_Lu: '张',
-  TwentyEightStarInn.Yi_Huo_She: '翼',
-  TwentyEightStarInn.Zhen_Shui_Yin: '轸',
-  TwentyEightStarInn.Jiao_Mu_Jiao: '角',
-  TwentyEightStarInn.Kang_Jin_Long: '亢',
-  TwentyEightStarInn.Di_Tu_Lu: '氐',
-  TwentyEightStarInn.Fang_Ri_Tu: '房',
-  TwentyEightStarInn.Xin_Yue_Hu: '心',
-  TwentyEightStarInn.Wei_Huo_Hu: '尾',
-  TwentyEightStarInn.Ji_Shui_Bao: '箕',
-  TwentyEightStarInn.Dou_Mu_Xie: '斗',
-  TwentyEightStarInn.Niu_Jin_Niu: '牛',
-  TwentyEightStarInn.Nv_Tu_Fu: '女',
-  TwentyEightStarInn.Xu_Ri_Shu: '虚',
-  TwentyEightStarInn.Wei_Yue_Yan: '危',
-  TwentyEightStarInn.Shi_Huo_Zhu: '室',
-  TwentyEightStarInn.Bi_Shui_Yu: '壁',
-  TwentyEightStarInn.Kui_Mu_Lang: '奎',
+const _$Enum28ConstellationsEnumMap = {
+  Enum28Constellations.Lou_Jin_Gou: '娄',
+  Enum28Constellations.Wei_Tu_Zhi: '胃',
+  Enum28Constellations.Mao_Ri_Ji: '昴',
+  Enum28Constellations.Bi_Yue_Wu: '毕',
+  Enum28Constellations.Zi_Huo_Hou: '觜',
+  Enum28Constellations.Shen_Shui_Yuan: '参',
+  Enum28Constellations.Jing_Mu_Han: '井',
+  Enum28Constellations.Gui_Jin_Yang: '鬼',
+  Enum28Constellations.Liu_Tu_Zhang: '柳',
+  Enum28Constellations.Xing_Ri_Ma: '星',
+  Enum28Constellations.Zhang_Yue_Lu: '张',
+  Enum28Constellations.Yi_Huo_She: '翼',
+  Enum28Constellations.Zhen_Shui_Yin: '轸',
+  Enum28Constellations.Jiao_Mu_Jiao: '角',
+  Enum28Constellations.Kang_Jin_Long: '亢',
+  Enum28Constellations.Di_Tu_Lu: '氐',
+  Enum28Constellations.Fang_Ri_Tu: '房',
+  Enum28Constellations.Xin_Yue_Hu: '心',
+  Enum28Constellations.Wei_Huo_Hu: '尾',
+  Enum28Constellations.Ji_Shui_Bao: '箕',
+  Enum28Constellations.Dou_Mu_Xie: '斗',
+  Enum28Constellations.Niu_Jin_Niu: '牛',
+  Enum28Constellations.Nv_Tu_Fu: '女',
+  Enum28Constellations.Xu_Ri_Shu: '虚',
+  Enum28Constellations.Wei_Yue_Yan: '危',
+  Enum28Constellations.Shi_Huo_Zhu: '室',
+  Enum28Constellations.Bi_Shui_Yu: '壁',
+  Enum28Constellations.Kui_Mu_Lang: '奎',
 };

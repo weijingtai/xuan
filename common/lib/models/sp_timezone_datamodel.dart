@@ -4,6 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../common_logger.dart';
 
 part 'sp_timezone_datamodel.g.dart';
+
 @JsonSerializable()
 class SPTimezoneDataModel extends Equatable {
   static const String SharedPreferencesBaseKey = "TimezoneDataModel";
@@ -12,12 +13,11 @@ class SPTimezoneDataModel extends Equatable {
   bool? isAutoHandleDST;
   bool? isDefaultTimezone;
   String get spKey => "${appFeatureModule.spPrefix}$SharedPreferencesBaseKey";
-  SPTimezoneDataModel({
-    required this.appFeatureModule,
-    required this.timezoneStr,
-    required this.isAutoHandleDST,
-    required this.isDefaultTimezone
-});
+  SPTimezoneDataModel(
+      {required this.appFeatureModule,
+      required this.timezoneStr,
+      required this.isAutoHandleDST,
+      required this.isDefaultTimezone});
   factory SPTimezoneDataModel.fromJson(Map<String, dynamic> json) =>
       _$SPTimezoneDataModelFromJson(json);
   @override
@@ -37,19 +37,18 @@ class SPTimezoneDataModel extends Equatable {
       isDefaultTimezone: isDefaultTimezone ?? this.isDefaultTimezone,
     );
   }
+
   // toString
   @override
   String toString() {
     return 'SPTimezoneDataModel(appFeatureModule: $appFeatureModule, timezoneStr: $timezoneStr, isAutoHandleDST: $isAutoHandleDST, isDefaultTimezone: $isDefaultTimezone)';
   }
 
-
   @override
   List<Object?> get props => [
-    appFeatureModule,
-    timezoneStr,
-    isAutoHandleDST,
-    isDefaultTimezone,
-  ];
+        appFeatureModule,
+        timezoneStr,
+        isAutoHandleDST,
+        isDefaultTimezone,
+      ];
 }
-

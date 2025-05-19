@@ -10,7 +10,7 @@ QiZhengSiYuDivination _$QiZhengSiYuDivinationFromJson(
         Map<String, dynamic> json) =>
     QiZhengSiYuDivination(
       divinationLocation:
-          Location.fromJson(json['divinationLocation'] as Map<String, dynamic>),
+          Address.fromJson(json['divinationLocation'] as Map<String, dynamic>),
       question: json['question'] as String,
       divinationAt: DateTime.parse(json['divinationAt'] as String),
       details: json['details'] as String?,
@@ -20,7 +20,7 @@ QiZhengSiYuDivination _$QiZhengSiYuDivinationFromJson(
               json['divinationPerson'] as Map<String, dynamic>),
       divinationPersonLocation: json['divinationPersonLocation'] == null
           ? null
-          : Location.fromJson(
+          : Address.fromJson(
               json['divinationPersonLocation'] as Map<String, dynamic>),
     );
 

@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:common/widgets/eight_chars_select_card_list_widget.dart';
 import 'package:common/widgets/eight_chars_selection_card.dart';
 import 'package:common/widgets/query_time_input_card.dart';
 import 'package:flutter/material.dart';
@@ -10,8 +11,13 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'helpers/solar_lunar_datetime_helper.dart';
-import 'models/query_datetime.dart';
+import 'models/divination_datetime.dart';
+import 'viewmodels/dev_enter_page_view_model.dart';
+import 'widgets/destiny_question_widget.dart';
+import 'widgets/divination_card_widget.dart';
+import 'widgets/divination_question_widget.dart';
 import 'widgets/eight_chars_input_card.dart';
+import 'widgets/world_country_city_picker_page.dart';
 
 class DevEnterPage extends StatefulWidget {
   const DevEnterPage({super.key});
@@ -21,90 +27,93 @@ class DevEnterPage extends StatefulWidget {
 }
 
 class _DevEnterPageState extends State<DevEnterPage> {
-  final ValueNotifier<List<MapEntry<EnumDatetimeType,QueryDatetimeModel>>?> _selectableCardsNotifier = ValueNotifier(null);
+  final ValueNotifier<
+          List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>>?>
+      _selectableCardsNotifier = ValueNotifier(null);
 
   final ValueNotifier<int?> _selectedIndexNotifier = ValueNotifier(null);
 
+  final PageController _pageController = PageController();
+
+  late final DevEnterPageViewModel _viewModel;
+  @override
+  void initState() {
+    super.initState();
+    _viewModel = DevEnterPageViewModel();
+  }
+
   @override
   void dispose() {
-    // TODO: implement dispose
     _selectableCardsNotifier.dispose();
     _selectedIndexNotifier.dispose();
+    _pageController.dispose();
     super.dispose();
   }
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(title: const Text("Dev Widget")),
       body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              QueryTimeInputCard(
-                // defaultTimeZone: "Asia/Shanghai",
-                defaultPageType: PageType.datetime,
-                selectableCardsNotifier: _selectableCardsNotifier,
-              ),
-              SizedBox(height: 64,),
-              ValueListenableBuilder(
-                  valueListenable: _selectableCardsNotifier,
-                  builder: (ctx,mapEntries,child){
-                    if (mapEntries == null) return child!;
-                    Set<int> highLightIndexSet = Set();
-                    if (mapEntries.map((e)=>e.value.bazi.year).toSet().length>1){
-                      highLightIndexSet.add(1);
-                    }
-                    if (mapEntries.map((e)=>e.value.bazi.month).toSet().length>1){
-                      highLightIndexSet.add(2);
-                    }
-                    if (mapEntries.map((e)=>e.value.bazi.day).toSet().length>1){
-                      highLightIndexSet.add(3);
-                    }
-                    if (mapEntries.map((e)=>e.value.bazi.time).toSet().length>1){
-                      highLightIndexSet.add(4);
-                    }
+        child: _buildCardContent(),
+      ),
+    );
+    // return Scaffold(
+    //   appBar: AppBar(title: const Text("Dev Widget")),
+    //   body: Center(
+    //     child: WorldCountryCityPickerPage(),
+    //   ),
+    // );
+  }
 
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal, // Display cards horizontally
-                      padding: const EdgeInsets.all(8.0),
-                      child: ValueListenableBuilder<int?>(
-                        valueListenable: _selectedIndexNotifier,
-                        builder: (context,selectedIndex,_) {
-                          return Row(
-                            // Generate the cards dynamically
-                            children: List.generate(mapEntries.length, (index) {
-                              return EightCharsSelectionCard(
-                                isSelected: selectedIndex == null ? false : selectedIndex == index,
-                                // queryDateTime:  SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(DateTime.now(), "Asia/Shanghai", true),
-                                queryDateTime: mapEntries[index].value,
-                                onTap: (){
-                                  setState(() {
-                                    _selectedIndexNotifier.value = index;
-                                  });
-                                },
-                                timeFormat: DateFormat("HH:mm"),
-                                dateFormat: DateFormat("yyyy-MM-dd"),
-                                dateTimeFormat: DateFormat("yyyy-MM-dd HH:mm"),
-                                highLight: highLightIndexSet,
-                                size: Size(256, 256 + 96+32),
-                                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                              );
-                            }),
-                          );
-                        }
-                      ),
-                    );
+  Widget _buildCardContent() {
+    // 获取屏幕尺寸信息
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
 
-                  },
-              child: SizedBox(height:  256 + 96+32 + 32),),
-
-            ],
+    // 计算合适的尺寸
+    final contentWidth = screenWidth > 600 ? 512.0 : screenWidth * 0.9;
+    final contentPadding = screenWidth > 600 ? 16.0 : 8.0;
+    final spacing = screenWidth > 600 ? 16.0 : 8.0;
+    final cardSize = screenWidth > 600 ? 256.0 : screenWidth * 0.8;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          DivinationCardWidget(
+            enterPageViewModel: _viewModel,
           ),
-        ),
+          Container(
+            width: contentWidth,
+            // height: 512,
+            padding: EdgeInsets.symmetric(
+                horizontal: contentPadding * 2, vertical: contentPadding * 2),
+            child: QueryTimeInputCard(
+              defaultPageType: PageType.datetime,
+              selectableCardsNotifier: _selectableCardsNotifier,
+              defaultTimezone: "America/Los_Angeles",
+            ),
+          ),
+          SizedBox(height: spacing * 2),
+          EightCharsSelectCardListWidget(
+            selectableCardsNotifier: _selectableCardsNotifier,
+            contentPadding: contentPadding,
+            cardSize: cardSize,
+            enterPageViewModel: _viewModel,
+          ),
+          SizedBox(height: spacing * 2),
+          SizedBox(
+            height: spacing * 2,
+          ),
+          ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, "/qizhengsiyu/panel");
+              },
+              child: Text("七政四余"))
+        ],
       ),
     );
   }
+
   int? selectedIndex;
 
   // Make sure _buildCardContent is accessible, maybe make it a static method
@@ -112,7 +121,6 @@ class _DevEnterPageState extends State<DevEnterPage> {
 // For simplicity here, assume it's defined globally or in the same scope.
 
   final DateTime now = DateTime.now();
-
 
   // 获取当前设备的经纬度
   Future<Position> determinePosition() async {
@@ -151,7 +159,4 @@ class _DevEnterPageState extends State<DevEnterPage> {
     // continue accessing the position of the device.
     return await Geolocator.getCurrentPosition();
   }
-
-
-
 }

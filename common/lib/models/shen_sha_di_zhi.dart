@@ -10,8 +10,8 @@ part 'shen_sha_di_zhi.g.dart';
 class DiZhiShenSha extends ShenSha {
   Map<DiZhi, DiZhi> locationMapper;
 
-  DiZhiShenSha(String name, JiXiongEnum jiXiong, List<String> descriptionList,
-      List<String> locationDescriptionList, this.locationMapper)
+  DiZhiShenSha(String name, JiXiongEnum jiXiong, List<String>? descriptionList,
+      List<String>? locationDescriptionList, this.locationMapper)
       : super(name, jiXiong, descriptionList, locationDescriptionList);
 
   factory DiZhiShenSha.fromJson(Map<String, dynamic> json) =>

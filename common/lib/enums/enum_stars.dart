@@ -16,7 +16,7 @@ enum EnumStars {
   Venus("太白", "金", FiveXing.JIN, YinYang.YIN, false), // 金
   @JsonValue("木")
   Jupiter("岁星", "木", FiveXing.MU, YinYang.YANG, true), // 木
-  @JsonValue("气")
+  @JsonValue("炁")
   Qi("紫炁", "炁", FiveXing.MU, YinYang.YANG, true),
   @JsonValue("罗")
   Luo("罗睺", "罗", FiveXing.HUO, YinYang.YANG, false),
@@ -36,8 +36,10 @@ enum EnumStars {
 
   bool get isFiveStar => [Mercury, Mars, Saturn, Venus, Jupiter].contains(this);
   bool get isYuNu => [Qi, Luo, Ji, Bei].contains(this);
-  static List<EnumStars> get sevenStars =>
+  static List<EnumStars> get sevenZhengStars =>
       [Sun, Moon, Mercury, Mars, Saturn, Venus, Jupiter];
+  static List<EnumStars> get fiveStars =>
+      [Mercury, Mars, Saturn, Venus, Jupiter];
   static List<EnumStars> get allStars =>
       [Sun, Moon, Mercury, Mars, Saturn, Venus, Jupiter, Luo, Ji, Qi, Bei];
 

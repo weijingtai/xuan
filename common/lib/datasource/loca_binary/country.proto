@@ -1,0 +1,75 @@
+syntax = "proto3";
+
+package country;
+
+message Timezone {
+  string zone_name = 1;        // "Europe/Mariehamn"
+  int32 gmt_offset = 2;        // 7200
+  string gmt_offset_name = 3;  // "UTC+02:00"
+  string abbreviation = 4;     // "EET"
+  string tz_name = 5;          // "Eastern European Time"
+}
+
+message City {
+  // 根据实际需求补充字段（示例数据中cities数组为空）
+  int32 id = 1;
+  string name = 2;
+  double latitude = 4;           
+  double longitude = 5;
+}
+
+message State {
+  int32 id = 1;
+  string name = 2;
+  optional string state_code = 3;  // 处理null值
+  double latitude = 4;             // "60.41259080" -> 60.41259080
+  double longitude = 5;
+  string type = 6;                 // "municipality"
+  repeated City cities = 7;
+}
+
+message Country {
+  // 核心字段
+  int32 id = 1;
+  string name = 2;                 // "Aland Islands"
+  string iso3 = 3;                 // "ALA"
+  string iso2 = 4;                 // "AX"
+  
+  // 编码类信息
+  string numeric_code = 5;         // "248"
+  string phonecode = 6;            // "358"
+  
+  // 地理信息
+  string capital = 7;              // "Mariehamn"
+  double latitude = 20;            // "60.11666700" -> 60.116667
+  double longitude = 21;
+  
+  // 行政区划
+  string region = 13;
+  int32 region_id = 14;
+  string subregion = 15;
+  int32 subregion_id = 16;
+  repeated State states = 24;
+
+  // 货币信息
+  string currency = 8;             // "EUR"
+  string currency_name = 9;        // "Euro"
+  string currency_symbol = 10;     // "€"
+
+  // 国际化
+  string native = 12;              // "Åland"
+  string nationality = 17;         // "Aland Island"
+  map<string, string> translations = 19;
+
+  // 其他标识
+  string tld = 11;                 // ".ax"
+  string emoji = 22;               // "🇦🇽"
+  string emojiU = 23;              // "U+1F1E6 U+1F1FD"
+
+  // 时区信息
+  repeated Timezone timezones = 18;
+}
+
+message Countries{
+  repeated Country countryList = 1;
+}

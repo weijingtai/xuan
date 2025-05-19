@@ -18,9 +18,13 @@ enum EnumSettleLifeType {
 
 enum EnumSettleBodyType {
   @JsonValue("byTaiYin")
-  TiaYin("taiYin", "太阴落宫即是身宫", "果老星宗"),
+  moon("taiYin", "太阴落宫即是身宫", "果老星宗"),
   @JsonValue("byYou")
-  You("you", "太阴落宫逆数制酉时为身宫", "郑氏星案");
+  you("you", "太阴落宫逆数制酉时为身宫", "郑氏星案");
+
+  // TODO: 并不是主流，所以暂时不支持
+  // @JsonValue("moonRise")
+  // moonRaise("moonRise", "月亮落宫逆数制月亮升起", "未知");
 
   final String name;
   final String description;

@@ -9,10 +9,12 @@ import 'package:tuple/tuple.dart';
 
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_twelve_gong.dart';
+import '../models/naming_degree_pair.dart';
 import '../models/star_inn_gong_degree.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_degree_inn_gong_helper.dart';
 
+@Deprecated("使用 SettleLifeBodyService 代替")
 class LifeBodyModelBuilder {
   Tuple4<JiaZi, JiaZi, JiaZi, JiaZi> eightChar;
 
@@ -48,7 +50,7 @@ class LifeBodyModelBuilder {
     // 命宫
     EnumTwelveGong lifeGongIs = settleLifeGong(sunEnterGong);
     // 命度
-    Tuple2<TwentyEightStarInn, double> lifeTuple =
+    Tuple2<Enum28Constellations, double> lifeTuple =
         settleLifeStarInn(panelCelesticalInfo, lifeGongIs, sunEnterGongDegree);
 
     // 立命
@@ -60,41 +62,42 @@ class LifeBodyModelBuilder {
 
     EnumTwelveGong bodyGongIs = settleBodyGong(moonEnterGong);
     // TODO: 提取出到单独的方法进行
-    Tuple2<TwentyEightStarInn, double> bodyStarInnResult =
+    Tuple2<Enum28Constellations, double> bodyStarInnResult =
         StarDegreeInnGongHelper.calculateStarAngleEnterStarInn(
             moonAngle,
             StarPanelType.ZodiacTropicalModernStarsInnSystemMapper,
             StarPanelType.getStarXiuMapper(panelCelesticalInfo));
 
-    return BodyAndLife(
-      lifeGong: lifeGongIs,
-      lifeGongDegree: sunEnterGongDegree,
-      lifeStarInn: lifeTuple.item1,
-      lifeStarInnDegree: lifeTuple.item2,
-      bodyGong: moonEnterGong,
-      bodyGongDegree: moonEnterGongDegree,
-      bodyStarInn: bodyStarInnResult.item1,
-      bodyStarInnDegree: bodyStarInnResult.item2,
-      settleBody: settleBodyType,
-      settleLife: settleLifeType,
+    return BodyLifeModel(
+      lifeGongInfo: GongDegree(gong: lifeGongIs, degree: sunEnterGongDegree),
+      lifeConstellationInfo: ConstellationDegree(
+        constellation: lifeTuple.item1,
+        degree: lifeTuple.item2,
+      ),
+      bodyGongInfo:
+          GongDegree(gong: moonEnterGong, degree: moonEnterGongDegree),
+      bodyConstellationInfo: ConstellationDegree(
+        constellation: bodyStarInnResult.item1,
+        degree: bodyStarInnResult.item2,
+      ),
     );
   }
 
-  static Tuple2<TwentyEightStarInn, double> settleLifeStarInn(
+  static Tuple2<Enum28Constellations, double> settleLifeStarInn(
       PanelCelesticalInfo panelCelesticalInfo,
       EnumTwelveGong lifeGong,
       double enterGongAngle) {
     // 根据盘制式 使用对应的星宿度数
-    Map<TwentyEightStarInn, StarInnGongDegreeInfo> innMapper =
+    Map<Enum28Constellations, ConstellationGongDegreeInfo> innMapper =
         StarPanelType.getStarXiuMapper(panelCelesticalInfo);
-    List<StarInnGongDegreeInfo> xiuTypeList = innMapper.values
+    List<ConstellationGongDegreeInfo> xiuTypeList = innMapper.values
         .where((xiu) =>
             xiu.startAtGongDegree.gong == lifeGong ||
             xiu.endAtGongDegree.gong == lifeGong)
         .toList();
     xiuTypeList.sort((x1, x2) => x1.degreeStartAt.compareTo(x2.degreeStartAt));
 
-    StarInnGongDegreeInfo? xiuType;
+    ConstellationGongDegreeInfo? xiuType;
     double? enterAngle = 0.0;
     for (var e in xiuTypeList) {
       if (e.startAtGongDegree.gong == lifeGong &&
@@ -156,7 +159,7 @@ class LifeBodyModelBuilder {
     EnumTwelveGong bodyGongSettledAt;
     // 根据立命的策略类型
     switch (settleBodyGong) {
-      case EnumSettleBodyType.You:
+      case EnumSettleBodyType.you:
         bodyGongSettledAt = calculateBodyGong(monEnterGong, DiZhi.YOU);
         break;
       default:

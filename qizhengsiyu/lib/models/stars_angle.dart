@@ -1,7 +1,10 @@
 import 'dart:convert';
 
 import 'package:common/enums.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
+
+part 'stars_angle.g.dart';
 
 class StarWalkingInfo {
   EnumStars star;
@@ -30,6 +33,24 @@ class StarWalkingInfo {
   String toString() => jsonEncode(toJson());
 }
 
+@JsonSerializable()
+class BaseFiveStarWalkingInfo {
+  final EnumStars star;
+  final double speed;
+  FiveStarWalkingType walkingType;
+  final StarWalkingTypeThreshold threshold;
+
+  BaseFiveStarWalkingInfo({
+    required this.star,
+    required this.speed,
+    required this.walkingType,
+    required this.threshold,
+  });
+  factory BaseFiveStarWalkingInfo.fromJson(Map<String, dynamic> json) =>
+      _$BaseFiveStarWalkingInfoFromJson(json);
+  Map<String, dynamic> toJson() => _$BaseFiveStarWalkingInfoToJson(this);
+}
+
 class FiveStarWalkingInfo {
   EnumStars star;
   double angle;
@@ -37,7 +58,7 @@ class FiveStarWalkingInfo {
   DateTime walkingTypeStartAt;
   DateTime walkingTypeEndAt;
 
-  String speedThresholdName; // 阈值使用的参数  单前多为moira
+  String speedThresholdName; // 阈值使用的参数  当前多为moira
   double maxSpeed;
   double retrogradeMaxSpeed;
 

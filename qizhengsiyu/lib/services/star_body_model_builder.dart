@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
+import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_qi_zheng.dart';
@@ -21,7 +22,7 @@ class StarBodyModelBuilder {
 
   createFiveStar(
       EnumStars star, double starAngle, double starSpeed, bool isHidden) {
-    EnteredInfo starInfo = calculateStarEnterInfo(starAngle);
+    EnteredInfo starInfo = calculateStarEnterInfo(star, starAngle);
     return FiveStarsInfo(
       star: star,
       angle: starAngle,
@@ -33,13 +34,13 @@ class StarBodyModelBuilder {
   }
 
   createSunStar(EnumStars star, double sunAngle) {
-    EnteredInfo starInfo = calculateStarEnterInfo(sunAngle);
+    EnteredInfo starInfo = calculateStarEnterInfo(star, sunAngle);
     return SunInfo(angle: sunAngle, enterInfo: starInfo);
   }
 
   createMoonStar(EnumStars star, double moonAngle, bool isHidden) {
     // TODO: 需要添加月亮 月象的部分
-    EnteredInfo starInfo = calculateStarEnterInfo(moonAngle);
+    EnteredInfo starInfo = calculateStarEnterInfo(star, moonAngle);
     return MoonInfo(
         angle: moonAngle,
         enterInfo: starInfo,
@@ -48,7 +49,7 @@ class StarBodyModelBuilder {
   }
 
   createFuYu(EnumStars star, double starAngle, bool isHidden) {
-    EnteredInfo starInfo = calculateStarEnterInfo(starAngle);
+    EnteredInfo starInfo = calculateStarEnterInfo(star, starAngle);
     if (star == EnumStars.Bei) {
       return FourSlaveStarInfo.bei(angle: starAngle, enterInfo: starInfo);
     } else if (star == EnumStars.Qi) {
@@ -97,22 +98,23 @@ class StarBodyModelBuilder {
     return result;
   }
 
-  EnteredInfo calculateStarEnterInfo(double starAngle) {
+  EnteredInfo calculateStarEnterInfo(EnumStars star, double starAngle) {
     Tuple2<EnumTwelveGong, double> sunResult =
         StarDegreeInnGongHelper.calculateStarAngleEnterDiZhiGong(starAngle);
     EnumTwelveGong starEnterGong = sunResult.item1;
     double starEnterGongDegree = sunResult.item2;
     // 命宫
-    Tuple2<TwentyEightStarInn, double> innTuple =
+    Tuple2<Enum28Constellations, double> innTuple =
         StarDegreeInnGongHelper.calculateStarAngleEnterStarInn(
             starEnterGongDegree,
             StarPanelType.ZodiacTropicalModernStarsInnSystemMapper,
             StarPanelType.getStarXiuMapper(panelCelesticalInfo));
 
     return EnteredInfo(
-        gong: starEnterGong,
-        atGongDegree: starEnterGongDegree,
-        inn: innTuple.item1,
-        atInnDegree: innTuple.item2);
+        originalStar: StarDegree(star: star, degree: starAngle),
+        enterGongInfo:
+            GongDegree(gong: starEnterGong, degree: starEnterGongDegree),
+        enterInnInfo: ConstellationDegree(
+            constellation: innTuple.item1, degree: innTuple.item2));
   }
 }

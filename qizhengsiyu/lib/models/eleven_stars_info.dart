@@ -15,12 +15,13 @@ class ElevenStarsInfo {
   final EnteredInfo enterInfo;
   final FiveStarWalkingType fiveStarWalkingType;
   final double walkingSpeed;
-  final bool isSlave;
+  // final bool isSlave;
+  bool get isSlave => star.isYuNu;
   final EnumStarsPriority priority; // this field only be used for sort
   // bool isHidden; // 是否为伏
   EnumTwelveGong get enteredGong => enterInfo.gong;
   double get enteredGongDegree => enterInfo.atGongDegree;
-  TwentyEightStarInn get enteredStarInn => enterInfo.inn;
+  Enum28Constellations get enteredStarInn => enterInfo.inn;
   double get enteredStarInnDegree => enterInfo.atInnDegree;
 
   ElevenStarsInfo(
@@ -29,7 +30,6 @@ class ElevenStarsInfo {
       required this.enterInfo,
       required this.fiveStarWalkingType,
       required this.walkingSpeed,
-      required this.isSlave,
       required this.priority
       // required this.isHidden,
       });
@@ -55,7 +55,6 @@ class FiveStarsInfo extends ElevenStarsInfo {
             enterInfo: enterInfo,
             fiveStarWalkingType: fiveStarWalkingType,
             walkingSpeed: walkingSpeed,
-            isSlave: false,
             priority: EnumStarsPriority.Normal
             // isHidden: isHidden,
             );
@@ -78,7 +77,6 @@ class SunInfo extends ElevenStarsInfo {
           fiveStarWalkingType: FiveStarWalkingType.Normal,
           walkingSpeed: 0.0, // 需要重写
           // isHidden: false,
-          isSlave: false,
           priority: EnumStarsPriority.Primary,
         );
 
@@ -103,7 +101,6 @@ class MoonInfo extends ElevenStarsInfo {
           fiveStarWalkingType: FiveStarWalkingType.Normal,
           walkingSpeed: 0.0, // 需要重写
           // isHidden: isHidden,
-          isSlave: false,
           priority: EnumStarsPriority.Secondary,
         );
 
@@ -127,7 +124,6 @@ class FourSlaveStarInfo extends ElevenStarsInfo {
           fiveStarWalkingType: FiveStarWalkingType.Normal,
           walkingSpeed: walkingSpeed,
           // isHidden: false,
-          isSlave: true,
           priority: EnumStarsPriority.Lowest,
         );
   FourSlaveStarInfo.qi({
@@ -140,7 +136,6 @@ class FourSlaveStarInfo extends ElevenStarsInfo {
           fiveStarWalkingType: FiveStarWalkingType.Normal,
           walkingSpeed: 0.0352,
           // isHidden: false,
-          isSlave: true,
           priority: EnumStarsPriority.Normal,
         );
   FourSlaveStarInfo.bei({
@@ -153,7 +148,6 @@ class FourSlaveStarInfo extends ElevenStarsInfo {
           fiveStarWalkingType: FiveStarWalkingType.Normal,
           walkingSpeed: 0.11,
           // isHidden: false,
-          isSlave: true,
           priority: EnumStarsPriority.Normal,
         );
 
@@ -165,18 +159,12 @@ class FourSlaveStarInfo extends ElevenStarsInfo {
 
 @JsonSerializable()
 class LouJiStarsInfo extends FourSlaveStarInfo {
-  // bool isRoundSun;
-  // double roundDegreeRange;
-  // bool isRoundMoon;
   bool get isLuo => star == EnumStars.Luo;
   bool get isJi => star == EnumStars.Ji;
   LouJiStarsInfo({
     required EnumStars star,
     required double angle,
     required EnteredInfo enterInfo,
-    // required this.isRoundMoon,
-    // required this.isRoundSun,
-    // required this.roundDegreeRange,
   }) : super(
           star: star,
           angle: angle,

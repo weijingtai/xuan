@@ -1,3 +1,4 @@
+import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:flutter/widgets.dart';
@@ -22,7 +23,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   BasicDivination? _divinationInfo;
 
   // 位置信息
-  Location? _location;
+  Address? _location;
 
   // 自定义配置
   late PanelConfig _customConfig;
@@ -84,7 +85,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   BasicDivination? get divinationInfo => _divinationInfo;
 
   /// 获取位置信息
-  Location? get location => _location;
+  Address? get location => _location;
 
   /// 获取自定义配置
   PanelConfig get customConfig => _customConfig;
@@ -105,7 +106,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   }
 
   /// 更新位置信息
-  void updateLocation(Location location) {
+  void updateLocation(Address location) {
     _location = location;
   }
 
@@ -117,32 +118,32 @@ class PanelConfigViewModel extends ChangeNotifier {
   /// 更新流派类型
   void updateSchoolType(EnumSchoolType schoolType) {
     // 根据流派类型更新默认配置
-    _customConfig = _customConfig.copyWith(schoolType: schoolType);
+    // _customConfig = _customConfig.copyWith(schoolType: schoolType);
 
     // 根据不同流派设置默认值
-    switch (schoolType) {
-      case EnumSchoolType.QinTang:
-        _customConfig = _customConfig.copyWith(
-          coordinateSystem: CoordinateSystem.Equatorial,
-          classicBooks: ['星学大成'],
-        );
-        break;
-      case EnumSchoolType.GuoLao:
-        _customConfig = _customConfig.copyWith(
-          coordinateSystem: CoordinateSystem.Ecliptic,
-          classicBooks: ['果老星宗'],
-        );
-        break;
-      case EnumSchoolType.TianGuan:
-        _customConfig = _customConfig.copyWith(
-          coordinateSystem: CoordinateSystem.Ecliptic,
-          classicBooks: ['天官星经'],
-        );
-        break;
-      case EnumSchoolType.Customerized:
-        // 自定义流派保持当前设置
-        break;
-    }
+    // switch (schoolType) {
+    //   case EnumSchoolType.QinTang:
+    //     _customConfig = _customConfig.copyWith(
+    //       coordinateSystem: CelestialCoordinateSystem.equatorial,
+    //       classicBooks: ['星学大成'],
+    //     );
+    //     break;
+    //   case EnumSchoolType.GuoLao:
+    //     _customConfig = _customConfig.copyWith(
+    //       coordinateSystem: CoordinateSystemType.Ecliptic,
+    //       classicBooks: ['果老星宗'],
+    //     );
+    //     break;
+    //   case EnumSchoolType.TianGuan:
+    //     _customConfig = _customConfig.copyWith(
+    //       coordinateSystem: CoordinateSystemType.Ecliptic,
+    //       classicBooks: ['天官星经'],
+    //     );
+    //     break;
+    //   case EnumSchoolType.Customerized:
+    //     // 自定义流派保持当前设置
+    //     break;
+    // }
   }
 
   /// 构建完整的配置对象
@@ -185,33 +186,38 @@ class PanelConfigViewModel extends ChangeNotifier {
   }
 
   static PanelConfig getPreviousPanelConfig() {
+    throw UnimplementedError("从数据库中获取");
     // 从数据库中获取
-    return PanelConfig(
-        queryType: EnumQueryType.destiny,
-        coordinateSystem: CoordinateSystem.Ecliptic,
-        starInnSystem: StarInnSystem.Tropical,
-        starInnType: StarInnType.Mordern,
-        schoolType: EnumSchoolType.GuoLao,
-        settleLifeType: EnumSettleLifeType.Mao,
-        settleBodyType: EnumSettleBodyType.TiaYin,
-        withAscendant: false,
-        huaYaoType: EnumHuaYaoType.Both,
-        panelRingOrder: EnumPanelRing.moria,
-        classicBooks: ["《果老星宗》"]);
+    //   return PanelConfig(
+    //       queryType: EnumQueryType.destiny,
+    //       coordinateSystem: CoordinateSystemType.Ecliptic,
+    //       starInnSystem: PanelSystem.Tropical,
+    //       starInnType: StarInnType.Mordern,
+    //       schoolType: EnumSchoolType.GuoLao,
+    //       settleLifeType: EnumSettleLifeType.Mao,
+    //       settleBodyType: EnumSettleBodyType.TiaYin,
+    //       withAscendant: false,
+    //       huaYaoType: EnumHuaYaoType.Both,
+    //       uiPanelRingOrder: UIEnumPanelRing.moria,
+    //       classicBooks: ["《果老星宗》"]);
+    //
   }
 
   PanelConfig getCustomConfig() {
-    return PanelConfig(
-        queryType: EnumQueryType.destiny,
-        coordinateSystem: CoordinateSystem.Ecliptic,
-        starInnSystem: StarInnSystem.Tropical,
-        starInnType: StarInnType.Mordern,
-        schoolType: EnumSchoolType.GuoLao,
-        settleLifeType: EnumSettleLifeType.Mao,
-        settleBodyType: EnumSettleBodyType.TiaYin,
-        withAscendant: false,
-        huaYaoType: EnumHuaYaoType.Both,
-        panelRingOrder: EnumPanelRing.moria,
-        classicBooks: ["1.《果老星宗》"]);
+    return _customConfig;
   }
+
+  //   return PanelConfig(
+  //       queryType: EnumQueryType.destiny,
+  //       coordinateSystem: CoordinateSystemType.Ecliptic,
+  //       starInnSystem: PanelSystem.Tropical,
+  //       starInnType: StarInnType.Mordern,
+  //       schoolType: EnumSchoolType.GuoLao,
+  //       settleLifeType: EnumSettleLifeType.Mao,
+  //       settleBodyType: EnumSettleBodyType.moon,
+  //       withAscendant: false,
+  //       huaYaoType: EnumHuaYaoType.Both,
+  //       uiPanelRingOrder: UIEnumPanelRing.moria,
+  //       classicBooks: ["1.《果老星宗》"]);
+  // }
 }

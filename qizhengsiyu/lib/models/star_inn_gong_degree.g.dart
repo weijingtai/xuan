@@ -6,24 +6,24 @@ part of 'star_inn_gong_degree.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-StarInnGongDegreeInfo _$StarInnGongDegreeInfoFromJson(
+ConstellationGongDegreeInfo _$ConstellationGongDegreeInfoFromJson(
         Map<String, dynamic> json) =>
-    StarInnGongDegreeInfo(
+    ConstellationGongDegreeInfo(
       starType: $enumDecode(_$StarPanelTypeEnumMap, json['starType']),
-      starXiu: $enumDecode(_$TwentyEightStarInnEnumMap, json['starXiu']),
+      starXiu: $enumDecode(_$Enum28ConstellationsEnumMap, json['starXiu']),
       degreeStartAt: (json['degreeStartAt'] as num).toDouble(),
       totalDegree: (json['totalDegree'] as num).toDouble(),
-      startAtGongDegree: GongAndDegree.fromJson(
+      startAtGongDegree: GongDegree.fromJson(
           json['startAtGongDegree'] as Map<String, dynamic>),
-      endAtGongDegree: GongAndDegree.fromJson(
-          json['endAtGongDegree'] as Map<String, dynamic>),
+      endAtGongDegree:
+          GongDegree.fromJson(json['endAtGongDegree'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$StarInnGongDegreeInfoToJson(
-        StarInnGongDegreeInfo instance) =>
+Map<String, dynamic> _$ConstellationGongDegreeInfoToJson(
+        ConstellationGongDegreeInfo instance) =>
     <String, dynamic>{
       'starType': _$StarPanelTypeEnumMap[instance.starType]!,
-      'starXiu': _$TwentyEightStarInnEnumMap[instance.starXiu]!,
+      'starXiu': _$Enum28ConstellationsEnumMap[instance.starXiu]!,
       'degreeStartAt': instance.degreeStartAt,
       'startAtGongDegree': instance.startAtGongDegree,
       'endAtGongDegree': instance.endAtGongDegree,
@@ -38,33 +38,33 @@ const _$StarPanelTypeEnumMap = {
   StarPanelType.ZodiacTropicalModernStarsInnSystemMapper: '黄道回归制今宿',
 };
 
-const _$TwentyEightStarInnEnumMap = {
-  TwentyEightStarInn.Lou_Jin_Gou: '娄',
-  TwentyEightStarInn.Wei_Tu_Zhi: '胃',
-  TwentyEightStarInn.Mao_Ri_Ji: '昴',
-  TwentyEightStarInn.Bi_Yue_Wu: '毕',
-  TwentyEightStarInn.Zi_Huo_Hou: '觜',
-  TwentyEightStarInn.Shen_Shui_Yuan: '参',
-  TwentyEightStarInn.Jing_Mu_Han: '井',
-  TwentyEightStarInn.Gui_Jin_Yang: '鬼',
-  TwentyEightStarInn.Liu_Tu_Zhang: '柳',
-  TwentyEightStarInn.Xing_Ri_Ma: '星',
-  TwentyEightStarInn.Zhang_Yue_Lu: '张',
-  TwentyEightStarInn.Yi_Huo_She: '翼',
-  TwentyEightStarInn.Zhen_Shui_Yin: '轸',
-  TwentyEightStarInn.Jiao_Mu_Jiao: '角',
-  TwentyEightStarInn.Kang_Jin_Long: '亢',
-  TwentyEightStarInn.Di_Tu_Lu: '氐',
-  TwentyEightStarInn.Fang_Ri_Tu: '房',
-  TwentyEightStarInn.Xin_Yue_Hu: '心',
-  TwentyEightStarInn.Wei_Huo_Hu: '尾',
-  TwentyEightStarInn.Ji_Shui_Bao: '箕',
-  TwentyEightStarInn.Dou_Mu_Xie: '斗',
-  TwentyEightStarInn.Niu_Jin_Niu: '牛',
-  TwentyEightStarInn.Nv_Tu_Fu: '女',
-  TwentyEightStarInn.Xu_Ri_Shu: '虚',
-  TwentyEightStarInn.Wei_Yue_Yan: '危',
-  TwentyEightStarInn.Shi_Huo_Zhu: '室',
-  TwentyEightStarInn.Bi_Shui_Yu: '壁',
-  TwentyEightStarInn.Kui_Mu_Lang: '奎',
+const _$Enum28ConstellationsEnumMap = {
+  Enum28Constellations.Lou_Jin_Gou: '娄',
+  Enum28Constellations.Wei_Tu_Zhi: '胃',
+  Enum28Constellations.Mao_Ri_Ji: '昴',
+  Enum28Constellations.Bi_Yue_Wu: '毕',
+  Enum28Constellations.Zi_Huo_Hou: '觜',
+  Enum28Constellations.Shen_Shui_Yuan: '参',
+  Enum28Constellations.Jing_Mu_Han: '井',
+  Enum28Constellations.Gui_Jin_Yang: '鬼',
+  Enum28Constellations.Liu_Tu_Zhang: '柳',
+  Enum28Constellations.Xing_Ri_Ma: '星',
+  Enum28Constellations.Zhang_Yue_Lu: '张',
+  Enum28Constellations.Yi_Huo_She: '翼',
+  Enum28Constellations.Zhen_Shui_Yin: '轸',
+  Enum28Constellations.Jiao_Mu_Jiao: '角',
+  Enum28Constellations.Kang_Jin_Long: '亢',
+  Enum28Constellations.Di_Tu_Lu: '氐',
+  Enum28Constellations.Fang_Ri_Tu: '房',
+  Enum28Constellations.Xin_Yue_Hu: '心',
+  Enum28Constellations.Wei_Huo_Hu: '尾',
+  Enum28Constellations.Ji_Shui_Bao: '箕',
+  Enum28Constellations.Dou_Mu_Xie: '斗',
+  Enum28Constellations.Niu_Jin_Niu: '牛',
+  Enum28Constellations.Nv_Tu_Fu: '女',
+  Enum28Constellations.Xu_Ri_Shu: '虚',
+  Enum28Constellations.Wei_Yue_Yan: '危',
+  Enum28Constellations.Shi_Huo_Zhu: '室',
+  Enum28Constellations.Bi_Shui_Yu: '壁',
+  Enum28Constellations.Kui_Mu_Lang: '奎',
 };

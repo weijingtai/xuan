@@ -2,7 +2,7 @@ import 'package:common/widgets/eight_chars_input_card.dart';
 import 'package:common/widgets/query_time_input_card.dart';
 import 'package:flutter/material.dart';
 
-import '../models/query_datetime.dart';
+import '../models/divination_datetime.dart';
 
 class ResponsiveDatetimeDialog extends StatelessWidget {
   final QueryDateTimeHeplperModel model;

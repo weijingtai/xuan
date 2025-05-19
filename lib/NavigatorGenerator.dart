@@ -7,7 +7,6 @@ import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
 import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
 import 'package:common/navigator.dart' as Common;
-import 'package:xuan/pages/city_picker_page.dart';
 import 'package:xuan/pages/one_year_circle.dart';
 
 class NavigatorGenerator {
@@ -16,7 +15,7 @@ class NavigatorGenerator {
   static Logger logger = Logger();
   static final routes = {
     // "/": (context,{arguments}) => RootPage(),
-    "/": (context, {arguments}) => CityPickerPage(),
+    // "/": (context, {arguments}) => CityPickerPage(),
     "/one_year": (context, {arguments}) => OneYearCircle(),
     "/widget_dev": (context, {arguments}) => MyHomePage(
           title: 'widgets dev',

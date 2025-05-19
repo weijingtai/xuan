@@ -233,6 +233,30 @@ class StarWalkingInfoUtils {
     return Sweph.swe_revjul(julianDay, CalendarType.SE_GREG_CAL);
   }
 
+  static FiveStarWalkingType getWalkingTypeByThreshold(
+      double observerSpeed, StarWalkingTypeThreshold threshold) {
+    double maxSpeed = threshold.maxSpeed;
+    double retrogradeMaxSpeed = threshold.maxRetrogradeThreshold;
+
+    double retrogradeThreshold = threshold.retrogradeThreshold;
+    double stayThreshold = threshold.stayThreshold;
+    double? fastThreshold = threshold.fastThreshold;
+    double? slowThreshold = threshold.slowThreshold;
+    FiveStarWalkingType walkingType = FiveStarWalkingType.Normal;
+
+    // print("[$observerSpeed] revs:$retrogradeThreshold stay:$stayThreshold fast:$fastThreshold slow:$slowThreshold");
+    if (observerSpeed < retrogradeThreshold) {
+      walkingType = FiveStarWalkingType.Retrograde;
+    } else if (fastThreshold != null && observerSpeed > fastThreshold) {
+      walkingType = FiveStarWalkingType.Fast;
+    } else if (observerSpeed < stayThreshold) {
+      walkingType = FiveStarWalkingType.Stay;
+    } else if (slowThreshold != null && observerSpeed < slowThreshold) {
+      walkingType = FiveStarWalkingType.Slow;
+    }
+    return walkingType;
+  }
+
   static FiveStarWalkingType getWalkingType(double observerSpeed,
       Tuple6<double, double, double, double, double?, double?> tuple6) {
     double maxSpeed = tuple6.item1;

@@ -1,8 +1,11 @@
 import 'dart:ui';
 
 import 'package:common/const_resources_mapper.dart';
+import 'package:common/database/app_database.dart' as db;
+import 'package:common/database/world_info_database.dart' as db;
 import 'package:common/enums/enum_hou_tian_gua.dart';
 import 'package:common/enums/enum_yin_yang.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:common/navigator.dart';
@@ -10,6 +13,7 @@ import 'package:common/widgets/eight_gua_widget.dart';
 import 'package:common/widgets/yao_widget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:sweph/sweph.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -44,10 +48,23 @@ void main() async {
   //   ),
   // );
 
-
   initServices().then((_) {
-
-    runApp(const MyApp());
+    runApp(
+      MultiProvider(
+        providers: [
+          Provider<db.AppDatabase>(
+            create: (ctx) => db.AppDatabase(),
+            dispose: (ctx, db) => db.close(),
+          ),
+          Provider<db.WorldInfoDatabase>(
+            create: (ctx) => db.WorldInfoDatabase(),
+            dispose: (ctx, db) => db.close(),
+          )
+        ],
+        child: const MyApp(),
+      ),
+    );
+    // runApp(const MyApp());
   });
 }
 
@@ -66,7 +83,8 @@ class MyApp extends StatelessWidget {
       // home: const MyHomePage(title: 'Common Widgets Dev'),
       // home:ChineseStyleTheme1HomePage(),
       // home:WidgetExamplePage(),
-      initialRoute: '/dev',
+      // initialRoute: '/common/history',
+      initialRoute: '/common/dev',
       onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }

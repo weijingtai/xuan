@@ -17,7 +17,8 @@ enum EnumSchoolType {
 enum EnumHuaYaoType {
   GuoLao("果老化曜"),
   TianGuan("天官化曜"),
-  Both("同参");
+  Both("同参"),
+  None("不显示");
 
   final String name;
   const EnumHuaYaoType(this.name);

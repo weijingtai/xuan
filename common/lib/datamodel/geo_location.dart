@@ -1,6 +1,8 @@
+import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:sweph/sweph.dart';
 import 'basic_person_info.dart' as my;
+import 'location.dart' as my;
 part 'geo_location.g.dart';
 
 enum GeoLevel {
@@ -27,7 +29,7 @@ enum GeoLevel {
 
 /// 地理位置数据类
 @JsonSerializable()
-class GeoLocation {
+class GeoLocation extends Equatable {
   /// 区域编码
   final String code;
 
@@ -45,7 +47,8 @@ class GeoLocation {
 
   /// 经度
   final double longitude;
-  my.Coordinates get coordinates => my.Coordinates(latitude: latitude, longitude: longitude);
+  my.Coordinates get coordinates =>
+      my.Coordinates(latitude: latitude, longitude: longitude);
   GeoLocation({
     required this.code,
     required this.parentCode,
@@ -55,6 +58,15 @@ class GeoLocation {
     required this.longitude,
   });
 
+  static GeoLocation nullGeoLocation = GeoLocation(
+    code: '-1',
+    parentCode: '-1',
+    level: GeoLevel.country,
+    name: 'null',
+    latitude: 0,
+    longitude: 0,
+  );
+
   @override
   String toString() {
     return '$name ($latitude, $longitude)';
@@ -63,4 +75,13 @@ class GeoLocation {
   factory GeoLocation.fromJson(Map<String, dynamic> json) =>
       _$GeoLocationFromJson(json);
   Map<String, dynamic> toJson() => _$GeoLocationToJson(this);
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [
+        code,
+        parentCode,
+        level,
+        name,
+      ];
 }

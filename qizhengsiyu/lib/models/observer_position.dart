@@ -34,12 +34,16 @@ class ObserverPosition extends BaseObserverPosition {
   late final JiaZi monthGanZhi;
   late final JiaZi dayGanZhi;
   late final JiaZi timeGanZhi;
+
+  // 是否为昼生
+  late final bool isDayBirth;
   ObserverPosition(
       {required this.birthday,
       required double latitude,
       required double longitude,
       required double altitude,
       required String timezone,
+      this.isDayBirth = true,
       this.fateLifeDateTime})
       : super(
             latitude: latitude,

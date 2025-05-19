@@ -9,10 +9,10 @@ part 'star_angle_raw_info.g.dart';
 @JsonSerializable()
 class StarAngleRawInfo {
   /// 使用的星制（恒星制、回归制）
-  final StarInnSystem starInnSystem;
+  final PanelSystemType panelSystemType;
 
   /// 使用的参考面（黄道、赤道）
-  final CoordinateSystem coordinateSystem;
+  final CelestialCoordinateSystem coordinateSystem;
 
   /// 当前角度（度数）
   final double angle;
@@ -22,7 +22,7 @@ class StarAngleRawInfo {
 
   /// 构造函数
   const StarAngleRawInfo({
-    required this.starInnSystem,
+    required this.panelSystemType,
     required this.coordinateSystem,
     required this.angle,
     required this.speed,
@@ -30,13 +30,13 @@ class StarAngleRawInfo {
 
   /// 创建此对象的副本，但使用提供的值替换指定的属性
   StarAngleRawInfo copyWith({
-    StarInnSystem? starInnSystem,
-    CoordinateSystem? coordinateSystem,
+    PanelSystemType? starInnSystem,
+    CelestialCoordinateSystem? coordinateSystem,
     double? angle,
     double? speed,
   }) {
     return StarAngleRawInfo(
-      starInnSystem: starInnSystem ?? this.starInnSystem,
+      panelSystemType: starInnSystem ?? this.panelSystemType,
       coordinateSystem: coordinateSystem ?? this.coordinateSystem,
       angle: angle ?? this.angle,
       speed: speed ?? this.speed,

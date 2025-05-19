@@ -10,7 +10,7 @@ class Starinn28ringPainter extends CustomPainter {
   final double outerRadius;
   // tuple5: 东南西北, 星宿名,星宿全称, 颜色, 角度
   // List<Tuple5<int, String, String, Color, num>> twentyEightStarsList;
-  List<Tuple3<TwentyEightStarInn, Color, double>> twentyEightStarsList;
+  List<Tuple3<Enum28Constellations, Color, double>> twentyEightStarsList;
   late TextStyle textStyle;
   bool isReverseText = false;
   bool isReverseOrderSequence = false;

@@ -1264,6 +1264,9 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                                                       jieQi = TwentyFourJieQi
                                                           .LI_DONG;
                                                       break;
+                                                    case FourSeasons.EARTH:
+                                                      jieQi = null;
+                                                      break;
                                                   }
                                                 } else {
                                                   jieQi = null;

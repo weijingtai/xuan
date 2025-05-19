@@ -7,10 +7,20 @@ part 'shen_sha.g.dart';
 abstract class ShenShaInterface {
   String get name;
   JiXiongEnum get jiXiong;
-  List<String> get descriptionList;
-  List<String> get locationDescriptionList;
+  List<String>? get descriptionList;
+  List<String>? get locationDescriptionList;
 }
 
+// enum ShenShaTypeEnum {
+//   @JsonValue("year")
+//   Year, // 年上神煞
+//   @JsonValue("month")
+//   Month, // 月上神煞
+//   @JsonValue("day")
+//   Day, // 日上神煞
+//   @JsonValue("time")
+//   Time; // 时上神煞
+// }
 @JsonSerializable()
 class ShenSha implements ShenShaInterface {
   @override
@@ -18,9 +28,9 @@ class ShenSha implements ShenShaInterface {
   @override
   JiXiongEnum jiXiong;
   @override
-  List<String> descriptionList;
+  List<String>? descriptionList;
   @override
-  List<String> locationDescriptionList;
+  List<String>? locationDescriptionList;
 
   ShenSha(this.name, this.jiXiong, this.descriptionList,
       this.locationDescriptionList);

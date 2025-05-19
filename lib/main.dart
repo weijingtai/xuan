@@ -1,6 +1,13 @@
+import 'package:common/common_logger.dart';
+import 'package:common/database/app_database.dart' as db;
+import 'package:common/database/world_info_database.dart' as db;
+import 'package:common/datasource/geo_location_repository.dart';
+import 'package:common/datasource/loca_binary/world_country_repository.dart';
+import 'package:common/widgets/timezone_location_viewmodel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
@@ -36,7 +43,37 @@ void main() async {
   //   ),
   // );
   initServices().then((_) {
-    runApp(const MyApp());
+    runApp(
+      MultiProvider(
+        providers: [
+          Provider<db.AppDatabase>(
+            create: (ctx) => db.AppDatabase(),
+            dispose: (ctx, db) => db.close(),
+          ),
+          Provider<db.WorldInfoDatabase>(
+            create: (ctx) => db.WorldInfoDatabase(),
+            dispose: (ctx, db) => db.close(),
+          ),
+          Provider<WorldCountryRepository>(
+            create: (ctx) => WorldCountryRepository(
+              path: "assets/dataset/world_country.pro",
+              regionJsonFilePath: "assets/dataset/regions.json",
+            ),
+          ),
+          Provider<GeoLocationRepository>(
+            create: (ctx) => GeoLocationRepository(
+              path: "assets/dataset/province_city_area_lng_lat.json",
+            ),
+          ),
+          ListenableProvider<TimezoneLocationViewModel>(
+            create: (ctx) => TimezoneLocationViewModel(
+                appFeatureModule: AppFeatureModule.Golabel),
+          )
+        ],
+        child: const MyApp(),
+      ),
+    );
+    // runApp(const MyApp());
   });
 }
 
@@ -58,7 +95,8 @@ class MyApp extends StatelessWidget {
       // initialRoute: '/qizhengsiyu',
       // initialRoute: '/one_year',
       // initialRoute: '/qizhengsiyu', // 七政四余
-      initialRoute: '/dev', // 七政四余
+      // initialRoute: '/dev', // 七政四余
+      initialRoute: '/common/dev', // 占测记录
       // initialRoute: '/taiyishenshu', // 太乙神数
       // initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲

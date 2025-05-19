@@ -3,43 +3,49 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
 import '../enums/enum_settle_life_body.dart';
+import 'naming_degree_pair.dart';
 
 part 'body_life_model.g.dart';
 
 @JsonSerializable()
-class BodyAndLife {
+class BodyLifeModel {
   // 身命
   // final DiZhi sunEnteredGong;
   // final double sunEnteredGongDegree;
 
+  final GongDegree lifeGongInfo;
+  final ConstellationDegree lifeConstellationInfo;
+  final GongDegree bodyGongInfo;
+  final ConstellationDegree bodyConstellationInfo;
+
   /// 命宫
-  final EnumSettleLifeType settleLife;
-  final EnumTwelveGong lifeGong;
-  final double lifeGongDegree;
+  // final EnumSettleLifeType settleLife;
+  EnumTwelveGong get lifeGong => lifeGongInfo.gong;
+  double get lifeDegree => lifeGongInfo.degree;
 
   /// 命度
-  final TwentyEightStarInn lifeStarInn;
-  final double lifeStarInnDegree;
+  Enum28Constellations get lifeConstellatioin =>
+      lifeConstellationInfo.constellation;
+  double get lifeConstellationDegree => lifeConstellationInfo.degree;
 
   /// 身宫
   ///
-  final EnumSettleBodyType settleBody;
-  final EnumTwelveGong bodyGong;
-  final double bodyGongDegree;
+  // final EnumSettleBodyType settleBody;
+  EnumTwelveGong get bodyGong => bodyGongInfo.gong;
+  double get bodyGongDegree => bodyGongInfo.degree;
 
-  final TwentyEightStarInn bodyStarInn;
-  final double bodyStarInnDegree;
+  Enum28Constellations get bodyConstellation =>
+      bodyConstellationInfo.constellation;
+  double get bodyConstellationDegree => bodyConstellationInfo.degree;
 
-  BodyAndLife({
-    required this.lifeGong,
-    required this.lifeGongDegree,
-    required this.lifeStarInn,
-    required this.lifeStarInnDegree,
-    required this.bodyGong,
-    required this.bodyGongDegree,
-    required this.bodyStarInn,
-    required this.bodyStarInnDegree,
-    required this.settleBody,
-    required this.settleLife,
+  BodyLifeModel({
+    required this.lifeGongInfo,
+    required this.lifeConstellationInfo,
+    required this.bodyGongInfo,
+    required this.bodyConstellationInfo,
   });
+
+  factory BodyLifeModel.fromJson(Map<String, dynamic> json) =>
+      _$BodyLifeModelFromJson(json);
+  Map<String, dynamic> toJson() => _$BodyLifeModelToJson(this);
 }

@@ -7,69 +7,71 @@ part of 'panel_config.dart';
 // **************************************************************************
 
 PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
-      queryType: $enumDecode(_$EnumQueryTypeEnumMap, json['queryType']),
-      coordinateSystem:
-          $enumDecode(_$CoordinateSystemEnumMap, json['coordinateSystem']),
-      starInnSystem: $enumDecode(_$StarInnSystemEnumMap, json['starInnSystem']),
-      starInnType: $enumDecode(_$StarInnTypeEnumMap, json['starInnType']),
-      schoolType: $enumDecode(_$EnumSchoolTypeEnumMap, json['schoolType']),
+      celestialCoordinateSystem: $enumDecode(_$CelestialCoordinateSystemEnumMap,
+          json['celestialCoordinateSystem']),
+      houseDivisionSystem: $enumDecode(
+          _$HouseDivisionSystemEnumMap, json['houseDivisionSystem']),
+      panelSystemType:
+          $enumDecode(_$PanelSystemTypeEnumMap, json['panelSystemType']),
+      constellationSystemType: $enumDecode(
+          _$ConstellationSystemTypeEnumMap, json['constellationSystemType']),
       settleLifeType:
           $enumDecode(_$EnumSettleLifeTypeEnumMap, json['settleLifeType']),
       settleBodyType:
           $enumDecode(_$EnumSettleBodyTypeEnumMap, json['settleBodyType']),
-      withAscendant: json['withAscendant'] as bool,
-      huaYaoType: $enumDecode(_$EnumHuaYaoTypeEnumMap, json['huaYaoType']),
-      panelRingOrder: (json['panelRingOrder'] as List<dynamic>)
-          .map((e) => $enumDecode(_$EnumPanelRingEnumMap, e))
-          .toList(),
-      classicBooks: (json['classicBooks'] as List<dynamic>)
-          .map((e) => e as String)
-          .toList(),
+      lifeGongBySunRealTimeLocation:
+          json['lifeGongBySunRealTimeLocation'] as bool,
+      lifeCountingToGong: $enumDecodeNullable(
+              _$EnumTwelveGongEnumMap, json['lifeCountingToGong']) ??
+          EnumTwelveGong.Mao,
+      bodyCountingToGong: $enumDecodeNullable(
+              _$EnumTwelveGongEnumMap, json['bodyCountingToGong']) ??
+          EnumTwelveGong.You,
     );
 
 Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
     <String, dynamic>{
-      'queryType': _$EnumQueryTypeEnumMap[instance.queryType]!,
-      'coordinateSystem': _$CoordinateSystemEnumMap[instance.coordinateSystem]!,
-      'starInnSystem': _$StarInnSystemEnumMap[instance.starInnSystem]!,
-      'starInnType': _$StarInnTypeEnumMap[instance.starInnType]!,
-      'schoolType': _$EnumSchoolTypeEnumMap[instance.schoolType]!,
+      'celestialCoordinateSystem': _$CelestialCoordinateSystemEnumMap[
+          instance.celestialCoordinateSystem]!,
+      'panelSystemType': _$PanelSystemTypeEnumMap[instance.panelSystemType]!,
+      'constellationSystemType':
+          _$ConstellationSystemTypeEnumMap[instance.constellationSystemType]!,
+      'houseDivisionSystem':
+          _$HouseDivisionSystemEnumMap[instance.houseDivisionSystem]!,
       'settleLifeType': _$EnumSettleLifeTypeEnumMap[instance.settleLifeType]!,
+      'lifeCountingToGong':
+          _$EnumTwelveGongEnumMap[instance.lifeCountingToGong]!,
       'settleBodyType': _$EnumSettleBodyTypeEnumMap[instance.settleBodyType]!,
-      'classicBooks': instance.classicBooks,
-      'withAscendant': instance.withAscendant,
-      'huaYaoType': _$EnumHuaYaoTypeEnumMap[instance.huaYaoType]!,
-      'panelRingOrder': instance.panelRingOrder
-          .map((e) => _$EnumPanelRingEnumMap[e]!)
-          .toList(),
+      'bodyCountingToGong':
+          _$EnumTwelveGongEnumMap[instance.bodyCountingToGong]!,
+      'lifeGongBySunRealTimeLocation': instance.lifeGongBySunRealTimeLocation,
     };
 
-const _$EnumQueryTypeEnumMap = {
-  EnumQueryType.destiny: '命运',
-  EnumQueryType.divination: '占测',
+const _$CelestialCoordinateSystemEnumMap = {
+  CelestialCoordinateSystem.ecliptic: '黄道制',
+  CelestialCoordinateSystem.equatorial: '赤道制',
+  CelestialCoordinateSystem.skyEquatorial: '赤道制',
+  CelestialCoordinateSystem.pseudoEcliptic: '似黄道恒星制',
 };
 
-const _$CoordinateSystemEnumMap = {
-  CoordinateSystem.Ecliptic: '黄道制',
-  CoordinateSystem.Equatorial: '赤道制',
+const _$HouseDivisionSystemEnumMap = {
+  HouseDivisionSystem.equal: '等宫制',
+  HouseDivisionSystem.equatorialEqual: '赤道等宫制',
+  HouseDivisionSystem.unequal: '不等宫制',
+  HouseDivisionSystem.equatorialFourZheng: '四正',
+  HouseDivisionSystem.equatorialSunMoon: '日月',
+  HouseDivisionSystem.equatorialZiWu: 'equatorialZiWu',
 };
 
-const _$StarInnSystemEnumMap = {
-  StarInnSystem.Tropical: '回归制',
-  StarInnSystem.Sidereal: '恒星制',
+const _$PanelSystemTypeEnumMap = {
+  PanelSystemType.tropical: '回归制',
+  PanelSystemType.sidereal: '恒星制',
 };
 
-const _$StarInnTypeEnumMap = {
-  StarInnType.Classical: '古宿',
-  StarInnType.AdjustedClassical: '矫正古宿',
-  StarInnType.Mordern: '今宿',
-};
-
-const _$EnumSchoolTypeEnumMap = {
-  EnumSchoolType.GuoLao: '果老派',
-  EnumSchoolType.TianGuan: '天官派',
-  EnumSchoolType.QinTang: '琴堂派',
-  EnumSchoolType.Customerized: '自定义',
+const _$ConstellationSystemTypeEnumMap = {
+  ConstellationSystemType.classical: '古宿制',
+  ConstellationSystemType.adjustedClassical: '矫正古宿制',
+  ConstellationSystemType.modern: '今宿制',
 };
 
 const _$EnumSettleLifeTypeEnumMap = {
@@ -80,24 +82,21 @@ const _$EnumSettleLifeTypeEnumMap = {
 };
 
 const _$EnumSettleBodyTypeEnumMap = {
-  EnumSettleBodyType.TiaYin: 'byTaiYin',
-  EnumSettleBodyType.You: 'byYou',
+  EnumSettleBodyType.moon: 'byTaiYin',
+  EnumSettleBodyType.you: 'byYou',
 };
 
-const _$EnumHuaYaoTypeEnumMap = {
-  EnumHuaYaoType.GuoLao: 'GuoLao',
-  EnumHuaYaoType.TianGuan: 'TianGuan',
-  EnumHuaYaoType.Both: 'Both',
-};
-
-const _$EnumPanelRingEnumMap = {
-  EnumPanelRing.PersonInfo: '命主',
-  EnumPanelRing.DiZhi12Gong: '地支',
-  EnumPanelRing.TwelveGong: '十二宫',
-  EnumPanelRing.DestinyGong: '命理宫',
-  EnumPanelRing.BasicTrack: '本命星轨',
-  EnumPanelRing.FateTrack: '流年星轨',
-  EnumPanelRing.StarInn: '星宿环',
-  EnumPanelRing.BasicShenSha: '本命神煞',
-  EnumPanelRing.FateShenSha: '流年',
+const _$EnumTwelveGongEnumMap = {
+  EnumTwelveGong.Zi: '子',
+  EnumTwelveGong.Chou: '丑',
+  EnumTwelveGong.Yin: '寅',
+  EnumTwelveGong.Mao: '卯',
+  EnumTwelveGong.Chen: '辰',
+  EnumTwelveGong.Si: '巳',
+  EnumTwelveGong.Wu: '午',
+  EnumTwelveGong.Wei: '未',
+  EnumTwelveGong.Shen: '申',
+  EnumTwelveGong.You: '酉',
+  EnumTwelveGong.Xu: '戌',
+  EnumTwelveGong.Hai: '亥',
 };

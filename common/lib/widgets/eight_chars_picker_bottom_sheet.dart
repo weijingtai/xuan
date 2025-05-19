@@ -1,18 +1,17 @@
-import 'package:common/datamodel/basic_person_info.dart';
 import 'package:common/enums/enum_di_zhi.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/enums/enum_tian_gan.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
-import 'package:common/datamodel/geo_location.dart';
-import 'package:common/helpers/geo_location_helper.dart';
+
+import '../datamodel/location.dart';
 
 /// 显示城市选择器底部弹窗
-Future<Location?> showEightCharsPickerBottomSheet({
+Future<Address?> showEightCharsPickerBottomSheet({
   required BuildContext context,
   required EightChars? eightChars,
 }) {
-  return showModalBottomSheet<Location>(
+  return showModalBottomSheet<Address>(
     context: context,
     isScrollControlled: true, // 允许弹窗占据更大空间
     shape: const RoundedRectangleBorder(

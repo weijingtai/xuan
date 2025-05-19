@@ -84,7 +84,7 @@ void main() {
           priority: 4,
           originalAngle: 0,
           rangeAngleEachSide: 4);
-      Tuple2<TwentyEightStarInn, double> result =
+      Tuple2<Enum28Constellations, double> result =
           StarDegreeInnGongHelper.calculateStarAngleEnterStarInn(
               uiStarModel.angle,
               StarPanelType.ZodiacTropicalModernStarsInnSystemMapper,
@@ -92,8 +92,8 @@ void main() {
                   .ZodiacTropicalModernStarsInnSystemMapper);
       expect(
           result,
-          equals(Tuple2<TwentyEightStarInn, double>(
-              TwentyEightStarInn.Shi_Huo_Zhu,
+          equals(Tuple2<Enum28Constellations, double>(
+              Enum28Constellations.Shi_Huo_Zhu,
               StarPanelType.ZodiacTropicalModernStarsInnSystemMapper
                   .firstAtZeroDegree)));
     });
@@ -103,7 +103,7 @@ void main() {
           priority: 4,
           originalAngle: 11.25,
           rangeAngleEachSide: 4);
-      Tuple2<TwentyEightStarInn, double> result =
+      Tuple2<Enum28Constellations, double> result =
           StarDegreeInnGongHelper.calculateStarAngleEnterStarInn(
               uiStarModel.angle,
               StarPanelType.ZodiacTropicalModernStarsInnSystemMapper,
@@ -111,8 +111,8 @@ void main() {
                   .ZodiacTropicalModernStarsInnSystemMapper);
       expect(
           result,
-          equals(const Tuple2<TwentyEightStarInn, double>(
-              TwentyEightStarInn.Bi_Shui_Yu, 1)));
+          equals(const Tuple2<Enum28Constellations, double>(
+              Enum28Constellations.Bi_Shui_Yu, 1)));
     });
 
     test("入室火 1", () {
@@ -121,7 +121,7 @@ void main() {
           priority: 4,
           originalAngle: 360 - 6.5 + 1,
           rangeAngleEachSide: 4);
-      Tuple2<TwentyEightStarInn, double> result =
+      Tuple2<Enum28Constellations, double> result =
           StarDegreeInnGongHelper.calculateStarAngleEnterStarInn(
               uiStarModel.angle,
               StarPanelType.ZodiacTropicalModernStarsInnSystemMapper,
@@ -129,8 +129,8 @@ void main() {
                   .ZodiacTropicalModernStarsInnSystemMapper);
       expect(
           result,
-          equals(const Tuple2<TwentyEightStarInn, double>(
-              TwentyEightStarInn.Shi_Huo_Zhu, 1.0)));
+          equals(const Tuple2<Enum28Constellations, double>(
+              Enum28Constellations.Shi_Huo_Zhu, 1.0)));
     });
   });
 }

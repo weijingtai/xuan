@@ -1,5 +1,5 @@
--- 创建 QueryTypes 表
-CREATE TABLE QueryTypes (
+-- 创建 DivinationTypes 表
+CREATE TABLE t_divination_types (
     uuid TEXT NOT NULL CHECK (LENGTH(uuid) >= 1),
     created_at DATETIME NOT NULL,
     last_updated_at DATETIME NOT NULL,
@@ -11,8 +11,8 @@ CREATE TABLE QueryTypes (
     PRIMARY KEY (uuid)
 );
 
--- 创建 SubQueryTypes 表
-CREATE TABLE SubQueryTypes (
+-- 创建 SubDivinationTypes 表
+CREATE TABLE t_sub_divination_types (
     uuid TEXT NOT NULL CHECK (LENGTH(uuid) >= 1),
     last_updated_at DATETIME NOT NULL,
     deleted_at DATETIME,
@@ -24,11 +24,12 @@ CREATE TABLE SubQueryTypes (
 );
 
 -- 创建 QueryTypesAndSubQueryTypesMapper 表
-CREATE TABLE QueryTypesAndSubQueryTypesMapper (
-    query_uuid TEXT NOT NULL,
-    sub_query_type_uuid TEXT NOT NULL,
+CREATE TABLE t_divination_types_sub_divination_types_mapper (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    divination_uuid TEXT NOT NULL,
+    sub_divination_type_uuid TEXT NOT NULL,
     created_at DATETIME NOT NULL,
     last_updated_at DATETIME NOT NULL,
     deleted_at DATETIME,
-    PRIMARY KEY (query_uuid, sub_query_type_uuid)
+    PRIMARY KEY (divination_uuid, sub_divination_type_uuid)
 );

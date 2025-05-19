@@ -1,4 +1,4 @@
-import 'package:common/enums/enum_twenty_eight_star_inn.dart';
+import 'package:common/enums.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_twelve_gong.dart';
@@ -23,16 +23,16 @@ class StarDegreeInnGongHelper {
   /// @return
   /// tuple.item1 角度 入星宿 入宫 0°为戌宫0° 逆时针
   /// tuple.item2 入星宿度数
-  static Tuple2<TwentyEightStarInn, double> calculateStarAngleEnterStarInn(
+  static Tuple2<Enum28Constellations, double> calculateStarAngleEnterStarInn(
       double starAngle,
       StarPanelType type,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper) {
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper) {
     int tmpStarAngle = ((starAngle + type.firstAtZeroDegree) * 100).round();
 
     int previousAngle = tmpStarAngle;
     for (int i = 0; i < 28; i++) {
-      TwentyEightStarInn starInn = type.starInnOrder[i];
-      StarInnGongDegreeInfo starXiuType = mapper[starInn]!;
+      Enum28Constellations starInn = type.starInnOrder[i];
+      ConstellationGongDegreeInfo starXiuType = mapper[starInn]!;
       int angle = previousAngle - (starXiuType.totalDegree * 100).round();
       if (angle <= 0) {
         return Tuple2(starInn, (previousAngle * 0.01));

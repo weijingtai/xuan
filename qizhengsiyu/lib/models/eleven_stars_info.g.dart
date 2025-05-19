@@ -15,7 +15,6 @@ ElevenStarsInfo _$ElevenStarsInfoFromJson(Map<String, dynamic> json) =>
       fiveStarWalkingType: $enumDecode(
           _$FiveStarWalkingTypeEnumMap, json['fiveStarWalkingType']),
       walkingSpeed: (json['walkingSpeed'] as num).toDouble(),
-      isSlave: json['isSlave'] as bool,
       priority: $enumDecode(_$EnumStarsPriorityEnumMap, json['priority']),
     );
 
@@ -27,7 +26,6 @@ Map<String, dynamic> _$ElevenStarsInfoToJson(ElevenStarsInfo instance) =>
       'fiveStarWalkingType':
           _$FiveStarWalkingTypeEnumMap[instance.fiveStarWalkingType]!,
       'walkingSpeed': instance.walkingSpeed,
-      'isSlave': instance.isSlave,
       'priority': _$EnumStarsPriorityEnumMap[instance.priority]!,
     };
 
@@ -39,7 +37,7 @@ const _$EnumStarsEnumMap = {
   EnumStars.Saturn: '土',
   EnumStars.Venus: '金',
   EnumStars.Jupiter: '木',
-  EnumStars.Qi: '气',
+  EnumStars.Qi: '炁',
   EnumStars.Luo: '罗',
   EnumStars.Ji: '计',
   EnumStars.Bei: '孛',

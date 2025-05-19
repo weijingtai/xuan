@@ -1,0 +1,236 @@
+import 'package:common/viewmodels/dev_enter_page_view_model.dart';
+import 'package:flutter/material.dart';
+
+import '../viewmodels/divination_meta_info.dart';
+import 'destiny_question_widget.dart';
+import 'divination_question_widget.dart';
+
+class DivinationCardWidget extends StatefulWidget {
+  final DevEnterPageViewModel enterPageViewModel;
+  const DivinationCardWidget({Key? key, required this.enterPageViewModel})
+      : super(key: key);
+
+  @override
+  State<DivinationCardWidget> createState() => _DivinationCardWidgetState();
+}
+
+class _DivinationCardWidgetState extends State<DivinationCardWidget> {
+  final ValueNotifier<bool> _isExpandedNotifier = ValueNotifier(false);
+
+  final PageController _pageController = PageController();
+
+  double smallRadius = 8;
+  double largeRadius = 24;
+  DevEnterPageViewModel get viewModel => widget.enterPageViewModel;
+  Duration duration = Duration(milliseconds: 600);
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    widget.enterPageViewModel.selectedDivinationTypeNotifier.addListener(() {
+      _pageController.animateToPage(
+          widget.enterPageViewModel.selectedDivinationTypeNotifier.value
+              .pageIndex,
+          duration: duration,
+          curve: Curves.linear);
+    });
+  }
+
+  @override
+  void dispose() {
+    _isExpandedNotifier.dispose();
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 获取屏幕尺寸信息
+    final screenSize = MediaQuery.of(context).size;
+    final screenWidth = screenSize.width;
+
+    // 计算合适的尺寸
+    final contentWidth = screenWidth > 600 ? 512.0 : screenWidth * 0.9;
+    final contentPadding = screenWidth > 600 ? 16.0 : 8.0;
+
+    return Container(
+      width: contentWidth,
+      padding: EdgeInsets.symmetric(
+          horizontal: contentPadding, vertical: contentPadding),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: contentWidth - (contentPadding * 2),
+            child: ValueListenableBuilder(
+              valueListenable: viewModel.selectedDivinationTypeNotifier,
+              builder: (ctx, selectedTabBarButton, child) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: DivinationType.values
+                      .map((e) => _buildTabBarButton(
+                          e, smallRadius, selectedTabBarButton))
+                      .toList(),
+                );
+              },
+            ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: viewModel.selectedDivinationTypeNotifier,
+            builder: (ctx, selectedTabBarButton, child) {
+              return ValueListenableBuilder(
+                valueListenable: _isExpandedNotifier,
+                builder: (ctx, isExpanded, child) {
+                  double height = 160;
+                  if (selectedTabBarButton == DivinationType.destiny) {
+                    height = 160;
+                  } else {
+                    height = isExpanded ? 340 : 180;
+                  }
+                  return AnimatedContainer(
+                    alignment: selectedTabBarButton == DivinationType.destiny
+                        ? Alignment.center
+                        : Alignment.topCenter,
+                    duration: Duration(milliseconds: 300),
+                    height: height,
+                    width: contentWidth - (contentPadding * 2),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topRight: Radius.circular(largeRadius),
+                        bottomLeft: Radius.circular(largeRadius),
+                        bottomRight: Radius.circular(largeRadius),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withAlpha(10),
+                          offset: Offset(1, 2),
+                          blurRadius: 2,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: contentPadding),
+                    child: PageView(
+                      controller: _pageController,
+                      clipBehavior: Clip.antiAlias,
+                      physics: BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                        decelerationRate: ScrollDecelerationRate.fast,
+                      ),
+                      onPageChanged: (index) {
+                        // viewModel.selectedDivinationTypeNotifier.value =
+                        //     index == 0
+                        //         ? DivinationType.destiny
+                        //         : DivinationType.divination;
+                      },
+                      children: [
+                        Container(
+                          // width: 640,
+                          height: height,
+                          child: _buildDestinyQuestion(),
+                        ),
+                        Container(
+                          padding: EdgeInsets.only(top: 4),
+                          child: _buildDivinationQuestion(),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabBarButton(
+      DivinationType type, double smallRadius, DivinationType selected) {
+    return AnimatedContainer(
+      duration: Duration(milliseconds: 400),
+      height: 32,
+      width: 64,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade400,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(smallRadius),
+          topRight: Radius.circular(smallRadius),
+        ),
+        boxShadow: selected == type
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 2,
+                  spreadRadius: 2,
+                  offset: Offset(2, 2),
+                ),
+              ]
+            : [],
+      ),
+      child: Material(
+        child: Ink(
+          child: InkWell(
+            splashColor: Colors.blue.withOpacity(0.3),
+            highlightColor: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(smallRadius),
+              topRight: Radius.circular(smallRadius),
+            ),
+            onTap: () => onDivinationTypeTap(type),
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 400),
+              alignment: Alignment.center,
+              child: Text(
+                _getTabBarButtonText(type),
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              decoration: BoxDecoration(
+                color: selected == type ? Colors.white : Colors.transparent,
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(smallRadius),
+                  topRight: Radius.circular(smallRadius),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onDivinationTypeTap(DivinationType type) {
+    viewModel.divinationTypeChanged(type);
+  }
+
+  String _getTabBarButtonText(DivinationType type) {
+    switch (type) {
+      case DivinationType.destiny:
+        return "命理";
+      case DivinationType.divination:
+        return "占测";
+    }
+  }
+
+  Widget _buildDestinyQuestion() {
+    return DestinyQuestionWidget(
+      width: 640,
+      enterPageViewModel: widget.enterPageViewModel,
+    );
+  }
+
+  Widget _buildDivinationQuestion() {
+    return DivinationQuestionWidget(
+      width: 640,
+      isExpandedNotifier: _isExpandedNotifier,
+      enterPageViewModel: widget.enterPageViewModel,
+    );
+  }
+}

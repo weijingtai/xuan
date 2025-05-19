@@ -241,29 +241,47 @@ class _JiaZiPickerDialogState extends State<JiaZiPickerDialog> {
                       onTap: () => selectJiaZi(jz),
                       borderRadius: BorderRadius.circular(4),
                       child: Container(
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? Colors.blue.shade100
-                              : Colors.grey.shade100,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(
-                            color:
-                                isSelected ? Colors.blue : Colors.grey.shade300,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          jz.name,
-                          style: TextStyle(
+                          decoration: BoxDecoration(
                             color: isSelected
-                                ? Colors.blue.shade800
-                                : Colors.black87,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.normal,
+                                ? Colors.blue.shade100
+                                : Colors.grey.shade100,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: isSelected
+                                  ? Colors.blue
+                                  : Colors.grey.shade300,
+                            ),
                           ),
-                        ),
-                      ),
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 4),
+                              Text(
+                                jz.name,
+                                style: TextStyle(
+                                  color: isSelected
+                                      ? Colors.blue.shade800
+                                      : Colors.black87,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                ),
+                              ),
+                              SizedBox(
+                                // height: 14,
+                                child: Text(
+                                  jz.naYinStr,
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    height: 1,
+                                    color: isSelected
+                                        ? Colors.blue.shade800
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              )
+                            ],
+                          )),
                     );
                   },
                 ),

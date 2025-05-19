@@ -1,5 +1,5 @@
 name: xuan
-description: 用来“承装”有关玄学的小App
+description: 用来"承装"有关玄学的小App
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -55,6 +55,9 @@ dependencies:
   sweph: ^3.2.1+2.10.3
   flutter_city_picker: ^2.1.1
   flutter_timezone: ^4.1.0
+  flutter_switch: ^0.3.2
+
+  dotted_border: ^2.1.0
   common:
     path: ./common
 
@@ -88,7 +91,12 @@ dependencies:
 
   animated_read_more_text: ^0.0.6
   drift: ^2.26.0
+  drift_dev: ^2.26.0
+  sqlite3_flutter_libs: ^0.5.0  # 本地平台支持
+  # drift_web: ^1.5.0    
   drift_flutter: ^0.2.4
+  decimal: ^2.3.3
+  protobuf: ^4.0.0
 
 dev_dependencies:
   flutter_test:

@@ -9,10 +9,10 @@ class PanelStarsInfo {
   final ElevenStarsInfo sun;
   final MoonInfo moon;
 
-  final FiveStarsInfo Venus;
-  final FiveStarsInfo Jupiter;
-  final FiveStarsInfo Mars;
-  final FiveStarsInfo Saturn;
+  final FiveStarsInfo venus;
+  final FiveStarsInfo jupiter;
+  final FiveStarsInfo mars;
+  final FiveStarsInfo saturn;
   final FiveStarsInfo water;
 
   final LouJiStarsInfo ji;
@@ -26,10 +26,10 @@ class PanelStarsInfo {
   PanelStarsInfo({
     required this.sun,
     required this.moon,
-    required this.Venus,
-    required this.Jupiter,
-    required this.Mars,
-    required this.Saturn,
+    required this.venus,
+    required this.jupiter,
+    required this.mars,
+    required this.saturn,
     required this.water,
     required this.ji,
     required this.luo,
@@ -47,15 +47,15 @@ class PanelStarsInfo {
       case EnumStars.Sun:
         return sun;
       case EnumStars.Venus:
-        return Venus;
+        return venus;
       case EnumStars.Mercury:
         return water;
       case EnumStars.Jupiter:
-        return Jupiter;
+        return jupiter;
       case EnumStars.Mars:
-        return Mars;
+        return mars;
       case EnumStars.Saturn:
-        return Saturn;
+        return saturn;
       case EnumStars.Qi:
         return qi;
       case EnumStars.Bei:
@@ -72,14 +72,14 @@ class StarsAngle {
   final double sun;
   final double moon;
 
-  final double Venus;
-  final double VenusSpeed;
-  final double Jupiter;
-  final double JupiterSpeed;
-  final double Mars;
-  final double MarsSpeed;
-  final double Saturn;
-  final double SaturnSpeed;
+  final double venus;
+  final double venusSpeed;
+  final double jupiter;
+  final double jupiterSpeed;
+  final double mars;
+  final double marsSpeed;
+  final double saturn;
+  final double saturnSpeed;
   final double water;
   final double waterSpeed;
 
@@ -91,14 +91,14 @@ class StarsAngle {
   StarsAngle({
     required this.sun,
     required this.moon,
-    required this.Venus,
-    required this.VenusSpeed,
-    required this.Jupiter,
-    required this.JupiterSpeed,
-    required this.Mars,
-    required this.MarsSpeed,
-    required this.Saturn,
-    required this.SaturnSpeed,
+    required this.venus,
+    required this.venusSpeed,
+    required this.jupiter,
+    required this.jupiterSpeed,
+    required this.mars,
+    required this.marsSpeed,
+    required this.saturn,
+    required this.saturnSpeed,
     required this.water,
     required this.waterSpeed,
     required this.southNode,
@@ -117,19 +117,19 @@ class StarsAngle {
         starAngle = sun;
         break;
       case EnumStars.Venus:
-        starAngle = Venus;
+        starAngle = venus;
         break;
       case EnumStars.Mercury:
         starAngle = water;
         break;
       case EnumStars.Jupiter:
-        starAngle = Jupiter;
+        starAngle = jupiter;
         break;
       case EnumStars.Mars:
-        starAngle = Mars;
+        starAngle = mars;
         break;
       case EnumStars.Saturn:
-        starAngle = Saturn;
+        starAngle = saturn;
         break;
       case EnumStars.Qi:
         starAngle = qi;
@@ -151,10 +151,10 @@ class StarsAngle {
   Map<String, dynamic> toJson() => {
         'sun': sun,
         'lunar': moon,
-        'Venus': Venus,
-        'Jupiter': Jupiter,
-        'Mars': Mars,
-        'Saturn': Saturn,
+        'Venus': venus,
+        'Jupiter': jupiter,
+        'Mars': mars,
+        'Saturn': saturn,
         'water': water,
         'southNode': southNode,
         'northNode': northNode,
@@ -293,14 +293,14 @@ class UIStarsAngle {
   }) : this(
           sun: starsAngle.sun,
           moon: starsAngle.moon,
-          Venus: starsAngle.Venus,
-          VenusSpeed: starsAngle.VenusSpeed,
-          Jupiter: starsAngle.Jupiter,
-          JupiterSpeed: starsAngle.JupiterSpeed,
-          Mars: starsAngle.Mars,
-          MarsSpeed: starsAngle.MarsSpeed,
-          Saturn: starsAngle.Saturn,
-          SaturnSpeed: starsAngle.SaturnSpeed,
+          Venus: starsAngle.venus,
+          VenusSpeed: starsAngle.venusSpeed,
+          Jupiter: starsAngle.jupiter,
+          JupiterSpeed: starsAngle.jupiterSpeed,
+          Mars: starsAngle.mars,
+          MarsSpeed: starsAngle.marsSpeed,
+          Saturn: starsAngle.saturn,
+          SaturnSpeed: starsAngle.saturnSpeed,
           water: starsAngle.water,
           waterSpeed: starsAngle.waterSpeed,
           southNode: starsAngle.southNode,
@@ -309,10 +309,10 @@ class UIStarsAngle {
           qi: starsAngle.qi,
           uiSunAngle: uiSunAngle ?? starsAngle.sun,
           uiMoonAngle: uiMoonAngle ?? starsAngle.moon,
-          uiVenusAngle: uiVenusAngle ?? starsAngle.Venus,
-          uiJupiterAngle: uiJupiterAngle ?? starsAngle.Jupiter,
-          uiMarsAngle: uiMarsAngle ?? starsAngle.Mars,
-          uiSaturnAngle: uiSaturnAngle ?? starsAngle.Saturn,
+          uiVenusAngle: uiVenusAngle ?? starsAngle.venus,
+          uiJupiterAngle: uiJupiterAngle ?? starsAngle.jupiter,
+          uiMarsAngle: uiMarsAngle ?? starsAngle.mars,
+          uiSaturnAngle: uiSaturnAngle ?? starsAngle.saturn,
           uiWaterAngle: uiWaterAngle ?? starsAngle.water,
           uiSouthNodeAngle: uiSouthNodeAngle ?? starsAngle.southNode,
           uiNorthNodeAngle: uiNorthNodeAngle ?? starsAngle.northNode,

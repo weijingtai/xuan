@@ -1,6 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
+import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
 import '../enums/enum_panel_ring.dart';
 import '../enums/enum_panel_system_type.dart';
@@ -12,76 +13,96 @@ part 'panel_config.g.dart';
 ///
 @JsonSerializable()
 class PanelConfig {
-  EnumQueryType queryType;
-
   /// 星道制式
-  CoordinateSystem coordinateSystem;
+  CelestialCoordinateSystem celestialCoordinateSystem;
 
-  /// 星宿制式
-  StarInnSystem starInnSystem;
+  /// 星盘制式
+  PanelSystemType panelSystemType;
 
   /// 星宿类型
-  StarInnType starInnType;
+  ConstellationSystemType constellationSystemType;
 
-  /// 批命提示流派
-  EnumSchoolType schoolType;
+  /// 宫位划分系统
+  HouseDivisionSystem houseDivisionSystem;
 
   /// 立命方式
   EnumSettleLifeType settleLifeType;
+  EnumTwelveGong lifeCountingToGong;
 
   /// 身宫方式
   EnumSettleBodyType settleBodyType;
+  EnumTwelveGong bodyCountingToGong;
 
-  /// 流派典籍
-  List<String> classicBooks;
+  /// 立命宫是否以真太阳时计算, 默认以实时太阳时计算，否则根据月令不同，确定太阳所在宫位 如：“子月在寅，丑月在丑，寅月在亥。。。。”
+  bool lifeGongBySunRealTimeLocation;
 
-  /// 是否启动上升点
-  bool withAscendant;
+  /// UI 是否启动上升点 --- 移动至UI部分
+  // bool withAscendant;
 
-  /// 化曜系统
-  EnumHuaYaoType huaYaoType;
+  // / UI 化曜系统 --- 移动至UI部分
+  // EnumHuaYaoType displayHuaYaoType;
 
-  /// 命盘排列顺序
-  List<EnumPanelRing> panelRingOrder;
+  /// 命盘排列顺序 --- 移动至UI部分
+  // List<UIEnumPanelRing> uiPanelRingOrder;
+  /// 批命提示流派 --- 移动至星盘高级部分
+  // EnumSchoolType schoolType;
+  /// 流派典籍 ---- 移动至星盘高级部分
+  // List<String> classicBooks;
 
-  PanelConfig(
-      {required this.queryType,
-      required this.coordinateSystem,
-      required this.starInnSystem,
-      required this.starInnType,
-      required this.schoolType,
-      required this.settleLifeType,
-      required this.settleBodyType,
-      required this.withAscendant,
-      required this.huaYaoType,
-      required this.panelRingOrder,
-      required this.classicBooks});
+  PanelConfig({
+    /// 星道制式
+    required this.celestialCoordinateSystem,
+
+    /// 宫位划分系统
+    required this.houseDivisionSystem,
+
+    /// 星宿制式
+    required this.panelSystemType,
+
+    /// 星宿类型
+    required this.constellationSystemType,
+
+    /// 立命方式
+    required this.settleLifeType,
+
+    /// 身宫方式
+    required this.settleBodyType,
+    required this.lifeGongBySunRealTimeLocation,
+    this.lifeCountingToGong = EnumTwelveGong.Mao,
+    this.bodyCountingToGong = EnumTwelveGong.You,
+  });
   // copy with
   PanelConfig copyWith({
-    EnumQueryType? queryType,
-    CoordinateSystem? coordinateSystem,
-    StarInnSystem? starInnSystem,
-    StarInnType? starInnType,
-    EnumSchoolType? schoolType,
+    /// 星道制式
+    CelestialCoordinateSystem? celestialCoordinateSystem,
+
+    /// 星盘制式
+    PanelSystemType? panelSystemType,
+
+    /// 星宿类型
+    ConstellationSystemType? constellationSystemType,
+
+    /// 宫位划分系统
+    HouseDivisionSystem? houseDivisionSystem,
+
+    /// 立命方式
     EnumSettleLifeType? settleLifeType,
+
+    /// 身宫方式
     EnumSettleBodyType? settleBodyType,
-    List<String>? classicBooks,
-    bool? withAscendant,
-    EnumHuaYaoType? huaYaoType,
-    List<EnumPanelRing>? panelRingOrder,
+    bool? lifeGongBySunRealTimeLocation,
   }) {
     return PanelConfig(
-      queryType: queryType ?? this.queryType,
-      coordinateSystem: coordinateSystem ?? this.coordinateSystem,
-      starInnSystem: starInnSystem ?? this.starInnSystem,
-      starInnType: starInnType ?? this.starInnType,
-      schoolType: schoolType ?? this.schoolType,
+      celestialCoordinateSystem:
+          celestialCoordinateSystem ?? this.celestialCoordinateSystem,
+      houseDivisionSystem: houseDivisionSystem ?? this.houseDivisionSystem,
+      panelSystemType: panelSystemType ?? this.panelSystemType,
+      constellationSystemType:
+          constellationSystemType ?? this.constellationSystemType,
       settleLifeType: settleLifeType ?? this.settleLifeType,
       settleBodyType: settleBodyType ?? this.settleBodyType,
-      classicBooks: classicBooks ?? this.classicBooks,
-      withAscendant: withAscendant ?? this.withAscendant,
-      huaYaoType: huaYaoType ?? this.huaYaoType,
-      panelRingOrder: panelRingOrder ?? this.panelRingOrder,
+      lifeGongBySunRealTimeLocation:
+          lifeGongBySunRealTimeLocation ?? this.lifeGongBySunRealTimeLocation,
     );
   }
 

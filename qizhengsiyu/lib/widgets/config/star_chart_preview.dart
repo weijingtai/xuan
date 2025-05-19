@@ -92,7 +92,8 @@ class StarChartPreview extends StatelessWidget {
             const Icon(Icons.info_outline, size: 16),
             const SizedBox(width: AppTheme.spacing8),
             Text(
-              '配置类型: ${config.queryType == EnumQueryType.destiny ? '命理运势' : '占卜事情'}',
+              // '配置类型: ${config.queryType == EnumQueryType.destiny ? '命理运势' : '占卜事情'}',
+              '配置类型: <未完成>',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -105,7 +106,8 @@ class StarChartPreview extends StatelessWidget {
             const Icon(Icons.school_outlined, size: 16),
             const SizedBox(width: AppTheme.spacing8),
             Text(
-              '流派: ${config.schoolType.name}',
+              // '流派: ${config.schoolType.name}',
+              '流派: <未完成>',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -118,7 +120,7 @@ class StarChartPreview extends StatelessWidget {
             const Icon(Icons.settings_outlined, size: 16),
             const SizedBox(width: AppTheme.spacing8),
             Text(
-              '星道制式: ${config.coordinateSystem == CoordinateSystem.Ecliptic ? '黄道制' : '赤道制'}',
+              '星道制式: ${config.celestialCoordinateSystem == CelestialCoordinateSystem.ecliptic ? '黄道制' : '赤道制'}',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],

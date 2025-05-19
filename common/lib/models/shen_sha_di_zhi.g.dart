@@ -9,11 +9,11 @@ part of 'shen_sha_di_zhi.dart';
 DiZhiShenSha _$DiZhiShenShaFromJson(Map<String, dynamic> json) => DiZhiShenSha(
       json['name'] as String,
       $enumDecode(_$JiXiongEnumEnumMap, json['jiXiong']),
-      (json['descriptionList'] as List<dynamic>)
-          .map((e) => e as String)
+      (json['descriptionList'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
-      (json['locationDescriptionList'] as List<dynamic>)
-          .map((e) => e as String)
+      (json['locationDescriptionList'] as List<dynamic>?)
+          ?.map((e) => e as String)
           .toList(),
       (json['locationMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(

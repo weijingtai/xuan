@@ -1216,6 +1216,11 @@ class _ScalableShiJiaQiMenViewPageState
                                                       jieQi = TwentyFourJieQi
                                                           .LI_DONG;
                                                       break;
+                                                    case FourSeasons.EARTH:
+                                                      jieQi = null;
+                                                      break;
+                                                    // TODO: Handle this case.
+                                                    // throw UnimplementedError();
                                                   }
                                                 } else {
                                                   jieQi = null;

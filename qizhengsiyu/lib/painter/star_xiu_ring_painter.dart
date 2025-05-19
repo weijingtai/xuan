@@ -9,7 +9,7 @@ import '../models/star_inn_gong_degree.dart';
 class StarXiuRingPainter extends CustomPainter {
   double outerSize;
   double innerSize;
-  Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper;
+  Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper;
   Map<EnumStars, Color> sevenZhengColorMapper;
 
   double tickLength;
@@ -53,7 +53,7 @@ class StarXiuRingPainter extends CustomPainter {
     final rectCircle = Rect.fromCircle(
         center: canvasCenter, radius: innerRadius + (ringWidth * .5));
 
-    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
       final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
       final double sweepAngle = -starXiuType.totalDegree * math.pi / 180;
 
@@ -64,7 +64,7 @@ class StarXiuRingPainter extends CustomPainter {
         ..strokeWidth = ringWidth - 10; // 调整线宽
       canvas.drawPath(path, paint);
     }
-    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
       // double lineLength = ringWidth;
       drawXingXiuName(
           canvas, starXiuType, canvasCenter, outerRadius, ringWidth);
@@ -117,7 +117,7 @@ class StarXiuRingPainter extends CustomPainter {
     }
   }
 
-  void drawXingXiuName(Canvas canvas, StarInnGongDegreeInfo starXiuType,
+  void drawXingXiuName(Canvas canvas, ConstellationGongDegreeInfo starXiuType,
       Offset canvasCenter, double outerRadius, double lineLength) {
     double angle =
         (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
@@ -183,7 +183,7 @@ class StarXiuRingPainter extends CustomPainter {
       ..color = Colors.blueAccent
       ..strokeWidth = .5
       ..style = PaintingStyle.stroke;
-    for (StarInnGongDegreeInfo starXiuType in mapper.values) {
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
       final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
       double lineLength = ringWidth;
       final double outerX = centerX + outerRadius * math.cos(angle);
@@ -192,7 +192,7 @@ class StarXiuRingPainter extends CustomPainter {
           centerX + (outerRadius - lineLength) * math.cos(angle);
       final double innerY =
           centerY + (outerRadius - lineLength) * math.sin(angle);
-      if (starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou) {
+      if (starXiuType.starXiu == Enum28Constellations.Lou_Jin_Gou) {
         canvas.drawLine(
           Offset(outerX, outerY),
           Offset(innerX, innerY),
@@ -240,7 +240,7 @@ class StarXiuRingPainter extends CustomPainter {
         canvas.rotate(angle);
         textPainter.paint(canvas, offset);
         canvas.restore();
-      } else if (starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi) {
+      } else if (starXiuType.starXiu == Enum28Constellations.Wei_Tu_Zhi) {
         canvas.drawLine(
           Offset(outerX, outerY),
           Offset(innerX, innerY),
@@ -274,7 +274,7 @@ class StarXiuRingPainter extends CustomPainter {
       double innerRadius,
       double centerX,
       double centerY,
-      StarInnGongDegreeInfo starXiuType,
+      ConstellationGongDegreeInfo starXiuType,
       Canvas canvas) {
     final double cosAngle = math.cos(angle);
     final double sinAngle = math.sin(angle);
@@ -285,7 +285,7 @@ class StarXiuRingPainter extends CustomPainter {
     final double innerX = centerX + innerRadius * cosAngle;
     final double innerY = centerY + innerRadius * sinAngle;
 
-    if (starXiuType.starXiu == TwentyEightStarInn.Lou_Jin_Gou) {
+    if (starXiuType.starXiu == Enum28Constellations.Lou_Jin_Gou) {
       // 可以用来绘制 “选择框”
       // canvas.drawArc(
       //     Rect.fromCircle(
@@ -306,7 +306,7 @@ class StarXiuRingPainter extends CustomPainter {
           ..strokeWidth = 1
           ..style = PaintingStyle.stroke,
       );
-    } else if (starXiuType.starXiu == TwentyEightStarInn.Wei_Tu_Zhi) {
+    } else if (starXiuType.starXiu == Enum28Constellations.Wei_Tu_Zhi) {
       canvas.drawLine(
         Offset(outerX, outerY),
         Offset(innerX, innerY),

@@ -1,35 +1,38 @@
 import 'package:drift/drift.dart';
+import '../../datamodel/seeker_model.dart';
 import '../app_database.dart';
-import '../tables.dart';
+import '../tables/tables.dart';
 
 part 'seekers_dao.g.dart';
+
 @DriftAccessor(tables: [Seekers])
 class SeekersDao extends DatabaseAccessor<AppDatabase> with _$SeekersDaoMixin {
-  SeekersDao(AppDatabase db) : super(db);
+  final AppDatabase db;
+  SeekersDao(this.db) : super(db);
 
-  // 获取所有求测人记录的流
-  Stream<List<Seeker>> getAllSeekersStream() {
-    return select(seekers).watch();
+  SimpleSelectStatement<$SeekersTable, SeekerModel> _baseSelect() =>
+      select(db.seekers);
+
+  Future<List<SeekerModel>> getAllSeekers() {
+    return (_baseSelect()..where((tbl) => tbl.deletedAt.isNull())).get();
   }
 
-  // 根据 UUID 获取单个求测人记录
-  Future<Seeker?> getSeekerByUuid(String uuid) {
-    return (select(seekers)..where((s) => s.uuid.equals(uuid))).getSingleOrNull();
+  Future<SeekerModel?> getSeekerByUuid(String uuid) {
+    return (_baseSelect()
+          ..where((t) => t.uuid.equals(uuid) & t.deletedAt.isNull()))
+        .getSingleOrNull();
   }
 
-  // 插入求测人记录
-  Future<int> insertSeeker(SeekersCompanion seeker) {
-    return into(seekers).insert(seeker);
+  Future<int> insertSeeker(SeekersCompanion companion) {
+    return into(db.seekers).insert(companion);
   }
 
-  // 更新求测人记录
-  Future<bool> updateSeeker(SeekersCompanion seeker) {
-    return update(seekers).replace(seeker);
+  Future<bool> updateSeeker(SeekersCompanion companion) {
+    return update(db.seekers).replace(companion);
   }
 
-  // 删除求测人记录
-  Future<int> deleteSeeker(Seeker seeker) {
-    return (delete(seekers)..where((s) => s.uuid.equals(seeker.uuid))).go();
+  Future<int> softDeleteSeeker(String uuid) {
+    return (update(db.seekers)..where((t) => t.uuid.equals(uuid)))
+        .write(SeekersCompanion(deletedAt: Value(DateTime.now())));
   }
 }
-    

@@ -14,12 +14,14 @@ import 'package:tuple/tuple.dart';
 
 import '../enums/enum_moon_phases.dart';
 import '../enums/enum_star_hidden_type.dart';
+import '../models/naming_degree_pair.dart';
 import '../models/observer_position.dart';
 import '../models/panel_stars_info.dart';
 import '../models/star_inn_gong_degree.dart';
 import '../models/stars_angle.dart';
 import '../models/eleven_stars_info.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
+import '../services/generate_base_panel_service.dart';
 import '../utils/star_walking_info_utils.dart';
 import 'StarsResolver.dart';
 
@@ -31,7 +33,6 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     EnumStars.Venus,
     EnumStars.Mercury
   ];
-
   // 本命星盘
   StarsAngle? _basicLifeStarsAngle;
   StarsAngle? get basicLifeStarsAngle => _basicLifeStarsAngle;
@@ -114,6 +115,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         EnumStarHiddenType.degree15,
         StarPanelType.ZodiacTropicalOriginalClassicStarsInnSystemMapper.mapper,
         isDayOrNight: true);
+
+    // TODO: 所有的ui数据都应该被存储到数据库中，这样减少计算量
     _uiBasicLifeStars =
         calculateUIStars(_basicLifeStarsAngle!, _baseMiniSafetyAngle);
 
@@ -128,6 +131,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
           isDayOrNight: true);
       _uiFateLifeStars =
           calculateUIStars(_fateLifeStarsAngle!, _fateMiniSafetyAngle);
+      // TODO: 所有的ui数据都应该被存储到数据库中，这样减少计算量
     }
   }
 
@@ -148,13 +152,13 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       ),
       UIStarModel(
         star: EnumStars.Venus,
-        originalAngle: starsAngle.Venus,
+        originalAngle: starsAngle.venus,
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Jupiter,
-        originalAngle: starsAngle.Jupiter,
+        originalAngle: starsAngle.jupiter,
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
@@ -166,13 +170,13 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       ),
       UIStarModel(
         star: EnumStars.Mars,
-        originalAngle: starsAngle.Mars,
+        originalAngle: starsAngle.mars,
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Saturn,
-        originalAngle: starsAngle.Saturn,
+        originalAngle: starsAngle.saturn,
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
@@ -201,7 +205,6 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         rangeAngleEachSide: miniSafetyAngle,
       ),
     ];
-
     return StarsResolver.resolveUIStars(unadjustedStarList);
   }
 
@@ -222,7 +225,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   PanelStarsInfo calculateElevenStartInfo(
       StarsAngle starsAngle,
       EnumStarHiddenType hiddenType,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper,
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper,
       {double isSunLunarTouchDegreeRange = 1.5,
       double eclipseDegreeRange = 15,
       bool isDayOrNight = false // true 为白天，false 为夜晚
@@ -243,31 +246,31 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         starsAngle.southNode, sunInfo, moonInfo, mapper, eclipseDegreeRange);
     // StarsAngle.moirasFiveStartsMapper
 
-    FiveStarsInfo VenusInfo = _doCalculateFiveStarInfo(
+    FiveStarsInfo venusInfo = _doCalculateFiveStarInfo(
         EnumStars.Venus,
-        starsAngle.Venus,
-        starsAngle.VenusSpeed,
+        starsAngle.venus,
+        starsAngle.venusSpeed,
         StarsAngle.moirasFiveStartsMapper[EnumStars.Venus]!,
         mapper);
     // setupIsHidden(sunInfo, VenusInfo, hiddenType);
-    FiveStarsInfo JupiterInfo = _doCalculateFiveStarInfo(
+    FiveStarsInfo jupiterInfo = _doCalculateFiveStarInfo(
         EnumStars.Jupiter,
-        starsAngle.Jupiter,
-        starsAngle.JupiterSpeed,
+        starsAngle.jupiter,
+        starsAngle.jupiterSpeed,
         StarsAngle.moirasFiveStartsMapper[EnumStars.Jupiter]!,
         mapper);
     // setupIsHidden(sunInfo, JupiterInfo, hiddenType);
-    FiveStarsInfo MarsInfo = _doCalculateFiveStarInfo(
+    FiveStarsInfo marsInfo = _doCalculateFiveStarInfo(
         EnumStars.Mars,
-        starsAngle.Mars,
-        starsAngle.MarsSpeed,
+        starsAngle.mars,
+        starsAngle.marsSpeed,
         StarsAngle.moirasFiveStartsMapper[EnumStars.Mars]!,
         mapper);
     // setupIsHidden(sunInfo, MarsInfo, hiddenType);
-    FiveStarsInfo SaturnInfo = _doCalculateFiveStarInfo(
+    FiveStarsInfo saturnInfo = _doCalculateFiveStarInfo(
         EnumStars.Saturn,
-        starsAngle.Saturn,
-        starsAngle.SaturnSpeed,
+        starsAngle.saturn,
+        starsAngle.saturnSpeed,
         StarsAngle.moirasFiveStartsMapper[EnumStars.Saturn]!,
         mapper);
     // setupIsHidden(sunInfo, SaturnInfo, hiddenType);
@@ -286,10 +289,10 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         bei: beiInfo,
         luo: luoInfo,
         ji: jiInfo,
-        Venus: VenusInfo,
-        Jupiter: JupiterInfo,
-        Mars: MarsInfo,
-        Saturn: SaturnInfo,
+        venus: venusInfo,
+        jupiter: jupiterInfo,
+        mars: marsInfo,
+        saturn: saturnInfo,
         water: waterInfo,
         isSunEclipse: false,
         isLunarEclipse: false,
@@ -308,12 +311,12 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   }
 
   MoonInfo _doCalculateMoonInfo(double moonAngle, ElevenStarsInfo sunInfo,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper,
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper,
       [double rangeDegree = 1]) {
     Tuple2<EnumTwelveGong, double> sunEnteredGong =
-        AnShenLiMingService.starEnterGong(moonAngle);
-    Tuple2<TwentyEightStarInn, double> sunEnteredInn =
-        AnShenLiMingService.starEnterStarInn(moonAngle, mapper);
+        SettleLifeBodyService.starEnterGong(moonAngle);
+    Tuple2<Enum28Constellations, double> sunEnteredInn =
+        SettleLifeBodyService.starEnterStarInn(moonAngle, mapper);
 
     double moonPhase = moonAngle - sunInfo.angle;
     if (moonPhase < 0) {
@@ -322,34 +325,35 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     return MoonInfo(
         angle: moonAngle,
         enterInfo: EnteredInfo(
-          gong: sunEnteredGong.item1,
-          atGongDegree: sunEnteredGong.item2,
-          inn: sunEnteredInn.item1,
-          atInnDegree: sunEnteredInn.item2,
+          originalStar: StarDegree(star: EnumStars.Moon, degree: moonAngle),
+          enterGongInfo: GongDegree(
+              gong: sunEnteredGong.item1, degree: sunEnteredGong.item2),
+          enterInnInfo: ConstellationDegree(
+              constellation: sunEnteredInn.item1, degree: sunEnteredInn.item2),
         ),
         moonPhase:
             EnumMoonPhases.fromAngle(moonPhase, offsetDegree: rangeDegree));
   }
 
   ElevenStarsInfo _doCalculateStarInfo(EnumStars star, double starAngle,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper) {
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper) {
     Tuple2<EnumTwelveGong, double> sunEnteredGong =
-        AnShenLiMingService.starEnterGong(starAngle);
-    Tuple2<TwentyEightStarInn, double> sunEnteredInn =
-        AnShenLiMingService.starEnterStarInn(starAngle, mapper);
+        SettleLifeBodyService.starEnterGong(starAngle);
+    Tuple2<Enum28Constellations, double> sunEnteredInn =
+        SettleLifeBodyService.starEnterStarInn(starAngle, mapper);
 
     return ElevenStarsInfo(
         star: star,
         angle: starAngle,
         enterInfo: EnteredInfo(
-          gong: sunEnteredGong.item1,
-          atGongDegree: sunEnteredGong.item2,
-          inn: sunEnteredInn.item1,
-          atInnDegree: sunEnteredInn.item2,
+          originalStar: StarDegree(star: star, degree: starAngle),
+          enterGongInfo: GongDegree(
+              gong: sunEnteredGong.item1, degree: sunEnteredGong.item2),
+          enterInnInfo: ConstellationDegree(
+              constellation: sunEnteredInn.item1, degree: sunEnteredInn.item2),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.1,
-        isSlave: false,
         priority: EnumStarsPriority.Primary);
   }
 
@@ -358,29 +362,30 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       double starAngle,
       ElevenStarsInfo sunInfo,
       ElevenStarsInfo moonInfo,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper,
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper,
       double roundingSunMoonDegreeRange) {
     Tuple2<EnumTwelveGong, double> sunEnteredGong =
-        AnShenLiMingService.starEnterGong(starAngle);
-    Tuple2<TwentyEightStarInn, double> sunEnteredInn =
-        AnShenLiMingService.starEnterStarInn(starAngle, mapper);
+        SettleLifeBodyService.starEnterGong(starAngle);
+    Tuple2<Enum28Constellations, double> sunEnteredInn =
+        SettleLifeBodyService.starEnterStarInn(starAngle, mapper);
     return LouJiStarsInfo(
-        star: star,
-        angle: starAngle,
-        enterInfo: EnteredInfo(
-          gong: sunEnteredGong.item1,
-          atGongDegree: sunEnteredGong.item2,
-          inn: sunEnteredInn.item1,
-          atInnDegree: sunEnteredInn.item2,
-        )
-        // isRoundMoon: isInDegreeRange(
-        //     moonInfo.angle + roundingSunMoonDegreeRange,
-        //     moonInfo.angle - roundingSunMoonDegreeRange,
-        //     starAngle),
-        // isRoundSun: isInDegreeRange(sunInfo.angle + roundingSunMoonDegreeRange,
-        //     sunInfo.angle - roundingSunMoonDegreeRange, starAngle),
-        // roundDegreeRange: roundingSunMoonDegreeRange
-        );
+      star: star,
+      angle: starAngle,
+      enterInfo: EnteredInfo(
+        originalStar: StarDegree(star: star, degree: starAngle),
+        enterGongInfo: GongDegree(
+            gong: sunEnteredGong.item1, degree: sunEnteredGong.item2),
+        enterInnInfo: ConstellationDegree(
+            constellation: sunEnteredInn.item1, degree: sunEnteredInn.item2),
+      ),
+      // isRoundMoon: isInDegreeRange(
+      //     moonInfo.angle + roundingSunMoonDegreeRange,
+      //     moonInfo.angle - roundingSunMoonDegreeRange,
+      //     starAngle),
+      // isRoundSun: isInDegreeRange(sunInfo.angle + roundingSunMoonDegreeRange,
+      //     sunInfo.angle - roundingSunMoonDegreeRange, starAngle),
+      // roundDegreeRange: roundingSunMoonDegreeRange
+    );
   }
 
   FiveStarsInfo _doCalculateFiveStarInfo(
@@ -388,20 +393,21 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       double starAngle,
       double starSpeed,
       Tuple6<double, double, double, double, double?, double?> tuple6,
-      Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper) {
+      Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper) {
     Tuple2<EnumTwelveGong, double> sunEnteredGong =
-        AnShenLiMingService.starEnterGong(starAngle);
-    Tuple2<TwentyEightStarInn, double> sunEnteredInn =
-        AnShenLiMingService.starEnterStarInn(starAngle, mapper);
+        SettleLifeBodyService.starEnterGong(starAngle);
+    Tuple2<Enum28Constellations, double> sunEnteredInn =
+        SettleLifeBodyService.starEnterStarInn(starAngle, mapper);
 
     return FiveStarsInfo(
         star: star,
         angle: starAngle,
         enterInfo: EnteredInfo(
-          gong: sunEnteredGong.item1,
-          atGongDegree: sunEnteredGong.item2,
-          inn: sunEnteredInn.item1,
-          atInnDegree: sunEnteredInn.item2,
+          originalStar: StarDegree(star: star, degree: starAngle),
+          enterGongInfo: GongDegree(
+              gong: sunEnteredGong.item1, degree: sunEnteredGong.item2),
+          enterInnInfo: ConstellationDegree(
+              constellation: sunEnteredInn.item1, degree: sunEnteredInn.item2),
         ),
         walkingSpeed: starSpeed,
         fiveStarWalkingType:
@@ -561,16 +567,16 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     return StarsAngle(
         moon: roundHelper(lunar.longitude),
         sun: roundHelper(sun.longitude),
-        Venus: roundHelper(Venus.longitude),
-        VenusSpeed: roundHelper(Venus.speedInLongitude),
-        Jupiter: roundHelper(Jupiter.longitude),
-        JupiterSpeed: roundHelper(Jupiter.speedInLongitude),
+        venus: roundHelper(Venus.longitude),
+        venusSpeed: roundHelper(Venus.speedInLongitude),
+        jupiter: roundHelper(Jupiter.longitude),
+        jupiterSpeed: roundHelper(Jupiter.speedInLongitude),
         water: roundHelper(water.longitude),
         waterSpeed: roundHelper(water.speedInLongitude),
-        Mars: roundHelper(Mars.longitude),
-        MarsSpeed: roundHelper(Mars.speedInLongitude),
-        Saturn: roundHelper(Saturn.longitude),
-        SaturnSpeed: roundHelper(Saturn.speedInLongitude),
+        mars: roundHelper(Mars.longitude),
+        marsSpeed: roundHelper(Mars.speedInLongitude),
+        saturn: roundHelper(Saturn.longitude),
+        saturnSpeed: roundHelper(Saturn.speedInLongitude),
         northNode: roundHelper(northNodeAngle),
         southNode: roundHelper(southNodeAngle),
         lilith: roundHelper(lilith.longitude),

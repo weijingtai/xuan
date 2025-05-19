@@ -17,7 +17,6 @@ import 'package:timezone/timezone.dart' as tz;
 import '../enums/enum_gender.dart';
 import '../enums/enum_tian_gan.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
-import '../models/query_datetime.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';
 

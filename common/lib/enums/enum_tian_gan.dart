@@ -52,6 +52,31 @@ enum TianGan {
     return null;
   }
 
+  TianGan getFiveTiger() {
+    /// 五虎遁
+    /// 甲己之年丙作首，乙庚之岁戊为头。丙辛必定寻庚起，丁壬壬位顺行流。
+    /// 更有戊癸何方觅，甲寅之上好追求。
+    switch (this) {
+      case TianGan.JIA:
+      case TianGan.JI:
+        return TianGan.BING;
+      case TianGan.YI:
+      case TianGan.GENG:
+        return TianGan.WU;
+      case TianGan.BING:
+      case TianGan.XIN:
+        return TianGan.GENG;
+      case TianGan.DING:
+      case TianGan.REN:
+        return TianGan.REN;
+      case TianGan.WU:
+      case TianGan.GUI:
+        return TianGan.JIA;
+      default:
+        throw Exception("五虎不存在");
+    }
+  }
+
   FiveXing get fiveXing {
     switch (this) {
       case TianGan.JIA:

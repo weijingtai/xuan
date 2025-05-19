@@ -21,34 +21,8 @@ Map<String, dynamic> _$BirthTimeToJson(BirthTime instance) => <String, dynamic>{
 const _$DateTimeTypeEnumMap = {
   DateTimeType.solar: 'solar',
   DateTimeType.lunar: 'lunar',
+  DateTimeType.ganZhi: 'ganZhi',
 };
-
-Coordinates _$CoordinatesFromJson(Map<String, dynamic> json) => Coordinates(
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
-    );
-
-Map<String, dynamic> _$CoordinatesToJson(Coordinates instance) =>
-    <String, dynamic>{
-      'latitude': instance.latitude,
-      'longitude': instance.longitude,
-    };
-
-Location _$LocationFromJson(Map<String, dynamic> json) => Location(
-      province: GeoLocation.fromJson(json['province'] as Map<String, dynamic>),
-      city: GeoLocation.fromJson(json['city'] as Map<String, dynamic>),
-      timezone: json['timezone'] as String,
-      area: json['area'] == null
-          ? null
-          : GeoLocation.fromJson(json['area'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$LocationToJson(Location instance) => <String, dynamic>{
-      'province': instance.province,
-      'city': instance.city,
-      'area': instance.area,
-      'timezone': instance.timezone,
-    };
 
 BasicPersonInfo _$BasicPersonInfoFromJson(Map<String, dynamic> json) =>
     BasicPersonInfo(
@@ -56,7 +30,7 @@ BasicPersonInfo _$BasicPersonInfoFromJson(Map<String, dynamic> json) =>
       gender: $enumDecode(_$GenderEnumMap, json['gender']),
       birthTime: DateTime.parse(json['birthTime'] as String),
       birthLocation:
-          Location.fromJson(json['birthLocation'] as Map<String, dynamic>),
+          Address.fromJson(json['birthLocation'] as Map<String, dynamic>),
       trueSolarTime: DateTime.parse(json['trueSolarTime'] as String),
       bazi: EightChars.fromJson(json['bazi'] as Map<String, dynamic>),
       hasDaylightSaving: json['hasDaylightSaving'] as bool,

@@ -10,10 +10,11 @@ abstract class StarAngleStrategy {
 }
 
 class EquatorialSiderealStrategy implements StarAngleStrategy {
+  // 赤道恒星制
   @override
   Future<StarAngleRawInfo> calculate(
       EnumStars star, double julianDay, List<double> geopos) async {
-    final sweph = Sweph();
+    // SE_SIDM_LAHIRI 瑞士星例表
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
 
@@ -28,8 +29,8 @@ class EquatorialSiderealStrategy implements StarAngleStrategy {
             SwephFlag.SEFLG_EQUATORIAL);
 
     return StarAngleRawInfo(
-      starInnSystem: StarInnSystem.Sidereal,
-      coordinateSystem: CoordinateSystem.Equatorial,
+      panelSystemType: PanelSystemType.sidereal,
+      coordinateSystem: CelestialCoordinateSystem.equatorial,
       angle: result.longitude, // 赤经
       speed: result.speedInLongitude, // 赤经速度
     );
@@ -37,12 +38,10 @@ class EquatorialSiderealStrategy implements StarAngleStrategy {
 }
 
 class EquatorialTropicalStrategy implements StarAngleStrategy {
+  // 赤道回归制
   @override
   Future<StarAngleRawInfo> calculate(
       EnumStars star, double julianDay, List<double> geopos) async {
-    // final sweph = Sweph();
-    // await sweph.setSidMode(Sweph.SIDM_TROP_ZOD);
-    // await sweph.setTopo(geopos[0], geopos[1], geopos[2]);
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_J2000);
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
 
@@ -56,8 +55,8 @@ class EquatorialTropicalStrategy implements StarAngleStrategy {
             SwephFlag.SEFLG_EQUATORIAL);
 
     return StarAngleRawInfo(
-      starInnSystem: StarInnSystem.Tropical,
-      coordinateSystem: CoordinateSystem.Equatorial,
+      panelSystemType: PanelSystemType.tropical,
+      coordinateSystem: CelestialCoordinateSystem.equatorial,
       angle: result.longitude, // 赤经
       speed: result.speedInLongitude, // 赤经速度
     );
@@ -65,10 +64,11 @@ class EquatorialTropicalStrategy implements StarAngleStrategy {
 }
 
 class EclipticSiderealStrategy implements StarAngleStrategy {
+  // 黄道恒星制
   @override
   Future<StarAngleRawInfo> calculate(
       EnumStars star, double julianDay, List<double> geopos) async {
-    final sweph = Sweph();
+    // final sweph = Sweph();
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI); // 设置恒星黄道
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
 
@@ -83,8 +83,8 @@ class EclipticSiderealStrategy implements StarAngleStrategy {
             SwephFlag.SEFLG_XYZ); // 使用黄道坐标标志和恒星制标志
 
     return StarAngleRawInfo(
-      starInnSystem: StarInnSystem.Sidereal,
-      coordinateSystem: CoordinateSystem.Ecliptic,
+      panelSystemType: PanelSystemType.sidereal,
+      coordinateSystem: CelestialCoordinateSystem.ecliptic,
       angle: result.longitude, // 黄经
       speed: result.speedInLongitude, // 黄经速度
     );
@@ -92,6 +92,7 @@ class EclipticSiderealStrategy implements StarAngleStrategy {
 }
 
 class EclipticTropicalStrategy implements StarAngleStrategy {
+  // 黄道回归制
   @override
   Future<StarAngleRawInfo> calculate(
       EnumStars star, double julianDay, List<double> geopos) async {
@@ -108,8 +109,8 @@ class EclipticTropicalStrategy implements StarAngleStrategy {
             SwephFlag.SEFLG_XYZ); // 使用黄道坐标标志
 
     return StarAngleRawInfo(
-      starInnSystem: StarInnSystem.Tropical,
-      coordinateSystem: CoordinateSystem.Ecliptic,
+      panelSystemType: PanelSystemType.tropical,
+      coordinateSystem: CelestialCoordinateSystem.ecliptic,
       angle: result.longitude, // 黄经
       speed: result.speedInLongitude, // 黄经速度
     );
@@ -132,6 +133,10 @@ HeavenlyBody _getSwephStar(EnumStars star) {
       return HeavenlyBody.SE_JUPITER;
     case EnumStars.Saturn:
       return HeavenlyBody.SE_SATURN;
+    case EnumStars.Ji:
+      return HeavenlyBody.SE_MEAN_NODE;
+    case EnumStars.Bei:
+      return HeavenlyBody.SE_MEAN_APOG;
     default:
       throw ArgumentError('Invalid star type');
   }

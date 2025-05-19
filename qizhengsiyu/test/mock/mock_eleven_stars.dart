@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
+import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
@@ -13,20 +14,20 @@ class MockElevenStars {
       SunInfo(
         angle: 15.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Sun, degree: 15.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 5.5),
         ),
       ),
 
       MoonInfo(
         angle: 195.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Wu,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Zhang_Yue_Lu,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Moon, degree: 195.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Wu, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Zhang_Yue_Lu, degree: 5.5),
         ),
         moonPhase: EnumMoonPhases.Full,
       ),
@@ -36,10 +37,10 @@ class MockElevenStars {
         star: EnumStars.Mercury,
         angle: 13.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 13.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 3.5,
+          originalStar: StarDegree(star: EnumStars.Mercury, degree: 13.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 13.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 3.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 1.2,
@@ -49,10 +50,10 @@ class MockElevenStars {
         star: EnumStars.Venus,
         angle: 85.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Si,
-          atGongDegree: 25.5,
-          inn: TwentyEightStarInn.Wei_Yue_Yan,
-          atInnDegree: 15.5,
+          originalStar: StarDegree(star: EnumStars.Venus, degree: 85.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Si, degree: 25.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Wei_Yue_Yan, degree: 15.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.8,
@@ -62,10 +63,10 @@ class MockElevenStars {
         star: EnumStars.Mars,
         angle: 145.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Wei,
-          atGongDegree: 25.5,
-          inn: TwentyEightStarInn.Kui_Mu_Lang,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Mars, degree: 145.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Wei, degree: 25.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Kui_Mu_Lang, degree: 5.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.5,
@@ -75,10 +76,10 @@ class MockElevenStars {
         star: EnumStars.Jupiter,
         angle: 265.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Xu,
-          atGongDegree: 25.5,
-          inn: TwentyEightStarInn.Xu_Ri_Shu,
-          atInnDegree: 15.5,
+          originalStar: StarDegree(star: EnumStars.Jupiter, degree: 265.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Xu, degree: 25.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Xu_Ri_Shu, degree: 15.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.3,
@@ -88,10 +89,10 @@ class MockElevenStars {
         star: EnumStars.Saturn,
         angle: 325.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Hai,
-          atGongDegree: 25.5,
-          inn: TwentyEightStarInn.Wei_Yue_Yan,
-          atInnDegree: 15.5,
+          originalStar: StarDegree(star: EnumStars.Saturn, degree: 325.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Hai, degree: 25.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Wei_Yue_Yan, degree: 15.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.1,
@@ -102,10 +103,10 @@ class MockElevenStars {
         star: EnumStars.Luo,
         angle: 16.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 16.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 6.5,
+          originalStar: StarDegree(star: EnumStars.Luo, degree: 16.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 16.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6.5),
         ),
         walkingSpeed: 0.0055,
       ),
@@ -114,10 +115,10 @@ class MockElevenStars {
         star: EnumStars.Ji,
         angle: 196.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Wu,
-          atGongDegree: 16.5,
-          inn: TwentyEightStarInn.Zhang_Yue_Lu,
-          atInnDegree: 6.5,
+          originalStar: StarDegree(star: EnumStars.Ji, degree: 196.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Wu, degree: 16.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Zhang_Yue_Lu, degree: 6.5),
         ),
         walkingSpeed: 0.0055,
       ),
@@ -125,20 +126,20 @@ class MockElevenStars {
       FourSlaveStarInfo.qi(
         angle: 95.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Si,
-          atGongDegree: 5.5,
-          inn: TwentyEightStarInn.Wei_Yue_Yan,
-          atInnDegree: 25.5,
+          originalStar: StarDegree(star: EnumStars.Ji, degree: 95.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Si, degree: 5.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Wei_Yue_Yan, degree: 25.5),
         ),
       ),
 
       FourSlaveStarInfo.bei(
         angle: 275.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Xu,
-          atGongDegree: 5.5,
-          inn: TwentyEightStarInn.Xu_Ri_Shu,
-          atInnDegree: 25.5,
+          originalStar: StarDegree(star: EnumStars.Ji, degree: 275.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Xu, degree: 5.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Xu_Ri_Shu, degree: 25.5),
         ),
       ),
     };
@@ -151,10 +152,10 @@ class MockElevenStars {
       SunInfo(
         angle: 15.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Sun, degree: 15.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 5.5),
         ),
       ),
 
@@ -162,10 +163,10 @@ class MockElevenStars {
         star: EnumStars.Mercury,
         angle: 13.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 13.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 3.5,
+          originalStar: StarDegree(star: EnumStars.Mercury, degree: 13.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 13.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 3.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 1.2,
@@ -175,10 +176,10 @@ class MockElevenStars {
         star: EnumStars.Luo,
         angle: 16.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 16.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 6.5,
+          originalStar: StarDegree(star: EnumStars.Luo, degree: 16.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 16.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6.5),
         ),
         walkingSpeed: 0.0055,
       ),
@@ -192,10 +193,10 @@ class MockElevenStars {
       MoonInfo(
         angle: 0.0,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Zi,
-          atGongDegree: 15.0,
-          inn: TwentyEightStarInn.Xu_Ri_Shu,
-          atInnDegree: 5.0,
+          originalStar: StarDegree(star: EnumStars.Moon, degree: 0.0),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 15.0),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Xu_Ri_Shu, degree: 5.0),
         ),
         moonPhase: EnumMoonPhases.Full,
       ),
@@ -205,10 +206,10 @@ class MockElevenStars {
         star: EnumStars.Mars,
         angle: 180.0,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Wu,
-          atGongDegree: 15.0,
-          inn: TwentyEightStarInn.Zhang_Yue_Lu,
-          atInnDegree: 5.0,
+          originalStar: StarDegree(star: EnumStars.Mars, degree: 180.0),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Wu, degree: 15.0),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Zhang_Yue_Lu, degree: 5.0),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.5,
@@ -223,10 +224,10 @@ class MockElevenStars {
       SunInfo(
         angle: 45.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Yin,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Sun, degree: 45.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Yin, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 5.5),
         ),
       ),
 
@@ -234,10 +235,10 @@ class MockElevenStars {
         star: EnumStars.Venus,
         angle: 46.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Yin,
-          atGongDegree: 16.5,
-          inn: TwentyEightStarInn.Mao_Ri_Ji,
-          atInnDegree: 6.5,
+          originalStar: StarDegree(star: EnumStars.Venus, degree: 46.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Yin, degree: 16.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.8,
@@ -253,10 +254,10 @@ class MockElevenStars {
         star: EnumStars.Mercury,
         angle: 15.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Chen,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Bi_Shui_Yu,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Mercury, degree: 15.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Bi_Shui_Yu, degree: 5.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 1.2,
@@ -266,10 +267,10 @@ class MockElevenStars {
         star: EnumStars.Saturn,
         angle: 45.5,
         enterInfo: EnteredInfo(
-          gong: EnumTwelveGong.Yin,
-          atGongDegree: 15.5,
-          inn: TwentyEightStarInn.Zhen_Shui_Yin,
-          atInnDegree: 5.5,
+          originalStar: StarDegree(star: EnumStars.Saturn, degree: 45.5),
+          enterGongInfo: GongDegree(gong: EnumTwelveGong.Yin, degree: 15.5),
+          enterInnInfo: ConstellationDegree(
+              constellation: Enum28Constellations.Zhen_Shui_Yin, degree: 5.5),
         ),
         fiveStarWalkingType: FiveStarWalkingType.Normal,
         walkingSpeed: 0.1,

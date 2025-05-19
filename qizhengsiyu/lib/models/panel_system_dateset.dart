@@ -13,9 +13,9 @@ class PanelSystemDataSet {
   String name;
   String calenderName;
   String features;
-  CoordinateSystem coordinateSystem; // 黄道制、赤道制之分
-  StarInnSystem starInnSystem; // 星宿系统 恒星制与回归制
-  StarInnType starInnType; // 古宿、古宿修正、今宿
+  CelestialCoordinateSystem coordinateSystem; // 黄道制、赤道制之分
+  PanelSystemType panelSystemType; // 星宿系统 恒星制与回归制
+  ConstellationSystemType constellationSystemType; // 古宿、古宿修正、今宿
 
   EnteredInfo originPoint;
   // EnumTwelveGong originPointGong; // 星盘0度点宫位
@@ -24,15 +24,16 @@ class PanelSystemDataSet {
   // double originPointAtStarInnDegree; // 0度点虽在星宿的角度
   TwentyFourJieQi originPointJieQi; // 0度点所在节气
   List<String> descriptionList;
-  Map<TwentyEightStarInn, StarInnGongDegreeInfo> starInnGongDegreeMap = {};
+  Map<Enum28Constellations, ConstellationGongDegreeInfo> starInnGongDegreeMap =
+      {};
 
   PanelSystemDataSet({
     required this.name,
     required this.calenderName,
     required this.features,
     required this.coordinateSystem,
-    required this.starInnSystem,
-    required this.starInnType,
+    required this.panelSystemType,
+    required this.constellationSystemType,
     required this.originPoint,
     required this.originPointJieQi,
     required this.descriptionList,

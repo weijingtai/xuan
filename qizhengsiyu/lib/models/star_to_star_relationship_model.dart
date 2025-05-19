@@ -17,13 +17,13 @@ class StarToStarRelationshipModel {
   late Map<EnumTwelveGong, Set<ElevenStarsInfo>> sameGongMap;
 
   // 同宿
-  late Map<TwentyEightStarInn, Set<ElevenStarsInfo>> sameStarInnMap;
+  late Map<Enum28Constellations, Set<ElevenStarsInfo>> sameStarInnMap;
 
   // 同经
   // map.key 同经时星宿的七曜属性
   // map.mapEntry.key 星体进入的星宿
   // map.mapEntry.value 进入这个星宿的所有星体
-  late Map<EnumStars, Map<TwentyEightStarInn, Set<ElevenStarsInfo>>>
+  late Map<EnumStars, Map<Enum28Constellations, Set<ElevenStarsInfo>>>
       sameJingMap;
 
   // 同络，不同中，相同入宫度数的星体。
@@ -71,9 +71,9 @@ class StarToStarRelationshipModel {
 
     // 初始化所有关系映射
     Map<EnumTwelveGong, Set<ElevenStarsInfo>> sameGongMap = {};
-    Map<TwentyEightStarInn, Set<ElevenStarsInfo>> sameStarInnMap = {};
-    Map<EnumStars, Map<TwentyEightStarInn, Set<ElevenStarsInfo>>> sameJingMap =
-        {};
+    Map<Enum28Constellations, Set<ElevenStarsInfo>> sameStarInnMap = {};
+    Map<EnumStars, Map<Enum28Constellations, Set<ElevenStarsInfo>>>
+        sameJingMap = {};
     Set<Set<ElevenStarsInfo>> sameLuoSet = {};
     Map<DiZhiChong, Map<EnumTwelveGong, Set<ElevenStarsInfo>>> chongGongSet =
         {};
@@ -84,7 +84,7 @@ class StarToStarRelationshipModel {
 
     // 预处理：为每个星体创建关系映射
     Map<EnumTwelveGong, Set<ElevenStarsInfo>> gongToStarsMap = {};
-    Map<TwentyEightStarInn, Set<ElevenStarsInfo>> innToStarsMap = {};
+    Map<Enum28Constellations, Set<ElevenStarsInfo>> innToStarsMap = {};
     Map<EnumStars, Set<ElevenStarsInfo>> jingToStarsMap = {};
     // 初始化三方和四正的映射结构
     for (var sanHe in DiZhiSanHe.values) {
@@ -185,7 +185,7 @@ class StarToStarRelationshipModel {
 
       // 四正关系
       DiZhiFourZheng fourZheng =
-          DiZhiFourZheng.getFromDiZhi(star.enteredGong.zhi);
+          DiZhiFourZheng.getBySingleDiZhi(star.enteredGong.zhi);
 
       if (!fourZhengMap[fourZheng]!.containsKey(star.enteredGong)) {
         fourZhengMap[fourZheng]![star.enteredGong] = {};
@@ -266,9 +266,9 @@ class StarToStarRelationshipModel {
 
     Map<EnumTwelveGong, Set<ElevenStarsInfo>> sameGongMap = {};
 
-    Map<TwentyEightStarInn, Set<ElevenStarsInfo>> sameStarInnMap = {};
-    Map<EnumStars, Map<TwentyEightStarInn, Set<ElevenStarsInfo>>> sameJingMap =
-        {};
+    Map<Enum28Constellations, Set<ElevenStarsInfo>> sameStarInnMap = {};
+    Map<EnumStars, Map<Enum28Constellations, Set<ElevenStarsInfo>>>
+        sameJingMap = {};
     Map<DiZhiChong, Map<EnumTwelveGong, Set<ElevenStarsInfo>>> chongGongSet =
         {};
     Map<DiZhiSanHe, Map<EnumTwelveGong, Set<ElevenStarsInfo>>> threeHeGongMap =
@@ -305,7 +305,7 @@ class StarToStarRelationshipModel {
                 os.enteredStarInn.sevenZheng == innMasterStar)
             .toSet();
         if (enteredStarInn.isNotEmpty) {
-          Map<TwentyEightStarInn, Set<ElevenStarsInfo>> res = {};
+          Map<Enum28Constellations, Set<ElevenStarsInfo>> res = {};
           Set<ElevenStarsInfo> added = {s};
           added.addAll(enteredStarInn);
           for (var s in added) {
@@ -395,7 +395,8 @@ class StarToStarRelationshipModel {
 
       Set<DiZhi> fourZhengZhiSet =
           DiZhiFourZheng.getOtherDiZhid(s.enteredGong.zhi);
-      DiZhiFourZheng fourZheng = DiZhiFourZheng.getFromDiZhi(s.enteredGong.zhi);
+      DiZhiFourZheng fourZheng =
+          DiZhiFourZheng.getBySingleDiZhi(s.enteredGong.zhi);
       if (!fourZhengMap.containsKey(fourZheng)) {
         // Map<EnumTwelveGong, Set<ElevenStarsInfo>> res = {};
         Set<ElevenStarsInfo> isFourZhengSet = orderedStars

@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
+import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/models/star_to_star_relationship_model.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
@@ -70,28 +71,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -106,28 +105,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -170,28 +167,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Moon,
             angle: 180,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Wu,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Fang_Ri_Tu,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Moon, degree: 180),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Wu, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Fang_Ri_Tu, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Secondary,
           ),
         };
@@ -213,28 +208,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -249,7 +242,7 @@ void main() {
         var model = StarToStarRelationshipModel.create(stars);
 
         // 验证昴日星宿的星体
-        var maoStars = model.sameStarInnMap[TwentyEightStarInn.Mao_Ri_Ji];
+        var maoStars = model.sameStarInnMap[Enum28Constellations.Mao_Ri_Ji];
         expect(maoStars, isNotNull);
         expect(maoStars!.length, equals(2));
 
@@ -271,35 +264,35 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
         var model = StarToStarRelationshipModel.create(starsSet);
-        expect(model.sameStarInnMap.containsKey(TwentyEightStarInn.Lou_Jin_Gou),
+        expect(
+            model.sameStarInnMap.containsKey(Enum28Constellations.Lou_Jin_Gou),
             true);
-        expect(model.sameStarInnMap[TwentyEightStarInn.Lou_Jin_Gou]!.length, 2);
+        expect(
+            model.sameStarInnMap[Enum28Constellations.Lou_Jin_Gou]!.length, 2);
       });
 
       test('All stars in different star inns', () {
@@ -308,28 +301,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -351,8 +342,8 @@ void main() {
         expect(waterJing!.length, greaterThan(1));
 
         // 验证具体星宿中的星体
-        var biStars = waterJing[TwentyEightStarInn.Bi_Shui_Yu];
-        var kuiStars = waterJing[TwentyEightStarInn.Zhen_Shui_Yin];
+        var biStars = waterJing[Enum28Constellations.Bi_Shui_Yu];
+        var kuiStars = waterJing[Enum28Constellations.Zhen_Shui_Yin];
 
         expect(biStars!.any((s) => s.star == EnumStars.Mercury), isTrue);
         expect(kuiStars!.any((s) => s.star == EnumStars.Saturn), isTrue);
@@ -368,8 +359,8 @@ void main() {
         expect(sunJing!.length, greaterThan(1));
 
         // 验证具体星宿中的星体
-        var maoStars = sunJing[TwentyEightStarInn.Mao_Ri_Ji];
-        var xuStars = sunJing[TwentyEightStarInn.Xu_Ri_Shu];
+        var maoStars = sunJing[Enum28Constellations.Mao_Ri_Ji];
+        var xuStars = sunJing[Enum28Constellations.Xu_Ri_Shu];
 
         expect(
             maoStars!.any((s) => s.enteredStarInn.sevenZheng == EnumStars.Sun),
@@ -384,8 +375,8 @@ void main() {
         expect(moonJing!.length, greaterThan(1));
 
         // 验证具体星宿中的星体
-        var zhangStars = moonJing[TwentyEightStarInn.Zhang_Yue_Lu];
-        var weiStars = moonJing[TwentyEightStarInn.Wei_Yue_Yan];
+        var zhangStars = moonJing[Enum28Constellations.Zhang_Yue_Lu];
+        var weiStars = moonJing[Enum28Constellations.Wei_Yue_Yan];
 
         expect(
             zhangStars!
@@ -401,28 +392,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Xing_Ri_Ma,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Xing_Ri_Ma, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -430,11 +419,11 @@ void main() {
         expect(model.sameJingMap.containsKey(EnumStars.Sun), true);
         expect(
             model.sameJingMap[EnumStars.Sun]!
-                .containsKey(TwentyEightStarInn.Mao_Ri_Ji),
+                .containsKey(Enum28Constellations.Mao_Ri_Ji),
             true);
         expect(
             model.sameJingMap[EnumStars.Sun]!
-                .containsKey(TwentyEightStarInn.Xing_Ri_Ma),
+                .containsKey(Enum28Constellations.Xing_Ri_Ma),
             true);
       });
 
@@ -444,28 +433,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Zi_Huo_Hou,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Zi_Huo_Hou, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -500,28 +487,26 @@ void main() {
             star: EnumStars.Mercury,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Mercury, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Venus,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Xing_Ri_Ma,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Venus, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Xing_Ri_Ma, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -535,28 +520,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -599,42 +582,40 @@ void main() {
             star: EnumStars.Saturn,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Shen,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Shen_Shui_Yuan,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Saturn, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Shen, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Shen_Shui_Yuan,
+                  degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Sun,
             angle: 120,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 120),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Secondary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Moon,
             angle: 240,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chen,
-              atGongDegree: 15,
-              inn: TwentyEightStarInn.Jing_Mu_Han,
-              atInnDegree: 8,
+              originalStar: StarDegree(star: EnumStars.Moon, degree: 240),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 15),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Jing_Mu_Han, degree: 8),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -660,28 +641,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
         };
@@ -696,7 +675,7 @@ void main() {
         var model = StarToStarRelationshipModel.create(stars);
 
         // 验证子午卯酉四正
-        var ziZheng = DiZhiFourZheng.getFromDiZhi(DiZhi.ZI);
+        var ziZheng = DiZhiFourZheng.getBySingleDiZhi(DiZhi.ZI);
         var ziZhengMap = model.fourZhengMap[ziZheng];
         expect(ziZhengMap, isNull);
       });
@@ -706,28 +685,26 @@ void main() {
             star: EnumStars.Sun,
             angle: 0,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Zi,
-              atGongDegree: 10,
-              inn: TwentyEightStarInn.Lou_Jin_Gou,
-              atInnDegree: 5,
+              originalStar: StarDegree(star: EnumStars.Sun, degree: 0),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Zi, degree: 10),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Lou_Jin_Gou, degree: 5),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Primary,
           ),
           ElevenStarsInfo(
             star: EnumStars.Moon,
             angle: 90,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Mao,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Jiao_Mu_Jiao,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Moon, degree: 90),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Mao, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Jiao_Mu_Jiao, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Secondary,
           ),
         };
@@ -742,28 +719,26 @@ void main() {
             star: EnumStars.Mars,
             angle: 10,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Chou,
-              atGongDegree: 12,
-              inn: TwentyEightStarInn.Mao_Ri_Ji,
-              atInnDegree: 6,
+              originalStar: StarDegree(star: EnumStars.Mars, degree: 10),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Chou, degree: 12),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Mao_Ri_Ji, degree: 6),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Normal,
           ),
           ElevenStarsInfo(
             star: EnumStars.Jupiter,
             angle: 20,
             enterInfo: EnteredInfo(
-              gong: EnumTwelveGong.Yin,
-              atGongDegree: 15,
-              inn: TwentyEightStarInn.Wei_Tu_Zhi,
-              atInnDegree: 8,
+              originalStar: StarDegree(star: EnumStars.Jupiter, degree: 20),
+              enterGongInfo: GongDegree(gong: EnumTwelveGong.Yin, degree: 15),
+              enterInnInfo: ConstellationDegree(
+                  constellation: Enum28Constellations.Wei_Tu_Zhi, degree: 8),
             ),
             fiveStarWalkingType: FiveStarWalkingType.Normal,
             walkingSpeed: 1,
-            isSlave: false,
             priority: EnumStarsPriority.Lowest,
           ),
         };

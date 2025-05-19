@@ -1,4 +1,5 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
+import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
 import 'package:common/enums/enum_gender.dart';
 import 'package:common/models/eight_chars.dart';
@@ -142,7 +143,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
           name: _name,
           birthTime: DateTime.now(),
           gender: _gender,
-          birthLocation: Location.defualtLocation,
+          birthLocation: Address.defualtAddress,
           trueSolarTime: DateTime.now(),
           bazi: EightChars(
               year: JiaZi.JIA_ZI,
@@ -293,10 +294,10 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
         ElevatedButton(
             onPressed: () async {
               // 显示城市选择器底部弹窗
-              final Location? selectedLocation =
-                  await showCityPickerBottomSheet(
+              final Address? selectedLocation = await showCityPickerBottomSheet(
                 context: context,
-                initLocation: Location.defualtLocation, // 可选，初始选中的地理位置编码
+                initAddress: Address.defualtAddress, // 可选，初始选中的地理位置编码
+                myLocationNotifier: ValueNotifier<Location?>(null),
               );
 // 处理选择结果
               if (selectedLocation != null) {

@@ -1492,6 +1492,10 @@ class _ScalableBeautifulPageState extends State<ScalableBeautifulPage>
                                                       jieQi = TwentyFourJieQi
                                                           .LI_DONG;
                                                       break;
+                                                    case FourSeasons.EARTH:
+                                                      jieQi = null;
+                                                      // TODO: Handle this case.
+                                                      throw UnimplementedError();
                                                   }
                                                 } else {
                                                   jieQi = null;

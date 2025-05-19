@@ -1,15 +1,21 @@
 import 'package:common/dev_select_datetime_page.dart';
 // import 'package:common/widgets/map_screen.dart.osm.bak';
 import 'package:common/widgets/flutter_map_screen.dart';
+import 'package:common/widgets/world_country_city_picker_page.dart';
 import 'package:flutter/material.dart';
+
+import './divinatioin_history_record/divination_history_record_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
   static final routes = {
-    "/dev": (context, {arguments}) => const DevEnterPage(),
-    "/common/maps": (context, {arguments}) =>
-        FlutterMapScreen(arguments["location"],seerCoordinate: arguments["myCoordinate"],seekerCoordinate: arguments["seekerCoordinate"])
+    "/common/dev": (context, {arguments}) => const DevEnterPage(),
+    "/common/maps": (context, {arguments}) => FlutterMapScreen(
+        seerLocation: arguments["seerLocation"],
+        seekerLocation: arguments["seekerLocation"]),
+    "/common/history": (context, {arguments}) =>
+        const DivinationHistoryRecordPage(),
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/utils/collections_utils.dart';
+import 'package:flutter/material.dart';
 
 enum EnumGuoLaoHuaYao {
   Lu("禄", EnumTenGods.BiJian),
@@ -25,21 +26,34 @@ enum EnumGuoLaoHuaYao {
     return jiaZi.tianGan.isYang ? Yin : Gui;
   }
 
-// 火孛木金土，月水气计罗。
-  static final List<EnumStars> _huaYaoStarsSeq = [
+  // 火孛木金土，月水气计罗。
+  static final List<EnumStars> _defaultStarsSeq = [
     EnumStars.Mars,
     EnumStars.Bei,
     EnumStars.Jupiter,
     EnumStars.Venus,
-    EnumStars.Sun,
+    EnumStars.Saturn,
     EnumStars.Moon,
     EnumStars.Mercury,
     EnumStars.Qi,
     EnumStars.Ji,
     EnumStars.Luo
   ];
+  static final List<TianGan> _defaultTianGanSeq = [
+    TianGan.JIA,
+    TianGan.YI,
+    TianGan.BING,
+    TianGan.DING,
+    TianGan.WU,
+    TianGan.JI,
+    TianGan.GENG,
+    TianGan.XIN,
+    TianGan.REN,
+    TianGan.GUI,
+  ];
+
   // 甲火乙孛丙属木，丁是金星戊土求。己人太阴庚是水，辛气壬计癸罗。
-  static Map<TianGan, EnumStars> _tianGanStarsMapper = {
+  static Map<TianGan, EnumStars> tianGanStarsMapper = {
     TianGan.JIA: EnumStars.Mars,
     TianGan.YI: EnumStars.Bei,
     TianGan.BING: EnumStars.Jupiter,
@@ -51,14 +65,14 @@ enum EnumGuoLaoHuaYao {
     TianGan.REN: EnumStars.Ji,
     TianGan.GUI: EnumStars.Luo,
   };
-// 诀曰：禄暗福耗荫，贵刑印囚权。火孛木金土，月水气计罗。
+  // 诀曰：禄暗福耗荫，贵刑印囚权。火孛木金土，月水气计罗。
   static Map<EnumStars, EnumGuoLaoHuaYao> calculateHuaYaoMapper(JiaZi jiaZi) {
     Map<EnumStars, EnumGuoLaoHuaYao> mapper = {};
     TianGan yearTianGan = jiaZi.tianGan;
-    EnumStars firstStar = _tianGanStarsMapper[yearTianGan]!;
+    EnumStars firstStar = tianGanStarsMapper[yearTianGan]!;
 
     List<EnumStars> tmpStarSeq =
-        CollectUtils.changeSeq(firstStar, _huaYaoStarsSeq);
+        CollectUtils.changeSeq(firstStar, _defaultStarsSeq);
     for (int i = 0; i < tmpStarSeq.length; i++) {
       EnumStars star = tmpStarSeq[i];
       EnumGuoLaoHuaYao huaYao = originalSeq[i];

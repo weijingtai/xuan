@@ -56,6 +56,11 @@ enum DiZhi {
     return null;
   }
 
+  static DiZhi getByOrder(int order) {
+    assert(order >= 1 && order <= 12);
+    return DiZhi.values[order - 1];
+  }
+
   FiveXing get fiveXing {
     switch (this) {
       case DiZhi.YIN:
@@ -670,6 +675,7 @@ enum DiZhiSanHe {
     return DiZhiSanHe.values.firstWhere((e) => e.content.contains(diZhi));
   }
 
+  // 获取 驿马位置
   static DiZhi getHorseBySingleDiZhi(DiZhi diZhi) {
     var res = getBySingleDiZhi(diZhi);
     if (res == Water) {
@@ -732,7 +738,7 @@ enum DiZhiFourZheng {
   final Set<DiZhi> diZhiSet;
   const DiZhiFourZheng(this.name, this.nickname, this.diZhiSet);
 
-  static DiZhiFourZheng getFromDiZhi(DiZhi diZhi) {
+  static DiZhiFourZheng getBySingleDiZhi(DiZhi diZhi) {
     if (Meng.diZhiSet.contains(diZhi)) {
       return Meng;
     } else if (Zhong.diZhiSet.contains(diZhi)) {
@@ -743,7 +749,7 @@ enum DiZhiFourZheng {
   }
 
   static Set<DiZhi> getOtherDiZhid(DiZhi diZhi) {
-    return getFromDiZhi(diZhi).diZhiSet.map((d) => d).toSet()
+    return getBySingleDiZhi(diZhi).diZhiSet.map((d) => d).toSet()
       ..removeWhere((zhi) => zhi == diZhi);
   }
 }
