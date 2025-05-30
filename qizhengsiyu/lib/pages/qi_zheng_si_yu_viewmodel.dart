@@ -1,27 +1,41 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:common/enums.dart';
+import 'package:common/models/shen_sha_gan_zhi.dart';
+import 'package:common/module.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:lunar/lunar.dart';
+import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
+import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
+import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
+import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
 import 'package:sweph/sweph.dart';
 
 import 'package:timezone/timezone.dart' as tz;
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_moon_phases.dart';
+import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
+import '../models/base_panel_model.dart';
+import '../models/di_zhi_shen_sha.dart';
+import '../models/hua_yao.dart';
 import '../models/naming_degree_pair.dart';
 import '../models/observer_position.dart';
 import '../models/panel_stars_info.dart';
+import '../models/star_angle_speed.dart';
 import '../models/star_inn_gong_degree.dart';
 import '../models/stars_angle.dart';
 import '../models/eleven_stars_info.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
-import '../services/generate_base_panel_service.dart';
 import '../utils/star_walking_info_utils.dart';
 import 'StarsResolver.dart';
 
@@ -62,6 +76,25 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   BuildContext context;
   QiZhengSiYuViewModel(this.context);
 
+  HuaYaoManager? _huaYaoManager;
+  HuaYaoManager get huaYaoManager {
+    return _huaYaoManager!;
+  }
+
+  ShenShaManager? _shenShaManager;
+  ShenShaManager get shenShaManager {
+    return _shenShaManager!;
+  }
+
+  Future<void> init() async {
+    final result = await Future.wait([
+      loadShenShaManager(),
+      loadHuaYaoManager(),
+    ]);
+    _shenShaManager = result[0] as ShenShaManager;
+    _huaYaoManager = result[1] as HuaYaoManager;
+  }
+
   void calculateBasicStarsSafetyAngle(double starBodyRadius,
       double starInnRangeMiddleSize, double basicLifeStarCenterCircleSize) {
     _baseMiniSafetyAngle = StarsResolver.calculateMinSafeAngle(
@@ -100,15 +133,15 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
     notifyListeners();
 
-    if (observerPosition.fateLifeUtcTime != null) {
-      _daXianMapper = calculateFiveStars();
-      notifyListeners();
-    }
+    // if (observerPosition.fateLifeUtcTime != null) {
+    //   _daXianMapper = calculateFiveStars();
+    //   notifyListeners();
+    // }
   }
 
   _doCalculateLifePanel(ObserverPosition observerPosition) {
     _basicLifeStarsAngle = calculateAllStarsAngleOnZodiac(
-        observerPosition, observerPosition.birthdayUtcTime);
+        observerPosition, observerPosition.utcDateTime);
 
     _basicLifePanelStarsInfo = calculateElevenStartInfo(
         _basicLifeStarsAngle!,
@@ -120,19 +153,92 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     _uiBasicLifeStars =
         calculateUIStars(_basicLifeStarsAngle!, _baseMiniSafetyAngle);
 
-    if (observerPosition.fateLifeDateTime != null) {
-      _fateLifeStarsAngle = calculateAllStarsAngleOnZodiac(
-          observerPosition, observerPosition.fateLifeUtcTime!);
-      _fateLifePanelStarsInfo = calculateElevenStartInfo(
-          _fateLifeStarsAngle!,
-          EnumStarHiddenType.degree15,
-          StarPanelType
-              .ZodiacTropicalOriginalClassicStarsInnSystemMapper.mapper,
-          isDayOrNight: true);
-      _uiFateLifeStars =
-          calculateUIStars(_fateLifeStarsAngle!, _fateMiniSafetyAngle);
-      // TODO: 所有的ui数据都应该被存储到数据库中，这样减少计算量
-    }
+    // if (observerPosition.fateLifeDateTime != null) {
+    //   _fateLifeStarsAngle = calculateAllStarsAngleOnZodiac(
+    //       observerPosition, observerPosition.fateLifeUtcTime!);
+    //   _fateLifePanelStarsInfo = calculateElevenStartInfo(
+    //       _fateLifeStarsAngle!,
+    //       EnumStarHiddenType.degree15,
+    //       StarPanelType
+    //           .ZodiacTropicalOriginalClassicStarsInnSystemMapper.mapper,
+    //       isDayOrNight: true);
+    //   _uiFateLifeStars =
+    //       calculateUIStars(_fateLifeStarsAngle!, _fateMiniSafetyAngle);
+    //   // TODO: 所有的ui数据都应该被存储到数据库中，这样减少计算量
+    // }
+  }
+
+  List<UIStarModel> calculateUIStarsFromMapper(
+      Map<EnumStars, StarAngleSpeed> starsAngleMapper, double miniSafetyAngle) {
+    List<UIStarModel> unadjustedStarList = [
+      UIStarModel(
+        star: EnumStars.Sun,
+        originalAngle: starsAngleMapper[EnumStars.Sun]!.angle,
+        priority: 4,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Moon,
+        originalAngle: starsAngleMapper[EnumStars.Moon]!.angle,
+        priority: 3,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Venus,
+        originalAngle: starsAngleMapper[EnumStars.Venus]!.angle,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Jupiter,
+        originalAngle: starsAngleMapper[EnumStars.Jupiter]!.angle,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Mercury,
+        originalAngle: starsAngleMapper[EnumStars.Mercury]!.angle,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Mars,
+        originalAngle: starsAngleMapper[EnumStars.Mars]!.angle,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Saturn,
+        originalAngle: starsAngleMapper[EnumStars.Saturn]!.angle,
+        priority: 2,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Qi,
+        originalAngle: starsAngleMapper[EnumStars.Qi]!.angle,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Bei,
+        originalAngle: starsAngleMapper[EnumStars.Bei]!.angle,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Luo,
+        originalAngle: starsAngleMapper[EnumStars.Luo]!.angle,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+      UIStarModel(
+        star: EnumStars.Ji,
+        originalAngle: starsAngleMapper[EnumStars.Ji]!.angle,
+        priority: 1,
+        rangeAngleEachSide: miniSafetyAngle,
+      ),
+    ];
+    return StarsResolver.resolveUIStars(unadjustedStarList);
   }
 
   List<UIStarModel> calculateUIStars(
@@ -730,4 +836,139 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   // }
 
   // ... 现有代码 ...
+  GenerateBasePanelService? generateBasePanelService;
+  calculateBasePanel(DivinationInfoModel divinationInfo) async {
+    generateBasePanelService = GenerateBasePanelService(
+        observerPosition: convertToObserverPosition(divinationInfo),
+        panelConfig: generatePanelConfig(),
+        shenShaManager: shenShaManager,
+        huaYaoManager: huaYaoManager);
+    BasePanelModel basePanelModel = await generateBasePanelService!.calculate();
+    List<UIStarModel> uiBaseStarLis = calculateUIStarsFromMapper(
+        basePanelModel.starAngleMapper, _baseMiniSafetyAngle);
+    _uiBasicLifeStars = uiBaseStarLis;
+    notifyListeners();
+    print(divinationInfo.divinationDatetime.datetime);
+
+    // StarsAngle starsAngle = basePanelModel.starAngleMapper[EnumStars.moon]!;
+    print(jsonEncode(basePanelModel));
+  }
+
+  PanelConfig generatePanelConfig() {
+    return PanelConfig(
+        celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
+        houseDivisionSystem: HouseDivisionSystem.equal,
+        panelSystemType: PanelSystemType.tropical,
+        constellationSystemType: ConstellationSystemType.classical,
+        settleLifeType: EnumSettleLifeType.Mao,
+        settleBodyType: EnumSettleBodyType.moon,
+        islifeGongBySunRealTimeLocation: true);
+  }
+
+  ObserverPosition convertToObserverPosition(
+      DivinationInfoModel divinationInfo) {
+    DateTime birthdayUtcTime =
+        divinationInfo.divinationDatetime.datetime.toUtc();
+    // if (fateLifeDateTime != null) {
+    //   fateLifeUtcTime = toUtcTime(timezone, fateLifeDateTime!);
+    // }
+    Lunar lunar = Lunar.fromDate(birthdayUtcTime);
+    return ObserverPosition(
+        dateTime: divinationInfo.divinationDatetime.datetime,
+        latitude:
+            divinationInfo.divinationDatetime.location!.coordinates!.latitude,
+        longitude:
+            divinationInfo.divinationDatetime.location!.coordinates!.longitude,
+        altitude: 0,
+        timezone: divinationInfo.divinationDatetime.location!.address!.timezone,
+        dayGanZhi: JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!,
+        yearGanZhi: JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!,
+        monthGanZhi: JiaZi.getFromGanZhiValue(lunar.getMonthInGanZhi())!,
+        timeGanZhi: JiaZi.getFromGanZhiValue(lunar.getTimeInGanZhi())!,
+        isDayBirth: true);
+  }
+
+  Future<ShenShaManager> loadShenShaManager() async {
+    // 并行加载所有神煞数据
+    final List<String> jsonStrings = await Future.wait([
+      rootBundle.loadString('assets/shen_sha/74_shensha_tiangan.json'),
+      rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_year.json'),
+      rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_month.json'),
+      rootBundle.loadString('assets/shen_sha/74_shensha_ganzhi.json'),
+      rootBundle.loadString('assets/shen_sha/74_shensha_bundle.json'),
+      rootBundle.loadString('assets/shen_sha/74_shensha_others.json'),
+    ]);
+
+    final tianGanJsonString = jsonStrings[0];
+    final yearDiZhiJsonString = jsonStrings[1];
+    final monthDiZhiJsonString = jsonStrings[2];
+    final ganzhiJsonString = jsonStrings[3];
+    final bundledShenShaJsonString = jsonStrings[4];
+    final otherShenShaJsonString = jsonStrings[5];
+
+    final tianGanList = json.decode(tianGanJsonString) as List;
+    List<TianGanShenSha> tianGanShenSha =
+        tianGanList.map((e) => TianGanShenSha.fromJson(e)).toList();
+
+    final yearDiZhiList = json.decode(yearDiZhiJsonString) as List;
+    List<YearDiZhiShenSha> yearDiZhiShenSha =
+        yearDiZhiList.map((e) => YearDiZhiShenSha.fromJson(e)).toList();
+
+    final monthDiZhiList = json.decode(monthDiZhiJsonString) as List;
+    List<DiZhiShenSha> monthDiZhiShenSha =
+        monthDiZhiList.map((e) => MonthDiZhiShenSha.fromJson(e)).toList();
+
+    final ganzhiList = json.decode(ganzhiJsonString) as List;
+    List<GanZhiShenSha> ganzhiShenSha =
+        ganzhiList.map((e) => GanZhiShenSha.fromJson(e)).toList();
+
+    final bundledShenShaList = json.decode(bundledShenShaJsonString) as List;
+    List<BundledShenSha> bundledShenSha =
+        bundledShenShaList.map((e) => BundledShenSha.fromJson(e)).toList();
+
+    final otherShenShaList = json.decode(otherShenShaJsonString) as List;
+    List<OtherShenSha> otherShenSha =
+        otherShenShaList.map((e) => OtherShenSha.fromJson(e)).toList();
+
+    return ShenShaManager(
+        tianGanShenSha: tianGanShenSha,
+        yearDiZhiShenSha: yearDiZhiShenSha,
+        monthDiZhiShenSha: monthDiZhiShenSha,
+        ganZhiShenSha: ganzhiShenSha,
+        bundledShenSha: bundledShenSha,
+        otherShenSha: otherShenSha);
+  }
+
+  Future<HuaYaoManager> loadHuaYaoManager() async {
+    final result = await Future.wait([
+      rootBundle.loadString('assets/shen_sha/74_huayao_tiangan.json'),
+      rootBundle.loadString('assets/shen_sha/74_huayao_dizhi.json'),
+      rootBundle.loadString('assets/shen_sha/74_huayao_others.json'),
+    ]);
+
+    // 天干化曜
+    final tianGanHuaYaoJsonString = result[0];
+    // 地支化曜
+    final diZhiHuaYaoJsonString = result[1];
+    // 其他化曜
+    final othersHuaYaoJsonString = result[2];
+
+    final tianGanList = json.decode(tianGanHuaYaoJsonString) as List;
+    List<TianGanHuaYao> tianGanHuaYao =
+        tianGanList.map((e) => TianGanHuaYao.fromJson(e)).toList();
+
+    final diZhiList = json.decode(diZhiHuaYaoJsonString) as List;
+    List<DiZhiHuaYao> diZhiHuaYao =
+        diZhiList.map((e) => DiZhiHuaYao.fromJson(e)).toList();
+
+    final othersHuaYaoList = json.decode(othersHuaYaoJsonString) as List;
+    List<OthersHuaYao> othersHuaYao =
+        othersHuaYaoList.map((e) => OthersHuaYao.fromJson(e)).toList();
+
+    return HuaYaoManager(
+      tianGanHuaYao: tianGanHuaYao,
+      diZhiHuaYao: diZhiHuaYao,
+      othersHuaYao: othersHuaYao,
+    );
+  }
 }

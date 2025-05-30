@@ -1,6 +1,6 @@
 -- 创建 DivinationTypes 表
 CREATE TABLE t_divination_types (
-    uuid TEXT NOT NULL CHECK (LENGTH(uuid) >= 1),
+    uuid TEXT NOT NULL,
     created_at DATETIME NOT NULL,
     last_updated_at DATETIME NOT NULL,
     deleted_at DATETIME,
@@ -13,7 +13,7 @@ CREATE TABLE t_divination_types (
 
 -- 创建 SubDivinationTypes 表
 CREATE TABLE t_sub_divination_types (
-    uuid TEXT NOT NULL CHECK (LENGTH(uuid) >= 1),
+    uuid TEXT NOT NULL,
     last_updated_at DATETIME NOT NULL,
     deleted_at DATETIME,
     hidden_at DATETIME,

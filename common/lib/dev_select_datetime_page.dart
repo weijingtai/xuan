@@ -1,4 +1,6 @@
 import 'package:common/enums.dart';
+import 'package:common/enums/enum_datetime_type.dart';
+import 'package:common/models/divination_info_model.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/widgets/eight_chars_select_card_list_widget.dart';
 import 'package:common/widgets/eight_chars_selection_card.dart';
@@ -7,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -17,7 +20,7 @@ import 'widgets/destiny_question_widget.dart';
 import 'widgets/divination_card_widget.dart';
 import 'widgets/divination_question_widget.dart';
 import 'widgets/eight_chars_input_card.dart';
-import 'widgets/world_country_city_picker_page.dart';
+import 'widgets/city_picker_global_widget.dart';
 
 class DevEnterPage extends StatefulWidget {
   const DevEnterPage({super.key});
@@ -35,11 +38,12 @@ class _DevEnterPageState extends State<DevEnterPage> {
 
   final PageController _pageController = PageController();
 
-  late final DevEnterPageViewModel _viewModel;
+  // late final DevEnterPageViewModel _viewModel;
   @override
   void initState() {
     super.initState();
-    _viewModel = DevEnterPageViewModel();
+    // _viewModel = DevEnterPageViewModel();
+    // context.read<DevEnterPageViewModel>().initState();
   }
 
   @override
@@ -80,7 +84,7 @@ class _DevEnterPageState extends State<DevEnterPage> {
       child: Column(
         children: [
           DivinationCardWidget(
-            enterPageViewModel: _viewModel,
+            enterPageViewModel: context.read<DevEnterPageViewModel>(),
           ),
           Container(
             width: contentWidth,
@@ -88,25 +92,36 @@ class _DevEnterPageState extends State<DevEnterPage> {
             padding: EdgeInsets.symmetric(
                 horizontal: contentPadding * 2, vertical: contentPadding * 2),
             child: QueryTimeInputCard(
-              defaultPageType: PageType.datetime,
-              selectableCardsNotifier: _selectableCardsNotifier,
-              defaultTimezone: "America/Los_Angeles",
+              defaultDateTimeType:
+                  context.read<DevEnterPageViewModel>().datetimeType,
+              selectableCardsNotifier: context
+                  .read<DevEnterPageViewModel>()
+                  .selectableCardListNotifier,
             ),
           ),
           SizedBox(height: spacing * 2),
           EightCharsSelectCardListWidget(
-            selectableCardsNotifier: _selectableCardsNotifier,
+            selectableCardsNotifier: context
+                .read<DevEnterPageViewModel>()
+                .selectableCardListNotifier,
             contentPadding: contentPadding,
             cardSize: cardSize,
-            enterPageViewModel: _viewModel,
+            enterPageViewModel: context.read<DevEnterPageViewModel>(),
           ),
           SizedBox(height: spacing * 2),
           SizedBox(
             height: spacing * 2,
           ),
           ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, "/qizhengsiyu/panel");
+              onPressed: () async {
+                DivinationInfoModel result =
+                    await context.read<DevEnterPageViewModel>().create();
+
+                // print(result.toJson());
+
+                Navigator.pushNamed(context, "/qizhengsiyu/panel", arguments: {
+                  "divinationInfoModel": result,
+                });
               },
               child: Text("七政四余"))
         ],

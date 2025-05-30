@@ -17,7 +17,7 @@ TimingDivinationModel _$TimingDivinationModelFromJson(
       deletedAt: json['deletedAt'] == null
           ? null
           : DateTime.parse(json['deletedAt'] as String),
-      queryUuid: json['queryUuid'] as String,
+      divinationUuid: json['divinationUuid'] as String?,
       timingType: $enumDecode(_$DateTimeTypeEnumMap, json['timingType']),
       datetime: DateTime.parse(json['datetime'] as String),
       isManual: json['isManual'] as bool,
@@ -28,8 +28,11 @@ TimingDivinationModel _$TimingDivinationModelFromJson(
       lunarMonth: (json['lunarMonth'] as num).toInt(),
       isLeapMonth: json['isLeapMonth'] as bool,
       lunarDay: (json['lunarDay'] as num).toInt(),
-      timingInfoUuid: json['timingInfoUuid'] as String,
-      timingInfoList: (json['timingInfoList'] as List<dynamic>?)
+      timingInfoUuid: json['timingInfoUuid'] as String?,
+      location: json['location'] == null
+          ? null
+          : Location.fromJson(json['location'] as Map<String, dynamic>),
+      timingInfoListJson: (json['timingInfoListJson'] as List<dynamic>?)
           ?.map((e) =>
               DivinationDatetimeModel.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -42,10 +45,8 @@ Map<String, dynamic> _$TimingDivinationModelToJson(
       'createdAt': instance.createdAt.toIso8601String(),
       'lastUpdatedAt': instance.lastUpdatedAt?.toIso8601String(),
       'deletedAt': instance.deletedAt?.toIso8601String(),
-      'queryUuid': instance.queryUuid,
       'timingType': _$DateTimeTypeEnumMap[instance.timingType]!,
       'datetime': instance.datetime.toIso8601String(),
-      'isManual': instance.isManual,
       'yearGanZhi': _$JiaZiEnumMap[instance.yearGanZhi]!,
       'monthGanZhi': _$JiaZiEnumMap[instance.monthGanZhi]!,
       'dayGanZhi': _$JiaZiEnumMap[instance.dayGanZhi]!,
@@ -54,7 +55,10 @@ Map<String, dynamic> _$TimingDivinationModelToJson(
       'isLeapMonth': instance.isLeapMonth,
       'lunarDay': instance.lunarDay,
       'timingInfoUuid': instance.timingInfoUuid,
-      'timingInfoList': instance.timingInfoList,
+      'location': instance.location,
+      'timingInfoListJson': instance.timingInfoListJson,
+      'divinationUuid': instance.divinationUuid,
+      'isManual': instance.isManual,
     };
 
 const _$DateTimeTypeEnumMap = {

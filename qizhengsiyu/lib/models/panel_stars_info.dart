@@ -1,9 +1,11 @@
 import 'dart:convert';
 
 import 'package:common/enums.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:tuple/tuple.dart';
 
 import 'eleven_stars_info.dart';
+import 'star_angle_speed.dart';
 
 class PanelStarsInfo {
   final ElevenStarsInfo sun;
@@ -87,6 +89,27 @@ class StarsAngle {
   final double northNode;
   final double lilith;
   final double qi;
+
+  static StarsAngle fromMapper(Map<EnumStars, StarAngleSpeed> mapper) {
+    return StarsAngle(
+      sun: mapper[EnumStars.Sun]!.angle,
+      moon: mapper[EnumStars.Moon]!.angle,
+      venus: mapper[EnumStars.Venus]!.angle,
+      venusSpeed: mapper[EnumStars.Venus]!.speed,
+      jupiter: mapper[EnumStars.Jupiter]!.angle,
+      jupiterSpeed: mapper[EnumStars.Jupiter]!.speed,
+      mars: mapper[EnumStars.Mars]!.angle,
+      marsSpeed: mapper[EnumStars.Mars]!.speed,
+      saturn: mapper[EnumStars.Saturn]!.angle,
+      saturnSpeed: mapper[EnumStars.Saturn]!.speed,
+      water: mapper[EnumStars.Mercury]!.angle,
+      waterSpeed: mapper[EnumStars.Mercury]!.speed,
+      southNode: mapper[EnumStars.Luo]!.angle,
+      northNode: mapper[EnumStars.Ji]!.angle,
+      lilith: mapper[EnumStars.Bei]!.angle,
+      qi: mapper[EnumStars.Qi]!.angle,
+    );
+  }
 
   StarsAngle({
     required this.sun,

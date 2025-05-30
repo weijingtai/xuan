@@ -1,3 +1,4 @@
+import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:drift/drift.dart';
 import '../app_database.dart';
 import '../tables/tables.dart';
@@ -10,14 +11,21 @@ class DivinationTypesDao extends DatabaseAccessor<AppDatabase>
   final AppDatabase db;
   DivinationTypesDao(this.db) : super(db);
 
-  SimpleSelectStatement<$DivinationTypesTable, DivinationType> _baseSelect() => 
-      select(db.divinationTypes);
+  SimpleSelectStatement<$DivinationTypesTable, DivinationTypeDataModel>
+      _baseSelect() => select(db.divinationTypes);
 
-  Future<List<DivinationType>> getAllDivinationTypes() {
+  Future<List<DivinationTypeDataModel>> getAllDivinationTypes() {
     return (_baseSelect()..where((tbl) => tbl.deletedAt.isNull())).get();
   }
 
-  Future<DivinationType?> getDivinationTypeByUuid(String uuid) {
+  Future<List<DivinationTypeDataModel>> listAvailable() {
+    return (_baseSelect()
+          ..where(
+              (tbl) => tbl.deletedAt.isNull() & tbl.isAvailable.equals(true)))
+        .get();
+  }
+
+  Future<DivinationTypeDataModel?> getDivinationTypeByUuid(String uuid) {
     return (_baseSelect()
           ..where((t) => t.uuid.equals(uuid) & t.deletedAt.isNull()))
         .getSingleOrNull();

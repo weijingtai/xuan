@@ -1,3 +1,5 @@
+import 'package:common/datamodel/location.dart';
+import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:lunar/calendar/Lunar.dart';
@@ -25,10 +27,8 @@ class BaseObserverPosition {
 
 @JsonSerializable()
 class ObserverPosition extends BaseObserverPosition {
-  final DateTime birthday;
-  final DateTime? fateLifeDateTime;
-  late final DateTime birthdayUtcTime;
-  late final DateTime? fateLifeUtcTime;
+  final DateTime dateTime;
+  late final DateTime utcDateTime;
   late final String fourZhuEightChar;
   late final JiaZi yearGanZhi;
   late final JiaZi monthGanZhi;
@@ -37,44 +37,78 @@ class ObserverPosition extends BaseObserverPosition {
 
   // 是否为昼生
   late final bool isDayBirth;
-  ObserverPosition(
-      {required this.birthday,
-      required double latitude,
-      required double longitude,
-      required double altitude,
-      required String timezone,
-      this.isDayBirth = true,
-      this.fateLifeDateTime})
-      : super(
+  ObserverPosition({
+    required this.dateTime,
+    required double latitude,
+    required double longitude,
+    required double altitude,
+    required String timezone,
+    required this.isDayBirth,
+    required this.yearGanZhi,
+    required this.monthGanZhi,
+    required this.dayGanZhi,
+    required this.timeGanZhi,
+    // this.fateLifeDateTime
+  }) : super(
             latitude: latitude,
             longitude: longitude,
             altitude: altitude,
             timezone: timezone) {
-    birthdayUtcTime = toUtcTime(timezone, birthday);
-    if (fateLifeDateTime != null) {
-      fateLifeUtcTime = toUtcTime(timezone, fateLifeDateTime!);
-    }
-    Lunar lunar = Lunar.fromDate(birthdayUtcTime);
-    dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
-    yearGanZhi = JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!;
-    monthGanZhi = JiaZi.getFromGanZhiValue(lunar.getMonthInGanZhi())!;
-    timeGanZhi = JiaZi.getFromGanZhiValue(lunar.getTimeInGanZhi())!;
+    utcDateTime = toUtcTime(timezone, dateTime);
+    //   fateLifeUtcTime = toUtcTime(timezone, fateLifeDateTime!);
+    // }
+    Lunar lunar = Lunar.fromDate(utcDateTime);
+    // dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
+    // yearGanZhi = JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!;
+    // monthGanZhi = JiaZi.getFromGanZhiValue(lunar.getMonthInGanZhi())!;
+    // timeGanZhi = JiaZi.getFromGanZhiValue(lunar.getTimeInGanZhi())!;
 
     fourZhuEightChar = [
-      lunar.getYearInGanZhi(),
-      lunar.getMonthInGanZhi(),
+      yearGanZhi,
+      monthGanZhi,
       dayGanZhi,
-      lunar.getTimeInGanZhi()
-    ].toList().join('');
+      timeGanZhi,
+    ].map((e) => e.name).toList().join('');
   }
-  ObserverPosition.fromDateTime(
-      {required DateTime datetime, required BaseObserverPosition observer})
-      : this(
-            birthday: datetime,
-            latitude: observer.latitude,
-            longitude: observer.longitude,
-            altitude: observer.altitude,
-            timezone: observer.timezone);
+  // ObserverPosition({
+  //   required this.birthday,
+  //   required double latitude,
+  //   required double longitude,
+  //   required double altitude,
+  //   required String timezone,
+  //   this.isDayBirth = true,
+  //   // this.fateLifeDateTime
+  // }) : super(
+  //           latitude: latitude,
+  //           longitude: longitude,
+  //           altitude: altitude,
+  //           timezone: timezone) {
+  //   birthdayUtcTime = toUtcTime(timezone, birthday);
+  //   // if (fateLifeDateTime != null) {
+  //   //   fateLifeUtcTime = toUtcTime(timezone, fateLifeDateTime!);
+  //   // }
+  //   Lunar lunar = Lunar.fromDate(birthdayUtcTime);
+  //   dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
+  //   yearGanZhi = JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!;
+  //   monthGanZhi = JiaZi.getFromGanZhiValue(lunar.getMonthInGanZhi())!;
+  //   timeGanZhi = JiaZi.getFromGanZhiValue(lunar.getTimeInGanZhi())!;
+
+  //   fourZhuEightChar = [
+  //     lunar.getYearInGanZhi(),
+  //     lunar.getMonthInGanZhi(),
+  //     dayGanZhi,
+  //     lunar.getTimeInGanZhi()
+  //   ].toList().join('');
+  // }
+
+  // ObserverPosition.fromDateTime(
+  //     {required DateTime datetime, required BaseObserverPosition observer})
+  //     : this(
+  //           birthday: datetime,
+  //           latitude: observer.latitude,
+  //           longitude: observer.longitude,
+  //           altitude: observer.altitude,
+  //           timezone: observer.timezone);
   static DateTime toUtcTime(String timezone, DateTime datetime) {
     tz.TZDateTime shanghaiTime = tz.TZDateTime(
         tz.getLocation(timezone),

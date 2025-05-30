@@ -1,3 +1,4 @@
+import 'package:common/datamodel/divination_data_model.dart';
 import 'package:flutter/material.dart';
 import 'package:common/database/app_database.dart';
 import 'package:common/database/tables/tables.dart';
@@ -16,7 +17,7 @@ class DivinationHistoryRecordPage extends StatefulWidget {
 
 class _DivinationHistoryRecordPageState
     extends State<DivinationHistoryRecordPage> {
-  late Stream<List<Divination>> _divinationsStream;
+  late Stream<List<DivinationDataModel>> _divinationsStream;
   late Stream<List<SeekerModel>> _seekersStream;
 
   @override
@@ -53,7 +54,7 @@ class _DivinationHistoryRecordPageState
         body: TabBarView(
           children: [
             // 占卜记录列表
-            StreamBuilder<List<Divination>>(
+            StreamBuilder<List<DivinationDataModel>>(
               stream: _divinationsStream,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
@@ -74,9 +75,9 @@ class _DivinationHistoryRecordPageState
                           horizontal: 16, vertical: 8),
                       child: ListTile(
                         title: Text(
-                          divination.queryQuestion ?? "<未注明>",
+                          divination.question ?? "<未注明>",
                           style: TextStyle(
-                              color: divination.queryQuestion == null
+                              color: divination.question == null
                                   ? Colors.grey
                                   : Colors.black87),
                         ),
@@ -125,7 +126,7 @@ class _DivinationHistoryRecordPageState
                             Text('创建时间: ${seeker.createdAt}'),
                             Text(
                                 '性别: ${seeker.gender == Gender.male ? '男' : '女'}'),
-                            Text('出生时间: ${seeker.birthDatetime}'),
+                            Text('出生时间: ${seeker.datetime}'),
                           ],
                         ),
                         isThreeLine: true,

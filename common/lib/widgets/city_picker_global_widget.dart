@@ -2,32 +2,31 @@ import 'package:common/datamodel/geo_location.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datasource/loca_binary/world_country_repository.dart';
 import 'package:common/models/sp_location_datamodel.dart';
-import 'package:common/widgets/timezone_location_viewmodel.dart';
+import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:lat_lng_to_timezone/lat_lng_to_timezone.dart' as tzmap;
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 
 import '../datasource/loca_binary/country.pb.dart' as pb;
 import '../datasource/local/regions.dart';
 
-class WorldCountryCityPickerPage extends StatefulWidget {
+class CityPickerGlobalWidget extends StatefulWidget {
   Address? initAddress;
   final ValueNotifier<Address?> newSelectedAddressNotifier;
   final ValueNotifier<Location?> myLocationNotifier;
-  WorldCountryCityPickerPage(
+  CityPickerGlobalWidget(
       {super.key,
       required this.newSelectedAddressNotifier,
       required this.myLocationNotifier,
       required this.initAddress});
 
   @override
-  State<WorldCountryCityPickerPage> createState() =>
-      _WorldCountryCityPickerPageState();
+  State<CityPickerGlobalWidget> createState() => _CityPickerGlobalWidgetState();
 }
 
-class _WorldCountryCityPickerPageState
-    extends State<WorldCountryCityPickerPage> {
+class _CityPickerGlobalWidgetState extends State<CityPickerGlobalWidget> {
   final _selectedRegionId = ValueNotifier<int?>(null);
   // final _selectedRegion = ValueNotifier<RegionDataSet?>(null);
   RegionDataSet? _selectedRegion;
@@ -104,8 +103,90 @@ class _WorldCountryCityPickerPageState
       }
     });
     _addressNotifier.addListener(() {
-      widget.newSelectedAddressNotifier.value = _addressNotifier.value;
+      if (_addressNotifier.value != null) {
+        if ([
+          233,
+          31,
+          39,
+          11,
+          86,
+          142,
+          14,
+          171,
+          89,
+          114,
+          137,
+          77,
+          158,
+          182,
+          207,
+          230,
+          102,
+          112,
+          146,
+          169,
+          236,
+          51
+        ].contains(_addressNotifier.value!.countryId)) {
+          // Montreal coordinates
+          double latitude = _addressNotifier.value!.coordinates.latitude;
+          double longitude = _addressNotifier.value!.coordinates.longitude;
+          // final result =
+          // mexicoCountryMapper[_addressNotifier.value!.province.name];
+
+          String tz = tzmap.latLngToTimezoneString(latitude, longitude);
+          final updatedTimezone =
+              _addressNotifier.value!.copyWith(timezone: tz);
+          widget.newSelectedAddressNotifier.value = updatedTimezone;
+        } else {
+          widget.newSelectedAddressNotifier.value = _addressNotifier.value;
+        }
+      } else {
+        widget.newSelectedAddressNotifier.value = _addressNotifier.value;
+      }
     });
+  }
+
+  handleByEachCountry() {
+    if (_addressNotifier.value!.countryId == 233) {
+      final result = usaStateToTimezones[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    } else if (_addressNotifier.value!.countryId == 31) {
+      final result = brazilCountryMapper[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    } else if (_addressNotifier.value!.countryId == 39) {
+      final result = canadaCountryMapper[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    } else if (_addressNotifier.value!.countryId == 11) {
+      final result =
+          argentinaCountryMapper[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    } else if (_addressNotifier.value!.countryId == 86) {
+      final result =
+          greenlandCountryMapper[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    } else if (_addressNotifier.value!.countryId == 142) {
+      final result = mexicoCountryMapper[_addressNotifier.value!.province.name];
+      final updatedTimezone = result == null
+          ? _addressNotifier.value
+          : _addressNotifier.value!.copyWith(timezone: result.first);
+      widget.newSelectedAddressNotifier.value = updatedTimezone;
+    }
   }
 
   @override
@@ -834,3 +915,305 @@ class _WorldCountryCityPickerPageState
     return address.copyWith(city: cityAddress);
   }
 }
+
+final Map<String, List<String>> usaStateToTimezones = {
+  'Alabama': ['America/Chicago'], // 主要为中部时间
+  'Alaska': [
+    'America/Anchorage', // 阿拉斯加大部分地区
+    'America/Juneau',
+    'America/Sitka',
+    'America/Nome',
+    'America/Yakutat',
+    'America/Adak' // 阿留申群岛
+  ],
+  'Arizona': [
+    'America/Phoenix', // 大部分地区，不使用夏令时 (MST all year)
+    'America/Denver' // 纳瓦霍族保留地使用山区时间并遵守夏令时
+  ],
+  'Arkansas': ['America/Chicago'],
+  'California': ['America/Los_Angeles'],
+  'Colorado': ['America/Denver'],
+  'Connecticut': ['America/New_York'],
+  'Delaware': ['America/New_York'],
+  'Florida': [
+    'America/New_York', // 东部时间区 (大部分)
+    'America/Chicago' // 中部时间区 (西部狭长地带)
+  ],
+  'Georgia': ['America/New_York'],
+  'Hawaii': ['Pacific/Honolulu'], // 不使用夏令时
+  'Idaho': [
+    'America/Denver', // 山区时间 (南部)
+    'America/Los_Angeles' // 太平洋时间 (北部)
+  ],
+  'Illinois': ['America/Chicago'],
+  'Indiana': [
+    'America/New_York', // 东部时间 (大部分)
+    'America/Chicago' // 中部时间 (西北和西南部角落)
+    // 注意: Indiana 的时区规则比较复杂，具体到县会有差异
+    // 'America/Indiana/Indianapolis', 'America/Indiana/Knox', 等也是有效的
+  ],
+  'Iowa': ['America/Chicago'],
+  'Kansas': [
+    'America/Chicago', // 中部时间 (大部分)
+    'America/Denver' // 山区时间 (西部少数县)
+  ],
+  'Kentucky': [
+    'America/New_York', // 东部时间 (东半部)
+    'America/Chicago' // 中部时间 (西半部)
+  ],
+  'Louisiana': ['America/Chicago'],
+  'Maine': ['America/New_York'],
+  'Maryland': ['America/New_York'],
+  'Massachusetts': ['America/New_York'],
+  'Michigan': [
+    'America/New_York', // 东部时间 (大部分)
+    'America/Chicago' // 中部时间 (邻近威斯康星州的少数县)
+    // 'America/Detroit' 是 America/New_York 的一个常用别名
+  ],
+  'Minnesota': ['America/Chicago'],
+  'Mississippi': ['America/Chicago'],
+  'Missouri': ['America/Chicago'],
+  'Montana': ['America/Denver'],
+  'Nebraska': [
+    'America/Chicago', // 中部时间 (大部分)
+    'America/Denver' // 山区时间 (西部)
+  ],
+  'Nevada': ['America/Los_Angeles'], // 大部分是太平洋时间，有些小区域在山区时间但通常城市会遵循州的主要时区
+  'New Hampshire': ['America/New_York'],
+  'New Jersey': ['America/New_York'],
+  'New Mexico': ['America/Denver'],
+  'New York': ['America/New_York'],
+  'North Carolina': ['America/New_York'],
+  'North Dakota': [
+    'America/Chicago', // 中部时间 (大部分)
+    'America/Denver' // 山区时间 (西南部)
+  ],
+  'Ohio': ['America/New_York'],
+  'Oklahoma': ['America/Chicago'],
+  'Oregon': [
+    'America/Los_Angeles', // 太平洋时间 (大部分)
+    'America/Denver' // 山区时间 (马卢尔县的一小部分)
+    // 'America/Boise' (爱达荷州) 有时也用于临近的山区时间区域
+  ],
+  'Pennsylvania': ['America/New_York'],
+  'Rhode Island': ['America/New_York'],
+  'South Carolina': ['America/New_York'],
+  'South Dakota': [
+    'America/Chicago', // 中部时间 (东半部)
+    'America/Denver' // 山区时间 (西半部)
+  ],
+  'Tennessee': [
+    'America/New_York', // 东部时间 (大部分东部地区)
+    'America/Chicago' // 中部时间 (大部分中部和西部地区)
+  ],
+  'Texas': [
+    'America/Chicago', // 中部时间 (大部分)
+    'America/Denver' // 山区时间 (最西部，如 El Paso)
+  ],
+  'Utah': ['America/Denver'],
+  'Vermont': ['America/New_York'],
+  'Virginia': ['America/New_York'],
+  'Washington': ['America/Los_Angeles'],
+  'West Virginia': ['America/New_York'],
+  'Wisconsin': ['America/Chicago'],
+  'Wyoming': ['America/Denver'],
+  // 你可以根据需要添加更多州或地区
+};
+Map<String, List<String>> brazilCountryMapper = {
+  // Fernando de Noronha Time (UTC-02:00)
+  "Fernando de Noronha": [
+    "America/Noronha"
+  ], // Islands (Fernando de Noronha archipelago)
+
+  // Brasilia Time (UTC-03:00)
+  "Alagoas": ["America/Maceio"],
+  "Amapá": ["America/Belem"],
+  "Bahia": ["America/Bahia"],
+  "Ceará": ["America/Fortaleza"],
+  "Distrito Federal": ["America/Sao_Paulo"], // Federal District
+  "Espírito Santo": ["America/Sao_Paulo"],
+  "Goiás": ["America/Sao_Paulo"],
+  "Maranhão": ["America/Fortaleza"],
+  "Minas Gerais": ["America/Sao_Paulo"],
+  "Pará (East)": ["America/Belem"],
+  "Paraíba": ["America/Fortaleza"],
+  "Paraná": ["America/Sao_Paulo"],
+  "Pernambuco": ["America/Recife"],
+  "Piauí": ["America/Fortaleza"],
+  "Rio de Janeiro": ["America/Sao_Paulo"],
+  "Rio Grande do Norte": ["America/Fortaleza"],
+  "Rio Grande do Sul": ["America/Sao_Paulo"],
+  "Santa Catarina": ["America/Sao_Paulo"],
+  "São Paulo": ["America/Sao_Paulo"],
+  "Sergipe": ["America/Maceio"],
+  "Tocantins": ["America/Araguaina"],
+  "Pará (West)": [
+    "America/Santarem"
+  ], // Western part of Pará state can observe Brasilia Time
+
+  // Amazon Time (UTC-04:00)
+  "Amazonas (East)": ["America/Manaus"], // Eastern part of Amazonas state
+  "Mato Grosso": ["America/Cuiaba"],
+  "Mato Grosso do Sul": ["America/Campo_Grande"],
+  "Rondônia": ["America/Porto_Velho"],
+  "Roraima": ["America/Boa_Vista"],
+  "Pará (Santarem region)": [
+    "America/Santarem"
+  ], // While mostly BRT, some sources indicate Santarem uses AMT
+
+  // Acre Time (UTC-05:00)
+  "Acre": ["America/Rio_Branco"],
+  "Amazonas (West)": ["America/Eirunepe"], // Western part of Amazonas state
+};
+Map<String, List<String>> argentinaCountryMapper = {
+  // Argentina generally observes UTC-03:00 year-round.
+  // Historically, some provinces had different time zone behaviors or observed DST.
+  // The IANA time zone database often uses specific city names within a province
+  // to represent the province's time zone.
+
+  "City of Buenos Aires": ["America/Argentina/Buenos_Aires"],
+  "Buenos Aires": ["America/Argentina/Buenos_Aires"],
+  "Catamarca": ["America/Argentina/Catamarca"],
+  "Chaco": ["America/Argentina/Cordoba"],
+  "Chubut": ["America/Argentina/Catamarca"],
+  "Córdoba": ["America/Argentina/Cordoba"],
+  "Corrientes": ["America/Argentina/Cordoba"],
+  "Entre Ríos": ["America/Argentina/Cordoba"],
+  "Formosa": ["America/Argentina/Cordoba"],
+  "Jujuy": ["America/Argentina/Jujuy"],
+  "La Pampa": ["America/Argentina/Salta"], // Often grouped with Salta TZ
+  "La Rioja": ["America/Argentina/La_Rioja"],
+  "Mendoza": ["America/Argentina/Mendoza"],
+  "Misiones": ["America/Argentina/Cordoba"],
+  "Neuquén": ["America/Argentina/Salta"], // Often grouped with Salta TZ
+  "Río Negro": ["America/Argentina/Salta"], // Often grouped with Salta TZ
+  "Salta": ["America/Argentina/Salta"],
+  "San Juan": ["America/Argentina/San_Juan"],
+  "San Luis": ["America/Argentina/San_Luis"],
+  "Santa Cruz": ["America/Argentina/Rio_Gallegos"],
+  "Santa Fe": ["America/Argentina/Cordoba"],
+  "Santiago del Estero": ["America/Argentina/Cordoba"],
+  "Tierra del Fuego": ["America/Argentina/Ushuaia"],
+  "Tucumán": ["America/Argentina/Tucuman"],
+};
+
+Map<String, List<String>> mexicoCountryMapper = {
+  // Zona Noroeste (Northwest Zone) - UTC-08:00 (Standard)
+  "Baja California": [
+    "America/Tijuana"
+  ], // Observes DST (aligns with US Pacific Time)
+
+  // Zona Pacífico (Pacific Zone) - UTC-07:00 (Standard)
+  "Baja California Sur": ["America/Mazatlan"],
+  "Chihuahua (US border - west)": [
+    "America/Ciudad_Juarez"
+  ], // Observes DST (aligns with US Mountain Time)
+  "Nayarit": ["America/Mazatlan"],
+  "Sinaloa": ["America/Mazatlan"],
+  "Sonora": ["America/Hermosillo"], // Does not observe DST
+
+  // Zona Centro (Central Zone) - UTC-06:00 (Standard)
+  "Aguascalientes": ["America/Mexico_City"],
+  "Chihuahua": ["America/Chihuahua"], // Does not observe DST (as of 2022)
+  "Coahuila": [
+    "America/Mexico_City"
+  ], // Some border municipalities follow US DST. Default to Mexico City.
+  "Colima": ["America/Mexico_City"],
+  "Durango": ["America/Mexico_City"],
+  "Guanajuato": ["America/Mexico_City"],
+  "Guerrero": ["America/Mexico_City"],
+  "Hidalgo": ["America/Mexico_City"],
+  "Jalisco": ["America/Mexico_City"],
+  "Estado de México": ["America/Mexico_City"],
+  "Ciudad de México": [
+    "America/Mexico_City"
+  ], // Does not observe DST (as of 2022)
+  "Michoacán de Ocampo": ["America/Mexico_City"],
+  "Morelos": ["America/Mexico_City"],
+  "Nuevo León": [
+    "America/Monterrey"
+  ], // Some border municipalities follow US DST. Default to Monterrey/Mexico City.
+  "Oaxaca": ["America/Mexico_City"],
+  "Puebla": ["America/Mexico_City"],
+  "Querétaro": ["America/Mexico_City"],
+  "San Luis Potosí": ["America/Mexico_City"],
+  "Tamaulipas (US border)": [
+    "America/Matamoros"
+  ], // Observes DST (aligns with US Central Time)
+  "Tamaulipas": ["America/Mexico_City"], // Default to Mexico City
+  "Tlaxcala": ["America/Mexico_City"],
+  "Veracruz": ["America/Mexico_City"],
+  "Zacatecas": ["America/Mexico_City"],
+  "Ojinaga (Chihuahua, US border - east)": [
+    "America/Ojinaga"
+  ], // Observes DST (aligns with US Central Time)
+
+  // Zona Sureste (Southeast Zone) - UTC-05:00 (Standard)
+  "Campeche": ["America/Cancun"],
+  "Quintana Roo": ["America/Cancun"], // Does not observe DST
+  "Tabasco": ["America/Cancun"],
+  "Yucatán": ["America/Cancun"],
+};
+
+Map<String, List<String>> greenlandCountryMapper = {
+  // Thule Air Base / Pituffik area (UTC-04:00 Standard, UTC-03:00 Daylight)
+  // This area follows North American DST rules.
+  "Avannaata (Pituffik/Thule Air Base)": ["America/Thule"],
+
+  // West Greenland Time (UTC-02:00 Standard, UTC-01:00 Daylight)
+  // This covers most populated areas, including the capital Nuuk.
+  // Note: Greenland's DST dates are different from North America/Europe.
+  "Sermersooq (Nuuk area)": ["America/Nuuk"],
+  "Kujalleq": ["America/Nuuk"],
+  "Qeqqata": ["America/Nuuk"],
+  "Qeqertalik": ["America/Nuuk"],
+  "Avannaata": ["America/Nuuk"],
+
+  // East Greenland Time (UTC-00:00 Standard, UTC+00:00 Daylight)
+  "Northeast Greenland National Park": [
+    "Atlantic/Jan_Mayen"
+  ], // Danmarkshavn often uses GMT/UTC+00:00 year-round (no DST)
+  "Sermersooq": [
+    "America/Scoresbysund"
+  ], // This area observes GMT-1 (standard) / GMT+0 (DST)
+};
+Map<String, List<String>> canadaCountryMapper = {
+  // Pacific Time (UTC-08:00 Standard, UTC-07:00 Daylight)
+  "British Columbia": ["America/Vancouver"],
+  "Yukon": [
+    "America/Whitehorse"
+  ], // Note: Yukon moved to permanent MST in 2020 (UTC-7) but is often still listed with Pacific time zones
+
+  // Mountain Time (UTC-07:00 Standard, UTC-06:00 Daylight)
+  "Alberta": ["America/Edmonton"],
+  "Northwest Territories": ["America/Yellowknife"],
+  "Nunavut": ["America/Cambridge_Bay"],
+  // "Nunavut": ["America/Rankin_Inlet"],
+  "British Columbia (northeast)": [
+    "America/Dawson_Creek"
+  ], // Some regions of BC
+  "Saskatchewan (Lloydminster)": [
+    "America/Dawson_Creek"
+  ], // Lloydminster observes MDT
+
+  // Central Time (UTC-06:00 Standard, UTC-05:00 Daylight)
+  "Manitoba": ["America/Winnipeg"],
+  "Saskatchewan": [
+    "America/Regina"
+  ], // Most of Saskatchewan observes CST year-round, no DST
+
+  // Eastern Time (UTC-05:00 Standard, UTC-04:00 Daylight)
+  "Ontario": ["America/Toronto"],
+  "Quebec": ["America/Montreal"],
+
+  // Atlantic Time (UTC-04:00 Standard, UTC-03:00 Daylight)
+  "New Brunswick": ["America/Moncton"],
+  "Nova Scotia": ["America/Halifax"],
+  "Prince Edward Island": ["America/Halifax"],
+  "Labrador": ["America/Goose_Bay"],
+  "Quebec (Specific areas)": ["America/Halifax"], // Specific areas in Quebec
+
+  // Newfoundland Time (UTC-03:30 Standard, UTC-02:30 Daylight)
+  "Newfoundland": ["America/St_Johns"],
+  "Labrador (southeastern)": ["America/St_Johns"],
+};

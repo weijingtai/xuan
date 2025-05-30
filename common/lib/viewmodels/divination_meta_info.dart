@@ -4,11 +4,12 @@ import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 
 enum DivinationType {
-  destiny(pageIndex: 0),
-  divination(pageIndex: 1);
+  destiny(pageIndex: 0, name: "命理"),
+  divination(pageIndex: 1, name: "占测");
 
   final int pageIndex;
-  const DivinationType({required this.pageIndex});
+  final String name;
+  const DivinationType({required this.pageIndex, required this.name});
 }
 
 class QuestionMetaInfo {

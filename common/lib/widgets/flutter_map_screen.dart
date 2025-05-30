@@ -639,20 +639,20 @@ class _FlutterMapScreenState extends State<FlutterMapScreen>
           //   subdomains: const ['a', 'b', 'c'], // 瓦片服务器子域名[5](@ref)
           //   userAgentPackageName: 'com.example.app',
           // ),
-          // TileLayer(
-          //   urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          //   subdomains: ['a', 'b', 'c'],
-          //   // 替换为可取消的 TileProvider
-          //   tileProvider: CancellableNetworkTileProvider(),
-          // ),
-
           TileLayer(
-            urlTemplate:
-                'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+            urlTemplate: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
             subdomains: ['a', 'b', 'c'],
             // 替换为可取消的 TileProvider
             tileProvider: CancellableNetworkTileProvider(),
           ),
+
+          // TileLayer(
+          //   urlTemplate:
+          //       'https://webrd02.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+          //   subdomains: ['a', 'b', 'c'],
+          //   // 替换为可取消的 TileProvider
+          //   tileProvider: CancellableNetworkTileProvider(),
+          // ),
           _polygons == null
               ? const SizedBox()
               : PolygonLayer(polygons: _polygons!),

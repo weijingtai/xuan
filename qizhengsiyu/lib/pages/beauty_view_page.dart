@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:common/utils/collections_utils.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -8,6 +10,9 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/enums/enum_stars.dart';
+import 'package:common/module.dart';
+import 'package:qizhengsiyu/models/base_panel_model.dart';
+import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
@@ -16,6 +21,10 @@ import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
+import '../models/body_life_model.dart';
+import '../widgets/rings/gong_12_dizhi_v2.dart';
+import '../widgets/rings/gong_ming_li_ring.dart';
+import '../widgets/rings/gong_shen_sha_ring.dart';
 import '../models/panel_stars_info.dart';
 import '../models/stars_angle.dart';
 import '../models/observer_position.dart';
@@ -25,6 +34,7 @@ import '../painter/star_xiu_ring_painter.dart';
 import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
 import '../qi_zheng_si_yu_ui_constant_resources.dart';
 import '../widgets/star_body.dart';
+import 'beauty_page_viewmodel.dart';
 
 class QiZhengSiYuPanSizeDataModel {
   // default:
@@ -190,20 +200,44 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   double zhengStarSize = 26;
   double yinYangStarSize = 32;
 
-  double marsSkyCoordLon = 75.58091941;
-  double venusSkyCoordLon = 359.88416846;
-  double mercurySkyCoordLon = 312.79800634;
-  double jupiterSkyCoordLon = 9.67729768;
-  double saturnSkyCoordLon = 327.87317251;
-  double sunSkyCoordLon = 331.24872792;
-  double moonSkyCoordLon = 334.13505029;
-
   late QiZhengSiYuPanSizeDataModel panelSizeDataModel;
+
+  Future<void> devInit() async {
+    final res = await Future.wait([
+      loadDiviniation(),
+    ]);
+    context
+        .read<BeautyPageViewModel>()
+        .setLifeObserver(res[0] as DivinationInfoModel);
+    context
+        .read<BeautyPageViewModel>()
+        .calculate(context.read<BeautyPageViewModel>().lifeObserver!);
+  }
+
+  Future<DivinationInfoModel> loadDiviniation() async {
+    var divinations = await context
+        .read<DevEnterPageViewModel>()
+        .appDatabase
+        .divinationsDao
+        .getAllDivinations();
+    var seeker = await context
+        .read<DevEnterPageViewModel>()
+        .appDatabase
+        .seekersDao
+        .getSeekersByDivinationUuid(divinations.last.uuid);
+    var res = DivinationInfoModel(
+        divination: divinations.last, divinationDatetime: seeker.first);
+
+    return res;
+  }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    devInit().then((value) {
+      logger.d("devInit finished");
+    });
     // 0°02′02‘’ 一天
     _jupiterController = AnimationController(
         vsync: this, duration: const Duration(seconds: 1062))
@@ -286,19 +320,31 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               _ziQiController.repeat();
             }
           });
-
     panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
-        starBodyRadius: 16 + 4,
-        centerSize: 172,
-        diZhi12GongHeight: 60,
-        zodiac12GongHeight: 42,
+        starBodyRadius: 16,
+        centerSize: 128,
+        diZhi12GongHeight: 50,
+        zodiac12GongHeight: 24,
         starSeq12GongHeight: 0,
-        destiny12GongHeight: 64,
-        lifeStarRingHeight: 16 * 4, // 564
-        starXiu28RingHeight: 48, // 660
-        innerShenShaHeight: 128,
-        outerShenShaHeight: 128,
+        destiny12GongHeight: 42,
+        lifeStarRingHeight: 48, // 64
+        starXiu28RingHeight: 36, // 660
+        innerShenShaHeight: 90,
+        outerShenShaHeight: 90,
         showFateLifeStarRing: true);
+
+    // panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
+    //     starBodyRadius: 16 + 4,
+    //     centerSize: 172,
+    //     diZhi12GongHeight: 60,
+    //     zodiac12GongHeight: 42,
+    //     starSeq12GongHeight: 0,
+    //     destiny12GongHeight: 64,
+    //     lifeStarRingHeight: 16 * 4, // 564
+    //     starXiu28RingHeight: 48, // 660
+    //     innerShenShaHeight: 128,
+    //     outerShenShaHeight: 128,
+    //     showFateLifeStarRing: true);
   }
 
   @override
@@ -357,6 +403,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       panelSizeDataModel.outerLifeStarRingOuterSize;
 
   /// _destiny12GongListNotifier list#index 对应地支方位 0-子 1-亥 ...
+  ///
+
   final ValueNotifier<List<String>> _destiny12GongListNotifier = ValueNotifier([
     "命宫",
     "财帛",
@@ -391,14 +439,6 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
   @override
   Widget build(BuildContext context) {
-    // late final double centerSize = 171;
-    // late final double diZhi11GongSize = 120;
-    // late final double zodiac11GongSize = 41;
-    // late final double starSeq11GongSize = 360;
-    // late final double destiny11GongSize = 67;
-    // late final double lifeStarRingSize = 15 * 8; // 564
-    // late final double starXiu27RingSize = 96; // 660
-
     double height = MediaQuery.of(context).size.height;
     double width = MediaQuery.of(context).size.width;
     double minSize = height > width ? width : height;
@@ -415,16 +455,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
     // double fateLifeStarCenterCircleSize= starInnRangeMiddleSize+starBodyRadius*2+12;
 
-    // 星轨外环，当前 80 为 星宿ring的 width*2
-    Provider.of<QiZhengSiYuViewModel>(context).calculateBasicStarsSafetyAngle(
-        starBodyRadius, starInnRangeMiddleSize, basicLifeStarCenterCircleSize);
-    Provider.of<QiZhengSiYuViewModel>(context).calculateFateStarsSafetyAngle(
-        starBodyRadius, destiny12GongSizeOuter, fateLifeStarOuterSize);
-
     if (isFirst) {
       Future.delayed(const Duration(seconds: 3), () {
         isFirst = false;
-        calculatePanel();
+        // calculatePanel();
       });
     }
 
@@ -434,19 +468,19 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Container(
-              padding: const EdgeInsets.all(15),
-              child: ValueListenableBuilder(
-                valueListenable: showStarHuaJiInfoNotifier,
-                builder: (ctx, show, _) {
-                  return Switch(
-                      value: show,
-                      onChanged: (n) {
-                        showStarHuaJiInfoNotifier.value = n;
-                      });
-                },
-              ),
-            ),
+            // Container(
+            //   padding: const EdgeInsets.all(15),
+            //   child: ValueListenableBuilder(
+            //     valueListenable: showStarHuaJiInfoNotifier,
+            //     builder: (ctx, show, _) {
+            //       return Switch(
+            //           value: show,
+            //           onChanged: (n) {
+            //             showStarHuaJiInfoNotifier.value = n;
+            //           });
+            //     },
+            //   ),
+            // ),
             Container(
                 width: panelMaxSize,
                 height: panelMaxSize,
@@ -456,18 +490,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Consumer<QiZhengSiYuViewModel>(
-                        builder: (context, viewModel, child) {
-                          if (viewModel.basicLifeStarsAngle == null) {
-                            return child!;
-                          }
-                          return Transform.rotate(
-                            angle: 30 * pi / 180,
-                            child: panel(viewModel.uiBasicLifeStars,
-                                viewModel.uiFateLifeStars, starBodyRadius),
-                          );
-                        },
-                        child: const CircularProgressIndicator(),
+                      Transform.rotate(
+                        angle: 30 * pi / 180,
+                        child: panel(starBodyRadius),
                       ),
                       const Expanded(child: SizedBox()),
                     ])),
@@ -477,23 +502,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  void calculatePanel() {
-    // 设定观察者的经纬度和高度（例如：上海）
-    double latitude = 31.2304; // 纬度
-    double longitude = 121.4737; // 经度
-    double altitude = 0; // 高度（米）
-    var observerPosition = ObserverPosition(
-        latitude: latitude,
-        longitude: longitude,
-        altitude: altitude,
-        fateLifeDateTime: DateTime(2024, 10, 13, 16, 45),
-        birthday: DateTime(1982, 10, 25, 02, 30),
-        timezone: 'Asia/Shanghai');
-    Provider.of<QiZhengSiYuViewModel>(context, listen: false)
-        .calculate(observerPosition);
-  }
-
-  Widget center() {
+  Widget center(BasePanelModel basePanel) {
     return Container(
         width: centerSize,
         height: centerSize,
@@ -503,139 +512,214 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           borderRadius: BorderRadius.circular(centerSize),
           border: Border.all(color: Colors.black, width: 1),
         ),
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "立命",
-                      style: TextStyle(fontSize: 12, height: 1.2),
-                    ),
-                    // SizedBox(width: 4,),
-                    Text(
-                      "昴日鸡",
-                      style: TextStyle(fontSize: 14, height: 1.2),
-                    ),
-                    Text(
-                      "六度",
-                      style: TextStyle(fontSize: 12, height: 1.2),
-                    ),
-                  ],
-                )
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "运",
-                      style: TextStyle(fontSize: 10),
-                    ),
-                    Text("癸", style: TextStyle(fontSize: 16)),
-                    Text("卯", style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("流", style: TextStyle(fontSize: 10)),
-                    Text("辛", style: TextStyle(fontSize: 16)),
-                    Text("丑", style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "年",
-                      style: TextStyle(fontSize: 10),
-                    ),
-                    Text("癸", style: TextStyle(fontSize: 16)),
-                    Text("卯", style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("月", style: TextStyle(fontSize: 10)),
-                    Text("辛", style: TextStyle(fontSize: 16)),
-                    Text("丑", style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      "日",
-                      style: TextStyle(fontSize: 10),
-                    ),
-                    Text("癸", style: TextStyle(fontSize: 16)),
-                    Text("卯", style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                SizedBox(
-                  width: 6,
-                ),
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text("时", style: TextStyle(fontSize: 10)),
-                    Text("辛", style: TextStyle(fontSize: 16)),
-                    Text("丑", style: TextStyle(fontSize: 16)),
-                  ],
-                )
-              ],
-            ),
             Column(
-              children: [Text("ok3"), Text("ok3")],
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "立命",
+                  style: TextStyle(fontSize: 12, height: 1.2),
+                ),
+                // SizedBox(width: 4,),
+                Text(
+                  basePanel.bodyLifeModel.lifeConstellatioin.fullname,
+                  style: TextStyle(fontSize: 14, height: 1.2),
+                ),
+                Text(
+                  "${basePanel.bodyLifeModel.lifeDegree.toStringAsFixed(1)}°",
+                  style: TextStyle(fontSize: 12, height: 1.2),
+                ),
+              ],
             ),
+            fourZhu(basePanel.bodyLifeModel),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "${basePanel.bodyLifeModel.bodyGongDegree.toStringAsFixed(1)}°",
+                  style: TextStyle(fontSize: 12, height: 1.2),
+                ),
+                // SizedBox(width: 4,),
+                Text(
+                  basePanel.bodyLifeModel.bodyConstellation.fullname,
+                  style: TextStyle(fontSize: 14, height: 1.2),
+                ),
+
+                Text(
+                  "安身",
+                  style: TextStyle(fontSize: 12, height: 1.2),
+                ),
+              ],
+            )
           ],
         ));
   }
 
+  Widget fourZhu(BodyLifeModel bodyLifeModel) {
+    TextStyle titleTextStyle =
+        TextStyle(fontSize: 14, height: 1.2, color: Colors.black38);
+    TextStyle infoTextStyle =
+        TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.bold);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text.rich(TextSpan(text: "命主:", style: titleTextStyle, children: [
+                TextSpan(
+                    text: bodyLifeModel.lifeGong.sevenZheng.singleName,
+                    style: infoTextStyle.copyWith(
+                        color: QiZhengSiYuUIConstantResources
+                            .zhengColorMap[bodyLifeModel.lifeGong.sevenZheng])),
+              ])),
+              Text.rich(TextSpan(text: "度主:", style: titleTextStyle, children: [
+                TextSpan(
+                    text:
+                        bodyLifeModel.lifeConstellatioin.sevenZheng.singleName,
+                    style: infoTextStyle.copyWith(
+                        color: QiZhengSiYuUIConstantResources.zhengColorMap[
+                            bodyLifeModel.lifeConstellatioin.sevenZheng]))
+              ])),
+            ]),
+        SizedBox(
+          width: 24,
+        ),
+        Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text.rich(TextSpan(text: "身主:", style: titleTextStyle, children: [
+                TextSpan(
+                    text: bodyLifeModel.bodyGong.sevenZheng.singleName,
+                    style: infoTextStyle.copyWith(
+                        color: QiZhengSiYuUIConstantResources
+                            .zhengColorMap[bodyLifeModel.bodyGong.sevenZheng]))
+              ])),
+              Text.rich(TextSpan(text: "身度:", style: titleTextStyle, children: [
+                TextSpan(
+                    text: bodyLifeModel.bodyConstellation.sevenZheng.singleName,
+                    style: infoTextStyle.copyWith(
+                        color: QiZhengSiYuUIConstantResources.zhengColorMap[
+                            bodyLifeModel.bodyConstellation.sevenZheng]))
+              ])),
+            ])
+      ],
+    );
+  }
+
+  Widget eigthChatPanel(ObserverPosition observer) {
+    // ValueListenableBuilder<ObserverPosition?>(
+    // valueListenable: context
+    //     .read<BeautyPageViewModel>()
+    //     .observerPositionNotifier,
+    // builder: (ctx, position, _) {
+    //   if (position == null) {
+    //     return SizedBox();
+    //   }
+    //   return eigthChatPanel(position);
+    // }),
+
+    TextStyle titleStyle = TextStyle(fontSize: 12, height: 1.0);
+    TextStyle ganZhiStyle = TextStyle(fontSize: 16, height: 1.0);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "运",
+              style: titleStyle,
+            ),
+            Text("癸", style: ganZhiStyle),
+            Text("卯", style: ganZhiStyle),
+          ],
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("流", style: titleStyle),
+            Text("辛", style: ganZhiStyle),
+            Text("丑", style: ganZhiStyle),
+          ],
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "年",
+              style: titleStyle,
+            ),
+            Text(observer.yearGanZhi.gan.name, style: ganZhiStyle),
+            Text(observer.yearGanZhi.zhi.name, style: ganZhiStyle),
+          ],
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("月", style: titleStyle),
+            Text(observer.monthGanZhi.gan.name, style: ganZhiStyle),
+            Text(observer.monthGanZhi.zhi.name, style: ganZhiStyle),
+          ],
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text(
+              "日",
+              style: titleStyle,
+            ),
+            Text(observer.dayGanZhi.gan.name, style: ganZhiStyle),
+            Text(observer.dayGanZhi.zhi.name, style: ganZhiStyle),
+          ],
+        ),
+        SizedBox(
+          width: 6,
+        ),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Text("时", style: titleStyle),
+            Text(observer.timeGanZhi.gan.name, style: ganZhiStyle),
+            Text(observer.timeGanZhi.zhi.name, style: ganZhiStyle),
+          ],
+        )
+      ],
+    );
+  }
+
   Widget panel(
-    List<UIStarModel> uiBasicStarList,
-    List<UIStarModel> uiFateStarList,
-    // StarsAngle basicLifeStarsAngle,
-    // StarsAngle? fateLifeStarsAngle,
     double starBodyRadius,
-    // double starInnRangeMiddleSize,
-    // double fateLifeStarTrackOuterSize,
-    // double basicLifeStarCenterCircleSize
   ) {
     // 黄道十二宫 从白羊开始
-    // List<String> zodiacEnglishList = <String>["Ari白羊♈︎", "Tau金牛♉︎", "Gem双子♊︎", "Can巨蟹♋︎", "Leo狮子♌︎", "Vir处女♍︎", "Lib天秤♎︎︎", "Sco天蝎♏︎", "Sag射手♐︎", "Cap摩羯♑︎", "Agu水瓶♒︎", "Pis双鱼♓︎",];
-    // List<String> zodiacList = <String>["白羊♈︎", "金牛♉︎", "双子♊︎", "巨蟹♋︎", "狮子♌︎", "处女♍︎", "天秤♎︎︎", "天蝎♏︎", "射手♐︎", "摩羯♑︎", "水瓶♒︎", "双鱼♓︎",];
     List<String> zodiacList = <String>[
       "白羊",
       "金牛",
@@ -710,61 +794,71 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          alignment: Alignment.center,
-          height: diZhi12GongOuter,
-          width: diZhi12GongOuter,
-          decoration: BoxDecoration(
-            // color: Colors.red.withOpacity(.1),
-            borderRadius: BorderRadius.circular(diZhi12GongOuter),
-            // border: Border.all(color: Colors.black,width: 1),
-          ),
-          child: Transform.rotate(
-            angle: 75 * pi / 180,
-            origin: Offset.zero,
-            child: CustomPaint(
-                size: Size(diZhi12GongOuter, diZhi12GongOuter),
-                painter: TwelveZhiGongCircleRingPrinter(
-                  innerRadius: 86,
-                  outerRadius: 148,
-                  twelveGongList: [
-                    EnumTwelveGong.Xu,
-                    EnumTwelveGong.Hai,
-                    EnumTwelveGong.Zi,
-                    EnumTwelveGong.Chou,
-                    EnumTwelveGong.Yin,
-                    EnumTwelveGong.Mao,
-                    EnumTwelveGong.Chen,
-                    EnumTwelveGong.Si,
-                    EnumTwelveGong.Wu,
-                    EnumTwelveGong.Wei,
-                    EnumTwelveGong.Shen,
-                    EnumTwelveGong.You,
-                  ],
-                  starColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
-                  isAntiClockwise: false,
-                  innerPadding: 3,
-                  isReverseText: false,
-                  isHorizontalText: false,
-                  textStyle: GoogleFonts.maShanZheng(
-                    height: 1.2,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                )),
-          ),
+        // Container(
+        //   alignment: Alignment.center,
+        //   height: diZhi12GongOuter,
+        //   width: diZhi12GongOuter,
+        //   decoration: BoxDecoration(
+        //     // color: Colors.red.withOpacity(.1),
+        //     borderRadius: BorderRadius.circular(diZhi12GongOuter),
+        //     // border: Border.all(color: Colors.black,width: 1),
+        //   ),
+        //   child: Transform.rotate(
+        //     angle: 75 * pi / 180,
+        //     origin: Offset.zero,
+        //     child: CustomPaint(
+        //         size: Size(diZhi12GongOuter, diZhi12GongOuter),
+        //         painter: TwelveZhiGongCircleRingPrinter(
+        //           innerRadius: 86,
+        //           outerRadius: 148,
+        //           twelveGongList: [
+        //             EnumTwelveGong.Xu,
+        //             EnumTwelveGong.Hai,
+        //             EnumTwelveGong.Zi,
+        //             EnumTwelveGong.Chou,
+        //             EnumTwelveGong.Yin,
+        //             EnumTwelveGong.Mao,
+        //             EnumTwelveGong.Chen,
+        //             EnumTwelveGong.Si,
+        //             EnumTwelveGong.Wu,
+        //             EnumTwelveGong.Wei,
+        //             EnumTwelveGong.Shen,
+        //             EnumTwelveGong.You,
+        //           ],
+        //           starColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
+        //           isAntiClockwise: false,
+        //           innerPadding: 3,
+        //           isReverseText: false,
+        //           isHorizontalText: false,
+        //           textStyle: GoogleFonts.maShanZheng(
+        //             height: 1.2,
+        //             fontSize: 16,
+        //             color: Colors.black87,
+        //           ),
+        //         )),
+        //   ),
+        // ),
+
+        // 十二地支宫
+        Transform.rotate(
+          angle: -30 * pi / 180,
+          child: build12DiZhiGong(diZhi12GongOuter * .5, diZhi12GongInner * .5),
         ),
         // 黄道十二宫
-        draw12GongRingText(
-            zodiac12GongSizeInner, zodiac12GongSizeOuter, zodiacTextList,
-            innerPadding: 2),
+        Transform.rotate(
+          angle: -30 * pi / 180,
+          child: zhouTian12GongRing(
+              zodiac12GongSizeInner * .5, zodiac12GongSizeOuter * .5),
+        ),
         // 星次十二宫
         // drawRingWithTextList(starSeq12GongSizeOuter, 18, starSeqTextList),
         // 命理十二宫
-        draw12GongRing(
-            destiny12GongSizeInner, destiny12GongSizeOuter, destinySeqTextList,
-            innerPadding: 2),
-        // drawRingWithTextList(destiny12GongSizeOuter, 33, destinySeqTextList,innerPadding: 2),
+        Transform.rotate(
+          angle: -30 * pi / 180,
+          child: buildMingLi12GongRing(
+              destiny12GongSizeInner * .5, destiny12GongSizeOuter * .5),
+        ),
+
         Transform.rotate(
           angle: rotating * pi / 180,
           child: starXiuRing(starXiu28RingSizeOuter, 40),
@@ -780,51 +874,252 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         ),
 
         // 大限星轨
-        Transform.rotate(
-          angle: rotating * pi / 180,
-          child: innerStarTrackRing(uiFateStarList),
-        ),
         // 本命盘星轨
-        Transform.rotate(
-          angle: rotating * pi / 180,
-          child: outerStarTrackRing(uiBasicStarList),
-        ),
-
-        Transform.rotate(
-          angle: -(rotating - 90) * pi / 180,
-          child: outerStarBodyRotating(uiBasicStarList),
-        ),
-        Transform.rotate(
-          angle: -(rotating - 90) * pi / 180,
-          child: innerStarBodyRotating(uiFateStarList),
-        ),
-
-        // 命理十二宫
-        ValueListenableBuilder(
-            valueListenable: _destiny12GongListNotifier,
-            builder: (ctx, destiny12GongList, child) {
-              // return drawDestiny12Gong(destiny12GongSizeInner,
-              // destiny12GongSizeOuter - 40 * 2, destiny12GongList);
-              return ValueListenableBuilder(
-                  valueListenable: _selectedTaiJiDestiny12GongListNotifier,
-                  builder: (ctx, selectedTaiJiDestiny12GongList, child) {
-                    return destiny12Gong(
-                        destiny12GongSizeInner,
-                        destiny12GongSizeOuter,
-                        destiny12GongList,
-                        selectedTaiJiDestiny12GongList);
-                  });
+        ValueListenableBuilder<List<UIStarModel>?>(
+            valueListenable:
+                context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+            builder: (ctx, uiFateStarsList, child) {
+              if (uiFateStarsList == null) {
+                return Container(
+                  width: fateLifeStarOuterSize,
+                  height: fateLifeStarOuterSize,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                );
+              }
+              return Transform.rotate(
+                angle: -(rotating - 90) * pi / 180,
+                child: innerStarBodyRotating(uiFateStarsList),
+              );
+              // return Transform.rotate(
+              //   angle: rotating * pi / 180,
+              //   child: innerStarBodyRotating(uiFateStarsList),
+              // );
             }),
+        ValueListenableBuilder<List<UIStarModel>?>(
+            valueListenable:
+                context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+            builder: (ctx, uiFateStarsList, child) {
+              if (uiFateStarsList == null) {
+                return Container(
+                  width: fateLifeStarOuterSize,
+                  height: fateLifeStarOuterSize,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                );
+              }
+              return Transform.rotate(
+                angle: rotating * pi / 180,
+                child: innerStarTrackRing(uiFateStarsList),
+              );
+            }),
+
+        ValueListenableBuilder<List<UIStarModel>?>(
+            valueListenable:
+                context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
+            builder: (ctx, uiBasicStarsList, child) {
+              if (uiBasicStarsList == null) {
+                return Container(
+                  width: basicLifeStarRingOuterSize,
+                  height: basicLifeStarRingOuterSize,
+                  decoration: BoxDecoration(
+                    // color: Colors.yellow,
+                    borderRadius:
+                        BorderRadius.circular(basicLifeStarRingOuterSize),
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                );
+              }
+              return Transform.rotate(
+                angle: -(rotating - 90) * pi / 180,
+                child: outerStarBodyRotating(uiBasicStarsList),
+              );
+            }),
+        ValueListenableBuilder<List<UIStarModel>?>(
+            valueListenable:
+                context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
+            builder: (ctx, uiBasicStarsList, child) {
+              if (uiBasicStarsList == null) {
+                return Container(
+                  width: basicLifeStarRingOuterSize,
+                  height: basicLifeStarRingOuterSize,
+                  decoration: BoxDecoration(
+                    // color: Colors.yellow,
+                    borderRadius:
+                        BorderRadius.circular(basicLifeStarRingOuterSize),
+                    border: Border.all(color: Colors.black87, width: 1),
+                  ),
+                );
+              }
+              return Transform.rotate(
+                angle: rotating * pi / 180,
+                child: outerStarTrackRing(uiBasicStarsList),
+              );
+            }),
+
+        // 神煞
         Transform.rotate(
-            angle: 120 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
-            // angle: 0,
-            child: innerShenShaRing(panelSizeDataModel.innerShenShaSizeInner,
-                panelSizeDataModel.innerShenShaSizeOuter)),
+          angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
+          // angle: 0,
+          child: ValueListenableBuilder<BasePanelModel?>(
+            valueListenable:
+                context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+            builder: (ctx, basePanel, child) {
+              if (basePanel == null) {
+                return child!;
+              }
+              return Transform.rotate(
+                angle: -30 * pi / 180,
+                child: AllShenShaRing(
+                  outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
+                  innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
+                  shenShaMapper: basePanel.shenShaMapper,
+                  gongOrder: EnumTwelveGong.listAll,
+                ),
+              );
+            },
+            child: Container(
+              width: panelSizeDataModel.innerShenShaSizeOuter,
+              height: panelSizeDataModel.innerShenShaSizeOuter,
+            ),
+          ),
+        ),
+
+        // 流年神煞
+        Transform.rotate(
+          angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
+          // angle: 0,
+          child: ValueListenableBuilder<DaXianPanelModel?>(
+              valueListenable:
+                  context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
+              builder: (ctx, daXianPanel, child) {
+                if (daXianPanel == null) {
+                  return child!;
+                }
+                return Transform.rotate(
+                  angle: -30 * pi / 180,
+                  child: AllShenShaRing(
+                    outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
+                    innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
+                    shenShaMapper: daXianPanel.shenShaMapper,
+                    gongOrder: EnumTwelveGong.listAll,
+                  ),
+                );
+              },
+              child: Container(
+                width: panelSizeDataModel.outerShenShaSizeOuter,
+                height: panelSizeDataModel.outerShenShaSizeOuter,
+              )),
+        ),
+
         Transform.rotate(
           angle: -30 * pi / 180,
-          child: center(),
+          child: ValueListenableBuilder<BasePanelModel?>(
+              valueListenable:
+                  context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+              builder: (ctx, baseModel, _) {
+                if (baseModel == null) {
+                  return Container(
+                    width: panelSizeDataModel.outerShenShaSizeOuter,
+                    height: panelSizeDataModel.outerShenShaSizeOuter,
+                  );
+                }
+                return center(baseModel);
+              }),
         ),
       ],
+    );
+  }
+
+  Widget build12DiZhiGong(double outerRadius, double innerRadius) {
+    TextStyle firstTextStyle =
+        TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
+      Shadow(
+        color: Colors.black26,
+        offset: Offset(1, 1),
+        blurRadius: 3,
+      ),
+    ]);
+    TextStyle secondTextStyle =
+        TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
+      Shadow(
+        color: Colors.black26,
+        offset: Offset(1, 1),
+        blurRadius: 3,
+      ),
+    ]);
+    // double outerRadius = 100;
+    // double innerRadius = outerRadius - 50;
+    return Gong12DiZhiRingV2(
+      outerRadius: outerRadius,
+      innerRadius: innerRadius,
+      // angleOffset: 3,
+      shenShaMapper: {
+        EnumTwelveGong.Zi: [
+          Text("子", style: firstTextStyle),
+          Text("坎", style: secondTextStyle),
+          Text("土", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Chou: [
+          Text("丑", style: firstTextStyle),
+          Text("艮", style: secondTextStyle),
+          Text("土", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Yin: [
+          Text("寅", style: firstTextStyle),
+          Text("艮", style: secondTextStyle),
+          Text("木", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Mao: [
+          Text("卯", style: firstTextStyle),
+          Text("震", style: secondTextStyle),
+          Text("火", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Chen: [
+          Text("辰", style: firstTextStyle),
+          Text("巽", style: secondTextStyle),
+          Text("金", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Si: [
+          Text("巳", style: firstTextStyle),
+          Text("巽", style: secondTextStyle),
+          Text("水", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Wu: [
+          Text("午", style: firstTextStyle),
+          Text("离", style: secondTextStyle),
+          Text("日", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Wei: [
+          Text("未", style: firstTextStyle),
+          Text("坤", style: secondTextStyle),
+          Text("月", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Shen: [
+          Text("申", style: firstTextStyle),
+          Text("坤", style: secondTextStyle),
+          Text("水", style: secondTextStyle)
+        ],
+        EnumTwelveGong.You: [
+          Text("酉", style: firstTextStyle),
+          Text("兑", style: secondTextStyle),
+          Text("金", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Xu: [
+          Text("戌", style: firstTextStyle),
+          Text("乾", style: secondTextStyle),
+          Text("火", style: secondTextStyle)
+        ],
+        EnumTwelveGong.Hai: [
+          Text("亥", style: firstTextStyle),
+          Text("乾", style: secondTextStyle),
+          Text("木", style: secondTextStyle)
+        ],
+      },
     );
   }
 
@@ -859,6 +1154,33 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       "胎",
       "养"
     ];
+
+    return Transform.rotate(
+      angle: -(number * 30) * (pi / 180),
+      // angle: 0,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          ...List.generate(
+              1,
+              (i) => eachShenShaVertical(
+                  twelveZhangShengShenSha[i],
+                  4.2 * i + 2.0,
+                  basicRotatedAngle,
+                  outerSize,
+                  textStyle)).toList(growable: false),
+          ...List.generate(
+              6,
+              (i) => eachShenShaVertical(
+                  twelveZhangShengShenSha[i + 6],
+                  4.2 * i + 2.0,
+                  basicRotatedAngle,
+                  outerSize - 120,
+                  textStyle)).toList(growable: false),
+        ],
+      ),
+    );
+
     if ([0, 1, 4, 5].contains(number)) {
       return Transform.rotate(
         angle: -(number * 30) * (pi / 180),
@@ -1004,6 +1326,12 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         height: height,
         width: 32,
         padding: const EdgeInsets.symmetric(vertical: 6),
+        decoration: BoxDecoration(
+            // border: BorderSide(color: Colors.black87, width: 1),
+            // 底部 border
+            border: Border(
+          bottom: BorderSide(color: Colors.yellow, width: 1),
+        )),
         // decoration: BoxDecoration(
         // TODO: DevHelper Color
         // color: Colors.blue.withOpacity(.1)),
@@ -1012,7 +1340,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             RotatedBox(
-              quarterTurns: 0,
+              quarterTurns: 2,
               child: Container(
                   height: 56,
                   width: 24,
@@ -1040,7 +1368,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             ),
             const Expanded(child: SizedBox()),
             RotatedBox(
-              quarterTurns: 0,
+              quarterTurns: 2,
               child: Container(
                   height: 56,
                   width: 24,
@@ -1153,9 +1481,6 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     panelSizeDataModel.outerLifeStarRingTrackSize -
                     panelSizeDataModel.starBodySize) *
                 .4),
-        // decoration: BoxDecoration(
-        // color: Colors.blue.withOpacity(.1),
-        // ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -1196,10 +1521,14 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   }
 
   Widget outerStarTrackRing(List<UIStarModel> uiBasicLifeStarList) {
+    print("-------- ${uiBasicLifeStarList.length}");
+    print(
+        "---- ${uiBasicLifeStarList.map((e) => e.star.singleName).join(",")}");
     return Container(
       width: basicLifeStarRingOuterSize,
       height: basicLifeStarRingOuterSize,
       decoration: BoxDecoration(
+        // color: Colors.yellow,
         borderRadius: BorderRadius.circular(basicLifeStarRingOuterSize),
         border: Border.all(color: Colors.black87, width: 1),
       ),
@@ -1283,72 +1612,6 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         uiNorthNodeAngle: uiNorthNodeAngle,
         uiBeiNodeAngle: uiBeiNodeAngle,
         uiQiAngle: uiQiAngle);
-  }
-
-  List<Widget> buildAllBasicLifePanelStars(
-      StarsAngle starsAngle, double basicLifeStarCenterCircleSize) {
-    UIStarsAngle uiStarsAngle =
-        correctBasicLifeAngle(starsAngle, basicLifeStarCenterCircleSize);
-
-    return [
-      basicLifePanelStar(EnumStars.Sun, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Moon, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Venus, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Jupiter, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Mercury, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Mars, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Saturn, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Qi, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Bei, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Ji, uiStarsAngle),
-      basicLifePanelStar(EnumStars.Luo, uiStarsAngle),
-    ];
-  }
-
-  List<Widget> buildAllFateLifePanelStars(StarsAngle starsAngle, double size) {
-    return [
-      fateLifePanelStar(EnumStars.Sun, starsAngle, size),
-      fateLifePanelStar(EnumStars.Moon, starsAngle, size),
-      fateLifePanelStar(EnumStars.Venus, starsAngle, size),
-      fateLifePanelStar(EnumStars.Jupiter, starsAngle, size),
-      fateLifePanelStar(EnumStars.Mercury, starsAngle, size),
-      fateLifePanelStar(EnumStars.Mars, starsAngle, size),
-      fateLifePanelStar(EnumStars.Saturn, starsAngle, size),
-      fateLifePanelStar(EnumStars.Qi, starsAngle, size),
-      fateLifePanelStar(EnumStars.Bei, starsAngle, size),
-      fateLifePanelStar(EnumStars.Ji, starsAngle, size),
-      fateLifePanelStar(EnumStars.Luo, starsAngle, size),
-    ];
-  }
-
-  Widget fateLifePanelStar(EnumStars star, StarsAngle starsAngle, double size) {
-    return Consumer<QiZhengSiYuViewModel>(
-      builder: (context, viewModel, child) {
-        if (viewModel.daXianMapper != null && star.isFiveStar) {
-          return fatePanelStar(viewModel.daXianMapper![star]!, size);
-        } else {
-          return child!;
-        }
-      },
-      child: fatePanelStarDefault(star, starsAngle.getByStar(star), 64, size,
-          offsetWidthTimes: 0),
-    );
-  }
-
-  Widget basicLifePanelStar(EnumStars star, UIStarsAngle starsAngle) {
-    return lifePanelStarDefault(star, starsAngle.getUIAngleByStar(star), 64,
-        offsetWidthTimes: 0);
-
-    // return Consumer<QiZhengSiYuViewModel>(
-    //   builder: (context, viewModel, child) {
-    //     if (viewModel.basicLifePanelStarsInfo != null){
-    //       return lifePanelStar(viewModel.basicLifePanelStarsInfo!.getByStar(star),64,offsetWidthTimes:0);
-    //     }else{
-    //       return child!;
-    //     }
-    //   },
-    //   child:lifePanelStarDefault(star,starsAngle.getUIAngleByStar(star),64,offsetWidthTimes:0),
-    // );
   }
 
   Widget basicLifeStarPanelHelperCircle(double size) {
@@ -2237,6 +2500,90 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             ),
           ),
         ));
+  }
+
+  // 周天12宫
+  Widget zhouTian12GongRing(double innerSize, double outerSize) {
+    return zodicalRing(innerSize, outerSize);
+  }
+
+  Widget zodicalRing(double innerSize, double outerSize) {
+    return generateDefault12GongRing(
+        innerSize, outerSize, defaultZodiac12GongMapper);
+  }
+
+  Widget starSeqRing(double innerSize, double outerSize) {
+    return generateDefault12GongRing(
+        innerSize, outerSize, defaultStarSeq12GongMapper);
+  }
+
+  Widget buildMingLi12GongRing(double innerSize, double outerSize) {
+    return ValueListenableBuilder<BasePanelModel?>(
+        valueListenable:
+            context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+        builder: (ctx, basePanel, child) {
+          if (basePanel == null) return child!;
+          final gongStrEntry = basePanel.twelveGongMapper.entries
+              .map((en) => MapEntry(en.key, [en.value.name]));
+          final resultMapper = Map.fromEntries(gongStrEntry);
+          return generateDefault12GongRing(innerSize, outerSize, resultMapper);
+        },
+        child: generateDefault12GongRing(
+            innerSize, outerSize, defaultDestiny12GongMapper));
+  }
+
+  Map<EnumTwelveGong, List<String>> defaultStarSeq12GongMapper = {
+    EnumTwelveGong.Zi: ["玄枵"],
+    EnumTwelveGong.Chou: ["星纪"],
+    EnumTwelveGong.Yin: ["析木"],
+    EnumTwelveGong.Mao: ["大火"],
+    EnumTwelveGong.Chen: ["寿星"],
+    EnumTwelveGong.Si: ["鹑尾"],
+    EnumTwelveGong.Wu: ["鹑火"],
+    EnumTwelveGong.Wei: ["鹑首"],
+    EnumTwelveGong.Shen: ["实沈"],
+    EnumTwelveGong.You: ["大梁"],
+    EnumTwelveGong.Xu: ["降娄"],
+    EnumTwelveGong.Hai: ["娵訾"],
+  };
+
+  Map<EnumTwelveGong, List<String>> defaultZodiac12GongMapper = {
+    EnumTwelveGong.Zi: ["水瓶"],
+    EnumTwelveGong.Chou: ["摩羯"],
+    EnumTwelveGong.Yin: ["射手"],
+    EnumTwelveGong.Mao: ["天蝎"],
+    EnumTwelveGong.Chen: ["天枰"],
+    EnumTwelveGong.Si: ["处女"],
+    EnumTwelveGong.Wu: ["狮子"],
+    EnumTwelveGong.Wei: ["巨蟹"],
+    EnumTwelveGong.Shen: ["双子"],
+    EnumTwelveGong.You: ["金牛"],
+    EnumTwelveGong.Xu: ["白羊"],
+    EnumTwelveGong.Hai: ["双鱼"],
+  };
+
+  Map<EnumTwelveGong, List<String>> defaultDestiny12GongMapper = {
+    EnumTwelveGong.Zi: ["命宫"],
+    EnumTwelveGong.Chou: ["相貌"],
+    EnumTwelveGong.Yin: ["福德"],
+    EnumTwelveGong.Mao: ["官禄"],
+    EnumTwelveGong.Chen: ["迁移"],
+    EnumTwelveGong.Si: ["疾厄"],
+    EnumTwelveGong.Wu: ["夫妻"],
+    EnumTwelveGong.Wei: ["奴仆"],
+    EnumTwelveGong.Shen: ["男女"],
+    EnumTwelveGong.You: ["田宅"],
+    EnumTwelveGong.Xu: ["兄弟"],
+    EnumTwelveGong.Hai: ["财帛"],
+  };
+  Widget generateDefault12GongRing(double innerSize, double outerSize,
+      Map<EnumTwelveGong, List<String>> mapper) {
+    return Normal12GongRing(
+      outerRadius: outerSize,
+      innerRadius: innerSize,
+      baseGongOffsetAngle: 2 * 30,
+      shenShaMapper: mapper,
+    );
   }
 
   Widget draw12GongRing(

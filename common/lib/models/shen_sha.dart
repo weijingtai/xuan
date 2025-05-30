@@ -39,3 +39,4 @@ class ShenSha implements ShenShaInterface {
       _$ShenShaFromJson(json);
   Map<String, dynamic> toJson() => _$ShenShaToJson(this);
 }
+

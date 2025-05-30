@@ -26,25 +26,19 @@ Map<String, dynamic> _$BaseObserverPositionToJson(
 
 ObserverPosition _$ObserverPositionFromJson(Map<String, dynamic> json) =>
     ObserverPosition(
-      birthday: DateTime.parse(json['birthday'] as String),
+      dateTime: DateTime.parse(json['dateTime'] as String),
       latitude: (json['latitude'] as num).toDouble(),
       longitude: (json['longitude'] as num).toDouble(),
       altitude: (json['altitude'] as num).toDouble(),
       timezone: json['timezone'] as String,
-      isDayBirth: json['isDayBirth'] as bool? ?? true,
-      fateLifeDateTime: json['fateLifeDateTime'] == null
-          ? null
-          : DateTime.parse(json['fateLifeDateTime'] as String),
+      isDayBirth: json['isDayBirth'] as bool,
+      yearGanZhi: $enumDecode(_$JiaZiEnumMap, json['yearGanZhi']),
+      monthGanZhi: $enumDecode(_$JiaZiEnumMap, json['monthGanZhi']),
+      dayGanZhi: $enumDecode(_$JiaZiEnumMap, json['dayGanZhi']),
+      timeGanZhi: $enumDecode(_$JiaZiEnumMap, json['timeGanZhi']),
     )
-      ..birthdayUtcTime = DateTime.parse(json['birthdayUtcTime'] as String)
-      ..fateLifeUtcTime = json['fateLifeUtcTime'] == null
-          ? null
-          : DateTime.parse(json['fateLifeUtcTime'] as String)
-      ..fourZhuEightChar = json['fourZhuEightChar'] as String
-      ..yearGanZhi = $enumDecode(_$JiaZiEnumMap, json['yearGanZhi'])
-      ..monthGanZhi = $enumDecode(_$JiaZiEnumMap, json['monthGanZhi'])
-      ..dayGanZhi = $enumDecode(_$JiaZiEnumMap, json['dayGanZhi'])
-      ..timeGanZhi = $enumDecode(_$JiaZiEnumMap, json['timeGanZhi']);
+      ..utcDateTime = DateTime.parse(json['utcDateTime'] as String)
+      ..fourZhuEightChar = json['fourZhuEightChar'] as String;
 
 Map<String, dynamic> _$ObserverPositionToJson(ObserverPosition instance) =>
     <String, dynamic>{
@@ -52,10 +46,8 @@ Map<String, dynamic> _$ObserverPositionToJson(ObserverPosition instance) =>
       'longitude': instance.longitude,
       'altitude': instance.altitude,
       'timezone': instance.timezone,
-      'birthday': instance.birthday.toIso8601String(),
-      'fateLifeDateTime': instance.fateLifeDateTime?.toIso8601String(),
-      'birthdayUtcTime': instance.birthdayUtcTime.toIso8601String(),
-      'fateLifeUtcTime': instance.fateLifeUtcTime?.toIso8601String(),
+      'dateTime': instance.dateTime.toIso8601String(),
+      'utcDateTime': instance.utcDateTime.toIso8601String(),
       'fourZhuEightChar': instance.fourZhuEightChar,
       'yearGanZhi': _$JiaZiEnumMap[instance.yearGanZhi]!,
       'monthGanZhi': _$JiaZiEnumMap[instance.monthGanZhi]!,

@@ -6,5 +6,9 @@ enum DateTimeType {
   @JsonValue("lunar")
   lunar,
   @JsonValue("ganZhi")
-  ganZhi,
+  ganZhi;
+
+  getFromIndex(int index) {
+    return DateTimeType.values[index];
+  }
 }

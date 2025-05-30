@@ -1,5 +1,5 @@
-import 'package:common/widgets/chinese_city_picker_widget.dart';
-import 'package:common/widgets/world_country_city_picker_page.dart';
+import 'package:common/widgets/city_picker_chinese_widget.dart';
+import 'package:common/widgets/city_picker_global_widget.dart';
 import 'package:flutter/material.dart';
 
 import '../datamodel/location.dart';
@@ -125,20 +125,19 @@ class _CityPickerBottomSheetState extends State<CityPickerBottomSheet> {
           _buildHeader(),
 
           // 选择信息面板
-
           Expanded(
               child: PageView(
                   // controller: widget.scrollController,
                   controller: _pageController,
                   physics: const BouncingScrollPhysics(),
                   children: [
-                ChineseCityPickerWidget(
+                CityPickerChineseWidget(
                   initAddress: insideNation,
                   // scrollController: widget.scrollController,
                   selectedAddressNotifier: _newSelectedAddressNotifier,
                   myLocationNotifier: widget.myLocationNotifier,
                 ),
-                WorldCountryCityPickerPage(
+                CityPickerGlobalWidget(
                   newSelectedAddressNotifier: _newSelectedAddressNotifier,
                   initAddress: globalNation,
                   myLocationNotifier: widget.myLocationNotifier,

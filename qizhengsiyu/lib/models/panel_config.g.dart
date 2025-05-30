@@ -19,8 +19,8 @@ PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
           $enumDecode(_$EnumSettleLifeTypeEnumMap, json['settleLifeType']),
       settleBodyType:
           $enumDecode(_$EnumSettleBodyTypeEnumMap, json['settleBodyType']),
-      lifeGongBySunRealTimeLocation:
-          json['lifeGongBySunRealTimeLocation'] as bool,
+      islifeGongBySunRealTimeLocation:
+          json['islifeGongBySunRealTimeLocation'] as bool,
       lifeCountingToGong: $enumDecodeNullable(
               _$EnumTwelveGongEnumMap, json['lifeCountingToGong']) ??
           EnumTwelveGong.Mao,
@@ -44,7 +44,8 @@ Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
       'settleBodyType': _$EnumSettleBodyTypeEnumMap[instance.settleBodyType]!,
       'bodyCountingToGong':
           _$EnumTwelveGongEnumMap[instance.bodyCountingToGong]!,
-      'lifeGongBySunRealTimeLocation': instance.lifeGongBySunRealTimeLocation,
+      'islifeGongBySunRealTimeLocation':
+          instance.islifeGongBySunRealTimeLocation,
     };
 
 const _$CelestialCoordinateSystemEnumMap = {

@@ -146,10 +146,17 @@ class SettleLifeBodyService {
     // 获取当前太阳所在宫位
     // 以当前时辰为开始，从当前太阳所在宫顺时针数到 liMingDiZhi 停止的宫位为命宫的序号
     // 将 timeGanZhi.zhi 作为 DiZhi.listAll 第一个元素
-    List<DiZhi> lists = [
-      ...DiZhi.listAll.sublist(timeGanZhi.zhi.index - 1),
-      ...DiZhi.listAll.sublist(0, timeGanZhi.zhi.index - 1)
-    ];
+
+    // print(timeGanZhi.zhi.name);
+    // print(timeGanZhi.zhi.index);
+
+    List<DiZhi> lists = DiZhi.listAll.map((e) => e).toList();
+    if (timeGanZhi.zhi.index != 0) {
+      lists = [
+        ...DiZhi.listAll.sublist(timeGanZhi.zhi.index - 1),
+        ...DiZhi.listAll.sublist(0, timeGanZhi.zhi.index - 1)
+      ];
+    }
     final liMingIndex = lists.indexOf(countingTo.zhi);
 
     int countingTimes = lists.sublist(0, liMingIndex).length;

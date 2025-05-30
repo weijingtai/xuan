@@ -23,6 +23,13 @@ class SeekersDao extends DatabaseAccessor<AppDatabase> with _$SeekersDaoMixin {
         .getSingleOrNull();
   }
 
+  Future<List<SeekerModel>> getSeekersByDivinationUuid(String divinationUuid) {
+    return (_baseSelect()
+          ..where((t) =>
+              t.divinationUuid.equals(divinationUuid) & t.deletedAt.isNull()))
+        .get();
+  }
+
   Future<int> insertSeeker(SeekersCompanion companion) {
     return into(db.seekers).insert(companion);
   }

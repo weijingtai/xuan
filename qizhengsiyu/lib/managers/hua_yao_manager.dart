@@ -25,7 +25,7 @@ class HuaYaoManager {
   static EnumStars getKeJia(EnumTwelveGong mingGong) {
     // 命宫对宫的宫主星就为科甲
     final congFiveXing = mingGong.zhi.sixChongZhi;
-    return EnumTwelveGong.getEnumTwelveGongByZhi(congFiveXing).zheng;
+    return EnumTwelveGong.getEnumTwelveGongByZhi(congFiveXing).sevenZheng;
   }
 
   // 人元禄
@@ -125,7 +125,7 @@ class HuaYaoManager {
 
   // 马元，驿马所在宫位宫主星
   static EnumStars generateMaYuan(EnumTwelveGong yiMaGong) {
-    return yiMaGong.zheng;
+    return yiMaGong.sevenZheng;
   }
 
   // 寿元

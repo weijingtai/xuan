@@ -34,7 +34,7 @@ class PanelConfig {
   EnumTwelveGong bodyCountingToGong;
 
   /// 立命宫是否以真太阳时计算, 默认以实时太阳时计算，否则根据月令不同，确定太阳所在宫位 如：“子月在寅，丑月在丑，寅月在亥。。。。”
-  bool lifeGongBySunRealTimeLocation;
+  bool islifeGongBySunRealTimeLocation;
 
   /// UI 是否启动上升点 --- 移动至UI部分
   // bool withAscendant;
@@ -67,7 +67,7 @@ class PanelConfig {
 
     /// 身宫方式
     required this.settleBodyType,
-    required this.lifeGongBySunRealTimeLocation,
+    required this.islifeGongBySunRealTimeLocation,
     this.lifeCountingToGong = EnumTwelveGong.Mao,
     this.bodyCountingToGong = EnumTwelveGong.You,
   });
@@ -101,8 +101,8 @@ class PanelConfig {
           constellationSystemType ?? this.constellationSystemType,
       settleLifeType: settleLifeType ?? this.settleLifeType,
       settleBodyType: settleBodyType ?? this.settleBodyType,
-      lifeGongBySunRealTimeLocation:
-          lifeGongBySunRealTimeLocation ?? this.lifeGongBySunRealTimeLocation,
+      islifeGongBySunRealTimeLocation:
+          lifeGongBySunRealTimeLocation ?? this.islifeGongBySunRealTimeLocation,
     );
   }
 

@@ -150,16 +150,19 @@ class UIStarModel extends Equatable with Compare<UIStarModel>, Edge {
         }
       }
     } else {
+      // print("ok ~~~  ${other.centerAngle}  ${edges.item1} ${edges.item2}");
       if (other.centerAngle == edges.item1) {
         return const Tuple3(true, 0, null);
       }
       if (other.centerAngle == edges.item2) {
         return const Tuple3(true, null, 0);
       }
+      // print(other.centerAngle > edges.item1 && other.centerAngle < edges.item2);
       if (other.centerAngle > edges.item1 && other.centerAngle < edges.item2) {
         // 说明ball在给定range的右侧
         double leftOffsetAngle = other.centerAngle - edges.item1;
         double rightOffsetAngle = edges.item2 - other.centerAngle;
+        // print("${leftOffsetAngle} ------ ${rightOffsetAngle}");
         if (leftOffsetAngle < rightOffsetAngle) {
           return Tuple3(true, leftOffsetAngle, null);
         } else if (leftOffsetAngle > rightOffsetAngle) {

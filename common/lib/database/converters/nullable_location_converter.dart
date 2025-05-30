@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../datamodel/location.dart';
 
@@ -10,10 +11,14 @@ class NullableLocationConverter extends TypeConverter<Location?, String?> {
 
   @override
   Location? fromSql(String? fromDb) {
-    if (fromDb == null) {
-      return null;
+    try {
+      if (fromDb == null || fromDb.isEmpty) return null;
+      final jsonMap = jsonDecode(fromDb) as Map<String, dynamic>;
+      return Location.fromJson(jsonMap);
+    } catch (e, stack) {
+      debugPrint('JSON 解析失败: $e\n$stack');
+      return null; // 返回 null 或抛出特定异常
     }
-    return Location.fromJson(jsonDecode(fromDb));
   }
 
   @override
@@ -21,6 +26,7 @@ class NullableLocationConverter extends TypeConverter<Location?, String?> {
     if (value == null) {
       return null;
     }
+
     return jsonEncode(value.toJson());
   }
 }

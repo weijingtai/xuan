@@ -33,6 +33,7 @@ class StarEnterInfoCalculator {
     // 计算每个星体的进入宫位和星宿
     final result = <EnteredInfo>[];
     for (final star in starDegreeSeq) {
+      print("${star.toJson()}");
       final starInn = doFindConstellation(
         star.degree,
         adjuestedStarInnSeq,
@@ -127,10 +128,11 @@ class StarEnterInfoCalculator {
           // // print(
           //     '警告：${dynamicStart.name}宿偏移量${dynamicStart.degree}超过该宿总度数${constellation.degree}');
         } else {
-          tmpAppendToTail.add(GongDegree(
-            gong: gong.gong,
-            degree: dynamicStart.degree,
-          ));
+          // NOTE: 每宫30°时会添加一个为0°的宫位 在末尾（戌宫）所以删除
+          // tmpAppendToTail.add(GongDegree(
+          //   gong: gong.gong,
+          //   degree: dynamicStart.degree,
+          // ));
           newSequence.add(GongDegree(
             gong: gong.gong,
             degree: gong.degree - dynamicStart.degree,
@@ -180,7 +182,8 @@ class StarEnterInfoCalculator {
       }
     }
 
-    throw Exception('未找到对应的星座');
+    print("starInnSeq: ${starInnSeq.map((e) => e).toList()}");
+    throw Exception('${targetDegree} 未找到对应的星座');
   }
 
   static GongDegree doFindGong(double targetDegree, List<GongPosition> gongSeq,

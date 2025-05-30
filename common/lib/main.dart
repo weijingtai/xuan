@@ -5,6 +5,8 @@ import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as db;
 import 'package:common/enums/enum_hou_tian_gua.dart';
 import 'package:common/enums/enum_yin_yang.dart';
+import 'package:common/viewmodels/dev_enter_page_view_model.dart';
+import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -18,8 +20,6 @@ import 'package:sweph/sweph.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
-import 'chinese_style_theme.dart';
-import 'chinese_style_theme2.dart';
 import 'common_logger.dart';
 import 'line_painter_widget.dart';
 
@@ -59,7 +59,16 @@ void main() async {
           Provider<db.WorldInfoDatabase>(
             create: (ctx) => db.WorldInfoDatabase(),
             dispose: (ctx, db) => db.close(),
-          )
+          ),
+          ListenableProvider<DevEnterPageViewModel>(
+            create: (ctx) =>
+                DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
+                  ..initState(),
+          ),
+          ListenableProvider<TimezoneLocationViewModel>(
+              create: (ctx) => TimezoneLocationViewModel(
+                    appFeatureModule: AppFeatureModule.Golabel,
+                  ))
         ],
         child: const MyApp(),
       ),

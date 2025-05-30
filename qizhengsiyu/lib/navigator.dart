@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/pages/beauty_page.dart';
+import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
 import 'package:qizhengsiyu/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/pages/primary_page.dart';
 import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
@@ -16,18 +16,18 @@ class NavigatorGenerator {
   static final routes = {
     // "/qizhengsiyu": (context, {arguments}) => PrimaryPage(),
     // "/qizhengsiyu": (context, {arguments}) => BeautyPage(),
-    "/qizhengsiyu": (context, {arguments}) => MultiProvider(
-          providers: [
-            ChangeNotifierProvider<PanelConfigViewModel>(
-                create: (context) => PanelConfigViewModel(context)),
-          ],
-          child: const QiZhengSiYuConfigPage(),
-          // child: ShiJiaQiMenViewPage(),
-        ),
+    // "/qizhengsiyu": (context, {arguments}) => MultiProvider(
+    //       providers: [
+    //         ChangeNotifierProvider<PanelConfigViewModel>(
+    //             create: (context) => PanelConfigViewModel(context)),
+    //       ],
+    //       child: const QiZhengSiYuConfigPage(),
+    //       // child: ShiJiaQiMenViewPage(),
+    //     ),
     "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
           providers: [
-            ChangeNotifierProvider<QiZhengSiYuViewModel>(
-                create: (context) => QiZhengSiYuViewModel(context)),
+            ChangeNotifierProvider<BeautyPageViewModel>(
+                create: (context) => BeautyPageViewModel()..init()),
           ],
           child: const BeautyViewPage(),
           // child: ShiJiaQiMenViewPage(),

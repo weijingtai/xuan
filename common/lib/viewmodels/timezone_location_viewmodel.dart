@@ -1,11 +1,14 @@
 import 'dart:convert';
 
 import 'package:common/datamodel/location.dart';
+import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/models/sp_location_datamodel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/intl.dart';
 import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'package:tuple/tuple.dart';
 
 import '../common_logger.dart';
@@ -15,7 +18,8 @@ import '../models/sp_timezone_datamodel.dart';
 enum TimezoneType {
   defaultTimezone,
   localTimezone,
-  globalCountryTimezoneChanged;
+  globalCountryTimezoneChanged,
+  myLocationTimeZone;
 }
 
 class TimezoneLocationViewModel extends ChangeNotifier {
@@ -28,9 +32,37 @@ class TimezoneLocationViewModel extends ChangeNotifier {
       {required this.appFeatureModule, DateTime? selectedTime}) {
     selectedTimeNotifier = ValueNotifier(selectedTime);
   }
+
+  @override
+  void dispose() {
+    onDispose();
+    super.dispose();
+  }
+
+  onDispose() {
+    // dispose alll ValueNotifier
+    selectedDSTTimeNotifer.dispose();
+    selectedTimeNotifier.dispose();
+    selectedLocationNotifier.dispose();
+    defaultTimezoneNotifier.dispose();
+    isDSTNotifier.dispose();
+    locationListNotifier.dispose();
+    myLocationNotifier.dispose();
+    displayDefaultTimezoneNotifier.dispose();
+    rememberLocationNotifier.dispose();
+    myLocationIsDefaultNotifier.dispose();
+    isSeerLocationNotifier.dispose();
+    timezoneNotifier.dispose();
+    isDefaultTimezoneNotifier.dispose();
+    isAutoHandleDSTNotifier.dispose();
+    selectedLocationNotifier.dispose();
+  }
+
   set selectedDatetime(newDatetime) {
     selectedTimeNotifier.value = newDatetime;
-    checkDST();
+    if (newDatetime != null) {
+      checkDST();
+    }
     //  setNormalAndDSTSelectableCards(queryUuid);
   }
 
@@ -87,9 +119,32 @@ class TimezoneLocationViewModel extends ChangeNotifier {
   final ValueNotifier<Location?> selectedLocationNotifier = ValueNotifier(null);
 
   set timezone(String? newTimezoneStr) {
+    if (newTimezoneStr == timezoneNotifier.value) {
+      return;
+    }
+    if (newTimezoneStr == null) {
+      selectedDatetime = null;
+    }
+    if (selectedDatetime != null) {
+      // selectedDatetime!
+      final shangHaiTZTime = tz.TZDateTime(
+          tz.getLocation(timezoneNotifier.value!),
+          selectedDatetime!.year,
+          selectedDatetime!.month,
+          selectedDatetime!.day,
+          selectedDatetime!.hour,
+          selectedDatetime!.minute,
+          selectedDatetime!.second,
+          selectedDatetime!.millisecond);
+      final losAngelesTime =
+          tz.TZDateTime.from(shangHaiTZTime, tz.getLocation(newTimezoneStr!));
+
+      // final outputFormat = DateFormat('yyyy-MM-dd HH:mm:ss zzz');
+      // print(losAngelesTime.toDateTime());
+      selectedDatetime = losAngelesTime.toDateTime();
+    }
     timezoneNotifier.value = newTimezoneStr;
     checkDST();
-    // setNormalAndDSTSelectableCards(queryUuid);
   }
 
   load() async {
@@ -104,18 +159,19 @@ class TimezoneLocationViewModel extends ChangeNotifier {
     myLocationDataModel =
         result[2] != null ? result[2] as SPMyLocationDataModel? : null;
 
-    print(
-        "${myLocationNotifier.value?.address != null} ${(_timezoneDataModel?.timezoneStr != null)} ${(_timezoneDataModel?.isDefaultTimezone ?? false)}");
+    // print(
+    // "${myLocationNotifier.value?.address != null} ${(_timezoneDataModel?.timezoneStr != null)} ${(_timezoneDataModel?.isDefaultTimezone ?? false)}");
     if (myLocationNotifier.value?.address != null &&
         (_timezoneDataModel?.timezoneStr != null) &&
         (_timezoneDataModel?.isDefaultTimezone ?? false)) {
-      print(
-          "${_timezoneDataModel!.timezoneStr} ${myLocationNotifier.value!.address!.timezone}");
+      // print(
+      // "${_timezoneDataModel!.timezoneStr} ${myLocationNotifier.value!.address!.timezone}");
       if (_timezoneDataModel!.timezoneStr !=
           myLocationNotifier.value!.address!.timezone) {
         displayDefaultTimezoneNotifier.value = Tuple2(
-            TimezoneType.defaultTimezone, _timezoneDataModel!.timezoneStr!);
-        timezone = myLocationNotifier.value!.address!.timezone;
+            TimezoneType.myLocationTimeZone,
+            myLocationNotifier.value!.address!.timezone);
+        // timezone = myLocationNotifier.value!.address!.timezone;
       } else {
         displayDefaultTimezoneNotifier.value = null;
       }
@@ -184,6 +240,9 @@ class TimezoneLocationViewModel extends ChangeNotifier {
         toSaved = null;
       } else {
         Location? previousLocation = _myLocationDataModel?.location;
+
+        // print(
+        // "${previousLocation?.toJson()} ----------- ${previousLocation?.address.toJson()}");
         if (previousLocation != null && previousLocation.address != null) {
           Address previousAddress = previousLocation.address!;
           Address newLocationAddress = newLocation.address!;
@@ -198,6 +257,11 @@ class TimezoneLocationViewModel extends ChangeNotifier {
               l.d("新选择的我的位置与已存储的“我的位置”相同，本次调用不进行存储");
               return;
             }
+          } else {
+            toSaved = SPMyLocationDataModel(
+                appFeatureModule: appFeatureModule,
+                location: newLocation,
+                isDefault: false);
           }
         } else {
           l.d("本地有已经存储的“我的位置”，进行更新");
@@ -267,8 +331,8 @@ class TimezoneLocationViewModel extends ChangeNotifier {
         if ((_timezoneDataModel!.isDefaultTimezone ?? false) &&
             _timezoneDataModel!.timezoneStr != newValue) {
           // 当与默认时区不一致时，将默认时区显示
-          displayDefaultTimezoneNotifier.value =
-              Tuple2(TimezoneType.defaultTimezone, timezoneNotifier.value!);
+          displayDefaultTimezoneNotifier.value = Tuple2(
+              TimezoneType.defaultTimezone, _timezoneDataModel!.timezoneStr!);
         } else {
           displayDefaultTimezoneNotifier.value = null;
         }
@@ -282,7 +346,17 @@ class TimezoneLocationViewModel extends ChangeNotifier {
       }
     }
 
-    timezoneNotifier.value = newValue;
+    if (newValue != null && isSeerLocationNotifier.value) {
+      // 检查“我的位置”当前是否被勾选, 如果有需要比对两个时区是否一致
+      if (myLocationNotifier.value!.address!.timezone != newValue) {
+        // 需要提醒用户时区不一致
+        displayDefaultTimezoneNotifier.value = Tuple2(
+            TimezoneType.myLocationTimeZone,
+            myLocationNotifier.value!.address!.timezone!);
+      }
+    }
+
+    timezone = newValue;
   }
 
   void onIsDefaultTimezoneChanged(bool? newValue) async {
@@ -339,6 +413,14 @@ class TimezoneLocationViewModel extends ChangeNotifier {
       selectedLocationNotifier.value = null;
     }
     isSeerLocationNotifier.value = isSeerLocation;
+    // 如果我的位置与当前选择的位置不同时 提示用户修改
+    if (isSeerLocation &&
+        timezone != null &&
+        timezone != myLocationNotifier.value!.address!.timezone) {
+      displayDefaultTimezoneNotifier.value = Tuple2(
+          TimezoneType.myLocationTimeZone,
+          myLocationNotifier.value!.address!.timezone!);
+    }
   }
 
   void selectLocation(Location newLocation) {
@@ -472,7 +554,6 @@ class TimezoneLocationViewModel extends ChangeNotifier {
   // 检查给定时间以及时区是否为夏令时时间
   // 如果是夏令时，将_isDSTNotifier.value 设置为 true
   void checkDST() {
-    // print("------ ${selectedDatetime} -------- ${timezone}");
     if (selectedDatetime != null && timezone != null) {
       /// 是否为夏令时
       final isDST =
@@ -492,7 +573,7 @@ class TimezoneLocationViewModel extends ChangeNotifier {
         selectedDatetime!.subtract(const Duration(hours: 1));
   }
 
-  void updateDatetime(DateTime newDatetime) {
+  void updateDatetime(DateTime? newDatetime) {
     selectedDatetime = newDatetime;
   }
 

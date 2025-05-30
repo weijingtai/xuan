@@ -172,8 +172,6 @@ class ShenShaManager {
     final countingGongSeq = CollectUtils.changeSeq(
         startCountingGong, EnumTwelveGong.listAll.reversed.toList());
     final countingNnumber = countingGongSeq.indexOf(stopCountingGong);
-    // print(countingGongSeq.map((e) => e.zhi.name).toList());
-    // print(stopCountingGong);
 
     final countinTianGanSeq =
         CollectUtils.changeSeq(tianGanFrom, TianGan.listAll);

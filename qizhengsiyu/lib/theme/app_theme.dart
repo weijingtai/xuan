@@ -131,8 +131,8 @@ class AppTheme {
           ),
         ),
       ),
-      cardTheme: CardTheme(
-        color: cardBackground,
+      cardTheme: CardThemeData(
+        color: const Color.fromARGB(255, 28, 24, 24),
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(borderRadius),
@@ -140,7 +140,7 @@ class AppTheme {
         ),
         margin: const EdgeInsets.all(spacing8),
       ),
-      tabBarTheme: const TabBarTheme(
+      tabBarTheme: const TabBarThemeData(
         labelColor: primaryColor,
         unselectedLabelColor: secondaryText,
         indicatorColor: primaryColor,

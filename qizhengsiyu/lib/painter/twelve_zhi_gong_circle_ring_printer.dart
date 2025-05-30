@@ -139,7 +139,7 @@ class TwelveZhiGongCircleRingPrinter extends CustomPainter {
       // var lastChar = textList![i][textListLength! - 1];
       // debugPrint("lastChar: $lastChar");
       if (withBackgroundColor) {
-        paint.color = starColorMapper[gong.zheng]!;
+        paint.color = starColorMapper[gong.sevenZheng]!;
       }
 
       canvas.drawPath(path, paint);

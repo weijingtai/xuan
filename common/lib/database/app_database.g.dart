@@ -888,7 +888,7 @@ class SkillClassesCompanion extends UpdateCompanion<SkillClass> {
 }
 
 class $DivinationTypesTable extends DivinationTypes
-    with TableInfo<$DivinationTypesTable, DivinationType> {
+    with TableInfo<$DivinationTypesTable, DivinationTypeDataModel> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -966,7 +966,8 @@ class $DivinationTypesTable extends DivinationTypes
   String get actualTableName => $name;
   static const String $name = 't_divination_types';
   @override
-  VerificationContext validateIntegrity(Insertable<DivinationType> instance,
+  VerificationContext validateIntegrity(
+      Insertable<DivinationTypeDataModel> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1030,9 +1031,10 @@ class $DivinationTypesTable extends DivinationTypes
   @override
   Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
-  DivinationType map(Map<String, dynamic> data, {String? tablePrefix}) {
+  DivinationTypeDataModel map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return DivinationType(
+    return DivinationTypeDataModel(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       createdAt: attachedDatabase.typeMapping
@@ -1058,155 +1060,8 @@ class $DivinationTypesTable extends DivinationTypes
   }
 }
 
-class DivinationType extends DataClass implements Insertable<DivinationType> {
-  final String uuid;
-  final DateTime createdAt;
-  final DateTime lastUpdatedAt;
-  final DateTime? deletedAt;
-  final String name;
-  final String description;
-  final bool isCustomized;
-  final bool isAvailable;
-  const DivinationType(
-      {required this.uuid,
-      required this.createdAt,
-      required this.lastUpdatedAt,
-      this.deletedAt,
-      required this.name,
-      required this.description,
-      required this.isCustomized,
-      required this.isAvailable});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    map['name'] = Variable<String>(name);
-    map['description'] = Variable<String>(description);
-    map['is_customized'] = Variable<bool>(isCustomized);
-    map['is_available'] = Variable<bool>(isAvailable);
-    return map;
-  }
-
-  DivinationTypesCompanion toCompanion(bool nullToAbsent) {
-    return DivinationTypesCompanion(
-      uuid: Value(uuid),
-      createdAt: Value(createdAt),
-      lastUpdatedAt: Value(lastUpdatedAt),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-      name: Value(name),
-      description: Value(description),
-      isCustomized: Value(isCustomized),
-      isAvailable: Value(isAvailable),
-    );
-  }
-
-  factory DivinationType.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return DivinationType(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-      name: serializer.fromJson<String>(json['name']),
-      description: serializer.fromJson<String>(json['description']),
-      isCustomized: serializer.fromJson<bool>(json['isCustomized']),
-      isAvailable: serializer.fromJson<bool>(json['isAvailable']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-      'name': serializer.toJson<String>(name),
-      'description': serializer.toJson<String>(description),
-      'isCustomized': serializer.toJson<bool>(isCustomized),
-      'isAvailable': serializer.toJson<bool>(isAvailable),
-    };
-  }
-
-  DivinationType copyWith(
-          {String? uuid,
-          DateTime? createdAt,
-          DateTime? lastUpdatedAt,
-          Value<DateTime?> deletedAt = const Value.absent(),
-          String? name,
-          String? description,
-          bool? isCustomized,
-          bool? isAvailable}) =>
-      DivinationType(
-        uuid: uuid ?? this.uuid,
-        createdAt: createdAt ?? this.createdAt,
-        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
-        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        name: name ?? this.name,
-        description: description ?? this.description,
-        isCustomized: isCustomized ?? this.isCustomized,
-        isAvailable: isAvailable ?? this.isAvailable,
-      );
-  DivinationType copyWithCompanion(DivinationTypesCompanion data) {
-    return DivinationType(
-      uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      lastUpdatedAt: data.lastUpdatedAt.present
-          ? data.lastUpdatedAt.value
-          : this.lastUpdatedAt,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      name: data.name.present ? data.name.value : this.name,
-      description:
-          data.description.present ? data.description.value : this.description,
-      isCustomized: data.isCustomized.present
-          ? data.isCustomized.value
-          : this.isCustomized,
-      isAvailable:
-          data.isAvailable.present ? data.isAvailable.value : this.isAvailable,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('DivinationType(')
-          ..write('uuid: $uuid, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('lastUpdatedAt: $lastUpdatedAt, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('name: $name, ')
-          ..write('description: $description, ')
-          ..write('isCustomized: $isCustomized, ')
-          ..write('isAvailable: $isAvailable')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, createdAt, lastUpdatedAt, deletedAt,
-      name, description, isCustomized, isAvailable);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is DivinationType &&
-          other.uuid == this.uuid &&
-          other.createdAt == this.createdAt &&
-          other.lastUpdatedAt == this.lastUpdatedAt &&
-          other.deletedAt == this.deletedAt &&
-          other.name == this.name &&
-          other.description == this.description &&
-          other.isCustomized == this.isCustomized &&
-          other.isAvailable == this.isAvailable);
-}
-
-class DivinationTypesCompanion extends UpdateCompanion<DivinationType> {
+class DivinationTypesCompanion
+    extends UpdateCompanion<DivinationTypeDataModel> {
   final Value<String> uuid;
   final Value<DateTime> createdAt;
   final Value<DateTime> lastUpdatedAt;
@@ -1244,7 +1099,7 @@ class DivinationTypesCompanion extends UpdateCompanion<DivinationType> {
         description = Value(description),
         isCustomized = Value(isCustomized),
         isAvailable = Value(isAvailable);
-  static Insertable<DivinationType> custom({
+  static Insertable<DivinationTypeDataModel> custom({
     Expression<String>? uuid,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUpdatedAt,
@@ -1395,12 +1250,12 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
       GeneratedColumn<int>('timing_type', aliasedName, false,
               type: DriftSqlType.int, requiredDuringInsert: true)
           .withConverter<DateTimeType>($SeekersTable.$convertertimingType);
-  static const VerificationMeta _birthDatetimeMeta =
-      const VerificationMeta('birthDatetime');
+  static const VerificationMeta _datetimeMeta =
+      const VerificationMeta('datetime');
   @override
-  late final GeneratedColumn<DateTime> birthDatetime =
-      GeneratedColumn<DateTime>('birth_datetime', aliasedName, false,
-          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  late final GeneratedColumn<DateTime> datetime = GeneratedColumn<DateTime>(
+      'datetime', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
   @override
   late final GeneratedColumnWithTypeConverter<JiaZi, int> yearGanZhi =
       GeneratedColumn<int>('year_gan_zhi', aliasedName, false,
@@ -1443,12 +1298,18 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
   late final GeneratedColumn<int> lunarDay = GeneratedColumn<int>(
       'lunar_day', aliasedName, false,
       type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _divinationUuidMeta =
+      const VerificationMeta('divinationUuid');
+  @override
+  late final GeneratedColumn<String> divinationUuid = GeneratedColumn<String>(
+      'divination_uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
   static const VerificationMeta _timingInfoUuidMeta =
       const VerificationMeta('timingInfoUuid');
   @override
   late final GeneratedColumn<String> timingInfoUuid = GeneratedColumn<String>(
-      'timing_info_uuid', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+      'timing_info_uuid', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   late final GeneratedColumnWithTypeConverter<List<DivinationDatetimeModel>?,
       String> timingInfoListJson = GeneratedColumn<String>(
@@ -1457,10 +1318,10 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
       .withConverter<List<DivinationDatetimeModel>?>(
           $SeekersTable.$convertertimingInfoListJsonn);
   @override
-  late final GeneratedColumnWithTypeConverter<Location?, String> birthLoction =
-      GeneratedColumn<String>('brith_location_json', aliasedName, true,
+  late final GeneratedColumnWithTypeConverter<Location?, String> location =
+      GeneratedColumn<String>('location_json', aliasedName, true,
               type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<Location?>($SeekersTable.$converterbirthLoction);
+          .withConverter<Location?>($SeekersTable.$converterlocation);
   @override
   List<GeneratedColumn> get $columns => [
         uuid,
@@ -1471,7 +1332,7 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
         lastUpdatedAt,
         deletedAt,
         timingType,
-        birthDatetime,
+        datetime,
         yearGanZhi,
         monthGanZhi,
         dayGanZhi,
@@ -1479,9 +1340,10 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
         lunarMonth,
         isLeapMonth,
         lunarDay,
+        divinationUuid,
         timingInfoUuid,
         timingInfoListJson,
-        birthLoction
+        location
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1523,13 +1385,11 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
       context.handle(_deletedAtMeta,
           deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
     }
-    if (data.containsKey('birth_datetime')) {
-      context.handle(
-          _birthDatetimeMeta,
-          birthDatetime.isAcceptableOrUnknown(
-              data['birth_datetime']!, _birthDatetimeMeta));
+    if (data.containsKey('datetime')) {
+      context.handle(_datetimeMeta,
+          datetime.isAcceptableOrUnknown(data['datetime']!, _datetimeMeta));
     } else if (isInserting) {
-      context.missing(_birthDatetimeMeta);
+      context.missing(_datetimeMeta);
     }
     if (data.containsKey('lunar_month')) {
       context.handle(
@@ -1551,13 +1411,19 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
     } else if (isInserting) {
       context.missing(_lunarDayMeta);
     }
+    if (data.containsKey('divination_uuid')) {
+      context.handle(
+          _divinationUuidMeta,
+          divinationUuid.isAcceptableOrUnknown(
+              data['divination_uuid']!, _divinationUuidMeta));
+    } else if (isInserting) {
+      context.missing(_divinationUuidMeta);
+    }
     if (data.containsKey('timing_info_uuid')) {
       context.handle(
           _timingInfoUuidMeta,
           timingInfoUuid.isAcceptableOrUnknown(
               data['timing_info_uuid']!, _timingInfoUuidMeta));
-    } else if (isInserting) {
-      context.missing(_timingInfoUuidMeta);
     }
     return context;
   }
@@ -1570,24 +1436,22 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
     return SeekerModel(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
-      username: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}username']),
-      nickname: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}nickname']),
-      gender: $SeekersTable.$convertergender.fromSql(attachedDatabase
-          .typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}gender'])!),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       lastUpdatedAt: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at']),
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      location: $SeekersTable.$converterlocation.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}location_json'])),
+      divinationUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}divination_uuid'])!,
       timingType: $SeekersTable.$convertertimingType.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}timing_type'])!),
-      birthDatetime: attachedDatabase.typeMapping.read(
-          DriftSqlType.dateTime, data['${effectivePrefix}birth_datetime'])!,
+      datetime: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}datetime'])!,
       yearGanZhi: $SeekersTable.$converteryearGanZhi.fromSql(attachedDatabase
           .typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}year_gan_zhi'])!),
@@ -1607,7 +1471,17 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
       lunarDay: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}lunar_day'])!,
       timingInfoUuid: attachedDatabase.typeMapping.read(
-          DriftSqlType.string, data['${effectivePrefix}timing_info_uuid'])!,
+          DriftSqlType.string, data['${effectivePrefix}timing_info_uuid']),
+      timingInfoListJson: $SeekersTable.$convertertimingInfoListJsonn.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}info_list_json'])),
+      username: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}username']),
+      nickname: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}nickname']),
+      gender: $SeekersTable.$convertergender.fromSql(attachedDatabase
+          .typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}gender'])!),
     );
   }
 
@@ -1633,7 +1507,7 @@ class $SeekersTable extends Seekers with TableInfo<$SeekersTable, SeekerModel> {
   static TypeConverter<List<DivinationDatetimeModel>?, String?>
       $convertertimingInfoListJsonn =
       NullAwareTypeConverter.wrap($convertertimingInfoListJson);
-  static TypeConverter<Location?, String?> $converterbirthLoction =
+  static TypeConverter<Location?, String?> $converterlocation =
       const NullableLocationConverter();
 }
 
@@ -1646,7 +1520,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
   final Value<DateTime?> lastUpdatedAt;
   final Value<DateTime?> deletedAt;
   final Value<DateTimeType> timingType;
-  final Value<DateTime> birthDatetime;
+  final Value<DateTime> datetime;
   final Value<JiaZi> yearGanZhi;
   final Value<JiaZi> monthGanZhi;
   final Value<JiaZi> dayGanZhi;
@@ -1654,9 +1528,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
   final Value<int> lunarMonth;
   final Value<bool> isLeapMonth;
   final Value<int> lunarDay;
-  final Value<String> timingInfoUuid;
+  final Value<String> divinationUuid;
+  final Value<String?> timingInfoUuid;
   final Value<List<DivinationDatetimeModel>?> timingInfoListJson;
-  final Value<Location?> birthLoction;
+  final Value<Location?> location;
   final Value<int> rowid;
   const SeekersCompanion({
     this.uuid = const Value.absent(),
@@ -1667,7 +1542,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     this.lastUpdatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.timingType = const Value.absent(),
-    this.birthDatetime = const Value.absent(),
+    this.datetime = const Value.absent(),
     this.yearGanZhi = const Value.absent(),
     this.monthGanZhi = const Value.absent(),
     this.dayGanZhi = const Value.absent(),
@@ -1675,9 +1550,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     this.lunarMonth = const Value.absent(),
     this.isLeapMonth = const Value.absent(),
     this.lunarDay = const Value.absent(),
+    this.divinationUuid = const Value.absent(),
     this.timingInfoUuid = const Value.absent(),
     this.timingInfoListJson = const Value.absent(),
-    this.birthLoction = const Value.absent(),
+    this.location = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   SeekersCompanion.insert({
@@ -1689,7 +1565,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     this.lastUpdatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     required DateTimeType timingType,
-    required DateTime birthDatetime,
+    required DateTime datetime,
     required JiaZi yearGanZhi,
     required JiaZi monthGanZhi,
     required JiaZi dayGanZhi,
@@ -1697,22 +1573,23 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     required int lunarMonth,
     this.isLeapMonth = const Value.absent(),
     required int lunarDay,
-    required String timingInfoUuid,
+    required String divinationUuid,
+    this.timingInfoUuid = const Value.absent(),
     this.timingInfoListJson = const Value.absent(),
-    this.birthLoction = const Value.absent(),
+    this.location = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
         gender = Value(gender),
         createdAt = Value(createdAt),
         timingType = Value(timingType),
-        birthDatetime = Value(birthDatetime),
+        datetime = Value(datetime),
         yearGanZhi = Value(yearGanZhi),
         monthGanZhi = Value(monthGanZhi),
         dayGanZhi = Value(dayGanZhi),
         timeGanZhi = Value(timeGanZhi),
         lunarMonth = Value(lunarMonth),
         lunarDay = Value(lunarDay),
-        timingInfoUuid = Value(timingInfoUuid);
+        divinationUuid = Value(divinationUuid);
   static Insertable<SeekerModel> custom({
     Expression<String>? uuid,
     Expression<String>? username,
@@ -1722,7 +1599,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     Expression<DateTime>? lastUpdatedAt,
     Expression<DateTime>? deletedAt,
     Expression<int>? timingType,
-    Expression<DateTime>? birthDatetime,
+    Expression<DateTime>? datetime,
     Expression<int>? yearGanZhi,
     Expression<int>? monthGanZhi,
     Expression<int>? dayGanZhi,
@@ -1730,9 +1607,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     Expression<int>? lunarMonth,
     Expression<bool>? isLeapMonth,
     Expression<int>? lunarDay,
+    Expression<String>? divinationUuid,
     Expression<String>? timingInfoUuid,
     Expression<String>? timingInfoListJson,
-    Expression<String>? birthLoction,
+    Expression<String>? location,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1744,7 +1622,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (timingType != null) 'timing_type': timingType,
-      if (birthDatetime != null) 'birth_datetime': birthDatetime,
+      if (datetime != null) 'datetime': datetime,
       if (yearGanZhi != null) 'year_gan_zhi': yearGanZhi,
       if (monthGanZhi != null) 'month_gan_zhi': monthGanZhi,
       if (dayGanZhi != null) 'day_gan_zhi': dayGanZhi,
@@ -1752,9 +1630,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       if (lunarMonth != null) 'lunar_month': lunarMonth,
       if (isLeapMonth != null) 'is_leap_month': isLeapMonth,
       if (lunarDay != null) 'lunar_day': lunarDay,
+      if (divinationUuid != null) 'divination_uuid': divinationUuid,
       if (timingInfoUuid != null) 'timing_info_uuid': timingInfoUuid,
       if (timingInfoListJson != null) 'info_list_json': timingInfoListJson,
-      if (birthLoction != null) 'brith_location_json': birthLoction,
+      if (location != null) 'location_json': location,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1768,7 +1647,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       Value<DateTime?>? lastUpdatedAt,
       Value<DateTime?>? deletedAt,
       Value<DateTimeType>? timingType,
-      Value<DateTime>? birthDatetime,
+      Value<DateTime>? datetime,
       Value<JiaZi>? yearGanZhi,
       Value<JiaZi>? monthGanZhi,
       Value<JiaZi>? dayGanZhi,
@@ -1776,9 +1655,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       Value<int>? lunarMonth,
       Value<bool>? isLeapMonth,
       Value<int>? lunarDay,
-      Value<String>? timingInfoUuid,
+      Value<String>? divinationUuid,
+      Value<String?>? timingInfoUuid,
       Value<List<DivinationDatetimeModel>?>? timingInfoListJson,
-      Value<Location?>? birthLoction,
+      Value<Location?>? location,
       Value<int>? rowid}) {
     return SeekersCompanion(
       uuid: uuid ?? this.uuid,
@@ -1789,7 +1669,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       timingType: timingType ?? this.timingType,
-      birthDatetime: birthDatetime ?? this.birthDatetime,
+      datetime: datetime ?? this.datetime,
       yearGanZhi: yearGanZhi ?? this.yearGanZhi,
       monthGanZhi: monthGanZhi ?? this.monthGanZhi,
       dayGanZhi: dayGanZhi ?? this.dayGanZhi,
@@ -1797,9 +1677,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       lunarMonth: lunarMonth ?? this.lunarMonth,
       isLeapMonth: isLeapMonth ?? this.isLeapMonth,
       lunarDay: lunarDay ?? this.lunarDay,
+      divinationUuid: divinationUuid ?? this.divinationUuid,
       timingInfoUuid: timingInfoUuid ?? this.timingInfoUuid,
       timingInfoListJson: timingInfoListJson ?? this.timingInfoListJson,
-      birthLoction: birthLoction ?? this.birthLoction,
+      location: location ?? this.location,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1833,8 +1714,8 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
       map['timing_type'] = Variable<int>(
           $SeekersTable.$convertertimingType.toSql(timingType.value));
     }
-    if (birthDatetime.present) {
-      map['birth_datetime'] = Variable<DateTime>(birthDatetime.value);
+    if (datetime.present) {
+      map['datetime'] = Variable<DateTime>(datetime.value);
     }
     if (yearGanZhi.present) {
       map['year_gan_zhi'] = Variable<int>(
@@ -1861,6 +1742,9 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
     if (lunarDay.present) {
       map['lunar_day'] = Variable<int>(lunarDay.value);
     }
+    if (divinationUuid.present) {
+      map['divination_uuid'] = Variable<String>(divinationUuid.value);
+    }
     if (timingInfoUuid.present) {
       map['timing_info_uuid'] = Variable<String>(timingInfoUuid.value);
     }
@@ -1869,9 +1753,9 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
           .$convertertimingInfoListJsonn
           .toSql(timingInfoListJson.value));
     }
-    if (birthLoction.present) {
-      map['brith_location_json'] = Variable<String>(
-          $SeekersTable.$converterbirthLoction.toSql(birthLoction.value));
+    if (location.present) {
+      map['location_json'] = Variable<String>(
+          $SeekersTable.$converterlocation.toSql(location.value));
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1890,7 +1774,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
           ..write('lastUpdatedAt: $lastUpdatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('timingType: $timingType, ')
-          ..write('birthDatetime: $birthDatetime, ')
+          ..write('datetime: $datetime, ')
           ..write('yearGanZhi: $yearGanZhi, ')
           ..write('monthGanZhi: $monthGanZhi, ')
           ..write('dayGanZhi: $dayGanZhi, ')
@@ -1898,9 +1782,10 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
           ..write('lunarMonth: $lunarMonth, ')
           ..write('isLeapMonth: $isLeapMonth, ')
           ..write('lunarDay: $lunarDay, ')
+          ..write('divinationUuid: $divinationUuid, ')
           ..write('timingInfoUuid: $timingInfoUuid, ')
           ..write('timingInfoListJson: $timingInfoListJson, ')
-          ..write('birthLoction: $birthLoction, ')
+          ..write('location: $location, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1908,7 +1793,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
 }
 
 class $DivinationsTable extends Divinations
-    with TableInfo<$DivinationsTable, Divination> {
+    with TableInfo<$DivinationsTable, DivinationDataModel> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1955,17 +1840,16 @@ class $DivinationsTable extends Divinations
   late final GeneratedColumn<String> fateYear = GeneratedColumn<String>(
       'fate_year', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _queryQuestionMeta =
-      const VerificationMeta('queryQuestion');
+  static const VerificationMeta _questionMeta =
+      const VerificationMeta('question');
   @override
-  late final GeneratedColumn<String> queryQuestion = GeneratedColumn<String>(
-      'query_question', aliasedName, true,
+  late final GeneratedColumn<String> question = GeneratedColumn<String>(
+      'question', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _queryDetailMeta =
-      const VerificationMeta('queryDetail');
+  static const VerificationMeta _detailMeta = const VerificationMeta('detail');
   @override
-  late final GeneratedColumn<String> queryDetail = GeneratedColumn<String>(
-      'query_detail', aliasedName, true,
+  late final GeneratedColumn<String> detail = GeneratedColumn<String>(
+      'detail', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _ownerSeekerUuidMeta =
       const VerificationMeta('ownerSeekerUuid');
@@ -2007,8 +1891,8 @@ class $DivinationsTable extends Divinations
         deletedAt,
         divinationTypeUuid,
         fateYear,
-        queryQuestion,
-        queryDetail,
+        question,
+        detail,
         ownerSeekerUuid,
         gender,
         seekerName,
@@ -2021,7 +1905,8 @@ class $DivinationsTable extends Divinations
   String get actualTableName => $name;
   static const String $name = 't_divinations';
   @override
-  VerificationContext validateIntegrity(Insertable<Divination> instance,
+  VerificationContext validateIntegrity(
+      Insertable<DivinationDataModel> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -2061,17 +1946,13 @@ class $DivinationsTable extends Divinations
       context.handle(_fateYearMeta,
           fateYear.isAcceptableOrUnknown(data['fate_year']!, _fateYearMeta));
     }
-    if (data.containsKey('query_question')) {
-      context.handle(
-          _queryQuestionMeta,
-          queryQuestion.isAcceptableOrUnknown(
-              data['query_question']!, _queryQuestionMeta));
+    if (data.containsKey('question')) {
+      context.handle(_questionMeta,
+          question.isAcceptableOrUnknown(data['question']!, _questionMeta));
     }
-    if (data.containsKey('query_detail')) {
-      context.handle(
-          _queryDetailMeta,
-          queryDetail.isAcceptableOrUnknown(
-              data['query_detail']!, _queryDetailMeta));
+    if (data.containsKey('detail')) {
+      context.handle(_detailMeta,
+          detail.isAcceptableOrUnknown(data['detail']!, _detailMeta));
     }
     if (data.containsKey('seeker_uuid')) {
       context.handle(
@@ -2103,9 +1984,9 @@ class $DivinationsTable extends Divinations
   @override
   Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
-  Divination map(Map<String, dynamic> data, {String? tablePrefix}) {
+  DivinationDataModel map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Divination(
+    return DivinationDataModel(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       createdAt: attachedDatabase.typeMapping
@@ -2118,10 +1999,10 @@ class $DivinationsTable extends Divinations
           DriftSqlType.string, data['${effectivePrefix}divination_type_uuid'])!,
       fateYear: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}fate_year']),
-      queryQuestion: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}query_question']),
-      queryDetail: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}query_detail']),
+      question: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}question']),
+      detail: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}detail']),
       ownerSeekerUuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}seeker_uuid']),
       gender: $DivinationsTable.$convertergendern.fromSql(attachedDatabase
@@ -2147,277 +2028,15 @@ class $DivinationsTable extends Divinations
       JsonTypeConverter2.asNullable($convertergender);
 }
 
-class Divination extends DataClass implements Insertable<Divination> {
-  final String uuid;
-  final DateTime createdAt;
-  final DateTime lastUpdatedAt;
-  final DateTime? deletedAt;
-  final String divinationTypeUuid;
-  final String? fateYear;
-  final String? queryQuestion;
-  final String? queryDetail;
-  final String? ownerSeekerUuid;
-  final Gender? gender;
-  final String? seekerName;
-  final String? tinyPredict;
-  final String? directlyPredict;
-  const Divination(
-      {required this.uuid,
-      required this.createdAt,
-      required this.lastUpdatedAt,
-      this.deletedAt,
-      required this.divinationTypeUuid,
-      this.fateYear,
-      this.queryQuestion,
-      this.queryDetail,
-      this.ownerSeekerUuid,
-      this.gender,
-      this.seekerName,
-      this.tinyPredict,
-      this.directlyPredict});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['created_at'] = Variable<DateTime>(createdAt);
-    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    map['divination_type_uuid'] = Variable<String>(divinationTypeUuid);
-    if (!nullToAbsent || fateYear != null) {
-      map['fate_year'] = Variable<String>(fateYear);
-    }
-    if (!nullToAbsent || queryQuestion != null) {
-      map['query_question'] = Variable<String>(queryQuestion);
-    }
-    if (!nullToAbsent || queryDetail != null) {
-      map['query_detail'] = Variable<String>(queryDetail);
-    }
-    if (!nullToAbsent || ownerSeekerUuid != null) {
-      map['seeker_uuid'] = Variable<String>(ownerSeekerUuid);
-    }
-    if (!nullToAbsent || gender != null) {
-      map['gender'] =
-          Variable<String>($DivinationsTable.$convertergendern.toSql(gender));
-    }
-    if (!nullToAbsent || seekerName != null) {
-      map['seeker_name'] = Variable<String>(seekerName);
-    }
-    if (!nullToAbsent || tinyPredict != null) {
-      map['tiny_predict'] = Variable<String>(tinyPredict);
-    }
-    if (!nullToAbsent || directlyPredict != null) {
-      map['directly_predict'] = Variable<String>(directlyPredict);
-    }
-    return map;
-  }
-
-  DivinationsCompanion toCompanion(bool nullToAbsent) {
-    return DivinationsCompanion(
-      uuid: Value(uuid),
-      createdAt: Value(createdAt),
-      lastUpdatedAt: Value(lastUpdatedAt),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-      divinationTypeUuid: Value(divinationTypeUuid),
-      fateYear: fateYear == null && nullToAbsent
-          ? const Value.absent()
-          : Value(fateYear),
-      queryQuestion: queryQuestion == null && nullToAbsent
-          ? const Value.absent()
-          : Value(queryQuestion),
-      queryDetail: queryDetail == null && nullToAbsent
-          ? const Value.absent()
-          : Value(queryDetail),
-      ownerSeekerUuid: ownerSeekerUuid == null && nullToAbsent
-          ? const Value.absent()
-          : Value(ownerSeekerUuid),
-      gender:
-          gender == null && nullToAbsent ? const Value.absent() : Value(gender),
-      seekerName: seekerName == null && nullToAbsent
-          ? const Value.absent()
-          : Value(seekerName),
-      tinyPredict: tinyPredict == null && nullToAbsent
-          ? const Value.absent()
-          : Value(tinyPredict),
-      directlyPredict: directlyPredict == null && nullToAbsent
-          ? const Value.absent()
-          : Value(directlyPredict),
-    );
-  }
-
-  factory Divination.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Divination(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-      divinationTypeUuid:
-          serializer.fromJson<String>(json['divinationTypeUuid']),
-      fateYear: serializer.fromJson<String?>(json['fateYear']),
-      queryQuestion: serializer.fromJson<String?>(json['queryQuestion']),
-      queryDetail: serializer.fromJson<String?>(json['queryDetail']),
-      ownerSeekerUuid: serializer.fromJson<String?>(json['ownerSeekerUuid']),
-      gender: $DivinationsTable.$convertergendern
-          .fromJson(serializer.fromJson<String?>(json['gender'])),
-      seekerName: serializer.fromJson<String?>(json['seekerName']),
-      tinyPredict: serializer.fromJson<String?>(json['tinyPredict']),
-      directlyPredict: serializer.fromJson<String?>(json['directlyPredict']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-      'divinationTypeUuid': serializer.toJson<String>(divinationTypeUuid),
-      'fateYear': serializer.toJson<String?>(fateYear),
-      'queryQuestion': serializer.toJson<String?>(queryQuestion),
-      'queryDetail': serializer.toJson<String?>(queryDetail),
-      'ownerSeekerUuid': serializer.toJson<String?>(ownerSeekerUuid),
-      'gender': serializer
-          .toJson<String?>($DivinationsTable.$convertergendern.toJson(gender)),
-      'seekerName': serializer.toJson<String?>(seekerName),
-      'tinyPredict': serializer.toJson<String?>(tinyPredict),
-      'directlyPredict': serializer.toJson<String?>(directlyPredict),
-    };
-  }
-
-  Divination copyWith(
-          {String? uuid,
-          DateTime? createdAt,
-          DateTime? lastUpdatedAt,
-          Value<DateTime?> deletedAt = const Value.absent(),
-          String? divinationTypeUuid,
-          Value<String?> fateYear = const Value.absent(),
-          Value<String?> queryQuestion = const Value.absent(),
-          Value<String?> queryDetail = const Value.absent(),
-          Value<String?> ownerSeekerUuid = const Value.absent(),
-          Value<Gender?> gender = const Value.absent(),
-          Value<String?> seekerName = const Value.absent(),
-          Value<String?> tinyPredict = const Value.absent(),
-          Value<String?> directlyPredict = const Value.absent()}) =>
-      Divination(
-        uuid: uuid ?? this.uuid,
-        createdAt: createdAt ?? this.createdAt,
-        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
-        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        divinationTypeUuid: divinationTypeUuid ?? this.divinationTypeUuid,
-        fateYear: fateYear.present ? fateYear.value : this.fateYear,
-        queryQuestion:
-            queryQuestion.present ? queryQuestion.value : this.queryQuestion,
-        queryDetail: queryDetail.present ? queryDetail.value : this.queryDetail,
-        ownerSeekerUuid: ownerSeekerUuid.present
-            ? ownerSeekerUuid.value
-            : this.ownerSeekerUuid,
-        gender: gender.present ? gender.value : this.gender,
-        seekerName: seekerName.present ? seekerName.value : this.seekerName,
-        tinyPredict: tinyPredict.present ? tinyPredict.value : this.tinyPredict,
-        directlyPredict: directlyPredict.present
-            ? directlyPredict.value
-            : this.directlyPredict,
-      );
-  Divination copyWithCompanion(DivinationsCompanion data) {
-    return Divination(
-      uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      lastUpdatedAt: data.lastUpdatedAt.present
-          ? data.lastUpdatedAt.value
-          : this.lastUpdatedAt,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      divinationTypeUuid: data.divinationTypeUuid.present
-          ? data.divinationTypeUuid.value
-          : this.divinationTypeUuid,
-      fateYear: data.fateYear.present ? data.fateYear.value : this.fateYear,
-      queryQuestion: data.queryQuestion.present
-          ? data.queryQuestion.value
-          : this.queryQuestion,
-      queryDetail:
-          data.queryDetail.present ? data.queryDetail.value : this.queryDetail,
-      ownerSeekerUuid: data.ownerSeekerUuid.present
-          ? data.ownerSeekerUuid.value
-          : this.ownerSeekerUuid,
-      gender: data.gender.present ? data.gender.value : this.gender,
-      seekerName:
-          data.seekerName.present ? data.seekerName.value : this.seekerName,
-      tinyPredict:
-          data.tinyPredict.present ? data.tinyPredict.value : this.tinyPredict,
-      directlyPredict: data.directlyPredict.present
-          ? data.directlyPredict.value
-          : this.directlyPredict,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Divination(')
-          ..write('uuid: $uuid, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('lastUpdatedAt: $lastUpdatedAt, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('divinationTypeUuid: $divinationTypeUuid, ')
-          ..write('fateYear: $fateYear, ')
-          ..write('queryQuestion: $queryQuestion, ')
-          ..write('queryDetail: $queryDetail, ')
-          ..write('ownerSeekerUuid: $ownerSeekerUuid, ')
-          ..write('gender: $gender, ')
-          ..write('seekerName: $seekerName, ')
-          ..write('tinyPredict: $tinyPredict, ')
-          ..write('directlyPredict: $directlyPredict')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-      uuid,
-      createdAt,
-      lastUpdatedAt,
-      deletedAt,
-      divinationTypeUuid,
-      fateYear,
-      queryQuestion,
-      queryDetail,
-      ownerSeekerUuid,
-      gender,
-      seekerName,
-      tinyPredict,
-      directlyPredict);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Divination &&
-          other.uuid == this.uuid &&
-          other.createdAt == this.createdAt &&
-          other.lastUpdatedAt == this.lastUpdatedAt &&
-          other.deletedAt == this.deletedAt &&
-          other.divinationTypeUuid == this.divinationTypeUuid &&
-          other.fateYear == this.fateYear &&
-          other.queryQuestion == this.queryQuestion &&
-          other.queryDetail == this.queryDetail &&
-          other.ownerSeekerUuid == this.ownerSeekerUuid &&
-          other.gender == this.gender &&
-          other.seekerName == this.seekerName &&
-          other.tinyPredict == this.tinyPredict &&
-          other.directlyPredict == this.directlyPredict);
-}
-
-class DivinationsCompanion extends UpdateCompanion<Divination> {
+class DivinationsCompanion extends UpdateCompanion<DivinationDataModel> {
   final Value<String> uuid;
   final Value<DateTime> createdAt;
   final Value<DateTime> lastUpdatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String> divinationTypeUuid;
   final Value<String?> fateYear;
-  final Value<String?> queryQuestion;
-  final Value<String?> queryDetail;
+  final Value<String?> question;
+  final Value<String?> detail;
   final Value<String?> ownerSeekerUuid;
   final Value<Gender?> gender;
   final Value<String?> seekerName;
@@ -2431,8 +2050,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
     this.deletedAt = const Value.absent(),
     this.divinationTypeUuid = const Value.absent(),
     this.fateYear = const Value.absent(),
-    this.queryQuestion = const Value.absent(),
-    this.queryDetail = const Value.absent(),
+    this.question = const Value.absent(),
+    this.detail = const Value.absent(),
     this.ownerSeekerUuid = const Value.absent(),
     this.gender = const Value.absent(),
     this.seekerName = const Value.absent(),
@@ -2447,8 +2066,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
     this.deletedAt = const Value.absent(),
     required String divinationTypeUuid,
     this.fateYear = const Value.absent(),
-    this.queryQuestion = const Value.absent(),
-    this.queryDetail = const Value.absent(),
+    this.question = const Value.absent(),
+    this.detail = const Value.absent(),
     this.ownerSeekerUuid = const Value.absent(),
     this.gender = const Value.absent(),
     this.seekerName = const Value.absent(),
@@ -2459,15 +2078,15 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
         createdAt = Value(createdAt),
         lastUpdatedAt = Value(lastUpdatedAt),
         divinationTypeUuid = Value(divinationTypeUuid);
-  static Insertable<Divination> custom({
+  static Insertable<DivinationDataModel> custom({
     Expression<String>? uuid,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUpdatedAt,
     Expression<DateTime>? deletedAt,
     Expression<String>? divinationTypeUuid,
     Expression<String>? fateYear,
-    Expression<String>? queryQuestion,
-    Expression<String>? queryDetail,
+    Expression<String>? question,
+    Expression<String>? detail,
     Expression<String>? ownerSeekerUuid,
     Expression<String>? gender,
     Expression<String>? seekerName,
@@ -2483,8 +2102,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
       if (divinationTypeUuid != null)
         'divination_type_uuid': divinationTypeUuid,
       if (fateYear != null) 'fate_year': fateYear,
-      if (queryQuestion != null) 'query_question': queryQuestion,
-      if (queryDetail != null) 'query_detail': queryDetail,
+      if (question != null) 'question': question,
+      if (detail != null) 'detail': detail,
       if (ownerSeekerUuid != null) 'seeker_uuid': ownerSeekerUuid,
       if (gender != null) 'gender': gender,
       if (seekerName != null) 'seeker_name': seekerName,
@@ -2501,8 +2120,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
       Value<DateTime?>? deletedAt,
       Value<String>? divinationTypeUuid,
       Value<String?>? fateYear,
-      Value<String?>? queryQuestion,
-      Value<String?>? queryDetail,
+      Value<String?>? question,
+      Value<String?>? detail,
       Value<String?>? ownerSeekerUuid,
       Value<Gender?>? gender,
       Value<String?>? seekerName,
@@ -2516,8 +2135,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
       deletedAt: deletedAt ?? this.deletedAt,
       divinationTypeUuid: divinationTypeUuid ?? this.divinationTypeUuid,
       fateYear: fateYear ?? this.fateYear,
-      queryQuestion: queryQuestion ?? this.queryQuestion,
-      queryDetail: queryDetail ?? this.queryDetail,
+      question: question ?? this.question,
+      detail: detail ?? this.detail,
       ownerSeekerUuid: ownerSeekerUuid ?? this.ownerSeekerUuid,
       gender: gender ?? this.gender,
       seekerName: seekerName ?? this.seekerName,
@@ -2548,11 +2167,11 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
     if (fateYear.present) {
       map['fate_year'] = Variable<String>(fateYear.value);
     }
-    if (queryQuestion.present) {
-      map['query_question'] = Variable<String>(queryQuestion.value);
+    if (question.present) {
+      map['question'] = Variable<String>(question.value);
     }
-    if (queryDetail.present) {
-      map['query_detail'] = Variable<String>(queryDetail.value);
+    if (detail.present) {
+      map['detail'] = Variable<String>(detail.value);
     }
     if (ownerSeekerUuid.present) {
       map['seeker_uuid'] = Variable<String>(ownerSeekerUuid.value);
@@ -2585,8 +2204,8 @@ class DivinationsCompanion extends UpdateCompanion<Divination> {
           ..write('deletedAt: $deletedAt, ')
           ..write('divinationTypeUuid: $divinationTypeUuid, ')
           ..write('fateYear: $fateYear, ')
-          ..write('queryQuestion: $queryQuestion, ')
-          ..write('queryDetail: $queryDetail, ')
+          ..write('question: $question, ')
+          ..write('detail: $detail, ')
           ..write('ownerSeekerUuid: $ownerSeekerUuid, ')
           ..write('gender: $gender, ')
           ..write('seekerName: $seekerName, ')
@@ -3415,7 +3034,7 @@ class PanelsCompanion extends UpdateCompanion<Panel> {
 }
 
 class $SubDivinationTypesTable extends SubDivinationTypes
-    with TableInfo<$SubDivinationTypesTable, SubDivinationType> {
+    with TableInfo<$SubDivinationTypesTable, SubDivinationTypeDataModel> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -3486,7 +3105,8 @@ class $SubDivinationTypesTable extends SubDivinationTypes
   String get actualTableName => $name;
   static const String $name = 't_sub_divination_types';
   @override
-  VerificationContext validateIntegrity(Insertable<SubDivinationType> instance,
+  VerificationContext validateIntegrity(
+      Insertable<SubDivinationTypeDataModel> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -3540,9 +3160,10 @@ class $SubDivinationTypesTable extends SubDivinationTypes
   @override
   Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
-  SubDivinationType map(Map<String, dynamic> data, {String? tablePrefix}) {
+  SubDivinationTypeDataModel map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return SubDivinationType(
+    return SubDivinationTypeDataModel(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       lastUpdatedAt: attachedDatabase.typeMapping.read(
@@ -3566,148 +3187,8 @@ class $SubDivinationTypesTable extends SubDivinationTypes
   }
 }
 
-class SubDivinationType extends DataClass
-    implements Insertable<SubDivinationType> {
-  final String uuid;
-  final DateTime lastUpdatedAt;
-  final DateTime? deletedAt;
-  final DateTime? hiddenAt;
-  final String name;
-  final bool isCustomized;
-  final bool isAvailable;
-  const SubDivinationType(
-      {required this.uuid,
-      required this.lastUpdatedAt,
-      this.deletedAt,
-      this.hiddenAt,
-      required this.name,
-      required this.isCustomized,
-      required this.isAvailable});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['uuid'] = Variable<String>(uuid);
-    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
-    if (!nullToAbsent || deletedAt != null) {
-      map['deleted_at'] = Variable<DateTime>(deletedAt);
-    }
-    if (!nullToAbsent || hiddenAt != null) {
-      map['hidden_at'] = Variable<DateTime>(hiddenAt);
-    }
-    map['name'] = Variable<String>(name);
-    map['is_customized'] = Variable<bool>(isCustomized);
-    map['is_available'] = Variable<bool>(isAvailable);
-    return map;
-  }
-
-  SubDivinationTypesCompanion toCompanion(bool nullToAbsent) {
-    return SubDivinationTypesCompanion(
-      uuid: Value(uuid),
-      lastUpdatedAt: Value(lastUpdatedAt),
-      deletedAt: deletedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(deletedAt),
-      hiddenAt: hiddenAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(hiddenAt),
-      name: Value(name),
-      isCustomized: Value(isCustomized),
-      isAvailable: Value(isAvailable),
-    );
-  }
-
-  factory SubDivinationType.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return SubDivinationType(
-      uuid: serializer.fromJson<String>(json['uuid']),
-      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
-      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
-      hiddenAt: serializer.fromJson<DateTime?>(json['hiddenAt']),
-      name: serializer.fromJson<String>(json['name']),
-      isCustomized: serializer.fromJson<bool>(json['isCustomized']),
-      isAvailable: serializer.fromJson<bool>(json['isAvailable']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'uuid': serializer.toJson<String>(uuid),
-      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
-      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
-      'hiddenAt': serializer.toJson<DateTime?>(hiddenAt),
-      'name': serializer.toJson<String>(name),
-      'isCustomized': serializer.toJson<bool>(isCustomized),
-      'isAvailable': serializer.toJson<bool>(isAvailable),
-    };
-  }
-
-  SubDivinationType copyWith(
-          {String? uuid,
-          DateTime? lastUpdatedAt,
-          Value<DateTime?> deletedAt = const Value.absent(),
-          Value<DateTime?> hiddenAt = const Value.absent(),
-          String? name,
-          bool? isCustomized,
-          bool? isAvailable}) =>
-      SubDivinationType(
-        uuid: uuid ?? this.uuid,
-        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
-        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
-        hiddenAt: hiddenAt.present ? hiddenAt.value : this.hiddenAt,
-        name: name ?? this.name,
-        isCustomized: isCustomized ?? this.isCustomized,
-        isAvailable: isAvailable ?? this.isAvailable,
-      );
-  SubDivinationType copyWithCompanion(SubDivinationTypesCompanion data) {
-    return SubDivinationType(
-      uuid: data.uuid.present ? data.uuid.value : this.uuid,
-      lastUpdatedAt: data.lastUpdatedAt.present
-          ? data.lastUpdatedAt.value
-          : this.lastUpdatedAt,
-      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
-      hiddenAt: data.hiddenAt.present ? data.hiddenAt.value : this.hiddenAt,
-      name: data.name.present ? data.name.value : this.name,
-      isCustomized: data.isCustomized.present
-          ? data.isCustomized.value
-          : this.isCustomized,
-      isAvailable:
-          data.isAvailable.present ? data.isAvailable.value : this.isAvailable,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('SubDivinationType(')
-          ..write('uuid: $uuid, ')
-          ..write('lastUpdatedAt: $lastUpdatedAt, ')
-          ..write('deletedAt: $deletedAt, ')
-          ..write('hiddenAt: $hiddenAt, ')
-          ..write('name: $name, ')
-          ..write('isCustomized: $isCustomized, ')
-          ..write('isAvailable: $isAvailable')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(uuid, lastUpdatedAt, deletedAt, hiddenAt,
-      name, isCustomized, isAvailable);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is SubDivinationType &&
-          other.uuid == this.uuid &&
-          other.lastUpdatedAt == this.lastUpdatedAt &&
-          other.deletedAt == this.deletedAt &&
-          other.hiddenAt == this.hiddenAt &&
-          other.name == this.name &&
-          other.isCustomized == this.isCustomized &&
-          other.isAvailable == this.isAvailable);
-}
-
-class SubDivinationTypesCompanion extends UpdateCompanion<SubDivinationType> {
+class SubDivinationTypesCompanion
+    extends UpdateCompanion<SubDivinationTypeDataModel> {
   final Value<String> uuid;
   final Value<DateTime> lastUpdatedAt;
   final Value<DateTime?> deletedAt;
@@ -3740,7 +3221,7 @@ class SubDivinationTypesCompanion extends UpdateCompanion<SubDivinationType> {
         name = Value(name),
         isCustomized = Value(isCustomized),
         isAvailable = Value(isAvailable);
-  static Insertable<SubDivinationType> custom({
+  static Insertable<SubDivinationTypeDataModel> custom({
     Expression<String>? uuid,
     Expression<DateTime>? lastUpdatedAt,
     Expression<DateTime>? deletedAt,
@@ -5172,11 +4653,11 @@ class $TimingDivinationsTable extends TimingDivinations
   late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
       'deleted_at', aliasedName, true,
       type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _queryUuidMeta =
-      const VerificationMeta('queryUuid');
+  static const VerificationMeta _divinationUuidMeta =
+      const VerificationMeta('divinationUuid');
   @override
-  late final GeneratedColumn<String> queryUuid = GeneratedColumn<String>(
-      'query_uuid', aliasedName, false,
+  late final GeneratedColumn<String> divinationUuid = GeneratedColumn<String>(
+      'divination_uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
   late final GeneratedColumnWithTypeConverter<DateTimeType, int> timingType =
@@ -5188,7 +4669,7 @@ class $TimingDivinationsTable extends TimingDivinations
       const VerificationMeta('datetime');
   @override
   late final GeneratedColumn<DateTime> datetime = GeneratedColumn<DateTime>(
-      'query_datetime', aliasedName, false,
+      'datetime', aliasedName, false,
       type: DriftSqlType.dateTime, requiredDuringInsert: true);
   static const VerificationMeta _isManualMeta =
       const VerificationMeta('isManual');
@@ -5249,6 +4730,11 @@ class $TimingDivinationsTable extends TimingDivinations
       'timing_info_uuid', aliasedName, false,
       type: DriftSqlType.string, requiredDuringInsert: true);
   @override
+  late final GeneratedColumnWithTypeConverter<Location?, String> location =
+      GeneratedColumn<String>('location_json', aliasedName, true,
+              type: DriftSqlType.string, requiredDuringInsert: false)
+          .withConverter<Location?>($TimingDivinationsTable.$converterlocation);
+  @override
   late final GeneratedColumnWithTypeConverter<List<DivinationDatetimeModel>?,
       String> timingInfoListJson = GeneratedColumn<String>(
           'info_list_json', aliasedName, true,
@@ -5261,7 +4747,7 @@ class $TimingDivinationsTable extends TimingDivinations
         createdAt,
         lastUpdatedAt,
         deletedAt,
-        queryUuid,
+        divinationUuid,
         timingType,
         datetime,
         isManual,
@@ -5273,6 +4759,7 @@ class $TimingDivinationsTable extends TimingDivinations
         isLeapMonth,
         lunarDay,
         timingInfoUuid,
+        location,
         timingInfoListJson
       ];
   @override
@@ -5306,17 +4793,17 @@ class $TimingDivinationsTable extends TimingDivinations
       context.handle(_deletedAtMeta,
           deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
     }
-    if (data.containsKey('query_uuid')) {
-      context.handle(_queryUuidMeta,
-          queryUuid.isAcceptableOrUnknown(data['query_uuid']!, _queryUuidMeta));
-    } else if (isInserting) {
-      context.missing(_queryUuidMeta);
-    }
-    if (data.containsKey('query_datetime')) {
+    if (data.containsKey('divination_uuid')) {
       context.handle(
-          _datetimeMeta,
-          datetime.isAcceptableOrUnknown(
-              data['query_datetime']!, _datetimeMeta));
+          _divinationUuidMeta,
+          divinationUuid.isAcceptableOrUnknown(
+              data['divination_uuid']!, _divinationUuidMeta));
+    } else if (isInserting) {
+      context.missing(_divinationUuidMeta);
+    }
+    if (data.containsKey('datetime')) {
+      context.handle(_datetimeMeta,
+          datetime.isAcceptableOrUnknown(data['datetime']!, _datetimeMeta));
     } else if (isInserting) {
       context.missing(_datetimeMeta);
     }
@@ -5369,13 +4856,13 @@ class $TimingDivinationsTable extends TimingDivinations
           DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at']),
       deletedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
-      queryUuid: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}query_uuid'])!,
+      divinationUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}divination_uuid'])!,
       timingType: $TimingDivinationsTable.$convertertimingType.fromSql(
           attachedDatabase.typeMapping
               .read(DriftSqlType.int, data['${effectivePrefix}timing_type'])!),
-      datetime: attachedDatabase.typeMapping.read(
-          DriftSqlType.dateTime, data['${effectivePrefix}query_datetime'])!,
+      datetime: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}datetime'])!,
       isManual: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_manual'])!,
       yearGanZhi: $TimingDivinationsTable.$converteryearGanZhi.fromSql(
@@ -5398,6 +4885,12 @@ class $TimingDivinationsTable extends TimingDivinations
           .read(DriftSqlType.int, data['${effectivePrefix}lunar_day'])!,
       timingInfoUuid: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}timing_info_uuid'])!,
+      location: $TimingDivinationsTable.$converterlocation.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}location_json'])),
+      timingInfoListJson: $TimingDivinationsTable.$convertertimingInfoListJsonn
+          .fromSql(attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}info_list_json'])),
     );
   }
 
@@ -5416,6 +4909,8 @@ class $TimingDivinationsTable extends TimingDivinations
       const EnumIndexConverter<JiaZi>(JiaZi.values);
   static JsonTypeConverter2<JiaZi, int, int> $convertertimeGanZhi =
       const EnumIndexConverter<JiaZi>(JiaZi.values);
+  static TypeConverter<Location?, String?> $converterlocation =
+      const NullableLocationConverter();
   static TypeConverter<List<DivinationDatetimeModel>, String>
       $convertertimingInfoListJson = const DivinationDatetimeModelConverter();
   static TypeConverter<List<DivinationDatetimeModel>?, String?>
@@ -5429,7 +4924,7 @@ class TimingDivinationsCompanion
   final Value<DateTime> createdAt;
   final Value<DateTime?> lastUpdatedAt;
   final Value<DateTime?> deletedAt;
-  final Value<String> queryUuid;
+  final Value<String> divinationUuid;
   final Value<DateTimeType> timingType;
   final Value<DateTime> datetime;
   final Value<bool> isManual;
@@ -5441,6 +4936,7 @@ class TimingDivinationsCompanion
   final Value<bool> isLeapMonth;
   final Value<int> lunarDay;
   final Value<String> timingInfoUuid;
+  final Value<Location?> location;
   final Value<List<DivinationDatetimeModel>?> timingInfoListJson;
   final Value<int> rowid;
   const TimingDivinationsCompanion({
@@ -5448,7 +4944,7 @@ class TimingDivinationsCompanion
     this.createdAt = const Value.absent(),
     this.lastUpdatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
-    this.queryUuid = const Value.absent(),
+    this.divinationUuid = const Value.absent(),
     this.timingType = const Value.absent(),
     this.datetime = const Value.absent(),
     this.isManual = const Value.absent(),
@@ -5460,6 +4956,7 @@ class TimingDivinationsCompanion
     this.isLeapMonth = const Value.absent(),
     this.lunarDay = const Value.absent(),
     this.timingInfoUuid = const Value.absent(),
+    this.location = const Value.absent(),
     this.timingInfoListJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
@@ -5468,7 +4965,7 @@ class TimingDivinationsCompanion
     this.createdAt = const Value.absent(),
     this.lastUpdatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
-    required String queryUuid,
+    required String divinationUuid,
     required DateTimeType timingType,
     required DateTime datetime,
     this.isManual = const Value.absent(),
@@ -5480,10 +4977,11 @@ class TimingDivinationsCompanion
     this.isLeapMonth = const Value.absent(),
     required int lunarDay,
     required String timingInfoUuid,
+    this.location = const Value.absent(),
     this.timingInfoListJson = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : uuid = Value(uuid),
-        queryUuid = Value(queryUuid),
+        divinationUuid = Value(divinationUuid),
         timingType = Value(timingType),
         datetime = Value(datetime),
         yearGanZhi = Value(yearGanZhi),
@@ -5498,7 +4996,7 @@ class TimingDivinationsCompanion
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUpdatedAt,
     Expression<DateTime>? deletedAt,
-    Expression<String>? queryUuid,
+    Expression<String>? divinationUuid,
     Expression<int>? timingType,
     Expression<DateTime>? datetime,
     Expression<bool>? isManual,
@@ -5510,6 +5008,7 @@ class TimingDivinationsCompanion
     Expression<bool>? isLeapMonth,
     Expression<int>? lunarDay,
     Expression<String>? timingInfoUuid,
+    Expression<String>? location,
     Expression<String>? timingInfoListJson,
     Expression<int>? rowid,
   }) {
@@ -5518,9 +5017,9 @@ class TimingDivinationsCompanion
       if (createdAt != null) 'created_at': createdAt,
       if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
-      if (queryUuid != null) 'query_uuid': queryUuid,
+      if (divinationUuid != null) 'divination_uuid': divinationUuid,
       if (timingType != null) 'timing_type': timingType,
-      if (datetime != null) 'query_datetime': datetime,
+      if (datetime != null) 'datetime': datetime,
       if (isManual != null) 'is_manual': isManual,
       if (yearGanZhi != null) 'year_gan_zhi': yearGanZhi,
       if (monthGanZhi != null) 'month_gan_zhi': monthGanZhi,
@@ -5530,6 +5029,7 @@ class TimingDivinationsCompanion
       if (isLeapMonth != null) 'is_leap_month': isLeapMonth,
       if (lunarDay != null) 'lunar_day': lunarDay,
       if (timingInfoUuid != null) 'timing_info_uuid': timingInfoUuid,
+      if (location != null) 'location_json': location,
       if (timingInfoListJson != null) 'info_list_json': timingInfoListJson,
       if (rowid != null) 'rowid': rowid,
     });
@@ -5540,7 +5040,7 @@ class TimingDivinationsCompanion
       Value<DateTime>? createdAt,
       Value<DateTime?>? lastUpdatedAt,
       Value<DateTime?>? deletedAt,
-      Value<String>? queryUuid,
+      Value<String>? divinationUuid,
       Value<DateTimeType>? timingType,
       Value<DateTime>? datetime,
       Value<bool>? isManual,
@@ -5552,6 +5052,7 @@ class TimingDivinationsCompanion
       Value<bool>? isLeapMonth,
       Value<int>? lunarDay,
       Value<String>? timingInfoUuid,
+      Value<Location?>? location,
       Value<List<DivinationDatetimeModel>?>? timingInfoListJson,
       Value<int>? rowid}) {
     return TimingDivinationsCompanion(
@@ -5559,7 +5060,7 @@ class TimingDivinationsCompanion
       createdAt: createdAt ?? this.createdAt,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
-      queryUuid: queryUuid ?? this.queryUuid,
+      divinationUuid: divinationUuid ?? this.divinationUuid,
       timingType: timingType ?? this.timingType,
       datetime: datetime ?? this.datetime,
       isManual: isManual ?? this.isManual,
@@ -5571,6 +5072,7 @@ class TimingDivinationsCompanion
       isLeapMonth: isLeapMonth ?? this.isLeapMonth,
       lunarDay: lunarDay ?? this.lunarDay,
       timingInfoUuid: timingInfoUuid ?? this.timingInfoUuid,
+      location: location ?? this.location,
       timingInfoListJson: timingInfoListJson ?? this.timingInfoListJson,
       rowid: rowid ?? this.rowid,
     );
@@ -5591,15 +5093,15 @@ class TimingDivinationsCompanion
     if (deletedAt.present) {
       map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
-    if (queryUuid.present) {
-      map['query_uuid'] = Variable<String>(queryUuid.value);
+    if (divinationUuid.present) {
+      map['divination_uuid'] = Variable<String>(divinationUuid.value);
     }
     if (timingType.present) {
       map['timing_type'] = Variable<int>(
           $TimingDivinationsTable.$convertertimingType.toSql(timingType.value));
     }
     if (datetime.present) {
-      map['query_datetime'] = Variable<DateTime>(datetime.value);
+      map['datetime'] = Variable<DateTime>(datetime.value);
     }
     if (isManual.present) {
       map['is_manual'] = Variable<bool>(isManual.value);
@@ -5633,6 +5135,10 @@ class TimingDivinationsCompanion
     if (timingInfoUuid.present) {
       map['timing_info_uuid'] = Variable<String>(timingInfoUuid.value);
     }
+    if (location.present) {
+      map['location_json'] = Variable<String>(
+          $TimingDivinationsTable.$converterlocation.toSql(location.value));
+    }
     if (timingInfoListJson.present) {
       map['info_list_json'] = Variable<String>($TimingDivinationsTable
           .$convertertimingInfoListJsonn
@@ -5651,7 +5157,7 @@ class TimingDivinationsCompanion
           ..write('createdAt: $createdAt, ')
           ..write('lastUpdatedAt: $lastUpdatedAt, ')
           ..write('deletedAt: $deletedAt, ')
-          ..write('queryUuid: $queryUuid, ')
+          ..write('divinationUuid: $divinationUuid, ')
           ..write('timingType: $timingType, ')
           ..write('datetime: $datetime, ')
           ..write('isManual: $isManual, ')
@@ -5663,6 +5169,7 @@ class TimingDivinationsCompanion
           ..write('isLeapMonth: $isLeapMonth, ')
           ..write('lunarDay: $lunarDay, ')
           ..write('timingInfoUuid: $timingInfoUuid, ')
+          ..write('location: $location, ')
           ..write('timingInfoListJson: $timingInfoListJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
@@ -6531,11 +6038,11 @@ typedef $$DivinationTypesTableUpdateCompanionBuilder = DivinationTypesCompanion
 });
 
 final class $$DivinationTypesTableReferences extends BaseReferences<
-    _$AppDatabase, $DivinationTypesTable, DivinationType> {
+    _$AppDatabase, $DivinationTypesTable, DivinationTypeDataModel> {
   $$DivinationTypesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$DivinationsTable, List<Divination>>
+  static MultiTypedResultKey<$DivinationsTable, List<DivinationDataModel>>
       _divinationsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.divinations,
               aliasName: $_aliasNameGenerator(
@@ -6769,14 +6276,14 @@ class $$DivinationTypesTableAnnotationComposer
 class $$DivinationTypesTableTableManager extends RootTableManager<
     _$AppDatabase,
     $DivinationTypesTable,
-    DivinationType,
+    DivinationTypeDataModel,
     $$DivinationTypesTableFilterComposer,
     $$DivinationTypesTableOrderingComposer,
     $$DivinationTypesTableAnnotationComposer,
     $$DivinationTypesTableCreateCompanionBuilder,
     $$DivinationTypesTableUpdateCompanionBuilder,
-    (DivinationType, $$DivinationTypesTableReferences),
-    DivinationType,
+    (DivinationTypeDataModel, $$DivinationTypesTableReferences),
+    DivinationTypeDataModel,
     PrefetchHooks Function(
         {bool divinationsRefs, bool divinationSubDivinationTypeMappersRefs})> {
   $$DivinationTypesTableTableManager(
@@ -6854,8 +6361,8 @@ class $$DivinationTypesTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (divinationsRefs)
-                    await $_getPrefetchedData<DivinationType, $DivinationTypesTable,
-                            Divination>(
+                    await $_getPrefetchedData<DivinationTypeDataModel,
+                            $DivinationTypesTable, DivinationDataModel>(
                         currentTable: table,
                         referencedTable: $$DivinationTypesTableReferences
                             ._divinationsRefsTable(db),
@@ -6868,7 +6375,7 @@ class $$DivinationTypesTableTableManager extends RootTableManager<
                         typedResults: items),
                   if (divinationSubDivinationTypeMappersRefs)
                     await $_getPrefetchedData<
-                            DivinationType,
+                            DivinationTypeDataModel,
                             $DivinationTypesTable,
                             DivinationSubDivinationTypeMapper>(
                         currentTable: table,
@@ -6891,14 +6398,14 @@ class $$DivinationTypesTableTableManager extends RootTableManager<
 typedef $$DivinationTypesTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $DivinationTypesTable,
-    DivinationType,
+    DivinationTypeDataModel,
     $$DivinationTypesTableFilterComposer,
     $$DivinationTypesTableOrderingComposer,
     $$DivinationTypesTableAnnotationComposer,
     $$DivinationTypesTableCreateCompanionBuilder,
     $$DivinationTypesTableUpdateCompanionBuilder,
-    (DivinationType, $$DivinationTypesTableReferences),
-    DivinationType,
+    (DivinationTypeDataModel, $$DivinationTypesTableReferences),
+    DivinationTypeDataModel,
     PrefetchHooks Function(
         {bool divinationsRefs, bool divinationSubDivinationTypeMappersRefs})>;
 typedef $$SeekersTableCreateCompanionBuilder = SeekersCompanion Function({
@@ -6910,7 +6417,7 @@ typedef $$SeekersTableCreateCompanionBuilder = SeekersCompanion Function({
   Value<DateTime?> lastUpdatedAt,
   Value<DateTime?> deletedAt,
   required DateTimeType timingType,
-  required DateTime birthDatetime,
+  required DateTime datetime,
   required JiaZi yearGanZhi,
   required JiaZi monthGanZhi,
   required JiaZi dayGanZhi,
@@ -6918,9 +6425,10 @@ typedef $$SeekersTableCreateCompanionBuilder = SeekersCompanion Function({
   required int lunarMonth,
   Value<bool> isLeapMonth,
   required int lunarDay,
-  required String timingInfoUuid,
+  required String divinationUuid,
+  Value<String?> timingInfoUuid,
   Value<List<DivinationDatetimeModel>?> timingInfoListJson,
-  Value<Location?> birthLoction,
+  Value<Location?> location,
   Value<int> rowid,
 });
 typedef $$SeekersTableUpdateCompanionBuilder = SeekersCompanion Function({
@@ -6932,7 +6440,7 @@ typedef $$SeekersTableUpdateCompanionBuilder = SeekersCompanion Function({
   Value<DateTime?> lastUpdatedAt,
   Value<DateTime?> deletedAt,
   Value<DateTimeType> timingType,
-  Value<DateTime> birthDatetime,
+  Value<DateTime> datetime,
   Value<JiaZi> yearGanZhi,
   Value<JiaZi> monthGanZhi,
   Value<JiaZi> dayGanZhi,
@@ -6940,9 +6448,10 @@ typedef $$SeekersTableUpdateCompanionBuilder = SeekersCompanion Function({
   Value<int> lunarMonth,
   Value<bool> isLeapMonth,
   Value<int> lunarDay,
-  Value<String> timingInfoUuid,
+  Value<String> divinationUuid,
+  Value<String?> timingInfoUuid,
   Value<List<DivinationDatetimeModel>?> timingInfoListJson,
-  Value<Location?> birthLoction,
+  Value<Location?> location,
   Value<int> rowid,
 });
 
@@ -6950,7 +6459,7 @@ final class $$SeekersTableReferences
     extends BaseReferences<_$AppDatabase, $SeekersTable, SeekerModel> {
   $$SeekersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$DivinationsTable, List<Divination>>
+  static MultiTypedResultKey<$DivinationsTable, List<DivinationDataModel>>
       _divinationsRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.divinations,
               aliasName: $_aliasNameGenerator(
@@ -7024,8 +6533,8 @@ class $$SeekersTableFilterComposer
           column: $table.timingType,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnFilters<DateTime> get birthDatetime => $composableBuilder(
-      column: $table.birthDatetime, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get datetime => $composableBuilder(
+      column: $table.datetime, builder: (column) => ColumnFilters(column));
 
   ColumnWithTypeConverterFilters<JiaZi, JiaZi, int> get yearGanZhi =>
       $composableBuilder(
@@ -7056,6 +6565,10 @@ class $$SeekersTableFilterComposer
   ColumnFilters<int> get lunarDay => $composableBuilder(
       column: $table.lunarDay, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid,
+      builder: (column) => ColumnFilters(column));
+
   ColumnFilters<String> get timingInfoUuid => $composableBuilder(
       column: $table.timingInfoUuid,
       builder: (column) => ColumnFilters(column));
@@ -7066,9 +6579,9 @@ class $$SeekersTableFilterComposer
           column: $table.timingInfoListJson,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnWithTypeConverterFilters<Location?, Location, String>
-      get birthLoction => $composableBuilder(
-          column: $table.birthLoction,
+  ColumnWithTypeConverterFilters<Location?, Location, String> get location =>
+      $composableBuilder(
+          column: $table.location,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
   Expression<bool> divinationsRefs(
@@ -7150,9 +6663,8 @@ class $$SeekersTableOrderingComposer
   ColumnOrderings<int> get timingType => $composableBuilder(
       column: $table.timingType, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<DateTime> get birthDatetime => $composableBuilder(
-      column: $table.birthDatetime,
-      builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get datetime => $composableBuilder(
+      column: $table.datetime, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get yearGanZhi => $composableBuilder(
       column: $table.yearGanZhi, builder: (column) => ColumnOrderings(column));
@@ -7175,6 +6687,10 @@ class $$SeekersTableOrderingComposer
   ColumnOrderings<int> get lunarDay => $composableBuilder(
       column: $table.lunarDay, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get timingInfoUuid => $composableBuilder(
       column: $table.timingInfoUuid,
       builder: (column) => ColumnOrderings(column));
@@ -7183,9 +6699,8 @@ class $$SeekersTableOrderingComposer
       column: $table.timingInfoListJson,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get birthLoction => $composableBuilder(
-      column: $table.birthLoction,
-      builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get location => $composableBuilder(
+      column: $table.location, builder: (column) => ColumnOrderings(column));
 }
 
 class $$SeekersTableAnnotationComposer
@@ -7222,8 +6737,8 @@ class $$SeekersTableAnnotationComposer
       $composableBuilder(
           column: $table.timingType, builder: (column) => column);
 
-  GeneratedColumn<DateTime> get birthDatetime => $composableBuilder(
-      column: $table.birthDatetime, builder: (column) => column);
+  GeneratedColumn<DateTime> get datetime =>
+      $composableBuilder(column: $table.datetime, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<JiaZi, int> get yearGanZhi =>
       $composableBuilder(
@@ -7249,6 +6764,9 @@ class $$SeekersTableAnnotationComposer
   GeneratedColumn<int> get lunarDay =>
       $composableBuilder(column: $table.lunarDay, builder: (column) => column);
 
+  GeneratedColumn<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid, builder: (column) => column);
+
   GeneratedColumn<String> get timingInfoUuid => $composableBuilder(
       column: $table.timingInfoUuid, builder: (column) => column);
 
@@ -7256,9 +6774,8 @@ class $$SeekersTableAnnotationComposer
       get timingInfoListJson => $composableBuilder(
           column: $table.timingInfoListJson, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<Location?, String> get birthLoction =>
-      $composableBuilder(
-          column: $table.birthLoction, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<Location?, String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
 
   Expression<T> divinationsRefs<T extends Object>(
       Expression<T> Function($$DivinationsTableAnnotationComposer a) f) {
@@ -7337,7 +6854,7 @@ class $$SeekersTableTableManager extends RootTableManager<
             Value<DateTime?> lastUpdatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<DateTimeType> timingType = const Value.absent(),
-            Value<DateTime> birthDatetime = const Value.absent(),
+            Value<DateTime> datetime = const Value.absent(),
             Value<JiaZi> yearGanZhi = const Value.absent(),
             Value<JiaZi> monthGanZhi = const Value.absent(),
             Value<JiaZi> dayGanZhi = const Value.absent(),
@@ -7345,10 +6862,11 @@ class $$SeekersTableTableManager extends RootTableManager<
             Value<int> lunarMonth = const Value.absent(),
             Value<bool> isLeapMonth = const Value.absent(),
             Value<int> lunarDay = const Value.absent(),
-            Value<String> timingInfoUuid = const Value.absent(),
+            Value<String> divinationUuid = const Value.absent(),
+            Value<String?> timingInfoUuid = const Value.absent(),
             Value<List<DivinationDatetimeModel>?> timingInfoListJson =
                 const Value.absent(),
-            Value<Location?> birthLoction = const Value.absent(),
+            Value<Location?> location = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               SeekersCompanion(
@@ -7360,7 +6878,7 @@ class $$SeekersTableTableManager extends RootTableManager<
             lastUpdatedAt: lastUpdatedAt,
             deletedAt: deletedAt,
             timingType: timingType,
-            birthDatetime: birthDatetime,
+            datetime: datetime,
             yearGanZhi: yearGanZhi,
             monthGanZhi: monthGanZhi,
             dayGanZhi: dayGanZhi,
@@ -7368,9 +6886,10 @@ class $$SeekersTableTableManager extends RootTableManager<
             lunarMonth: lunarMonth,
             isLeapMonth: isLeapMonth,
             lunarDay: lunarDay,
+            divinationUuid: divinationUuid,
             timingInfoUuid: timingInfoUuid,
             timingInfoListJson: timingInfoListJson,
-            birthLoction: birthLoction,
+            location: location,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -7382,7 +6901,7 @@ class $$SeekersTableTableManager extends RootTableManager<
             Value<DateTime?> lastUpdatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             required DateTimeType timingType,
-            required DateTime birthDatetime,
+            required DateTime datetime,
             required JiaZi yearGanZhi,
             required JiaZi monthGanZhi,
             required JiaZi dayGanZhi,
@@ -7390,10 +6909,11 @@ class $$SeekersTableTableManager extends RootTableManager<
             required int lunarMonth,
             Value<bool> isLeapMonth = const Value.absent(),
             required int lunarDay,
-            required String timingInfoUuid,
+            required String divinationUuid,
+            Value<String?> timingInfoUuid = const Value.absent(),
             Value<List<DivinationDatetimeModel>?> timingInfoListJson =
                 const Value.absent(),
-            Value<Location?> birthLoction = const Value.absent(),
+            Value<Location?> location = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               SeekersCompanion.insert(
@@ -7405,7 +6925,7 @@ class $$SeekersTableTableManager extends RootTableManager<
             lastUpdatedAt: lastUpdatedAt,
             deletedAt: deletedAt,
             timingType: timingType,
-            birthDatetime: birthDatetime,
+            datetime: datetime,
             yearGanZhi: yearGanZhi,
             monthGanZhi: monthGanZhi,
             dayGanZhi: dayGanZhi,
@@ -7413,9 +6933,10 @@ class $$SeekersTableTableManager extends RootTableManager<
             lunarMonth: lunarMonth,
             isLeapMonth: isLeapMonth,
             lunarDay: lunarDay,
+            divinationUuid: divinationUuid,
             timingInfoUuid: timingInfoUuid,
             timingInfoListJson: timingInfoListJson,
-            birthLoction: birthLoction,
+            location: location,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
@@ -7435,7 +6956,7 @@ class $$SeekersTableTableManager extends RootTableManager<
                 return [
                   if (divinationsRefs)
                     await $_getPrefetchedData<SeekerModel, $SeekersTable,
-                            Divination>(
+                            DivinationDataModel>(
                         currentTable: table,
                         referencedTable:
                             $$SeekersTableReferences._divinationsRefsTable(db),
@@ -7487,8 +7008,8 @@ typedef $$DivinationsTableCreateCompanionBuilder = DivinationsCompanion
   Value<DateTime?> deletedAt,
   required String divinationTypeUuid,
   Value<String?> fateYear,
-  Value<String?> queryQuestion,
-  Value<String?> queryDetail,
+  Value<String?> question,
+  Value<String?> detail,
   Value<String?> ownerSeekerUuid,
   Value<Gender?> gender,
   Value<String?> seekerName,
@@ -7504,8 +7025,8 @@ typedef $$DivinationsTableUpdateCompanionBuilder = DivinationsCompanion
   Value<DateTime?> deletedAt,
   Value<String> divinationTypeUuid,
   Value<String?> fateYear,
-  Value<String?> queryQuestion,
-  Value<String?> queryDetail,
+  Value<String?> question,
+  Value<String?> detail,
   Value<String?> ownerSeekerUuid,
   Value<Gender?> gender,
   Value<String?> seekerName,
@@ -7514,8 +7035,8 @@ typedef $$DivinationsTableUpdateCompanionBuilder = DivinationsCompanion
   Value<int> rowid,
 });
 
-final class $$DivinationsTableReferences
-    extends BaseReferences<_$AppDatabase, $DivinationsTable, Divination> {
+final class $$DivinationsTableReferences extends BaseReferences<_$AppDatabase,
+    $DivinationsTable, DivinationDataModel> {
   $$DivinationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $DivinationTypesTable _divinationTypeUuidTable(_$AppDatabase db) =>
@@ -7633,11 +7154,11 @@ class $$DivinationsTableFilterComposer
   ColumnFilters<String> get fateYear => $composableBuilder(
       column: $table.fateYear, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get queryQuestion => $composableBuilder(
-      column: $table.queryQuestion, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get question => $composableBuilder(
+      column: $table.question, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get queryDetail => $composableBuilder(
-      column: $table.queryDetail, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get detail => $composableBuilder(
+      column: $table.detail, builder: (column) => ColumnFilters(column));
 
   ColumnWithTypeConverterFilters<Gender?, Gender, String> get gender =>
       $composableBuilder(
@@ -7787,12 +7308,11 @@ class $$DivinationsTableOrderingComposer
   ColumnOrderings<String> get fateYear => $composableBuilder(
       column: $table.fateYear, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get queryQuestion => $composableBuilder(
-      column: $table.queryQuestion,
-      builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get question => $composableBuilder(
+      column: $table.question, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get queryDetail => $composableBuilder(
-      column: $table.queryDetail, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get detail => $composableBuilder(
+      column: $table.detail, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get gender => $composableBuilder(
       column: $table.gender, builder: (column) => ColumnOrderings(column));
@@ -7872,11 +7392,11 @@ class $$DivinationsTableAnnotationComposer
   GeneratedColumn<String> get fateYear =>
       $composableBuilder(column: $table.fateYear, builder: (column) => column);
 
-  GeneratedColumn<String> get queryQuestion => $composableBuilder(
-      column: $table.queryQuestion, builder: (column) => column);
+  GeneratedColumn<String> get question =>
+      $composableBuilder(column: $table.question, builder: (column) => column);
 
-  GeneratedColumn<String> get queryDetail => $composableBuilder(
-      column: $table.queryDetail, builder: (column) => column);
+  GeneratedColumn<String> get detail =>
+      $composableBuilder(column: $table.detail, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<Gender?, String> get gender =>
       $composableBuilder(column: $table.gender, builder: (column) => column);
@@ -8003,14 +7523,14 @@ class $$DivinationsTableAnnotationComposer
 class $$DivinationsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $DivinationsTable,
-    Divination,
+    DivinationDataModel,
     $$DivinationsTableFilterComposer,
     $$DivinationsTableOrderingComposer,
     $$DivinationsTableAnnotationComposer,
     $$DivinationsTableCreateCompanionBuilder,
     $$DivinationsTableUpdateCompanionBuilder,
-    (Divination, $$DivinationsTableReferences),
-    Divination,
+    (DivinationDataModel, $$DivinationsTableReferences),
+    DivinationDataModel,
     PrefetchHooks Function(
         {bool divinationTypeUuid,
         bool ownerSeekerUuid,
@@ -8034,8 +7554,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<String> divinationTypeUuid = const Value.absent(),
             Value<String?> fateYear = const Value.absent(),
-            Value<String?> queryQuestion = const Value.absent(),
-            Value<String?> queryDetail = const Value.absent(),
+            Value<String?> question = const Value.absent(),
+            Value<String?> detail = const Value.absent(),
             Value<String?> ownerSeekerUuid = const Value.absent(),
             Value<Gender?> gender = const Value.absent(),
             Value<String?> seekerName = const Value.absent(),
@@ -8050,8 +7570,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             divinationTypeUuid: divinationTypeUuid,
             fateYear: fateYear,
-            queryQuestion: queryQuestion,
-            queryDetail: queryDetail,
+            question: question,
+            detail: detail,
             ownerSeekerUuid: ownerSeekerUuid,
             gender: gender,
             seekerName: seekerName,
@@ -8066,8 +7586,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
             Value<DateTime?> deletedAt = const Value.absent(),
             required String divinationTypeUuid,
             Value<String?> fateYear = const Value.absent(),
-            Value<String?> queryQuestion = const Value.absent(),
-            Value<String?> queryDetail = const Value.absent(),
+            Value<String?> question = const Value.absent(),
+            Value<String?> detail = const Value.absent(),
             Value<String?> ownerSeekerUuid = const Value.absent(),
             Value<Gender?> gender = const Value.absent(),
             Value<String?> seekerName = const Value.absent(),
@@ -8082,8 +7602,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
             deletedAt: deletedAt,
             divinationTypeUuid: divinationTypeUuid,
             fateYear: fateYear,
-            queryQuestion: queryQuestion,
-            queryDetail: queryDetail,
+            question: question,
+            detail: detail,
             ownerSeekerUuid: ownerSeekerUuid,
             gender: gender,
             seekerName: seekerName,
@@ -8151,7 +7671,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (combinedDivinationsRefs)
-                    await $_getPrefetchedData<Divination, $DivinationsTable, CombinedDivination>(
+                    await $_getPrefetchedData<DivinationDataModel,
+                            $DivinationsTable, CombinedDivination>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
                             ._combinedDivinationsRefsTable(db),
@@ -8163,8 +7684,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
                                 .where((e) => e.divinationUuid == item.uuid),
                         typedResults: items),
                   if (seekerDivinationMappersRefs)
-                    await $_getPrefetchedData<Divination, $DivinationsTable,
-                            SeekerDivinationMapper>(
+                    await $_getPrefetchedData<DivinationDataModel,
+                            $DivinationsTable, SeekerDivinationMapper>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
                             ._seekerDivinationMappersRefsTable(db),
@@ -8176,8 +7697,8 @@ class $$DivinationsTableTableManager extends RootTableManager<
                                 .where((e) => e.divinationUuid == item.uuid),
                         typedResults: items),
                   if (divinationPanelMappersRefs)
-                    await $_getPrefetchedData<Divination, $DivinationsTable,
-                            DivinationPanelMapper>(
+                    await $_getPrefetchedData<DivinationDataModel,
+                            $DivinationsTable, DivinationPanelMapper>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
                             ._divinationPanelMappersRefsTable(db),
@@ -8198,14 +7719,14 @@ class $$DivinationsTableTableManager extends RootTableManager<
 typedef $$DivinationsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $DivinationsTable,
-    Divination,
+    DivinationDataModel,
     $$DivinationsTableFilterComposer,
     $$DivinationsTableOrderingComposer,
     $$DivinationsTableAnnotationComposer,
     $$DivinationsTableCreateCompanionBuilder,
     $$DivinationsTableUpdateCompanionBuilder,
-    (Divination, $$DivinationsTableReferences),
-    Divination,
+    (DivinationDataModel, $$DivinationsTableReferences),
+    DivinationDataModel,
     PrefetchHooks Function(
         {bool divinationTypeUuid,
         bool ownerSeekerUuid,
@@ -9022,7 +8543,7 @@ typedef $$SubDivinationTypesTableUpdateCompanionBuilder
 });
 
 final class $$SubDivinationTypesTableReferences extends BaseReferences<
-    _$AppDatabase, $SubDivinationTypesTable, SubDivinationType> {
+    _$AppDatabase, $SubDivinationTypesTable, SubDivinationTypeDataModel> {
   $$SubDivinationTypesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
@@ -9193,14 +8714,14 @@ class $$SubDivinationTypesTableAnnotationComposer
 class $$SubDivinationTypesTableTableManager extends RootTableManager<
     _$AppDatabase,
     $SubDivinationTypesTable,
-    SubDivinationType,
+    SubDivinationTypeDataModel,
     $$SubDivinationTypesTableFilterComposer,
     $$SubDivinationTypesTableOrderingComposer,
     $$SubDivinationTypesTableAnnotationComposer,
     $$SubDivinationTypesTableCreateCompanionBuilder,
     $$SubDivinationTypesTableUpdateCompanionBuilder,
-    (SubDivinationType, $$SubDivinationTypesTableReferences),
-    SubDivinationType,
+    (SubDivinationTypeDataModel, $$SubDivinationTypesTableReferences),
+    SubDivinationTypeDataModel,
     PrefetchHooks Function({bool divinationSubDivinationTypeMappersRefs})> {
   $$SubDivinationTypesTableTableManager(
       _$AppDatabase db, $SubDivinationTypesTable table)
@@ -9273,7 +8794,7 @@ class $$SubDivinationTypesTableTableManager extends RootTableManager<
                 return [
                   if (divinationSubDivinationTypeMappersRefs)
                     await $_getPrefetchedData<
-                            SubDivinationType,
+                            SubDivinationTypeDataModel,
                             $SubDivinationTypesTable,
                             DivinationSubDivinationTypeMapper>(
                         currentTable: table,
@@ -9296,14 +8817,14 @@ class $$SubDivinationTypesTableTableManager extends RootTableManager<
 typedef $$SubDivinationTypesTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $SubDivinationTypesTable,
-    SubDivinationType,
+    SubDivinationTypeDataModel,
     $$SubDivinationTypesTableFilterComposer,
     $$SubDivinationTypesTableOrderingComposer,
     $$SubDivinationTypesTableAnnotationComposer,
     $$SubDivinationTypesTableCreateCompanionBuilder,
     $$SubDivinationTypesTableUpdateCompanionBuilder,
-    (SubDivinationType, $$SubDivinationTypesTableReferences),
-    SubDivinationType,
+    (SubDivinationTypeDataModel, $$SubDivinationTypesTableReferences),
+    SubDivinationTypeDataModel,
     PrefetchHooks Function({bool divinationSubDivinationTypeMappersRefs})>;
 typedef $$SeekerDivinationMappersTableCreateCompanionBuilder
     = SeekerDivinationMappersCompanion Function({
@@ -10760,7 +10281,7 @@ typedef $$TimingDivinationsTableCreateCompanionBuilder
   Value<DateTime> createdAt,
   Value<DateTime?> lastUpdatedAt,
   Value<DateTime?> deletedAt,
-  required String queryUuid,
+  required String divinationUuid,
   required DateTimeType timingType,
   required DateTime datetime,
   Value<bool> isManual,
@@ -10772,6 +10293,7 @@ typedef $$TimingDivinationsTableCreateCompanionBuilder
   Value<bool> isLeapMonth,
   required int lunarDay,
   required String timingInfoUuid,
+  Value<Location?> location,
   Value<List<DivinationDatetimeModel>?> timingInfoListJson,
   Value<int> rowid,
 });
@@ -10781,7 +10303,7 @@ typedef $$TimingDivinationsTableUpdateCompanionBuilder
   Value<DateTime> createdAt,
   Value<DateTime?> lastUpdatedAt,
   Value<DateTime?> deletedAt,
-  Value<String> queryUuid,
+  Value<String> divinationUuid,
   Value<DateTimeType> timingType,
   Value<DateTime> datetime,
   Value<bool> isManual,
@@ -10793,6 +10315,7 @@ typedef $$TimingDivinationsTableUpdateCompanionBuilder
   Value<bool> isLeapMonth,
   Value<int> lunarDay,
   Value<String> timingInfoUuid,
+  Value<Location?> location,
   Value<List<DivinationDatetimeModel>?> timingInfoListJson,
   Value<int> rowid,
 });
@@ -10818,8 +10341,9 @@ class $$TimingDivinationsTableFilterComposer
   ColumnFilters<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get queryUuid => $composableBuilder(
-      column: $table.queryUuid, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid,
+      builder: (column) => ColumnFilters(column));
 
   ColumnWithTypeConverterFilters<DateTimeType, DateTimeType, int>
       get timingType => $composableBuilder(
@@ -10865,6 +10389,11 @@ class $$TimingDivinationsTableFilterComposer
       column: $table.timingInfoUuid,
       builder: (column) => ColumnFilters(column));
 
+  ColumnWithTypeConverterFilters<Location?, Location, String> get location =>
+      $composableBuilder(
+          column: $table.location,
+          builder: (column) => ColumnWithTypeConverterFilters(column));
+
   ColumnWithTypeConverterFilters<List<DivinationDatetimeModel>?,
           List<DivinationDatetimeModel>, String>
       get timingInfoListJson => $composableBuilder(
@@ -10894,8 +10423,9 @@ class $$TimingDivinationsTableOrderingComposer
   ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
       column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get queryUuid => $composableBuilder(
-      column: $table.queryUuid, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid,
+      builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<int> get timingType => $composableBuilder(
       column: $table.timingType, builder: (column) => ColumnOrderings(column));
@@ -10931,6 +10461,9 @@ class $$TimingDivinationsTableOrderingComposer
       column: $table.timingInfoUuid,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get location => $composableBuilder(
+      column: $table.location, builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get timingInfoListJson => $composableBuilder(
       column: $table.timingInfoListJson,
       builder: (column) => ColumnOrderings(column));
@@ -10957,8 +10490,8 @@ class $$TimingDivinationsTableAnnotationComposer
   GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
-  GeneratedColumn<String> get queryUuid =>
-      $composableBuilder(column: $table.queryUuid, builder: (column) => column);
+  GeneratedColumn<String> get divinationUuid => $composableBuilder(
+      column: $table.divinationUuid, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<DateTimeType, int> get timingType =>
       $composableBuilder(
@@ -10996,6 +10529,9 @@ class $$TimingDivinationsTableAnnotationComposer
 
   GeneratedColumn<String> get timingInfoUuid => $composableBuilder(
       column: $table.timingInfoUuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<Location?, String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
 
   GeneratedColumnWithTypeConverter<List<DivinationDatetimeModel>?, String>
       get timingInfoListJson => $composableBuilder(
@@ -11035,7 +10571,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUpdatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
-            Value<String> queryUuid = const Value.absent(),
+            Value<String> divinationUuid = const Value.absent(),
             Value<DateTimeType> timingType = const Value.absent(),
             Value<DateTime> datetime = const Value.absent(),
             Value<bool> isManual = const Value.absent(),
@@ -11047,6 +10583,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             Value<bool> isLeapMonth = const Value.absent(),
             Value<int> lunarDay = const Value.absent(),
             Value<String> timingInfoUuid = const Value.absent(),
+            Value<Location?> location = const Value.absent(),
             Value<List<DivinationDatetimeModel>?> timingInfoListJson =
                 const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -11056,7 +10593,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             createdAt: createdAt,
             lastUpdatedAt: lastUpdatedAt,
             deletedAt: deletedAt,
-            queryUuid: queryUuid,
+            divinationUuid: divinationUuid,
             timingType: timingType,
             datetime: datetime,
             isManual: isManual,
@@ -11068,6 +10605,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             isLeapMonth: isLeapMonth,
             lunarDay: lunarDay,
             timingInfoUuid: timingInfoUuid,
+            location: location,
             timingInfoListJson: timingInfoListJson,
             rowid: rowid,
           ),
@@ -11076,7 +10614,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime?> lastUpdatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
-            required String queryUuid,
+            required String divinationUuid,
             required DateTimeType timingType,
             required DateTime datetime,
             Value<bool> isManual = const Value.absent(),
@@ -11088,6 +10626,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             Value<bool> isLeapMonth = const Value.absent(),
             required int lunarDay,
             required String timingInfoUuid,
+            Value<Location?> location = const Value.absent(),
             Value<List<DivinationDatetimeModel>?> timingInfoListJson =
                 const Value.absent(),
             Value<int> rowid = const Value.absent(),
@@ -11097,7 +10636,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             createdAt: createdAt,
             lastUpdatedAt: lastUpdatedAt,
             deletedAt: deletedAt,
-            queryUuid: queryUuid,
+            divinationUuid: divinationUuid,
             timingType: timingType,
             datetime: datetime,
             isManual: isManual,
@@ -11109,6 +10648,7 @@ class $$TimingDivinationsTableTableManager extends RootTableManager<
             isLeapMonth: isLeapMonth,
             lunarDay: lunarDay,
             timingInfoUuid: timingInfoUuid,
+            location: location,
             timingInfoListJson: timingInfoListJson,
             rowid: rowid,
           ),

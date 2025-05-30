@@ -10,12 +10,8 @@ DivinationDatetimeModel _$DivinationDatetimeModelFromJson(
         Map<String, dynamic> json) =>
     DivinationDatetimeModel(
       uuid: json['uuid'] as String,
-      type: $enumDecode(_$EnumDatetimeTypeEnumMap, json['type']),
-      hourAdjusted: (json['hourAdjusted'] as num?)?.toInt(),
-      location: json['location'] == null
-          ? null
-          : Location.fromJson(json['location'] as Map<String, dynamic>),
-      timezoneStr: json['timezoneStr'] as String,
+      observer:
+          ObserverDataModel.fromJson(json['observer'] as Map<String, dynamic>),
       datetime: DateTime.parse(json['datetime'] as String),
       yearJiaZi: $enumDecode(_$JiaZiEnumMap, json['yearJiaZi']),
       monthJiaZi: $enumDecode(_$JiaZiEnumMap, json['monthJiaZi']),
@@ -26,7 +22,6 @@ DivinationDatetimeModel _$DivinationDatetimeModelFromJson(
       jieQiInfo: JieQiInfo.fromJson(json['jieQiInfo'] as Map<String, dynamic>),
       isSeersLocation: json['isSeersLocation'] as bool,
       isLeapMonth: json['isLeapMonth'] as bool,
-      isManualCalibration: json['isManualCalibration'] as bool,
       isDst: json['isDst'] as bool,
     );
 
@@ -34,11 +29,9 @@ Map<String, dynamic> _$DivinationDatetimeModelToJson(
         DivinationDatetimeModel instance) =>
     <String, dynamic>{
       'uuid': instance.uuid,
-      'type': _$EnumDatetimeTypeEnumMap[instance.type]!,
-      'hourAdjusted': instance.hourAdjusted,
-      'location': instance.location,
+      'isDst': instance.isDst,
       'isSeersLocation': instance.isSeersLocation,
-      'timezoneStr': instance.timezoneStr,
+      'observer': instance.observer,
       'datetime': instance.datetime.toIso8601String(),
       'yearJiaZi': _$JiaZiEnumMap[instance.yearJiaZi]!,
       'monthJiaZi': _$JiaZiEnumMap[instance.monthJiaZi]!,
@@ -48,16 +41,7 @@ Map<String, dynamic> _$DivinationDatetimeModelToJson(
       'isLeapMonth': instance.isLeapMonth,
       'lunarDay': instance.lunarDay,
       'jieQiInfo': instance.jieQiInfo,
-      'isManualCalibration': instance.isManualCalibration,
-      'isDst': instance.isDst,
     };
-
-const _$EnumDatetimeTypeEnumMap = {
-  EnumDatetimeType.standard: '阳历',
-  EnumDatetimeType.removeDST: '移除夏令时',
-  EnumDatetimeType.meanSolar: '平太阳时',
-  EnumDatetimeType.trueSolar: '真太阳时',
-};
 
 const _$JiaZiEnumMap = {
   JiaZi.JIA_ZI: '甲子',

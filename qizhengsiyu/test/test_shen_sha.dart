@@ -25,7 +25,6 @@ import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao_shen_sha.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import 'package:qizhengsiyu/main.dart';
 import 'package:qizhengsiyu/models/di_zhi_shen_sha.dart';
 
 void main() {

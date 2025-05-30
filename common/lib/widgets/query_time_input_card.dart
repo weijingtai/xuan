@@ -10,6 +10,7 @@ import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/models/sp_location_datamodel.dart';
 import 'package:common/models/sp_timezone_datamodel.dart';
+import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_input_card.dart';
 import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
@@ -32,28 +33,27 @@ import 'package:uuid/uuid.dart';
 // import 'package:timezone/data/latest.dart' as tz;
 
 import '../datamodel/location.dart';
+import '../enums/enum_datetime_type.dart';
 import '../enums/enum_gender.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
 import '../models/divination_datetime.dart';
 import 'eight_chars_selection_card.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';
-import 'timezone_location_viewmodel.dart';
+import '../viewmodels/timezone_location_viewmodel.dart';
 
 class QueryTimeInputCard extends StatefulWidget {
   // final String defaultTimeZone;
-  final PageType defaultPageType;
+  final DateTimeType defaultDateTimeType;
   final AppFeatureModule appFeatureModule;
-  final String defaultTimezone;
+  // final String defaultTimezone;
   final ValueNotifier<
           List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>>?>
       selectableCardsNotifier;
   const QueryTimeInputCard(
       {super.key,
-      // required this.defaultTimeZone,
-      required this.defaultPageType,
+      required this.defaultDateTimeType,
       required this.selectableCardsNotifier,
-      required this.defaultTimezone,
       this.appFeatureModule = AppFeatureModule.Golabel});
 
   @override
@@ -73,11 +73,12 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
 
   late TextEditingController _nameController;
 
-  late final ValueNotifier<PageType> _tabSelectNotifier;
+  late final ValueNotifier<DateTimeType> _tabSelectNotifier;
 
   late final ValueNotifier<bool> showTimezoneAtTitleNotifier =
       ValueNotifier(false);
 
+  final ValueNotifier<bool> isEditorNotifier = ValueNotifier(false);
   // late final ValueNotifier<bool> _isSeersLocationNotifier;
 
   final CommonLogger _commonLogger = CommonLogger();
@@ -98,34 +99,35 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
   final ValueNotifier<String?> _inputQuestionDetailValueNotifier =
       ValueNotifier<String?>(null);
 
+  late tz.TZDateTime _tzNow;
   late final ValueNotifier<Tuple2<String, bool>> _nowClockTimeNotifier;
-  late final Timer _nowClockTimer;
-  late final DateFormat secondsFormat;
+  Timer? _nowClockTimer;
+  // late final DateFormat secondsFormat =;
+  final DateFormat secondsFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
 
   @override
   void initState() {
     super.initState();
     _timezoneLocationViewModel.load();
-    // _timezoneLocationViewModel = TimezoneLocationViewModel(
-    //   appFeatureModule: widget.appFeatureModule,
-    // )..load();
-
+    _nowClockTimeNotifier = ValueNotifier(Tuple2("loading", false));
     String queryUuid = Uuid().v4();
     _nameController = TextEditingController();
     _controller = AnimationController(vsync: this);
-    _tabSelectNotifier = ValueNotifier<PageType>(widget.defaultPageType);
+    _tabSelectNotifier =
+        ValueNotifier<DateTimeType>(widget.defaultDateTimeType);
     _tabSelectNotifier.addListener(() {
-      _pageController.animateToPage(_tabSelectNotifier.value.pageIndex,
-          duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
-      // _pageController.jumpToPage(_tabSelectNotifier.value.pageIndex);
+      _pageController.animateToPage(
+          getPageIndexByDateTimeType(_tabSelectNotifier.value),
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut);
     });
 
     _timezoneLocationViewModel.isDefaultTimezoneNotifier.addListener(() {
       showTimezoneAtTitleNotifier.value =
           _timezoneLocationViewModel.isDefaultTimezoneNotifier.value;
     });
-    _pageController =
-        PageController(initialPage: _tabSelectNotifier.value.pageIndex);
+    _pageController = PageController(
+        initialPage: getPageIndexByDateTimeType(widget.defaultDateTimeType));
 
     // _removeDSTTimeNotifier = ValueNotifier(false);
 
@@ -133,24 +135,49 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     // _DSTBirthTimeNotifier = ValueNotifier(null);
     // _selectedBirthTimeNotifier = ValueNotifier(null)
     _timezoneLocationViewModel.selectedTimeNotifier.addListener(() {
-      setNormalAndDSTSelectableCards(queryUuid);
+      if (_timezoneLocationViewModel.selectedTimeNotifier.value != null) {
+        setNormalAndDSTSelectableCards(queryUuid);
+        // 当位置已经设置时，需要添加 mean solar 与 true solar
+        if (_timezoneLocationViewModel.selectedLocationNotifier.value != null) {
+          bool isManual = _timezoneLocationViewModel
+                  .selectedLocationNotifier.value!.preciseCoordinates !=
+              null;
+          setMeanSolarAndTrueSolarSelectableCards(queryUuid, isManual,
+              _timezoneLocationViewModel.selectedLocationNotifier.value!);
+        } else {
+          if (_timezoneLocationViewModel.isSeerLocationNotifier.value &&
+              _timezoneLocationViewModel.myLocationNotifier.value != null) {
+            bool isManual = _timezoneLocationViewModel
+                    .myLocationNotifier.value!.preciseCoordinates !=
+                null;
+            setMeanSolarAndTrueSolarSelectableCards(queryUuid, isManual,
+                _timezoneLocationViewModel.myLocationNotifier.value!);
+          }
+        }
+      } else {
+        startNewNowClockTimer();
+        removeAllSelectableCards();
+      }
     });
+
     _timezoneLocationViewModel.timezoneNotifier.addListener(() {
-      setNormalAndDSTSelectableCards(queryUuid);
+      startNewNowClockTimer();
     });
 
     _timezoneLocationViewModel.selectedLocationNotifier.addListener(() {
       Location? selectedLocation =
           _timezoneLocationViewModel.selectedLocationNotifier.value;
       if (selectedLocation != null) {
-        setMeanSolarAndTrueSolarSelectableCards(
-            queryUuid, false, selectedLocation);
         if (_timezoneLocationViewModel
                 .selectedLocationNotifier.value!.coordinates !=
             null) {
           l.i("手动校准经纬为 ${_timezoneLocationViewModel.selectedLocationNotifier.value!.coordinates}");
           setMeanSolarAndTrueSolarSelectableCards(
               queryUuid, true, selectedLocation);
+        } else {
+          l.i("使用官方给定中心");
+          setMeanSolarAndTrueSolarSelectableCards(
+              queryUuid, false, selectedLocation);
         }
       } else {
         // 当清除地理位置之后，需要已经存在的card
@@ -159,26 +186,64 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               widget.selectableCardsNotifier.value!.where((e) {
             return (e.key == EnumDatetimeType.standard ||
                     e.key == EnumDatetimeType.removeDST) &&
-                !e.value.isManualCalibration;
+                !e.value.observer.isManualCalibration;
           }).toList();
         }
       }
     });
 
-    _nowClockTimeNotifier =
-        ValueNotifier<Tuple2<String, bool>>(getNowClockTime());
-
-    _nowClockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_nowClockTimer.isActive) {
-        _nowClockTimeNotifier.value = getNowClockTime();
-      }
-    });
     _timezoneLocationViewModel.isDSTNotifier.addListener(() {
       if (_timezoneLocationViewModel.isDSTNotifier.value) {
         if (isDSTShakeMeKey.currentState != null &&
             isDSTShakeMeKey.currentState is ShakeWidgetState) {
           (isDSTShakeMeKey.currentState as ShakeWidgetState).shake();
         }
+      }
+    });
+  }
+
+  int getPageIndexByDateTimeType(DateTimeType datetimeType) {
+    switch (datetimeType) {
+      case DateTimeType.solar:
+        return 0;
+      case DateTimeType.lunar:
+        return 1;
+      case DateTimeType.ganZhi:
+        return 2;
+    }
+  }
+
+  DateTimeType getDateTimeTypeByPageIndex(int index) {
+    switch (index) {
+      case 0:
+        return DateTimeType.solar;
+      case 1:
+        return DateTimeType.lunar;
+      case 2:
+        return DateTimeType.ganZhi;
+    }
+    return DateTimeType.solar;
+  }
+
+  void stopNowClockTimer() {
+    if (_nowClockTimer != null) {
+      _nowClockTimer!.cancel();
+      _nowClockTimer = null;
+    }
+  }
+
+  void startNewNowClockTimer() {
+    stopNowClockTimer();
+    _tzNow = getNowClockTime();
+    _nowClockTimeNotifier.value = Tuple2<String, bool>(
+        secondsFormat.format(_tzNow.toDateTime()), _tzNow.timeZone.isDst);
+
+    _nowClockTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_nowClockTimer != null && _nowClockTimer!.isActive) {
+        // _nowClockTimeNotifier.value = getNowClockTime();
+        _tzNow = _tzNow.add(const Duration(seconds: 1));
+        _nowClockTimeNotifier.value = Tuple2<String, bool>(
+            secondsFormat.format(_tzNow.toDateTime()), _tzNow.timeZone.isDst);
       }
     });
   }
@@ -190,29 +255,32 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     _pageController.dispose();
 
     showTimezoneAtTitleNotifier.dispose();
-    // _isSeersLocationNotifier.dispose();
     _isDivinationQuestionNotifier.dispose();
     _inputQuestionStrValueNotifier.dispose();
     _inputQuestionDetailValueNotifier.dispose();
     _isExpandedNotifier.dispose();
+    isEditorNotifier.dispose();
     _nowClockTimeNotifier.dispose();
-    _nowClockTimer.cancel();
+    _nowClockTimer?.cancel();
 
     super.dispose();
   }
 
   // @return:
   // Tuple2<String,bool> 第一个元素为时间字符串，第二个元素为是否为夏令时
-  Tuple2<String, bool> getNowClockTime() {
+  tz.TZDateTime getNowClockTime() {
     // return Tuple2("ok", true);
-    DateFormat secondsFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-    tz.TZDateTime tzSelectedBirthTime = tz.TZDateTime.from(
-        DateTime.now(),
-        tz.getLocation(context.read<TimezoneLocationViewModel>().timezone ??
-            widget.defaultTimezone));
+    tz.TZDateTime tzNow = tz.TZDateTime.from(DateTime.now(),
+        tz.getLocation(context.read<TimezoneLocationViewModel>().timezone!));
 
-    return Tuple2(secondsFormat.format(tzSelectedBirthTime.toDateTime()),
-        tzSelectedBirthTime.timeZone.isDst);
+    // return Tuple2(secondsFormat.format(tzSelectedBirthTime.toDateTime()),
+    //     tzSelectedBirthTime.timeZone.isDst);
+    return tzNow;
+  }
+
+  void removeAllSelectableCards() {
+    l.i("remove all selectableCars");
+    widget.selectableCardsNotifier.value = [];
   }
 
   void setNormalAndDSTSelectableCards(String queryUuid) {
@@ -231,11 +299,17 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
       final isDST = tzSelectedBirthTime.timeZone.isDst;
       final DivinationDatetimeModel normalQueryDateTime =
           SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
-              queryUuid,
-              selectedBirthTime,
-              timezoneStr,
-              isDST,
-              context
+              queryUuid: queryUuid,
+              dateTime: selectedBirthTime,
+              timezoneStr: timezoneStr,
+              location: context
+                      .read<TimezoneLocationViewModel>()
+                      .isSeerLocationNotifier
+                      .value
+                  ? _timezoneLocationViewModel.myLocationNotifier.value
+                  : _timezoneLocationViewModel.selectedLocationNotifier.value,
+              isDST: isDST,
+              isSeersLocation: context
                   .read<TimezoneLocationViewModel>()
                   .isSeerLocationNotifier
                   .value);
@@ -247,11 +321,17 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
             selectedBirthTime.subtract(Duration(hours: 1));
         DivinationDatetimeModel removeDSTQueryDateTime =
             SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(
-                queryUuid,
-                nonDSTDateTime,
-                timezoneStr,
-                -1,
-                context
+                queryUuid: queryUuid,
+                dateTime: nonDSTDateTime,
+                timezoneStr: timezoneStr,
+                hourAdjusted: -1,
+                location: context
+                        .read<TimezoneLocationViewModel>()
+                        .isSeerLocationNotifier
+                        .value
+                    ? _timezoneLocationViewModel.myLocationNotifier.value
+                    : _timezoneLocationViewModel.selectedLocationNotifier.value,
+                isSeersLocation: context
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
                     .value);
@@ -295,7 +375,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         final tzDateTime = tz.TZDateTime.from(
             _timezoneLocationViewModel.selectedDatetime!,
             tz.getLocation(_timezoneLocationViewModel.timezoneNotifier.value!));
-        // print("selectedBirthTime: ${_selectedBirthTimeNotifier.value}");
         final meanSolarDateTime =
             SolarLunarDateTimeHelper.calculateMeanSolarQueryDateTimeInfo(
                 queryUuid,
@@ -305,37 +384,54 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
                     .value);
-        final trueSolarDateTime =
-            SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
-                queryUuid,
-                meanSolarDateTime.datetime,
-                _timezoneLocationViewModel.timezoneNotifier.value!,
-                location.coordinates!,
-                context
-                    .read<TimezoneLocationViewModel>()
-                    .isSeerLocationNotifier
-                    .value);
+        var meanTrueSolarList = [
+          MapEntry(meanType, meanSolarDateTime),
+        ];
+        if (location.address?.area != null) {
+          final trueSolarDateTime =
+              SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
+                  queryUuid,
+                  _timezoneLocationViewModel.selectedTimeNotifier.value!,
+                  _timezoneLocationViewModel.timezoneNotifier.value!,
+                  location.address!.city!.coordinates,
+                  context
+                      .read<TimezoneLocationViewModel>()
+                      .isSeerLocationNotifier
+                      .value);
+          l.i("add new ${isToManual ? "manualTrueSolar" : "trueSolar"} to selectable card");
+          meanTrueSolarList.add(MapEntry(trueType, trueSolarDateTime));
+        }
+        if (location.preciseCoordinates != null) {
+          final trueSolarDateTime =
+              SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
+                  queryUuid,
+                  _timezoneLocationViewModel.selectedTimeNotifier.value!,
+                  _timezoneLocationViewModel.timezoneNotifier.value!,
+                  location.address!.city!.coordinates,
+                  context
+                      .read<TimezoneLocationViewModel>()
+                      .isSeerLocationNotifier
+                      .value);
+          l.i("add new ${isToManual ? "manualTrueSolar" : "trueSolar"} to selectable card");
+          // l.t(trueSolarDateTime);
+
+          meanTrueSolarList.add(MapEntry(
+              trueType,
+              trueSolarDateTime.clone(
+                  observer: trueSolarDateTime.observer
+                      .copyWith(isManualCalibration: true))));
+        } else {
+          l.i("user not provider area OR preciseCoordinates, the True Solar Datetime without meaning.");
+        }
+
         l.i("add new ${isToManual ? "manualMeanSolar" : "meanSolar"} to selectable card");
         l.t(meanSolarDateTime);
-        l.i("add new ${isToManual ? "manualTrueSolar" : "trueSolar"} to selectable card");
-        l.t(trueSolarDateTime);
 
         List<MapEntry<EnumDatetimeType, DivinationDatetimeModel>>
             clonedEntries =
             widget.selectableCardsNotifier.value!.map((e) => e).toList();
         widget.selectableCardsNotifier.value = clonedEntries
-          ..addAll([
-            MapEntry(
-                meanType,
-                isToManual
-                    ? meanSolarDateTime.clone(isManualCalibration: true)
-                    : meanSolarDateTime),
-            MapEntry(
-                trueType,
-                isToManual
-                    ? trueSolarDateTime.clone(isManualCalibration: true)
-                    : trueSolarDateTime)
-          ]);
+          ..addAll(meanTrueSolarList);
         // widget.selectableCardsNotifier.value!..add(MapEntry(EnumDatetimeType.meanSolar, meanSolarDateTime));
       }
     }
@@ -377,21 +473,33 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         l.i("出生时间为夏令时时间，根据夏令时时间计算 八字等信息, 同时给出移除夏令时后的时间");
         final dstDateTime =
             SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
-                queryUuid,
-                datetime,
-                _timezoneLocationViewModel.timezoneNotifier.value!,
-                true,
-                context
+                queryUuid: queryUuid,
+                dateTime: datetime,
+                timezoneStr: _timezoneLocationViewModel.timezoneNotifier.value!,
+                location: context
+                        .read<TimezoneLocationViewModel>()
+                        .isSeerLocationNotifier
+                        .value
+                    ? _timezoneLocationViewModel.myLocationNotifier.value
+                    : _timezoneLocationViewModel.selectedLocationNotifier.value,
+                isDST: true,
+                isSeersLocation: context
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
                     .value);
         final removedDSTDateTime =
             SolarLunarDateTimeHelper.calculateRemoveDSTQueryDateTimeInfo(
-                queryUuid,
-                datetime,
-                _timezoneLocationViewModel.timezoneNotifier.value!,
-                -1,
-                context
+                queryUuid: queryUuid,
+                dateTime: datetime,
+                timezoneStr: _timezoneLocationViewModel.timezoneNotifier.value!,
+                hourAdjusted: -1,
+                location: context
+                        .read<TimezoneLocationViewModel>()
+                        .isSeerLocationNotifier
+                        .value
+                    ? _timezoneLocationViewModel.myLocationNotifier.value
+                    : _timezoneLocationViewModel.selectedLocationNotifier.value,
+                isSeersLocation: context
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
                     .value);
@@ -401,11 +509,17 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         l.i("当前为非夏令时");
         final normalDateTimeInfo =
             SolarLunarDateTimeHelper.calculateNormalQueryDateTimeInfo(
-                queryUuid,
-                datetime,
-                _timezoneLocationViewModel.timezoneNotifier.value!,
-                false,
-                context
+                queryUuid: queryUuid,
+                dateTime: datetime,
+                timezoneStr: _timezoneLocationViewModel.timezoneNotifier.value!,
+                isDST: false,
+                location: context
+                        .read<TimezoneLocationViewModel>()
+                        .isSeerLocationNotifier
+                        .value
+                    ? _timezoneLocationViewModel.myLocationNotifier.value
+                    : _timezoneLocationViewModel.selectedLocationNotifier.value,
+                isSeersLocation: context
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
                     .value);
@@ -441,9 +555,9 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         final normalDateTimeInfo =
             SolarLunarDateTimeHelper.calculateTrueSolarQueryDateTimeInfo(
                 queryUuid,
-                meanDateTimeInfo.datetime,
+                _timezoneLocationViewModel.selectedTimeNotifier.value!,
                 timezoneStr,
-                location.coordinates!,
+                location.coordinates ?? location.address!.city!.coordinates,
                 context
                     .read<TimezoneLocationViewModel>()
                     .isSeerLocationNotifier
@@ -486,7 +600,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 return Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  children: PageType.values
+                  children: DateTimeType.values
                       .map((e) => _buildTabBarButton(
                           e, smallRadius, selectedTabBarButton))
                       .toList(),
@@ -494,13 +608,13 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               },
             ),
           ),
-          ValueListenableBuilder<PageType>(
+          ValueListenableBuilder<DateTimeType>(
             valueListenable: _tabSelectNotifier,
             builder: (ctx, selectedTabBarButton, child) {
               return AnimatedContainer(
                 duration: Duration(milliseconds: 300),
                 width: contentWidth - (contentPadding * 2),
-                height: selectedTabBarButton == PageType.datetime ? 480 : 80,
+                height: selectedTabBarButton == DateTimeType.solar ? 480 : 80,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -526,7 +640,8 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                     decelerationRate: ScrollDecelerationRate.fast,
                   ),
                   onPageChanged: (index) {
-                    _tabSelectNotifier.value = PageType.getFromPageIndex(index);
+                    _tabSelectNotifier.value =
+                        getDateTimeTypeByPageIndex(index);
                   },
                   children: [
                     _buildTimeSelectionContent(),
@@ -559,7 +674,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
   }
 
   Widget _buildTabBarButton(
-      PageType type, double smallRadius, PageType selected) {
+      DateTimeType type, double smallRadius, DateTimeType selected) {
     return AnimatedContainer(
       duration: Duration(milliseconds: 400),
       height: 32,
@@ -591,12 +706,12 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               topRight: Radius.circular(smallRadius),
             ),
             onTap: () {
-              _tabSelectNotifier.value = type;
               _pageController.animateToPage(
-                type.pageIndex,
+                getPageIndexByDateTimeType(type),
                 duration: Duration(milliseconds: 600),
                 curve: Curves.easeInOut,
               );
+              context.read<DevEnterPageViewModel>().updateDatetimeType(type);
             },
             child: AnimatedContainer(
               duration: Duration(milliseconds: 400),
@@ -632,7 +747,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               return SlideSwitcher(
                 initialIndex: tabIndex.index,
                 onSelect: (index) {
-                  _tabSelectNotifier.value = PageType.getFromPageIndex(index);
+                  _tabSelectNotifier.value = getDateTimeTypeByPageIndex(index);
                   _pageController.animateToPage(index,
                       duration: Duration(milliseconds: 400),
                       curve: Curves.bounceIn);
@@ -651,20 +766,20 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 ],
                 children: [
                   Text(
-                    _getTabBarButtonText(PageType.datetime),
-                    style: tabIndex != PageType.datetime
+                    _getTabBarButtonText(DateTimeType.solar),
+                    style: tabIndex != DateTimeType.solar
                         ? _getSwitcherInactivatedStyle()
                         : _getSwitcherActivatedStyle(Colors.blueAccent),
                   ),
                   Text(
-                    _getTabBarButtonText(PageType.chineseTraditional),
-                    style: tabIndex != PageType.chineseTraditional
+                    _getTabBarButtonText(DateTimeType.lunar),
+                    style: tabIndex != DateTimeType.lunar
                         ? _getSwitcherInactivatedStyle()
                         : _getSwitcherActivatedStyle(Colors.blueAccent),
                   ),
                   Text(
-                    _getTabBarButtonText(PageType.eightChars),
-                    style: tabIndex != PageType.eightChars
+                    _getTabBarButtonText(DateTimeType.ganZhi),
+                    style: tabIndex != DateTimeType.ganZhi
                         ? _getSwitcherInactivatedStyle()
                         : _getSwitcherActivatedStyle(Colors.blueAccent),
                   ),
@@ -697,13 +812,13 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     );
   }
 
-  String _getTabBarButtonText(PageType type) {
+  String _getTabBarButtonText(DateTimeType type) {
     switch (type) {
-      case PageType.datetime:
+      case DateTimeType.solar:
         return "阳历";
-      case PageType.chineseTraditional:
+      case DateTimeType.lunar:
         return "农历";
-      case PageType.eightChars:
+      case DateTimeType.ganZhi:
         return "八字";
     }
   }
@@ -786,34 +901,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
             ],
           ),
         ));
-    bool setAsDefault = false;
-    return Row(
-      children: [
-        // Transform.scale(
-        // scale: 0.6,
-        // child: Checkbox(value: setAsDefault, onChanged: (newVal) async {})),
-        Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(4)),
-              border: Border.all(color: Colors.teal, width: 1),
-              color: Colors.teal),
-          child: Icon(Icons.check, size: 12, color: Colors.white),
-        ),
-        SizedBox(
-          width: 2,
-        ),
-        Text(
-          "记住这个位置",
-          style:
-              TextStyle(height: 1, fontSize: 12, color: Colors.grey.shade600),
-        )
-      ],
-    );
   }
-
-  ValueNotifier<bool> isEditorNotifier = ValueNotifier(false);
 
   Widget buildSelectMyLocation(double width) {
     return ValueListenableBuilder<Location?>(
@@ -856,7 +944,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                           child: AnimatedContainer(
                               duration: Duration(milliseconds: 400),
                               width: width,
-                              height: isEditor ? 72 + 28 : 42,
+                              height: isEditor ? 102 : 42,
                               alignment: Alignment.center,
                               padding: EdgeInsets.symmetric(
                                   horizontal: 12, vertical: 8),
@@ -928,16 +1016,23 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                       SizedBox(
                                         width: 4,
                                       ),
-                                      AnimatedDefaultTextStyle(
-                                          child: Text(defaultLocation),
-                                          style: TextStyle(
-                                              fontSize: 14,
-                                              height: 1.2,
-                                              color: isEditor
-                                                  ? Colors.transparent
-                                                  : Colors.black38),
-                                          duration:
-                                              Duration(milliseconds: 400)),
+                                      Container(
+                                        width: 120,
+                                        height: 18,
+                                        child: AnimatedDefaultTextStyle(
+                                            child: Text(defaultLocation),
+                                            overflow: TextOverflow.ellipsis,
+                                            softWrap: false,
+                                            maxLines: 1,
+                                            style: TextStyle(
+                                                fontSize: 14,
+                                                height: 1.2,
+                                                color: isEditor
+                                                    ? Colors.transparent
+                                                    : Colors.black38),
+                                            duration:
+                                                Duration(milliseconds: 400)),
+                                      ),
                                       Expanded(child: SizedBox()),
                                       InkWell(
                                           child: Icon(Icons.edit_document,
@@ -951,63 +1046,70 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                   ),
                                   if (isEditor) ...[
                                     SizedBox(
-                                      height: 12,
+                                      height: 4,
                                     ),
-                                    Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        RichText(
-                                          text: TextSpan(
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  height: 1,
-                                                  fontWeight: FontWeight.normal,
-                                                  color: Colors.black87),
-                                              text:
-                                                  "${location.address!.countryName} > ${location.address!.province.name}",
-                                              children: [
-                                                if (location.address!.city !=
-                                                    null)
-                                                  TextSpan(
-                                                      text:
-                                                          " > ${location.address!.city!.name}"),
-                                                if (location.address!.area !=
-                                                    null)
-                                                  TextSpan(
-                                                      text:
-                                                          " > ${location.address!.area!.name}"),
-                                              ]),
-                                        ),
-                                        RichText(
-                                          text: TextSpan(
-                                              style: TextStyle(
-                                                  fontSize: 10,
-                                                  height: 1.2,
-                                                  fontWeight: FontWeight.normal,
-                                                  color: Colors.grey.shade600),
-                                              children: [
-                                                location.preciseCoordinates ==
-                                                        null
-                                                    ? TextSpan(
+                                    Container(
+                                      height: 46,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          AutoSizeText.rich(
+                                            minFontSize: 10,
+                                            maxFontSize: 16,
+                                            TextSpan(
+                                                style: TextStyle(
+                                                    height: 1,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    color: Colors.black87),
+                                                text:
+                                                    "${location.address!.countryName} > ${location.address!.province.name}",
+                                                children: [
+                                                  if (location.address!.city !=
+                                                      null)
+                                                    TextSpan(
                                                         text:
-                                                            "经纬度: (${location.coordinates!.latitude}, ${location.coordinates!.longitude})",
-                                                      )
-                                                    : TextSpan(
+                                                            " > ${location.address!.city!.name}"),
+                                                  if (location.address!.area !=
+                                                      null)
+                                                    TextSpan(
                                                         text:
-                                                            "手动校准: (${location.preciseCoordinates!.latitude.toStringAsFixed(6)}, ${location.preciseCoordinates!.longitude.toStringAsFixed(6)})",
-                                                        style: TextStyle(
-                                                          color:
-                                                              Colors.blueAccent,
-                                                        )),
-                                              ]),
-                                        )
-                                      ],
+                                                            " > ${location.address!.area!.name}"),
+                                                ]),
+                                          ),
+                                          RichText(
+                                            text: TextSpan(
+                                                style: TextStyle(
+                                                    fontSize: 10,
+                                                    height: 1.2,
+                                                    fontWeight:
+                                                        FontWeight.normal,
+                                                    color:
+                                                        Colors.grey.shade600),
+                                                children: [
+                                                  location.preciseCoordinates ==
+                                                          null
+                                                      ? TextSpan(
+                                                          text:
+                                                              "经纬度: (${location.coordinates!.latitude}, ${location.coordinates!.longitude})",
+                                                        )
+                                                      : TextSpan(
+                                                          text:
+                                                              "手动校准: (${location.preciseCoordinates!.latitude.toStringAsFixed(6)}, ${location.preciseCoordinates!.longitude.toStringAsFixed(6)})",
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .blueAccent,
+                                                          )),
+                                                ]),
+                                          )
+                                        ],
+                                      ),
                                     ),
                                     SizedBox(
-                                      height: 12,
+                                      height: 4,
                                     ),
                                     Row(
                                       children: [
@@ -1586,7 +1688,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               return InkWell(
                 onTap: () async {
                   if (birthTime == null) {
-                    _nowClockTimer.cancel();
+                    stopNowClockTimer();
                     _timezoneLocationViewModel.updateDatetime(tzNow());
                   } else {
                     final result = await showBoardDateTimePicker(
@@ -1645,30 +1747,50 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 child: Text("选择"),
               ),
             ),
-            InkWell(
-              onTap: () {
-                _timezoneLocationViewModel.updateDatetime(tzNow());
-                // _selectedBirthTimeNotifier.value =
-                //     DateTime.now(); // clear the location inf
-              },
-              child: Container(
-                margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-                alignment: Alignment.center,
-                height: 24,
-                width: 48,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.blueGrey, width: 1),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.blueGrey.shade300,
-                          blurRadius: 4,
-                          spreadRadius: 4)
-                    ]),
-                child: Text("现在"),
-              ),
-            ),
+            ValueListenableBuilder<DateTime?>(
+                valueListenable: context
+                    .read<TimezoneLocationViewModel>()
+                    .selectedTimeNotifier,
+                builder: (ctx, selectedTime, _) {
+                  return InkWell(
+                    onTap: () {
+                      if (selectedTime == null) {
+                        _timezoneLocationViewModel.updateDatetime(tzNow());
+                      } else {
+                        _timezoneLocationViewModel.updateDatetime(null);
+                      }
+                    },
+                    child: Container(
+                      margin: EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                      alignment: Alignment.center,
+                      height: 24,
+                      width: 48,
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: selectedTime == null
+                                  ? Colors.blueGrey
+                                  : Colors.redAccent,
+                              width: 1),
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.grey.withAlpha(40),
+                                blurRadius: 4,
+                                spreadRadius: 4)
+                          ]),
+                      child: selectedTime == null
+                          ? Text(
+                              "现在",
+                              style: TextStyle(color: Colors.blueGrey),
+                            )
+                          : Text(
+                              "取消",
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                    ),
+                  );
+                }),
           ],
         )
       ],
@@ -1679,7 +1801,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     tz.TZDateTime tzSelectedBirthTime = tz.TZDateTime.from(
         DateTime.now(),
         tz.getLocation(context.read<TimezoneLocationViewModel>().timezone ??
-            widget.defaultTimezone));
+            context.read<TimezoneLocationViewModel>().localTimezone!));
     return tzSelectedBirthTime.toDateTime();
   }
 
@@ -1787,167 +1909,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
           )
         ]);
   }
-
-  // void alertSelectTimezone(String timezoneStr) {
-  //   double totalWidth = 320;
-  //   showDialog(
-  //       context: context,
-  //       builder: (ctx) {
-  //         return AlertDialog(
-  //             title: Text("时区设置"),
-  //             content: Container(
-  //               alignment: Alignment.center,
-  //               width: totalWidth,
-  //               height: 100,
-  //               child: Column(children: [
-  //                 ValueListenableBuilder<SPTimezoneDataModel?>(
-  //                     valueListenable: _spTimezoneDataModelNotifier,
-  //                     builder: (ctx, spTimezoneDataModel, _) {
-  //                       return ValueListenableBuilder<String?>(
-  //                           valueListenable: _localTimezoneNotifier,
-  //                           builder: (ctx, localTimezone, _) {
-  //                             String? defaultTimezone =
-  //                                 spTimezoneDataModel?.isDefaultTimezone != null
-  //                                     ? spTimezoneDataModel?.timezoneStr
-  //                                     : null;
-  //                             return ValueListenableBuilder<String?>(
-  //                                 valueListenable: _timezoneLocationViewModel.timezoneNotifier,
-  //                                 builder: (context, timezoneStr, _) {
-  //                                   return buildTimezoneDropdownList(totalWidth,timezoneStr,localTimezone,defaultTimezone);
-  //                                 });
-  //                           });
-  //                     }),
-  //                 Container(
-  //                   height: 18,
-  //                   width: totalWidth,
-  //                   alignment: Alignment.topCenter,
-  //                   // color: Colors.greenAccent.withAlpha(20),
-  //                   child: ValueListenableBuilder<SPTimezoneDataModel?>(
-  //                     valueListenable: _spTimezoneDataModelNotifier,
-  //                     builder: (context, spTimezoneDataModel, _) {
-  //                       return ValueListenableBuilder<String?>(
-  //                           valueListenable: _localTimezoneNotifier,
-  //                           builder: (ctx, localTimezoneStr, _) {
-  //                             return ValueListenableBuilder<String?>(
-  //                                 valueListenable: _timezoneLocationViewModel
-  //                                     .timezoneNotifier,
-  //                                 builder: (ctx, selectedTimezoneStr, _) {
-  //                                   //  当默认时区是存在的，且当前选择的时区不是默认时区是显示默认时区
-  //                                   if (_spTimezoneDataModelNotifier
-  //                                           .value?.isDefaultTimezone ??
-  //                                       false) {
-  //                                     List<TextSpan> textSpans = [];
-  //                                     if (selectedTimezoneStr !=
-  //                                         _spTimezoneDataModelNotifier
-  //                                             .value?.timezoneStr) {
-  //                                       textSpans = [
-  //                                         const TextSpan(text: "默认时区: "),
-  //                                         TextSpan(
-  //                                             text: _spTimezoneDataModelNotifier
-  //                                                 .value?.timezoneStr!,
-  //                                             style: TextStyle(
-  //                                                 color: Theme.of(ctx)
-  //                                                     .primaryColor))
-  //                                       ];
-  //                                     }
-  //                                     return Container(
-  //                                       padding: EdgeInsets.symmetric(
-  //                                           horizontal: 24),
-  //                                       child: TextButton(
-  //                                           onPressed: () {
-  //                                             if (_spTimezoneDataModelNotifier
-  //                                                     .value
-  //                                                     ?.isDefaultTimezone ??
-  //                                                 false) {
-  //                                               // && _spTimezoneDataModelNotifier.value?.timezoneStr != null){
-  //                                               _timezoneNotifier.value =
-  //                                                   _spTimezoneDataModelNotifier
-  //                                                       .value?.timezoneStr;
-  //                                             }
-  //                                             _timezoneLocationViewModel.updateTimezone(newTimezone)
-  //                                           },
-  //                                           child: Text.rich(
-  //                                             TextSpan(
-  //                                                 style: TextStyle(
-  //                                                     fontSize: 12,
-  //                                                     color: Colors.grey,
-  //                                                     height: 1,
-  //                                                     fontFamily: "NotoSansSC"),
-  //                                                 children: textSpans),
-  //                                           )),
-  //                                     );
-  //                                   } else {
-  //                                     List<TextSpan> textSpans = [];
-  //                                     if (_localTimezoneNotifier.value !=
-  //                                         selectedTimezoneStr) {
-  //                                       textSpans = [
-  //                                         const TextSpan(text: "本地时区: "),
-  //                                         TextSpan(
-  //                                             text: localTimezoneStr,
-  //                                             style: TextStyle(
-  //                                                 color: Colors.black87))
-  //                                       ];
-  //                                     }
-  //                                     return Container(
-  //                                       padding: EdgeInsets.symmetric(
-  //                                           horizontal: 24),
-  //                                       child: TextButton(
-  //                                           onPressed: () {
-  //                                             if (_timezoneNotifier.value !=
-  //                                                 localTimezoneStr) {
-  //                                               _timezoneNotifier.value =
-  //                                                   localTimezoneStr;
-  //                                             }
-  //                                             _timezoneLocationViewModel
-  //                                                 .updateTimezone(
-  //                                                     localTimezoneStr);
-  //                                           },
-  //                                           child: Text.rich(
-  //                                             TextSpan(
-  //                                                 style: TextStyle(
-  //                                                     fontSize: 12,
-  //                                                     color: Colors.grey,
-  //                                                     height: 1,
-  //                                                     fontFamily: "NotoSansSC"),
-  //                                                 children: textSpans),
-  //                                           )),
-  //                                     );
-  //                                   }
-  //                                 });
-  //                           });
-  //                     },
-  //                   ),
-  //                 ),
-  //                 Container(
-  //                   height: 24,
-  //                   width: totalWidth,
-  //                   alignment: Alignment.topCenter,
-  //                   child: Row(
-  //                     mainAxisAlignment: MainAxisAlignment.end,
-  //                     crossAxisAlignment: CrossAxisAlignment.center,
-  //                     children: [
-  //                       buildSetAsDefaultTimezoneContent(),
-  //                       Expanded(child: SizedBox()),
-  //                       buildRemoveDSTContent()
-  //                     ],
-  //                   ),
-  //                 )
-  //               ]),
-  //             ),
-  //             actions: [
-  //               TextButton(
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                   child: Text("取消")),
-  //               TextButton(
-  //                   onPressed: () {
-  //                     Navigator.of(context).pop();
-  //                   },
-  //                   child: Text("确定")),
-  //             ]);
-  //       });
-  // }
 
   Widget buildSetTimezoneContentV1() {
     return Container(
@@ -2273,8 +2234,18 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                         Future.delayed(Duration(milliseconds: 600), () {
                           (isGlobalTimezoneChangedShakeMeKey.currentState
                                   as ShakeWidgetState)
-                              ?.shake();
+                              .shake();
                         });
+                        break;
+                      case TimezoneType.myLocationTimeZone:
+                        hintText = "“我的位置”时区：";
+                        hintTextColor = Colors.redAccent;
+                        Future.delayed(Duration(milliseconds: 600), () {
+                          (isGlobalTimezoneChangedShakeMeKey.currentState
+                                  as ShakeWidgetState)
+                              .shake();
+                        });
+                        break;
                     }
                     TextStyle hintTextStyle = TextStyle(
                         fontSize: 12,
@@ -2283,26 +2254,26 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                         fontFamily: "NotoSansSC");
                     String timezoneStr = tuple!.item2;
                     return Container(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        // padding: EdgeInsets.symmetric(horizontal: 24),
                         child: ShakeMe(
-                          // 4. pass the GlobalKey as an argument
-                          // 5. configure the animation parameters
-                          shakeCount: 3,
-                          shakeOffset: 12,
-                          shakeDuration: Duration(seconds: 1),
-                          key: isGlobalTimezoneChangedShakeMeKey,
-                          child: TextButton(
-                              onPressed: () {
-                                _timezoneLocationViewModel
-                                    .updateTimezone(timezoneStr);
-                              },
-                              child: Text.rich(
-                                TextSpan(
-                                    text: hintText,
-                                    style: hintTextStyle,
-                                    children: [TextSpan(text: timezoneStr)]),
-                              )),
-                        ));
+                      // 4. pass the GlobalKey as an argument
+                      // 5. configure the animation parameters
+                      shakeCount: 3,
+                      shakeOffset: 12,
+                      shakeDuration: Duration(seconds: 1),
+                      key: isGlobalTimezoneChangedShakeMeKey,
+                      child: TextButton(
+                          onPressed: () {
+                            _timezoneLocationViewModel
+                                .updateTimezone(timezoneStr);
+                          },
+                          child: Text.rich(
+                            TextSpan(
+                                text: hintText,
+                                style: hintTextStyle,
+                                children: [TextSpan(text: timezoneStr)]),
+                          )),
+                    ));
                   },
                 ),
               ),
@@ -2517,50 +2488,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     );
   }
 
-  // void handleDSTTime(DateTime? result, String timezoneStr) {
-  //   if (result != null) {
-  //     l.i("handle datetime from DST to normal");
-  //     final tzDateTime =
-  //         tz.TZDateTime.from(result, tz.getLocation(timezoneStr));
-  //     // final isDST = SolarTimeCalculator.checkIsDST(result, timezoneStr);
-  //     if (tzDateTime.timeZone.isDst) {
-  //       l.d("current datetime is DST");
-
-  //       if (_timezoneLocationViewModel?.isAutoHandleDSTNotifier.value ??
-  //           false) {
-  //         DateTime dstDateTime = result;
-  //         DateTime removedDSTDateTime =
-  //             dstDateTime.subtract(Duration(hours: 1));
-  //         _selectedBirthTimeNotifier.value = result;
-  //         // _DSTBirthTimeNotifier.value = removedDSTDateTime; // 保留DST，并显示在UI上
-  //         _timezoneLocationViewModel.isDSTNotifier.value = false;
-  //       } else {
-  //         _selectedBirthTimeNotifier.value = result;
-  //         _timezoneLocationViewModel.isDSTNotifier.value = true;
-  //       }
-  //     } else {
-  //       l.d("current datetime is not DST");
-  //       _selectedBirthTimeNotifier.value = result;
-  //       _timezoneLocationViewModel.isDSTNotifier.value = false;
-  //     }
-  //   }
-  // }
-
-  // void removeDSTTime(bool doRemove) {
-  //   if (_timezoneLocationViewModel.isDSTNotifier.value &&
-  //       _selectedBirthTimeNotifier.value != null) {
-  //     if (doRemove && _DSTBirthTimeNotifier.value == null) {
-  //       DateTime dstDateTime = _selectedBirthTimeNotifier.value!;
-  //       DateTime removedDSTDateTime = dstDateTime.subtract(Duration(hours: 1));
-  //       _selectedBirthTimeNotifier.value = removedDSTDateTime;
-  //       _DSTBirthTimeNotifier.value = dstDateTime;
-  //     } else {
-  //       _selectedBirthTimeNotifier.value = _DSTBirthTimeNotifier.value;
-  //       _DSTBirthTimeNotifier.value = null;
-  //     }
-  //   }
-  // }
-
   void helpTooltipTapped(EnumDatetimeType datetimeType) {
     switch (datetimeType) {
       case EnumDatetimeType.standard:
@@ -2657,26 +2584,4 @@ class QueryDateTimeHeplperModel {
         example:
             "如：北京时间(东八区标准时间)为“2025年3月13日 23:15”，新疆乌鲁木齐当地平太阳时为“2025年3月13日 21:05”，通过计算得到当日均时差为“-7分26秒”，真太阳时为“2025年3月13日 20:57:34”")
   };
-}
-
-enum PageType {
-  datetime(0),
-  chineseTraditional(1),
-  eightChars(2);
-
-  final int pageIndex;
-  const PageType(this.pageIndex);
-  // get by pageIndex
-  static PageType getFromPageIndex(int index) {
-    switch (index) {
-      case 0:
-        return datetime;
-      case 1:
-        return chineseTraditional;
-      case 2:
-        return eightChars;
-      default:
-        return datetime;
-    }
-  }
 }

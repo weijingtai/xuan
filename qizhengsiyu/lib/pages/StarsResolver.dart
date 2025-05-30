@@ -1,6 +1,7 @@
 import 'dart:core';
 import 'dart:math';
 
+import 'package:common/enums.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:tuple/tuple.dart';
 
@@ -117,9 +118,13 @@ class StarsResolver {
     if (needHandled.isEmpty) {
       return stars0;
     }
-    needHandled.forEach((k, v) => print("$k: ${v.length}"));
+    // needHandled.forEach((k, v) => print("$k: ${v.length}"));
 
     List<Set<UIStarModel>> connectedStars = findConnectedStars(needHandled);
+    // print("-------- ");
+    // connectedStars.map((e) => print(e.map((e) => e.star.starName).toList()));
+    // print("-------- ");
+
     connectedStars.sort((a, b) => a.length.compareTo(b.length));
 
     List<UIConstellationModel> constellations = [];
@@ -144,6 +149,8 @@ class StarsResolver {
     }
 
     if (constellations.length > 1) {
+      // print(
+      // "${constellations.length} --- ${constellations.map((e) => e.orderedStars.map((e) => e.star.starName).toList()).toList()}");
       handleTwoConstellationModel(addedSingleStarsConstellation);
     }
 
@@ -597,6 +604,9 @@ class StarsResolver {
       List<UIStarModel> stars,
       Map<UIStarModel, Set<UIStarModel>> needHandled,
       Set<UIStarModel> singleStar) {
+    // final sun = stars.firstWhere((t) => t.star == EnumStars.Sun);
+    // final mercury = stars.firstWhere((t) => t.star == EnumStars.Mercury);
+    // print(sun.inRangeAngle(mercury));
     for (var s in stars) {
       Set<UIStarModel> result = s.setupInRangeAngle(stars);
       if (result.isNotEmpty) {
@@ -605,6 +615,11 @@ class StarsResolver {
         singleStar.add(s);
       }
     }
+    // print("-------");
+    // needHandled.forEach((k, v) => print("$k: ${v.length}"));
+    // print("-------");
+    // stars.forEach((e) => print(e));
+    // print("-------");
   }
 
   // 辅助方法：处理奇数个圆周角度情况
@@ -838,7 +853,7 @@ class GraphUtils {
     return connectedComponents;
   }
 }
+
 /// @param outerR 外圈半径
 /// @param innerR 内圈半径
 /// @param r 小球半径
-

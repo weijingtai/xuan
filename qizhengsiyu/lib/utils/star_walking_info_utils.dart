@@ -15,7 +15,7 @@ class StarWalkingInfoUtils {
           mapper) {
     Sweph.swe_set_topo(observerPosition.longitude, observerPosition.latitude,
         observerPosition.altitude);
-    DateTime utcTime = observerPosition.fateLifeUtcTime!;
+    DateTime utcTime = observerPosition.dateTime;
 
     final double julianDay = Sweph.swe_julday(
         utcTime.year,

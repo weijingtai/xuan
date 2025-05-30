@@ -4,6 +4,7 @@ import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../datamodel/location.dart';
+import '../datamodel/observer_datamodel.dart';
 import 'eight_chars.dart';
 import 'jie_qi_info.dart';
 
@@ -50,13 +51,16 @@ class DivinationDatetimeModel extends Equatable {
   // extends DataClass with EquatableMixin {
   // 公共基础属性
   final String uuid;
-  final EnumDatetimeType type;
+  // final EnumDatetimeType type;
 
   // 差异化属性（声明为可空）
-  final int? hourAdjusted; // RemoveDST特有
-
-  final Location? location;
+  // final int? hourAdjusted; // RemoveDST特有
+  // final Location? location;
+  // final bool isManualCalibration;
+  final bool isDst;
   final bool isSeersLocation;
+  final ObserverDataModel observer;
+
   // 合并之 Location中
   // final Address? address; // MeanSolar特有
   // final Coordinates? coordinates; // TrueSolar特有
@@ -65,7 +69,7 @@ class DivinationDatetimeModel extends Equatable {
   // final String queryUuid;
   // final DateTime? lastUpdatedAt;
   // final DateTime? deletedAt;
-  final String timezoneStr;
+  // final String timezoneStr;
   final DateTime datetime;
   // final EightChars bazi;
   final JiaZi yearJiaZi;
@@ -83,8 +87,6 @@ class DivinationDatetimeModel extends Equatable {
   final bool isLeapMonth;
   final int lunarDay;
   final JieQiInfo jieQiInfo;
-  final bool isManualCalibration;
-  final bool isDst;
 
   String get lunarMonthStr {
     String lunarMonthStr =
@@ -103,12 +105,14 @@ class DivinationDatetimeModel extends Equatable {
   // 统一私有构造函数
   const DivinationDatetimeModel({
     required this.uuid,
-    required this.type,
-    this.hourAdjusted,
-    this.location,
+
+    // required this.type,
+    // this.hourAdjusted,
+    // this.location,
     // this.address,
     // this.coordinates,
-    required this.timezoneStr,
+    // required this.timezoneStr,
+    required this.observer,
     required this.datetime,
     required this.yearJiaZi,
     required this.monthJiaZi,
@@ -119,8 +123,8 @@ class DivinationDatetimeModel extends Equatable {
     required this.jieQiInfo,
     required this.isSeersLocation,
     required this.isLeapMonth,
-    required this.isManualCalibration,
     required this.isDst,
+    // required this.isManualCalibration,
     // required this.queryUuid,
     // this.lastUpdatedAt,
     // this.deletedAt,
@@ -138,26 +142,29 @@ class DivinationDatetimeModel extends Equatable {
     required JieQiInfo jieQiInfo,
     required bool isLeapMonth,
     required bool isSeersLocation,
+    required Location? location,
     bool isDst = false,
   }) {
     return DivinationDatetimeModel(
-      type: EnumDatetimeType.standard,
-      uuid: uuid,
-      isSeersLocation: isSeersLocation,
-      // queryUuid: queryUuid,
-      timezoneStr: timezoneStr,
-      datetime: datetime,
-      yearJiaZi: bazi.year,
-      monthJiaZi: bazi.month,
-      dayJiaZi: bazi.day,
-      timeJiaZi: bazi.time,
-      lunarMonth: lunarMonth,
-      isLeapMonth: isLeapMonth,
-      lunarDay: lunarDay,
-      jieQiInfo: jieQiInfo,
-      isManualCalibration: false,
-      isDst: isDst,
-    );
+        observer: ObserverDataModel(
+          timezoneStr: timezoneStr,
+          type: EnumDatetimeType.standard,
+          location: location,
+          coordinate: location?.coordinates,
+        ),
+        uuid: uuid,
+        isSeersLocation: isSeersLocation,
+        datetime: datetime,
+        yearJiaZi: bazi.year,
+        monthJiaZi: bazi.month,
+        dayJiaZi: bazi.day,
+        timeJiaZi: bazi.time,
+        lunarMonth: lunarMonth,
+        isLeapMonth: isLeapMonth,
+        lunarDay: lunarDay,
+        jieQiInfo: jieQiInfo,
+        // isManualCalibration: false,
+        isDst: isDst);
   }
 
   /// 移除夏令时工厂方法
@@ -173,16 +180,21 @@ class DivinationDatetimeModel extends Equatable {
     required int lunarDay,
     required JieQiInfo jieQiInfo,
     required bool isSeersLocation,
+    required Location? location,
   }) {
     assert(hourAdjusted != 0, "移除夏令时必须提供有效的hourAdjusted参数");
 
     return DivinationDatetimeModel(
-      type: EnumDatetimeType.removeDST,
       uuid: uuid,
       isSeersLocation: isSeersLocation,
       // queryUuid: queryUuid,
-      hourAdjusted: hourAdjusted,
-      timezoneStr: timezoneStr,
+      observer: ObserverDataModel(
+        timezoneStr: timezoneStr,
+        type: EnumDatetimeType.removeDST,
+        location: location,
+        hourAdjusted: hourAdjusted,
+        coordinate: location?.coordinates,
+      ),
       datetime: datetime,
       yearJiaZi: bazi.year,
       monthJiaZi: bazi.month,
@@ -192,7 +204,7 @@ class DivinationDatetimeModel extends Equatable {
       isLeapMonth: isLeapMonth,
       lunarDay: lunarDay,
       jieQiInfo: jieQiInfo,
-      isManualCalibration: false,
+      // isManualCalibration: false,
       isDst: false,
     );
   }
@@ -212,17 +224,20 @@ class DivinationDatetimeModel extends Equatable {
     required bool isSeersLocation,
   }) {
     return DivinationDatetimeModel(
-      type: EnumDatetimeType.meanSolar,
       uuid: uuid,
       // queryUuid: queryUuid,
-      location: Location(address: address),
       isSeersLocation: isSeersLocation,
-      timezoneStr: timezoneStr,
+      observer: ObserverDataModel(
+          timezoneStr: timezoneStr,
+          type: EnumDatetimeType.meanSolar,
+          location: Location(address: address),
+          coordinate:
+              address.city?.coordinates ?? address.province.coordinates),
       datetime: datetime,
       lunarMonth: lunarMonth,
       lunarDay: lunarDay,
       jieQiInfo: jieQiInfo,
-      isManualCalibration: false,
+      // isManualCalibration: false,
       isDst: false,
       isLeapMonth: isLeapMonth,
       yearJiaZi: bazi.year,
@@ -247,13 +262,14 @@ class DivinationDatetimeModel extends Equatable {
       required bool isSeersLocation,
       Address? address}) {
     return DivinationDatetimeModel(
-      type: EnumDatetimeType.trueSolar,
+      observer: ObserverDataModel(
+        timezoneStr: timezoneStr,
+        type: EnumDatetimeType.trueSolar,
+        location: Location(preciseCoordinates: coordinates, address: address),
+        coordinate: coordinates,
+      ),
       uuid: uuid,
       isSeersLocation: isSeersLocation,
-      // queryUuid: queryUuid,
-      location: Location(preciseCoordinates: coordinates, address: address),
-      // coordinates: coordinates,
-      timezoneStr: timezoneStr,
       datetime: datetime,
       yearJiaZi: bazi.year,
       monthJiaZi: bazi.month,
@@ -263,22 +279,23 @@ class DivinationDatetimeModel extends Equatable {
       isLeapMonth: isLeapMonth,
       lunarDay: lunarDay,
       jieQiInfo: jieQiInfo,
-      isManualCalibration: false,
+      // isManualCalibration: false,
       isDst: false,
     );
   }
 
   @override
-  List<Object?> get props => [uuid, type, bazi, datetime];
+  List<Object?> get props => [uuid, observer, bazi, datetime];
 
   // clone
   DivinationDatetimeModel clone({
     String? uuid,
     String? queryUuid,
-    EnumDatetimeType? type,
-    int? hourAdjusted,
-    Location? location,
-    String? timezoneStr,
+    // EnumDatetimeType? type,
+    // int? hourAdjusted,
+    // Location? location,
+    // String? timezoneStr,
+    ObserverDataModel? observer,
     DateTime? datetime,
     EightChars? bazi,
     int? lunarMonth,
@@ -292,11 +309,8 @@ class DivinationDatetimeModel extends Equatable {
     return DivinationDatetimeModel(
       uuid: uuid ?? this.uuid,
       // queryUuid: queryUuid ?? this.queryUuid,
-      type: type ?? this.type,
+      observer: observer ?? this.observer,
       isSeersLocation: isSeersLocation ?? this.isSeersLocation,
-      hourAdjusted: hourAdjusted ?? this.hourAdjusted,
-      location: location ?? this.location,
-      timezoneStr: timezoneStr ?? this.timezoneStr,
       datetime: datetime ?? this.datetime,
       yearJiaZi: yearJiaZi,
       monthJiaZi: monthJiaZi,
@@ -307,7 +321,7 @@ class DivinationDatetimeModel extends Equatable {
       lunarDay: lunarDay ?? this.lunarDay,
       jieQiInfo: jieQiInfo ?? this.jieQiInfo,
       isDst: isDst ?? this.isDst,
-      isManualCalibration: isManualCalibration ?? this.isManualCalibration,
+      // isManualCalibration: isManualCalibration ?? this.isManualCalibration,
       // lastUpdatedAt: lastUpdatedAt,
       // deletedAt: deletedAt,
     );

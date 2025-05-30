@@ -8,9 +8,6 @@ part of 'seeker_model.dart';
 
 SeekerModel _$SeekerModelFromJson(Map<String, dynamic> json) => SeekerModel(
       uuid: json['uuid'] as String,
-      username: json['username'] as String?,
-      nickname: json['nickname'] as String?,
-      gender: $enumDecode(_$GenderEnumMap, json['gender']),
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastUpdatedAt: json['lastUpdatedAt'] == null
           ? null
@@ -18,8 +15,12 @@ SeekerModel _$SeekerModelFromJson(Map<String, dynamic> json) => SeekerModel(
       deletedAt: json['deletedAt'] == null
           ? null
           : DateTime.parse(json['deletedAt'] as String),
+      location: json['location'] == null
+          ? null
+          : Location.fromJson(json['location'] as Map<String, dynamic>),
+      divinationUuid: json['divinationUuid'] as String?,
       timingType: $enumDecode(_$DateTimeTypeEnumMap, json['timingType']),
-      birthDatetime: DateTime.parse(json['birthDatetime'] as String),
+      datetime: DateTime.parse(json['datetime'] as String),
       yearGanZhi: $enumDecode(_$JiaZiEnumMap, json['yearGanZhi']),
       monthGanZhi: $enumDecode(_$JiaZiEnumMap, json['monthGanZhi']),
       dayGanZhi: $enumDecode(_$JiaZiEnumMap, json['dayGanZhi']),
@@ -27,27 +28,24 @@ SeekerModel _$SeekerModelFromJson(Map<String, dynamic> json) => SeekerModel(
       lunarMonth: (json['lunarMonth'] as num).toInt(),
       isLeapMonth: json['isLeapMonth'] as bool,
       lunarDay: (json['lunarDay'] as num).toInt(),
-      timingInfoUuid: json['timingInfoUuid'] as String,
-      timingInfoList: (json['timingInfoList'] as List<dynamic>?)
+      timingInfoUuid: json['timingInfoUuid'] as String?,
+      timingInfoListJson: (json['timingInfoListJson'] as List<dynamic>?)
           ?.map((e) =>
               DivinationDatetimeModel.fromJson(e as Map<String, dynamic>))
           .toList(),
-      birthLocation: json['birthLocation'] == null
-          ? null
-          : Location.fromJson(json['birthLocation'] as Map<String, dynamic>),
+      username: json['username'] as String?,
+      nickname: json['nickname'] as String?,
+      gender: $enumDecode(_$GenderEnumMap, json['gender']),
     );
 
 Map<String, dynamic> _$SeekerModelToJson(SeekerModel instance) =>
     <String, dynamic>{
       'uuid': instance.uuid,
-      'username': instance.username,
-      'nickname': instance.nickname,
-      'gender': _$GenderEnumMap[instance.gender]!,
       'createdAt': instance.createdAt.toIso8601String(),
       'lastUpdatedAt': instance.lastUpdatedAt?.toIso8601String(),
       'deletedAt': instance.deletedAt?.toIso8601String(),
       'timingType': _$DateTimeTypeEnumMap[instance.timingType]!,
-      'birthDatetime': instance.birthDatetime.toIso8601String(),
+      'datetime': instance.datetime.toIso8601String(),
       'yearGanZhi': _$JiaZiEnumMap[instance.yearGanZhi]!,
       'monthGanZhi': _$JiaZiEnumMap[instance.monthGanZhi]!,
       'dayGanZhi': _$JiaZiEnumMap[instance.dayGanZhi]!,
@@ -56,15 +54,13 @@ Map<String, dynamic> _$SeekerModelToJson(SeekerModel instance) =>
       'isLeapMonth': instance.isLeapMonth,
       'lunarDay': instance.lunarDay,
       'timingInfoUuid': instance.timingInfoUuid,
-      'timingInfoList': instance.timingInfoList,
-      'birthLocation': instance.birthLocation,
+      'location': instance.location,
+      'timingInfoListJson': instance.timingInfoListJson,
+      'divinationUuid': instance.divinationUuid,
+      'username': instance.username,
+      'nickname': instance.nickname,
+      'gender': _$GenderEnumMap[instance.gender]!,
     };
-
-const _$GenderEnumMap = {
-  Gender.male: 'male',
-  Gender.female: 'female',
-  Gender.unknown: 'unknown',
-};
 
 const _$DateTimeTypeEnumMap = {
   DateTimeType.solar: 'solar',
@@ -133,4 +129,10 @@ const _$JiaZiEnumMap = {
   JiaZi.XIN_YOU: '辛酉',
   JiaZi.REN_XU: '壬戌',
   JiaZi.GUI_HAI: '癸亥',
+};
+
+const _$GenderEnumMap = {
+  Gender.male: 'male',
+  Gender.female: 'female',
+  Gender.unknown: 'unknown',
 };

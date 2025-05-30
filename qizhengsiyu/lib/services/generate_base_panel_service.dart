@@ -9,6 +9,7 @@ import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
+import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
 import 'package:qizhengsiyu/models/hua_yao.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
@@ -46,7 +47,7 @@ class GenerateBasePanelService {
 
     final result = await Future.wait([
       getZhouTianModel(),
-      getAllStarAngleRawInfo(),
+      getAllStarAngleRawInfo(observerPosition),
     ]);
     final ZhouTianModel zhouTianModel = result[0] as ZhouTianModel;
 
@@ -94,12 +95,89 @@ class GenerateBasePanelService {
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(observerPosition.yearGanZhi);
 
+    // 8.1. 根据十二长生enum 构建出对应 zhangsheng12ShenSha 并加入在神煞中,
+    for (var i = 0; i < twelveZhangShengGongMapper.entries.length; i++) {
+      final gong = twelveZhangShengGongMapper.entries.elementAt(i).key;
+      shenShaMapper[gong]!.insert(
+          0,
+          ZhangSheng12ShenSha(
+              twelveZhangShengGongMapper.entries.elementAt(i).value.name,
+              JiXiongEnum.PING,
+              null,
+              null));
+    }
+
     return BasePanelModel(
       starAngleMapper: starAngleMapper,
       enteredGongMapper: enteredGongMapper,
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       bodyLifeModel: bodyLifeModel,
       twelveGongMapper: twelveGongMapper,
+      shenShaMapper: shenShaMapper,
+      huaYaoStarPairList: huaYaoStarPairList,
+      twelveZhangShengGongMapper: twelveZhangShengGongMapper,
+    );
+  }
+
+  Future<DaXianPanelModel> calculateDaXia(
+      BasePanelModel basePanel, ObserverPosition daXianObserver) async {
+    // 大限与 计算星命基础命盘一样，但是不计算 四主 与 命理十二宫的位置。
+    // 在计算神煞时则是借用原局的命宫等位置进行计算
+
+    // TODO: 需要提取公共函数
+    final result = await Future.wait([
+      getZhouTianModel(),
+      getAllStarAngleRawInfo(daXianObserver),
+    ]);
+    final ZhouTianModel zhouTianModel = result[0] as ZhouTianModel;
+
+    // 1. 星体原始信息
+    final Map<EnumStars, StarAngleSpeed> starAngleMapper =
+        result[1] as Map<EnumStars, StarAngleSpeed>;
+    // 2. 计算星体进入宫位信息
+    final Map<EnumStars, EnteredInfo> enteredGongMapper =
+        getStarEnteredInfoMapper(starAngleMapper, zhouTianModel);
+
+    // 3. 计算五星运行状态
+    final Map<EnumStars, StarAngleSpeed> fiveStarMapper =
+        Map.fromEntries(starAngleMapper.entries.where((t) => t.key.isFiveStar));
+    final Map<EnumStars, BaseFiveStarWalkingInfo> fiveStarWalkingTypeMapper =
+        calculateFiveStarskWalingStatus(fiveStarMapper);
+
+    // 6. 计算神煞位置
+    final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper =
+        shenShaManager.calculate(
+            daXianObserver.yearGanZhi,
+            daXianObserver.monthGanZhi,
+            daXianObserver.timeGanZhi,
+            basePanel.bodyLifeModel.lifeGong,
+            enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
+            enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
+            daXianObserver.isDayBirth);
+    // 7. 计算化曜位置
+    final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
+      mingGong: basePanel.bodyLifeModel.lifeGong,
+      yearJiaZi: daXianObserver.yearGanZhi,
+      monthJiaZi: daXianObserver.monthGanZhi,
+    );
+    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
+        .map((e) => HuaYaoStarPair(e.key, e.value))
+        .toList();
+    // 8. 计算十二长生
+    final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
+        calculateTwelveLong(daXianObserver.yearGanZhi);
+    // 8.1. 根据十二长生enum 构建出对应 zhangsheng12ShenSha 并加入在神煞中,
+    for (var i = 0; i < twelveZhangShengGongMapper.entries.length; i++) {
+      final entry = twelveZhangShengGongMapper.entries.elementAt(i);
+      final gong = entry.key;
+      // 插入到第一个
+      shenShaMapper[gong]!.insert(0,
+          ZhangSheng12ShenSha(entry.value.name, JiXiongEnum.PING, null, null));
+    }
+    return DaXianPanelModel(
+      starAngleMapper: starAngleMapper,
+      enteredGongMapper: enteredGongMapper,
+      fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       shenShaMapper: shenShaMapper,
       huaYaoStarPairList: huaYaoStarPairList,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
@@ -121,11 +199,6 @@ class GenerateBasePanelService {
 
     return result;
   }
-
-  // Map<EnumTwelveGong, List<ShenSha>> calculateShenShaForTwelveGong(
-  //     BodyLifeModel bodyLifeModel) {
-
-  // }
 
   Map<EnumTwelveGong, EnumDestinyTwelveGong> orderDestinyTwelveGong(
       BodyLifeModel bodyLifeModel) {
@@ -173,7 +246,7 @@ class GenerateBasePanelService {
       lifeCountingToGong,
       observerPosition.monthGanZhi,
       observerPosition.timeGanZhi,
-      panelConfig.lifeGongBySunRealTimeLocation,
+      panelConfig.islifeGongBySunRealTimeLocation,
     );
 
     // 计算身宫
@@ -350,7 +423,8 @@ class GenerateBasePanelService {
     // read ecliptic_tropical_calassical.json from assets
   }
 
-  Future<Map<EnumStars, StarAngleSpeed>> getAllStarAngleRawInfo() async {
+  Future<Map<EnumStars, StarAngleSpeed>> getAllStarAngleRawInfo(
+      ObserverPosition observerPosition) async {
     final StarAngleStrategy starAngleStrategy;
     final StarAngleSpeed qiStarInfo;
     if (panelConfig.celestialCoordinateSystem ==
@@ -358,7 +432,7 @@ class GenerateBasePanelService {
       if (panelConfig.panelSystemType == PanelSystemType.tropical) {
         starAngleStrategy = EclipticTropicalStrategy();
         qiStarInfo = StarAngleSpeed(
-          angle: ziQi(observerPosition.birthday),
+          angle: ziQi(observerPosition.dateTime),
           speed: 0.0352,
         );
       } else {
@@ -370,7 +444,7 @@ class GenerateBasePanelService {
           panelConfig.celestialCoordinateSystem ==
               CelestialCoordinateSystem.skyEquatorial) {
         qiStarInfo = StarAngleSpeed(
-          angle: shouShiLiCalculateZiQiPosition(observerPosition.birthday,
+          angle: shouShiLiCalculateZiQiPosition(observerPosition.dateTime,
               circleDegrees: 365.25),
           speed: 0.0352,
         );
@@ -380,23 +454,27 @@ class GenerateBasePanelService {
             '不支持的星盘制式:${panelConfig.celestialCoordinateSystem.name} ${panelConfig.panelSystemType.name}');
       }
     }
-    double julianDay = JulianDayConverter.dateTimeToJulianDay(DateTime.now());
+
+    double julianDay = JulianDayConverter.dateTimeToJulianDay(
+        observerPosition.dateTime.toUtc());
     final geopos = [
-      observerPosition.latitude,
       observerPosition.longitude,
+      observerPosition.latitude,
       observerPosition.altitude,
     ];
+
     final results = await Future.wait([
-      starAngleStrategy.calculate(EnumStars.Sun, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Moon, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Jupiter, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Saturn, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Mars, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Mercury, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Venus, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Bei, julianDay, geopos),
-      starAngleStrategy.calculate(EnumStars.Ji, julianDay, geopos), //
-    ]);
+      EnumStars.Sun,
+      EnumStars.Moon,
+      EnumStars.Jupiter,
+      EnumStars.Saturn,
+      EnumStars.Mars,
+      EnumStars.Mercury,
+      EnumStars.Venus,
+      EnumStars.Bei,
+      EnumStars.Ji
+    ].map((e) =>
+        Future.sync(() => starAngleStrategy.calculate(e, julianDay, geopos))));
     Map<EnumStars, StarAngleSpeed> resultMapper = {};
 
     resultMapper[EnumStars.Sun] =
@@ -421,7 +499,6 @@ class GenerateBasePanelService {
         .copyWith(angle: (results[8].angle + 180) % 360);
 
     resultMapper[EnumStars.Qi] = qiStarInfo;
-
     return resultMapper;
   }
 

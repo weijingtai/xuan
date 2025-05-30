@@ -3,6 +3,8 @@ import 'package:common/database/converters/coordinates_converter.dart';
 import 'package:common/database/converters/jie_qi_info_converter.dart';
 import 'package:common/database/converters/location_converter.dart';
 import 'package:common/database/converters/divination_datetime_model_converter.dart';
+import 'package:common/datamodel/divination_data_model.dart';
+import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/enums.dart';
 import 'package:common/enums/enum_datetime_type.dart';
 import 'package:common/enums/enum_gender.dart';
@@ -12,6 +14,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../datamodel/seeker_model.dart';
+import '../../datamodel/sub_divination_type_data_model.dart';
 import '../../datamodel/timing_divination_model.dart';
 import '../../models/divination_datetime.dart';
 import '../converters/nullable_location_converter.dart';
@@ -35,7 +38,7 @@ class CombinedDivinations extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
-@DataClassName('Divination')
+@UseRowClass(DivinationDataModel)
 class Divinations extends Table {
   @override
   String get tableName => "t_divinations";
@@ -51,8 +54,8 @@ class Divinations extends Table {
   // // 当前起卦使用的地理位置（起卦时间）是否为卦师自己的位置
   // BoolColumn get isSeersLocation => boolean().named('is_seers_location')();
 
-  TextColumn get queryQuestion => text().nullable().named('query_question')();
-  TextColumn get queryDetail => text().nullable().named('query_detail')();
+  TextColumn get question => text().nullable().named('question')();
+  TextColumn get detail => text().nullable().named('detail')();
 
   // 卜问求测人的uuid, 当本字段为空时说明求测人以前未进行过卜问 （可以为空，表示为卦师自己的客源）
   TextColumn get ownerSeekerUuid =>
@@ -187,7 +190,7 @@ class SkillClasses extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
-@DataClassName('DivinationType')
+@UseRowClass(DivinationTypeDataModel)
 class DivinationTypes extends Table {
   @override
   String get tableName => "t_divination_types";
@@ -208,7 +211,7 @@ class DivinationTypes extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
-@DataClassName('SubDivinationType')
+@UseRowClass(SubDivinationTypeDataModel)
 class SubDivinationTypes extends Table {
   @override
   String get tableName => "t_sub_divination_types";
@@ -263,12 +266,12 @@ class TimingDivinations extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
 
   // 关联字段
-  TextColumn get queryUuid => text().named('query_uuid')();
+  TextColumn get divinationUuid => text().named('divination_uuid')();
 
   // 历法核心数据
   IntColumn get timingType =>
       intEnum<DateTimeType>()(); // 使用MappedEnumConverter
-  DateTimeColumn get datetime => dateTime().named('query_datetime')();
+  DateTimeColumn get datetime => dateTime().named('datetime')();
   BoolColumn get isManual =>
       boolean().withDefault(const Constant(false)).named('is_manual')();
 
@@ -286,6 +289,10 @@ class TimingDivinations extends Table {
   IntColumn get lunarDay => integer().named('lunar_day')();
 
   TextColumn get timingInfoUuid => text().named('timing_info_uuid')();
+  TextColumn get location => text()
+      .nullable()
+      .map(const NullableLocationConverter())
+      .named("location_json")();
   // JSON扩展字段
   TextColumn get timingInfoListJson => text()
       .map(const DivinationDatetimeModelConverter())
@@ -317,7 +324,7 @@ class Seekers extends Table {
   IntColumn get timingType =>
       intEnum<DateTimeType>()(); // 使用MappedEnumConverter
 
-  DateTimeColumn get birthDatetime => dateTime().named('birth_datetime')();
+  DateTimeColumn get datetime => dateTime().named('datetime')();
 
   // 干支体系， 注意甲子的index=0 而非枚举类型number=1
   IntColumn get yearGanZhi => intEnum<JiaZi>().named('year_gan_zhi')();
@@ -331,18 +338,21 @@ class Seekers extends Table {
   BoolColumn get isLeapMonth =>
       boolean().withDefault(const Constant(false)).named('is_leap_month')();
   IntColumn get lunarDay => integer().named('lunar_day')();
+  // 关联字段
+  TextColumn get divinationUuid => text().named('divination_uuid')();
 
-  TextColumn get timingInfoUuid => text().named('timing_info_uuid')();
+  TextColumn get timingInfoUuid =>
+      text().named('timing_info_uuid').nullable()();
   // JSON扩展字段
   TextColumn get timingInfoListJson => text()
       .map(const DivinationDatetimeModelConverter())
       .nullable()
       .named('info_list_json')();
 
-  TextColumn get birthLoction => text()
+  TextColumn get location => text()
       .nullable()
       .map(const NullableLocationConverter())
-      .named("brith_location_json")();
+      .named("location_json")();
 
   @override
   Set<Column> get primaryKey => {uuid};

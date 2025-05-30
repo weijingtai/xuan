@@ -8,7 +8,15 @@ class DivinationDatetimeModelConverter
     extends TypeConverter<List<DivinationDatetimeModel>, String> {
   const DivinationDatetimeModelConverter();
   @override
-  List<DivinationDatetimeModel> fromSql(String fromDb) => jsonDecode(fromDb);
+  List<DivinationDatetimeModel> fromSql(String fromDb) {
+    final List<dynamic> jsonList = jsonDecode(fromDb);
+    return jsonList
+        .map((json) =>
+            DivinationDatetimeModel.fromJson(json as Map<String, dynamic>))
+        .toList();
+  }
+
   @override
-  String toSql(List<DivinationDatetimeModel> value) => jsonEncode(value);
+  String toSql(List<DivinationDatetimeModel> value) =>
+      jsonEncode(value.map((e) => e.toJson()).toList());
 }

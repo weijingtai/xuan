@@ -52,6 +52,7 @@ dependencies:
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
   dotted_border: ^2.1.0
+  lat_lng_to_timezone: ^0.2.0
   
   flutter_map: ^8.1.1
   topojson: ^0.3.0

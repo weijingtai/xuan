@@ -123,7 +123,7 @@ enum EnumTwelveGong {
 
   final DiZhi zhi;
   final HouTianGua houTianGua;
-  final EnumStars zheng;
+  final EnumStars sevenZheng;
   final TwelveStarSeq starSeq;
   final TwelveEclipticGong twelveEclipticGong;
 
@@ -131,11 +131,12 @@ enum EnumTwelveGong {
   final YinYang yinYangGong;
 
   String get name => zhi.name;
-  String get fullname => "${zhi.name}${houTianGua.name}${zheng.singleName}";
+  String get fullname =>
+      "${zhi.name}${houTianGua.name}${sevenZheng.singleName}";
   static get eclipticSeq =>
       [Xu, You, Shen, Wei, Wu, Si, Chen, Mao, Yin, Chou, Zi, Hai];
 
-  const EnumTwelveGong(this.zhi, this.houTianGua, this.zheng, this.starSeq,
+  const EnumTwelveGong(this.zhi, this.houTianGua, this.sevenZheng, this.starSeq,
       this.twelveEclipticGong, this.isDayOrNight, this.yinYangGong);
   static EnumTwelveGong getEnumTwelveGongByZhi(DiZhi zhi) {
     return EnumTwelveGong.values.where((e) => e.zhi == zhi).first;

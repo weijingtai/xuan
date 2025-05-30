@@ -1,7 +1,7 @@
 import 'package:common/dev_select_datetime_page.dart';
 // import 'package:common/widgets/map_screen.dart.osm.bak';
 import 'package:common/widgets/flutter_map_screen.dart';
-import 'package:common/widgets/world_country_city_picker_page.dart';
+import 'package:common/widgets/city_picker_global_widget.dart';
 import 'package:flutter/material.dart';
 
 import './divinatioin_history_record/divination_history_record_page.dart';

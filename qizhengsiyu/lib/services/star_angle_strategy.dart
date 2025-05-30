@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:sweph/sweph.dart';
 import 'package:common/enums.dart';
 
@@ -5,15 +7,15 @@ import '../models/star_angle_raw_info.dart';
 import '../enums/enum_panel_system_type.dart';
 
 abstract class StarAngleStrategy {
-  Future<StarAngleRawInfo> calculate(
+  StarAngleRawInfo calculate(
       EnumStars star, double julianDay, List<double> geopos);
 }
 
 class EquatorialSiderealStrategy implements StarAngleStrategy {
   // 赤道恒星制
   @override
-  Future<StarAngleRawInfo> calculate(
-      EnumStars star, double julianDay, List<double> geopos) async {
+  StarAngleRawInfo calculate(
+      EnumStars star, double julianDay, List<double> geopos) {
     // SE_SIDM_LAHIRI 瑞士星例表
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI);
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
@@ -40,8 +42,8 @@ class EquatorialSiderealStrategy implements StarAngleStrategy {
 class EquatorialTropicalStrategy implements StarAngleStrategy {
   // 赤道回归制
   @override
-  Future<StarAngleRawInfo> calculate(
-      EnumStars star, double julianDay, List<double> geopos) async {
+  StarAngleRawInfo calculate(
+      EnumStars star, double julianDay, List<double> geopos) {
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_J2000);
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
 
@@ -65,9 +67,8 @@ class EquatorialTropicalStrategy implements StarAngleStrategy {
 
 class EclipticSiderealStrategy implements StarAngleStrategy {
   // 黄道恒星制
-  @override
-  Future<StarAngleRawInfo> calculate(
-      EnumStars star, double julianDay, List<double> geopos) async {
+  StarAngleRawInfo calculate(
+      EnumStars star, double julianDay, List<double> geopos) {
     // final sweph = Sweph();
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_LAHIRI); // 设置恒星黄道
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
@@ -94,19 +95,16 @@ class EclipticSiderealStrategy implements StarAngleStrategy {
 class EclipticTropicalStrategy implements StarAngleStrategy {
   // 黄道回归制
   @override
-  Future<StarAngleRawInfo> calculate(
-      EnumStars star, double julianDay, List<double> geopos) async {
+  StarAngleRawInfo calculate(
+      EnumStars star, double julianDay, List<double> geopos) {
     Sweph.swe_set_sid_mode(SiderealMode.SE_SIDM_J2000); // 设置回归黄道
     Sweph.swe_set_topo(geopos[0], geopos[1], geopos[2]);
 
     final swephStar = _getSwephStar(star);
+    CoordinatesWithSpeed result = Sweph.swe_calc_ut(julianDay, swephStar,
+        SwephFlag.SEFLG_TROPICAL | SwephFlag.SEFLG_SPEED); // 使用黄道坐标标志
 
-    CoordinatesWithSpeed result = Sweph.swe_calc_ut(
-        julianDay,
-        swephStar,
-        SwephFlag.SEFLG_TOPOCTR |
-            SwephFlag.SEFLG_SPEED |
-            SwephFlag.SEFLG_XYZ); // 使用黄道坐标标志
+    // double degrees = result.longitude * 180 / math.pi;
 
     return StarAngleRawInfo(
       panelSystemType: PanelSystemType.tropical,
@@ -128,7 +126,7 @@ HeavenlyBody _getSwephStar(EnumStars star) {
     case EnumStars.Venus:
       return HeavenlyBody.SE_VENUS;
     case EnumStars.Mars:
-      return HeavenlyBody.SE_JUPITER;
+      return HeavenlyBody.SE_MARS;
     case EnumStars.Jupiter:
       return HeavenlyBody.SE_JUPITER;
     case EnumStars.Saturn:

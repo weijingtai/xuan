@@ -106,7 +106,7 @@ class OuterLifeStarRangePainter extends CustomPainter {
         canvas.save();
         UIStarModel star = stars[i];
         if (i == 0) {
-          print(star.angle);
+          // print(star.angle);
         }
 
         canvas.rotate(-star.angle * (pi / 180));
@@ -119,6 +119,7 @@ class OuterLifeStarRangePainter extends CustomPainter {
   }
 
   void paintEachStar(Canvas canvas, UIStarModel star) {
+    // debugPrint("paint star ${star.star.singleName}");
     double textSize = 16;
     var textPainter = TextPainter(
       text: TextSpan(

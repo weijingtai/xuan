@@ -1,6 +1,7 @@
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 import '../models/divination_datetime.dart';
 import 'eight_chars_selection_card.dart';
@@ -31,6 +32,16 @@ class _EightCharsSelectCardListWidgetState
   @override
   void initState() {
     super.initState();
+    _selectedIndexNotifier.addListener(() {
+      if (_selectedIndexNotifier.value != null &&
+          widget.selectableCardsNotifier.value != null &&
+          widget.selectableCardsNotifier!.value!.isNotEmpty) {
+        context.read<DevEnterPageViewModel>().selectDivinationDatetime(widget
+            .selectableCardsNotifier
+            .value![_selectedIndexNotifier.value!]
+            .value);
+      }
+    });
   }
 
   @override

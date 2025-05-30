@@ -13,6 +13,7 @@ import '../models/stars_angle.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_degree_inn_gong_helper.dart';
 import '../utils/star_walking_info_utils.dart';
+import 'star_angle_strategy.dart';
 
 class StarBodyModelBuilder {
   PanelCelesticalInfo panelCelesticalInfo;
@@ -117,4 +118,5 @@ class StarBodyModelBuilder {
         enterInnInfo: ConstellationDegree(
             constellation: innTuple.item1, degree: innTuple.item2));
   }
+
 }

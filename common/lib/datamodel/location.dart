@@ -158,7 +158,6 @@ class Address extends Equatable {
   Map<String, dynamic> toJson() => _$AddressToJson(this);
 
   @override
-  // TODO: implement props
   List<Object?> get props =>
       [countryName, countryId, regionId, province, city, area, timezone];
 }

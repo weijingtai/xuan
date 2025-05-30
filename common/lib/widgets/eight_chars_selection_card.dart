@@ -174,7 +174,7 @@ class EightCharsSelectionCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 32, width: 18),
-              _buildTitle(context, queryDateTime.type),
+              _buildTitle(context, queryDateTime.observer.type),
               Container(
                 alignment: Alignment.topCenter,
                 height: 32,
@@ -247,7 +247,7 @@ class EightCharsSelectionCard extends StatelessWidget {
         ),
 
         Text(
-          queryDateTime.timezoneStr,
+          queryDateTime.observer.timezoneStr,
           style: naYinTextStyle,
         ),
 
@@ -321,7 +321,7 @@ class EightCharsSelectionCard extends StatelessWidget {
         if (EnumDatetimeType.trueSolar == type) _buildTrueSolarTitle(context),
 
         // if (EnumDatetimeType.)
-        queryDateTime.isManualCalibration
+        queryDateTime.observer.isManualCalibration
             ? Text("<手动校准经纬纬度>",
                 style: TextStyle(
                     color: Colors.black45,
@@ -472,7 +472,7 @@ class EightCharsSelectionCard extends StatelessWidget {
   }
 
   String get cardTitle {
-    switch (queryDateTime.type) {
+    switch (queryDateTime.observer.type) {
       case EnumDatetimeType.removeDST:
         return "无夏令时";
       case EnumDatetimeType.meanSolar:

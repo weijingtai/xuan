@@ -6,9 +6,9 @@ import 'package:provider/provider.dart';
 import '../datamodel/geo_location.dart';
 import '../datamodel/location.dart';
 import '../datasource/geo_location_repository.dart';
-import 'timezone_location_viewmodel.dart';
+import '../viewmodels/timezone_location_viewmodel.dart';
 
-class ChineseCityPickerWidget extends StatefulWidget {
+class CityPickerChineseWidget extends StatefulWidget {
   final Address? initAddress;
   final ValueNotifier<Address?> selectedAddressNotifier;
 
@@ -17,7 +17,7 @@ class ChineseCityPickerWidget extends StatefulWidget {
   /// 滚动控制器
   // final ScrollController scrollController;
 
-  const ChineseCityPickerWidget({
+  const CityPickerChineseWidget({
     super.key,
     required this.initAddress,
     required this.selectedAddressNotifier,
@@ -25,11 +25,11 @@ class ChineseCityPickerWidget extends StatefulWidget {
   });
 
   @override
-  State<ChineseCityPickerWidget> createState() =>
-      _ChineseCityPickerWidgetState();
+  State<CityPickerChineseWidget> createState() =>
+      _CityPickerChineseWidgetState();
 }
 
-class _ChineseCityPickerWidgetState extends State<ChineseCityPickerWidget> {
+class _CityPickerChineseWidgetState extends State<CityPickerChineseWidget> {
   late final ValueNotifier<Address?> _newSelectedAddressNotifier;
   // 当前选中的省份
   late final ValueNotifier<GeoLocation?> _selectedProvince;
