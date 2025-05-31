@@ -421,6 +421,22 @@ enum JiaZi {
     }
   }
 
+  JiaZi getPrevious() {
+    if (number == 1) {
+      return JiaZi.GUI_HAI;
+    } else {
+      return JiaZiIndexMapper.jiaZiList[number - 2];
+    }
+  }
+
+  JiaZi getNext() {
+    if (number == 60) {
+      return JiaZi.JIA_ZI;
+    } else {
+      return JiaZiIndexMapper.jiaZiList[number];
+    }
+  }
+
   static List<JiaZi> getSix(TianGan gan) {
     return JiaZiIndexMapper.jiaZiMapper[gan]!.values.toList();
   }

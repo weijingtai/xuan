@@ -1,11 +1,11 @@
-
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_twenty_four_jie_qi.dart';
 
 part 'jie_qi_info.g.dart';
+
 @JsonSerializable()
-class JieQiInfo{
+class JieQiInfo {
   TwentyFourJieQi get prevJieQi => jieQi.previous;
   TwentyFourJieQi get nextJieQi => jieQi.next;
   TwentyFourJieQi jieQi;
