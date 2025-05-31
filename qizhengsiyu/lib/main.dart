@@ -1,13 +1,20 @@
 import 'dart:math' as math;
 
+import 'package:common/enums.dart';
+import 'package:common/enums/enum_stars.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/dev_demo2.dart';
 import 'package:qizhengsiyu/dev_demo_v2.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/models/body_life_model.dart';
+import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi_v2.dart';
 import 'package:qizhengsiyu/sector_painter.dart';
+import 'package:tuple/tuple.dart';
 
+import 'circle_text_painter.dart';
 import 'dev_demo.dart';
 import 'gong_12_dizhi.dart';
 import 'widgets/rings/gong_ming_li_ring.dart';
@@ -61,8 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 height: 480 * 2,
                 child: Stack(alignment: Alignment.center, children: [
                   Normal12GongRing(
-                    outerRadius: 160,
-                    innerRadius: 120,
+                    outerRadius: 190,
+                    innerRadius: 150,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
@@ -81,8 +88,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   Normal12GongRing(
-                    outerRadius: 120,
-                    innerRadius: 100,
+                    outerRadius: 150,
+                    innerRadius: 130,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
@@ -100,7 +107,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       EnumTwelveGong.Hai: ["双鱼"],
                     },
                   ),
-                  build12DiZhiGong(100, 50),
+                  build12DiZhiGong(130, 80),
                   DaXianRing(
                       gongYearsMapper: {
                         // EnumTwelveGong.Zi: 4.5,
@@ -122,6 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       outerRadius: 480,
                       innerRadius: 448,
                       baseGongOffsetAngle: 30),
+                  textCicle(),
                   // DaXianRing(
                   //     gongYearsMapper: {
                   //       // EnumTwelveGong.Zi: 4.5,
@@ -151,6 +159,169 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           )),
     );
+  }
+
+  Tuple2<String, String?> toStringDegree(double degree) {
+    var mingGongDegree = degree.toString();
+    List<String> _tmpList = mingGongDegree.split(".");
+    var mingGongDegreeFirstPart = _tmpList[0];
+    String? mingGongDegreeSecondPar;
+    if (_tmpList.length > 1) {
+      mingGongDegreeFirstPart = _tmpList[0] + ".";
+      mingGongDegreeSecondPar = _tmpList[1] + "°";
+      return Tuple2(mingGongDegreeFirstPart, mingGongDegreeSecondPar);
+    } else {
+      mingGongDegreeFirstPart = _tmpList[0] + "°";
+      return Tuple2(mingGongDegreeFirstPart, null);
+    }
+  }
+
+  Widget textCicle() {
+    double itemSize = 80;
+    BodyLifeModel bodyLifeModel = BodyLifeModel(
+      lifeGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
+      lifeConstellationInfo: ConstellationDegree(
+          constellation: Enum28Constellations.Zhen_Shui_Yin, degree: 2.2),
+      bodyGongInfo: GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
+      bodyConstellationInfo: ConstellationDegree(
+          constellation: Enum28Constellations.Zhen_Shui_Yin, degree: 2.2),
+    );
+    TextStyle textStyle = const TextStyle(
+        fontSize: 16,
+        height: 1,
+        color: Colors.black54,
+        fontWeight: FontWeight.w400);
+    TextStyle starTextStyle =
+        textStyle.copyWith(fontWeight: FontWeight.bold, shadows: const [
+      Shadow(
+        color: Colors.grey,
+        offset: Offset(1, 1),
+        blurRadius: 1,
+      ),
+    ]);
+    Tuple2<String, String?> lifeGongTuple =
+        toStringDegree(bodyLifeModel.lifeGongInfo.degree);
+    Tuple2<String, String?> lifeConstellationTuple =
+        toStringDegree(bodyLifeModel.lifeConstellationInfo.degree);
+
+    Tuple2<String, String?> bodyConstellationTuple =
+        toStringDegree(bodyLifeModel.bodyConstellationInfo.degree);
+    Tuple2<String, String?> bodyGongTuple =
+        toStringDegree(bodyLifeModel.bodyGongInfo.degree);
+
+    return SizedBox(
+        width: itemSize,
+        height: itemSize,
+        child: CustomMultiChildLayout(
+          delegate: _TempLayoutDelegate(
+            itemCount: 1,
+            radius: 0, // 所有子项都从中心开始布局
+            itemSize: itemSize,
+          ),
+          children: [
+            LayoutId(
+                id: 0,
+                child: SizedBox(
+                  width: itemSize,
+                  height: itemSize,
+                  child: Transform.rotate(
+                      angle: 0,
+                      child: CustomPaint(
+                        size: Size(itemSize, itemSize),
+                        painter: CircleTextPainter(
+                            startAngle: 30 + 30 + 30,
+                            // sweepRadian: 2 * math.pi,
+                            sweepRadian: (3 * 30) * math.pi / 180,
+                            color: Colors.blue,
+                            outerRadius: itemSize,
+                            innerRadius: itemSize - 20,
+                            borderColor: Colors.black12,
+                            gongYearsMapper: {
+                              EnumTwelveGong.Yin: [
+                                Text("身", style: textStyle),
+                                Text("主", style: textStyle),
+                                Text(
+                                    bodyLifeModel
+                                        .bodyGong.sevenZheng.singleName,
+                                    style: starTextStyle.copyWith(
+                                        color: QiZhengSiYuUIConstantResources
+                                                .zhengColorMap[
+                                            bodyLifeModel
+                                                .bodyGong.sevenZheng])),
+                                Text(bodyLifeModel.bodyGong.name,
+                                    style: textStyle),
+                                Text(bodyGongTuple.item1, style: textStyle),
+                                if (bodyGongTuple.item2 != null)
+                                  Text(bodyGongTuple.item2!, style: textStyle),
+                              ],
+                              EnumTwelveGong.Si: [
+                                Text("命", style: textStyle),
+                                Text("主", style: textStyle),
+                                Text(
+                                    bodyLifeModel
+                                        .lifeGong.sevenZheng.singleName,
+                                    style: starTextStyle.copyWith(
+                                        color: QiZhengSiYuUIConstantResources
+                                                .zhengColorMap[
+                                            bodyLifeModel
+                                                .lifeGong.sevenZheng])),
+                                Text(bodyLifeModel.lifeGong.name,
+                                    style: textStyle),
+                                Text(lifeGongTuple.item1, style: textStyle),
+                                if (lifeGongTuple.item2 != null)
+                                  Text(lifeGongTuple.item2!, style: textStyle),
+                              ],
+                              EnumTwelveGong.Shen: [
+                                Text("命", style: textStyle),
+                                Text("度", style: textStyle),
+                                Text(
+                                    bodyLifeModel.lifeConstellatioin.sevenZheng
+                                        .singleName,
+                                    style: starTextStyle.copyWith(
+                                        color: QiZhengSiYuUIConstantResources
+                                                .zhengColorMap[
+                                            bodyLifeModel.lifeConstellatioin
+                                                .sevenZheng])),
+                                Text(bodyLifeModel.lifeConstellatioin.name,
+                                    style: textStyle),
+                                Text(lifeConstellationTuple.item1,
+                                    style: textStyle),
+                                if (lifeConstellationTuple.item2 != null)
+                                  Text(lifeConstellationTuple.item2!,
+                                      style: textStyle),
+                              ],
+                              EnumTwelveGong.Hai: [
+                                Text("身", style: textStyle),
+                                Text("度", style: textStyle),
+                                Text(
+                                    bodyLifeModel.bodyConstellation.sevenZheng
+                                        .singleName,
+                                    style: starTextStyle.copyWith(
+                                        color: QiZhengSiYuUIConstantResources
+                                                .zhengColorMap[
+                                            bodyLifeModel.bodyConstellation
+                                                .sevenZheng])),
+                                Text(bodyLifeModel.bodyConstellation.name,
+                                    style: textStyle),
+                                Text(bodyConstellationTuple.item1,
+                                    style: textStyle),
+                                if (bodyConstellationTuple.item2 != null)
+                                  Text(bodyConstellationTuple.item2!,
+                                      style: textStyle),
+                              ],
+                            },
+                            textStyle: const TextStyle(
+                                height: 1, color: Colors.black87, fontSize: 16),
+                            gongOrderedSeq: [
+                              EnumTwelveGong.Yin,
+                              EnumTwelveGong.Si,
+                              EnumTwelveGong.Shen,
+                              EnumTwelveGong.Hai,
+                            ]),
+                      )),
+                )),
+          ],
+        ));
   }
 
   Widget build12DiZhiGong(double outerRadius, double innerRadius) {
@@ -292,4 +463,45 @@ class _MyHomePageState extends State<MyHomePage> {
     "胎",
     // "养",
   ];
+}
+
+class _TempLayoutDelegate extends MultiChildLayoutDelegate {
+  /// 子项数量
+  final int itemCount;
+
+  /// 布局半径
+  final double radius;
+
+  /// 子项尺寸
+  final double itemSize;
+
+  _TempLayoutDelegate({
+    required this.itemCount,
+    required this.radius,
+    required this.itemSize,
+  });
+
+  @override
+  void performLayout(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+
+    for (int i = 0; i < itemCount; i++) {
+      if (!hasChild(i)) continue;
+
+      final childSize =
+          layoutChild(i, BoxConstraints.tight(Size(itemSize, itemSize)));
+      // 所有子项都放置在中心点
+      positionChild(
+        i,
+        Offset(
+            center.dx - childSize.width / 2, center.dy - childSize.height / 2),
+      );
+    }
+  }
+
+  @override
+  bool shouldRelayout(covariant _TempLayoutDelegate oldDelegate) =>
+      oldDelegate.itemCount != itemCount ||
+      oldDelegate.radius != radius ||
+      oldDelegate.itemSize != itemSize;
 }

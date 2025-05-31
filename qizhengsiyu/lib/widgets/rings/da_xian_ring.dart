@@ -70,7 +70,7 @@ class DaXianRing extends StatelessWidget {
                           sweepRadian: (3 * 30) * math.pi / 180,
                           color: Colors.blue,
                           outerRadius: outerRadius,
-                          innerRadius: innerRadius + 16,
+                          innerRadius: outerRadius - 16,
                           borderColor: Colors.black12,
                           gongYearsMapper: gongYearsMapper,
                           textStyle: const TextStyle(
