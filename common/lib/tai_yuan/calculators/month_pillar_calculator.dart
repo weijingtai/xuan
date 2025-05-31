@@ -15,6 +15,7 @@ class MonthPillarCalculator extends TaiYuanCalculator {
   @override
   TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
       {DateTime? conceptionDate,
+      required bool withAdjust,
       bool isTestTubeBaby = false,
       int actualMatureMonths = 10}) {
     final monthGanZhi = birthInfo.monthGanZhi;
@@ -41,13 +42,15 @@ class MonthPillarCalculator extends TaiYuanCalculator {
       isTestTubeBaby: isTestTubeBaby,
       totalMatureMonth: actualMatureMonths.toDouble(),
     );
-
-    TaiYuanModel? adjustedTaiYuanModel;
-    if (actualMatureMonths < 10) {
-      adjustedTaiYuanModel =
-          adjustForPrematureOrPostmature(taiYuanModel, birthInfo);
+    if (withAdjust) {
+      TaiYuanModel? adjustedTaiYuanModel;
+      if (actualMatureMonths < 10) {
+        adjustedTaiYuanModel =
+            adjustForPrematureOrPostmature(taiYuanModel, birthInfo);
+      }
+      return adjustedTaiYuanModel ?? taiYuanModel;
     }
-    return adjustedTaiYuanModel ?? taiYuanModel;
+    return taiYuanModel;
   }
 
   TianGan _getNextTianGan(TianGan current) {

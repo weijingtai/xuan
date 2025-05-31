@@ -22,17 +22,21 @@ class BirthdayCountbackCalculator extends TaiYuanCalculator {
   TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
+      required bool withAdjust,
       int actualMatureMonths = 10}) {
     final taiYuanModel = calculateByDays(birthInfo,
         conceptionDate: conceptionDate,
         isTestTubeBaby: isTestTubeBaby,
         actualMatureDays: 300);
-    TaiYuanModel? adjustedTaiYuanModel;
-    if (actualMatureMonths < 10) {
-      adjustedTaiYuanModel =
-          adjustForPrematureOrPostmature(taiYuanModel, birthInfo);
+    if (withAdjust) {
+      TaiYuanModel? adjustedTaiYuanModel;
+      if (actualMatureMonths < 10) {
+        adjustedTaiYuanModel =
+            adjustForPrematureOrPostmature(taiYuanModel, birthInfo);
+      }
+      return adjustedTaiYuanModel ?? taiYuanModel;
     }
-    return adjustedTaiYuanModel ?? taiYuanModel;
+    return taiYuanModel;
   }
 
   /// 根据给定早产天数计算胎元

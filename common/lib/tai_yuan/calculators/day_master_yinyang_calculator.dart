@@ -16,6 +16,7 @@ class DayMasterYinYangCalculator extends TaiYuanCalculator {
   @override
   TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
       {DateTime? conceptionDate,
+      required bool withAdjust,
       bool isTestTubeBaby = false,
       int actualMatureMonths = 10}) {
     final dayMaster = birthInfo.dayGanZhi.diZhi;

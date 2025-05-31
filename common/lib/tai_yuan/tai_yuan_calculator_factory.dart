@@ -22,8 +22,10 @@ class TaiYuanCalculatorFactory {
       TaiYuanCalculateStrategy strategy,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
+      required bool withAdjust,
       int actualMatureMonths = 10}) {
-    return getCalculator(strategy)!.calculate(birthInfo,
+    return getCalculator(strategy).calculate(birthInfo,
+        withAdjust: withAdjust,
         conceptionDate: conceptionDate,
         isTestTubeBaby: isTestTubeBaby,
         actualMatureMonths: actualMatureMonths);

@@ -39,6 +39,7 @@ abstract class TaiYuanCalculator {
   /// 计算胎元
   TaiYuanModel calculate(BaseDivinationDatetimeDataModel datetimeData,
       {DateTime? conceptionDate,
+      required bool withAdjust,
       bool isTestTubeBaby = false,
       int actualMatureMonths = 10});
 
