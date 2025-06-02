@@ -110,15 +110,16 @@ class _MyHomePageState extends State<MyHomePage> {
                   build12DiZhiGong(130, 80),
                   DaXianRing(
                       gongYearsMapper: {
-                        // EnumTwelveGong.Zi: 4.5,
-                        EnumTwelveGong.Zi: 15,
+                        EnumTwelveGong.Zi: 10.25,
+                        // EnumTwelveGong.Chou: 4.5,
+                        // EnumTwelveGong.Zi: 15,
                         EnumTwelveGong.Chou: 10,
                         EnumTwelveGong.Yin: 11,
                         EnumTwelveGong.Mao: 15,
                         EnumTwelveGong.Chen: 8,
                         EnumTwelveGong.Si: 7,
                         EnumTwelveGong.Wu: 11,
-                        EnumTwelveGong.Wei: 6,
+                        EnumTwelveGong.Wei: 4.5,
                         EnumTwelveGong.Shen: 4.5,
                         EnumTwelveGong.You: 4.5,
                         // EnumTwelveGong.Shen: 5,
@@ -127,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         EnumTwelveGong.Hai: 5,
                       },
                       outerRadius: 480,
-                      innerRadius: 448,
+                      innerRadius: 432,
                       baseGongOffsetAngle: 30),
                   textCicle(),
                   // DaXianRing(
@@ -187,7 +188,7 @@ class _MyHomePageState extends State<MyHomePage> {
           constellation: Enum28Constellations.Zhen_Shui_Yin, degree: 2.2),
     );
     TextStyle textStyle = const TextStyle(
-        fontSize: 16,
+        fontSize: 14,
         height: 1,
         color: Colors.black54,
         fontWeight: FontWeight.w400);

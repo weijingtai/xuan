@@ -6,11 +6,10 @@ import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../da_xian_raing_painter.dart';
-import '../../da_xian_raing_painter_v2.dart';
+import '../../da_xian_ring_painter.dart';
 import '../../ring_text_direction.dart';
 import '../../sector_painter.dart';
-import '../../sector_painter_v2.dart';
+import '../../year_month.dart';
 
 class DaXianRing extends StatelessWidget {
   final Map<EnumTwelveGong, double> gongYearsMapper;
@@ -43,13 +42,26 @@ class DaXianRing extends StatelessWidget {
     double middelRadius = innerRadius + (outerRadius - innerRadius) / 2;
 
     // 将角度转换为弧度
+    Border gongBorder = const Border(
+        left: BorderSide(color: Colors.black, width: 1),
+        top: BorderSide.none,
+        bottom: BorderSide(color: Colors.black, width: 1),
+        right: BorderSide.none);
+    Border slotBorder = const Border(
+        left: BorderSide(color: Colors.black12, width: 1),
+        top: BorderSide.none,
+        bottom: BorderSide.none,
+        right: BorderSide.none);
+
+    TextStyle textStyle =
+        const TextStyle(height: 1, color: Colors.black54, fontSize: 10);
 
     return SizedBox(
       width: itemSize,
       height: itemSize,
       child: CustomMultiChildLayout(
         delegate: _ShenShaLayoutDelegate(
-          itemCount: 2,
+          itemCount: 3,
           radius: 0, // 所有子项都从中心开始布局
           itemSize: itemSize,
         ),
@@ -64,41 +76,51 @@ class DaXianRing extends StatelessWidget {
                     angle: 0,
                     child: CustomPaint(
                       size: Size(itemSize, itemSize),
-                      painter: DaXianRaingPainter(
+                      painter: DaXianRingPainter(
                           startAngle: 30 + 30,
                           // sweepRadian: 2 * math.pi,
                           sweepRadian: (3 * 30) * math.pi / 180,
                           color: Colors.blue,
                           outerRadius: outerRadius,
                           innerRadius: outerRadius - 16,
-                          borderColor: Colors.black12,
-                          gongYearsMapper: gongYearsMapper,
+                          gongYearsMapper: daXianDongWei,
+                          startFromYear: YearMonth(0, 0),
+                          gongBorder: const Border(
+                              left: BorderSide(color: Colors.black, width: 1),
+                              top: BorderSide.none,
+                              bottom: BorderSide(color: Colors.black, width: 1),
+                              right: BorderSide.none),
+                          slotBorder: const Border(
+                              left: BorderSide(color: Colors.black12, width: 1),
+                              top: BorderSide.none,
+                              bottom: BorderSide.none,
+                              right: BorderSide.none),
                           textStyle: const TextStyle(
-                              height: 1, color: Colors.black87, fontSize: 12),
+                              height: 1, color: Colors.black54, fontSize: 10),
                           gongOrderedSeq: EnumTwelveGong.listAll),
                     )),
               )),
-
           LayoutId(
               id: 1,
               child: SizedBox(
-                width: itemSize - 16,
-                height: itemSize - 16,
+                width: itemSize,
+                height: itemSize,
                 child: Transform.rotate(
                     angle: 0,
                     child: CustomPaint(
-                      size: Size(itemSize - 16, itemSize - 16),
-                      painter: DaXianRaingPainterV2(
+                      size: Size(itemSize, itemSize),
+                      painter: DaXianRingPainter(
                           startAngle: 30 + 30,
                           // sweepRadian: 2 * math.pi,
                           sweepRadian: (3 * 30) * math.pi / 180,
                           color: Colors.blue,
                           outerRadius: outerRadius - 16,
-                          innerRadius: innerRadius,
-                          borderColor: Colors.black12,
-                          gongYearsMapper: gongYearsMapper,
-                          textStyle: const TextStyle(
-                              height: 1, color: Colors.black87, fontSize: 12),
+                          innerRadius: outerRadius - 16 - 16,
+                          gongYearsMapper: daXian106,
+                          startFromYear: YearMonth(0, 0),
+                          gongBorder: gongBorder,
+                          slotBorder: slotBorder,
+                          textStyle: textStyle,
                           gongOrderedSeq: EnumTwelveGong.listAll),
                     )),
               )),
@@ -106,6 +128,38 @@ class DaXianRing extends StatelessWidget {
       ),
     );
   }
+
+  static Map<EnumTwelveGong, YearMonth> daXianDongWei = {
+    // EnumTwelveGong.Zi: YearMonth(10, 2),
+    // EnumTwelveGong.Chou: YearMonth(4, 0),
+    EnumTwelveGong.Zi: YearMonth(10, 2),
+    EnumTwelveGong.Chou: YearMonth(10, 0),
+    EnumTwelveGong.Yin: YearMonth(11, 0),
+    EnumTwelveGong.Mao: YearMonth.fromYear(15),
+    EnumTwelveGong.Chen: YearMonth.fromYear(8),
+    EnumTwelveGong.Si: YearMonth.fromYear(7),
+    EnumTwelveGong.Wu: YearMonth.fromYear(11),
+    EnumTwelveGong.Wei: YearMonth(4, 6),
+    EnumTwelveGong.Shen: YearMonth(4, 6),
+    EnumTwelveGong.You: YearMonth(4, 6),
+    EnumTwelveGong.Xu: YearMonth.fromYear(5),
+    EnumTwelveGong.Hai: YearMonth.fromYear(5),
+  };
+
+  static Map<EnumTwelveGong, YearMonth> daXian106 = {
+    EnumTwelveGong.Zi: YearMonth.fromYear(15),
+    EnumTwelveGong.Chou: YearMonth.fromYear(10),
+    EnumTwelveGong.Yin: YearMonth.fromYear(11),
+    EnumTwelveGong.Mao: YearMonth.fromYear(15),
+    EnumTwelveGong.Chen: YearMonth.fromYear(8),
+    EnumTwelveGong.Si: YearMonth.fromYear(7),
+    EnumTwelveGong.Wu: YearMonth.fromYear(11),
+    EnumTwelveGong.Wei: YearMonth(4, 6),
+    EnumTwelveGong.Shen: YearMonth(4, 6),
+    EnumTwelveGong.You: YearMonth(4, 6),
+    EnumTwelveGong.Xu: YearMonth.fromYear(5),
+    EnumTwelveGong.Hai: YearMonth.fromYear(5),
+  };
 
   Widget eachShenNumber(
       {required int i,
