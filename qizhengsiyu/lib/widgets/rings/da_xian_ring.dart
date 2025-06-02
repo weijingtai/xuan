@@ -6,10 +6,10 @@ import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../da_xian_ring_painter.dart';
-import '../../ring_text_direction.dart';
-import '../../sector_painter.dart';
-import '../../year_month.dart';
+import 'enum_ring_text_direction.dart';
+import 'sector_painter.dart';
+import 'year_month.dart';
+import 'da_xian_ring_painter.dart';
 
 class DaXianRing extends StatelessWidget {
   final Map<EnumTwelveGong, double> gongYearsMapper;

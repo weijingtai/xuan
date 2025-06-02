@@ -6,8 +6,8 @@ import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_ming_li_ring.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../ring_text_direction.dart';
-import '../../sector_painter.dart';
+import 'enum_ring_text_direction.dart';
+import 'sector_painter.dart';
 
 class AllShenShaRing extends StatelessWidget {
   final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper;

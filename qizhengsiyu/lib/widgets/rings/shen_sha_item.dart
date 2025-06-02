@@ -1,13 +1,9 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:qizhengsiyu/sector_painter.dart';
+import 'package:qizhengsiyu/widgets/rings/sector_painter.dart';
 
-enum ShenShaTextDirection {
-  center,
-  outer,
-  gravity,
-}
+import 'enum_ring_text_direction.dart';
 
 class ShenShaItem extends StatelessWidget {
   final String name;
@@ -16,7 +12,7 @@ class ShenShaItem extends StatelessWidget {
   final double outerRadius;
   final double innerRadius;
   final double itemSize;
-  final ShenShaTextDirection shaTextDirection;
+  final RingTextDirection shaTextDirection;
 
   const ShenShaItem({
     required this.name,
@@ -176,17 +172,17 @@ class ShenShaItem extends StatelessWidget {
     );
   }
 
-  double getTextRotationAngle(ShenShaTextDirection direction) {
+  double getTextRotationAngle(RingTextDirection direction) {
     // 计算文字的旋转角度，使其始终垂直于半径
     // 这里我们假设文字是横向的 Text('神煞')，并且我们希望它垂直于半径。
     // 如果文字是纵向的 Text('神\n煞')，则需要调整角度。
     // 这里我们简单地返回0度，即不旋转。
     switch (direction) {
-      case ShenShaTextDirection.center:
+      case RingTextDirection.center:
         return 0; // 文字指向圆环中心
-      case ShenShaTextDirection.outer:
+      case RingTextDirection.outer:
         return math.pi; // 文字指向圆环外侧
-      case ShenShaTextDirection.gravity:
+      case RingTextDirection.gravity:
         return -(index * 30 + 90) * (math.pi / 180); // 文字垂直于半径，旋转180度
     }
   }

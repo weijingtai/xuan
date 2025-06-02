@@ -3,20 +3,16 @@ import 'dart:math' as math;
 import 'package:common/enums.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:flutter/material.dart';
-import 'package:qizhengsiyu/dev_demo2.dart';
-import 'package:qizhengsiyu/dev_demo_v2.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
 import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi_v2.dart';
-import 'package:qizhengsiyu/sector_painter.dart';
+import 'package:qizhengsiyu/widgets/rings/sector_painter.dart';
 import 'package:tuple/tuple.dart';
 
-import 'circle_text_painter.dart';
-import 'dev_demo.dart';
-import 'gong_12_dizhi.dart';
+import 'widgets/rings/circle_text_painter.dart';
 import 'widgets/rings/gong_ming_li_ring.dart';
 import 'navigator.dart';
 
@@ -131,30 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
                       innerRadius: 432,
                       baseGongOffsetAngle: 30),
                   textCicle(),
-                  // DaXianRing(
-                  //     gongYearsMapper: {
-                  //       // EnumTwelveGong.Zi: 4.5,
-                  //       EnumTwelveGong.Zi: 13,
-                  //       EnumTwelveGong.Chou: 10,
-                  //       EnumTwelveGong.Yin: 11,
-                  //       EnumTwelveGong.Mao: 15,
-                  //       EnumTwelveGong.Chen: 8,
-                  //       EnumTwelveGong.Si: 7,
-                  //       EnumTwelveGong.Wu: 11,
-                  //       EnumTwelveGong.Wei: 6,
-                  //       EnumTwelveGong.Shen: 4.5,
-                  //       EnumTwelveGong.You: 4.5,
-                  //       // EnumTwelveGong.Shen: 5,
-                  //       // EnumTwelveGong.You: 5,
-                  //       EnumTwelveGong.Xu: 5,
-                  //       EnumTwelveGong.Hai: 5,
-                  //     },
-                  //     gongOrderSeq: [
-                  //       EnumTwelveGong.Zi
-                  //     ],
-                  //     outerRadius: 494,
-                  //     innerRadius: 480,
-                  //     baseGongOffsetAngle: 30)
                 ]),
               )
             ],

@@ -2,8 +2,8 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'enums/enum_twelve_gong.dart';
-import 'ring_text_direction.dart';
+import '../../enums/enum_twelve_gong.dart';
+import 'enum_ring_text_direction.dart';
 
 class CircleTextPainter extends CustomPainter {
   final double startAngle; // 扇环绘制的起始角度（相对于其自身坐标系）

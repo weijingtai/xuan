@@ -5,8 +5,8 @@ import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../ring_text_direction.dart';
-import '../../sector_painter.dart';
+import 'enum_ring_text_direction.dart';
+import 'sector_painter.dart';
 
 enum DiZhiTextLayoutStyle {
   // 字体排列在宫位的中心，呈一条线

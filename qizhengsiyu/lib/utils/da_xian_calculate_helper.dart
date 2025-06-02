@@ -1,4 +1,4 @@
-import '../year_month.dart';
+import '../widgets/rings/year_month.dart';
 
 class DaXianCalculateHelper {
   /// 将数字数组转换为列表的列表，遵循特定的规则。
@@ -210,7 +210,6 @@ class DaXianCalculateHelper {
 
     return result;
   }
-
 
   static (bool, double, List<double>, double) proportionalAllocationWithEnds({
     required double first,
