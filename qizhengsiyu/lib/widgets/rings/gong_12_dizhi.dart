@@ -17,7 +17,7 @@ enum DiZhiTextLayoutStyle {
 }
 
 /// 重构版本的十二地支宫位环组件
-class Gong12DiZhiRingV2 extends StatelessWidget {
+class Gong12DiZhiRing extends StatelessWidget {
   final Map<EnumTwelveGong, List<Text>> shenShaMapper;
   final double outerRadius;
   final double innerRadius;
@@ -27,7 +27,7 @@ class Gong12DiZhiRingV2 extends StatelessWidget {
   final bool isXu;
   final double baseGongOffsetAngle;
 
-  const Gong12DiZhiRingV2({
+  const Gong12DiZhiRing({
     super.key,
     required this.shenShaMapper,
     required this.outerRadius,

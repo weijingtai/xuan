@@ -22,7 +22,7 @@ import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../models/body_life_model.dart';
-import '../widgets/rings/gong_12_dizhi_v2.dart';
+import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
 import '../models/panel_stars_info.dart';
@@ -1054,7 +1054,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     ]);
     // double outerRadius = 100;
     // double innerRadius = outerRadius - 50;
-    return Gong12DiZhiRingV2(
+    return Gong12DiZhiRing(
       outerRadius: outerRadius,
       innerRadius: innerRadius,
       // angleOffset: 3,
