@@ -1,10 +1,14 @@
 class YearMonth {
   final int year;
   final int month;
-  YearMonth(this.year, this.month);
+  final int? day;
+  YearMonth(this.year, this.month, [this.day]);
 
   @override
   String toString() {
+    if (day != null) {
+      return '$year/$month/$day';
+    }
     if (month > 0) {
       return '$year/$month';
     }
@@ -129,9 +133,12 @@ class YearMonth {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is YearMonth && other.year == year && other.month == month;
+    return other is YearMonth && 
+           other.year == year && 
+           other.month == month &&
+           other.day == day;
   }
 
   @override
-  int get hashCode => year.hashCode ^ month.hashCode;
+  int get hashCode => year.hashCode ^ month.hashCode ^ (day?.hashCode ?? 0);
 }
