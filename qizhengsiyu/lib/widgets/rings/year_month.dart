@@ -1,7 +1,8 @@
 class YearMonth {
   final int year;
   final int month;
-  YearMonth(this.year, this.month);
+  int? day;
+  YearMonth(this.year, this.month, [this.day]);
 
   @override
   String toString() {
