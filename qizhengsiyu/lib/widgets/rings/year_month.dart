@@ -133,10 +133,10 @@ class YearMonth {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is YearMonth && 
-           other.year == year && 
-           other.month == month &&
-           other.day == day;
+    return other is YearMonth &&
+        other.year == year &&
+        other.month == month &&
+        other.day == day;
   }
 
   @override
