@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
 import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
 import 'package:qizhengsiyu/models/hua_yao.dart';
@@ -36,11 +37,14 @@ class GenerateBasePanelService {
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
 
+  final ZhouTianModelManager zhouTianModelManager;
+
   GenerateBasePanelService(
       {required this.panelConfig,
       required this.observerPosition,
       required this.shenShaManager,
-      required this.huaYaoManager});
+      required this.huaYaoManager,
+      required this.zhouTianModelManager});
 
   Future<BasePanelModel> calculate() async {
     // final resultMapper = await getAllStarAngleRawInfo();
@@ -49,7 +53,8 @@ class GenerateBasePanelService {
       getZhouTianModel(),
       getAllStarAngleRawInfo(observerPosition),
     ]);
-    final ZhouTianModel zhouTianModel = result[0] as ZhouTianModel;
+    final ZhouTianModel zhouTianModel =
+        zhouTianModelManager.getZhouTianModelBy(panelConfig);
 
     // 1. 星体原始信息
     final Map<EnumStars, StarAngleSpeed> starAngleMapper =

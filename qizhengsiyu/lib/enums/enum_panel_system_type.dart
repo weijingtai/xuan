@@ -13,7 +13,7 @@ enum CelestialCoordinateSystem {
     "赤道制",
     "以赤道面为基准划分十二宫，符合中国传统阴阳五行理论",
   ),
-  @JsonValue("赤道制")
+  @JsonValue("天赤道制")
   skyEquatorial(
     "天赤道制",
     "以天赤道面为基准划分十二宫，周天365.25°合一年之数，太阳日行一度，符合中国传统阴阳五行理论",

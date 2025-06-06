@@ -1,4 +1,4 @@
-import '../widgets/rings/year_month.dart';
+import 'package:common/module.dart';
 
 class DaXianCalculateHelper {
   /// 将数字数组转换为列表的列表，遵循特定的规则。

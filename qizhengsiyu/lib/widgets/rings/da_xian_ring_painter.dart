@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
+import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/utils/da_xian_calculate_helper.dart';
 
 import '../../enums/enum_twelve_gong.dart';
-import 'year_month.dart';
 
 class DaXianRingPainter extends CustomPainter {
   final double startAngle;

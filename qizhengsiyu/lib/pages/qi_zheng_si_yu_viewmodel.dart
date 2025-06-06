@@ -12,6 +12,7 @@ import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
+import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
@@ -842,7 +843,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         observerPosition: convertToObserverPosition(divinationInfo),
         panelConfig: generatePanelConfig(),
         shenShaManager: shenShaManager,
-        huaYaoManager: huaYaoManager);
+        huaYaoManager: huaYaoManager,
+        zhouTianModelManager: ZhouTianModelManager.instance);
     BasePanelModel basePanelModel = await generateBasePanelService!.calculate();
     List<UIStarModel> uiBaseStarLis = calculateUIStarsFromMapper(
         basePanelModel.starAngleMapper, _baseMiniSafetyAngle);
