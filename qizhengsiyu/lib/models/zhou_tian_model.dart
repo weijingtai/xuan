@@ -59,6 +59,8 @@ class ZhouTianModel {
   double celestialLongitude;
   double zeroPointOffsetToNow;
   double rightAscension;
+  List<EnumTwelveGong> gongOrder;
+  List<Enum28Constellations> starInnOrder;
 
   List<String> specificationList;
 
@@ -79,6 +81,8 @@ class ZhouTianModel {
     required this.zeroPointOffsetToNow,
     required this.rightAscension,
     required this.specificationList,
+    required this.gongOrder,
+    required this.starInnOrder,
   });
 
   factory ZhouTianModel.fromJson(Map<String, dynamic> json) =>

@@ -33,6 +33,6 @@ const _$PanelSystemTypeEnumMap = {
 const _$CelestialCoordinateSystemEnumMap = {
   CelestialCoordinateSystem.ecliptic: '黄道制',
   CelestialCoordinateSystem.equatorial: '赤道制',
-  CelestialCoordinateSystem.skyEquatorial: '赤道制',
+  CelestialCoordinateSystem.skyEquatorial: '天赤道制',
   CelestialCoordinateSystem.pseudoEcliptic: '似黄道恒星制',
 };

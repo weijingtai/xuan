@@ -30,6 +30,7 @@ import 'package:uuid/v7.dart';
 import '../enums/enum_moon_phases.dart';
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
+import '../managers/zhou_tian_model_manager.dart';
 import '../models/base_panel_model.dart';
 import '../models/da_xian_panel_model.dart';
 import '../models/di_zhi_shen_sha.dart';
@@ -146,6 +147,9 @@ class BeautyPageViewModel extends ChangeNotifier {
     return _shenShaManager!;
   }
 
+  ZhouTianModelManager get zhouTianModelManager =>
+      ZhouTianModelManager.instance;
+
   /// 化曜数据管理器。
   HuaYaoManager? _huaYaoManager;
   HuaYaoManager get huaYaoManager {
@@ -177,9 +181,11 @@ class BeautyPageViewModel extends ChangeNotifier {
       final result = await Future.wait([
         _loadShenShaManager(),
         _loadHuaYaoManager(),
+        ZhouTianModelManager.instance.load(), // 添加周天模型加载
       ]);
       _shenShaManager = result[0] as ShenShaManager;
       _huaYaoManager = result[1] as HuaYaoManager;
+      // 第三个结果是 void，不需要赋值
       // 初始化服务，因为它依赖于 Manager
       debugPrint("ViewModel init complete: Managers loaded.");
     } catch (e) {
@@ -271,7 +277,8 @@ class BeautyPageViewModel extends ChangeNotifier {
         panelConfig: _generatePanelConfig(), // 默认配置
         shenShaManager: shenShaManager,
         huaYaoManager: huaYaoManager,
-        observerPosition: observerPosition);
+        observerPosition: observerPosition,
+        zhouTianModelManager: ZhouTianModelManager.instance);
 
     baseObserverPositionNotifier.value = observerPosition;
     debugPrint(
