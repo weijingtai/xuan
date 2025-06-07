@@ -50,7 +50,7 @@ class GenerateBasePanelService {
     // final resultMapper = await getAllStarAngleRawInfo();
 
     final result = await Future.wait([
-      getZhouTianModel(),
+      // getZhouTianModel(),
       getAllStarAngleRawInfo(observerPosition),
     ]);
     final ZhouTianModel zhouTianModel =

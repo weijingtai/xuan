@@ -146,11 +146,44 @@ enum EnumTwelveGong {
     return getEnumTwelveGongByZhi(DiZhi.getFromValue(zhi)!);
   }
 
+  static List<EnumTwelveGong> getSquareGongList(EnumTwelveGong twelveGong,
+      [bool withCurrent = false]) {
+    Set<DiZhi> fourSet =
+        DiZhiFourZheng.getBySingleDiZhi(twelveGong.zhi).diZhiSet;
+    if (!withCurrent) {
+      fourSet.remove(twelveGong.zhi);
+    }
+    return fourSet
+        .toList()
+        .map((zhi) => EnumTwelveGong.getEnumTwelveGongByZhi(zhi))
+        .toList();
+  }
+
+  List<EnumTwelveGong> get otherSquareGongList {
+    return getSquareGongList(this, false);
+  }
+
+  List<EnumTwelveGong> get otherTringleGongList {
+    return getTriangleGongList(this, false);
+  }
+
+  static List<EnumTwelveGong> getTriangleGongList(EnumTwelveGong twelveGong,
+      [bool withCurrent = false]) {
+    Set<DiZhi> sanHeSet = DiZhiSanHe.getBySingleDiZhi(twelveGong.zhi)!.content;
+    if (!withCurrent) {
+      sanHeSet.remove(twelveGong.zhi);
+    }
+    return sanHeSet
+        .toList()
+        .map((zhi) => EnumTwelveGong.getEnumTwelveGongByZhi(zhi))
+        .toList();
+  }
+
   static List<EnumTwelveGong> get listAll {
     return EnumTwelveGong.values.toList();
   }
 
-  EnumTwelveGong get duiGong {
+  EnumTwelveGong get opposite {
     return EnumTwelveGong.getEnumTwelveGongByZhi(zhi.sixChongZhi);
   }
 }

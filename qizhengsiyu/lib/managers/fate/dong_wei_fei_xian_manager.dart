@@ -79,7 +79,7 @@ class DongWeiFeiXianManager {
           _atGong = daXianGong.gong;
           break;
         case FeiGongType.duiGong:
-          _atGong = daXianGong.gong.duiGong;
+          _atGong = daXianGong.gong.opposite;
           break;
         case FeiGongType.sanHeGong:
           // 飞限 三合宫 第五、六年按阴阳规则顺/逆取三合宫。，第五年取第一个，第六年取第二个

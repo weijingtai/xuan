@@ -77,7 +77,7 @@ void main() {
   });
 
   group("calculate daxian", () {
-    test("计算洞微大限 v3", skip: true, () {
+    test("计算洞微大限 v3", skip: false, () {
       final DateTime birth = DateTime(1990, 1, 15, 10, 30);
       final List<EnumTwelveGong> daxianOrder = [
         EnumTwelveGong.Zi,

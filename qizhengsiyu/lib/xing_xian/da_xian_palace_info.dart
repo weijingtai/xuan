@@ -3,12 +3,14 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_twelve_gong.dart';
 import 'da_xian_constellation_passage_info.dart';
+import 'star_influence_model.dart';
 
 part 'da_xian_palace_info.g.dart';
 
+//
 @JsonSerializable()
 class DaXianPalaceInfo {
-  /// 大限宫位的序号,从0开始计数
+  /// 大限宫位的序号,从1开始计数
   final int order;
 
   /// 大限所在的宫位
@@ -34,6 +36,15 @@ class DaXianPalaceInfo {
 
   /// 此大限内所有星宿过限的详细信息列表
   final List<DaXianConstellationPassageInfo> constellationPassages;
+
+  /// 宫位总度数
+  final double totalGongDegreee;
+
+  StarGongInfluence? starGongInfluence;
+
+  /// 丁度星体影响映射表
+  Map<EnumInfluenceType, List<DingStarInfluenceModel>>? dingStarMapper;
+
   DaXianPalaceInfo({
     required this.order,
     required this.palace,
@@ -44,7 +55,41 @@ class DaXianPalaceInfo {
     required this.endAge,
     required this.rateYearsPerDegree,
     required this.constellationPassages,
+    required this.totalGongDegreee,
+    this.starGongInfluence,
+    this.dingStarMapper,
   });
+
+  DaXianPalaceInfo copyWith({
+    int? order,
+    EnumTwelveGong? palace,
+    YearMonth? durationYears,
+    DateTime? startTime,
+    DateTime? endTime,
+    YearMonth? startAge,
+    YearMonth? endAge,
+    YearMonth? rateYearsPerDegree,
+    List<DaXianConstellationPassageInfo>? constellationPassages,
+    double? totalGongDegreee,
+    StarGongInfluence? starGongInfluence,
+    Map<EnumInfluenceType, List<DingStarInfluenceModel>>? dingStarMapper,
+  }) {
+    return DaXianPalaceInfo(
+      order: order ?? this.order,
+      palace: palace ?? this.palace,
+      durationYears: durationYears ?? this.durationYears,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      startAge: startAge ?? this.startAge,
+      endAge: endAge ?? this.endAge,
+      rateYearsPerDegree: rateYearsPerDegree ?? this.rateYearsPerDegree,
+      constellationPassages:
+          constellationPassages ?? this.constellationPassages,
+      totalGongDegreee: totalGongDegreee ?? this.totalGongDegreee,
+      starGongInfluence: starGongInfluence ?? this.starGongInfluence,
+      dingStarMapper: dingStarMapper ?? this.dingStarMapper,
+    );
+  }
 
   @override
   String toString() {
@@ -60,4 +105,33 @@ class DaXianPalaceInfo {
   factory DaXianPalaceInfo.fromJson(Map<String, dynamic> json) =>
       _$DaXianPalaceInfoFromJson(json);
   Map<String, dynamic> toJson() => _$DaXianPalaceInfoToJson(this);
+}
+
+@JsonSerializable()
+class StarGongInfluence {
+  // 同宫
+  final List<PalaceStarInfluenceModel>? sameGongInfluence;
+
+  // 对宫
+  final List<PalaceStarInfluenceModel>? oppositeGongInfluence;
+  // 三方
+  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>?
+      triangleGongInfluence;
+  // 四正
+  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>?
+      squareGongInfluence;
+  // 同络
+  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>? sameLuoInfluence;
+
+  StarGongInfluence({
+    this.sameGongInfluence,
+    this.oppositeGongInfluence,
+    this.triangleGongInfluence,
+    this.squareGongInfluence,
+    this.sameLuoInfluence,
+  });
+
+  factory StarGongInfluence.fromJson(Map<String, dynamic> json) =>
+      _$StarGongInfluenceFromJson(json);
+  Map<String, dynamic> toJson() => _$StarGongInfluenceToJson(this);
 }

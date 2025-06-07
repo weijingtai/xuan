@@ -23,6 +23,11 @@ DaXianConstellationPassageInfo _$DaXianConstellationPassageInfoFromJson(
       exitTime: DateTime.parse(json['exitTime'] as String),
       entryAge: YearMonth.fromJson(json['entryAge'] as Map<String, dynamic>),
       exitAge: YearMonth.fromJson(json['exitAge'] as Map<String, dynamic>),
+      constellationStarInfluences:
+          (json['constellationStarInfluences'] as List<dynamic>?)
+              ?.map((e) => ConstellationStarInfluenceModel.fromJson(
+                  e as Map<String, dynamic>))
+              .toList(),
     );
 
 Map<String, dynamic> _$DaXianConstellationPassageInfoToJson(
@@ -37,6 +42,7 @@ Map<String, dynamic> _$DaXianConstellationPassageInfoToJson(
       'exitTime': instance.exitTime.toIso8601String(),
       'entryAge': instance.entryAge,
       'exitAge': instance.exitAge,
+      'constellationStarInfluences': instance.constellationStarInfluences,
     };
 
 const _$Enum28ConstellationsEnumMap = {
