@@ -2,12 +2,12 @@ import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_twelve_gong.dart';
+import '../enums/enum_xing_xian_type.dart';
 import 'da_xian_constellation_passage_info.dart';
 import 'star_influence_model.dart';
 
 part 'da_xian_palace_info.g.dart';
 
-//
 @JsonSerializable()
 class DaXianPalaceInfo {
   /// 大限宫位的序号,从1开始计数
@@ -42,8 +42,11 @@ class DaXianPalaceInfo {
 
   StarGongInfluence? starGongInfluence;
 
-  /// 丁度星体影响映射表
+  /// 顶度星体影响映射表
   Map<EnumInfluenceType, List<DingStarInfluenceModel>>? dingStarMapper;
+
+  /// 行限类型
+  final EnumXingXianType xingXianType;
 
   DaXianPalaceInfo({
     required this.order,
@@ -58,6 +61,7 @@ class DaXianPalaceInfo {
     required this.totalGongDegreee,
     this.starGongInfluence,
     this.dingStarMapper,
+    this.xingXianType = EnumXingXianType.daXian, // 默认为大限
   });
 
   DaXianPalaceInfo copyWith({

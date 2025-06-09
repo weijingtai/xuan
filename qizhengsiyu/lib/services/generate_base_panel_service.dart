@@ -58,7 +58,7 @@ class GenerateBasePanelService {
 
     // 1. 星体原始信息
     final Map<EnumStars, StarAngleSpeed> starAngleMapper =
-        result[1] as Map<EnumStars, StarAngleSpeed>;
+        result.first as Map<EnumStars, StarAngleSpeed>;
     // 2. 计算星体进入宫位信息
     final Map<EnumStars, EnteredInfo> enteredGongMapper =
         getStarEnteredInfoMapper(starAngleMapper, zhouTianModel);

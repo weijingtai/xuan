@@ -27,6 +27,17 @@ DaXianPalaceInfo _$DaXianPalaceInfoFromJson(Map<String, dynamic> json) =>
           ? null
           : StarGongInfluence.fromJson(
               json['starGongInfluence'] as Map<String, dynamic>),
+      dingStarMapper: (json['dingStarMapper'] as Map<String, dynamic>?)?.map(
+        (k, e) => MapEntry(
+            $enumDecode(_$EnumInfluenceTypeEnumMap, k),
+            (e as List<dynamic>)
+                .map((e) =>
+                    DingStarInfluenceModel.fromJson(e as Map<String, dynamic>))
+                .toList()),
+      ),
+      xingXianType: $enumDecodeNullable(
+              _$EnumXingXianTypeEnumMap, json['xingXianType']) ??
+          EnumXingXianType.daXian,
     );
 
 Map<String, dynamic> _$DaXianPalaceInfoToJson(DaXianPalaceInfo instance) =>
@@ -42,6 +53,9 @@ Map<String, dynamic> _$DaXianPalaceInfoToJson(DaXianPalaceInfo instance) =>
       'constellationPassages': instance.constellationPassages,
       'totalGongDegreee': instance.totalGongDegreee,
       'starGongInfluence': instance.starGongInfluence,
+      'dingStarMapper': instance.dingStarMapper
+          ?.map((k, e) => MapEntry(_$EnumInfluenceTypeEnumMap[k]!, e)),
+      'xingXianType': _$EnumXingXianTypeEnumMap[instance.xingXianType]!,
     };
 
 const _$EnumTwelveGongEnumMap = {
@@ -57,6 +71,21 @@ const _$EnumTwelveGongEnumMap = {
   EnumTwelveGong.You: '酉',
   EnumTwelveGong.Xu: '戌',
   EnumTwelveGong.Hai: '亥',
+};
+
+const _$EnumInfluenceTypeEnumMap = {
+  EnumInfluenceType.same: '同宫',
+  EnumInfluenceType.opposite: '对宫',
+  EnumInfluenceType.triangle: '三方',
+  EnumInfluenceType.square: '四正',
+  EnumInfluenceType.luo: '同络',
+  EnumInfluenceType.jing: '同经',
+};
+
+const _$EnumXingXianTypeEnumMap = {
+  EnumXingXianType.daXian: 'daXian',
+  EnumXingXianType.xian106: 'xian106',
+  EnumXingXianType.feiXian: 'feiXian',
 };
 
 StarGongInfluence _$StarGongInfluenceFromJson(Map<String, dynamic> json) =>

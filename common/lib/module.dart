@@ -5,6 +5,7 @@ export 'models/shen_sha_tian_gan.dart';
 export 'models/shen_sha_bundled.dart';
 export 'models/twelve_zhang_sheng.dart';
 export 'models/ConstantNineGongDataClass.dart';
+export 'models/year_month.dart';
 export 'widgets/gold_text.dart';
 export 'widgets/ge_ju_panel_template_ji_1.dart';
 export 'widgets/ge_ju_panel_template_xiong_1.dart';

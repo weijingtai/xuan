@@ -22,11 +22,11 @@ import 'star_influence_model.dart';
 
 class DongWeiDaXianCalculator {
   final ZhouTianModel zhouTianModel;
-  // final Map<EnumTwelveGong, CelestialObject> palacesStaticInfo;
-  // final Map<Enum28Constellations, CelestialObject> constellationsStaticInfo;
   final List<EnumTwelveGong> daxianPalaceOrder;
   final Map<EnumTwelveGong, YearMonth> daxianPalaceDurations; // 改为YearMonth
 
+  // final Map<EnumTwelveGong, CelestialObject> palacesStaticInfo;
+  // final Map<Enum28Constellations, CelestialObject> constellationsStaticInfo;
   final int totalDegreesInt;
   // 判断是否为逆行（这里需要根据实际的逆行判断逻辑）
   bool isRetrograde = true;
@@ -43,7 +43,6 @@ class DongWeiDaXianCalculator {
     required this.zhouTianModel,
     required this.basePanel,
     required this.observerPosition,
-    // required this.birthTime,
     required this.daxianPalaceOrder,
     required this.daxianPalaceDurations, // 现在接受YearMonth类型
     this.isRetrograde = true,

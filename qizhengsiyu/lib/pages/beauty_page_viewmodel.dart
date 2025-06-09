@@ -288,6 +288,7 @@ class BeautyPageViewModel extends ChangeNotifier {
     BasePanelModel basicPanelModel;
     try {
       basicPanelModel = await _generateBasePanelService.calculate();
+      print(jsonEncode(basicPanelModel.toJson()));
       // _basicLifeStarsAngle =
       // StarsAngle.fromMapper(basicPanelModel.starAngleMapper);
       // _uiBasicLifeStars = // 使用原始角度计算 UI 数据
@@ -544,6 +545,8 @@ class BeautyPageViewModel extends ChangeNotifier {
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
     lifeObserver = generateLifeObserverPosition();
+
+    print(json.encode(lifeObserver));
   }
 
   ObserverPosition? lifeObserver;

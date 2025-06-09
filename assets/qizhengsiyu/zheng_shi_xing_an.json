@@ -1,11 +1,11 @@
 {
-      "systemType": "黄道制",
-      "constellationSystemType": "今宿制",
-      "panelSystemType": "回归制",
-      "epochCorrection": "j2000",
+      "systemType": "似黄道恒星制",
+      "constellationSystemType": "古宿制",
+      "panelSystemType": "恒星制",
+      "epochCorrection": "郑氏星案",
       "totalDegree": 360.00,
       "gongOrder":[
-        "戌","酉","申","未","午","巳","辰","卯","寅","丑","子","亥"
+        "子","亥","戌","酉","申","未","午","巳","辰","卯","寅","丑"
       ],
       "gongDegreeSeq": [
         {"gong":"亥","degree": 30.0},
@@ -22,7 +22,7 @@
         {"gong":"子","degree": 30.0}
       ],
       "starInnOrder":[
-        "室","壁","奎","娄","胃","昴","毕","觜","参","井","鬼","柳","星","张","翼","轸","角","亢","氐","房","心","尾","箕","斗","牛","女","虚","危"
+        "女","虚","危","室","壁","奎","娄","胃","昴","毕","觜","参","井","鬼","柳","星","张","翼","轸","角","亢","氐","房","心","尾","箕","斗","牛"
       ],
     "starInnDegreeSeq": [
       {"constellation":"危","degree":20.07},
@@ -54,18 +54,18 @@
       {"constellation":"女","degree":11.67},
       {"constellation":"虚","degree":9.97}
     ],
-    "alignmentPointAtConstellation": {"constellation":"室","degree": 6.55},
+    "alignmentPointAtConstellation": {"constellation":"虚","degree": 6.0},
     "alignmentPointAtGong": {
-      "gong": "戌",
-      "degree": 0.0
+      "gong": "子",
+      "degree": 15.0
     },
-      "zeroPointJieQi": "春分",
-      "zeroPointAtConstellation": {"constellation":"室","degree": 6.55},
-      "zeroPointAtGong": {"gong": "戌", "degree": 0.0},
+      "zeroPointJieQi": "立春",
+      "zeroPointAtConstellation": {"constellation":"女","degree": 2.1},
+      "zeroPointAtGong": {"gong": "子", "degree": 0.0},
       "celestialLongitude": 0.0,
       "rightAscension": 0.0,
       "zeroPointOffsetToNow": 0.0,
       "specificationList":[
-        "来自moira, 室宿12.7° 戌白羊0° 春分点, 黄经0°，岁差为0°已矫正"
+        "来自moira, 郑氏星案"
       ]
   }
