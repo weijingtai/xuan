@@ -61,6 +61,16 @@ class YearMonth {
         (day ?? 0);
   }
 
+  // 总天数计算 但以小时返回
+  int toDaysInHour() {
+    int oneYearInHour = 365 * 24 + 6; // 每年为365天，6小时
+    double oneMonthInHour = 30 * 24 + 10.5; // 每个月为30天，24小时
+
+    return year * oneYearInHour +
+        (oneMonthInHour * month).round() +
+        (day == null ? 0 : day! * 24);
+  }
+
   // 从总天数创建YearMonth（使用增量版本的改进实现）
   static YearMonth fromTotalDays(int totalDays) {
     if (totalDays == 0) return YearMonth(0, 0, 0);

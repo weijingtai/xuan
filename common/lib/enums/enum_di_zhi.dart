@@ -675,6 +675,23 @@ enum DiZhiSanHe {
     return DiZhiSanHe.values.firstWhere((e) => e.content.contains(diZhi));
   }
 
+  List<DiZhi> getOrderedSeq() {
+    switch (this) {
+      case Water:
+        return [DiZhi.SHEN, DiZhi.ZI, DiZhi.CHEN];
+      case Wood:
+        return [DiZhi.HAI, DiZhi.MAO, DiZhi.WEI];
+      case Fire:
+        return [DiZhi.YIN, DiZhi.WU, DiZhi.XU];
+      case Golden:
+        return [DiZhi.SI, DiZhi.YOU, DiZhi.CHOU];
+    }
+  }
+
+  List<DiZhi> getReversedSeq() {
+    return getOrderedSeq().reversed.toList();
+  }
+
   // 获取 驿马位置
   static DiZhi getHorseBySingleDiZhi(DiZhi diZhi) {
     var res = getBySingleDiZhi(diZhi);
