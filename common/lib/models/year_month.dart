@@ -38,10 +38,29 @@ class YearMonth {
 
   // 加法运算符（使用增量版本的高精度实现）
   YearMonth operator +(YearMonth other) {
-    // 使用总天数进行高精度计算
-    int totalDaysSelf = this.toTotalDays();
-    int totalDaysOther = other.toTotalDays();
-    return YearMonth.fromTotalDays(totalDaysSelf + totalDaysOther);
+    int newYear = year + other.year;
+    int newMonth = month + other.month;
+    int newDay = (day ?? 0) + (other.day ?? 0);
+
+    // 处理月份进位
+    if (newMonth >= 12) {
+      newYear += newMonth ~/ 12;
+      newMonth = newMonth % 12;
+    }
+
+    // 处理天数进位（简化处理，假设每月30天）
+    if (newDay >= 30) {
+      newMonth += newDay ~/ 30;
+      newDay = newDay % 30;
+
+      // 再次检查月份进位
+      if (newMonth >= 12) {
+        newYear += newMonth ~/ 12;
+        newMonth = newMonth % 12;
+      }
+    }
+
+    return YearMonth(newYear, newMonth, newDay > 0 ? newDay : null);
   }
 
   // 总月数计算（改进版本，考虑天数）
@@ -63,12 +82,10 @@ class YearMonth {
 
   // 总天数计算 但以小时返回
   int toDaysInHour() {
-    int oneYearInHour = 365 * 24 + 6; // 每年为365天，6小时
-    double oneMonthInHour = 30 * 24 + 10.5; // 每个月为30天，24小时
+    int yearInHour = (year * avgDaysInYear * 24).round(); // 每年为365天，6小时
+    int monthInHour = (month * avgDaysInMonth * 24).round(); // 每个月为30天，24小时
 
-    return year * oneYearInHour +
-        (oneMonthInHour * month).round() +
-        (day == null ? 0 : day! * 24);
+    return yearInHour + monthInHour + (day == null ? 0 : day! * 24);
   }
 
   // 从总天数创建YearMonth（使用增量版本的改进实现）
