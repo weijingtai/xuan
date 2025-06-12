@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -148,8 +149,10 @@ enum EnumTwelveGong {
 
   static List<EnumTwelveGong> getSquareGongList(EnumTwelveGong twelveGong,
       [bool withCurrent = false]) {
-    Set<DiZhi> fourSet =
-        DiZhiFourZheng.getBySingleDiZhi(twelveGong.zhi).diZhiSet;
+    // 创建一个新的可修改的Set
+    Set<DiZhi> fourSet = DiZhiFourZheng.getBySingleDiZhi(twelveGong.zhi)
+        .diZhiSet
+        .toSet(); // 通过toSet()创建一个新的可修改Set
     if (!withCurrent) {
       fourSet.remove(twelveGong.zhi);
     }
@@ -169,7 +172,12 @@ enum EnumTwelveGong {
 
   static List<EnumTwelveGong> getTriangleGongList(EnumTwelveGong twelveGong,
       [bool withCurrent = false]) {
-    Set<DiZhi> sanHeSet = DiZhiSanHe.getBySingleDiZhi(twelveGong.zhi)!.content;
+    // 创建一个新的可修改的Set
+    Set<DiZhi> sanHeSet = DiZhiSanHe.getBySingleDiZhi(twelveGong.zhi)!
+        .content
+        .map((e) => e)
+        .toSet()
+        .toSet(); // 通过两次toSet()创建一个新的可修改Set
     if (!withCurrent) {
       sanHeSet.remove(twelveGong.zhi);
     }
