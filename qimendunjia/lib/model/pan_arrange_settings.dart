@@ -1,6 +1,5 @@
 
-import 'package:qimendunjia/model/shi_jia_qi_men.dart';
-
+import 'package:qimendunjia/enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_arrange_plate_type.dart';
 import '../enums/enum_nine_stars.dart';
 
