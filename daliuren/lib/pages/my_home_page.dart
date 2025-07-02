@@ -36,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  String ICONS_ASSETS_PATH = "assets/icons/";
   GlobalKey renYearGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
   GlobalKey renMonthGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
   GlobalKey renDayGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
@@ -623,11 +624,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                           // color: Colors.blue.withOpacity(.1),
                                           height: 128,
                                           width: 64,
-                                          decoration: const BoxDecoration(
+                                          decoration: BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
-                                                      "assets/icons/tag_virt.png"))),
-                                          // child:Image.asset("assets/icons/tag_virt.png",),
+                                                      "${ICONS_ASSETS_PATH}/tag_virt.png"))),
+                                          // child:Image.asset("${ICONS_ASSETS_PATH}/tag_virt.png",),
                                         ),
                                         const Column(
                                           children: [Text("元"), Text("首")],
@@ -722,7 +723,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           loadBy(tuple2.item1, tuple2.item2),
                                       builder: (ctx, snap) {
                                         if (snap.hasError) {
-                                          print(snap.error);
+                                          debugPrint(snap.error.toString());
                                         }
                                         if (snap.hasData) {
                                           return yu_ding(snap.data!);
@@ -744,11 +745,11 @@ class _MyHomePageState extends State<MyHomePage> {
                                           // color: Colors.blue.withOpacity(.1),
                                           height: 128,
                                           width: 64,
-                                          decoration: const BoxDecoration(
+                                          decoration: BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
-                                                      "assets/icons/tag_virt.png"))),
-                                          // child:Image.asset("assets/icons/tag_virt.png",),
+                                                      "${ICONS_ASSETS_PATH}/tag_virt.png"))),
+                                          // child:Image.asset("${ICONS_ASSETS_PATH}/tag_virt.png",),
                                         ),
                                         const Column(
                                           children: [Text("元"), Text("首")],
@@ -1341,11 +1342,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Container(
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                                 image: DecorationImage(
                                     fit: BoxFit.fill,
                                     image: AssetImage(
-                                        "assets/icons/chinese-red-ink-seal.png"),
+                                        "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
                                     colorFilter: ColorFilter.mode(
                                         Color.fromRGBO(176, 31, 36, .8),
                                         BlendMode.srcIn))),
@@ -1534,10 +1535,11 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Container(
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
                 image: DecorationImage(
                     fit: BoxFit.fill,
-                    image: AssetImage("assets/icons/chinese-red-ink-seal.png"),
+                    image: AssetImage(
+                        "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
                     colorFilter: ColorFilter.mode(
                         Color.fromRGBO(176, 31, 36, .8), BlendMode.srcIn))),
             child: Column(
@@ -1625,11 +1627,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   ],
                 ),
                 Container(
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                       image: DecorationImage(
                           fit: BoxFit.fill,
                           image: AssetImage(
-                              "assets/icons/chinese-red-ink-seal.png"),
+                              "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
                           colorFilter: ColorFilter.mode(
                               Color.fromRGBO(176, 31, 36, .8),
                               BlendMode.srcIn))),
@@ -2529,7 +2531,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   Color.fromRGBO(176, 31, 36, .7),
                                   BlendMode.srcIn),
                               child: Image.asset(
-                                "assets/icons/wide-black-ink-radian-line2.png",
+                                "${ICONS_ASSETS_PATH}/wide-black-ink-radian-line2.png",
                               )))
                       : const SizedBox(),
                   Text(
@@ -2621,7 +2623,7 @@ class _MyHomePageState extends State<MyHomePage> {
         colorFilter:
             ColorFilter.mode(color ?? Colors.blueGrey, BlendMode.srcIn),
         child: Image.asset(
-          "assets/icons/thin-black-ink-circle.png",
+          "${ICONS_ASSETS_PATH}/thin-black-ink-circle.png",
           width: size,
           height: size,
         ));
