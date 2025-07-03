@@ -36,6 +36,7 @@ import 'package:sliding_switch/sliding_switch.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
+import '../enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_most_popular_ge_ju.dart';
 import '../enums/enum_nine_stars.dart';
 import '../enums/enum_san_zha_wu_jia.dart';
@@ -52,6 +53,8 @@ import '../ui_models/ui_pan_meta_model.dart';
 import '../ui_models/ui_ten_gan_key_ying_ge_ju.dart';
 import '../utils/qi_men_ju_calculator.dart';
 import '../widgets/each_gong_widget.dart';
+import '../widgets/pan_info_display.dart';
+import '../widgets/pan_settings_panel.dart';
 import '../widgets/qi_yi_wang_shuai.dart';
 import '../widgets/ten_gan_ke_ying_yin_zhang.dart';
 import 'beatiful_page.dart';
@@ -70,7 +73,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
   // Size panSize = Size(590, 590);
   double baseEachGongSize = 256;
   Offset panOffset = const Offset(0, 0);
-  Size panSize = const Size(816, 816);
+  Size panSize = const Size(1016, 1016);
   double eachPaddingSize = 8;
 
   // Map<HouTianGua,UITenGanKeYingGeJu> geJuMapper = {};
@@ -353,11 +356,13 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                       builder: (context, viewModel, child) {
                         print("UI: build pan when ${viewModel.shiJiaQiMen}");
                         if (viewModel.shiJiaQiMen == null) {
-                          return const SizedBox(height: 160); // Placeholder height
+                          return const SizedBox(
+                              height: 160); // Placeholder height
                         }
                         return PanInfoDisplay(
                           shiJiaQiMen: viewModel.shiJiaQiMen,
-                          panDateTime: dateTimeValueNotifier.value, // Or directly from viewModel.shiJiaQiMen.panDateTime
+                          panDateTime: dateTimeValueNotifier
+                              .value, // Or directly from viewModel.shiJiaQiMen.panDateTime
                           panInfoTextStyle: panInfoTextStyle,
                           twelveDiZhiTextStyle: twelveDiZhiTextStyle,
                           tianGanTextStyle: tianGanTextStyle,
@@ -368,8 +373,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                       },
                       // Child is not strictly needed here if PanInfoDisplay handles the null case,
                       // but kept for consistency if there was a default child before.
-                      child: const SizedBox(height: 160)
-                  ),
+                      child: const SizedBox(height: 160)),
                   Stack(
                     alignment: Alignment.center,
                     children: [
@@ -398,31 +402,47 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                               starGongTypeNotifier: starGongTypeNotifier,
                               doorGongTypeNotifier: doorGongTypeNotifier,
                               ganGongTypeNotifier: ganGongTypeNotifier,
-                              selectedDateTimeNotifier: selectedDateTimeNotifier,
-                              onArrangePlatePressed: _onArrangePlatePressed,
-                              onClearPlatePressed: _onClearPlatePressed,
-                              onSelectDateTimePressed: _onSelectDateTimePressed,
+                              selectedDateTimeNotifier:
+                                  selectedDateTimeNotifier,
+                              onArrangePlatePressed: () {},
+                              onClearPlatePressed: () {},
+                              onSelectDateTimePressed: () async {},
+                              // onArrangePlatePressed: _onArrangePlatePressed,
+                              // onClearPlatePressed: _onClearPlatePressed,
+                              // onSelectDateTimePressed: _onSelectDateTimePressed,
                               onYearJiaZiChanged: (value) => yearJiaZi = value,
-                              onMonthJiaZiChanged: (value) => monthJiaZi = value,
+                              onMonthJiaZiChanged: (value) =>
+                                  monthJiaZi = value,
                               onDayJiaZiChanged: (value) => dayJiaZi = value,
                               onTimeJiaZiChanged: (value) => timeJiaZi = value,
                               onDunJuChanged: (value) {
                                 if (value != null) {
                                   List<String> splitedList = value.split("");
                                   String numStr = splitedList[2];
-                                  yinYangDun = splitedList.first == "阳" ? YinYang.YANG : YinYang.YIN;
-                                  juNumber = ConstResourcesMapper.chineseNumberMapper.entries.firstWhere((e) => e.value == numStr).key;
+                                  yinYangDun = splitedList.first == "阳"
+                                      ? YinYang.YANG
+                                      : YinYang.YIN;
+                                  juNumber = ConstResourcesMapper
+                                      .chineseNumberMapper.entries
+                                      .firstWhere((e) => e.value == numStr)
+                                      .key;
                                 } else {
                                   yinYangDun = null;
                                   juNumber = null;
                                 }
                               },
-                              yearGanZhiShakeKey: yearGanZhiShakeKey as GlobalKey<ShakeWidgetState>,
-                              monthGanZhiShakeKey: monthGanZhiShakeKey as GlobalKey<ShakeWidgetState>,
-                              dayGanZhiShakeKey: dayGanZhiShakeKey as GlobalKey<ShakeWidgetState>,
-                              timeGanZhiShakeKey: timeGanZhiShakeKey as GlobalKey<ShakeWidgetState>,
-                              dunGanZhiShakeKey: dunGanZhiShakeKey as GlobalKey<ShakeWidgetState>,
-                              switcherInactivatedStyle: switcherInactivatedStyle,
+                              yearGanZhiShakeKey: yearGanZhiShakeKey
+                                  as GlobalKey<ShakeWidgetState>,
+                              monthGanZhiShakeKey: monthGanZhiShakeKey
+                                  as GlobalKey<ShakeWidgetState>,
+                              dayGanZhiShakeKey: dayGanZhiShakeKey
+                                  as GlobalKey<ShakeWidgetState>,
+                              timeGanZhiShakeKey: timeGanZhiShakeKey
+                                  as GlobalKey<ShakeWidgetState>,
+                              dunGanZhiShakeKey: dunGanZhiShakeKey
+                                  as GlobalKey<ShakeWidgetState>,
+                              switcherInactivatedStyle:
+                                  switcherInactivatedStyle,
                               switcherActivatedStyle: switcherActivatedStyle,
                               zhuanPanActivatedStyle: zhuanPanActivatedStyle,
                               feiPanActivatedStyle: feiPanActivatedStyle,
@@ -442,7 +462,9 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                         }
                         return const SizedBox.shrink();
                       }),
-                  const SizedBox(height: 1000,) // This seems like a large spacer, might be for scrolling?
+                  const SizedBox(
+                    height: 1000,
+                  ) // This seems like a large spacer, might be for scrolling?
                 ],
               ),
             ),

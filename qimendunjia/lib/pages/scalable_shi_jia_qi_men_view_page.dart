@@ -30,6 +30,7 @@ import 'package:slide_switcher/slide_switcher.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
+import '../enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_most_popular_ge_ju.dart';
 import '../enums/enum_nine_stars.dart';
 import '../enums/enum_san_zha_wu_jia.dart';
@@ -59,7 +60,7 @@ class _ScalableShiJiaQiMenViewPageState
   // Size panSize = Size(590, 590);
   double baseEachGongSize = 200; // default is 256
   Offset panOffset = const Offset(0, 0);
-  Size panSize = const Size(604, 604); // default 816,816
+  Size panSize = const Size(816, 816); // default 816,816
   double eachPaddingSize = 0; // default 8
 
   // Map<HouTianGua,UITenGanKeYingGeJu> geJuMapper = {};

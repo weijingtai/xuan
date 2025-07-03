@@ -1,9 +1,8 @@
-
-import 'package:qimendunjia/enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_arrange_plate_type.dart';
+import '../enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_nine_stars.dart';
 
-class PanArrangeSettings{
+class PanArrangeSettings {
   ArrangeType arrangeType;
   CenterGongJiGongType jiGong;
   MonthTokenTypeEnum starMonthTokenType;
@@ -19,5 +18,5 @@ class PanArrangeSettings{
     required this.doorFourWeiGongType,
     required this.godWithGongTypeEnum,
     required this.ganGongType,
-});
+  });
 }

@@ -18,6 +18,7 @@ class QiMenJuCalculator {}
 abstract class ShiJiaQiMenJuCalculator {
   /// 排盘类型，例如拆补、置润等。
   final ArrangeType arrangeType;
+
   /// 需要排盘的公历日期和时间。
   final DateTime dateTime;
 
@@ -90,11 +91,14 @@ abstract class ShiJiaQiMenJuCalculator {
   /// - 地支为寅、申、巳、亥（四驿马）的符头属于中元。
   /// - 地支为辰、戌、丑、未（四库）的符头属于下元。
   static EnumThreeYuan getThreeYuanByFuHead(JiaZi fouTou) {
-    if (DiZhi.fourMuYu.contains(fouTou.diZhi)) { // 子午卯酉为上元
+    if (DiZhi.fourMuYu.contains(fouTou.diZhi)) {
+      // 子午卯酉为上元
       return EnumThreeYuan.START;
-    } else if (DiZhi.fourYiMa.contains(fouTou.diZhi)) { // 寅申巳亥为中元
+    } else if (DiZhi.fourYiMa.contains(fouTou.diZhi)) {
+      // 寅申巳亥为中元
       return EnumThreeYuan.MIDDLE;
-    } else { // 辰戌丑未为下元
+    } else {
+      // 辰戌丑未为下元
       return EnumThreeYuan.END;
     }
   }
@@ -139,12 +143,16 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
     // 根据日干支的序号 % 5 来判断在五日符头周期中的位置
     int model = dayGanZhi.number % 5;
     JiaZi fuTou;
-    if (model % 5 == 0) { // 余数为0，表示是符头周期的最后一天 (如戊辰日，符头为甲子)
+    if (model % 5 == 0) {
+      // 余数为0，表示是符头周期的最后一天 (如戊辰日，符头为甲子)
       fuTou = JiaZi.getByNumber(dayGanZhi.number - 4); // 符头 = 当前日干支序号 - 4
-    } else if (model == 1) { // 余数为1，表示是符头当天 (如甲子日，符头为甲子)
+    } else if (model == 1) {
+      // 余数为1，表示是符头当天 (如甲子日，符头为甲子)
       fuTou = dayGanZhi; // 符头即为当日干支
-    } else { // 其他余数 (2,3,4)，表示在符头周期的中间几天 (如乙丑日，符头为甲子)
-      fuTou = JiaZi.getByNumber(dayGanZhi.number - model + 1); // 符头 = 当前日干支序号 - 余数 + 1
+    } else {
+      // 其他余数 (2,3,4)，表示在符头周期的中间几天 (如乙丑日，符头为甲子)
+      fuTou = JiaZi.getByNumber(
+          dayGanZhi.number - model + 1); // 符头 = 当前日干支序号 - 余数 + 1
     }
     return fuTou;
   }
@@ -156,8 +164,8 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
     JiaZi dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
 
     // 获取当前日期所属的节气名称
-    String jieQiName =
-        lunar.getCurrentJieQi()?.getName() ?? lunar.getPrevJieQi().getName(); // 如果当天不是节气，则取上一个节气
+    String jieQiName = lunar.getCurrentJieQi()?.getName() ??
+        lunar.getPrevJieQi().getName(); // 如果当天不是节气，则取上一个节气
     TwentyFourJieQi jieQi = TwentyFourJieQi.fromName(jieQiName);
 
     // 1. 根据节气判断当前是阳遁还是阴遁
@@ -165,7 +173,8 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
 
     // 特殊处理：如果排盘时间为23点 (子时)，日干支应算作下一天
     if (dateTime.hour == 23) {
-      dayGanZhi = JiaZi.getByNumber((dayGanZhi.number + 1) % 60); // 日干支序号+1，然后模60确保在甲子表范围内
+      dayGanZhi = JiaZi.getByNumber(
+          (dayGanZhi.number + 1) % 60); // 日干支序号+1，然后模60确保在甲子表范围内
     }
 
     // 2. 根据当日干支获取符头
@@ -177,9 +186,11 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
 
     // 4. 根据阴阳遁和当前节气，获取对应的上中下三元的局数表
     Tuple3<int, int, int> juTuple;
-    if (yinYangDun.isYang) { // 阳遁
+    if (yinYangDun.isYang) {
+      // 阳遁
       juTuple = ShiJiaQiMenJuCalculator.YANG_DUN_JIE_QI_JU_NUMER[jieQi]!;
-    } else { // 阴遁
+    } else {
+      // 阴遁
       juTuple = ShiJiaQiMenJuCalculator.YIN_DUN_JIE_QI_JU_NUMER[jieQi]!;
     }
 
@@ -205,11 +216,15 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
         fuTouJiaZi: fuTou, // 当前局的符头
         yinYangDun: yinYangDun, // 阴遁或阳遁
         jieQiAt: jieQi, // 排盘时间所在的节气
-        jieQiStartAt: DateFormat("yyyy-MM-dd HH:mm:ss").parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms()), // 当前节气的开始时间
-        jieQiEnd: TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
-        jieQiEndAt: DateFormat("yyyy-MM-dd HH:mm:ss").parse(lunar.getNextJieQi().getSolar().toYmdHms()), // 下一个节气的开始时间
+        jieQiStartAt: DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms()), // 当前节气的开始时间
+        jieQiEnd:
+            TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
+        jieQiEndAt: DateFormat("yyyy-MM-dd HH:mm:ss")
+            .parse(lunar.getNextJieQi().getSolar().toYmdHms()), // 下一个节气的开始时间
         atThreeYuan: threeYuan, // 符头所属的三元
-        fourZhuEightChar: [ // 四柱八字
+        fourZhuEightChar: [
+          // 四柱八字
           lunar.getYearInGanZhi(), // 年柱
           lunar.getMonthInGanZhi(), // 月柱
           dayGanZhi.name, // 日柱 (已处理23点情况)
@@ -231,6 +246,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
           dateTime: dateTime,
           arrangeType: ArrangeType.ZHI_RUN,
         );
+
   /// 执行置润法的奇门局计算。
   @override
   ShiJiaJu calculate() {
@@ -242,7 +258,8 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   // panDateTime: 排盘（目标）日期。
   // dateFormatter: 用于解析日期字符串的格式化工具。
   // 返回一个包含所有相关冬至和夏至日期的列表。
-  static List<DateTime> _getRelevantTwoZhiDates(DateTime zhengShouDongZhi, DateTime panDateTime, DateFormat dateFormatter) {
+  static List<DateTime> _getRelevantTwoZhiDates(DateTime zhengShouDongZhi,
+      DateTime panDateTime, DateFormat dateFormatter) {
     // dateTimes 存储计算得到的冬至和夏至日期
     List<DateTime> dateTimes = [];
     int yearStart = zhengShouDongZhi.year + 1; // 正授日冬至实为第二年冬至 所以“+1”
@@ -250,12 +267,16 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
 
     for (var i = yearStart; i <= targetEnd; i++) {
       Lunar tmpLunar = Lunar.fromDate(DateTime(i, 1, 1));
-      DateTime thisYearDongZhi = dateFormatter.parse(tmpLunar.getJieQiTable()["冬至"]!.toYmdHms());
-      DateTime thisYearXiaZhi = dateFormatter.parse(tmpLunar.getJieQiTable()["夏至"]!.toYmdHms());
+      DateTime thisYearDongZhi =
+          dateFormatter.parse(tmpLunar.getJieQiTable()["冬至"]!.toYmdHms());
+      DateTime thisYearXiaZhi =
+          dateFormatter.parse(tmpLunar.getJieQiTable()["夏至"]!.toYmdHms());
 
       // 将时间调整为 前一天子时开始时间
-      thisYearDongZhi = DateTime(thisYearDongZhi.year, thisYearDongZhi.month, thisYearDongZhi.day - 1, 22, 59, 59);
-      thisYearXiaZhi = DateTime(thisYearXiaZhi.year, thisYearXiaZhi.month, thisYearXiaZhi.day - 1, 22, 59, 59);
+      thisYearDongZhi = DateTime(thisYearDongZhi.year, thisYearDongZhi.month,
+          thisYearDongZhi.day - 1, 22, 59, 59);
+      thisYearXiaZhi = DateTime(thisYearXiaZhi.year, thisYearXiaZhi.month,
+          thisYearXiaZhi.day - 1, 22, 59, 59);
 
       dateTimes.add(thisYearDongZhi);
       dateTimes.add(thisYearXiaZhi);
@@ -270,14 +291,17 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
 
     if (panDateTime.month == 12 && panDateTime.day >= 18) {
       // 如果目标日期为12月，则判断日期是否在在下一年冬至开始后，
-      DateTime tmp2 = DateTime(panDateTime.year, panDateTime.month + 3, panDateTime.day); // 使用month + 3是为了确保跨年获取正确的冬至
+      DateTime tmp2 = DateTime(panDateTime.year, panDateTime.month + 3,
+          panDateTime.day); // 使用month + 3是为了确保跨年获取正确的冬至
       Lunar tmp2Lunar = Lunar.fromDate(tmp2);
-      DateTime theDongZhiDate = dateFormatter.parse(tmp2Lunar.getJieQiTable()["冬至"]!.toYmdHms());
+      DateTime theDongZhiDate =
+          dateFormatter.parse(tmp2Lunar.getJieQiTable()["冬至"]!.toYmdHms());
       if (theDongZhiDate.isBefore(panDateTime)) {
-        theDongZhiDate = DateTime(theDongZhiDate.year, theDongZhiDate.month, theDongZhiDate.day - 1, 22, 59, 59);
+        theDongZhiDate = DateTime(theDongZhiDate.year, theDongZhiDate.month,
+            theDongZhiDate.day - 1, 22, 59, 59);
         // 确保不重复添加
         if (!dateTimes.any((dt) => dt.isAtSameMomentAs(theDongZhiDate))) {
-            dateTimes.add(theDongZhiDate);
+          dateTimes.add(theDongZhiDate);
         }
       }
     }
@@ -353,7 +377,8 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
       fuTouLunar = Lunar.fromDate(fuTouDateTime);
       print(fuTouLunar.getDayInGanZhi());
     }
-    Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> tuple = doCa(dateTime); // 调用 doCa 获取局数等核心信息
+    Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> tuple =
+        doCa(dateTime); // 调用 doCa 获取局数等核心信息
 
     return ShiJiaJu(
         panDateTime: dateTime,
@@ -453,27 +478,37 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
 
     // 获取从正授冬至的下一年到排盘日期的每年的冬至和夏至日期。
     // 这些日期是计算置润的基础，通过 _getRelevantTwoZhiDates 方法获得。
-    List<DateTime> dateTimes = _getRelevantTwoZhiDates(zhengShouDongZhi, targetDateTime, dateFormatter);
+    List<DateTime> dateTimes = _getRelevantTwoZhiDates(
+        zhengShouDongZhi, targetDateTime, dateFormatter);
 
     // 计算这些连续的冬至/夏至之间相隔的天数。
     // 例如，对于日期列表 [冬至A, 夏至B, 冬至C]，将计算出 [夏至B与冬至A相差的天数, 冬至C与夏至B相差的天数]。
     // 这些天数用于后续判断每个180天周期（阳遁或阴遁）是正授、超神还是接气。
     List<int> daysBetweenEachTwoZhi = [];
     for (int i = 1; i < dateTimes.length; i++) {
-      daysBetweenEachTwoZhi.add(dateTimes[i].difference(dateTimes[i - 1]).inDays + 1);
+      daysBetweenEachTwoZhi
+          .add(dateTimes[i].difference(dateTimes[i - 1]).inDays + 1);
     }
     YinYang lastPeriodType = YinYang.YIN; // 记录上一个处理的遁的类型（阳遁或阴遁），用于最后补充dunList
-    int daysCarryOver = 0; // 记录上一个180天周期结束后，需要带到下一个周期计算的天数（正数表示下一个周期需补，负数表示下一个周期需减）
-    EnumZhiRunType currentPeriodZhiRunType = EnumZhiRunType.ZHENG_SHOU; // 当前180天周期的置润类型
-    List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>> dunList = []; // 累积的遁列表（包含局数、三元、节气）
+    int daysCarryOver =
+        0; // 记录上一个180天周期结束后，需要带到下一个周期计算的天数（正数表示下一个周期需补，负数表示下一个周期需减）
+    EnumZhiRunType currentPeriodZhiRunType =
+        EnumZhiRunType.ZHENG_SHOU; // 当前180天周期的置润类型
+    List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>> dunList =
+        []; // 累积的遁列表（包含局数、三元、节气）
 
     // 遍历每一个二至节之间的时段
     for (int i = 0; i < daysBetweenEachTwoZhi.length; i++) {
-      Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int, EnumZhiRunType, YinYang> periodResult;
-      if (i == 0 || i % 2 == 0) { // 索引为偶数，通常为阳遁周期 (冬至到夏至)
-        periodResult = _processYangDunPeriod(daysBetweenEachTwoZhi[i], daysCarryOver, currentPeriodZhiRunType);
-      } else { // 索引为奇数，通常为阴遁周期 (夏至到冬至)
-        periodResult = _processYinDunPeriod(daysBetweenEachTwoZhi[i], daysCarryOver, currentPeriodZhiRunType);
+      Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int,
+          EnumZhiRunType, YinYang> periodResult;
+      if (i == 0 || i % 2 == 0) {
+        // 索引为偶数，通常为阳遁周期 (冬至到夏至)
+        periodResult = _processYangDunPeriod(
+            daysBetweenEachTwoZhi[i], daysCarryOver, currentPeriodZhiRunType);
+      } else {
+        // 索引为奇数，通常为阴遁周期 (夏至到冬至)
+        periodResult = _processYinDunPeriod(
+            daysBetweenEachTwoZhi[i], daysCarryOver, currentPeriodZhiRunType);
       }
       dunList.addAll(periodResult.item1);
       daysCarryOver = periodResult.item2;
@@ -487,10 +522,12 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
     // 如果累积的dunList天数不足以覆盖totalDiffInDays，
     // 这通常发生在目标日期超出了已计算的所有二至周期范围，需要根据最后一个周期的类型补充相反类型的遁。
     if (dunList.length * 5 <= totalDiffInDays) {
-      if (lastPeriodType.isYang) { // 如果最后一个处理的周期是阳遁
+      if (lastPeriodType.isYang) {
+        // 如果最后一个处理的周期是阳遁
         // print("天数不足，需要使用补全阴遁 $totalDiffInDays ${dunList.length * 5}");
         dunList.addAll(ShiJiaQiMenJuCalculator.yinDunList); // 补充一个完整的阴遁周期
-      } else { // 如果最后一个处理的周期是阴遁
+      } else {
+        // 如果最后一个处理的周期是阴遁
         // print("天数不足，需要使用补全阳遁  $totalDiffInDays ${dunList.length * 5}");
         dunList.addAll(ShiJiaQiMenJuCalculator.yangDunList); // 补充一个完整的阳遁周期
       }
@@ -515,48 +552,60 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   //   item2 (int): 当前阳遁周期结束后，需要带到下一个阴遁周期的天数结余。
   //   item3 (EnumZhiRunType): 当前阳遁周期最终确定的置润类型，将作为下一个阴遁周期的 previousZhiRunType。
   //   item4 (YinYang): 当前处理的周期类型，固定为 YinYang.YANG。
-  static Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int, EnumZhiRunType, YinYang> _processYangDunPeriod(
-    int daysInPeriod,
-    int daysCarryOverFromPrevious,
-    EnumZhiRunType previousZhiRunType
-  ) {
+  static Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int,
+          EnumZhiRunType, YinYang>
+      _processYangDunPeriod(int daysInPeriod, int daysCarryOverFromPrevious,
+          EnumZhiRunType previousZhiRunType) {
     List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>> periodDunList = [];
     int newDaysCarryOver = 0;
     EnumZhiRunType nextZhiRunType = EnumZhiRunType.ZHENG_SHOU;
 
     // 根据上一个周期的置润类型，调整当前周期的实际天数
     int currentEffectiveDays = daysInPeriod;
-    if (previousZhiRunType == EnumZhiRunType.JIE_QI) { // 上一周期是接气，本周期天数要减去上周期“借”的天数
+    if (previousZhiRunType == EnumZhiRunType.JIE_QI) {
+      // 上一周期是接气，本周期天数要减去上周期“借”的天数
       currentEffectiveDays = daysInPeriod - daysCarryOverFromPrevious;
-    } else if (previousZhiRunType == EnumZhiRunType.CHAO_SHEN) { // 上一周期是超神，本周期天数要加上上周期“欠”的天数
+    } else if (previousZhiRunType == EnumZhiRunType.CHAO_SHEN) {
+      // 上一周期是超神，本周期天数要加上上周期“欠”的天数
       currentEffectiveDays = daysInPeriod + daysCarryOverFromPrevious;
-    } else { // 正授或初始情况，直接使用上周期结余调整
+    } else {
+      // 正授或初始情况，直接使用上周期结余调整
       currentEffectiveDays = daysInPeriod + daysCarryOverFromPrevious;
     }
 
     periodDunList.addAll(ShiJiaQiMenJuCalculator.yangDunList); // 阳遁周期，基础为阳遁表
 
-    if (currentEffectiveDays == 180) { // 正授：阳遁周期不多不少正好180天
+    if (currentEffectiveDays == 180) {
+      // 正授：阳遁周期不多不少正好180天
       // print("正授结束，无超神，接气之类。阳遁正好180天");
       nextZhiRunType = EnumZhiRunType.ZHENG_SHOU;
       newDaysCarryOver = 0; // 无结余
-    } else if (currentEffectiveDays > 180) { // 天数超出180天
-      if (currentEffectiveDays - 180 >= 9) { // 置润：超出天数大于等于9天，需要重复芒种三元（阳遁最后一个节气）
-        newDaysCarryOver = 15 - (currentEffectiveDays - 180); // 下一个阴遁周期需要“接气”，补回 (15 - 超出天数) 天
+    } else if (currentEffectiveDays > 180) {
+      // 天数超出180天
+      if (currentEffectiveDays - 180 >= 9) {
+        // 置润：超出天数大于等于9天，需要重复芒种三元（阳遁最后一个节气）
+        newDaysCarryOver =
+            15 - (currentEffectiveDays - 180); // 下一个阴遁周期需要“接气”，补回 (15 - 超出天数) 天
         // print("阳遁180天已经用完，然而并没有夏至没到，其时间超过9天（为${currentEffectiveDays-180}），需要进行置润操作，重复芒种节三元15天，阴遁开始需要向后延 $newDaysCarryOver 天");
         nextZhiRunType = EnumZhiRunType.JIE_QI; // 下一周期为接气
-        periodDunList.addAll(ShiJiaQiMenJuCalculator.yangDunList.sublist(ShiJiaQiMenJuCalculator.yangDunList.length - 3)); // 重复芒种三元
-      } else { // 超神：超出天数小于9天
-        newDaysCarryOver = currentEffectiveDays - 180; // 这些超出的天数需要下一个阴遁周期“超神”补上（即阴遁提前开始）
+        periodDunList.addAll(ShiJiaQiMenJuCalculator.yangDunList
+            .sublist(ShiJiaQiMenJuCalculator.yangDunList.length - 3)); // 重复芒种三元
+      } else {
+        // 超神：超出天数小于9天
+        newDaysCarryOver =
+            currentEffectiveDays - 180; // 这些超出的天数需要下一个阴遁周期“超神”补上（即阴遁提前开始）
         // print("阳遁180天已经用完，然而并没有夏至没到，夏至需要超神补全 $newDaysCarryOver 天（提前n天开始阴遁）");
         nextZhiRunType = EnumZhiRunType.CHAO_SHEN; // 下一周期为超神
       }
-    } else { // 接气：天数不足180天
-      newDaysCarryOver = 180 - currentEffectiveDays; // 不足的天数，下一个阴遁周期需要“接气”补上（即阴遁延后开始）
+    } else {
+      // 接气：天数不足180天
+      newDaysCarryOver =
+          180 - currentEffectiveDays; // 不足的天数，下一个阴遁周期需要“接气”补上（即阴遁延后开始）
       // print("阳遁180天未用完，但夏至节已经到来，阴遁开始需要向后延 $newDaysCarryOver 天");
       nextZhiRunType = EnumZhiRunType.JIE_QI; // 下一周期为接气
     }
-    return Tuple4(periodDunList, newDaysCarryOver, nextZhiRunType, YinYang.YANG);
+    return Tuple4(
+        periodDunList, newDaysCarryOver, nextZhiRunType, YinYang.YANG);
   }
 
   // _processYinDunPeriod 处理阴遁180天周期内的超神、接气、置润逻辑。
@@ -571,44 +620,55 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   //   item2 (int): 当前阴遁周期结束后，需要带到下一个阳遁周期的天数结余。
   //   item3 (EnumZhiRunType): 当前阴遁周期最终确定的置润类型，将作为下一个阳遁周期的 previousZhiRunType。
   //   item4 (YinYang): 当前处理的周期类型，固定为 YinYang.YIN。
-  static Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int, EnumZhiRunType, YinYang> _processYinDunPeriod(
-    int daysInPeriod,
-    int daysCarryOverFromPrevious,
-    EnumZhiRunType previousZhiRunType
-  ) {
+  static Tuple4<List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>>, int,
+          EnumZhiRunType, YinYang>
+      _processYinDunPeriod(int daysInPeriod, int daysCarryOverFromPrevious,
+          EnumZhiRunType previousZhiRunType) {
     List<Tuple3<int, EnumThreeYuan, TwentyFourJieQi>> periodDunList = [];
     int newDaysCarryOver = 0;
     EnumZhiRunType nextZhiRunType = EnumZhiRunType.ZHENG_SHOU;
 
     // 根据上一个周期的置润类型，调整当前周期的实际天数
     int currentEffectiveDays = daysInPeriod;
-    if (previousZhiRunType == EnumZhiRunType.JIE_QI) { // 上一周期是接气，本周期天数要减去上周期“借”的天数
+    if (previousZhiRunType == EnumZhiRunType.JIE_QI) {
+      // 上一周期是接气，本周期天数要减去上周期“借”的天数
       currentEffectiveDays = daysInPeriod - daysCarryOverFromPrevious;
-    } else if (previousZhiRunType == EnumZhiRunType.CHAO_SHEN) { // 上一周期是超神，本周期天数要加上上周期“欠”的天数
+    } else if (previousZhiRunType == EnumZhiRunType.CHAO_SHEN) {
+      // 上一周期是超神，本周期天数要加上上周期“欠”的天数
       currentEffectiveDays = daysInPeriod + daysCarryOverFromPrevious;
-    } else { // 正授或初始情况，直接使用上周期结余调整
+    } else {
+      // 正授或初始情况，直接使用上周期结余调整
       currentEffectiveDays = daysInPeriod + daysCarryOverFromPrevious;
     }
 
     periodDunList.addAll(ShiJiaQiMenJuCalculator.yinDunList); // 阴遁周期，基础为阴遁表
 
-    if (currentEffectiveDays == 180) { // 正授：阴遁周期不多不少正好180天
+    if (currentEffectiveDays == 180) {
+      // 正授：阴遁周期不多不少正好180天
       // print("正授结束，无超神，接气之类。阴遁正好180天");
       nextZhiRunType = EnumZhiRunType.ZHENG_SHOU;
       newDaysCarryOver = 0;
-    } else if (currentEffectiveDays > 180) { // 天数超出180天
-      if (currentEffectiveDays - 180 >= 9) { // 置润：超出天数大于等于9天，需要重复大雪三元（阴遁最后一个节气）
-        newDaysCarryOver = 15 - (currentEffectiveDays - 180); // 下一个阳遁周期需要“接气”，补回 (15 - 超出天数) 天
+    } else if (currentEffectiveDays > 180) {
+      // 天数超出180天
+      if (currentEffectiveDays - 180 >= 9) {
+        // 置润：超出天数大于等于9天，需要重复大雪三元（阴遁最后一个节气）
+        newDaysCarryOver =
+            15 - (currentEffectiveDays - 180); // 下一个阳遁周期需要“接气”，补回 (15 - 超出天数) 天
         // print("阴遁180天已经用完，然而并没有冬至，其时间超过9天（为${currentEffectiveDays-180}），需要进行置润操作，重复大雪节三元15天，阳遁开始需要向后延 $newDaysCarryOver 天");
         nextZhiRunType = EnumZhiRunType.JIE_QI;
-        periodDunList.addAll(ShiJiaQiMenJuCalculator.yinDunList.sublist(ShiJiaQiMenJuCalculator.yinDunList.length - 3)); // 重复大雪三元
-      } else { // 超神：超出天数小于9天
-        newDaysCarryOver = currentEffectiveDays - 180; // 这些超出的天数需要下一个阳遁周期“超神”补上（即阳遁提前开始）
+        periodDunList.addAll(ShiJiaQiMenJuCalculator.yinDunList
+            .sublist(ShiJiaQiMenJuCalculator.yinDunList.length - 3)); // 重复大雪三元
+      } else {
+        // 超神：超出天数小于9天
+        newDaysCarryOver =
+            currentEffectiveDays - 180; // 这些超出的天数需要下一个阳遁周期“超神”补上（即阳遁提前开始）
         // print("阴遁180天已经用完，然而并没有冬至，冬至需要超神补全 $newDaysCarryOver 天（提前n天开始阳遁）");
         nextZhiRunType = EnumZhiRunType.CHAO_SHEN;
       }
-    } else { // 接气：天数不足180天
-      newDaysCarryOver = 180 - currentEffectiveDays; // 不足的天数，下一个阳遁周期需要“接气”补上（即阳遁延后开始）
+    } else {
+      // 接气：天数不足180天
+      newDaysCarryOver =
+          180 - currentEffectiveDays; // 不足的天数，下一个阳遁周期需要“接气”补上（即阳遁延后开始）
       // print("阴遁180天未用完，但冬至节已经到来，阳遁开始需要向后延 $newDaysCarryOver 天");
       nextZhiRunType = EnumZhiRunType.JIE_QI;
     }
@@ -665,16 +725,20 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
     ].join(" ").toString();
 
     // 获取当前日期所属的节气名称
-    String jieQiName = lunar.getCurrentJieQi()?.getName() ?? lunar.getPrevJieQi().getName();
+    String jieQiName =
+        lunar.getCurrentJieQi()?.getName() ?? lunar.getPrevJieQi().getName();
     TwentyFourJieQi jieQi = TwentyFourJieQi.fromName(jieQiName);
 
     // 获取当前节气的精确开始时间
-    DateTime jieQiExactStartAt = dateFormatter.parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms());
+    DateTime jieQiExactStartAt =
+        dateFormatter.parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms());
     // 茅山法通常以节气当日的子时（前一天23点）作为节气的开始计算点
-    DateTime jieQiCaltStartAt = DateTime(jieQiExactStartAt.year, jieQiExactStartAt.month, jieQiExactStartAt.day - 1, 23, 0, 0);
+    DateTime jieQiCaltStartAt = DateTime(jieQiExactStartAt.year,
+        jieQiExactStartAt.month, jieQiExactStartAt.day - 1, 23, 0, 0);
 
     // 获取下一个节气的开始时间，作为当前节气的结束点
-    DateTime nextJieQiExactStartAt = dateFormatter.parse(lunar.getJieQiTable()[lunar.getNextJieQi().getName()]!.toYmdHms());
+    DateTime nextJieQiExactStartAt = dateFormatter.parse(
+        lunar.getJieQiTable()[lunar.getNextJieQi().getName()]!.toYmdHms());
     // 当前节气的计算结束点应为下一个节气开始的前一刻（或前一天23点，取决于算法定义）
     // DateTime currentJieQiCalcEndAt = nextJieQiExactStartAt.subtract(const Duration(days: 1));
     // currentJieQiCalcEndAt = DateTime(currentJieQiCalcEndAt.year, currentJieQiCalcEndAt.month, currentJieQiCalcEndAt.day, 23, 0, 0);
@@ -688,7 +752,8 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
     }
 
     // 计算排盘时间距离节气计算开始时间的小时数
-    int diffHourPanDateWithJieQiStart = dateTime.difference(jieQiCaltStartAt).inHours;
+    int diffHourPanDateWithJieQiStart =
+        dateTime.difference(jieQiCaltStartAt).inHours;
 
     EnumThreeYuan yuan; // 当前排盘时间所属的三元
     int juNumber; // 计算得到的局数
@@ -708,13 +773,17 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
     //   juNumber = dunJuNumbers.item3;
     // }
     // 当前代码的逻辑 (180h, 360h 为分界):
-    if (diffHourPanDateWithStartDate <= 180) { // 0-180小时，上元
+    if (diffHourPanDateWithJieQiStart <= 180) {
+      // 0-180小时，上元
       yuan = EnumThreeYuan.START;
       juNumber = dunJuNumbers.item1;
-    } else if (diffHourPanDateWithStartDate <= 360 && diffHourPanDateWithStartDate > 180) { // 181-360小时，中元
+    } else if (diffHourPanDateWithJieQiStart <= 360 &&
+        diffHourPanDateWithJieQiStart > 180) {
+      // 181-360小时，中元
       yuan = EnumThreeYuan.MIDDLE;
       juNumber = dunJuNumbers.item2;
-    } else { // > 360小时，下元
+    } else {
+      // > 360小时，下元
       yuan = EnumThreeYuan.END;
       juNumber = dunJuNumbers.item3;
     }
@@ -724,11 +793,13 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
         panDateTime: dateTime,
         juNumber: juNumber,
         // 茅山法的符头通常是节气开始那天的干支，这里取节气计算开始时间的干支
-        fuTouJiaZi: JiaZi.getFromGanZhiValue(Lunar.fromDate(jieQiCaltStartAt).getDayInGanZhi())!,
+        fuTouJiaZi: JiaZi.getFromGanZhiValue(
+            Lunar.fromDate(jieQiCaltStartAt).getDayInGanZhi())!,
         yinYangDun: jieQi.yinYangDun,
         jieQiAt: jieQi, // 当前节气
         jieQiStartAt: jieQiCaltStartAt, // 节气计算开始时间
-        jieQiEnd: TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
+        jieQiEnd:
+            TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
         jieQiEndAt: nextJieQiExactStartAt, // 下一个节气的精确开始时间
         atThreeYuan: yuan, // 所属三元
         fourZhuEightChar: eightChar); // 四柱八字
@@ -782,7 +853,8 @@ class YinPanCalculator extends ShiJiaQiMenJuCalculator {
 
     // 1. 计算阴盘局数
     // 年支序数 (地支的顺序，如子为1, 丑为2, ..., 亥为12)
-    int yearZhiIndex = JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!.diZhi.order;
+    int yearZhiIndex =
+        JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!.diZhi.order;
     // 时支序数
     int timeZhiIndex = JiaZi.getFromGanZhiValue(timeGanZhi)!.diZhi.order;
     // 农历月数
@@ -792,21 +864,24 @@ class YinPanCalculator extends ShiJiaQiMenJuCalculator {
 
     // 局数 = (年支序数 + 农历月数 + 农历日数 + 时支序数) % 9
     int juNumber = (yearZhiIndex + lunarMonth + lunarDay + timeZhiIndex) % 9;
-    if (juNumber == 0) { // 如果余数为0，则取9局
+    if (juNumber == 0) {
+      // 如果余数为0，则取9局
       juNumber = 9;
     }
 
     // 2. 判断阴阳遁
     // 获取当前日期所属的节气名称
-    String jieQiName = lunar.getCurrentJieQi()?.getName() ?? lunar.getPrevJieQi().getName();
+    String jieQiName =
+        lunar.getCurrentJieQi()?.getName() ?? lunar.getPrevJieQi().getName();
     TwentyFourJieQi jieQi = TwentyFourJieQi.fromName(jieQiName);
     YinYang yinYangDun = jieQi.yinYangDun; // 冬至后阳遁，夏至后阴遁
 
     // 获取节气相关时间信息 (主要用于填充ShiJiaJu对象，阴盘局数计算不直接依赖节气三元)
-    DateTime jieQiExactStartAt = dateFormatter.parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms());
-     // 节气开始时间通常指节气交换的精确时刻
-    DateTime nextJieQiExactStartAt = dateFormatter.parse(lunar.getJieQiTable()[lunar.getNextJieQi().getName()]!.toYmdHms());
-
+    DateTime jieQiExactStartAt =
+        dateFormatter.parse(lunar.getJieQiTable()[jieQi.name]!.toYmdHms());
+    // 节气开始时间通常指节气交换的精确时刻
+    DateTime nextJieQiExactStartAt = dateFormatter.parse(
+        lunar.getJieQiTable()[lunar.getNextJieQi().getName()]!.toYmdHms());
 
     // 3. 构建并返回时家局对象
     return ShiJiaJu(
@@ -814,11 +889,13 @@ class YinPanCalculator extends ShiJiaQiMenJuCalculator {
         juNumber: juNumber, // 计算得到的阴盘局数
         // 阴盘法通常不强调传统意义上的符头，或有其特定定义，此处暂用节气开始日干支或留空/特定值
         // 为保持对象结构一致，暂取节气开始日的干支作为参考，实际应用中可能不同
-        fuTouJiaZi: JiaZi.getFromGanZhiValue(Lunar.fromDate(jieQiExactStartAt).getDayInGanZhi())!,
+        fuTouJiaZi: JiaZi.getFromGanZhiValue(
+            Lunar.fromDate(jieQiExactStartAt).getDayInGanZhi())!,
         yinYangDun: yinYangDun, // 阴遁或阳遁
         jieQiAt: jieQi, // 当前节气
         jieQiStartAt: jieQiExactStartAt, // 节气精确开始时间
-        jieQiEnd: TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
+        jieQiEnd:
+            TwentyFourJieQi.fromName(lunar.getNextJieQi().getName()), // 下一个节气
         jieQiEndAt: nextJieQiExactStartAt, // 下一个节气的精确开始时间
         atThreeYuan: EnumThreeYuan.NONE, // 阴盘法不使用传统的三元划分方法来定局
         fourZhuEightChar: eightChar); // 四柱八字
