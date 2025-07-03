@@ -21,3 +21,13 @@ targets:
           generic_argument_factories: false
           ignore_unannotated: false
           include_if_null: true
+      drift_dev:
+        options:
+          # verbose: true # Uncomment to see generated code details
+          # generate_data_classes: true # Default
+          # generate_companions: true # Default
+          # schema_version: 1 # Enable for schema migrations
+          # date_time_serialization_type: text # Or integer (default)
+          # null_safety: true # Default if SDK >= 2.12
+          # apply_date_converter_on_json_serialization: true # If using DateTime with JSON
+          # Other options as needed, see Drift documentation.
