@@ -1,5 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/utils/collections_utils.dart';
+import 'package:common/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tuple/tuple.dart';
 

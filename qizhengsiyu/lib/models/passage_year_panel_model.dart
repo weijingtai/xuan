@@ -8,11 +8,11 @@ import 'star_angle_speed.dart';
 import 'star_enter_info.dart';
 import 'stars_angle.dart';
 
-part 'da_xian_panel_model.g.dart';
+part 'passage_year_panel_model.g.dart';
 
 @JsonSerializable()
-class DaXianPanelModel {
-  // 1. 星体原始信息
+class PassageYearPanelModel {
+  // 1. 流年星体原始信息
   final Map<EnumStars, StarAngleSpeed> starAngleMapper;
   // 2. 计算星体进入宫位信息
   final Map<EnumStars, EnteredInfo> enteredGongMapper;
@@ -29,7 +29,7 @@ class DaXianPanelModel {
   // 8. 计算十二长生
   final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper;
 
-  DaXianPanelModel({
+  PassageYearPanelModel({
     required this.starAngleMapper,
     required this.enteredGongMapper,
     required this.fiveStarWalkingTypeMapper,
@@ -38,12 +38,12 @@ class DaXianPanelModel {
     required this.twelveZhangShengGongMapper,
   });
 
-  factory DaXianPanelModel.fromJson(Map<String, dynamic> json) =>
-      _$DaXianPanelModelFromJson(json);
+  factory PassageYearPanelModel.fromJson(Map<String, dynamic> json) =>
+      _$PassageYearPanelModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DaXianPanelModelToJson(this);
+  Map<String, dynamic> toJson() => _$PassageYearPanelModelToJson(this);
 
-  DaXianPanelModel copyWith({
+  PassageYearPanelModel copyWith({
     Map<EnumStars, StarAngleSpeed>? starAngleMapper,
     Map<EnumStars, EnteredInfo>? enteredGongMapper,
     Map<EnumStars, BaseFiveStarWalkingInfo>? fiveStarWalkingTypeMapper,
@@ -52,7 +52,7 @@ class DaXianPanelModel {
     List<HuaYaoStarPair>? huaYaoStarPairList,
     Map<EnumTwelveGong, TwelveZhangSheng>? twelveZhangShengGongMapper,
   }) {
-    return DaXianPanelModel(
+    return PassageYearPanelModel(
       starAngleMapper: starAngleMapper ?? this.starAngleMapper,
       enteredGongMapper: enteredGongMapper ?? this.enteredGongMapper,
       fiveStarWalkingTypeMapper:

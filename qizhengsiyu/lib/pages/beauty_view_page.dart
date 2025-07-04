@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:common/utils/collections_utils.dart';
+import 'package:common/enums.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,10 +9,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
@@ -993,7 +992,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         Transform.rotate(
           angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
           // angle: 0,
-          child: ValueListenableBuilder<DaXianPanelModel?>(
+          child: ValueListenableBuilder<PassageYearPanelModel?>(
               valueListenable:
                   context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
               builder: (ctx, daXianPanel, child) {

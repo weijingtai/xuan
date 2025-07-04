@@ -1,4 +1,4 @@
-import 'package:common/enums/enum_di_zhi.dart';
+import 'package:common/enums.dart';
 import 'package:decimal/decimal.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/naming_degree_pair.dart';

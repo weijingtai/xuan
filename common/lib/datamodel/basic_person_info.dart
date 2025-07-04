@@ -1,5 +1,4 @@
-import 'package:common/enums/enum_datetime_type.dart';
-import 'package:common/enums/enum_gender.dart';
+import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../models/eight_chars.dart';

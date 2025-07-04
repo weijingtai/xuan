@@ -2,7 +2,6 @@ import 'package:common/database/app_database.dart' as db;
 import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/datamodel/seeker_model.dart';
 import 'package:common/datamodel/timing_divination_model.dart';
-import 'package:common/enums/enum_datetime_type.dart';
 import 'package:common/models/divination_info_model.dart';
 import 'package:common/module.dart';
 import 'package:common/viewmodels/divination_meta_info.dart';
@@ -17,7 +16,6 @@ import 'package:uuid/v7.dart';
 
 import '../database/app_database.dart';
 import '../datamodel/divination_data_model.dart';
-import '../enums/enum_gender.dart';
 
 class DevEnterPageViewModel extends ChangeNotifier {
   // 获取当前位置

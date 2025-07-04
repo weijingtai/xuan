@@ -1,13 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'da_xian_panel_model.dart';
+part of 'passage_year_panel_model.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-DaXianPanelModel _$DaXianPanelModelFromJson(Map<String, dynamic> json) =>
-    DaXianPanelModel(
+PassageYearPanelModel _$PassageYearPanelModelFromJson(
+        Map<String, dynamic> json) =>
+    PassageYearPanelModel(
       starAngleMapper: (json['starAngleMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$EnumStarsEnumMap, k),
             StarAngleSpeed.fromJson(e as Map<String, dynamic>)),
@@ -39,7 +40,8 @@ DaXianPanelModel _$DaXianPanelModelFromJson(Map<String, dynamic> json) =>
       ),
     );
 
-Map<String, dynamic> _$DaXianPanelModelToJson(DaXianPanelModel instance) =>
+Map<String, dynamic> _$PassageYearPanelModelToJson(
+        PassageYearPanelModel instance) =>
     <String, dynamic>{
       'starAngleMapper': instance.starAngleMapper
           .map((k, e) => MapEntry(_$EnumStarsEnumMap[k]!, e)),

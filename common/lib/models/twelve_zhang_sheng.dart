@@ -1,6 +1,6 @@
+import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_ji_xiong.dart';
 import 'shen_sha.dart';
 
 part 'twelve_zhang_sheng.g.dart';

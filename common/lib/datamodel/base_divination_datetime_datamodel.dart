@@ -1,9 +1,8 @@
-import 'package:common/enums/enum_datetime_type.dart';
-import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../shared/shared.dart';
 import 'location.dart';
 
 part 'base_divination_datetime_datamodel.g.dart';

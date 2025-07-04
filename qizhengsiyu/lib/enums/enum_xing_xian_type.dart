@@ -8,7 +8,10 @@ enum EnumXingXianType {
   xian106("洞微百六"),
 
   @JsonValue("feiXian")
-  feiXian("洞微飞限");
+  feiXian("洞微飞限"),
+
+  @JsonValue("yang9")
+  yang9("洞微阳九");
 
   final String value;
   const EnumXingXianType(this.value);

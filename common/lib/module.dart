@@ -17,6 +17,8 @@ export 'datamodel/basic_person_info.dart';
 
 export 'models/divination_info_model.dart';
 
-export 'utils/julian_day_converter.dart';
+// export 'utils/julian_day_converter.dart';
 
 export 'viewmodels/dev_enter_page_view_model.dart';
+
+export 'database/connection.dart';

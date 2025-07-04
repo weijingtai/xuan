@@ -1,7 +1,8 @@
-import 'package:common/enums/enum_di_zhi.dart';
-import 'package:common/enums/enum_five_xing_relationship.dart';
-import 'package:common/enums/enum_tian_gan.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'enum_di_zhi.dart';
+import 'enum_five_xing_relationship.dart';
+import 'enum_tian_gan.dart';
 
 enum LiuQin {
   @JsonValue("己身")

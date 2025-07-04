@@ -10,7 +10,7 @@ import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
 import 'package:qizhengsiyu/models/hua_yao.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
@@ -124,7 +124,7 @@ class GenerateBasePanelService {
     );
   }
 
-  Future<DaXianPanelModel> calculateDaXia(
+  Future<PassageYearPanelModel> calculateDaXia(
       BasePanelModel basePanel, ObserverPosition daXianObserver) async {
     // 大限与 计算星命基础命盘一样，但是不计算 四主 与 命理十二宫的位置。
     // 在计算神煞时则是借用原局的命宫等位置进行计算
@@ -179,7 +179,7 @@ class GenerateBasePanelService {
       shenShaMapper[gong]!.insert(0,
           ZhangSheng12ShenSha(entry.value.name, JiXiongEnum.PING, null, null));
     }
-    return DaXianPanelModel(
+    return PassageYearPanelModel(
       starAngleMapper: starAngleMapper,
       enteredGongMapper: enteredGongMapper,
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
