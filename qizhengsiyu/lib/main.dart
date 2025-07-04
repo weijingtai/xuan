@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
@@ -9,7 +8,6 @@ import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi.dart';
-import 'package:qizhengsiyu/widgets/rings/sector_painter.dart';
 import 'package:tuple/tuple.dart';
 
 import 'widgets/rings/circle_text_painter.dart';

@@ -1,5 +1,5 @@
+import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/pages/StarsResolver.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:tuple/tuple.dart';

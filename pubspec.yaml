@@ -99,6 +99,7 @@ dependencies:
   drift_flutter: ^0.2.4
   decimal: ^2.3.3
   protobuf: ^4.0.0
+  get_it: ^8.0.3
   
 
 dev_dependencies:

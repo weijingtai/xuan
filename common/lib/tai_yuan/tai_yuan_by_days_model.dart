@@ -1,10 +1,11 @@
+import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_jia_zi.dart';
-import 'enum_calculate_strategy.dart';
-import 'tai_yuan_model.dart';
 import '../models/eight_chars.dart';
 import '../models/jie_qi_info.dart';
+import 'enum_calculate_strategy.dart';
+import 'tai_yuan_model.dart';
+
 part 'tai_yuan_by_days_model.g.dart';
 
 @JsonSerializable()

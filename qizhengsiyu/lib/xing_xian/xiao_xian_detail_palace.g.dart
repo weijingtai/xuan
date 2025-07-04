@@ -1,13 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'fei_xian_detail_palace.dart';
+part of 'xiao_xian_detail_palace.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-FeiXianDetailPalace _$FeiXianDetailPalaceFromJson(Map<String, dynamic> json) =>
-    FeiXianDetailPalace(
+XiaoXianDetailPalace _$XiaoXianDetailPalaceFromJson(
+        Map<String, dynamic> json) =>
+    XiaoXianDetailPalace(
       order: (json['order'] as num).toInt(),
       palace: $enumDecode(_$EnumTwelveGongEnumMap, json['palace']),
       startAge: YearMonth.fromJson(json['startAge'] as Map<String, dynamic>),
@@ -23,14 +24,11 @@ FeiXianDetailPalace _$FeiXianDetailPalaceFromJson(Map<String, dynamic> json) =>
       totalGongDegreee: (json['totalGongDegreee'] as num).toDouble(),
       xingXianType: $enumDecodeNullable(
               _$EnumXingXianTypeEnumMap, json['xingXianType']) ??
-          EnumXingXianType.feiXian,
-      feiXianGongType:
-          $enumDecode(_$FeiXianGongTypeEnumMap, json['feiXianGongType']),
-      triangleIndex: (json['triangleIndex'] as num?)?.toInt(),
+          EnumXingXianType.yang9,
     );
 
-Map<String, dynamic> _$FeiXianDetailPalaceToJson(
-        FeiXianDetailPalace instance) =>
+Map<String, dynamic> _$XiaoXianDetailPalaceToJson(
+        XiaoXianDetailPalace instance) =>
     <String, dynamic>{
       'order': instance.order,
       'palace': _$EnumTwelveGongEnumMap[instance.palace]!,
@@ -42,8 +40,6 @@ Map<String, dynamic> _$FeiXianDetailPalaceToJson(
       'totalGongDegreee': instance.totalGongDegreee,
       'constellationPassages': instance.constellationPassages,
       'xingXianType': _$EnumXingXianTypeEnumMap[instance.xingXianType]!,
-      'feiXianGongType': _$FeiXianGongTypeEnumMap[instance.feiXianGongType]!,
-      'triangleIndex': instance.triangleIndex,
     };
 
 const _$EnumTwelveGongEnumMap = {
@@ -66,11 +62,4 @@ const _$EnumXingXianTypeEnumMap = {
   EnumXingXianType.xian106: 'xian106',
   EnumXingXianType.feiXian: 'feiXian',
   EnumXingXianType.yang9: 'yang9',
-};
-
-const _$FeiXianGongTypeEnumMap = {
-  FeiXianGongType.current: '本宫',
-  FeiXianGongType.opposite: '对宫',
-  FeiXianGongType.yang_triangle: '阳三合',
-  FeiXianGongType.yin_triangle: '阴三合',
 };

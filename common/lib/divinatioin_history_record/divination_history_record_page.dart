@@ -1,8 +1,8 @@
 import 'package:common/datamodel/divination_data_model.dart';
+import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:common/database/app_database.dart';
 import 'package:common/database/tables/tables.dart';
-import 'package:common/enums/enum_gender.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:provider/provider.dart';
 import 'package:common/datamodel/seeker_model.dart';

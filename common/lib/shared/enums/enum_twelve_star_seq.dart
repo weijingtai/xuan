@@ -1,5 +1,6 @@
-import 'package:common/enums/enum_twelve_ecliptic_gong.dart';
 import 'package:tuple/tuple.dart';
+
+import 'enum_twelve_ecliptic_gong.dart';
 
 enum TwelveStarSeq {
   Jiang_Lou(0, "降娄", Tuple2(0, 30)), // MonthGeneral.XU_TIAN_KUI,

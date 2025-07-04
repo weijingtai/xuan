@@ -1,7 +1,7 @@
 import 'dart:math';
 
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
 class TwelveZhiGongCircleRingPrinter extends CustomPainter {

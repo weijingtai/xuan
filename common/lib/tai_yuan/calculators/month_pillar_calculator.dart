@@ -1,6 +1,5 @@
-import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_tian_gan.dart';
-import 'package:common/enums/enum_di_zhi.dart';
+import 'package:common/shared/shared.dart';
+
 import '../../datamodel/base_divination_datetime_datamodel.dart';
 import '../tai_yuan_calculator.dart';
 import '../tai_yuan_model.dart';

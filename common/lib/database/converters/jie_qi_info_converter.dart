@@ -2,8 +2,6 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
-
-import '../../enums/enum_twenty_four_jie_qi.dart';
 import '../../models/jie_qi_info.dart';
 
 class JieQiInfoConverter extends TypeConverter<JieQiInfo, String> {

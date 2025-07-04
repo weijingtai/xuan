@@ -9,7 +9,6 @@ import '../models/naming_degree_pair.dart';
 import '../enums/enum_panel_system_type.dart';
 
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:common/enums/enum_stars.dart';
 
 import '../xing_xian/gong_constellation_mapping.dart';
 import 'zhou_tian_calculator.dart';

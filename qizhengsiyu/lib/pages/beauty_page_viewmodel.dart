@@ -32,7 +32,7 @@ import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
 import '../managers/zhou_tian_model_manager.dart';
 import '../models/base_panel_model.dart';
-import '../models/da_xian_panel_model.dart';
+import '../models/passage_year_panel_model.dart';
 import '../models/di_zhi_shen_sha.dart';
 import '../models/hua_yao.dart';
 import '../models/naming_degree_pair.dart';
@@ -95,8 +95,8 @@ class BeautyPageViewModel extends ChangeNotifier {
   // ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>(null);
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier<BasePanelModel?>(null);
-  final ValueNotifier<DaXianPanelModel?> uiDaXianPanelNotifier =
-      ValueNotifier<DaXianPanelModel?>(null);
+  final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
+      ValueNotifier<PassageYearPanelModel?>(null);
 
   final ValueNotifier<ObserverPosition?> baseObserverPositionNotifier =
       ValueNotifier<ObserverPosition?>(null);
@@ -321,7 +321,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     // DateTime fateLifeUtcTime = fateLifeTime.toUtc();
     try {
-      DaXianPanelModel fatePanelModel = await _generateBasePanelService
+      PassageYearPanelModel fatePanelModel = await _generateBasePanelService
           .calculateDaXia(uiBasePanelNotifier.value!, fateObserver!);
 
       _uiFateLifeStars = _calculateUIStarsFromMapper(

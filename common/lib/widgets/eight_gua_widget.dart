@@ -1,8 +1,6 @@
-import 'package:common/enums/enum_hou_tian_gua.dart';
+import 'package:common/shared/shared.dart';
 import 'package:common/widgets/yao_widget.dart';
 import 'package:flutter/material.dart';
-
-import '../enums/enum_yin_yang.dart';
 
 class EightGuaWidget extends StatelessWidget {
   HouTianGua gua;

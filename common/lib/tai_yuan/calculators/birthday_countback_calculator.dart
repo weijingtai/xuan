@@ -1,10 +1,8 @@
-import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:lunar/calendar/Lunar.dart';
 import 'package:tuple/tuple.dart';
 import '../../datamodel/base_divination_datetime_datamodel.dart';
-import '../../helpers/solar_lunar_datetime_helper.dart';
 import '../../models/jie_qi_info.dart';
 import '../../models/seventy_two_phenology.dart';
 import '../tai_yuan_by_days_model.dart';

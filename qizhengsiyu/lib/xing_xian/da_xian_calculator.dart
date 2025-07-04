@@ -14,59 +14,37 @@ import '../enums/enum_twelve_gong.dart';
 import '../managers/zhou_tian_calculator.dart';
 import '../models/observer_position.dart';
 import '../models/star_enter_info.dart';
-import '../models/zhou_tian_model.dart';
+import 'base_xian_palace.dart';
 import 'da_xian_constellation_passage_info.dart';
 import 'da_xian_palace_info.dart';
 import 'gong_constellation_mapping.dart';
 import 'star_influence_model.dart';
+import 'base_xian_calculator.dart';
 
-class DongWeiDaXianCalculator {
-  final ZhouTianModel zhouTianModel;
-  final List<EnumTwelveGong> daxianPalaceOrder;
-  final Map<EnumTwelveGong, YearMonth> daxianPalaceDurations; // 改为YearMonth
-
-  // final Map<EnumTwelveGong, CelestialObject> palacesStaticInfo;
-  // final Map<Enum28Constellations, CelestialObject> constellationsStaticInfo;
-  final int totalDegreesInt;
-  // 判断是否为逆行（这里需要根据实际的逆行判断逻辑）
-  bool isRetrograde = true;
-
-  double luoRangeDegree; // 同络，可接受的偏移范围
-  double dingRangeDegree; // ‘明’，‘暗’顶可接受的偏移范围
-  BasePanelModel basePanel;
-  ObserverPosition observerPosition;
-
-  Map<EnumStars, EnteredInfo> get starsEnterInfo => basePanel.enteredGongMapper;
-  DateTime get birthTime => observerPosition.dateTime;
-
+class DongWeiDaXianCalculator extends BaseXianCalculator {
   DongWeiDaXianCalculator({
-    required this.zhouTianModel,
-    required this.basePanel,
-    required this.observerPosition,
-    required this.daxianPalaceOrder,
-    required this.daxianPalaceDurations, // 现在接受YearMonth类型
-    this.isRetrograde = true,
-    this.luoRangeDegree = 1.0,
-    this.dingRangeDegree = 1.0,
-  }) : totalDegreesInt =
-            (zhouTianModel.totalDegree * ZhouTianCalculator.DEGREE_MULTIPLIER)
-                .round();
+    required super.zhouTianModel,
+    required super.basePanel,
+    required super.observerPosition,
+    required super.daxianPalaceOrder,
+    required super.daxianPalaceDurations,
+    super.isRetrograde = true,
+    super.luoRangeDegree = 1.0,
+    super.dingRangeDegree = 1.0,
+  });
 
   Map<EnumTwelveGong, DaXianPalaceInfo> calculate(
       List<ConstellationMappingResult> mapping,
       Map<EnumTwelveGong, CelestialObject> palacesStaticInfo) {
     // 1. 首先调用 calculateDaXian 获取 List<DaXianPalaceInfo>
     List<DaXianPalaceInfo> daXianList =
-        calculateDaXian(mapping, palacesStaticInfo, starsEnterInfo);
+        calculateDaXianV1(mapping, palacesStaticInfo, starsEnterInfo);
 
     // 2. 为每个大限宫位计算星体影响并更新到 List<DaXianPalaceInfo>
     for (int i = 0; i < daXianList.length; i++) {
       DaXianPalaceInfo daXianInfo = daXianList[i];
 
-      // 调用 calculateStarInfluences 计算星体影响
-      // 注意：需要准备 starsEnterInfo 参数，这里假设从某处获取
-      Map<EnumStars, EnteredInfo> starsEnterInfo = {}; // 需要从适当的地方获取星体入宫信息
-
+      // 调用基类的 calculateStarInfluences 方法
       StarGongInfluence? starInfluence = calculateStarInfluences(
         targetPalace: daXianInfo.palace,
         starsEnterInfo: starsEnterInfo,
@@ -102,9 +80,97 @@ class DongWeiDaXianCalculator {
   }
 
   // 在 DongWeiDaXianCalculator 类中添加修正后的方法
+  /// 基于宫位星宿映射结果计算大限
+  /// [palaceMapping] 来自 ZhouTianCalculator.mapPalacesToConstellations() 的结果
+  List<DaXianPalaceInfo> calculateDaXian(
+    List<PalaceMappingResult> palaceMapping,
+    Map<EnumTwelveGong, CelestialObject> palacesStaticInfo,
+    // Map<EnumStars, EnteredInfo> starsEnterInfo,
+  ) {
+    List<DaXianPalaceInfo> results = [];
+    DateTime currentEventTime = birthTime;
+    YearMonth currentEventAge = YearMonth(0, 0);
+    int daxianOrder = 0;
+
+    // 遍历大限宫位顺序
+    for (EnumTwelveGong currentPalaceKey in daxianPalaceOrder) {
+      daxianOrder++;
+      YearMonth palaceDaxianDuration = daxianPalaceDurations[currentPalaceKey]!;
+
+      DateTime daxianStartTime = currentEventTime;
+      YearMonth daxianStartAge = currentEventAge;
+      DateTime daxianEndTime = TimeUtils.addYearMonthToDateTime(
+          daxianStartTime, palaceDaxianDuration);
+      YearMonth daxianEndAge = daxianStartAge + palaceDaxianDuration;
+
+      // 获取宫位信息
+      CelestialObject palaceStatic = palacesStaticInfo[currentPalaceKey]!;
+      double palaceWidthDegrees = palaceStatic.width;
+
+      if (palaceWidthDegrees < ZhouTianCalculator.EPSILON_RAW) {
+        if (palaceDaxianDuration.toTotalMonths() == 0) {
+          List<DaXianConstellationPassageInfo> passages = [];
+          results.add(DaXianPalaceInfo(
+            order: daxianOrder,
+            palace: currentPalaceKey,
+            durationYears: palaceDaxianDuration,
+            startTime: daxianStartTime,
+            endTime: daxianEndTime,
+            startAge: daxianStartAge,
+            endAge: daxianEndAge,
+            rateYearsPerDegree: YearMonth.zero(),
+            constellationPassages: passages,
+            totalGongDegreee: palaceWidthDegrees,
+          ));
+          currentEventTime = daxianEndTime;
+          currentEventAge = daxianEndAge;
+          continue;
+        }
+        throw Exception("宫位 ${palaceStatic.name} 宽度为0但大限时长不为0");
+      }
+
+      // 计算时间分配
+      int totalDays = palaceDaxianDuration.toTotalDays();
+      double daysPerDegree = totalDays / palaceWidthDegrees;
+      YearMonth rateYearsPerDegree =
+          YearMonth.fromTotalDays(daysPerDegree.round());
+
+      // 调用提取的方法计算行限星宿信息
+      List<DaXianConstellationPassageInfo> passages =
+          calculateXingXianStarPassages(
+        targetPalaceMapping:
+            palaceMapping.firstWhere((t) => t.palaceName == currentPalaceKey),
+        daxianDuration: palaceDaxianDuration,
+        daxianStartTime: daxianStartTime,
+        daxianStartAge: daxianStartAge,
+        isRetrograde: isRetrograde,
+      );
+
+      results.add(DaXianPalaceInfo(
+        order: daxianOrder,
+        palace: currentPalaceKey,
+        durationYears: palaceDaxianDuration,
+        startTime: daxianStartTime,
+        endTime: daxianEndTime,
+        startAge: daxianStartAge,
+        endAge: daxianEndAge,
+        rateYearsPerDegree: rateYearsPerDegree,
+        constellationPassages: passages,
+        totalGongDegreee: palaceWidthDegrees,
+      ));
+
+      currentEventTime = daxianEndTime;
+      currentEventAge = daxianEndAge;
+    }
+
+    return results;
+  }
+
+  // 在 DongWeiDaXianCalculator 类中添加修正后的方法
   /// 基于已有的宫位星宿映射结果计算大限
   /// [mapping] 来自 ZhouTianCalculator.mapConstellationsToPalaces() 的结果
-  List<DaXianPalaceInfo> calculateDaXian(
+  @Deprecated('Use calculateDaXian instead')
+  List<DaXianPalaceInfo> calculateDaXianV1(
     List<ConstellationMappingResult> mapping,
     Map<EnumTwelveGong, CelestialObject> palacesStaticInfo,
     Map<EnumStars, EnteredInfo> starsEnterInfo,
@@ -253,7 +319,6 @@ class DongWeiDaXianCalculator {
           exitTime: passageExitTime,
           entryAge: passageEntryAge,
           exitAge: passageExitAge,
-          constellationStarInfluences: constellationStarInfluences,
         ));
       }
 
@@ -277,151 +342,6 @@ class DongWeiDaXianCalculator {
     return results;
   }
 
-  /// 计算丁度星体影响
-  /// [daXianPassageGong] 大限宫位信息，包含星体影响数据
-  /// 返回丁度星体影响模型列表
-  Map<EnumInfluenceType, List<DingStarInfluenceModel>>? calculateDingStar(
-      DaXianPalaceInfo daXianPassageGong) {
-    Map<EnumInfluenceType, List<DingStarInfluenceModel>> dingStarInfluences =
-        {};
-
-    // 检查是否有星体宫位影响数据
-    if (daXianPassageGong.starGongInfluence == null) {
-      return null;
-    }
-
-    StarGongInfluence starGongInfluence = daXianPassageGong.starGongInfluence!;
-
-    // 处理同宫影响（明顶）
-    if (starGongInfluence.sameGongInfluence != null) {
-      List<DingStarInfluenceModel> sameInfluences = [];
-      for (PalaceStarInfluenceModel starInfluence
-          in starGongInfluence.sameGongInfluence!) {
-        // 检查度数差是否在丁度范围内
-        if (starInfluence.degreeDiff.abs() <= dingRangeDegree) {
-          sameInfluences.add(_createDingStarInfluence(
-            starInfluence,
-            daXianPassageGong,
-            EnumInfluenceType.same,
-          ));
-        }
-      }
-      if (sameInfluences.isNotEmpty) {
-        dingStarInfluences[EnumInfluenceType.same] = sameInfluences;
-      }
-    }
-
-    // 处理对宫影响（暗顶）
-    if (starGongInfluence.oppositeGongInfluence != null) {
-      List<DingStarInfluenceModel> oppositeInfluences = [];
-      for (PalaceStarInfluenceModel starInfluence
-          in starGongInfluence.oppositeGongInfluence!) {
-        // 检查度数差是否在丁度范围内
-        if (starInfluence.degreeDiff.abs() <= dingRangeDegree) {
-          oppositeInfluences.add(_createDingStarInfluence(
-            starInfluence,
-            daXianPassageGong,
-            EnumInfluenceType.opposite,
-          ));
-        }
-      }
-      if (oppositeInfluences.isNotEmpty) {
-        dingStarInfluences[EnumInfluenceType.opposite] = oppositeInfluences;
-      }
-    }
-
-    // 处理三方影响（暗顶）
-    if (starGongInfluence.triangleGongInfluence != null) {
-      List<DingStarInfluenceModel> triangleInfluences = [];
-      starGongInfluence.triangleGongInfluence!
-          .forEach((palace, starInfluences) {
-        for (PalaceStarInfluenceModel starInfluence in starInfluences) {
-          // 检查度数差是否在丁度范围内
-          if (starInfluence.degreeDiff.abs() <= dingRangeDegree) {
-            triangleInfluences.add(_createDingStarInfluence(
-              starInfluence,
-              daXianPassageGong,
-              EnumInfluenceType.triangle,
-            ));
-          }
-        }
-      });
-      if (triangleInfluences.isNotEmpty) {
-        dingStarInfluences[EnumInfluenceType.triangle] = triangleInfluences;
-      }
-    }
-
-    // 处理四正影响（暗顶）
-    if (starGongInfluence.squareGongInfluence != null) {
-      List<DingStarInfluenceModel> squareInfluences = [];
-      starGongInfluence.squareGongInfluence!.forEach((palace, starInfluences) {
-        for (PalaceStarInfluenceModel starInfluence in starInfluences) {
-          // 检查度数差是否在丁度范围内
-          if (starInfluence.degreeDiff.abs() <= dingRangeDegree) {
-            squareInfluences.add(_createDingStarInfluence(
-              starInfluence,
-              daXianPassageGong,
-              EnumInfluenceType.square,
-            ));
-          }
-        }
-      });
-      if (squareInfluences.isNotEmpty) {
-        dingStarInfluences[EnumInfluenceType.square] = squareInfluences;
-      }
-    }
-
-    // 注意：同络影响不参与暗顶计算，所以这里不处理 sameLuoInfluence
-
-    return dingStarInfluences.isEmpty ? null : dingStarInfluences;
-  }
-
-  /// 创建丁度星体影响模型的辅助方法
-  DingStarInfluenceModel _createDingStarInfluence(
-    PalaceStarInfluenceModel starInfluence,
-    DaXianPalaceInfo daXianPassageGong,
-    EnumInfluenceType influenceType,
-  ) {
-    // 根据星体入宫度数和大限时间信息计算丁度的起止时间
-    double entryDegree = starInfluence.entryDegree;
-    YearMonth ratePerDegree = daXianPassageGong.rateYearsPerDegree;
-
-    // 计算星体影响的时间范围（基于度数差和丁度范围）
-    double startDegree = entryDegree - dingRangeDegree;
-    double endDegree = entryDegree + dingRangeDegree;
-
-    // 确保度数在宫位范围内
-    startDegree = startDegree.clamp(0.0, 30.0);
-    endDegree = endDegree.clamp(0.0, 30.0);
-
-    // 计算相对于大限开始的时间偏移
-    int startDaysOffset = (startDegree * ratePerDegree.toTotalDays()).round();
-    int endDaysOffset = (endDegree * ratePerDegree.toTotalDays()).round();
-
-    DateTime startTime =
-        daXianPassageGong.startTime.add(Duration(days: startDaysOffset));
-    DateTime endTime =
-        daXianPassageGong.startTime.add(Duration(days: endDaysOffset));
-
-    YearMonth startAge =
-        daXianPassageGong.startAge + YearMonth.fromTotalDays(startDaysOffset);
-    YearMonth endAge =
-        daXianPassageGong.startAge + YearMonth.fromTotalDays(endDaysOffset);
-
-    return DingStarInfluenceModel(
-      influenceType: influenceType,
-      star: starInfluence.star,
-      location: starInfluence.location,
-      entryDegree: starInfluence.entryDegree,
-      degreeDiff: starInfluence.degreeDiff,
-      defaultRangeDegree: dingRangeDegree,
-      startTime: startTime,
-      endTime: endTime,
-      startAge: startAge,
-      endAge: endAge,
-    );
-  }
-
   // 计算指定宫位的星体影响信息
   /// [targetPalace] 目标宫位
   /// [starsEnterInfo] 所有星体的入宫入宿信息
@@ -430,7 +350,8 @@ class DongWeiDaXianCalculator {
   /// [daxianStartAge] 大限开始年龄
   /// [rateYearsPerDegree] 每度对应的年月数
   /// 计算指定宫位的星体影响信息（简化版）
-  StarGongInfluence? calculateStarInfluences({
+  @Deprecated('此方法已过时，建议使用 calculateStarInfluences方法。')
+  StarGongInfluence? calculateStarInfluences_v1({
     required EnumTwelveGong targetPalace,
     required Map<EnumStars, EnteredInfo> starsEnterInfo,
   }) {
@@ -569,7 +490,7 @@ class DongWeiDaXianCalculator {
           star: star,
           location: starInfo.enterInnInfo.constellation,
           entryDegree: starInfo.enterInnInfo.degree,
-          inSameConstellation: true,
+          inSameConstellation: false,
         ));
       }
     }
@@ -613,6 +534,238 @@ class DongWeiDaXianCalculator {
           defaultRangeDegree: luoRangeDegree));
     }
   }
+
+  /// 计算同宫影响
+  List<PalaceStarInfluenceModel> _calculateSameGongInfluence({
+    required EnumTwelveGong targetPalace,
+    required Map<EnumStars, EnteredInfo> starsEnterInfo,
+  }) {
+    List<PalaceStarInfluenceModel> sameGongInfluence = [];
+
+    for (MapEntry<EnumStars, EnteredInfo> entry in starsEnterInfo.entries) {
+      EnumStars star = entry.key;
+      EnteredInfo starInfo = entry.value;
+
+      // 同宫影响
+      if (starInfo.gong == targetPalace) {
+        sameGongInfluence.add(PalaceStarInfluenceModel(
+          influenceType: EnumInfluenceType.same,
+          star: star,
+          location: starInfo.gong,
+          entryDegree: starInfo.atGongDegree,
+        ));
+      }
+    }
+
+    return sameGongInfluence;
+  }
+
+  /// 计算对宫影响
+  List<PalaceStarInfluenceModel> _calculateOppositeGongInfluence({
+    required EnumTwelveGong targetPalace,
+    required Map<EnumStars, EnteredInfo> starsEnterInfo,
+  }) {
+    List<PalaceStarInfluenceModel> oppositeGongInfluence = [];
+    EnumTwelveGong oppositePalace = targetPalace.opposite;
+
+    for (MapEntry<EnumStars, EnteredInfo> entry in starsEnterInfo.entries) {
+      EnumStars star = entry.key;
+      EnteredInfo starInfo = entry.value;
+
+      // 对宫影响
+      if (starInfo.gong == oppositePalace) {
+        oppositeGongInfluence.add(PalaceStarInfluenceModel(
+          influenceType: EnumInfluenceType.opposite,
+          star: star,
+          location: starInfo.gong,
+          entryDegree: starInfo.atGongDegree,
+        ));
+      }
+    }
+
+    return oppositeGongInfluence;
+  }
+
+  /// 计算三方影响
+  Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>
+      _calculateTriangleGongInfluence({
+    required EnumTwelveGong targetPalace,
+    required Map<EnumStars, EnteredInfo> starsEnterInfo,
+  }) {
+    Map<EnumTwelveGong, List<PalaceStarInfluenceModel>> triangleGongInfluence =
+        {};
+    List<EnumTwelveGong> trianglePalaces = targetPalace.otherTringleGongList;
+
+    for (MapEntry<EnumStars, EnteredInfo> entry in starsEnterInfo.entries) {
+      EnumStars star = entry.key;
+      EnteredInfo starInfo = entry.value;
+
+      // 三方影响
+      if (trianglePalaces.contains(starInfo.gong)) {
+        if (!triangleGongInfluence.containsKey(starInfo.gong)) {
+          triangleGongInfluence[starInfo.gong] = [];
+        }
+        triangleGongInfluence[starInfo.gong]!.add(PalaceStarInfluenceModel(
+          influenceType: EnumInfluenceType.triangle,
+          star: star,
+          location: starInfo.gong,
+          entryDegree: starInfo.atGongDegree,
+        ));
+      }
+    }
+
+    return triangleGongInfluence;
+  }
+
+  /// 计算四正影响
+  Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>
+      _calculateSquareGongInfluence({
+    required EnumTwelveGong targetPalace,
+    required Map<EnumStars, EnteredInfo> starsEnterInfo,
+  }) {
+    Map<EnumTwelveGong, List<PalaceStarInfluenceModel>> squareGongInfluence =
+        {};
+    List<EnumTwelveGong> squarePalaces = targetPalace.otherSquareGongList;
+
+    for (MapEntry<EnumStars, EnteredInfo> entry in starsEnterInfo.entries) {
+      EnumStars star = entry.key;
+      EnteredInfo starInfo = entry.value;
+
+      // 四正影响
+      if (squarePalaces.contains(starInfo.gong)) {
+        if (!squareGongInfluence.containsKey(starInfo.gong)) {
+          squareGongInfluence[starInfo.gong] = [];
+        }
+        squareGongInfluence[starInfo.gong]!.add(PalaceStarInfluenceModel(
+          influenceType: EnumInfluenceType.square,
+          star: star,
+          location: starInfo.gong,
+          entryDegree: starInfo.atGongDegree,
+        ));
+      }
+    }
+
+    return squareGongInfluence;
+  }
+
+  /// 重构后的 calculateStarInfluences 方法
+  @Deprecated("请使用父类的 calculateStarInfluences")
+  StarGongInfluence? calculateStarInfluencesV2({
+    required EnumTwelveGong targetPalace,
+    required Map<EnumStars, EnteredInfo> starsEnterInfo,
+  }) {
+    // 使用独立函数计算各种影响
+    List<PalaceStarInfluenceModel> sameGongInfluence =
+        _calculateSameGongInfluence(
+      targetPalace: targetPalace,
+      starsEnterInfo: starsEnterInfo,
+    );
+
+    List<PalaceStarInfluenceModel> oppositeGongInfluence =
+        _calculateOppositeGongInfluence(
+      targetPalace: targetPalace,
+      starsEnterInfo: starsEnterInfo,
+    );
+
+    Map<EnumTwelveGong, List<PalaceStarInfluenceModel>> triangleGongInfluence =
+        _calculateTriangleGongInfluence(
+      targetPalace: targetPalace,
+      starsEnterInfo: starsEnterInfo,
+    );
+
+    Map<EnumTwelveGong, List<PalaceStarInfluenceModel>> squareGongInfluence =
+        _calculateSquareGongInfluence(
+      targetPalace: targetPalace,
+      starsEnterInfo: starsEnterInfo,
+    );
+
+    // 计算同络影响（保持原有逻辑）
+    Map<EnumTwelveGong, List<PalaceStarInfluenceModel>> sameLuoInfluence = {};
+    for (MapEntry<EnumStars, EnteredInfo> entry in starsEnterInfo.entries) {
+      EnumStars star = entry.key;
+      EnteredInfo starInfo = entry.value;
+
+      _calculateSameLuoInfluence(
+        targetPalace: targetPalace,
+        star: star,
+        starInfo: starInfo,
+        starsEnterInfo: starsEnterInfo,
+        sameLuoInfluence: sameLuoInfluence,
+      );
+    }
+
+    // 检查是否所有影响列表都为空
+    if (sameGongInfluence.isEmpty &&
+        oppositeGongInfluence.isEmpty &&
+        triangleGongInfluence.isEmpty &&
+        squareGongInfluence.isEmpty &&
+        sameLuoInfluence.isEmpty) {
+      return null;
+    }
+
+    return StarGongInfluence(
+      sameGongInfluence: sameGongInfluence.isEmpty ? null : sameGongInfluence,
+      oppositeGongInfluence:
+          oppositeGongInfluence.isEmpty ? null : oppositeGongInfluence,
+      triangleGongInfluence:
+          triangleGongInfluence.isEmpty ? null : triangleGongInfluence,
+      squareGongInfluence:
+          squareGongInfluence.isEmpty ? null : squareGongInfluence,
+      sameLuoInfluence: sameLuoInfluence.isEmpty ? null : sameLuoInfluence,
+    );
+  }
+
+  /// 创建丁度星体影响模型的辅助方法
+  @override
+  DingStarInfluenceModel createDingStarInfluence(
+    PalaceStarInfluenceModel starInfluence,
+    BaseXianPalace daXianPassageGong,
+    EnumInfluenceType influenceType,
+  ) {
+    // 根据星体入宫度数和大限时间信息计算丁度的起止时间
+    double entryDegree = starInfluence.entryDegree;
+
+    // YearMonth ratePerDegree = daXianPassageGong.rateYearsPerDegree;
+    YearMonth ratePerDegree =
+        (daXianPassageGong as DaXianPalaceInfo).rateYearsPerDegree;
+
+    // 计算星体影响的时间范围（基于度数差和丁度范围）
+    double startDegree = entryDegree - dingRangeDegree;
+    double endDegree = entryDegree + dingRangeDegree;
+
+    // 确保度数在宫位范围内
+    startDegree = startDegree.clamp(0.0, daXianPassageGong.totalGongDegreee);
+    endDegree = endDegree.clamp(0.0, daXianPassageGong.totalGongDegreee);
+
+    // 计算相对于大限开始的时间偏移
+    int startDaysOffset = (startDegree * ratePerDegree.toTotalDays()).round();
+    int endDaysOffset = (endDegree * ratePerDegree.toTotalDays()).round();
+
+    // 计算实际的开始和结束时间
+    DateTime actualStartTime =
+        daXianPassageGong.startTime.add(Duration(days: startDaysOffset));
+    DateTime actualEndTime =
+        daXianPassageGong.startTime.add(Duration(days: endDaysOffset));
+
+    // 计算对应的年龄
+    YearMonth startAge = daXianPassageGong.startAge +
+        YearMonth.fromTotalDays(startDaysOffset.toInt());
+    YearMonth endAge = daXianPassageGong.startAge +
+        YearMonth.fromTotalDays(endDaysOffset.toInt());
+
+    return DingStarInfluenceModel(
+      influenceType: influenceType,
+      star: starInfluence.star,
+      location: starInfluence.location,
+      entryDegree: entryDegree,
+      startTime: actualStartTime,
+      endTime: actualEndTime,
+      startAge: startAge,
+      endAge: endAge,
+      degreeDiff: dingRangeDegree,
+      defaultRangeDegree: dingRangeDegree,
+    );
+  }
 }
 
 // 辅助类
@@ -655,28 +808,3 @@ class TimeUtils {
   }
 }
 
-// 用于大限计算的星宿段信息
-class ConstellationSegmentForDaXian {
-  final Enum28Constellations constellation;
-  final double segmentStartInPalace;
-  final double segmentEndInPalace;
-  final double degreeStartInConstellation;
-  final double degreeEndInConstellation;
-  final double segmentLengthDeg;
-
-  ConstellationSegmentForDaXian({
-    required this.constellation,
-    required this.segmentStartInPalace,
-    required this.segmentEndInPalace,
-    required this.degreeStartInConstellation,
-    required this.degreeEndInConstellation,
-    required this.segmentLengthDeg,
-  });
-
-  @override
-  String toString() {
-    return 'ConstellationSegmentForDaXian{constellation: $constellation, segmentStartInPalace: $segmentStartInPalace, segmentEndInPalace: $segmentEndInPalace, degreeStartInConstellation: $degreeStartInConstellation, degreeEndInConstellation: $degreeEndInConstellation, segmentLengthDeg: $segmentLengthDeg}';
-  }
-}
-
-/// 星体影响计算结果
