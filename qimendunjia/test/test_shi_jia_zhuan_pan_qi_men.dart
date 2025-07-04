@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:qimendunjia/enums/enum_arrange_plate_type.dart';
+import 'package:qimendunjia/enums/enum_center_gong_ji_gong_type.dart';
 import 'package:qimendunjia/enums/enum_eight_door.dart';
 import 'package:qimendunjia/enums/enum_eight_gods.dart';
 import 'package:qimendunjia/enums/enum_nine_stars.dart';
