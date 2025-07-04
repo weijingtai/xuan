@@ -23,6 +23,7 @@ export './enums/enum_twelve_star_seq.dart';
 export './enums/enum_twelve_zhang_sheng.dart';
 export './enums/enum_twenty_four_jie_qi.dart';
 export './enums/enum_yin_yang.dart';
+export './enums/enum_day_night.dart';
 
 export './utils/collections_utils.dart';
 export './utils/julian_day_converter.dart';

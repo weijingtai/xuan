@@ -23,3 +23,4 @@ export 'shared/enums/enum_twelve_star_seq.dart';
 export 'shared/enums/enum_twelve_zhang_sheng.dart';
 export 'shared/enums/enum_twenty_four_jie_qi.dart';
 export 'shared/enums/enum_yin_yang.dart';
+export 'shared/enums/enum_day_night.dart';
