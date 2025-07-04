@@ -1,8 +1,8 @@
 import 'package:daliuren/model/three_chuan.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../domain/enums/nine_zong_men.dart';
 import 'each_chuan.dart';
-import 'enum_nine_zong_men.dart';
 part 'three_chuan_bi_yong.g.dart';
 
 @JsonSerializable()

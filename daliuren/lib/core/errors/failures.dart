@@ -9,29 +9,46 @@ abstract class Failure {
 
   @override
   String toString() => '$runtimeType: $message';
+
+  static notImplemented() => NotImplementedFailure();
+}
+
+class NotImplementedFailure extends Failure {
+  NotImplementedFailure() : super('Not implemented');
 }
 
 // General failures
 class ServerFailure extends Failure {
-  ServerFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  ServerFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }
 
 class CacheFailure extends Failure {
-  CacheFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  CacheFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }
 
 class NetworkFailure extends Failure {
-  NetworkFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  NetworkFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }
 
 class UnknownFailure extends Failure {
-  UnknownFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  UnknownFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }
 
 class DatabaseFailure extends Failure {
-  DatabaseFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  DatabaseFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }
 
 class InvalidInputFailure extends Failure {
-  InvalidInputFailure(String message, [StackTrace? stackTrace]) : super(message, stackTrace);
+  InvalidInputFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
+}
+
+class GenericFailure extends Failure {
+  GenericFailure(String message, [StackTrace? stackTrace])
+      : super(message, stackTrace);
 }

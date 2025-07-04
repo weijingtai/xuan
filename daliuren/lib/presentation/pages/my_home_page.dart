@@ -5,28 +5,23 @@ import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
-import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart'; // May be used if LiuRenPan has BaZi
-import 'package:common/widgets/twenty_four_jie_qi_tag.dart'; // May be used
 import 'package:daliuren/presentation/widgets/pan_display_widget.dart';
-import 'package:daliuren/presentation/widgets/yuding_display_widget.dart'; // Assuming a new widget for YuDing
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart'; // No longer directly loading from rootBundle here
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lunar/calendar/Lunar.dart'; // For displaying Lunar date if needed
 import 'package:provider/provider.dart';
 
 // Domain entities that the View will now primarily deal with
 import 'package:daliuren/domain/entities/liuren_pan.dart';
-import 'package:daliuren/domain/entities/yuding_entry.dart';
+
+import '../viewmodels/my_home_viewmodel.dart';
+import '../widgets/yu_ding_display_widget.dart';
 
 // View Model
-import '../viewmodels/my_home_viewmodel.dart';
-
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -37,15 +32,22 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  final String ICONS_ASSETS_PATH = "assets/icons/"; // Keep for local asset paths if any remain
+  final String ICONS_ASSETS_PATH =
+      "assets/icons/"; // Keep for local asset paths if any remain
 
   // Keys for shake widgets (for manual input validation)
-  final GlobalKey<ShakeWidgetState> renYearGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> renMonthGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> renDayGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> renTimeGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> renDunGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
-  final GlobalKey<ShakeWidgetState> renJuNumberShakeKey = GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renYearGanZhiShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renMonthGanZhiShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renDayGanZhiShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renTimeGanZhiShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renDunGanZhiShakeKey =
+      GlobalKey<ShakeWidgetState>();
+  final GlobalKey<ShakeWidgetState> renJuNumberShakeKey =
+      GlobalKey<ShakeWidgetState>();
 
   // Local state for UI interactions (e.g., selected date before "排盘")
   DateTime? _selectedDateTimeForPan;
@@ -62,7 +64,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final ValueNotifier<bool> _showMonthGeneralJieQi = ValueNotifier(false);
   Timer? _showMonthGeneralJieQiTimer;
   bool _isMonthGeneralSticky = false;
-
 
   @override
   void initState() {
@@ -109,9 +110,12 @@ class _MyHomePageState extends State<MyHomePage> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
               if (state.isInitializing)
-                const CircularProgressIndicator(semanticsLabel: "数据库初始化中...",)
+                const CircularProgressIndicator(
+                  semanticsLabel: "数据库初始化中...",
+                )
               else if (!state.isDbInitialized && state.error != null)
-                Text("数据库初始化失败: ${state.error!.message}", style: const TextStyle(color: Colors.red))
+                Text("数据库初始化失败: ${state.error!.message}",
+                    style: const TextStyle(color: Colors.red))
               else ...[
                 // Pan Base Info (Simplified or using parts of PanDisplayWidget later)
                 _buildPanBaseInfo(state.liuRenPan),
@@ -119,35 +123,46 @@ class _MyHomePageState extends State<MyHomePage> {
 
                 // Main Pan Display Area
                 if (state.isLoadingPan)
-                  const CircularProgressIndicator(semanticsLabel: "排盘中...",)
+                  const CircularProgressIndicator(
+                    semanticsLabel: "排盘中...",
+                  )
                 else if (state.liuRenPan != null)
                   PanDisplayWidget(liuRenPan: state.liuRenPan) // New Widget
-                else if (state.error?.message.contains("LiuRenPan") ?? false) // Check if error is pan related
-                  Text("排盘失败: ${state.error!.message}", style: const TextStyle(color: Colors.red))
+                else if (state.error?.message.contains("LiuRenPan") ??
+                    false) // Check if error is pan related
+                  Text("排盘失败: ${state.error!.message}",
+                      style: const TextStyle(color: Colors.red))
                 else
-                  Container( // Placeholder for pan display area
+                  Container(
+                    // Placeholder for pan display area
                     width: panSize.width,
                     height: panSize.height,
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
-                      borderRadius: BorderRadius.circular(10)
-                    ),
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(10)),
                     child: const Center(child: Text("请选择条件进行排盘")),
                   ),
                 const SizedBox(height: 16),
 
                 // YuDing Entry Display Area
                 if (state.isLoadingYuDing)
-                  const CircularProgressIndicator(semanticsLabel: "获取课义中...",)
+                  const CircularProgressIndicator(
+                    semanticsLabel: "获取课义中...",
+                  )
                 else if (state.yuDingEntry != null)
-                   YuDingDisplayWidget(yuDingEntry: state.yuDingEntry!) // New Widget
-                else if (state.error?.message.contains("YuDing") ?? false) // Check if error is YuDing related
-                  Text("获取课义失败: ${state.error!.message}", style: const TextStyle(color: Colors.red))
+                  YuDingDisplayWidget(
+                      yuDingEntry: state.yuDingEntry!) // New Widget
+                else if (state.error?.message.contains("YuDing") ??
+                    false) // Check if error is YuDing related
+                  Text("获取课义失败: ${state.error!.message}",
+                      style: const TextStyle(color: Colors.red))
                 else
-                  const SizedBox.shrink(), // No YuDing or error related to it specifically
+                  const SizedBox
+                      .shrink(), // No YuDing or error related to it specifically
 
                 const SizedBox(height: 32),
-                _buildManualInputSection(context, viewModel), // Manual GanZhi Inputs
+                _buildManualInputSection(
+                    context, viewModel), // Manual GanZhi Inputs
                 const SizedBox(height: 32),
                 _buildActionButtons(context, viewModel), // Action Buttons
                 const SizedBox(height: 56),
@@ -163,7 +178,8 @@ class _MyHomePageState extends State<MyHomePage> {
     if (pan == null) return const SizedBox.shrink();
 
     // Simplified display of base info. Could be expanded or part of PanDisplayWidget.
-    Lunar? lunarDate = pan.panDateTime != null ? Lunar.fromDate(pan.panDateTime!) : null;
+    Lunar? lunarDate =
+        pan.panDateTime != null ? Lunar.fromDate(pan.panDateTime!) : null;
 
     return Card(
       elevation: 2,
@@ -172,19 +188,24 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           children: [
             if (pan.panDateTime != null)
-              Text("公历: ${DateFormat("yyyy-MM-dd HH:mm").format(pan.panDateTime!)}"),
+              Text(
+                  "公历: ${DateFormat("yyyy-MM-dd HH:mm").format(pan.panDateTime!)}"),
             if (lunarDate != null)
-              Text("农历: ${lunarDate.getYearInGanZhi()}年 ${lunarDate.getMonthInChinese()}月 ${lunarDate.getDayInChinese()} ${lunarDate.getTimeZhi()}时"),
+              Text(
+                  "农历: ${lunarDate.getYearInGanZhi()}年 ${lunarDate.getMonthInChinese()}月 ${lunarDate.getDayInChinese()} ${lunarDate.getTimeZhi()}时"),
             Text("日课: ${pan.dayGanZhi} ${pan.shiChenZhiName}时"),
             // Could add FourZhuEightChar widget here if BaZi is part of LiuRenPan entity
-            if (pan.dayJiaZiEnum != null && pan.shiChenEnum != null /* and other BaZi parts */)
+            if (pan.dayJiaZiEnum != null &&
+                pan.shiChenEnum != null /* and other BaZi parts */)
               Padding(
-                padding: const EdgeInsets.only(top:8.0),
+                padding: const EdgeInsets.only(top: 8.0),
                 child: FourZhuEightChar(
-                  year: pan.dayJiaZiEnum!, // Placeholder, need full BaZi from pan
-                  month: pan.dayJiaZiEnum!,// Placeholder
+                  year:
+                      pan.dayJiaZiEnum!, // Placeholder, need full BaZi from pan
+                  month: pan.dayJiaZiEnum!, // Placeholder
                   day: pan.dayJiaZiEnum!,
-                  chen: common_enums.JiaZi.fromGanZhi(pan.dayJiaZiEnum!.tianGan, pan.shiChenEnum!), // Approximate
+                  chen: JiaZi.getFromGanZhiEnum(pan.dayJiaZiEnum!.tianGan,
+                      pan.shiChenEnum!), // Approximate
                   isColorful: true,
                 ),
               )
@@ -194,7 +215,8 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildManualInputSection(BuildContext context, MyHomePageViewModel viewModel) {
+  Widget _buildManualInputSection(
+      BuildContext context, MyHomePageViewModel viewModel) {
     // This section retains the CustomDropdowns for manual input.
     // Their onChanged callbacks will update the local _manual* variables.
     // The "干支排盘" button will then use these variables.
@@ -202,25 +224,31 @@ class _MyHomePageState extends State<MyHomePage> {
       children: [
         Text("或手动选择干支局数排盘:", style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        Wrap( // Using Wrap for better responsiveness
+        Wrap(
+          // Using Wrap for better responsiveness
           spacing: 12,
           runSpacing: 12,
           alignment: WrapAlignment.center,
           children: [
-            _buildGanZhiDropdown(renDayGanZhiShakeKey, "日干支", JiaZi.listAll, (val) => _manualDayJiaZi = val),
-            _buildGanZhiDropdown(renTimeGanZhiShakeKey, "时干支", JiaZi.listAll, (val) => _manualTimeJiaZi = val),
+            _buildGanZhiDropdown(renDayGanZhiShakeKey, "日干支", JiaZi.listAll,
+                (val) => _manualDayJiaZi = val),
+            _buildGanZhiDropdown(renTimeGanZhiShakeKey, "时干支", JiaZi.listAll,
+                (val) => _manualTimeJiaZi = val),
             // For simplicity, Year and Month GanZhi inputs are omitted as they are often less critical for basic LiuRen
             // _buildGanZhiDropdown(renYearGanZhiShakeKey, "年干支", JiaZi.listAll, (val) => _manualYearJiaZi = val),
             // _buildGanZhiDropdown(renMonthGanZhiShakeKey, "月干支", JiaZi.listAll, (val) => _manualMonthJiaZi = val),
-            _buildYinYangDropdown(renDunGanZhiShakeKey, (val) => _manualYinYangDun = val),
-            _buildJuNumberDropdown(renJuNumberShakeKey, (val) => _manualJuNumber = val),
+            _buildYinYangDropdown(
+                renDunGanZhiShakeKey, (val) => _manualYinYangDun = val),
+            _buildJuNumberDropdown(
+                renJuNumberShakeKey, (val) => _manualJuNumber = val),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildGanZhiDropdown(Key key, String hint, List<JiaZi> items, ValueChanged<JiaZi?> onChanged) {
+  Widget _buildGanZhiDropdown(
+      Key key, String hint, List<JiaZi> items, ValueChanged<JiaZi?> onChanged) {
     return ShakeMe(
       key: key,
       shakeCount: 3,
@@ -231,33 +259,45 @@ class _MyHomePageState extends State<MyHomePage> {
         height: 48,
         child: CustomDropdown<JiaZi>.search(
           decoration: CustomDropdownDecoration(
-              searchFieldDecoration: const SearchFieldDecoration(prefixIcon: null)),
+              searchFieldDecoration:
+                  const SearchFieldDecoration(prefixIcon: null)),
           hintText: hint,
           items: items,
           onChanged: onChanged,
-          headerBuilder: (_, item) => Text(item.name),
-          listItemBuilder: (_, item,isSelected,onTap) => ListTile(title: Text(item.name),onTap: onTap,selected: isSelected,),
-
+          headerBuilder: (context, item, isEnable) => Text(item.name),
+          listItemBuilder: (_, item, isSelected, onTap) => ListTile(
+            title: Text(item.name),
+            onTap: onTap,
+            selected: isSelected,
+          ),
         ),
       ),
     );
   }
 
-   Widget _buildYinYangDropdown(Key key, ValueChanged<YinYang?> onChanged) {
+  Widget _buildYinYangDropdown(Key key, ValueChanged<YinYang?> onChanged) {
     return ShakeMe(
       key: key,
       shakeCount: 3,
       shakeOffset: 10,
       shakeDuration: const Duration(milliseconds: 500),
       child: SizedBox(
-        width: 135, height: 48,
+        width: 135,
+        height: 48,
         child: CustomDropdown<YinYang>.search(
-          decoration: CustomDropdownDecoration(searchFieldDecoration: const SearchFieldDecoration(prefixIcon: null)),
+          decoration: CustomDropdownDecoration(
+              searchFieldDecoration:
+                  const SearchFieldDecoration(prefixIcon: null)),
           hintText: "阴阳遁",
-          items: YinYang.values.where((yy) => yy != YinYang.UNKNOWN).toList(), // Filter out UNKNOWN
+          items: YinYang.values.toList(), // Filter out UNKNOWN
           onChanged: onChanged,
-          headerBuilder: (_, item) => Text(item.isYang ? "阳遁" : "阴遁"),
-          listItemBuilder: (_, item,isSelected,onTap) => ListTile(title: Text(item.isYang ? "阳遁" : "阴遁"),onTap: onTap,selected: isSelected,),
+          headerBuilder: (context, item, isEnable) =>
+              Text(item.isYang ? "阳遁" : "阴遁"),
+          listItemBuilder: (_, item, isSelected, onTap) => ListTile(
+            title: Text(item.isYang ? "阳遁" : "阴遁"),
+            onTap: onTap,
+            selected: isSelected,
+          ),
         ),
       ),
     );
@@ -271,21 +311,29 @@ class _MyHomePageState extends State<MyHomePage> {
       shakeOffset: 10,
       shakeDuration: const Duration(milliseconds: 500),
       child: SizedBox(
-        width: 135, height: 48,
+        width: 135,
+        height: 48,
         child: CustomDropdown<int>.search(
-          decoration: CustomDropdownDecoration(searchFieldDecoration: const SearchFieldDecoration(prefixIcon: null)),
+          decoration: CustomDropdownDecoration(
+              searchFieldDecoration:
+                  const SearchFieldDecoration(prefixIcon: null)),
           hintText: "局数",
           items: items,
           onChanged: onChanged,
-          headerBuilder: (_, item) => Text("${ConstResourcesMapper.chineseNumberMapper[item]!}局"),
-          listItemBuilder: (_, item,isSelected,onTap) => ListTile(title: Text("${ConstResourcesMapper.chineseNumberMapper[item]!}局"),onTap: onTap,selected: isSelected,),
+          headerBuilder: (context, item, isEnable) =>
+              Text("${ConstResourcesMapper.chineseNumberMapper[item]!}局"),
+          listItemBuilder: (_, item, isSelected, onTap) => ListTile(
+            title: Text("${ConstResourcesMapper.chineseNumberMapper[item]!}局"),
+            onTap: onTap,
+            selected: isSelected,
+          ),
         ),
       ),
     );
   }
 
-
-  Widget _buildActionButtons(BuildContext context, MyHomePageViewModel viewModel) {
+  Widget _buildActionButtons(
+      BuildContext context, MyHomePageViewModel viewModel) {
     return Wrap(
       spacing: 16,
       runSpacing: 16,
@@ -320,19 +368,24 @@ class _MyHomePageState extends State<MyHomePage> {
           child: const Text('现在时间'),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).primaryColor, foregroundColor: Colors.white),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white),
           onPressed: () {
             // Option 2: "排盘" button uses the _selectedDateTimeForPan
             if (_selectedDateTimeForPan != null) {
               viewModel.getPanByTime(_selectedDateTimeForPan!);
             } else {
-              InteractiveToast.slide(context, title: const Text("请先选择时间或使用现在时间"));
+              InteractiveToast.slide(context,
+                  title: const Text("请先选择时间或使用现在时间"));
             }
           },
           child: const Text('依时间排盘'),
         ),
         ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.secondary, foregroundColor: Colors.white),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).colorScheme.secondary,
+              foregroundColor: Colors.white),
           onPressed: () {
             bool isValid = true;
             if (_manualDayJiaZi == null) {
@@ -340,15 +393,18 @@ class _MyHomePageState extends State<MyHomePage> {
               isValid = false;
             }
             // Time OR JuNumber+YinYangDun must be present
-            if (_manualTimeJiaZi == null && (_manualJuNumber == null || _manualYinYangDun == null)) {
-               (renTimeGanZhiShakeKey.currentState as ShakeWidgetState?)?.shake();
-               (renJuNumberShakeKey.currentState as ShakeWidgetState?)?.shake();
-               (renDunGanZhiShakeKey.currentState as ShakeWidgetState?)?.shake();
-               isValid = false;
+            if (_manualTimeJiaZi == null &&
+                (_manualJuNumber == null || _manualYinYangDun == null)) {
+              (renTimeGanZhiShakeKey.currentState as ShakeWidgetState?)
+                  ?.shake();
+              (renJuNumberShakeKey.currentState as ShakeWidgetState?)?.shake();
+              (renDunGanZhiShakeKey.currentState as ShakeWidgetState?)?.shake();
+              isValid = false;
             }
             if (!isValid) {
-                InteractiveToast.slide(context, title: const Text("请完成干支、局数等必要选择"));
-                return;
+              InteractiveToast.slide(context,
+                  title: const Text("请完成干支、局数等必要选择"));
+              return;
             }
 
             viewModel.getPanByGanZhi(
@@ -356,7 +412,8 @@ class _MyHomePageState extends State<MyHomePage> {
               monthJiaZi: _manualMonthJiaZi?.name,
               dayJiaZi: _manualDayJiaZi!.name, // Already checked for null
               timeJiaZi: _manualTimeJiaZi?.name,
-              yinYangDun: _manualYinYangDun?.name, // ViewModel expects String name
+              yinYangDun:
+                  _manualYinYangDun?.name, // ViewModel expects String name
               juNumber: _manualJuNumber,
             );
           },
@@ -366,7 +423,8 @@ class _MyHomePageState extends State<MyHomePage> {
           style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
           onPressed: () {
             viewModel.clearPan();
-            setState(() { // Clear local selections too
+            setState(() {
+              // Clear local selections too
               _selectedDateTimeForPan = DateTime.now();
               _manualYearJiaZi = null;
               _manualMonthJiaZi = null;

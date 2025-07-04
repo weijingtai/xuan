@@ -18,9 +18,9 @@ ThreeChuanZeiKe _$ThreeChuanZeiKeFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ThreeChuanZeiKeToJson(ThreeChuanZeiKe instance) =>
     <String, dynamic>{
       'nineZongMen': _$NineZongMenEnumMap[instance.nineZongMen]!,
-      'first': instance.first,
-      'second': instance.second,
-      'third': instance.third,
+      'first': instance.first.toJson(),
+      'second': instance.second.toJson(),
+      'third': instance.third.toJson(),
       'type': _$ZeiKeTypeEnumMap[instance.type]!,
       'zeiKeType': _$EachClassZeiKeTypeEnumMap[instance.zeiKeType]!,
     };
@@ -45,5 +45,6 @@ const _$NineZongMenEnumMap = {
   NineZongMen.BIE_ZE: '别责',
   NineZongMen.BA_ZHUAN: '八专',
   NineZongMen.FU_YIN: '伏吟',
-  NineZongMen.FAN_YIN: '反吟',
+  NineZongMen.FAN_YIN: '返吟',
+  NineZongMen.UNKNOWN: '未知',
 };

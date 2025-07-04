@@ -1,13 +1,13 @@
 // lib/presentation/viewmodels/my_home_viewmodel.dart
 
 import 'package:flutter/foundation.dart'; // For ChangeNotifier
-import 'package:fpdart/fpdart.dart'; // For Either type
+import 'package:fpdart/fpdart.dart' hide Failure; // For Either type
 import 'package:daliuren/core/errors/failures.dart'; // For Failure type
 import 'package:daliuren/domain/entities/liuren_pan.dart'; // Domain entities
 import 'package:daliuren/domain/entities/yuding_entry.dart'; // Domain entities
-import 'package:daliuren/domain/entities/pan_input.dart';   // Domain entities
+import 'package:daliuren/domain/entities/pan_input.dart'; // Domain entities
 import 'package:daliuren/domain/usecases/calculate_liuren_pan_usecase.dart'; // Use cases
-import 'package:daliuren/domain/usecases/get_yuding_entry_usecase.dart';     // Use cases
+import 'package:daliuren/domain/usecases/get_yuding_entry_usecase.dart'; // Use cases
 import 'package:daliuren/domain/usecases/initialize_database_usecase.dart'; // Use cases
 import 'package:daliuren/core/usecase/usecase.dart'; // For NoParams
 
@@ -16,16 +16,22 @@ import 'package:daliuren/core/usecase/usecase.dart'; // For NoParams
 class MyHomePageState {
   /// True if the database is currently being initialized.
   final bool isInitializing;
+
   /// True if a Liu Ren Pan is currently being calculated or fetched.
   final bool isLoadingPan;
+
   /// True if a Yu Ding Entry is currently being fetched.
   final bool isLoadingYuDing;
+
   /// The current Liu Ren Pan data, if available.
   final LiuRenPan? liuRenPan;
+
   /// The current Yu Ding Entry data, if available.
   final YuDingEntry? yuDingEntry;
+
   /// Holds any error that occurred during operations.
   final Failure? error;
+
   /// True if the database has been successfully initialized.
   final bool isDbInitialized;
 
@@ -81,9 +87,9 @@ class MyHomePageViewModel with ChangeNotifier {
     required CalculateLiuRenPanUseCase calculateLiuRenPanUseCase,
     required GetYuDingEntryUseCase getYuDingEntryUseCase,
     required InitializeDatabaseUseCase initializeDatabaseUseCase,
-  }) : _calculateLiuRenPanUseCase = calculateLiuRenPanUseCase,
-       _getYuDingEntryUseCase = getYuDingEntryUseCase,
-       _initializeDatabaseUseCase = initializeDatabaseUseCase {
+  })  : _calculateLiuRenPanUseCase = calculateLiuRenPanUseCase,
+        _getYuDingEntryUseCase = getYuDingEntryUseCase,
+        _initializeDatabaseUseCase = initializeDatabaseUseCase {
     // Set initial state to indicate database initialization is in progress.
     _state = MyHomePageState(isInitializing: true);
     notifyListeners(); // Notify UI about the initial loading state.
@@ -94,14 +100,13 @@ class MyHomePageViewModel with ChangeNotifier {
   /// Updates the state based on the success or failure of the initialization.
   Future<void> _initialize() async {
     final result = await _initializeDatabaseUseCase.call(NoParams());
-    result.fold(
-      (failure) {
-        _state = _state.copyWith(isInitializing: false, error: failure, isDbInitialized: false);
-      },
-      (_) {
+    switch (result) {
+      case Left(value: final failure):
+        _state = _state.copyWith(
+            isInitializing: false, error: failure, isDbInitialized: false);
+      case Right(value: final _):
         _state = _state.copyWith(isInitializing: false, isDbInitialized: true);
-      },
-    );
+    }
     notifyListeners(); // Notify UI of the outcome.
   }
 
@@ -109,18 +114,23 @@ class MyHomePageViewModel with ChangeNotifier {
   /// Also fetches the corresponding Yu Ding entry upon successful pan retrieval.
   Future<void> getPanByTime(DateTime dateTime) async {
     // Set loading state and clear previous pan/error data.
-    _state = _state.copyWith(isLoadingPan: true, clearLiuRenPan: true, clearYuDingEntry: true, clearError: true);
+    _state = _state.copyWith(
+        isLoadingPan: true,
+        clearLiuRenPan: true,
+        clearYuDingEntry: true,
+        clearError: true);
     notifyListeners();
 
     final panInput = PanInput.byTime(dateTime: dateTime);
     final result = await _calculateLiuRenPanUseCase.call(panInput);
 
     // Process the result of the pan calculation.
-    await result.fold(
-      (failure) async { // Left side: Failure
+    switch (result) {
+      case Left(value: final failure):
+        // Left side: Failure
         _state = _state.copyWith(isLoadingPan: false, error: failure);
-      },
-      (pan) async { // Right side: Success (LiuRenPan)
+      case Right(value: final pan):
+        // Right side: Success (LiuRenPan)
         _state = _state.copyWith(isLoadingPan: false, liuRenPan: pan);
         // If pan calculation is successful and pan data is available,
         // attempt to fetch the corresponding Yu Ding entry.
@@ -130,8 +140,7 @@ class MyHomePageViewModel with ChangeNotifier {
           final String ganShangDiZhiName = pan.fourClasses[0].sky.name;
           await _fetchYuDingEntry(dayJiaZiName, ganShangDiZhiName);
         }
-      },
-    );
+    }
     notifyListeners(); // Notify UI of the final state after all operations.
   }
 
@@ -145,7 +154,11 @@ class MyHomePageViewModel with ChangeNotifier {
     String? yinYangDun, // Expected as String (e.g., "YANG", "YIN") from UI
     int? juNumber,
   }) async {
-    _state = _state.copyWith(isLoadingPan: true, clearLiuRenPan: true, clearYuDingEntry: true, clearError: true);
+    _state = _state.copyWith(
+        isLoadingPan: true,
+        clearLiuRenPan: true,
+        clearYuDingEntry: true,
+        clearError: true);
     notifyListeners();
 
     final panInput = PanInput.byGanZhi(
@@ -158,11 +171,10 @@ class MyHomePageViewModel with ChangeNotifier {
     );
     final result = await _calculateLiuRenPanUseCase.call(panInput);
 
-    await result.fold(
-      (failure) async {
+    switch (result) {
+      case Left(value: final failure):
         _state = _state.copyWith(isLoadingPan: false, error: failure);
-      },
-      (pan) async {
+      case Right(value: final pan):
         _state = _state.copyWith(isLoadingPan: false, liuRenPan: pan);
         // Similar to getPanByTime, fetch YuDingEntry if pan is successful.
         if (pan.fourClasses.isNotEmpty) {
@@ -170,8 +182,7 @@ class MyHomePageViewModel with ChangeNotifier {
           final String ganShangDiZhiName = pan.fourClasses[0].sky.name;
           await _fetchYuDingEntry(dayJiaZiName, ganShangDiZhiName);
         }
-      },
-    );
+    }
     notifyListeners();
   }
 
@@ -182,18 +193,17 @@ class MyHomePageViewModel with ChangeNotifier {
     _state = _state.copyWith(isLoadingYuDing: true, clearError: true);
     notifyListeners(); // Notify UI that YuDing fetching has started.
 
-    final params = GetYuDingEntryUseCaseParams(dayJiaZi: dayJiaZi, ganShangDiZhi: ganShangDiZhi);
+    final params = GetYuDingEntryUseCaseParams(
+        dayJiaZi: dayJiaZi, ganShangDiZhi: ganShangDiZhi);
     final result = await _getYuDingEntryUseCase.call(params);
 
-    result.fold(
-      (failure) {
+    switch (result) {
+      case Left(value: final failure):
         // If YuDing fetching fails, update error state but keep the successfully loaded LiuRenPan.
         _state = _state.copyWith(isLoadingYuDing: false, error: failure);
-      },
-      (entry) {
+      case Right(value: final entry):
         _state = _state.copyWith(isLoadingYuDing: false, yuDingEntry: entry);
-      },
-    );
+    }
     // The final notifyListeners() is typically called by the public methods (getPanByTime/getPanByGanZhi)
     // after all operations (pan + yuding) are complete. If this method were public or needed
     // immediate independent UI updates, a notifyListeners() call would be here.
@@ -203,12 +213,12 @@ class MyHomePageViewModel with ChangeNotifier {
   /// Resets loading flags and errors.
   void clearPan() {
     _state = _state.copyWith(
-      isLoadingPan: false,
-      isLoadingYuDing: false,
-      clearLiuRenPan: true,
-      clearYuDingEntry: true,
-      clearError: true // Clears any existing errors.
-    );
+        isLoadingPan: false,
+        isLoadingYuDing: false,
+        clearLiuRenPan: true,
+        clearYuDingEntry: true,
+        clearError: true // Clears any existing errors.
+        );
     notifyListeners();
   }
 }

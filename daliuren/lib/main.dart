@@ -4,7 +4,7 @@ import 'package:daliuren/di/service_locator.dart'; // Import the GetIt service l
 import 'package:daliuren/presentation/viewmodels/my_home_viewmodel.dart'; // ViewModel for MyHomePage
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // For providing ViewModel to the widget tree
-import './pages/my_home_page.dart';     // The main page of the application
+import 'presentation/pages/my_home_page.dart'; // The main page of the application
 
 /// Main entry point of the application.
 /// Initializes WidgetsFlutterBinding, sets up the service locator,

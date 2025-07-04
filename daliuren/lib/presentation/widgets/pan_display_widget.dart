@@ -30,25 +30,31 @@ class PanDisplayWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("排盘时间: ${liuRenPan!.panDateTime.toIso8601String()}", style: Theme.of(context).textTheme.titleMedium),
+          Text("排盘时间: ${liuRenPan!.panDateTime?.toIso8601String()}",
+              style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text("日干支: ${liuRenPan!.dayGanZhi}"),
           Text("时干支: ${liuRenPan!.timeGanZhi}"),
           Text("月将: ${liuRenPan!.yueJiangName}"),
           Text("贵人: ${liuRenPan!.guiRenType}"),
           const SizedBox(height: 16),
-          Text("课体: ${liuRenPan!.lessonsTitle} - ${liuRenPan!.keTi.join(', ')}"),
+          Text("课体: ${liuRenPan!.keTiComplement.join(', ')}"),
           const SizedBox(height: 16),
-          const Text("天地盘 (Placeholder):", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text("天地盘 (Placeholder):",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           // Iterate over liuRenPan.heavenPlate and earthPlate to display them
           const SizedBox(height: 16),
-          const Text("四课 (Placeholder):", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text("四课 (Placeholder):",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           // Iterate over liuRenPan.fourClasses
-          ...liuRenPan!.fourClasses.map((ke) => Text(" - ${ke.toString()}")), // Replace with actual widget
+          ...liuRenPan!.fourClasses.map((ke) =>
+              Text(" - ${ke.toString()}")), // Replace with actual widget
           const SizedBox(height: 16),
-          const Text("三传 (Placeholder):", style: TextStyle(fontWeight: FontWeight.bold)),
+          const Text("三传 (Placeholder):",
+              style: TextStyle(fontWeight: FontWeight.bold)),
           // Iterate over liuRenPan.threeChuans
-          ...liuRenPan!.threeChuans.map((chuan) => Text(" - ${chuan.toString()}")), // Replace with actual widget
+          ...liuRenPan!.threeChuans.map((chuan) =>
+              Text(" - ${chuan.toString()}")), // Replace with actual widget
         ],
       ),
     );

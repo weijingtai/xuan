@@ -30,11 +30,14 @@ class EachChuanDataModel {
   Map<String, dynamic> toJson() => _$EachChuanDataModelToJson(this);
 
   static String _diZhiToJson(DiZhi diZhi) => diZhi.name;
-  static DiZhi _diZhiFromJson(String name) => DiZhi.values.firstWhere((e) => e.name == name);
+  static DiZhi _diZhiFromJson(String name) =>
+      DiZhi.values.firstWhere((e) => e.name == name);
 
   static String? _tianGanToJsonNullable(TianGan? gan) => gan?.name;
-  static TianGan? _tianGanFromJsonNullable(String? name) => name == null ? null : TianGan.values.firstWhere((e) => e.name == name);
+  static TianGan? _tianGanFromJsonNullable(String? name) =>
+      name == null ? null : TianGan.values.firstWhere((e) => e.name == name);
 
-  static String _liuQinToJson(LiuQinqin liuQin) => liuQin.name;
-  static LiuQin _liuQinFromJson(String name) => LiuQin.values.firstWhere((e) => e.name == name);
+  static String _liuQinToJson(LiuQin liuQin) => liuQin.name;
+  static LiuQin _liuQinFromJson(String name) =>
+      LiuQin.values.firstWhere((e) => e.name == name);
 }

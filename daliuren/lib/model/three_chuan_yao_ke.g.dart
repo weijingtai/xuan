@@ -19,12 +19,13 @@ ThreeChuanYaoKe _$ThreeChuanYaoKeFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$ThreeChuanYaoKeToJson(ThreeChuanYaoKe instance) =>
     <String, dynamic>{
       'nineZongMen': _$NineZongMenEnumMap[instance.nineZongMen]!,
-      'first': instance.first,
-      'second': instance.second,
-      'third': instance.third,
-      'type': _$YaoKeTypeEnumMap[instance.type],
-      'isBiYong': instance.isBiYong,
-      'sheHaiType': _$SheHaiTypeEnumMap[instance.sheHaiType],
+      'first': instance.first.toJson(),
+      'second': instance.second.toJson(),
+      'third': instance.third.toJson(),
+      if (_$YaoKeTypeEnumMap[instance.type] case final value?) 'type': value,
+      if (instance.isBiYong case final value?) 'isBiYong': value,
+      if (_$SheHaiTypeEnumMap[instance.sheHaiType] case final value?)
+        'sheHaiType': value,
     };
 
 const _$YaoKeTypeEnumMap = {
@@ -49,5 +50,6 @@ const _$NineZongMenEnumMap = {
   NineZongMen.BIE_ZE: '别责',
   NineZongMen.BA_ZHUAN: '八专',
   NineZongMen.FU_YIN: '伏吟',
-  NineZongMen.FAN_YIN: '反吟',
+  NineZongMen.FAN_YIN: '返吟',
+  NineZongMen.UNKNOWN: '未知',
 };

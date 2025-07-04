@@ -8,33 +8,33 @@ class YuDingEntry {
   final String title;
 
   /// Main textual body of the interpretation.
-  final List<String> 原文;
+  final List<String> raw; // 原文
 
   /// Explanation of the lesson/divination type (课义).
-  final String 課義;
+  final String meaning;
 
   /// General explanation or solution (解曰).
-  final String 解曰;
+  final String explanation;
 
   /// Predictive judgment or assertion (断曰).
-  final String 斷曰;
+  final String perdiction;
 
   /// Miscellaneous divinations or specific topic interpretations (杂占).
   /// Example: `{"出行": "宜出行，见贵人", "求财": "难遂"}`
-  final Map<String, String> 杂占;
+  final Map<String, String> otherDetails;
 
   /// References to classic texts or sources for this interpretation (经典).
   /// Example: `{"毕法赋": "云云...", "指要": "如此..."}`
-  final Map<String, String> 经典;
+  final Map<String, String> ancientsBookTextMapper;
 
   YuDingEntry({
     required this.title,
-    required this.原文,
-    required this.課義,
-    required this.解曰,
-    required this.斷曰,
-    required this.杂占,
-    required this.经典,
+    required this.raw,
+    required this.meaning,
+    required this.explanation,
+    required this.perdiction,
+    required this.otherDetails,
+    required this.ancientsBookTextMapper,
   });
 
   // Consider Equatable

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
-import 'pages/dev.dart';
-import 'pages/my_home_page.dart';
+import 'presentation/pages/dev.dart';
+import 'presentation/pages/my_home_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =

@@ -39,7 +39,7 @@ dependencies:
 
   fpdart: ^2.0.0-dev.3
   lunar: ^1.7.3
-  json_serializable: ^6.8.0
+
   json_annotation: ^4.9.0
   board_datetime_picker: 2.1.0
   flutter_sliding_toast: ^1.4.2
@@ -48,16 +48,17 @@ dependencies:
 
   # MVVM and State Management
   provider: ^6.1.2
-  get_it: ^7.7.0 # Added get_it for Service Location
+  get_it: ^8.0.3 # Added get_it for Service Location
 
   # Database
-  drift: ^2.18.0 # Added drift runtime
   sqlite3_flutter_libs: ^0.5.22 # For Android/iOS, if using native sqlite
   path_provider: ^2.1.3 # For finding db path
   path: ^1.9.0 # For path manipulation
 
   # Code generators (usually in dev_dependencies, but drift_dev was in dependencies)
-  drift_dev: ^2.18.0 # Keep version consistent with drift
+  mockito: ^5.4.6
+  drift: ^2.26.0
+  drift_flutter: ^0.2.4
 
 
 
@@ -66,6 +67,9 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^2.0.0
   build_runner: ^2.4.11 # Stays in dev_dependencies
+  drift_dev: ^2.18.0 # Keep version consistent with drift
+  # analyzer: ^7.5.4  # 使用兼容的 analyzer 版本
+  json_serializable: ^6.9.5
   # json_serializable is already here, ensure it's up-to-date if needed.
 
 # For information on the generic Dart part of this file, see the

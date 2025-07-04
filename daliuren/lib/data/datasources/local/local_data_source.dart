@@ -16,13 +16,16 @@ const String _dbInitializedFlagKey = 'isAssetDataLoaded_v1';
 /// Defines methods for interacting with locally stored data (via Drift).
 abstract class LiuRenLocalDataSource {
   /// Retrieves a Ju Mapping entry from the local database.
-  Future<JuMappingEntryDb?> getJuMapping(String dayJiaZiName, String timeDiZhiName, String yinYangValue);
+  // Future<JuMappingEntryDb?> getJuMapping(
+  //     String dayJiaZiName, String timeDiZhiName, String yinYangValue);
 
   /// Retrieves a Yu Ding Da Liu Ren entry from the local database.
-  Future<YuDingEntryDb?> getYuDingEntry(String dayJiaZiName, String ganShangJuName);
+  // Future<YuDingEntryDb?> getYuDingEntry(
+  //     String dayJiaZiName, String ganShangJuName);
 
   /// Retrieves a preset Liu Ren Pan from the local database.
-  Future<PresetPanEntryDb?> getPresetPan(String dayJiaZiName, String shiChenName, String yinYangDun);
+  Future<PresetPanEntryDb?> getPresetPan(
+      String dayJiaZiName, String shiChenName, String yinYangDun);
 
   /// Checks if the database has been initialized with data from assets.
   Future<bool> isDatabaseInitialized();
@@ -35,7 +38,8 @@ abstract class LiuRenLocalDataSource {
   Future<void> bulkInsertInitialData({
     required List<JuMappingDataModel> juMappings,
     required List<YuDingDaLiuRenDataModel> yuDingEntries,
-    required List<DaLiuRenPanDataModel> presetPans, // Assumes this list contains both Yang and Yin pans, differentiated by a field within DaLiuRenPanDataModel.
+    required List<DaLiuRenPanDataModel>
+        presetPans, // Assumes this list contains both Yang and Yin pans, differentiated by a field within DaLiuRenPanDataModel.
   });
 
   /// Clears all Liu Ren related data from the local database.
@@ -47,12 +51,14 @@ abstract class LiuRenLocalDataSource {
 class LiuRenLocalDataSourceImpl implements LiuRenLocalDataSource {
   final LiuRenDao _liuRenDao;
 
-  LiuRenLocalDataSourceImpl({required LiuRenDao liuRenDao}) : _liuRenDao = liuRenDao;
+  LiuRenLocalDataSourceImpl({required LiuRenDao liuRenDao})
+      : _liuRenDao = liuRenDao;
 
   @override
   Future<bool> isDatabaseInitialized() async {
     final flag = await _liuRenDao.getInitializationFlag(_dbInitializedFlagKey);
-    return flag?.isSet ?? false; // If flag doesn't exist or isSet is null, assume not initialized.
+    return flag?.isSet ??
+        false; // If flag doesn't exist or isSet is null, assume not initialized.
   }
 
   @override
@@ -82,12 +88,16 @@ class LiuRenLocalDataSourceImpl implements LiuRenLocalDataSource {
     // Convert YuDingDaLiuRenDataModel list to List<YuDingEntriesCompanion>.
     final yuDingCompanions = yuDingEntries.map((model) {
       return YuDingEntriesCompanion.insert(
-        dayJiaZiName: model.dayJiaZi.name, // Assumes enum has a .name property for string storage
-        juName: model.juName.name,         // Assumes enum has a .name property
+        dayJiaZiName: model.dayJiaZi
+            .name, // Assumes enum has a .name property for string storage
+        juName: model.juName.name, // Assumes enum has a .name property
         juNumber: model.juNumber,
-        detailsJson: model.details,        // TypeConverter handles Map<String,String> to JSON String
-        booksJson: model.books,            // TypeConverter handles Map<String,String> to JSON String
-        bodyJson: model.body,              // TypeConverter handles Set<String> to JSON String
+        detailsJson: model
+            .details, // TypeConverter handles Map<String,String> to JSON String
+        booksJson: model
+            .books, // TypeConverter handles Map<String,String> to JSON String
+        bodyJson:
+            model.body, // TypeConverter handles Set<String> to JSON String
         meaning: model.meaning,
         explain: model.explain,
         predication: model.predication,
@@ -108,21 +118,25 @@ class LiuRenLocalDataSourceImpl implements LiuRenLocalDataSource {
         shiChenName: model.shiChen.name,
         yinYangDun: model.yinYangDun.name, // Uses the name of the YinYang enum
         juNumberName: model.juNumberName,
-        heavenPlateJson: model.heavenPlate, // TypeConverter handles complex Map
-        earthPlateJson: model.earthPlate,   // TypeConverter handles complex Map
-        fourClassJson: model.fourClass,     // TypeConverter handles FourClassDataModel
-        threeChuanJson: model.threeChuan,   // TypeConverter handles ThreeChuanDataModel
-        nineZongMenName: model.nineZongMenName.name, // Uses the name of the NineZongMen enum
+        // heavenPlateJson: model.heavenPlate, // TypeConverter handles complex Map
+        // earthPlateJson: model.earthPlate, // TypeConverter handles complex Map
+        fourClassJson:
+            model.fourClass, // TypeConverter handles FourClassDataModel
+        threeChuanJson:
+            model.threeChuan, // TypeConverter handles ThreeChuanDataModel
+        nineZongMenName:
+            model.nineZongMenName.name, // Uses the name of the NineZongMen enum
       );
     }).toList();
-     if (presetPanCompanions.isNotEmpty) {
+    if (presetPanCompanions.isNotEmpty) {
       await _liuRenDao.bulkInsertPresetPans(presetPanCompanions);
     }
     print("LocalDataSource: Bulk data insertion complete.");
   }
 
   @override
-  Future<JuMappingEntryDb?> getJuMapping(String dayJiaZiName, String timeDiZhiName, String yinYangValue) {
+  Future<JuMappingEntryDb?> getJuMapping(
+      String dayJiaZiName, String timeDiZhiName, String yinYangValue) {
     return _liuRenDao.findJuMapping(
       dayJiaZiName: dayJiaZiName,
       timeDiZhiName: timeDiZhiName,
@@ -131,7 +145,8 @@ class LiuRenLocalDataSourceImpl implements LiuRenLocalDataSource {
   }
 
   @override
-  Future<YuDingEntryDb?> getYuDingEntry(String dayJiaZiName, String ganShangJuName) {
+  Future<YuDingEntryDb?> getYuDingEntry(
+      String dayJiaZiName, String ganShangJuName) {
     return _liuRenDao.findYuDingEntry(
       dayJiaZiName: dayJiaZiName,
       juName: ganShangJuName,
@@ -139,7 +154,8 @@ class LiuRenLocalDataSourceImpl implements LiuRenLocalDataSource {
   }
 
   @override
-  Future<PresetPanEntryDb?> getPresetPan(String dayJiaZiName, String shiChenName, String yinYangDun) {
+  Future<PresetPanEntryDb?> getPresetPan(
+      String dayJiaZiName, String shiChenName, String yinYangDun) {
     return _liuRenDao.findPresetPan(
       dayJiaZiName: dayJiaZiName,
       shiChenName: shiChenName,

@@ -6,16 +6,17 @@
 
 import 'package:get_it/get_it.dart'; // The get_it package
 import 'package:daliuren/data/datasources/local/drift_database.dart'; // Database class
-import 'package:daliuren/data/datasources/local/dao/liuren_dao.dart'; // Data Access Object
 import 'package:daliuren/data/datasources/local/local_data_source.dart'; // Local Data Source
 // import 'package:daliuren/data/datasources/remote/remote_data_source.dart'; // Placeholder for Remote Data Source
 import 'package:daliuren/data/repositories/liuren_repository_impl.dart'; // Repository Implementation
-import 'package:daliuren/domain/repositories/liuren_repository.dart';    // Repository Interface
+import 'package:daliuren/domain/repositories/liuren_repository.dart'; // Repository Interface
 import 'package:daliuren/domain/usecases/initialize_database_usecase.dart'; // Use Cases
 import 'package:daliuren/domain/usecases/calculate_liuren_pan_usecase.dart';
 import 'package:daliuren/domain/usecases/get_yuding_entry_usecase.dart';
 import 'package:daliuren/domain/services/liuren_calculation_service.dart'; // Domain Service
-import 'package:daliuren/presentation/viewmodels/my_home_viewmodel.dart';   // ViewModel
+import 'package:daliuren/presentation/viewmodels/my_home_viewmodel.dart';
+
+import '../data/datasources/local/dao/liuren_dao.dart'; // ViewModel
 
 /// Global GetIt instance, used as a Service Locator.
 final sl = GetIt.instance;
@@ -30,11 +31,12 @@ Future<void> setupServiceLocator() async {
   // --- Database ---
   // Register AppDatabase as a lazy singleton, so it's created only when first needed
   // and a single instance is shared throughout the app.
-  sl.registerLazySingleton<AppDatabase>(() => AppDatabase());
+  sl.registerLazySingleton<DaLiuRenAppDatabase>(() => DaLiuRenAppDatabase());
 
   // Register LiuRenDao as a lazy singleton. It depends on AppDatabase.
   // DAOs are typically tied to a database instance.
-  sl.registerLazySingleton<LiuRenDao>(() => LiuRenDao(sl<AppDatabase>()));
+  sl.registerLazySingleton<LiuRenDao>(
+      () => LiuRenDao(sl<DaLiuRenAppDatabase>()));
 
   // --- Data sources ---
   // Register LiuRenLocalDataSource implementation, dependent on LiuRenDao.
@@ -62,8 +64,10 @@ Future<void> setupServiceLocator() async {
   // --- Use cases ---
   // Use cases are typically stateless and depend on repositories or services.
   // Lazy singletons are often suitable.
-  sl.registerLazySingleton(() => InitializeDatabaseUseCase(sl<LiuRenRepository>()));
-  sl.registerLazySingleton(() => CalculateLiuRenPanUseCase(sl<LiuRenRepository>()));
+  sl.registerLazySingleton(
+      () => InitializeDatabaseUseCase(sl<LiuRenRepository>()));
+  sl.registerLazySingleton(
+      () => CalculateLiuRenPanUseCase(sl<LiuRenRepository>()));
   // Alternative for CalculateLiuRenPanUseCase if it directly used LiuRenCalculationService:
   // sl.registerLazySingleton(() => CalculateLiuRenPanUseCase(repository: sl<LiuRenRepository>(), calculationService: sl<LiuRenCalculationService>()));
   sl.registerLazySingleton(() => GetYuDingEntryUseCase(sl<LiuRenRepository>()));

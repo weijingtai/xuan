@@ -1,6 +1,6 @@
 // lib/core/usecase/usecase.dart
 
-import 'package:fpdart/fpdart.dart';
+import 'package:fpdart/fpdart.dart' hide Failure;
 import '../errors/failures.dart';
 
 // Parameters have to be Equatable for value comparison

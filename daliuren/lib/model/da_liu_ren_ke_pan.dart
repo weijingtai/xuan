@@ -1,16 +1,18 @@
 import 'package:common/enums.dart';
 import 'package:daliuren/model/da_liu_ren_gong.dart';
-import 'package:daliuren/model/enum_gui_ren.dart';
-import 'package:daliuren/model/enum_nine_zong_men.dart';
 import 'package:daliuren/model/three_chuan.dart';
-import 'package:daliuren/model/three_chuan_detail_type.dart';
 import 'package:daliuren/model/three_chuan_she_hai.dart';
 import 'package:daliuren/model/three_chuan_yao_ke.dart';
 import 'package:daliuren/model/three_chuan_zei_ke.dart';
-import 'package:daliuren/model/zei_key_type.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:tuple/tuple.dart';
 
+import '../domain/enums/each_class_zei_ke_type.dart';
+import '../domain/enums/gui_ren.dart';
+import '../domain/enums/nine_zong_men.dart';
+import '../domain/enums/she_hai_type.dart';
+import '../domain/enums/yao_ke_type.dart';
+import '../domain/enums/zei_ke_type.dart';
 import 'da_liu_ren_panel.dart';
 import 'each_chuan.dart';
 import 'each_class.dart';
