@@ -10,6 +10,7 @@ import 'package:qimendunjia/model/each_gong.dart';
 import 'package:qimendunjia/model/each_gong_wang_shuai.dart';
 import 'package:qimendunjia/model/pan_arrange_settings.dart';
 import 'package:qimendunjia/model/shi_jia_qi_men.dart';
+import 'package:qimendunjia/utils/constant_resources_of_qi_men.dart';
 import 'package:qimendunjia/utils/qi_men_ju_calculator.dart';
 
 void main() {

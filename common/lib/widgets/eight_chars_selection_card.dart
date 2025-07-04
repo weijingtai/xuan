@@ -1,9 +1,9 @@
+import 'package:common/shared/shared.dart';
 import 'package:common/widgets/query_time_input_card.dart';
 import 'package:common/widgets/responseive_datetime_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../enums/enum_jia_zi.dart';
 import '../models/divination_datetime.dart';
 import '../models/eight_chars.dart';
 

@@ -1,4 +1,4 @@
-import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/shared/shared.dart';
 import 'package:lunar/lunar.dart';
 import 'package:tuple/tuple.dart';
 import '../../datamodel/base_divination_datetime_datamodel.dart';

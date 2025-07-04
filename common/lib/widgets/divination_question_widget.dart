@@ -1,9 +1,8 @@
+import 'package:common/shared/shared.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:slide_switcher/slide_switcher.dart';
 
-import '../enums/enum_gender.dart';
-import '../enums/enum_jia_zi.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 
 class DivinationQuestionWidget extends StatefulWidget {
@@ -213,7 +212,8 @@ class _DivinationQuestionWidgetState extends State<DivinationQuestionWidget>
                 return InkWell(
                   borderRadius: BorderRadius.circular(12),
                   onTap: () {
-                    showJiaZiPicker(context, jiaZi, JiaZi.values).then((value) {
+                    showJiaZiPicker(context, jiaZi, JiaZi.values)
+                        .then((JiaZi? value) {
                       _selectedYearJiaZiNotifier.value = value;
                     });
                   },

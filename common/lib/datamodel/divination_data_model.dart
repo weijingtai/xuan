@@ -3,7 +3,6 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:common/enums.dart';
 import 'package:common/models/divination_datetime.dart';
-import 'package:common/enums/enum_gender.dart';
 
 import '../database/app_database.dart';
 

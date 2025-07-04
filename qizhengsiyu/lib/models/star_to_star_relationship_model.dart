@@ -1,7 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:flutter/foundation.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 

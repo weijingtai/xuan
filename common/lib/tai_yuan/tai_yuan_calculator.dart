@@ -1,5 +1,5 @@
 import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
-import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/shared/shared.dart';
 import 'tai_yuan_model.dart';
 import 'enum_calculate_strategy.dart';
 
