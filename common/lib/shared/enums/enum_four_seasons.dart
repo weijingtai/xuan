@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'enum_di_zhi.dart';
+
 enum FourSeasons {
   @JsonValue("春")
   SPRING(0, "春"),
@@ -19,5 +21,24 @@ enum FourSeasons {
   // get by name
   static FourSeasons fromName(String name) {
     return values.firstWhere((e) => e.name == name);
+  }
+
+  static FourSeasons getFourSeason(DiZhi monthDiZhi) {
+    switch (monthDiZhi) {
+      case DiZhi.ZI:
+      case DiZhi.HAI:
+        return FourSeasons.WINTER;
+      case DiZhi.YIN:
+      case DiZhi.MAO:
+        return FourSeasons.SPRING;
+      case DiZhi.WU:
+      case DiZhi.WEI:
+        return FourSeasons.SUMMER;
+      case DiZhi.SHEN:
+      case DiZhi.YOU:
+        return FourSeasons.AUTUMN;
+      default:
+        return FourSeasons.EARTH;
+    }
   }
 }
