@@ -6,7 +6,6 @@ import 'package:fpdart/fpdart.dart' hide Failure; // For Either type
 import 'package:daliuren/core/errors/failures.dart'; // For Failure type
 import '../entities/liu_ren_pan_model.dart'; // Domain entity for Liu Ren Pan
 import '../entities/yuding_entry.dart'; // Domain entity for Yu Ding interpretations
-import '../entities/pan_input.dart'; // Input object for pan calculation
 
 /// Abstract interface for the Liu Ren data repository.
 /// Defines the contract for data operations related to Liu Ren divination,

@@ -7,13 +7,10 @@
 import 'package:get_it/get_it.dart'; // The get_it package
 import 'package:daliuren/data/datasources/local/database/drift_database.dart'; // Database class
 import 'package:daliuren/data/datasources/local/database/local_data_source.dart'; // Local Data Source
-// import 'package:daliuren/data/datasources/remote/remote_data_source.dart'; // Placeholder for Remote Data Source
-import 'package:daliuren/data/repositories/liuren_repository_impl.dart'; // Repository Implementation
 import 'package:daliuren/domain/repositories/liuren_repository.dart'; // Repository Interface
 import 'package:daliuren/domain/usecases/initialize_database_usecase.dart'; // Use Cases
 import 'package:daliuren/domain/usecases/calculate_liuren_pan_usecase.dart';
 import 'package:daliuren/domain/usecases/get_yuding_entry_usecase.dart';
-import 'package:daliuren/domain/services/liuren_calculation_service.dart'; // Domain Service
 import 'package:daliuren/domain/services/shen_sha_calculation_service.dart'; // 神煞计算服务
 import 'package:daliuren/domain/services/shen_sha_calculation_service_impl.dart'; // 神煞计算服务实现
 import 'package:daliuren/data/services/shen_sha_data_service_impl.dart'; // 神煞数据服务实现
@@ -53,23 +50,22 @@ Future<void> setupServiceLocator() async {
 
   // --- Repository ---
   // Register LiuRenRepository implementation, dependent on data sources.
-  sl.registerLazySingleton<LiuRenRepository>(() => LiuRenRepositoryImpl(
-        localDataSource: sl<LiuRenLocalDataSource>(),
-        // remoteDataSource: sl<LiuRenRemoteDataSource>(), // Uncomment if remote source is used
-        // networkInfo: sl<NetworkInfo>(), // Uncomment if network checks are needed
-      ));
+  // sl.registerLazySingleton<LiuRenRepository>(() => LiuRenRepositoryImpl(
+  //   localDataSource: sl<LiuRenLocalDataSource>(),
+  //   // remoteDataSource: sl<LiuRenRemoteDataSource>(), // Uncomment if remote source is used
+  //   // networkInfo: sl<NetworkInfo>(), // Uncomment if network checks are needed
+  // ));
 
   // --- Domain Services ---
   // Register LiuRenCalculationService. This is a placeholder implementation.
   // Lazy singleton is appropriate as it's likely stateless or its state is managed internally.
-  sl.registerLazySingleton<LiuRenCalculationService>(
-      () => LiuRenCalculationServiceImpl());
+  // sl.registerLazySingleton<LiuRenCalculationService>(
+  //     () => LiuRenCalculationServiceImpl());
 
   // Register 神煞 related services
-  sl.registerLazySingleton<ShenShaDataService>(
-      () => ShenShaDataServiceImpl());
-  sl.registerLazySingleton<ShenShaCalculationService>(
-      () => ShenShaCalculationServiceImpl(dataService: sl<ShenShaDataService>()));
+  sl.registerLazySingleton<ShenShaDataService>(() => ShenShaDataServiceImpl());
+  sl.registerLazySingleton<ShenShaCalculationService>(() =>
+      ShenShaCalculationServiceImpl(dataService: sl<ShenShaDataService>()));
 
   // --- Use cases ---
   // Use cases are typically stateless and depend on repositories or services.
@@ -81,11 +77,14 @@ Future<void> setupServiceLocator() async {
   // Alternative for CalculateLiuRenPanUseCase if it directly used LiuRenCalculationService:
   // sl.registerLazySingleton(() => CalculateLiuRenPanUseCase(repository: sl<LiuRenRepository>(), calculationService: sl<LiuRenCalculationService>()));
   sl.registerLazySingleton(() => GetYuDingEntryUseCase(sl<LiuRenRepository>()));
-  
+
   // Register 神煞 use cases
-  sl.registerLazySingleton(() => CalculateShenShaUseCase(sl<ShenShaCalculationService>()));
-  sl.registerLazySingleton(() => GetShenShaAtLocationUseCase(sl<ShenShaCalculationService>()));
-  sl.registerLazySingleton(() => FindShenShaByNameUseCase(sl<ShenShaCalculationService>()));
+  sl.registerLazySingleton(
+      () => CalculateShenShaUseCase(sl<ShenShaCalculationService>()));
+  sl.registerLazySingleton(
+      () => GetShenShaAtLocationUseCase(sl<ShenShaCalculationService>()));
+  sl.registerLazySingleton(
+      () => FindShenShaByNameUseCase(sl<ShenShaCalculationService>()));
 
   // --- ViewModels (or BloCs/Cubits using flutter_bloc) ---
   // ViewModels (like those using ChangeNotifier) are often registered as factories.
@@ -96,7 +95,8 @@ Future<void> setupServiceLocator() async {
   sl.registerFactory(() => MyHomePageViewModel(
         initializeDatabaseUseCase: sl<InitializeDatabaseUseCase>(),
         calculateLiuRenPanUseCase: sl<CalculateLiuRenPanUseCase>(),
-        getYuDingEntryUseCase: sl<GetYuDingEntryUseCase>(),
+        calculateShenShaUseCase: sl<CalculateShenShaUseCase>(),
+        // getYuDingEntryUseCase: sl<GetYuDingEntryUseCase>(),
         // If ViewModel needed the calculation service directly (less common if use cases handle orchestration):
         // liuRenCalculationService: sl<LiuRenCalculationService>(),
       ));
