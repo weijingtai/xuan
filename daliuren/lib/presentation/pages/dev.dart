@@ -2,13 +2,11 @@ import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/widgets/const_ui_resources_mapper.dart';
-import 'package:daliuren/model/each_class.dart';
-import 'package:daliuren/model/first_class.dart';
-import 'package:daliuren/model/four_class.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../domain/enums/gui_ren.dart';
+import '../../model/da_liu_ren_ke_pan.dart';
 
 class DevMyWidget extends StatefulWidget {
   const DevMyWidget({super.key});

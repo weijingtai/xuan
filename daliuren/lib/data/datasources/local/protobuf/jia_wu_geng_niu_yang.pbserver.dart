@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: resources/jia_wu_geng_niu_yang.proto
+//  source: jia_wu_geng_niu_yang.proto
 //
 // @dart = 3.3
 

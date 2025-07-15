@@ -9,7 +9,7 @@ class NavigatorGenerator {
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    "/daliuren": (context, {arguments}) => const MyHomePage(
+    "/daliuren": (context, {arguments}) => HomePage(
           title: "大六壬",
         ),
     "/daliuren/dev": (context, {arguments}) => const DevMyWidget()

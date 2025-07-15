@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: resources/jia_wu_geng_niu_yang.proto
+//  source: jia_wu_geng_niu_yang.proto
 //
 // @dart = 3.3
 
@@ -20,9 +20,10 @@ const XuanDaLiuRenData$json = {
     {'1': 'day_jia_zi', '3': 1, '4': 1, '5': 9, '10': 'dayJiaZi'},
     {'1': 'shi_chen', '3': 2, '4': 1, '5': 9, '10': 'shiChen'},
     {'1': 'ju_number_name', '3': 3, '4': 1, '5': 9, '10': 'juNumberName'},
-    {'1': 'four_class', '3': 4, '4': 1, '5': 11, '6': '.xuan_daliuren.FourClass', '10': 'fourClass'},
-    {'1': 'three_chuan', '3': 5, '4': 1, '5': 11, '6': '.xuan_daliuren.ThreeChuan', '10': 'threeChuan'},
-    {'1': 'gong_mapper', '3': 6, '4': 3, '5': 11, '6': '.xuan_daliuren.XuanDaLiuRenData.GongMapperEntry', '10': 'gongMapper'},
+    {'1': 'ju_number', '3': 4, '4': 1, '5': 5, '10': 'juNumber'},
+    {'1': 'four_class', '3': 5, '4': 1, '5': 11, '6': '.xuan_daliuren.FourClass', '10': 'fourClass'},
+    {'1': 'three_chuan', '3': 6, '4': 1, '5': 11, '6': '.xuan_daliuren.ThreeChuan', '10': 'threeChuan'},
+    {'1': 'gong_mapper', '3': 7, '4': 3, '5': 11, '6': '.xuan_daliuren.XuanDaLiuRenData.GongMapperEntry', '10': 'gongMapper'},
   ],
   '3': [XuanDaLiuRenData_GongMapperEntry$json],
 };
@@ -41,12 +42,12 @@ const XuanDaLiuRenData_GongMapperEntry$json = {
 final $typed_data.Uint8List xuanDaLiuRenDataDescriptor = $convert.base64Decode(
     'ChBYdWFuRGFMaXVSZW5EYXRhEhwKCmRheV9qaWFfemkYASABKAlSCGRheUppYVppEhkKCHNoaV'
     '9jaGVuGAIgASgJUgdzaGlDaGVuEiQKDmp1X251bWJlcl9uYW1lGAMgASgJUgxqdU51bWJlck5h'
-    'bWUSNwoKZm91cl9jbGFzcxgEIAEoCzIYLnh1YW5fZGFsaXVyZW4uRm91ckNsYXNzUglmb3VyQ2'
-    'xhc3MSOgoLdGhyZWVfY2h1YW4YBSABKAsyGS54dWFuX2RhbGl1cmVuLlRocmVlQ2h1YW5SCnRo'
-    'cmVlQ2h1YW4SUAoLZ29uZ19tYXBwZXIYBiADKAsyLy54dWFuX2RhbGl1cmVuLlh1YW5EYUxpdV'
-    'JlbkRhdGEuR29uZ01hcHBlckVudHJ5Ugpnb25nTWFwcGVyGlYKD0dvbmdNYXBwZXJFbnRyeRIQ'
-    'CgNrZXkYASABKAlSA2tleRItCgV2YWx1ZRgCIAEoCzIXLnh1YW5fZGFsaXVyZW4uR29uZ0luZm'
-    '9SBXZhbHVlOgI4AQ==');
+    'bWUSGwoJanVfbnVtYmVyGAQgASgFUghqdU51bWJlchI3Cgpmb3VyX2NsYXNzGAUgASgLMhgueH'
+    'Vhbl9kYWxpdXJlbi5Gb3VyQ2xhc3NSCWZvdXJDbGFzcxI6Cgt0aHJlZV9jaHVhbhgGIAEoCzIZ'
+    'Lnh1YW5fZGFsaXVyZW4uVGhyZWVDaHVhblIKdGhyZWVDaHVhbhJQCgtnb25nX21hcHBlchgHIA'
+    'MoCzIvLnh1YW5fZGFsaXVyZW4uWHVhbkRhTGl1UmVuRGF0YS5Hb25nTWFwcGVyRW50cnlSCmdv'
+    'bmdNYXBwZXIaVgoPR29uZ01hcHBlckVudHJ5EhAKA2tleRgBIAEoCVIDa2V5Ei0KBXZhbHVlGA'
+    'IgASgLMhcueHVhbl9kYWxpdXJlbi5Hb25nSW5mb1IFdmFsdWU6AjgB');
 
 @$core.Deprecated('Use fourClassDescriptor instead')
 const FourClass$json = {
@@ -144,20 +145,15 @@ const ChuanInfo$json = {
   '2': [
     {'1': 'order', '3': 1, '4': 1, '5': 5, '10': 'order'},
     {'1': 'di_zhi', '3': 2, '4': 1, '5': 9, '10': 'diZhi'},
-    {'1': 'tian_gan', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'tianGan', '17': true},
-    {'1': 'gui_ren', '3': 4, '4': 1, '5': 9, '10': 'guiRen'},
-    {'1': 'liu_qin', '3': 5, '4': 1, '5': 9, '10': 'liuQin'},
-  ],
-  '8': [
-    {'1': '_tian_gan'},
+    {'1': 'gui_ren', '3': 3, '4': 1, '5': 9, '10': 'guiRen'},
+    {'1': 'liu_qin', '3': 4, '4': 1, '5': 9, '10': 'liuQin'},
   ],
 };
 
 /// Descriptor for `ChuanInfo`. Decode as a `google.protobuf.DescriptorProto`.
 final $typed_data.Uint8List chuanInfoDescriptor = $convert.base64Decode(
     'CglDaHVhbkluZm8SFAoFb3JkZXIYASABKAVSBW9yZGVyEhUKBmRpX3poaRgCIAEoCVIFZGlaaG'
-    'kSHgoIdGlhbl9nYW4YAyABKAlIAFIHdGlhbkdhbogBARIXCgdndWlfcmVuGAQgASgJUgZndWlS'
-    'ZW4SFwoHbGl1X3FpbhgFIAEoCVIGbGl1UWluQgsKCV90aWFuX2dhbg==');
+    'kSFwoHZ3VpX3JlbhgDIAEoCVIGZ3VpUmVuEhcKB2xpdV9xaW4YBCABKAlSBmxpdVFpbg==');
 
 @$core.Deprecated('Use gongInfoDescriptor instead')
 const GongInfo$json = {
@@ -166,12 +162,6 @@ const GongInfo$json = {
     {'1': 'ground_pan_di_zhi', '3': 1, '4': 1, '5': 9, '10': 'groundPanDiZhi'},
     {'1': 'gui_ren', '3': 2, '4': 1, '5': 9, '10': 'guiRen'},
     {'1': 'sky_pan_di_zhi', '3': 3, '4': 1, '5': 9, '10': 'skyPanDiZhi'},
-    {'1': 'tian_gan', '3': 4, '4': 1, '5': 9, '9': 0, '10': 'tianGan', '17': true},
-    {'1': 'jia_zi', '3': 5, '4': 1, '5': 9, '9': 1, '10': 'jiaZi', '17': true},
-  ],
-  '8': [
-    {'1': '_tian_gan'},
-    {'1': '_jia_zi'},
   ],
 };
 
@@ -179,8 +169,7 @@ const GongInfo$json = {
 final $typed_data.Uint8List gongInfoDescriptor = $convert.base64Decode(
     'CghHb25nSW5mbxIpChFncm91bmRfcGFuX2RpX3poaRgBIAEoCVIOZ3JvdW5kUGFuRGlaaGkSFw'
     'oHZ3VpX3JlbhgCIAEoCVIGZ3VpUmVuEiMKDnNreV9wYW5fZGlfemhpGAMgASgJUgtza3lQYW5E'
-    'aVpoaRIeCgh0aWFuX2dhbhgEIAEoCUgAUgd0aWFuR2FuiAEBEhoKBmppYV96aRgFIAEoCUgBUg'
-    'VqaWFaaYgBAUILCglfdGlhbl9nYW5CCQoHX2ppYV96aQ==');
+    'aVpoaQ==');
 
 @$core.Deprecated('Use xuanDaLiuRenDataListDescriptor instead')
 const XuanDaLiuRenDataList$json = {

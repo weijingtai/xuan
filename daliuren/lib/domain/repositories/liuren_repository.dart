@@ -1,8 +1,10 @@
 // lib/domain/repositories/liuren_repository.dart
 
+import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:fpdart/fpdart.dart' hide Failure; // For Either type
 import 'package:daliuren/core/errors/failures.dart'; // For Failure type
-import '../entities/liuren_pan.dart'; // Domain entity for Liu Ren Pan
+import '../entities/liu_ren_pan_model.dart'; // Domain entity for Liu Ren Pan
 import '../entities/yuding_entry.dart'; // Domain entity for Yu Ding interpretations
 import '../entities/pan_input.dart'; // Input object for pan calculation
 
@@ -12,9 +14,10 @@ import '../entities/pan_input.dart'; // Input object for pan calculation
 abstract class LiuRenRepository {
   /// Retrieves or calculates a Liu Ren Pan based on the provided [input].
   ///
-  /// Returns a [LiuRenPan] domain entity on success (Right),
+  /// Returns a [LiuRenPanModel] domain entity on success (Right),
   /// or a [Failure] on error (Left).
-  Future<Either<Failure, LiuRenPan>> getLiuRenPan(PanInput input);
+  Future<Either<Failure, LiuRenPanModel>> getPan(
+      EnumDayNight dagyNight, JiaZi dayGanZhi, DiZhi ganShangZhi);
 
   /// Fetches a "御定大六壬" (Yu Ding Da Liu Ren) interpretation entry.
   ///

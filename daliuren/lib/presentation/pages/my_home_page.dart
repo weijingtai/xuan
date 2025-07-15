@@ -5,6 +5,7 @@ import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart'; // May be used if LiuRenPan has BaZi
 import 'package:daliuren/presentation/widgets/pan_display_widget.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +17,7 @@ import 'package:lunar/calendar/Lunar.dart'; // For displaying Lunar date if need
 import 'package:provider/provider.dart';
 
 // Domain entities that the View will now primarily deal with
-import 'package:daliuren/domain/entities/liuren_pan.dart';
+import 'package:daliuren/domain/entities/liu_ren_pan_model.dart';
 
 import '../viewmodels/my_home_viewmodel.dart';
 import '../widgets/yu_ding_display_widget.dart';
@@ -24,7 +25,11 @@ import '../widgets/yu_ding_display_widget.dart';
 // View Model
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  DivinationInfoModel divinationInfoModel;
+  const MyHomePage(
+      {super.key,
+      required this.title,
+      divinationInfoModel: DivinationInfoModel()});
   final String title;
 
   @override
@@ -97,8 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(state.liuRenPan?.dayJiaZiName != null
-            ? "${state.liuRenPan!.dayJiaZiName}日 ${state.liuRenPan!.shiChenZhiName}时 ${state.liuRenPan!.guiRenType} ${state.liuRenPan!.nineZongMen.name}" // Simplified title
+        title: Text(state.liuRenPan?.dayJiaZi != null
+            ? "${state.liuRenPan!.dayJiaZi}日 ${state.liuRenPan!.timeChen}时 ${state.liuRenPan!.dayNight} ${state.liuRenPan!.nineZongMen.name}" // Simplified title
             : widget.title),
         centerTitle: true,
       ),
@@ -174,12 +179,12 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildPanBaseInfo(LiuRenPan? pan) {
+  Widget _buildPanBaseInfo(LiuRenPanModel? pan) {
     if (pan == null) return const SizedBox.shrink();
 
     // Simplified display of base info. Could be expanded or part of PanDisplayWidget.
-    Lunar? lunarDate =
-        pan.panDateTime != null ? Lunar.fromDate(pan.panDateTime!) : null;
+    // Lunar? lunarDate =
+    //     pan.panDateTime != null ? Lunar.fromDate(pan.panDateTime!) : null;
 
     return Card(
       elevation: 2,
@@ -187,25 +192,25 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            if (pan.panDateTime != null)
-              Text(
-                  "公历: ${DateFormat("yyyy-MM-dd HH:mm").format(pan.panDateTime!)}"),
-            if (lunarDate != null)
-              Text(
-                  "农历: ${lunarDate.getYearInGanZhi()}年 ${lunarDate.getMonthInChinese()}月 ${lunarDate.getDayInChinese()} ${lunarDate.getTimeZhi()}时"),
-            Text("日课: ${pan.dayGanZhi} ${pan.shiChenZhiName}时"),
+            // if (pan.panDateTime != null)
+            //   Text(
+            //       "公历: ${DateFormat("yyyy-MM-dd HH:mm").format(pan.panDateTime!)}"),
+            // if (lunarDate != null)
+            //   Text(
+            //       "农历: ${lunarDate.getYearInGanZhi()}年 ${lunarDate.getMonthInChinese()}月 ${lunarDate.getDayInChinese()} ${lunarDate.getTimeZhi()}时"),
+
+            Text("日课: ${pan.dayJiaZi.name} ${pan.timeChen}时"),
             // Could add FourZhuEightChar widget here if BaZi is part of LiuRenPan entity
-            if (pan.dayJiaZiEnum != null &&
-                pan.shiChenEnum != null /* and other BaZi parts */)
+            if (pan.dayJiaZi != null &&
+                pan.timeChen != null /* and other BaZi parts */)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: FourZhuEightChar(
-                  year:
-                      pan.dayJiaZiEnum!, // Placeholder, need full BaZi from pan
-                  month: pan.dayJiaZiEnum!, // Placeholder
-                  day: pan.dayJiaZiEnum!,
-                  chen: JiaZi.getFromGanZhiEnum(pan.dayJiaZiEnum!.tianGan,
-                      pan.shiChenEnum!), // Approximate
+                  year: pan.dayJiaZi!, // Placeholder, need full BaZi from pan
+                  month: pan.dayJiaZi!, // Placeholder
+                  day: pan.dayJiaZi!,
+                  chen: JiaZi.getFromGanZhiEnum(
+                      pan.dayJiaZi!.tianGan, pan.timeChen!), // Approximate
                   isColorful: true,
                 ),
               )
@@ -374,7 +379,7 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: () {
             // Option 2: "排盘" button uses the _selectedDateTimeForPan
             if (_selectedDateTimeForPan != null) {
-              viewModel.getPanByTime(_selectedDateTimeForPan!);
+              viewModel.calculateByDivinationInfo(_selectedDateTimeForPan!);
             } else {
               InteractiveToast.slide(context,
                   title: const Text("请先选择时间或使用现在时间"));
@@ -407,15 +412,15 @@ class _MyHomePageState extends State<MyHomePage> {
               return;
             }
 
-            viewModel.getPanByGanZhi(
-              yearJiaZi: _manualYearJiaZi?.name,
-              monthJiaZi: _manualMonthJiaZi?.name,
-              dayJiaZi: _manualDayJiaZi!.name, // Already checked for null
-              timeJiaZi: _manualTimeJiaZi?.name,
-              yinYangDun:
-                  _manualYinYangDun?.name, // ViewModel expects String name
-              juNumber: _manualJuNumber,
-            );
+            // viewModel.getPanByGanZhi(
+            //   yearJiaZi: _manualYearJiaZi?.name,
+            //   monthJiaZi: _manualMonthJiaZi?.name,
+            //   dayJiaZi: _manualDayJiaZi!.name, // Already checked for null
+            //   timeJiaZi: _manualTimeJiaZi?.name,
+            //   yinYangDun:
+            //       _manualYinYangDun?.name, // ViewModel expects String name
+            //   juNumber: _manualJuNumber,
+            // );
           },
           child: const Text('依干支局数排盘'),
         ),

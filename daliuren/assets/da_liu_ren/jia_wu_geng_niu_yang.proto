@@ -7,9 +7,10 @@ message XuanDaLiuRenData {
   string day_jia_zi = 1;                    // 日甲子
   string shi_chen = 2;                      // 时辰
   string ju_number_name = 3;                // 局数名称
-  FourClass four_class = 4;                 // 四课
-  ThreeChuan three_chuan = 5;               // 三传
-  map<string, GongInfo> gong_mapper = 6;    // 宫位映射
+  int32 ju_number = 4;                      // 局数（从局数名称中提取的数字）
+  FourClass four_class = 5;                 // 四课
+  ThreeChuan three_chuan = 6;               // 三传
+  map<string, GongInfo> gong_mapper = 7;    // 宫位映射
 }
 
 // 四课结构
@@ -50,22 +51,19 @@ message ThreeChuan {
   optional string zei_ke_type = 6;          // 贼克类型
 }
 
-// 传信息
+// 传信息（已移除tianGan字段）
 message ChuanInfo {
   int32 order = 1;                          // 顺序
   string di_zhi = 2;                        // 地支
-  optional string tian_gan = 3;             // 天干
-  string gui_ren = 4;                       // 贵人
-  string liu_qin = 5;                       // 六亲
+  string gui_ren = 3;                       // 贵人
+  string liu_qin = 4;                       // 六亲
 }
 
-// 宫位信息
+// 宫位信息（已移除tianGan和jiaZi字段）
 message GongInfo {
   string ground_pan_di_zhi = 1;             // 地盘地支
   string gui_ren = 2;                       // 贵人
   string sky_pan_di_zhi = 3;                // 天盘地支
-  optional string tian_gan = 4;             // 天干
-  optional string jia_zi = 5;               // 甲子
 }
 
 // 玄大六壬数据列表

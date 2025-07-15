@@ -1,6 +1,7 @@
 // lib/domain/usecases/initialize_database_usecase.dart
 
 import 'dart:convert';
+import 'package:daliuren/model/pan_config.dart';
 import 'package:flutter/services.dart' show rootBundle; // For loading assets
 import 'package:fpdart/fpdart.dart' hide Failure;
 import 'package:daliuren/core/errors/failures.dart';
@@ -9,7 +10,7 @@ import 'package:daliuren/domain/repositories/liuren_repository.dart';
 
 /// Use case responsible for initializing the application's database with data from JSON assets.
 /// This is typically a one-time operation performed when the app starts or when data needs to be reset.
-class InitializeDatabaseUseCase implements UseCase<void, NoParams> {
+class InitializeDatabaseUseCase {
   final LiuRenRepository _repository;
 
   InitializeDatabaseUseCase(this._repository);

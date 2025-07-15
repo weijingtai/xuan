@@ -1,21 +1,21 @@
 // lib/data/repositories/liuren_repository_impl.dart
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:common/module.dart';
 import 'package:fpdart/fpdart.dart' hide Failure; // For Either type
 import 'package:daliuren/core/errors/failures.dart'; // For Failure types
 import 'package:daliuren/domain/repositories/liuren_repository.dart'; // Abstract repository
-import 'package:daliuren/domain/entities/liuren_pan.dart'; // Domain entity
-import 'package:daliuren/domain/entities/yuding_entry.dart'; // Domain entity
+import 'package:daliuren/domain/entities/liu_ren_pan_model.dart'; // Domain entity
 import 'package:daliuren/domain/entities/pan_input.dart'; // Domain entity / Input object
-import 'package:daliuren/data/datasources/local/local_data_source.dart'; // Local data source interface
+import 'package:daliuren/data/datasources/local/database/local_data_source.dart'; // Local data source interface
 // import 'package:daliuren/data/datasources/remote/remote_data_source.dart'; // Placeholder for remote data source
-import 'package:daliuren/data/datasources/local/drift_database.dart'; // For DBOs (Database Objects like JuMappingEntryDb)
+import 'package:daliuren/data/datasources/local/database/drift_database.dart'; // For DBOs (Database Objects like JuMappingEntryDb)
 import 'package:daliuren/data/models/ju_mapping_data_model.dart'; // DTO for Ju Mappings
 import 'package:daliuren/data/models/yu_ding_da_liu_ren_data_model.dart'; // DTO for Yu Ding Entries
 // Domain entities that are composed within LiuRenPan, used by mappers
 import 'package:daliuren/domain/entities/liuren_gong_entity.dart';
 import 'package:daliuren/domain/entities/four_class_ke_entity.dart';
-import 'package:daliuren/domain/entities/three_chuan_chuan_entity.dart';
+import 'package:daliuren/domain/entities/three_chuan_entity.dart';
 import 'package:daliuren/data/models/da_liu_ren_pan_data_model.dart'; // DTO for preset pans (source for mapping)
 import 'package:daliuren/data/models/da_liu_ren_gong_data_model.dart'; // DTO for Gong (part of DaLiuRenPanDataModel)
 import 'package:daliuren/data/models/four_class_data_model.dart'; // DTO for FourClass (part of DaLiuRenPanDataModel)
@@ -50,17 +50,25 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
   /// Initializes the database with data from assets if not already done.
   /// Transforms raw JSON data from [initialRawData] into specific DataModels
   /// before passing them to the local data source for insertion.
+
   @override
   Future<Either<Failure, void>> initializeDatabase(
       Map<String, List<Map<String, dynamic>>> initialRawData) async {
     try {
       bool isInitialized = await _localDataSource.isDatabaseInitialized();
+
       if (!isInitialized) {
+        if (kIsWeb) {
+          // Web 环境：每次都重新初始化内存数据库
+          print("Web environment: Initializing in-memory database");
+        } else {
+          print("Native environment: Initializing file database");
+        }
+
         // Transform raw JSON data (List<Map<String, dynamic>>) into typed DataModel lists.
         final List<JuMappingDataModel> juMappings =
             (initialRawData['ju_mapper'] ?? [])
-                .map((json) => JuMappingDataModel.fromJson(
-                    json)) // Assuming json is already Map<String, dynamic>
+                .map((json) => JuMappingDataModel.fromJson(json))
                 .toList();
 
         final List<YuDingDaLiuRenDataModel> yuDingEntries =
@@ -100,10 +108,10 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
         return const Right(null);
       }
     } catch (e, s) {
-      // Catch and report any errors during the initialization process.
       print("Repository: Database initialization failed: $e \n$s");
-      return Left(DatabaseFailure(
-          "Database initialization failed: ${e.toString()}", s));
+      // 将 StackTrace 转换为字符串，避免 Web 环境的问题
+      return Left(
+          DatabaseFailure("Database initialization failed: ${e.toString()}"));
     }
   }
 
@@ -112,73 +120,75 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
   /// If input is Time-based, or a preset GanZhi pan is not found, it currently
   /// returns a placeholder. The actual calculation logic is a TODO.
   @override
-  Future<Either<Failure, LiuRenPan>> getLiuRenPan(PanInput input) async {
-    try {
-      // Handle GanZhi input for preset pans
-      if (input.inputType == PanInputType.GANZHI_INPUT &&
-          input.dayJiaZi != null &&
-          input.timeJiaZi !=
-              null && // timeJiaZi is used to derive ShiChen DiZhi
-          input.yinYangDun != null) {
-        // Extract DiZhi from timeJiaZi string (e.g., "甲子" -> "子")
-        // This assumes timeJiaZi is a valid JiaZi string.
-        // PanInput already asserts that dayJiaZi is not null.
-        String timeDiZhiName = input.timeJiaZi!.substring(1);
+  Future<Either<Failure, LiuRenPanModel>> getLiuRenPan(
+      DivinationInfoModel input) async {
+    return Future.value(Failure.notImplemented());
+    // try {
+    //   // Handle GanZhi input for preset pans
+    //   if (input.inputType == PanInputType.GANZHI_INPUT &&
+    //       input.dayJiaZi != null &&
+    //       input.timeJiaZi !=
+    //           null && // timeJiaZi is used to derive ShiChen DiZhi
+    //       input.yinYangDun != null) {
+    //     // Extract DiZhi from timeJiaZi string (e.g., "甲子" -> "子")
+    //     // This assumes timeJiaZi is a valid JiaZi string.
+    //     // PanInput already asserts that dayJiaZi is not null.
+    //     String timeDiZhiName = input.timeJiaZi!.substring(1);
 
-        final presetPanDbo = await _localDataSource.getPresetPan(
-            input.dayJiaZi!, timeDiZhiName, input.yinYangDun!);
+    //     final presetPanDbo = await _localDataSource.getPresetPan(
+    //         input.dayJiaZi!, timeDiZhiName, input.yinYangDun!);
 
-        if (presetPanDbo != null) {
-          return Right(_mapPresetPanDboToEntity(presetPanDbo));
-        } else {
-          print(
-              "Preset pan not found for Day: ${input.dayJiaZi}, Time Branch: $timeDiZhiName, Dun: ${input.yinYangDun}. Calculation would be needed.");
-          // TODO: Implement fallback to LiuRenCalculationService if preset not found for GANZH_INPUT,
-          // or if input.juNumber is provided, indicating a different type of GanZhi lookup/calculation.
-          // For now, this path will lead to the GenericFailure at the end of the try block.
-        }
-      }
+    //     if (presetPanDbo != null) {
+    //       return Right(_mapPresetPanDboToEntity(presetPanDbo));
+    //     } else {
+    //       print(
+    //           "Preset pan not found for Day: ${input.dayJiaZi}, Time Branch: $timeDiZhiName, Dun: ${input.yinYangDun}. Calculation would be needed.");
+    //       // TODO: Implement fallback to LiuRenCalculationService if preset not found for GANZH_INPUT,
+    //       // or if input.juNumber is provided, indicating a different type of GanZhi lookup/calculation.
+    //       // For now, this path will lead to the GenericFailure at the end of the try block.
+    //     }
+    //   }
 
-      // Handle Time-based input (currently a placeholder for full calculation)
-      if (input.inputType == PanInputType.TIME_INPUT) {
-        print(
-            "Calculating LiuRenPan for time: ${input.dateTime} (Placeholder - Calculation Not Implemented)");
-        // TODO: CRITICAL - Implement actual LiuRen calculation logic.
-        // This should ideally involve calling a dedicated LiuRenCalculationService.
-        // Example of how it might look:
-        // final calculationService = LiuRenCalculationServiceImpl(); // Or get from DI via constructor
-        // final pan = await calculationService.calculatePanFromTime(input.dateTime!);
-        // return Right(pan);
+    //   // Handle Time-based input (currently a placeholder for full calculation)
+    //   if (input.inputType == PanInputType.TIME_INPUT) {
+    //     print(
+    //         "Calculating LiuRenPan for time: ${input.dateTime} (Placeholder - Calculation Not Implemented)");
+    //     // TODO: CRITICAL - Implement actual LiuRen calculation logic.
+    //     // This should ideally involve calling a dedicated LiuRenCalculationService.
+    //     // Example of how it might look:
+    //     // final calculationService = LiuRenCalculationServiceImpl(); // Or get from DI via constructor
+    //     // final pan = await calculationService.calculatePanFromTime(input.dateTime!);
+    //     // return Right(pan);
 
-        await Future.delayed(
-            const Duration(milliseconds: 100)); // Simulate async work
-        // Return a dummy pan for now
-        return Right(LiuRenPan(
-          panDateTime: input.dateTime ?? DateTime.now(),
-          dayJiaZiName: "甲子 (Calc)",
-          dayGanZhi: "甲子",
-          timeGanZhi: "甲子",
-          shiChenZhiName: "子",
-          yueJiangName: "登明 (Calc)",
-          guiRenType: "阳贵 (Calc)",
-          // heavenPlate: {},
-          // earthPlate: {},
-          fourClasses: [],
-          threeChuans: [],
-          nineZongMen: domain_nine_zong_men.NineZongMen.UNKNOWN,
-          keTiComplement: ["计算课 (Placeholder)"],
-          sourceDescription: "Calculated from Time (Placeholder)",
-        ));
-      }
+    //     await Future.delayed(
+    //         const Duration(milliseconds: 100)); // Simulate async work
+    //     // Return a dummy pan for now
+    //     return Right(LiuRenPan(
+    //       panDateTime: input.dateTime ?? DateTime.now(),
+    //       dayJiaZiName: "甲子 (Calc)",
+    //       dayGanZhi: "甲子",
+    //       timeGanZhi: "甲子",
+    //       shiChenZhiName: "子",
+    //       yueJiangName: "登明 (Calc)",
+    //       guiRenType: "阳贵 (Calc)",
+    //       // heavenPlate: {},
+    //       // earthPlate: {},
+    //       fourClasses: [],
+    //       threeChuans: [],
+    //       nineZongMen: domain_nine_zong_men.NineZongMen.UNKNOWN,
+    //       keTiComplement: ["计算课 (Placeholder)"],
+    //       sourceDescription: "Calculated from Time (Placeholder)",
+    //     ));
+    //   }
 
-      // If no specific path handled or calculation not implemented.
-      return Left(GenericFailure(
-          "LiuRenPan processing for the given input is not fully implemented or no data found."));
-    } catch (e, s) {
-      print("Repository: Failed to get LiuRenPan: $e \n$s");
-      return Left(GenericFailure(
-          "Failed to process LiuRenPan request: ${e.toString()}", s));
-    }
+    //   // If no specific path handled or calculation not implemented.
+    //   return Left(GenericFailure(
+    //       "LiuRenPan processing for the given input is not fully implemented or no data found."));
+    // } catch (e, s) {
+    //   print("Repository: Failed to get LiuRenPan: $e \n$s");
+    //   return Left(GenericFailure(
+    //       "Failed to process LiuRenPan request: ${e.toString()}", s));
+    // }
   }
 
   /// Fetches a Yu Ding interpretation entry from the local data source and maps it to a domain entity.
@@ -207,8 +217,8 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
   // based on DataModels/DTOs after TypeConversion) into Domain Layer Entities.
   // This is a core responsibility of the Repository to decouple layers.
 
-  /// Maps a [PresetPanEntryDb] (database object for preset pans) to a [LiuRenPan] domain entity.
-  LiuRenPan _mapPresetPanDboToEntity(PresetPanEntryDb dbo) {
+  /// Maps a [PresetPanEntryDb] (database object for preset pans) to a [LiuRenPanModel] domain entity.
+  LiuRenPanModel _mapPresetPanDboToEntity(PresetPanEntryDb dbo) {
     // Helper to map nested DaLiuRenGongDataModel (from JSON in DBO) to LiuRenGongEntity
     Map<String, LiuRenGongEntity> mapHeavenPlate(
         Map<String, DaLiuRenGongDataModel> plateDataModel) {
@@ -234,7 +244,7 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
     }
 
     // Helper to map nested ThreeChuanDataModel to List<ThreeChuanChuanEntity>
-    List<ThreeChuanChuanEntity> mapThreeChuan(ThreeChuanDataModel tcModel) {
+    List<ThreeChuanEntity> mapThreeChuan(ThreeChuanDataModel tcModel) {
       return [
         _mapEachChuanDataModelToChuanEntity(tcModel.first),
         _mapEachChuanDataModelToChuanEntity(tcModel.second),
@@ -276,10 +286,10 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
       juNumber = juNumKeyEntry.key;
     }
 
-    return LiuRenPan(
+    return LiuRenPanModel(
       panDateTime:
           null, // Preset pans from JSON typically don't have a specific original cast time.
-      dayJiaZiName: dbo.dayJiaZiName,
+      dayJiaZi: dbo.dayJiaZiName,
       dayGanZhi:
           dbo.dayJiaZiName, // Assuming dayJiaZiName is the full GanZhi string.
       // Construct time GanZhi: Day's TianGan + ShiChen's DiZhi.
@@ -336,15 +346,24 @@ class LiuRenRepositoryImpl implements LiuRenRepository {
     );
   }
 
-  /// Maps [EachChuanDataModel] (DTO) to [ThreeChuanChuanEntity] (Domain Entity).
-  ThreeChuanChuanEntity _mapEachChuanDataModelToChuanEntity(
+  /// Maps [EachChuanDataModel] (DTO) to [ThreeChuanEntity] (Domain Entity).
+  ThreeChuanEntity _mapEachChuanDataModelToChuanEntity(
       EachChuanDataModel model) {
-    return ThreeChuanChuanEntity(
+    return ThreeChuanEntity(
       diZhi: model.diZhi,
       tianGan: model.tianGan,
       guiRen: model.guiRen,
       liuQin: model.liuQin,
     );
+  }
+
+  @override
+  Future<Either<Failure, LiuRenPanModel>> getPan(
+      common_enums.YinYang yinYangDun,
+      common_enums.JiaZi dayGanZhi,
+      common_enums.DiZhi ganShangZhi) {
+    // TODO: implement getPan
+    throw UnimplementedError();
   }
 
   /// Maps [YuDingEntryDb] (database object) to a [YuDingEntry] domain entity.

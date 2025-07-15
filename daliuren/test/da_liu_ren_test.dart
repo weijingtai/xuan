@@ -1,6 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:daliuren/domain/enums/gui_ren.dart';
-import 'package:daliuren/model/da_liu_ren_gong.dart';
+import 'package:daliuren/model/each_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:daliuren/model/four_class.dart';
 import 'package:daliuren/model/three_chuan.dart';
@@ -36,9 +36,9 @@ void main() {
         Map<DiZhi, DiZhi>.fromIterables(diSeq, monthGeneralSeq);
     Map<DiZhi, GuiRen> currentDiGodsMapper =
         Map<DiZhi, GuiRen>.fromIterables(diSeq, guiRenNameList);
-    Map<DiZhi, DaLiuRenGong> currentPanWithGods = {};
+    Map<DiZhi, EachGong> currentPanWithGods = {};
     for (var di in diSeq) {
-      currentPanWithGods[di] = DaLiuRenGong(
+      currentPanWithGods[di] = EachGong(
           guiRen: currentDiGodsMapper[di]!,
           skyPanDiZhi: currentTianDiMapper[di]!,
           groundPanDiZhi: di);
@@ -59,9 +59,9 @@ void main() {
           .split("")
           .map((e) => TianGan.getFromValue(e) ?? TianGan.KONG_WANG)
           .toList();
-      Map<DiZhi, DaLiuRenGong> mapper = {};
+      Map<DiZhi, EachGong> mapper = {};
       for (int i = 0; i < diPanSeq.length; i++) {
-        mapper[diPanSeq[i]] = DaLiuRenGong(
+        mapper[diPanSeq[i]] = EachGong(
             guiRen: godsSeq[i],
             skyPanDiZhi: tianPanSeq[i],
             groundPanDiZhi: diPanSeq[i],
@@ -126,7 +126,7 @@ void main() {
 
 /// "<四> <三> <二> <一>"
 FourClass createFourClass(JiaZi dayJiaZi, String first, String second,
-    String third, String fourth, Map<DiZhi, DaLiuRenGong> eachGongMapper) {
+    String third, String fourth, Map<DiZhi, EachGong> eachGongMapper) {
   // List<String> each = fourClassString.split(" ").toList();
   //
   // String first = each[3];

@@ -1,5 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:daliuren/model/da_liu_ren_gong.dart';
+import 'package:daliuren/model/each_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:daliuren/domain/enums/gui_ren.dart';
 import 'package:daliuren/model/four_class.dart';
@@ -36,9 +36,9 @@ void main() {
         Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, monthGeneralSeq);
     Map<DiZhi, GuiRen> currentDiGodsMapper =
         Map<DiZhi, GuiRen>.fromIterables(diSeq, godsNameList);
-    Map<DiZhi, DaLiuRenGong> currentPanWithGods = {};
+    Map<DiZhi, EachGong> currentPanWithGods = {};
     for (var di in diSeq) {
-      currentPanWithGods[di] = DaLiuRenGong(
+      currentPanWithGods[di] = EachGong(
           guiRen: currentDiGodsMapper[di]!,
           skyPanDiZhi: currentTianDiMapper[di]!,
           groundPanDiZhi: di);
@@ -52,7 +52,7 @@ void main() {
       Map<DiZhi, DiZhi> currentTianDiMapper =
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       for (var di in diSeq) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);
@@ -86,7 +86,7 @@ void main() {
       Map<DiZhi, DiZhi> currentTianDiMapper =
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       for (var di in diSeq) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);
@@ -119,7 +119,7 @@ void main() {
       Map<DiZhi, DiZhi> currentTianDiMapper =
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       for (var di in diSeq) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);
@@ -152,7 +152,7 @@ void main() {
       Map<DiZhi, DiZhi> currentTianDiMapper =
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       for (var di in diSeq) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);

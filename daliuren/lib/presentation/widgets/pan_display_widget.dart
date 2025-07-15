@@ -1,10 +1,10 @@
 // lib/presentation/widgets/pan_display_widget.dart
 
 import 'package:flutter/material.dart';
-import 'package:daliuren/domain/entities/liuren_pan.dart'; // Placeholder
+import 'package:daliuren/domain/entities/liu_ren_pan_model.dart'; // Placeholder
 
 class PanDisplayWidget extends StatelessWidget {
-  final LiuRenPan? liuRenPan; // Make it nullable if it can be empty
+  final LiuRenPanModel? liuRenPan; // Make it nullable if it can be empty
 
   const PanDisplayWidget({Key? key, required this.liuRenPan}) : super(key: key);
 
@@ -30,13 +30,13 @@ class PanDisplayWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text("排盘时间: ${liuRenPan!.panDateTime?.toIso8601String()}",
-              style: Theme.of(context).textTheme.titleMedium),
+          // Text("排盘时间: ${liuRenPan!.panDateTime?.toIso8601String()}",
+          // style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
-          Text("日干支: ${liuRenPan!.dayGanZhi}"),
+          Text("日干支: ${liuRenPan!.dayJiaZi}"),
           Text("时干支: ${liuRenPan!.timeGanZhi}"),
-          Text("月将: ${liuRenPan!.yueJiangName}"),
-          Text("贵人: ${liuRenPan!.guiRenType}"),
+          Text("月将: ${liuRenPan!.monthGeneral}"),
+          Text("贵人: ${liuRenPan!.timeGanZhi}"),
           const SizedBox(height: 16),
           Text("课体: ${liuRenPan!.keTiComplement.join(', ')}"),
           const SizedBox(height: 16),

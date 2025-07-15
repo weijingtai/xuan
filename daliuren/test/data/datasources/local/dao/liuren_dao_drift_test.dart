@@ -1,8 +1,8 @@
 import 'package:common/database/app_database.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
-import 'package:daliuren/data/datasources/local/drift_database.dart';
-import 'package:daliuren/data/datasources/local/dao/liuren_dao.dart';
+import 'package:daliuren/data/datasources/local/database/drift_database.dart';
+import 'package:daliuren/data/datasources/local/database/dao/liuren_dao.dart';
 import 'package:daliuren/data/models/da_liu_ren_gong_data_model.dart';
 import 'package:daliuren/data/models/four_class_data_model.dart';
 import 'package:daliuren/data/models/three_chuan_data_model.dart';

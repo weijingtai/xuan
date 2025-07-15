@@ -1,5 +1,6 @@
 // lib/domain/usecases/get_yuding_entry_usecase.dart
 
+import 'package:daliuren/model/pan_config.dart';
 import 'package:fpdart/fpdart.dart' hide Failure;
 import 'package:daliuren/core/errors/failures.dart';
 import 'package:daliuren/core/usecase/usecase.dart'; // Base UseCase interface
@@ -40,7 +41,7 @@ class GetYuDingEntryUseCase
   /// - Left([Failure]) if an error occurs or the entry is not found.
   @override
   Future<Either<Failure, YuDingEntry>> call(
-      GetYuDingEntryUseCaseParams params) async {
+      PanConfig config, GetYuDingEntryUseCaseParams params) async {
     // Basic validation for parameters.
     if (params.dayJiaZi.isEmpty || params.ganShangDiZhi.isEmpty) {
       return Left(InvalidInputFailure(

@@ -1,6 +1,6 @@
 //
 //  Generated code. Do not modify.
-//  source: resources/jia_wu_geng_niu_yang.proto
+//  source: jia_wu_geng_niu_yang.proto
 //
 // @dart = 3.3
 
@@ -21,6 +21,7 @@ class XuanDaLiuRenData extends $pb.GeneratedMessage {
     $core.String? dayJiaZi,
     $core.String? shiChen,
     $core.String? juNumberName,
+    $core.int? juNumber,
     FourClass? fourClass,
     ThreeChuan? threeChuan,
     $pb.PbMap<$core.String, GongInfo>? gongMapper,
@@ -34,6 +35,9 @@ class XuanDaLiuRenData extends $pb.GeneratedMessage {
     }
     if (juNumberName != null) {
       $result.juNumberName = juNumberName;
+    }
+    if (juNumber != null) {
+      $result.juNumber = juNumber;
     }
     if (fourClass != null) {
       $result.fourClass = fourClass;
@@ -54,9 +58,10 @@ class XuanDaLiuRenData extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'dayJiaZi')
     ..aOS(2, _omitFieldNames ? '' : 'shiChen')
     ..aOS(3, _omitFieldNames ? '' : 'juNumberName')
-    ..aOM<FourClass>(4, _omitFieldNames ? '' : 'fourClass', subBuilder: FourClass.create)
-    ..aOM<ThreeChuan>(5, _omitFieldNames ? '' : 'threeChuan', subBuilder: ThreeChuan.create)
-    ..m<$core.String, GongInfo>(6, _omitFieldNames ? '' : 'gongMapper', entryClassName: 'XuanDaLiuRenData.GongMapperEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OM, valueCreator: GongInfo.create, valueDefaultOrMaker: GongInfo.getDefault, packageName: const $pb.PackageName('xuan_daliuren'))
+    ..a<$core.int>(4, _omitFieldNames ? '' : 'juNumber', $pb.PbFieldType.O3)
+    ..aOM<FourClass>(5, _omitFieldNames ? '' : 'fourClass', subBuilder: FourClass.create)
+    ..aOM<ThreeChuan>(6, _omitFieldNames ? '' : 'threeChuan', subBuilder: ThreeChuan.create)
+    ..m<$core.String, GongInfo>(7, _omitFieldNames ? '' : 'gongMapper', entryClassName: 'XuanDaLiuRenData.GongMapperEntry', keyFieldType: $pb.PbFieldType.OS, valueFieldType: $pb.PbFieldType.OM, valueCreator: GongInfo.create, valueDefaultOrMaker: GongInfo.getDefault, packageName: const $pb.PackageName('xuan_daliuren'))
     ..hasRequiredFields = false
   ;
 
@@ -109,29 +114,38 @@ class XuanDaLiuRenData extends $pb.GeneratedMessage {
   void clearJuNumberName() => $_clearField(3);
 
   @$pb.TagNumber(4)
-  FourClass get fourClass => $_getN(3);
+  $core.int get juNumber => $_getIZ(3);
   @$pb.TagNumber(4)
-  set fourClass(FourClass v) { $_setField(4, v); }
+  set juNumber($core.int v) { $_setSignedInt32(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasFourClass() => $_has(3);
+  $core.bool hasJuNumber() => $_has(3);
   @$pb.TagNumber(4)
-  void clearFourClass() => $_clearField(4);
-  @$pb.TagNumber(4)
-  FourClass ensureFourClass() => $_ensure(3);
+  void clearJuNumber() => $_clearField(4);
 
   @$pb.TagNumber(5)
-  ThreeChuan get threeChuan => $_getN(4);
+  FourClass get fourClass => $_getN(4);
   @$pb.TagNumber(5)
-  set threeChuan(ThreeChuan v) { $_setField(5, v); }
+  set fourClass(FourClass v) { $_setField(5, v); }
   @$pb.TagNumber(5)
-  $core.bool hasThreeChuan() => $_has(4);
+  $core.bool hasFourClass() => $_has(4);
   @$pb.TagNumber(5)
-  void clearThreeChuan() => $_clearField(5);
+  void clearFourClass() => $_clearField(5);
   @$pb.TagNumber(5)
-  ThreeChuan ensureThreeChuan() => $_ensure(4);
+  FourClass ensureFourClass() => $_ensure(4);
 
   @$pb.TagNumber(6)
-  $pb.PbMap<$core.String, GongInfo> get gongMapper => $_getMap(5);
+  ThreeChuan get threeChuan => $_getN(5);
+  @$pb.TagNumber(6)
+  set threeChuan(ThreeChuan v) { $_setField(6, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasThreeChuan() => $_has(5);
+  @$pb.TagNumber(6)
+  void clearThreeChuan() => $_clearField(6);
+  @$pb.TagNumber(6)
+  ThreeChuan ensureThreeChuan() => $_ensure(5);
+
+  @$pb.TagNumber(7)
+  $pb.PbMap<$core.String, GongInfo> get gongMapper => $_getMap(6);
 }
 
 /// 四课结构
@@ -611,12 +625,11 @@ class ThreeChuan extends $pb.GeneratedMessage {
   void clearZeiKeType() => $_clearField(6);
 }
 
-/// 传信息
+/// 传信息（已移除tianGan字段）
 class ChuanInfo extends $pb.GeneratedMessage {
   factory ChuanInfo({
     $core.int? order,
     $core.String? diZhi,
-    $core.String? tianGan,
     $core.String? guiRen,
     $core.String? liuQin,
   }) {
@@ -626,9 +639,6 @@ class ChuanInfo extends $pb.GeneratedMessage {
     }
     if (diZhi != null) {
       $result.diZhi = diZhi;
-    }
-    if (tianGan != null) {
-      $result.tianGan = tianGan;
     }
     if (guiRen != null) {
       $result.guiRen = guiRen;
@@ -645,9 +655,8 @@ class ChuanInfo extends $pb.GeneratedMessage {
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ChuanInfo', package: const $pb.PackageName(_omitMessageNames ? '' : 'xuan_daliuren'), createEmptyInstance: create)
     ..a<$core.int>(1, _omitFieldNames ? '' : 'order', $pb.PbFieldType.O3)
     ..aOS(2, _omitFieldNames ? '' : 'diZhi')
-    ..aOS(3, _omitFieldNames ? '' : 'tianGan')
-    ..aOS(4, _omitFieldNames ? '' : 'guiRen')
-    ..aOS(5, _omitFieldNames ? '' : 'liuQin')
+    ..aOS(3, _omitFieldNames ? '' : 'guiRen')
+    ..aOS(4, _omitFieldNames ? '' : 'liuQin')
     ..hasRequiredFields = false
   ;
 
@@ -691,41 +700,30 @@ class ChuanInfo extends $pb.GeneratedMessage {
   void clearDiZhi() => $_clearField(2);
 
   @$pb.TagNumber(3)
-  $core.String get tianGan => $_getSZ(2);
+  $core.String get guiRen => $_getSZ(2);
   @$pb.TagNumber(3)
-  set tianGan($core.String v) { $_setString(2, v); }
+  set guiRen($core.String v) { $_setString(2, v); }
   @$pb.TagNumber(3)
-  $core.bool hasTianGan() => $_has(2);
+  $core.bool hasGuiRen() => $_has(2);
   @$pb.TagNumber(3)
-  void clearTianGan() => $_clearField(3);
+  void clearGuiRen() => $_clearField(3);
 
   @$pb.TagNumber(4)
-  $core.String get guiRen => $_getSZ(3);
+  $core.String get liuQin => $_getSZ(3);
   @$pb.TagNumber(4)
-  set guiRen($core.String v) { $_setString(3, v); }
+  set liuQin($core.String v) { $_setString(3, v); }
   @$pb.TagNumber(4)
-  $core.bool hasGuiRen() => $_has(3);
+  $core.bool hasLiuQin() => $_has(3);
   @$pb.TagNumber(4)
-  void clearGuiRen() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get liuQin => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set liuQin($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasLiuQin() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearLiuQin() => $_clearField(5);
+  void clearLiuQin() => $_clearField(4);
 }
 
-/// 宫位信息
+/// 宫位信息（已移除tianGan和jiaZi字段）
 class GongInfo extends $pb.GeneratedMessage {
   factory GongInfo({
     $core.String? groundPanDiZhi,
     $core.String? guiRen,
     $core.String? skyPanDiZhi,
-    $core.String? tianGan,
-    $core.String? jiaZi,
   }) {
     final $result = create();
     if (groundPanDiZhi != null) {
@@ -737,12 +735,6 @@ class GongInfo extends $pb.GeneratedMessage {
     if (skyPanDiZhi != null) {
       $result.skyPanDiZhi = skyPanDiZhi;
     }
-    if (tianGan != null) {
-      $result.tianGan = tianGan;
-    }
-    if (jiaZi != null) {
-      $result.jiaZi = jiaZi;
-    }
     return $result;
   }
   GongInfo._() : super();
@@ -753,8 +745,6 @@ class GongInfo extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'groundPanDiZhi')
     ..aOS(2, _omitFieldNames ? '' : 'guiRen')
     ..aOS(3, _omitFieldNames ? '' : 'skyPanDiZhi')
-    ..aOS(4, _omitFieldNames ? '' : 'tianGan')
-    ..aOS(5, _omitFieldNames ? '' : 'jiaZi')
     ..hasRequiredFields = false
   ;
 
@@ -805,24 +795,6 @@ class GongInfo extends $pb.GeneratedMessage {
   $core.bool hasSkyPanDiZhi() => $_has(2);
   @$pb.TagNumber(3)
   void clearSkyPanDiZhi() => $_clearField(3);
-
-  @$pb.TagNumber(4)
-  $core.String get tianGan => $_getSZ(3);
-  @$pb.TagNumber(4)
-  set tianGan($core.String v) { $_setString(3, v); }
-  @$pb.TagNumber(4)
-  $core.bool hasTianGan() => $_has(3);
-  @$pb.TagNumber(4)
-  void clearTianGan() => $_clearField(4);
-
-  @$pb.TagNumber(5)
-  $core.String get jiaZi => $_getSZ(4);
-  @$pb.TagNumber(5)
-  set jiaZi($core.String v) { $_setString(4, v); }
-  @$pb.TagNumber(5)
-  $core.bool hasJiaZi() => $_has(4);
-  @$pb.TagNumber(5)
-  void clearJiaZi() => $_clearField(5);
 }
 
 /// 玄大六壬数据列表

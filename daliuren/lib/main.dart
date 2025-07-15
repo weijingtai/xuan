@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         // TODO: Consider defining a more complete theme (brightness, colorScheme, textTheme, etc.)
       ),
       // Set MyHomePage as the home screen.
-      home: const MyHomePage(title: '大六壬神课'),
+      home: MyHomePage(title: '大六壬神课'),
       // TODO: Implement routing for navigation to other pages if the app grows.
       // debugShowCheckedModeBanner: false, // Optionally hide the debug banner.
     );
