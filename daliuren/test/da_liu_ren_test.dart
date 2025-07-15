@@ -1,9 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:daliuren/domain/enums/gui_ren.dart';
-import 'package:daliuren/model/each_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
-import 'package:daliuren/model/four_class.dart';
-import 'package:daliuren/model/three_chuan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -64,8 +61,7 @@ void main() {
         mapper[diPanSeq[i]] = EachGong(
             guiRen: godsSeq[i],
             skyPanDiZhi: tianPanSeq[i],
-            groundPanDiZhi: diPanSeq[i],
-            tianGan: tianGanSeq[i]);
+            groundPanDiZhi: diPanSeq[i]);
       }
       expect(tianPanSeq.first, mapper[DiZhi.ZI]!.skyPanDiZhi);
       expect(diPanSeq.first, mapper[DiZhi.ZI]!.groundPanDiZhi);

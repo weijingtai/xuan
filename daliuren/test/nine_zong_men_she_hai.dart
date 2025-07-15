@@ -1,9 +1,6 @@
 import 'package:common/enums.dart';
-import 'package:daliuren/model/each_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:daliuren/domain/enums/gui_ren.dart';
-import 'package:daliuren/model/four_class.dart';
-import 'package:daliuren/model/three_chuan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

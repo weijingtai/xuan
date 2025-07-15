@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:daliuren/domain/services/daliuren_calculator_service.dart';
+import 'package:common/enums.dart';
+import 'package:daliuren/domain/enums/three_chuan_staff.dart';
+import 'package:daliuren/domain/services/calculate_month_general_service.dart';
 import 'package:daliuren/model/raw_pan_datamodel.dart';
 
 import '../lib/domain/services/nine_zong_men_calculator_v1_2.dart';
@@ -34,6 +36,13 @@ void main() async {
         final calculator = DaLiuRenModelCalculator(
           rawPanData: rawPan,
           sheHaiStrategy: strategy,
+          monthJiaZi: JiaZi.WU_ZI,
+          timeJiaZi: JiaZi.WU_ZI,
+          dayJiaZi: rawPan.day,
+          dayNight: EnumDayNight.day,
+          guiRenType: GuiRenType.Jia_Wu_Geng_Niu_Yang,
+          guiRenPosition: DiZhi.ZI,
+          dayNightBoundaryType: DayNightBoundaryType.maoYou,
         );
 
         // 执行三传计算

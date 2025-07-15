@@ -25,6 +25,7 @@ enum LiuQin {
 
   final String name;
   const LiuQin(this.name);
+
   static LiuQin getLiuQinByForTianGanDiZhi(TianGan tianGan, DiZhi diZhi) {
     FiveXingRelationship fiveXing = FiveXingRelationship.checkRelationship(
         tianGan.fiveXing, diZhi.fiveXing)!;
