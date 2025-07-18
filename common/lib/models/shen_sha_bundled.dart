@@ -20,7 +20,11 @@ class BundledShenSha extends ShenSha {
   String name;
   JiXiongEnum jiXiong;
   int offset; // 马前诸煞的offset 是相对于 红鸾的而非太岁
+
+  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? descriptionList;
+
+  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? locationDescriptionList;
 
   BundledShenSha(this.type, this.name, this.jiXiong, this.offset,

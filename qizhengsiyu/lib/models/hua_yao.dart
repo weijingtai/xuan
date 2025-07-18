@@ -17,6 +17,29 @@ class HuaYao extends ShenSha {
 }
 
 @JsonSerializable()
+class HuaYaoItem extends HuaYao {
+  // ShenShaType type;
+  // HuaYaoItem(super.name, super.jiXiong, super.descriptionList,
+  // super.locationDescriptionList, super.type);
+  HuaYaoItem({
+    required String name,
+    required JiXiongEnum jiXiong,
+    required ShenShaType type,
+  }) : super(name, jiXiong, null, null, type);
+  factory HuaYaoItem.fromJson(Map<String, dynamic> json) =>
+      _$HuaYaoItemFromJson(json);
+  Map<String, dynamic> toJson() => _$HuaYaoItemToJson(this);
+
+  static HuaYaoItem fromHuaYao(HuaYao huaYao) {
+    return HuaYaoItem(
+      name: huaYao.name,
+      jiXiong: huaYao.jiXiong,
+      type: huaYao.type,
+    );
+  }
+}
+
+@JsonSerializable()
 class OthersHuaYao extends HuaYao {
   OthersHuaYao(super.name, super.jiXiong, super.descriptionList,
       super.locationDescriptionList, super.type);
@@ -52,6 +75,7 @@ class DiZhiHuaYao extends HuaYao {
   Map<String, dynamic> toJson() => _$DiZhiHuaYaoToJson(this);
 }
 
+@Deprecated("废弃")
 @JsonSerializable()
 class HuaYaoStarPair {
   final HuaYao huaYao;

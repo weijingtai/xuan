@@ -20,8 +20,6 @@ ShenSha _$ShenShaFromJson(Map<String, dynamic> json) => ShenSha(
 Map<String, dynamic> _$ShenShaToJson(ShenSha instance) => <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
-      'descriptionList': instance.descriptionList,
-      'locationDescriptionList': instance.locationDescriptionList,
     };
 
 const _$JiXiongEnumEnumMap = {
@@ -34,3 +32,21 @@ const _$JiXiongEnumEnumMap = {
   JiXiongEnum.DA_XIONG: '大凶',
   JiXiongEnum.WEI_ZHI: '未知',
 };
+
+ShenShaItem _$ShenShaItemFromJson(Map<String, dynamic> json) => ShenShaItem(
+      name: json['name'] as String,
+      jiXiong: $enumDecode(_$JiXiongEnumEnumMap, json['jiXiong']),
+    )
+      ..descriptionList = (json['descriptionList'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList()
+      ..locationDescriptionList =
+          (json['locationDescriptionList'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList();
+
+Map<String, dynamic> _$ShenShaItemToJson(ShenShaItem instance) =>
+    <String, dynamic>{
+      'name': instance.name,
+      'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+    };

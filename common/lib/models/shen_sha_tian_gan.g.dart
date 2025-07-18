@@ -26,8 +26,6 @@ Map<String, dynamic> _$TianGanShenShaToJson(TianGanShenSha instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
-      'descriptionList': instance.descriptionList,
-      'locationDescriptionList': instance.locationDescriptionList,
       'locationMapper': instance.locationMapper
           .map((k, e) => MapEntry(_$TianGanEnumMap[k]!, _$DiZhiEnumMap[e]!)),
     };

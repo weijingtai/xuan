@@ -27,8 +27,10 @@ class ShenSha implements ShenShaInterface {
   @override
   JiXiongEnum jiXiong;
   @override
+  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? descriptionList;
   @override
+  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? locationDescriptionList;
 
   ShenSha(this.name, this.jiXiong, this.descriptionList,
@@ -37,4 +39,21 @@ class ShenSha implements ShenShaInterface {
   factory ShenSha.fromJson(Map<String, dynamic> json) =>
       _$ShenShaFromJson(json);
   Map<String, dynamic> toJson() => _$ShenShaToJson(this);
+}
+
+@JsonSerializable()
+class ShenShaItem extends ShenSha {
+  ShenShaItem({required String name, required JiXiongEnum jiXiong})
+      : super(name, jiXiong, null, null);
+
+  factory ShenShaItem.fromJson(Map<String, dynamic> json) =>
+      _$ShenShaItemFromJson(json);
+  Map<String, dynamic> toJson() => _$ShenShaItemToJson(this);
+
+  static ShenShaItem fromShenSha(ShenSha shenSha) {
+    return ShenShaItem(
+      name: shenSha.name,
+      jiXiong: shenSha.jiXiong,
+    );
+  }
 }
