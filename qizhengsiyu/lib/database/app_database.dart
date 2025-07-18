@@ -6,15 +6,20 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../dataset/star_position_status_model.dart';
 import '../enums/enum_star_position_status.dart';
+import 'tables/base_panel_table.dart';
+import 'daos/base_panel_dao.dart';
 
 part 'app_database.g.dart';
 
-@DriftDatabase(tables: [StarPositionStatusTable])
-class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+@DriftDatabase(
+  tables: [StarPositionStatusTable, BasePanelTable],
+  daos: [BasePanelDao],
+)
+class App74Database extends _$AppDatabase {
+  App74Database() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 1; // 增加版本号
 
   @override
   MigrationStrategy get migration {
@@ -24,6 +29,10 @@ class AppDatabase extends _$AppDatabase {
       },
       onUpgrade: (Migrator m, int from, int to) async {
         // 数据库升级逻辑
+        if (from < 2) {
+          // 添加新的BasePanelTable
+          await m.createTable(basePanelTable);
+        }
       },
     );
   }

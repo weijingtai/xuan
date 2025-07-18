@@ -23,16 +23,21 @@ PassageYearPanelModel _$PassageYearPanelModelFromJson(
         (k, e) => MapEntry($enumDecode(_$EnumStarsEnumMap, k),
             BaseFiveStarWalkingInfo.fromJson(e as Map<String, dynamic>)),
       ),
-      shenShaMapper: (json['shenShaMapper'] as Map<String, dynamic>).map(
+      shenShaItemMapper:
+          (json['shenShaItemMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(
             $enumDecode(_$EnumTwelveGongEnumMap, k),
             (e as List<dynamic>)
-                .map((e) => ShenSha.fromJson(e as Map<String, dynamic>))
+                .map((e) => ShenShaItem.fromJson(e as Map<String, dynamic>))
                 .toList()),
       ),
-      huaYaoStarPairList: (json['huaYaoStarPairList'] as List<dynamic>)
-          .map((e) => HuaYaoStarPair.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      huaYaoItemMapper: (json['huaYaoItemMapper'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry(
+            $enumDecode(_$EnumStarsEnumMap, k),
+            (e as List<dynamic>)
+                .map((e) => HuaYaoItem.fromJson(e as Map<String, dynamic>))
+                .toList()),
+      ),
       twelveZhangShengGongMapper:
           (json['twelveZhangShengGongMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$EnumTwelveGongEnumMap, k),
@@ -49,9 +54,10 @@ Map<String, dynamic> _$PassageYearPanelModelToJson(
           .map((k, e) => MapEntry(_$EnumStarsEnumMap[k]!, e)),
       'fiveStarWalkingTypeMapper': instance.fiveStarWalkingTypeMapper
           .map((k, e) => MapEntry(_$EnumStarsEnumMap[k]!, e)),
-      'shenShaMapper': instance.shenShaMapper
+      'shenShaItemMapper': instance.shenShaItemMapper
           .map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
-      'huaYaoStarPairList': instance.huaYaoStarPairList,
+      'huaYaoItemMapper': instance.huaYaoItemMapper
+          .map((k, e) => MapEntry(_$EnumStarsEnumMap[k]!, e)),
       'twelveZhangShengGongMapper': instance.twelveZhangShengGongMapper.map((k,
               e) =>
           MapEntry(_$EnumTwelveGongEnumMap[k]!, _$TwelveZhangShengEnumMap[e]!)),

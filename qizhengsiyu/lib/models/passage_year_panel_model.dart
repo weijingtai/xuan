@@ -20,11 +20,11 @@ class PassageYearPanelModel {
   final Map<EnumStars, BaseFiveStarWalkingInfo> fiveStarWalkingTypeMapper;
 
   // 6. 计算神煞位置
-  final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper;
+  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper;
 
   // 7. 计算化曜
   // final Map<HuaYao, EnumStars> huaYaoMapper;
-  final List<HuaYaoStarPair> huaYaoStarPairList;
+  final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper;
 
   // 8. 计算十二长生
   final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper;
@@ -33,8 +33,8 @@ class PassageYearPanelModel {
     required this.starAngleMapper,
     required this.enteredGongMapper,
     required this.fiveStarWalkingTypeMapper,
-    required this.shenShaMapper,
-    required this.huaYaoStarPairList,
+    required this.shenShaItemMapper,
+    required this.huaYaoItemMapper,
     required this.twelveZhangShengGongMapper,
   });
 
@@ -48,8 +48,8 @@ class PassageYearPanelModel {
     Map<EnumStars, EnteredInfo>? enteredGongMapper,
     Map<EnumStars, BaseFiveStarWalkingInfo>? fiveStarWalkingTypeMapper,
     Map<EnumTwelveGong, EnumDestinyTwelveGong>? twelveGongMapper,
-    Map<EnumTwelveGong, List<ShenSha>>? shenShaMapper,
-    List<HuaYaoStarPair>? huaYaoStarPairList,
+    Map<EnumTwelveGong, List<ShenShaItem>>? shenShaItemMapper,
+    Map<EnumStars, List<HuaYaoItem>>? huaYaoItemMapper,
     Map<EnumTwelveGong, TwelveZhangSheng>? twelveZhangShengGongMapper,
   }) {
     return PassageYearPanelModel(
@@ -57,8 +57,8 @@ class PassageYearPanelModel {
       enteredGongMapper: enteredGongMapper ?? this.enteredGongMapper,
       fiveStarWalkingTypeMapper:
           fiveStarWalkingTypeMapper ?? this.fiveStarWalkingTypeMapper,
-      shenShaMapper: shenShaMapper ?? this.shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList ?? this.huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper ?? this.shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper ?? this.huaYaoItemMapper,
       twelveZhangShengGongMapper:
           twelveZhangShengGongMapper ?? this.twelveZhangShengGongMapper,
     );

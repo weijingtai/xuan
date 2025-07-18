@@ -87,15 +87,36 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             observerPosition.isDayBirth);
+
+    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+        shenShaMapper.map((key, value) {
+      return MapEntry(
+          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+    });
+
+    // 将神煞从ShenSha 处理成 String
+    // Map<EnumTwelveGong, List<String>> shenShaStrMapper = {};
+    // for (var i = 0; i < shenShaMapper.entries.length; i++) {
+    //   final entry = shenShaMapper.entries.elementAt(i);
+    //   final gong = entry.key;
+    //   final shenShaList = entry.value;
+    //   final result = shenShaList.map((e) => e.name).toList();
+    //   shenShaStrMapper[gong] = result;
+    // }
+
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
       mingGong: bodyLifeModel.lifeGong,
       yearJiaZi: observerPosition.yearGanZhi,
       monthJiaZi: observerPosition.monthGanZhi,
     );
-    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
-        .map((e) => HuaYaoStarPair(e.key, e.value))
-        .toList();
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (var entry in huaYaoMapper.entries) {
+      if (!huaYaoItemMapper.containsKey(entry.value)) {
+        huaYaoItemMapper[entry.value] = [];
+      }
+      huaYaoItemMapper[entry.value]!.add(HuaYaoItem.fromHuaYao(entry.key));
+    }
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(observerPosition.yearGanZhi);
@@ -118,8 +139,8 @@ class GenerateBasePanelService {
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       bodyLifeModel: bodyLifeModel,
       twelveGongMapper: twelveGongMapper,
-      shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }
@@ -159,15 +180,30 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             daXianObserver.isDayBirth);
+    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+        shenShaMapper.map((key, value) {
+      return MapEntry(
+          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+    });
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
       mingGong: basePanel.bodyLifeModel.lifeGong,
       yearJiaZi: daXianObserver.yearGanZhi,
       monthJiaZi: daXianObserver.monthGanZhi,
     );
-    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
-        .map((e) => HuaYaoStarPair(e.key, e.value))
-        .toList();
+    // final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
+    //     .map((e) => HuaYaoStarPair(e.key, e.value))
+    //     .toList();
+
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (var entry in huaYaoMapper.entries) {
+      if (!huaYaoItemMapper.containsKey(entry.value)) {
+        huaYaoItemMapper[entry.value] = [];
+      }
+      // huaYaoStarPairList[entry.value]!.add(entry.key);
+
+      huaYaoItemMapper[entry.value]!.add(HuaYaoItem.fromHuaYao(entry.key));
+    }
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(daXianObserver.yearGanZhi);
@@ -183,8 +219,8 @@ class GenerateBasePanelService {
       starAngleMapper: starAngleMapper,
       enteredGongMapper: enteredGongMapper,
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
-      shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }

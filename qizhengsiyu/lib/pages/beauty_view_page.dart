@@ -976,7 +976,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 child: AllShenShaRing(
                   outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
                   innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                  shenShaMapper: basePanel.shenShaMapper,
+                  shenShaMapper: basePanel.shenShaItemMapper,
                   gongOrder: EnumTwelveGong.listAll,
                 ),
               );
@@ -1004,7 +1004,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   child: AllShenShaRing(
                     outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
                     innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
-                    shenShaMapper: daXianPanel.shenShaMapper,
+                    shenShaMapper: daXianPanel.shenShaItemMapper,
                     gongOrder: EnumTwelveGong.listAll,
                   ),
                 );

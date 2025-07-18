@@ -27,6 +27,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:tuple/tuple.dart';
 import 'package:uuid/v7.dart';
 
+import '../database/app_database.dart';
 import '../enums/enum_moon_phases.dart';
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
@@ -43,6 +44,7 @@ import '../models/star_inn_gong_degree.dart';
 import '../models/stars_angle.dart';
 import '../models/eleven_stars_info.dart'; // 已弃用，但模型本身可能被PanelStarsInfo引用，暂时保留
 import '../qi_zheng_si_yu_constant_resources.dart'; // 常量资源文件，假设存在
+import '../usecases/save_calculated_panel_usecase.dart';
 import '../utils/star_walking_info_utils.dart';
 import 'StarsResolver.dart';
 
@@ -848,5 +850,36 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     // 使用已初始化并更新了 observerPosition 的 _generateBasePanelService
     return _generateBasePanelService.calculate();
+  }
+
+  late final SaveCalculatedPanelUseCase _saveCalculatedPanelUseCase;
+  late final App74Database _database;
+
+  // 在构造函数或初始化方法中初始化
+  void _initializeUseCases() {
+    _database = App74Database();
+    _saveCalculatedPanelUseCase =
+        SaveCalculatedPanelUseCase(_database.basePanelDao);
+  }
+
+  // 修改现有的计算方法
+  Future<void> calculatePanel() async {
+    try {
+      basicPanelModel = await _generateBasePanelService.calculate();
+
+      // 保存计算结果到数据库
+      final savedUuid = await _saveCalculatedPanelUseCase.execute(
+        basicPanelModel: basicPanelModel,
+        panelConfig: panelConfig, // 需要传入当前的配置
+        observerPosition: observerPosition, // 需要传入当前的观测位置
+        divinationUuid: currentDivinationUuid, // 如果有的话
+        seekerUuid: currentSeekerUuid, // 如果有的话
+      );
+
+      print('面板数据已保存，UUID: $savedUuid');
+    } catch (e) {
+      print('保存面板数据失败: $e');
+      // 处理错误
+    }
   }
 }
