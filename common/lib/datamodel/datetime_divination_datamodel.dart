@@ -5,10 +5,10 @@ import 'package:json_annotation/json_annotation.dart';
 import '../shared/shared.dart';
 import 'location.dart';
 
-part 'base_divination_datetime_datamodel.g.dart';
+part 'datetime_divination_datamodel.g.dart';
 
 @JsonSerializable()
-class BaseDivinationDatetimeDataModel extends Equatable {
+class DatatimeDivinationDetailsDataModel extends Equatable {
   final String uuid;
   final DateTime createdAt;
   final DateTime? lastUpdatedAt;
@@ -27,7 +27,7 @@ class BaseDivinationDatetimeDataModel extends Equatable {
   final List<DivinationDatetimeModel>? timingInfoListJson;
   final String? divinationUuid;
 
-  BaseDivinationDatetimeDataModel({
+  DatatimeDivinationDetailsDataModel({
     required this.uuid,
     required this.createdAt,
     this.lastUpdatedAt,
@@ -47,11 +47,12 @@ class BaseDivinationDatetimeDataModel extends Equatable {
     this.timingInfoListJson,
   });
 
-  factory BaseDivinationDatetimeDataModel.fromJson(Map<String, dynamic> json) =>
-      _$BaseDivinationDatetimeDataModelFromJson(json);
+  factory DatatimeDivinationDetailsDataModel.fromJson(
+          Map<String, dynamic> json) =>
+      _$DatatimeDivinationDetailsDataModelFromJson(json);
 
   Map<String, dynamic> toJson() =>
-      _$BaseDivinationDatetimeDataModelToJson(this);
+      _$DatatimeDivinationDetailsDataModelToJson(this);
 
   @override
   List<Object?> get props => [

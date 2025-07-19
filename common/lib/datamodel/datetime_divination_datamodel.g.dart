@@ -1,14 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'base_divination_datetime_datamodel.dart';
+part of 'datetime_divination_datamodel.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-BaseDivinationDatetimeDataModel _$BaseDivinationDatetimeDataModelFromJson(
+DatatimeDivinationDetailsDataModel _$DatatimeDivinationDetailsDataModelFromJson(
         Map<String, dynamic> json) =>
-    BaseDivinationDatetimeDataModel(
+    DatatimeDivinationDetailsDataModel(
       uuid: json['uuid'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastUpdatedAt: json['lastUpdatedAt'] == null
@@ -37,8 +37,8 @@ BaseDivinationDatetimeDataModel _$BaseDivinationDatetimeDataModelFromJson(
           .toList(),
     );
 
-Map<String, dynamic> _$BaseDivinationDatetimeDataModelToJson(
-        BaseDivinationDatetimeDataModel instance) =>
+Map<String, dynamic> _$DatatimeDivinationDetailsDataModelToJson(
+        DatatimeDivinationDetailsDataModel instance) =>
     <String, dynamic>{
       'uuid': instance.uuid,
       'createdAt': instance.createdAt.toIso8601String(),

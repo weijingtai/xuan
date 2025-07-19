@@ -227,6 +227,7 @@ class _DivinationCardWidgetState extends State<DivinationCardWidget> {
                 .read<DevEnterPageViewModel>()
                 .selectedDivinaionTypeNotifier,
             builder: (ctx, selecetedDivinationType, _) {
+              // debugPrint("buildRealTime: $selecetedDivinationType");
               return ValueListenableBuilder(
                 valueListenable: context
                     .read<DevEnterPageViewModel>()

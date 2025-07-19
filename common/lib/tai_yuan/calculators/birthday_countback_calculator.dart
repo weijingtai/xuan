@@ -17,7 +17,7 @@ class BirthdayCountbackCalculator extends TaiYuanCalculator {
       TaiYuanCalculateStrategy.birthdayCountbackMethod;
 
   @override
-  TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
       required bool withAdjust,
@@ -42,7 +42,8 @@ class BirthdayCountbackCalculator extends TaiYuanCalculator {
   /// [prematureDays] 早产天数（正数表示早产，负数表示晚产）
   /// [isTestTubeBaby] 是否试管婴儿
   /// 注意：当前函数功能并未得到应用层的“验证”，所以在调用前请自行确保参数的合理性
-  TaiYuanByDaysModel calculateByDays(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanByDaysModel calculateByDays(
+      DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
       int actualMatureDays = 300}) {

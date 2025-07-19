@@ -3,13 +3,13 @@ import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../shared/enums/enum_gender.dart';
-import 'base_divination_datetime_datamodel.dart';
+import 'datetime_divination_datamodel.dart';
 import 'location.dart';
 
 part 'seeker_model.g.dart';
 
 @JsonSerializable()
-class SeekerModel extends BaseDivinationDatetimeDataModel {
+class SeekerModel extends DatatimeDivinationDetailsDataModel {
   final String? username;
   final String? nickname;
   final Gender gender;

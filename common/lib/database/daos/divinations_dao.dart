@@ -11,14 +11,14 @@ class DivinationsDao extends DatabaseAccessor<AppDatabase>
   final AppDatabase db;
   DivinationsDao(this.db) : super(db);
 
-  SimpleSelectStatement<$DivinationsTable, DivinationDataModel> _baseSelect() =>
-      select(db.divinations);
+  SimpleSelectStatement<$DivinationsTable, DivinationRequestInfoDataModel>
+      _baseSelect() => select(db.divinations);
 
-  Future<List<DivinationDataModel>> getAllDivinations() {
+  Future<List<DivinationRequestInfoDataModel>> getAllDivinations() {
     return (_baseSelect()..where((tbl) => tbl.deletedAt.isNull())).get();
   }
 
-  Future<DivinationDataModel?> getDivinationByUuid(String uuid) {
+  Future<DivinationRequestInfoDataModel?> getDivinationByUuid(String uuid) {
     return (_baseSelect()
           ..where((t) => t.uuid.equals(uuid) & t.deletedAt.isNull()))
         .getSingleOrNull();

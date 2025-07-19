@@ -3,7 +3,7 @@ import 'package:common/database/converters/coordinates_converter.dart';
 import 'package:common/database/converters/jie_qi_info_converter.dart';
 import 'package:common/database/converters/location_converter.dart';
 import 'package:common/database/converters/divination_datetime_model_converter.dart';
-import 'package:common/datamodel/divination_data_model.dart';
+import 'package:common/datamodel/divination_request_info_datamodel.dart';
 import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/enums.dart';
 // import 'package:common/enums/enum_datetime_type.dart';
@@ -42,7 +42,7 @@ class CombinedDivinations extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
-@UseRowClass(DivinationDataModel)
+@UseRowClass(DivinationRequestInfoDataModel)
 class Divinations extends Table {
   @override
   String get tableName => "t_divinations";

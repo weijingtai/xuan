@@ -8,9 +8,9 @@ part of 'divination_info_model.dart';
 
 DivinationInfoModel _$DivinationInfoModelFromJson(Map<String, dynamic> json) =>
     DivinationInfoModel(
-      divination: DivinationDataModel.fromJson(
+      divination: DivinationRequestInfoDataModel.fromJson(
           json['divination'] as Map<String, dynamic>),
-      divinationDatetime: BaseDivinationDatetimeDataModel.fromJson(
+      divinationDatetime: DatatimeDivinationDetailsDataModel.fromJson(
           json['divinationDatetime'] as Map<String, dynamic>),
     );
 

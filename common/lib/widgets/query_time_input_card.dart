@@ -112,10 +112,10 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     _tabSelectNotifier =
         ValueNotifier<DateTimeType>(widget.defaultDateTimeType);
     _tabSelectNotifier.addListener(() {
-      _pageController.animateToPage(
-          getPageIndexByDateTimeType(_tabSelectNotifier.value),
-          duration: const Duration(milliseconds: 800),
-          curve: Curves.easeInOut);
+      // _pageController.animateToPage(
+      //     getPageIndexByDateTimeType(_tabSelectNotifier.value),
+      //     duration: const Duration(milliseconds: 800),
+      //     curve: Curves.easeInOut);
     });
 
     _timezoneLocationViewModel.isDefaultTimezoneNotifier.addListener(() {
@@ -744,6 +744,10 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 initialIndex: tabIndex.index,
                 onSelect: (index) {
                   _tabSelectNotifier.value = getDateTimeTypeByPageIndex(index);
+                  // _pageController.animateToPage(
+                  //     getPageIndexByDateTimeType(_tabSelectNotifier.value),
+                  //     duration: const Duration(milliseconds: 800),
+                  //     curve: Curves.easeInOut);
                   _pageController.animateToPage(index,
                       duration: Duration(milliseconds: 400),
                       curve: Curves.bounceIn);

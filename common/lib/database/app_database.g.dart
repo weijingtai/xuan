@@ -1793,7 +1793,7 @@ class SeekersCompanion extends UpdateCompanion<SeekerModel> {
 }
 
 class $DivinationsTable extends Divinations
-    with TableInfo<$DivinationsTable, DivinationDataModel> {
+    with TableInfo<$DivinationsTable, DivinationRequestInfoDataModel> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -1906,7 +1906,7 @@ class $DivinationsTable extends Divinations
   static const String $name = 't_divinations';
   @override
   VerificationContext validateIntegrity(
-      Insertable<DivinationDataModel> instance,
+      Insertable<DivinationRequestInfoDataModel> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -1984,9 +1984,10 @@ class $DivinationsTable extends Divinations
   @override
   Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
-  DivinationDataModel map(Map<String, dynamic> data, {String? tablePrefix}) {
+  DivinationRequestInfoDataModel map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return DivinationDataModel(
+    return DivinationRequestInfoDataModel(
       uuid: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
       createdAt: attachedDatabase.typeMapping
@@ -2028,7 +2029,8 @@ class $DivinationsTable extends Divinations
       JsonTypeConverter2.asNullable($convertergender);
 }
 
-class DivinationsCompanion extends UpdateCompanion<DivinationDataModel> {
+class DivinationsCompanion
+    extends UpdateCompanion<DivinationRequestInfoDataModel> {
   final Value<String> uuid;
   final Value<DateTime> createdAt;
   final Value<DateTime> lastUpdatedAt;
@@ -2078,7 +2080,7 @@ class DivinationsCompanion extends UpdateCompanion<DivinationDataModel> {
         createdAt = Value(createdAt),
         lastUpdatedAt = Value(lastUpdatedAt),
         divinationTypeUuid = Value(divinationTypeUuid);
-  static Insertable<DivinationDataModel> custom({
+  static Insertable<DivinationRequestInfoDataModel> custom({
     Expression<String>? uuid,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? lastUpdatedAt,
@@ -6042,11 +6044,12 @@ final class $$DivinationTypesTableReferences extends BaseReferences<
   $$DivinationTypesTableReferences(
       super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$DivinationsTable, List<DivinationDataModel>>
-      _divinationsRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.divinations,
-              aliasName: $_aliasNameGenerator(
-                  db.divinationTypes.uuid, db.divinations.divinationTypeUuid));
+  static MultiTypedResultKey<$DivinationsTable,
+      List<DivinationRequestInfoDataModel>> _divinationsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.divinations,
+          aliasName: $_aliasNameGenerator(
+              db.divinationTypes.uuid, db.divinations.divinationTypeUuid));
 
   $$DivinationsTableProcessedTableManager get divinationsRefs {
     final manager = $$DivinationsTableTableManager($_db, $_db.divinations)
@@ -6361,8 +6364,10 @@ class $$DivinationTypesTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (divinationsRefs)
-                    await $_getPrefetchedData<DivinationTypeDataModel,
-                            $DivinationTypesTable, DivinationDataModel>(
+                    await $_getPrefetchedData<
+                            DivinationTypeDataModel,
+                            $DivinationTypesTable,
+                            DivinationRequestInfoDataModel>(
                         currentTable: table,
                         referencedTable: $$DivinationTypesTableReferences
                             ._divinationsRefsTable(db),
@@ -6459,11 +6464,12 @@ final class $$SeekersTableReferences
     extends BaseReferences<_$AppDatabase, $SeekersTable, SeekerModel> {
   $$SeekersTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
-  static MultiTypedResultKey<$DivinationsTable, List<DivinationDataModel>>
-      _divinationsRefsTable(_$AppDatabase db) =>
-          MultiTypedResultKey.fromTable(db.divinations,
-              aliasName: $_aliasNameGenerator(
-                  db.seekers.uuid, db.divinations.ownerSeekerUuid));
+  static MultiTypedResultKey<$DivinationsTable,
+      List<DivinationRequestInfoDataModel>> _divinationsRefsTable(
+          _$AppDatabase db) =>
+      MultiTypedResultKey.fromTable(db.divinations,
+          aliasName: $_aliasNameGenerator(
+              db.seekers.uuid, db.divinations.ownerSeekerUuid));
 
   $$DivinationsTableProcessedTableManager get divinationsRefs {
     final manager = $$DivinationsTableTableManager($_db, $_db.divinations)
@@ -6956,7 +6962,7 @@ class $$SeekersTableTableManager extends RootTableManager<
                 return [
                   if (divinationsRefs)
                     await $_getPrefetchedData<SeekerModel, $SeekersTable,
-                            DivinationDataModel>(
+                            DivinationRequestInfoDataModel>(
                         currentTable: table,
                         referencedTable:
                             $$SeekersTableReferences._divinationsRefsTable(db),
@@ -7036,7 +7042,7 @@ typedef $$DivinationsTableUpdateCompanionBuilder = DivinationsCompanion
 });
 
 final class $$DivinationsTableReferences extends BaseReferences<_$AppDatabase,
-    $DivinationsTable, DivinationDataModel> {
+    $DivinationsTable, DivinationRequestInfoDataModel> {
   $$DivinationsTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $DivinationTypesTable _divinationTypeUuidTable(_$AppDatabase db) =>
@@ -7523,14 +7529,14 @@ class $$DivinationsTableAnnotationComposer
 class $$DivinationsTableTableManager extends RootTableManager<
     _$AppDatabase,
     $DivinationsTable,
-    DivinationDataModel,
+    DivinationRequestInfoDataModel,
     $$DivinationsTableFilterComposer,
     $$DivinationsTableOrderingComposer,
     $$DivinationsTableAnnotationComposer,
     $$DivinationsTableCreateCompanionBuilder,
     $$DivinationsTableUpdateCompanionBuilder,
-    (DivinationDataModel, $$DivinationsTableReferences),
-    DivinationDataModel,
+    (DivinationRequestInfoDataModel, $$DivinationsTableReferences),
+    DivinationRequestInfoDataModel,
     PrefetchHooks Function(
         {bool divinationTypeUuid,
         bool ownerSeekerUuid,
@@ -7671,7 +7677,7 @@ class $$DivinationsTableTableManager extends RootTableManager<
               getPrefetchedDataCallback: (items) async {
                 return [
                   if (combinedDivinationsRefs)
-                    await $_getPrefetchedData<DivinationDataModel,
+                    await $_getPrefetchedData<DivinationRequestInfoDataModel,
                             $DivinationsTable, CombinedDivination>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
@@ -7684,7 +7690,7 @@ class $$DivinationsTableTableManager extends RootTableManager<
                                 .where((e) => e.divinationUuid == item.uuid),
                         typedResults: items),
                   if (seekerDivinationMappersRefs)
-                    await $_getPrefetchedData<DivinationDataModel,
+                    await $_getPrefetchedData<DivinationRequestInfoDataModel,
                             $DivinationsTable, SeekerDivinationMapper>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
@@ -7697,7 +7703,7 @@ class $$DivinationsTableTableManager extends RootTableManager<
                                 .where((e) => e.divinationUuid == item.uuid),
                         typedResults: items),
                   if (divinationPanelMappersRefs)
-                    await $_getPrefetchedData<DivinationDataModel,
+                    await $_getPrefetchedData<DivinationRequestInfoDataModel,
                             $DivinationsTable, DivinationPanelMapper>(
                         currentTable: table,
                         referencedTable: $$DivinationsTableReferences
@@ -7719,14 +7725,14 @@ class $$DivinationsTableTableManager extends RootTableManager<
 typedef $$DivinationsTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $DivinationsTable,
-    DivinationDataModel,
+    DivinationRequestInfoDataModel,
     $$DivinationsTableFilterComposer,
     $$DivinationsTableOrderingComposer,
     $$DivinationsTableAnnotationComposer,
     $$DivinationsTableCreateCompanionBuilder,
     $$DivinationsTableUpdateCompanionBuilder,
-    (DivinationDataModel, $$DivinationsTableReferences),
-    DivinationDataModel,
+    (DivinationRequestInfoDataModel, $$DivinationsTableReferences),
+    DivinationRequestInfoDataModel,
     PrefetchHooks Function(
         {bool divinationTypeUuid,
         bool ownerSeekerUuid,

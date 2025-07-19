@@ -18,7 +18,7 @@ class TaiYuanCalculatorFactory {
     TaiYuanCalculateStrategy.dayMasterYinYangMethod:
         DayMasterYinYangCalculator(),
   };
-  static TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  static TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       TaiYuanCalculateStrategy strategy,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,

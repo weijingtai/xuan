@@ -25,7 +25,7 @@ class DirectConceptionCalculator extends TaiYuanCalculator {
   }
 
   @override
-  TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       required bool withAdjust,
       bool isTestTubeBaby = false,

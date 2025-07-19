@@ -1,5 +1,5 @@
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
-import 'package:common/datamodel/divination_data_model.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
+import 'package:common/datamodel/divination_request_info_datamodel.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -7,8 +7,8 @@ part 'divination_info_model.g.dart';
 
 @JsonSerializable()
 class DivinationInfoModel extends Equatable {
-  final DivinationDataModel divination;
-  final BaseDivinationDatetimeDataModel divinationDatetime;
+  final DivinationRequestInfoDataModel divination;
+  final DatatimeDivinationDetailsDataModel divinationDatetime;
   const DivinationInfoModel({
     required this.divination,
     required this.divinationDatetime,

@@ -70,7 +70,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
 
   loadDivinationTypes() async {
     final List<DivinationTypeDataModel> divinationTypes =
-        await appDatabase!.divinationTypesDao.listAvailable();
+        await appDatabase.divinationTypesDao.listAvailable();
     divinationTypesListNotifier.value = divinationTypes;
     selectedDivinaionTypeNotifier.value = divinationTypes.first;
   }
@@ -130,7 +130,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
 
   // Future<Tuple2<DivinationDataModel, TimingDivinationModel>>
   Future<DivinationInfoModel> create() async {
-    DivinationDataModel divination = generateDivination();
+    DivinationRequestInfoDataModel divination = generateDivination();
     DivinationsCompanion divinationsCompanion =
         generateDivinationCompanion(divination);
 
@@ -152,7 +152,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
       // print((res[1]! as SeekerModel)?.location?.toJson());
       // print("~~~~~~~~");
       return DivinationInfoModel(
-          divination: res[0]! as DivinationDataModel,
+          divination: res[0]! as DivinationRequestInfoDataModel,
           divinationDatetime: res[1]! as SeekerModel);
     } else {
       TimingDivinationsCompanion timing =
@@ -168,33 +168,34 @@ class DevEnterPageViewModel extends ChangeNotifier {
             .getTimingDivinationByUuid(timing.uuid.value)
       ]);
       return DivinationInfoModel(
-          divination: res[0]! as DivinationDataModel,
+          divination: res[0]! as DivinationRequestInfoDataModel,
           divinationDatetime: res[1]! as TimingDivinationModel);
     }
   }
 
-  DivinationDataModel generateDivination() {
+  DivinationRequestInfoDataModel generateDivination() {
     // check value is all there
     DateTime now = DateTime.now();
-    DivinationDataModel divinationDataModel = DivinationDataModel(
-        uuid: UuidV7().generate(),
-        createdAt: now,
-        lastUpdatedAt: now,
-        deletedAt: null,
-        divinationTypeUuid: selectedDivinaionTypeNotifier.value!.uuid,
-        fateYear: yearJiaZi.value?.toString(),
-        question: question.value,
-        detail: question.value,
-        ownerSeekerUuid: null,
-        gender: genderNotifier.value,
-        seekerName: username.value ?? nickname.value,
-        tinyPredict: null,
-        directlyPredict: null);
+    DivinationRequestInfoDataModel divinationDataModel =
+        DivinationRequestInfoDataModel(
+            uuid: UuidV7().generate(),
+            createdAt: now,
+            lastUpdatedAt: now,
+            deletedAt: null,
+            divinationTypeUuid: selectedDivinaionTypeNotifier.value!.uuid,
+            fateYear: yearJiaZi.value?.toString(),
+            question: question.value,
+            detail: question.value,
+            ownerSeekerUuid: null,
+            gender: genderNotifier.value,
+            seekerName: username.value ?? nickname.value,
+            tinyPredict: null,
+            directlyPredict: null);
     return divinationDataModel;
   }
 
   DivinationsCompanion generateDivinationCompanion(
-      DivinationDataModel divinationDataModel) {
+      DivinationRequestInfoDataModel divinationDataModel) {
     return DivinationsCompanion(
         uuid: Value(divinationDataModel.uuid),
         createdAt: Value(divinationDataModel.createdAt),
