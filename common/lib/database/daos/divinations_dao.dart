@@ -1,5 +1,5 @@
-import 'package:common/datamodel/divination_data_model.dart';
 import 'package:drift/drift.dart';
+import '../../datamodel/divination_request_info_datamodel.dart';
 import '../app_database.dart';
 import '../tables/tables.dart';
 

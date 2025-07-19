@@ -15,7 +15,7 @@ import 'package:uuid/v5.dart';
 import 'package:uuid/v7.dart';
 
 import '../database/app_database.dart';
-import '../datamodel/divination_data_model.dart';
+import '../datamodel/divination_request_info_datamodel.dart';
 
 class DevEnterPageViewModel extends ChangeNotifier {
   // 获取当前位置

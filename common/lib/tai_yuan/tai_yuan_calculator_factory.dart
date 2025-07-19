@@ -1,4 +1,4 @@
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/tai_yuan/tai_yuan_model.dart';
 
 import 'tai_yuan_calculator.dart';

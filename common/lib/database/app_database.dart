@@ -5,7 +5,7 @@ import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import '../datamodel/basic_person_info.dart';
-import '../datamodel/divination_data_model.dart';
+import '../datamodel/divination_request_info_datamodel.dart';
 import '../datamodel/divination_type_data_model.dart';
 import '../datamodel/location.dart';
 import '../datamodel/seeker_model.dart';
