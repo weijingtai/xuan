@@ -28,8 +28,8 @@ class CalculateRawPanService {
   final CalculateGuiRenPositionService _guiRenPositionService =
       CalculateGuiRenPositionService();
 
-  LiuRenPanModel calculate(
-      PanConfig config, DivinationDatetimeModel divinationDatetimeModel) {
+  LiuRenPanModel calculate(DaLiuRenPanConfig config,
+      DivinationDatetimeModel divinationDatetimeModel) {
     final JiaZi dayJiaZi = divinationDatetimeModel.dayJiaZi;
     // 1. 计算月将
     final MonthGeneral _monthGeneral = _monthGeneralService.calculate(

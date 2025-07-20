@@ -15,7 +15,7 @@ import 'package:daliuren/domain/services/shen_sha_calculation_service.dart'; // 
 import 'package:daliuren/domain/services/shen_sha_calculation_service_impl.dart'; // 神煞计算服务实现
 import 'package:daliuren/data/services/shen_sha_data_service_impl.dart'; // 神煞数据服务实现
 import 'package:daliuren/domain/usecases/calculate_shen_sha_usecase.dart'; // 神煞用例
-import 'package:daliuren/presentation/viewmodels/my_home_viewmodel.dart';
+import 'package:daliuren/presentation/viewmodels/daliuren_home_viewmodel.dart';
 
 import '../data/datasources/local/database/dao/liuren_dao.dart'; // ViewModel
 
@@ -92,7 +92,7 @@ Future<void> setupServiceLocator() async {
   // when using `Provider(create: (_) => sl<MyViewModel>())` where Provider manages the lifecycle.
   // If a ViewModel's state needs to be preserved across different parts of the widget tree
   // independently of Provider's default behavior, other strategies might be used (e.g. Provider.value with an instance managed elsewhere).
-  sl.registerFactory(() => MyHomePageViewModel(
+  sl.registerFactory(() => DaLiuRenHomePageViewModel(
         initializeDatabaseUseCase: sl<InitializeDatabaseUseCase>(),
         calculateLiuRenPanUseCase: sl<CalculateLiuRenPanUseCase>(),
         calculateShenShaUseCase: sl<CalculateShenShaUseCase>(),

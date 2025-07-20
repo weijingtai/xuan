@@ -7,6 +7,7 @@ import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart'; // May be used if LiuRenPan has BaZi
+import 'package:daliuren/model/pan_config.dart';
 import 'package:daliuren/presentation/widgets/pan_display_widget.dart';
 import 'package:flutter/material.dart';
 // import 'package:flutter/services.dart'; // No longer directly loading from rootBundle here
@@ -19,24 +20,28 @@ import 'package:provider/provider.dart';
 // Domain entities that the View will now primarily deal with
 import 'package:daliuren/domain/entities/liu_ren_pan_model.dart';
 
-import '../viewmodels/my_home_viewmodel.dart';
+import '../viewmodels/daliuren_home_viewmodel.dart';
 import '../widgets/yu_ding_display_widget.dart';
 
 // View Model
 
-class MyHomePage extends StatefulWidget {
-  DivinationInfoModel divinationInfoModel;
-  const MyHomePage(
-      {super.key,
-      required this.title,
-      divinationInfoModel: DivinationInfoModel()});
-  final String title;
+class DaLiuRenHomePageArguments {
+  DivinationInfoModel? divinationInfoModel;
+  DaLiuRenPanConfig? panConfig;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  String? uuid;
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class DaLiuRenHomePage extends StatefulWidget {
+  DaLiuRenHomePageArguments arguments;
+  final String title;
+  DaLiuRenHomePage({super.key, required this.title, required this.arguments});
+
+  @override
+  State<DaLiuRenHomePage> createState() => _DaLiuRenHomePageState();
+}
+
+class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
   final String ICONS_ASSETS_PATH =
       "assets/icons/"; // Keep for local asset paths if any remain
 
@@ -55,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
       GlobalKey<ShakeWidgetState>();
 
   // Local state for UI interactions (e.g., selected date before "排盘")
-  DateTime? _selectedDateTimeForPan;
+  // DateTime? _selectedDateTimeForPan;
 
   // Local state for manual GanZhi input before submitting to ViewModel
   JiaZi? _manualYearJiaZi;
@@ -75,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // ViewModel initialization (like DB init) is handled by the ViewModel itself now.
     // We can choose to set an initial date for the picker here if desired.
-    _selectedDateTimeForPan = DateTime.now();
+    // _selectedDateTimeForPan = DateTime.now();
   }
 
   @override
@@ -97,8 +102,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<MyHomePageViewModel>();
-    final MyHomePageState state = viewModel.state;
+    final viewModel = context.watch<DaLiuRenHomePageViewModel>();
+    final DaLiuRenHomePageState state = viewModel.state;
 
     return Scaffold(
       appBar: AppBar(
@@ -221,7 +226,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildManualInputSection(
-      BuildContext context, MyHomePageViewModel viewModel) {
+      BuildContext context, DaLiuRenHomePageViewModel viewModel) {
     // This section retains the CustomDropdowns for manual input.
     // Their onChanged callbacks will update the local _manual* variables.
     // The "干支排盘" button will then use these variables.
@@ -338,7 +343,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget _buildActionButtons(
-      BuildContext context, MyHomePageViewModel viewModel) {
+      BuildContext context, DaLiuRenHomePageViewModel viewModel) {
     return Wrap(
       spacing: 16,
       runSpacing: 16,
@@ -349,12 +354,12 @@ class _MyHomePageState extends State<MyHomePage> {
             final result = await showBoardDateTimePicker(
               context: context,
               pickerType: DateTimePickerType.datetime,
-              initialDate: _selectedDateTimeForPan ?? DateTime.now(),
+              initialDate: DateTime.now(),
             );
             if (result != null) {
-              setState(() {
-                _selectedDateTimeForPan = result;
-              });
+              // setState(() {
+              // _selectedDateTimeForPan = result;
+              // });
               // Option 1: Pan immediately after selection
               // viewModel.getPanByTime(result);
             }
@@ -364,9 +369,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ElevatedButton(
           onPressed: () {
             final now = DateTime.now();
-            setState(() {
-              _selectedDateTimeForPan = now;
-            });
+            // setState(() {
+            // _selectedDateTimeForPan = now;
+            // });
             // Option 1: Pan immediately
             // viewModel.getPanByTime(now);
           },
@@ -378,12 +383,11 @@ class _MyHomePageState extends State<MyHomePage> {
               foregroundColor: Colors.white),
           onPressed: () {
             // Option 2: "排盘" button uses the _selectedDateTimeForPan
-            if (_selectedDateTimeForPan != null) {
-              viewModel.calculateByDivinationInfo(_selectedDateTimeForPan!);
-            } else {
-              InteractiveToast.slide(context,
-                  title: const Text("请先选择时间或使用现在时间"));
-            }
+            // if (_selectedDateTimeForPan != null) {
+            // viewModel.calculateByDivinationInfo(widget.divinationInfoModel);
+            // } else {
+            InteractiveToast.slide(context, title: const Text("请先选择时间或使用现在时间"));
+            // }
           },
           child: const Text('依时间排盘'),
         ),
@@ -430,7 +434,7 @@ class _MyHomePageState extends State<MyHomePage> {
             viewModel.clearPan();
             setState(() {
               // Clear local selections too
-              _selectedDateTimeForPan = DateTime.now();
+              // _selectedDateTimeForPan = DateTime.now();
               _manualYearJiaZi = null;
               _manualMonthJiaZi = null;
               _manualDayJiaZi = null;

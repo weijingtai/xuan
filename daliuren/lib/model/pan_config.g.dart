@@ -6,7 +6,8 @@ part of 'pan_config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PanConfig _$PanConfigFromJson(Map<String, dynamic> json) => PanConfig(
+DaLiuRenPanConfig _$DaLiuRenPanConfigFromJson(Map<String, dynamic> json) =>
+    DaLiuRenPanConfig(
       monthGeneralType: $enumDecode(
           _$CalculateMonthGeneralTypeEnumMap, json['monthGeneralType']),
       dayNightBoundaryType: $enumDecode(
@@ -15,7 +16,8 @@ PanConfig _$PanConfigFromJson(Map<String, dynamic> json) => PanConfig(
       dayNight: $enumDecodeNullable(_$EnumDayNightEnumMap, json['dayNight']),
     );
 
-Map<String, dynamic> _$PanConfigToJson(PanConfig instance) => <String, dynamic>{
+Map<String, dynamic> _$DaLiuRenPanConfigToJson(DaLiuRenPanConfig instance) =>
+    <String, dynamic>{
       'monthGeneralType':
           _$CalculateMonthGeneralTypeEnumMap[instance.monthGeneralType]!,
       'dayNightBoundaryType':

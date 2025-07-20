@@ -15,9 +15,9 @@ import 'package:daliuren/core/usecase/usecase.dart';
 
 import '../../domain/services/calculate_month_general_service.dart'; // For NoParams
 
-/// Represents the state of the MyHomePage.
-/// This class is immutable and used by [MyHomePageViewModel] to expose UI state.
-class MyHomePageState {
+/// Represents the state of the DaLiuRenHomePage.
+/// This class is immutable and used by [DaLiuRenHomePageViewModel] to expose UI state.
+class DaLiuRenHomePageState {
   /// True if the database is currently being initialized.
   final bool isInitializing;
 
@@ -39,7 +39,7 @@ class MyHomePageState {
   /// True if the database has been successfully initialized.
   final bool isDbInitialized;
 
-  MyHomePageState({
+  DaLiuRenHomePageState({
     this.isInitializing = false,
     this.isLoadingPan = false,
     this.isLoadingYuDing = false,
@@ -51,7 +51,7 @@ class MyHomePageState {
 
   /// Creates a copy of the current state with updated values.
   /// Allows for controlled state mutation by the ViewModel.
-  MyHomePageState copyWith({
+  DaLiuRenHomePageState copyWith({
     bool? isInitializing,
     bool? isLoadingPan,
     bool? isLoadingYuDing,
@@ -63,7 +63,7 @@ class MyHomePageState {
     bool clearError = false, // If true, error will be set to null
     bool? isDbInitialized,
   }) {
-    return MyHomePageState(
+    return DaLiuRenHomePageState(
       isInitializing: isInitializing ?? this.isInitializing,
       isLoadingPan: isLoadingPan ?? this.isLoadingPan,
       isLoadingYuDing: isLoadingYuDing ?? this.isLoadingYuDing,
@@ -75,26 +75,26 @@ class MyHomePageState {
   }
 }
 
-/// ViewModel for MyHomePage.
-/// It manages the state ([MyHomePageState]) and orchestrates actions by calling use cases.
+/// ViewModel for DaLiuRenHomePage.
+/// It manages the state ([DaLiuRenHomePageState]) and orchestrates actions by calling use cases.
 /// Uses [ChangeNotifier] to notify listeners (typically the UI) of state changes.
-class MyHomePageViewModel with ChangeNotifier {
+class DaLiuRenHomePageViewModel with ChangeNotifier {
   final CalculateLiuRenPanUseCase _calculateLiuRenPanUseCase;
   final CalculateShenShaUseCase _calculateShenShaUseCase;
   // final GetYuDingEntryUseCase _getYuDingEntryUseCase;
   final InitializeDatabaseUseCase _initializeDatabaseUseCase;
 
   /// Current state of the ViewModel.
-  late MyHomePageState _state;
-  MyHomePageState get state => _state;
+  late DaLiuRenHomePageState _state;
+  DaLiuRenHomePageState get state => _state;
 
-  PanConfig defaultConfig = PanConfig(
+  DaLiuRenPanConfig defaultConfig = DaLiuRenPanConfig(
     monthGeneralType: CalculateMonthGeneralType.middleQi,
     dayNightBoundaryType: DayNightBoundaryType.maoYou,
     guiRenType: GuiRenType.Jia_Wu_Geng_Niu_Yang,
   );
 
-  MyHomePageViewModel({
+  DaLiuRenHomePageViewModel({
     required CalculateLiuRenPanUseCase calculateLiuRenPanUseCase,
     required CalculateShenShaUseCase calculateShenShaUseCase,
     // required GetYuDingEntryUseCase getYuDingEntryUseCase,
@@ -104,7 +104,7 @@ class MyHomePageViewModel with ChangeNotifier {
         // _getYuDingEntryUseCase = getYuDingEntryUseCase,
         _initializeDatabaseUseCase = initializeDatabaseUseCase {
     // Set initial state to indicate database initialization is in progress.
-    _state = MyHomePageState(isInitializing: true);
+    _state = DaLiuRenHomePageState(isInitializing: true);
     notifyListeners(); // Notify UI about the initial loading state.
     _initialize(); // Trigger asynchronous database initialization.
   }

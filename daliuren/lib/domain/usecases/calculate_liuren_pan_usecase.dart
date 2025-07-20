@@ -28,7 +28,7 @@ class CalculateLiuRenPanUseCase
 
   @override
   Future<Either<Failure, LiuRenPanModel>> call(
-      PanConfig config, DivinationInfoModel params) async {
+      DaLiuRenPanConfig config, DivinationInfoModel params) async {
     try {
       final DivinationDatetimeModel divinationDatetimeModel =
           params.divinationDatetime.timingInfoListJson!.firstWhere(

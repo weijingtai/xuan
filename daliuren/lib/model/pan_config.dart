@@ -6,24 +6,24 @@ import '../domain/services/calculate_month_general_service.dart';
 part 'pan_config.g.dart';
 
 @JsonSerializable()
-class PanConfig {
+class DaLiuRenPanConfig {
   CalculateMonthGeneralType monthGeneralType;
   DayNightBoundaryType dayNightBoundaryType;
   EnumDayNight? dayNight;
   GuiRenType guiRenType;
 
-  PanConfig(
+  DaLiuRenPanConfig(
       {required this.monthGeneralType,
       required this.dayNightBoundaryType,
       required this.guiRenType,
       this.dayNight});
-  static PanConfig get defaultConfig => PanConfig(
+  static DaLiuRenPanConfig get defaultConfig => DaLiuRenPanConfig(
         monthGeneralType: CalculateMonthGeneralType.middleQi,
         dayNightBoundaryType: DayNightBoundaryType.maoYou,
         guiRenType: GuiRenType.Jia_Wu_Geng_Niu_Yang,
       );
 
-  factory PanConfig.fromJson(Map<String, dynamic> json) =>
-      _$PanConfigFromJson(json);
-  Map<String, dynamic> toJson() => _$PanConfigToJson(this);
+  factory DaLiuRenPanConfig.fromJson(Map<String, dynamic> json) =>
+      _$DaLiuRenPanConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$DaLiuRenPanConfigToJson(this);
 }

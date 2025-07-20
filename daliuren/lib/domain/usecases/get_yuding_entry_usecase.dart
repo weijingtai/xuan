@@ -41,7 +41,7 @@ class GetYuDingEntryUseCase
   /// - Left([Failure]) if an error occurs or the entry is not found.
   @override
   Future<Either<Failure, YuDingEntry>> call(
-      PanConfig config, GetYuDingEntryUseCaseParams params) async {
+      DaLiuRenPanConfig config, GetYuDingEntryUseCaseParams params) async {
     // Basic validation for parameters.
     if (params.dayJiaZi.isEmpty || params.ganShangDiZhi.isEmpty) {
       return Left(InvalidInputFailure(
