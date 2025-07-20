@@ -10,6 +10,7 @@ import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi.dart';
 import 'package:tuple/tuple.dart';
 
+import 'widgets/rings/body_life_circle_widget.dart';
 import 'widgets/rings/circle_text_painter.dart';
 import 'widgets/rings/gong_ming_li_ring.dart';
 import 'navigator.dart';
@@ -124,7 +125,23 @@ class _MyHomePageState extends State<MyHomePage> {
                       outerRadius: 480,
                       innerRadius: 432,
                       baseGongOffsetAngle: 30),
-                  textCicle(),
+                  // textCicle(),
+                  BodyLifeCircleWidget(
+                    bodyLifeModel: BodyLifeModel(
+                      lifeGongInfo:
+                          GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
+                      lifeConstellationInfo: ConstellationDegree(
+                          constellation: Enum28Constellations.Zhen_Shui_Yin,
+                          degree: 2.2),
+                      bodyGongInfo:
+                          GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
+                      bodyConstellationInfo: ConstellationDegree(
+                          constellation: Enum28Constellations.Zhen_Shui_Yin,
+                          degree: 2.2),
+                    ),
+                    itemSize: 80,
+                    ringColor: Colors.blue,
+                  ),
                 ]),
               )
             ],

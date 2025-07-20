@@ -24,14 +24,15 @@ class NavigatorGenerator {
     //       child: const QiZhengSiYuConfigPage(),
     //       // child: ShiJiaQiMenViewPage(),
     //     ),
-    "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
-          providers: [
-            ChangeNotifierProvider<BeautyPageViewModel>(
-                create: (context) => BeautyPageViewModel()..init()),
-          ],
-          child: const BeautyViewPage(),
-          // child: ShiJiaQiMenViewPage(),
-        ),
+    // "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
+    //       providers: [
+    //         ChangeNotifierProvider<BeautyPageViewModel>(
+    //             create: (context) => BeautyPageViewModel()..init()),
+    //       ],
+    //       child: const BeautyViewPage(),
+    //       // child: ShiJiaQiMenViewPage(),
+    //     ),
+    "/qizhengsiyu/panel": (context, {arguments}) => const BeautyViewPage()
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

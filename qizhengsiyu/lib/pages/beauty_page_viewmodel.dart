@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
@@ -63,6 +63,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 此计算方法基于特定术数规则，非标准天文计算。
   static final tz.TZDateTime _ziQiBaseShangHaiTime =
       tz.TZDateTime(tz.getLocation('Asia/Shanghai'), 2013, 4, 9, 2, 58);
+  late final SaveCalculatedPanelUseCase saveCalculatedPanelUseCase;
 
   /// 紫气每日运行角度 (度)。
   /// 每24小时运行 02′07″，约等于 0.0352 度。
@@ -173,7 +174,9 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   /// QiZhengSiYuViewModel 构造函数。
   /// 注意: 移除了 BuildContext 参数，ViewModel 不应持有 UI Context。
-  BeautyPageViewModel();
+  BeautyPageViewModel({
+    required this.saveCalculatedPanelUseCase,
+  });
 
   // MARK: - Initialization
 
@@ -275,8 +278,9 @@ class BeautyPageViewModel extends ChangeNotifier {
     //   await init(); // 如果未初始化则先初始化
     // }
     // 更新服务中的观测者位置
+    PanelConfig panelConfig = _generatePanelConfig();
     _generateBasePanelService = GenerateBasePanelService(
-        panelConfig: _generatePanelConfig(), // 默认配置
+        panelConfig: panelConfig, // 默认配置
         shenShaManager: shenShaManager,
         huaYaoManager: huaYaoManager,
         observerPosition: observerPosition,
@@ -302,6 +306,16 @@ class BeautyPageViewModel extends ChangeNotifier {
       // gongShenShaNotifier.value = basicPanelModel.gongShenShaMapper;
       debugPrint(
           "Basic panel calculated. ${uiBasicLifeStarsNotifier.value!.length}");
+      final timingInfo = _divinationInfoModel!
+          .divinationDatetime.timingInfoListJson!
+          .firstWhere((t) =>
+              t.uuid ==
+              _divinationInfoModel!.divinationDatetime.timingInfoUuid!);
+      saveCalculatedPanelUseCase.execute(
+          basicPanelModel: basicPanelModel,
+          panelConfig: panelConfig,
+          divinationDatetimeModel: timingInfo,
+          requestInfo: _divinationInfoModel!.divination);
     } catch (e) {
       debugPrint("Error calculating basic panel: $e");
       // 根据需要处理错误
@@ -541,7 +555,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    BaseDivinationDatetimeDataModel _tmp =
+    DatatimeDivinationDetailsDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -690,7 +704,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
+    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
@@ -852,34 +866,33 @@ class BeautyPageViewModel extends ChangeNotifier {
     return _generateBasePanelService.calculate();
   }
 
-  late final SaveCalculatedPanelUseCase _saveCalculatedPanelUseCase;
-  late final App74Database _database;
+  // late final App74Database _database;
 
   // 在构造函数或初始化方法中初始化
-  void _initializeUseCases() {
-    _database = App74Database();
-    _saveCalculatedPanelUseCase =
-        SaveCalculatedPanelUseCase(_database.basePanelDao);
-  }
+  // void _initializeUseCases() {
+  //   _database = App74Database();
+  //   _saveCalculatedPanelUseCase =
+  //       SaveCalculatedPanelUseCase(_database.basePanelDao);
+  // }
 
   // 修改现有的计算方法
-  Future<void> calculatePanel() async {
-    try {
-      basicPanelModel = await _generateBasePanelService.calculate();
+  // Future<void> calculatePanel() async {
+  //   try {
+  //     basicPanelModel = await _generateBasePanelService.calculate();
 
-      // 保存计算结果到数据库
-      final savedUuid = await _saveCalculatedPanelUseCase.execute(
-        basicPanelModel: basicPanelModel,
-        panelConfig: panelConfig, // 需要传入当前的配置
-        observerPosition: observerPosition, // 需要传入当前的观测位置
-        divinationUuid: currentDivinationUuid, // 如果有的话
-        seekerUuid: currentSeekerUuid, // 如果有的话
-      );
+  //     // 保存计算结果到数据库
+  //     final savedUuid = await _saveCalculatedPanelUseCase.execute(
+  //       basicPanelModel: basicPanelModel,
+  //       panelConfig: panelConfig, // 需要传入当前的配置
+  //       observerPosition: observerPosition, // 需要传入当前的观测位置
+  //       divinationUuid: currentDivinationUuid, // 如果有的话
+  //       seekerUuid: currentSeekerUuid, // 如果有的话
+  //     );
 
-      print('面板数据已保存，UUID: $savedUuid');
-    } catch (e) {
-      print('保存面板数据失败: $e');
-      // 处理错误
-    }
-  }
+  //     print('面板数据已保存，UUID: $savedUuid');
+  //   } catch (e) {
+  //     print('保存面板数据失败: $e');
+  //     // 处理错误
+  //   }
+  // }
 }

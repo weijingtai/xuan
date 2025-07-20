@@ -1,18 +1,20 @@
-import 'dart:convert';
-import 'package:drift/drift.dart';
+import 'package:common/datamodel/divination_request_info_datamodel.dart';
+import 'package:common/models/divination_datetime.dart';
+import 'package:flutter/rendering.dart';
+import 'package:qizhengsiyu/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'package:uuid/uuid.dart';
-import '../database/app_database.dart';
-import '../database/daos/base_panel_dao.dart';
-import '../database/tables/base_panel_table.dart';
 import '../models/base_panel_model.dart';
+import '../models/pan_entity.dart';
 import '../models/panel_config.dart';
-import '../models/observer_position.dart';
 
 class SaveCalculatedPanelUseCase {
-  final BasePanelDao _basePanelDao;
+  // final BasePanelDao _basePanelDao;
   final Uuid _uuid = const Uuid();
+  IQiZhengSiYuPanRepository qiZhengSiYuPanRepository;
 
-  SaveCalculatedPanelUseCase(this._basePanelDao);
+  SaveCalculatedPanelUseCase({
+    required this.qiZhengSiYuPanRepository,
+  });
 
   /// 保存计算得到的基础面板模型到本地数据库
   ///
@@ -23,163 +25,102 @@ class SaveCalculatedPanelUseCase {
   /// [seekerUuid] 可选的求测人UUID
   ///
   /// 返回保存的记录UUID
-  Future<String> execute({
+  Future<QiZhengSiYuPanEntity> execute({
     required BasePanelModel basicPanelModel,
     required PanelConfig panelConfig,
-    required ObserverPosition observerPosition,
-    String? divinationUuid,
-    String? seekerUuid,
+    required DivinationDatetimeModel divinationDatetimeModel,
+    required DivinationRequestInfoDataModel requestInfo,
   }) async {
     try {
       final uuid = _uuid.v4();
       final now = DateTime.now();
-
-      // 序列化数据
-      final panelDataJson = jsonEncode(basicPanelModel.toJson());
-      final panelConfigJson = jsonEncode(panelConfig.toJson());
-      final observerPositionJson = jsonEncode(observerPosition.toJson());
-
-      // 创建数据库记录
-      final companion = BasePanelTableCompanion(
-        uuid: Value(uuid),
-        createdAt: Value(now),
-        lastUpdatedAt: Value(now),
-        panelData: Value(panelDataJson),
-        panelConfigJson: Value(panelConfigJson),
-        observerPositionJson: Value(observerPositionJson),
-        divinationUuid: Value(divinationUuid),
-        seekerUuid: Value(seekerUuid),
+      QiZhengSiYuPanEntity entity = QiZhengSiYuPanEntity(
+        uuid: uuid,
+        createdAt: now,
+        lastUpdatedAt: now,
+        deletedAt: null,
+        divinationRequestInfoUuid: requestInfo.uuid,
+        panelConfig: panelConfig,
+        panelModel: basicPanelModel,
+        divinationDatetimeModel: divinationDatetimeModel,
       );
-
-      // 保存到数据库
-      await _basePanelDao.insertBasePanel(companion);
-
-      return uuid;
+      await qiZhengSiYuPanRepository.save(entity);
+      // TODO: Dev only
+      List<QiZhengSiYuPanEntity> all =
+          await qiZhengSiYuPanRepository.findAllActive();
+      debugPrint("all: ${all.length}");
+      return entity;
     } catch (e) {
       throw SavePanelException('保存面板数据失败: $e');
     }
   }
 
   /// 更新已存在的面板记录
-  Future<bool> updatePanel({
+  Future<bool> update({
     required String uuid,
     required BasePanelModel basicPanelModel,
     required PanelConfig panelConfig,
-    required ObserverPosition observerPosition,
-    String? divinationUuid,
-    String? seekerUuid,
+    required DivinationDatetimeModel divinationDatetimeModel,
+    required DivinationRequestInfoDataModel requestInfo,
   }) async {
     try {
       final now = DateTime.now();
-
-      // 序列化数据
-      final panelDataJson = jsonEncode(basicPanelModel.toJson());
-      final panelConfigJson = jsonEncode(panelConfig.toJson());
-      final observerPositionJson = jsonEncode(observerPosition.toJson());
-
-      // 创建更新记录
-      final companion = BasePanelTableCompanion(
-        uuid: Value(uuid),
-        lastUpdatedAt: Value(now),
-        panelData: Value(panelDataJson),
-        panelConfigJson: Value(panelConfigJson),
-        observerPositionJson: Value(observerPositionJson),
-        divinationUuid: Value(divinationUuid),
-        seekerUuid: Value(seekerUuid),
+      QiZhengSiYuPanEntity? oldEntity =
+          await qiZhengSiYuPanRepository.findByUuid(uuid);
+      if (oldEntity == null) {
+        debugPrint("this is not entity with {uuid: $uuid} in db");
+        return false;
+      }
+      oldEntity.copyWith(
+        panelModel: basicPanelModel,
+        panelConfig: panelConfig,
+        divinationDatetimeModel: divinationDatetimeModel,
+        lastUpdatedAt: now,
       );
-
-      // 更新数据库
-      return await _basePanelDao.updateBasePanel(companion);
+      await qiZhengSiYuPanRepository.update(oldEntity);
+      return false;
     } catch (e) {
       throw SavePanelException('更新面板数据失败: $e');
     }
   }
 
   /// 根据UUID获取面板数据
-  Future<SavedPanelData?> getPanelByUuid(String uuid) async {
+  Future<QiZhengSiYuPanEntity?> getByUuid(String uuid) async {
     try {
-      final record = await _basePanelDao.getBasePanelByUuid(uuid);
+      final record = await qiZhengSiYuPanRepository.findByUuid(uuid);
       if (record == null) return null;
-
-      return _convertToSavedPanelData(record);
+      return record;
     } catch (e) {
       throw SavePanelException('获取面板数据失败: $e');
     }
   }
 
-  /// 获取所有面板数据
-  Future<List<SavedPanelData>> getAllPanels() async {
-    try {
-      final records = await _basePanelDao.getAllBasePanels();
-      return records.map(_convertToSavedPanelData).toList();
-    } catch (e) {
-      throw SavePanelException('获取面板列表失败: $e');
-    }
-  }
-
   /// 根据占卜UUID获取面板数据
-  Future<List<SavedPanelData>> getPanelsByDivinationUuid(
+  Future<List<QiZhengSiYuPanEntity>> getByDivinationUuid(
       String divinationUuid) async {
     try {
-      final records =
-          await _basePanelDao.getBasePanelsByDivinationUuid(divinationUuid);
-      return records.map(_convertToSavedPanelData).toList();
+      List<QiZhengSiYuPanEntity> resultList =
+          await qiZhengSiYuPanRepository.findByDivinationUuid(divinationUuid);
+      return resultList;
     } catch (e) {
       throw SavePanelException('根据占卜UUID获取面板数据失败: $e');
     }
   }
 
   /// 删除面板数据
-  Future<int> deletePanel(String uuid) async {
+  Future<int> delete(String uuid) async {
     try {
-      return await _basePanelDao.softDeleteBasePanel(uuid);
+      final isExist = await qiZhengSiYuPanRepository.existsByUuid(uuid);
+      if (!isExist) {
+        debugPrint("this is not entity with {uuid: $uuid} in db");
+        return 0;
+      }
+      await qiZhengSiYuPanRepository.delete(uuid);
+      return 1;
     } catch (e) {
       throw SavePanelException('删除面板数据失败: $e');
     }
   }
-
-  /// 转换数据库记录为业务模型
-  SavedPanelData _convertToSavedPanelData(BasePanelModel record) {
-    final panelData = BasePanelModel.fromJson(jsonDecode(record.panelData));
-    final panelConfig =
-        PanelConfig.fromJson(jsonDecode(record.panelConfigJson));
-    final observerPosition =
-        ObserverPosition.fromJson(jsonDecode(record.observerPositionJson));
-
-    return SavedPanelData(
-      uuid: record.uuid,
-      createdAt: record.createdAt,
-      lastUpdatedAt: record.lastUpdatedAt,
-      basicPanelModel: panelData,
-      panelConfig: panelConfig,
-      observerPosition: observerPosition,
-      divinationUuid: record.divinationUuid,
-      seekerUuid: record.seekerUuid,
-    );
-  }
-}
-
-/// 保存的面板数据模型
-class SavedPanelData {
-  final String uuid;
-  final DateTime createdAt;
-  final DateTime lastUpdatedAt;
-  final BasePanelModel basicPanelModel;
-  final PanelConfig panelConfig;
-  final ObserverPosition observerPosition;
-  final String? divinationUuid;
-  final String? seekerUuid;
-
-  SavedPanelData({
-    required this.uuid,
-    required this.createdAt,
-    required this.lastUpdatedAt,
-    required this.basicPanelModel,
-    required this.panelConfig,
-    required this.observerPosition,
-    this.divinationUuid,
-    this.seekerUuid,
-  });
 }
 
 /// 保存面板异常

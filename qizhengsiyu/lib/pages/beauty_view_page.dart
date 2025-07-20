@@ -21,6 +21,7 @@ import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../models/body_life_model.dart';
+import '../widgets/rings/body_life_circle_widget.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
@@ -1014,22 +1015,48 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 height: panelSizeDataModel.outerShenShaSizeOuter,
               )),
         ),
-
         Transform.rotate(
-          angle: -30 * pi / 180,
-          child: ValueListenableBuilder<BasePanelModel?>(
-              valueListenable:
-                  context.read<BeautyPageViewModel>().uiBasePanelNotifier,
-              builder: (ctx, baseModel, _) {
-                if (baseModel == null) {
-                  return Container(
-                    width: panelSizeDataModel.outerShenShaSizeOuter,
-                    height: panelSizeDataModel.outerShenShaSizeOuter,
+            angle: -30 * pi / 180,
+            child: ValueListenableBuilder<BasePanelModel?>(
+                valueListenable:
+                    context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+                builder: (ctx, basePanel, _) {
+                  if (basePanel == null) return Container();
+                  return BodyLifeCircleWidget(
+                    bodyLifeModel: basePanel.bodyLifeModel,
+                    itemSize: 64,
+                    ringColor: Colors.transparent,
+                    textStyle: TextStyle(
+                        fontSize: 12, color: Colors.black38, height: 1),
+                    starTextStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withAlpha(80),
+                            blurRadius: 1,
+                            offset: Offset(0, 1),
+                          ),
+                        ]),
                   );
-                }
-                return center(baseModel);
-              }),
-        ),
+                })),
+
+        // Transform.rotate(
+        //   angle: -30 * pi / 180,
+        //   child: ValueListenableBuilder<BasePanelModel?>(
+        //       valueListenable:
+        //           context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+        //       builder: (ctx, baseModel, _) {
+        //         if (baseModel == null) {
+        //           return Container(
+        //             width: panelSizeDataModel.outerShenShaSizeOuter,
+        //             height: panelSizeDataModel.outerShenShaSizeOuter,
+        //           );
+        //         }
+        //         return center(baseModel);
+        //       }),
+        // ),
       ],
     );
   }
