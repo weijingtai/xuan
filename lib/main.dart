@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
+import 'package:qizhengsiyu/usecases/calculate_fate_dong_wei_usecase.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
@@ -75,6 +76,7 @@ void main() async {
                       ctx.read<app74rep.IQiZhengSiYuPanRepository>())),
           ChangeNotifierProvider<BeautyPageViewModel>(
               create: (ctx) => BeautyPageViewModel(
+                  calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
                   saveCalculatedPanelUseCase:
                       ctx.read<app74usecase.SaveCalculatedPanelUseCase>())
                 ..init()),

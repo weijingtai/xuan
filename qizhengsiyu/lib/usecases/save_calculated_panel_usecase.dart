@@ -27,7 +27,7 @@ class SaveCalculatedPanelUseCase {
   /// 返回保存的记录UUID
   Future<QiZhengSiYuPanEntity> execute({
     required BasePanelModel basicPanelModel,
-    required PanelConfig panelConfig,
+    required BasePanelConfig panelConfig,
     required DivinationDatetimeModel divinationDatetimeModel,
     required DivinationRequestInfoDataModel requestInfo,
   }) async {
@@ -59,7 +59,7 @@ class SaveCalculatedPanelUseCase {
   Future<bool> update({
     required String uuid,
     required BasePanelModel basicPanelModel,
-    required PanelConfig panelConfig,
+    required BasePanelConfig panelConfig,
     required DivinationDatetimeModel divinationDatetimeModel,
     required DivinationRequestInfoDataModel requestInfo,
   }) async {

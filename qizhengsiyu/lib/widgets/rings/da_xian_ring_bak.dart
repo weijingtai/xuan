@@ -12,15 +12,14 @@ import 'sector_painter.dart';
 import 'da_xian_ring_painter.dart';
 
 class DaXianRing extends StatelessWidget {
-  // final Map<EnumTwelveGong, double> gongYearsMapper;
+  final Map<EnumTwelveGong, double> gongYearsMapper;
   final double outerRadius;
   final double innerRadius;
   final RingTextDirection shaTextDirection;
   final double baseGongOffsetAngle;
 
   final List<EnumTwelveGong> gongOrderSeq;
-  Map<EnumTwelveGong, YearMonth> gongYearsMapper;
-  DaXianRing({
+  const DaXianRing({
     super.key,
     required this.gongYearsMapper,
     required this.outerRadius,
@@ -37,9 +36,9 @@ class DaXianRing extends StatelessWidget {
     // 每个item占据的空间是外半径的两倍
     final double itemSize = outerRadius * 2;
 
-    // double totalSlot = gongYearsMapper.values.reduce((a, b) => a + b);
-    // double eachSlotAngle = 360 / totalSlot;
-    // double sweepRadians = eachSlotAngle * math.pi / 180;
+    double totalSlot = gongYearsMapper.values.reduce((a, b) => a + b);
+    double eachSlotAngle = 360 / totalSlot;
+    double sweepRadians = eachSlotAngle * math.pi / 180;
     double middelRadius = innerRadius + (outerRadius - innerRadius) / 2;
 
     // 将角度转换为弧度
@@ -84,7 +83,7 @@ class DaXianRing extends StatelessWidget {
                           color: Colors.blue,
                           outerRadius: outerRadius,
                           innerRadius: outerRadius - 16,
-                          gongYearsMapper: gongYearsMapper,
+                          gongYearsMapper: daXianDongWei,
                           startFromYear: YearMonth(0, 0),
                           gongBorder: const Border(
                               left: BorderSide(color: Colors.black, width: 1),
@@ -159,22 +158,22 @@ class DaXianRing extends StatelessWidget {
     );
   }
 
-  // static Map<EnumTwelveGong, YearMonth> daXianDongWei = {
-  //   // EnumTwelveGong.Zi: YearMonth(10, 2),
-  //   // EnumTwelveGong.Chou: YearMonth(4, 0),
-  //   EnumTwelveGong.Zi: YearMonth(10, 2),
-  //   EnumTwelveGong.Chou: YearMonth(10, 0),
-  //   EnumTwelveGong.Yin: YearMonth(11, 0),
-  //   EnumTwelveGong.Mao: YearMonth.fromYear(15),
-  //   EnumTwelveGong.Chen: YearMonth.fromYear(8),
-  //   EnumTwelveGong.Si: YearMonth.fromYear(7),
-  //   EnumTwelveGong.Wu: YearMonth.fromYear(11),
-  //   EnumTwelveGong.Wei: YearMonth(4, 6),
-  //   EnumTwelveGong.Shen: YearMonth(4, 6),
-  //   EnumTwelveGong.You: YearMonth(4, 6),
-  //   EnumTwelveGong.Xu: YearMonth.fromYear(5),
-  //   EnumTwelveGong.Hai: YearMonth.fromYear(5),
-  // };
+  static Map<EnumTwelveGong, YearMonth> daXianDongWei = {
+    // EnumTwelveGong.Zi: YearMonth(10, 2),
+    // EnumTwelveGong.Chou: YearMonth(4, 0),
+    EnumTwelveGong.Zi: YearMonth(10, 2),
+    EnumTwelveGong.Chou: YearMonth(10, 0),
+    EnumTwelveGong.Yin: YearMonth(11, 0),
+    EnumTwelveGong.Mao: YearMonth.fromYear(15),
+    EnumTwelveGong.Chen: YearMonth.fromYear(8),
+    EnumTwelveGong.Si: YearMonth.fromYear(7),
+    EnumTwelveGong.Wu: YearMonth.fromYear(11),
+    EnumTwelveGong.Wei: YearMonth(4, 6),
+    EnumTwelveGong.Shen: YearMonth(4, 6),
+    EnumTwelveGong.You: YearMonth(4, 6),
+    EnumTwelveGong.Xu: YearMonth.fromYear(5),
+    EnumTwelveGong.Hai: YearMonth.fromYear(5),
+  };
 
   static Map<EnumTwelveGong, YearMonth> daXian106 = {
     EnumTwelveGong.Zi: YearMonth.fromYear(15),

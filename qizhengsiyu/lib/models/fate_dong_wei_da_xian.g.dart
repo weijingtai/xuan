@@ -11,10 +11,10 @@ DaXianGong _$DaXianGongFromJson(Map<String, dynamic> json) => DaXianGong(
       destinyGong:
           $enumDecode(_$EnumDestinyTwelveGongEnumMap, json['destinyGong']),
       gong: $enumDecode(_$EnumTwelveGongEnumMap, json['gong']),
-      start: YearMonthPair.fromJson(json['start'] as Map<String, dynamic>),
-      end: YearMonthPair.fromJson(json['end'] as Map<String, dynamic>),
+      start: YearMonth.fromJson(json['start'] as Map<String, dynamic>),
+      end: YearMonth.fromJson(json['end'] as Map<String, dynamic>),
       totalYears:
-          YearMonthPair.fromJson(json['totalYears'] as Map<String, dynamic>),
+          YearMonth.fromJson(json['totalYears'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DaXianGongToJson(DaXianGong instance) =>
@@ -61,10 +61,10 @@ DaXianFeiXianGong _$DaXianFeiXianGongFromJson(Map<String, dynamic> json) =>
     DaXianFeiXianGong(
       order: (json['order'] as num).toInt(),
       gong: $enumDecode(_$EnumTwelveGongEnumMap, json['gong']),
-      start: YearMonthPair.fromJson(json['start'] as Map<String, dynamic>),
-      end: YearMonthPair.fromJson(json['end'] as Map<String, dynamic>),
+      start: YearMonth.fromJson(json['start'] as Map<String, dynamic>),
+      end: YearMonth.fromJson(json['end'] as Map<String, dynamic>),
       totalYears:
-          YearMonthPair.fromJson(json['totalYears'] as Map<String, dynamic>),
+          YearMonth.fromJson(json['totalYears'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$DaXianFeiXianGongToJson(DaXianFeiXianGong instance) =>

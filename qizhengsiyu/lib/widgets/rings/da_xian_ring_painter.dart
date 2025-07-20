@@ -361,13 +361,13 @@ class DaXianRingPainter extends CustomPainter {
 
     // 绘制文字
     // final YearMonth _baseYear = baseYear + currentYear;
-    String textContent = yearMoth.year.toString();
+    String yearMonthContent = yearMoth.year.toString();
     if (yearMoth.month != 0) {
-      textContent = textContent + "/" + yearMoth.month.toString();
+      yearMonthContent += "/${yearMoth.month}";
     }
     final TextPainter textPainter = TextPainter(
       text: TextSpan(
-        text: textContent,
+        text: yearMonthContent,
         style: textStyle,
       ),
       textDirection: TextDirection.ltr,

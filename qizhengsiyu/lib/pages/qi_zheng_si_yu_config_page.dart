@@ -22,7 +22,7 @@ class QiZhengSiYuConfigPage extends StatefulWidget {
   // final Function(PanelConfig config) onConfigComplete;
 
   /// 初始配置，用于恢复上次的设置
-  final PanelConfig? initialConfig;
+  final BasePanelConfig? initialConfig;
 
   const QiZhengSiYuConfigPage({
     Key? key,

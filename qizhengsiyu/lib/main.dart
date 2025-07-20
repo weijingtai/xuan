@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
@@ -105,22 +106,22 @@ class _MyHomePageState extends State<MyHomePage> {
                   build12DiZhiGong(130, 80),
                   DaXianRing(
                       gongYearsMapper: {
-                        EnumTwelveGong.Zi: 10.25,
+                        EnumTwelveGong.Zi: YearMonth(10, 3),
                         // EnumTwelveGong.Chou: 4.5,
                         // EnumTwelveGong.Zi: 15,
-                        EnumTwelveGong.Chou: 10,
-                        EnumTwelveGong.Yin: 11,
-                        EnumTwelveGong.Mao: 15,
-                        EnumTwelveGong.Chen: 8,
-                        EnumTwelveGong.Si: 7,
-                        EnumTwelveGong.Wu: 11,
-                        EnumTwelveGong.Wei: 4.5,
-                        EnumTwelveGong.Shen: 4.5,
-                        EnumTwelveGong.You: 4.5,
+                        EnumTwelveGong.Chou: YearMonth(10, 0),
+                        EnumTwelveGong.Yin: YearMonth(11, 0),
+                        EnumTwelveGong.Mao: YearMonth(15, 0),
+                        EnumTwelveGong.Chen: YearMonth(8, 0),
+                        EnumTwelveGong.Si: YearMonth(7, 0),
+                        EnumTwelveGong.Wu: YearMonth(11, 0),
+                        EnumTwelveGong.Wei: YearMonth(4, 6),
+                        EnumTwelveGong.Shen: YearMonth(4, 6),
+                        EnumTwelveGong.You: YearMonth(4, 6),
                         // EnumTwelveGong.Shen: 5,
                         // EnumTwelveGong.You: 5,
-                        EnumTwelveGong.Xu: 5,
-                        EnumTwelveGong.Hai: 5,
+                        EnumTwelveGong.Xu: YearMonth(5, 0),
+                        EnumTwelveGong.Hai: YearMonth(5, 0),
                       },
                       outerRadius: 480,
                       innerRadius: 432,

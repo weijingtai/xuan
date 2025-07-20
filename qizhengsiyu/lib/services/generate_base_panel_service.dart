@@ -32,7 +32,7 @@ import 'an_shen_li_ming_service.dart';
 import 'star_angle_strategy.dart';
 
 class GenerateBasePanelService {
-  final PanelConfig panelConfig;
+  final BasePanelConfig panelConfig;
   final ObserverPosition observerPosition;
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;

@@ -2,16 +2,16 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 import '../models/panel_config.dart';
 
-class PanelConfigConverter extends TypeConverter<PanelConfig, String> {
+class PanelConfigConverter extends TypeConverter<BasePanelConfig, String> {
   const PanelConfigConverter();
 
   @override
-  PanelConfig fromSql(String fromDb) {
-    return PanelConfig.fromJson(jsonDecode(fromDb));
+  BasePanelConfig fromSql(String fromDb) {
+    return BasePanelConfig.fromJson(jsonDecode(fromDb));
   }
 
   @override
-  String toSql(PanelConfig value) {
+  String toSql(BasePanelConfig value) {
     return jsonEncode(value.toJson());
   }
 }

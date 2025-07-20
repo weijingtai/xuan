@@ -22,6 +22,7 @@ import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../models/body_life_model.dart';
 import '../widgets/rings/body_life_circle_widget.dart';
+import '../widgets/rings/da_xian_ring.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
@@ -794,51 +795,27 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Container(
-        //   alignment: Alignment.center,
-        //   height: diZhi12GongOuter,
-        //   width: diZhi12GongOuter,
-        //   decoration: BoxDecoration(
-        //     // color: Colors.red.withOpacity(.1),
-        //     borderRadius: BorderRadius.circular(diZhi12GongOuter),
-        //     // border: Border.all(color: Colors.black,width: 1),
-        //   ),
-        //   child: Transform.rotate(
-        //     angle: 75 * pi / 180,
-        //     origin: Offset.zero,
-        //     child: CustomPaint(
-        //         size: Size(diZhi12GongOuter, diZhi12GongOuter),
-        //         painter: TwelveZhiGongCircleRingPrinter(
-        //           innerRadius: 86,
-        //           outerRadius: 148,
-        //           twelveGongList: [
-        //             EnumTwelveGong.Xu,
-        //             EnumTwelveGong.Hai,
-        //             EnumTwelveGong.Zi,
-        //             EnumTwelveGong.Chou,
-        //             EnumTwelveGong.Yin,
-        //             EnumTwelveGong.Mao,
-        //             EnumTwelveGong.Chen,
-        //             EnumTwelveGong.Si,
-        //             EnumTwelveGong.Wu,
-        //             EnumTwelveGong.Wei,
-        //             EnumTwelveGong.Shen,
-        //             EnumTwelveGong.You,
-        //           ],
-        //           starColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
-        //           isAntiClockwise: false,
-        //           innerPadding: 3,
-        //           isReverseText: false,
-        //           isHorizontalText: false,
-        //           textStyle: GoogleFonts.maShanZheng(
-        //             height: 1.2,
-        //             fontSize: 16,
-        //             color: Colors.black87,
-        //           ),
-        //         )),
-        //   ),
-        // ),
-
+        ValueListenableBuilder(
+            valueListenable:
+                context.read<BeautyPageViewModel>().dongWeiFateResultNotifier,
+            builder: (ctx, dongWei, child) {
+              if (dongWei == null) {
+                return SizedBox();
+              }
+              final gongYearMapper = Map.fromEntries(dongWei
+                  .daXianResult.daXianGongs
+                  .map((e) => MapEntry(e.gong, e.totalYears)));
+              return Transform.rotate(
+                angle: -30 * pi / 180,
+                child: DaXianRing(
+                    outerRadius:
+                        (panelSizeDataModel.outerShenShaSizeOuter * .5) + 32,
+                    innerRadius:
+                        (panelSizeDataModel.outerShenShaSizeOuter * .5) + 24,
+                    gongYearsMapper: gongYearMapper,
+                    baseGongOffsetAngle: 30),
+              );
+            }),
         // 十二地支宫
         Transform.rotate(
           angle: -30 * pi / 180,

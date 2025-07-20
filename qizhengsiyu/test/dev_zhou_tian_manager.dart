@@ -23,7 +23,7 @@ import 'package:qizhengsiyu/xing_xian/fei_xian_detail_palace.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 void main() {
-  late PanelConfig panelConfig = PanelConfig(
+  late BasePanelConfig panelConfig = BasePanelConfig(
       panelSystemType: PanelSystemType.tropical,
       celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
       houseDivisionSystem: HouseDivisionSystem.equal,

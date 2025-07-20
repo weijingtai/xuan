@@ -26,7 +26,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   Address? _location;
 
   // 自定义配置
-  late PanelConfig _customConfig;
+  late BasePanelConfig _customConfig;
   BuildContext context;
 
   /// 构造函数
@@ -88,7 +88,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   Address? get location => _location;
 
   /// 获取自定义配置
-  PanelConfig get customConfig => _customConfig;
+  BasePanelConfig get customConfig => _customConfig;
 
   /// 更新配置类型
   void updateQueryType(EnumQueryType configType) {
@@ -111,7 +111,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   }
 
   /// 更新自定义配置
-  void updateCustomConfig(PanelConfig customConfig) {
+  void updateCustomConfig(BasePanelConfig customConfig) {
     _customConfig = customConfig;
   }
 
@@ -185,7 +185,7 @@ class PanelConfigViewModel extends ChangeNotifier {
     }
   }
 
-  static PanelConfig getPreviousPanelConfig() {
+  static BasePanelConfig getPreviousPanelConfig() {
     throw UnimplementedError("从数据库中获取");
     // 从数据库中获取
     //   return PanelConfig(
@@ -203,7 +203,7 @@ class PanelConfigViewModel extends ChangeNotifier {
     //
   }
 
-  PanelConfig getCustomConfig() {
+  BasePanelConfig getCustomConfig() {
     return _customConfig;
   }
 

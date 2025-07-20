@@ -6,7 +6,8 @@ part of 'panel_config.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
+BasePanelConfig _$BasePanelConfigFromJson(Map<String, dynamic> json) =>
+    BasePanelConfig(
       celestialCoordinateSystem: $enumDecode(_$CelestialCoordinateSystemEnumMap,
           json['celestialCoordinateSystem']),
       houseDivisionSystem: $enumDecode(
@@ -29,7 +30,7 @@ PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
           EnumTwelveGong.You,
     );
 
-Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
+Map<String, dynamic> _$BasePanelConfigToJson(BasePanelConfig instance) =>
     <String, dynamic>{
       'celestialCoordinateSystem': _$CelestialCoordinateSystemEnumMap[
           instance.celestialCoordinateSystem]!,
@@ -100,4 +101,22 @@ const _$EnumTwelveGongEnumMap = {
   EnumTwelveGong.You: '酉',
   EnumTwelveGong.Xu: '戌',
   EnumTwelveGong.Hai: '亥',
+};
+
+FatePanelConfig _$FatePanelConfigFromJson(Map<String, dynamic> json) =>
+    FatePanelConfig(
+      mingCountingType: $enumDecode(
+          _$DongWeiDaXianMingGongCountingTypeEnumMap, json['mingCountingType']),
+    );
+
+Map<String, dynamic> _$FatePanelConfigToJson(FatePanelConfig instance) =>
+    <String, dynamic>{
+      'mingCountingType': _$DongWeiDaXianMingGongCountingTypeEnumMap[
+          instance.mingCountingType]!,
+    };
+
+const _$DongWeiDaXianMingGongCountingTypeEnumMap = {
+  DongWeiDaXianMingGongCountingType.HundredSix: 'hundredSix',
+  DongWeiDaXianMingGongCountingType.Ancient: 'Ancient',
+  DongWeiDaXianMingGongCountingType.Modern: 'Modern',
 };

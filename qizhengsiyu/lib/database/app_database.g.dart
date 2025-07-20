@@ -44,10 +44,11 @@ class $QizhengsiyuPanTableTable extends QizhengsiyuPanTable
           'divination_request_info_uuid', aliasedName, false,
           type: DriftSqlType.string, requiredDuringInsert: true);
   @override
-  late final GeneratedColumnWithTypeConverter<PanelConfig, String> panelConfig =
-      GeneratedColumn<String>('panel_config_json', aliasedName, false,
+  late final GeneratedColumnWithTypeConverter<BasePanelConfig, String>
+      panelConfig = GeneratedColumn<String>(
+              'panel_config_json', aliasedName, false,
               type: DriftSqlType.string, requiredDuringInsert: true)
-          .withConverter<PanelConfig>(
+          .withConverter<BasePanelConfig>(
               $QizhengsiyuPanTableTable.$converterpanelConfig);
   @override
   late final GeneratedColumnWithTypeConverter<BasePanelModel, String>
@@ -156,7 +157,7 @@ class $QizhengsiyuPanTableTable extends QizhengsiyuPanTable
     return $QizhengsiyuPanTableTable(attachedDatabase, alias);
   }
 
-  static TypeConverter<PanelConfig, String> $converterpanelConfig =
+  static TypeConverter<BasePanelConfig, String> $converterpanelConfig =
       const PanelConfigConverter();
   static TypeConverter<BasePanelModel, String> $converterpanelModel =
       const BasePanelModelConverter();
@@ -171,7 +172,7 @@ class QizhengsiyuPanTableCompanion
   final Value<DateTime> lastUpdatedAt;
   final Value<DateTime?> deletedAt;
   final Value<String> divinationRequestInfoUuid;
-  final Value<PanelConfig> panelConfig;
+  final Value<BasePanelConfig> panelConfig;
   final Value<BasePanelModel> panelModel;
   final Value<DivinationDatetimeModel> divinationDatetimeModel;
   final Value<int> rowid;
@@ -192,7 +193,7 @@ class QizhengsiyuPanTableCompanion
     required DateTime lastUpdatedAt,
     this.deletedAt = const Value.absent(),
     required String divinationRequestInfoUuid,
-    required PanelConfig panelConfig,
+    required BasePanelConfig panelConfig,
     required BasePanelModel panelModel,
     required DivinationDatetimeModel divinationDatetimeModel,
     this.rowid = const Value.absent(),
@@ -235,7 +236,7 @@ class QizhengsiyuPanTableCompanion
       Value<DateTime>? lastUpdatedAt,
       Value<DateTime?>? deletedAt,
       Value<String>? divinationRequestInfoUuid,
-      Value<PanelConfig>? panelConfig,
+      Value<BasePanelConfig>? panelConfig,
       Value<BasePanelModel>? panelModel,
       Value<DivinationDatetimeModel>? divinationDatetimeModel,
       Value<int>? rowid}) {
@@ -332,7 +333,7 @@ typedef $$QizhengsiyuPanTableTableCreateCompanionBuilder
   required DateTime lastUpdatedAt,
   Value<DateTime?> deletedAt,
   required String divinationRequestInfoUuid,
-  required PanelConfig panelConfig,
+  required BasePanelConfig panelConfig,
   required BasePanelModel panelModel,
   required DivinationDatetimeModel divinationDatetimeModel,
   Value<int> rowid,
@@ -344,7 +345,7 @@ typedef $$QizhengsiyuPanTableTableUpdateCompanionBuilder
   Value<DateTime> lastUpdatedAt,
   Value<DateTime?> deletedAt,
   Value<String> divinationRequestInfoUuid,
-  Value<PanelConfig> panelConfig,
+  Value<BasePanelConfig> panelConfig,
   Value<BasePanelModel> panelModel,
   Value<DivinationDatetimeModel> divinationDatetimeModel,
   Value<int> rowid,
@@ -375,7 +376,7 @@ class $$QizhengsiyuPanTableTableFilterComposer
       column: $table.divinationRequestInfoUuid,
       builder: (column) => ColumnFilters(column));
 
-  ColumnWithTypeConverterFilters<PanelConfig, PanelConfig, String>
+  ColumnWithTypeConverterFilters<BasePanelConfig, BasePanelConfig, String>
       get panelConfig => $composableBuilder(
           column: $table.panelConfig,
           builder: (column) => ColumnWithTypeConverterFilters(column));
@@ -453,7 +454,7 @@ class $$QizhengsiyuPanTableTableAnnotationComposer
   GeneratedColumn<String> get divinationRequestInfoUuid => $composableBuilder(
       column: $table.divinationRequestInfoUuid, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<PanelConfig, String> get panelConfig =>
+  GeneratedColumnWithTypeConverter<BasePanelConfig, String> get panelConfig =>
       $composableBuilder(
           column: $table.panelConfig, builder: (column) => column);
 
@@ -501,7 +502,7 @@ class $$QizhengsiyuPanTableTableTableManager extends RootTableManager<
             Value<DateTime> lastUpdatedAt = const Value.absent(),
             Value<DateTime?> deletedAt = const Value.absent(),
             Value<String> divinationRequestInfoUuid = const Value.absent(),
-            Value<PanelConfig> panelConfig = const Value.absent(),
+            Value<BasePanelConfig> panelConfig = const Value.absent(),
             Value<BasePanelModel> panelModel = const Value.absent(),
             Value<DivinationDatetimeModel> divinationDatetimeModel =
                 const Value.absent(),
@@ -524,7 +525,7 @@ class $$QizhengsiyuPanTableTableTableManager extends RootTableManager<
             required DateTime lastUpdatedAt,
             Value<DateTime?> deletedAt = const Value.absent(),
             required String divinationRequestInfoUuid,
-            required PanelConfig panelConfig,
+            required BasePanelConfig panelConfig,
             required BasePanelModel panelModel,
             required DivinationDatetimeModel divinationDatetimeModel,
             Value<int> rowid = const Value.absent(),

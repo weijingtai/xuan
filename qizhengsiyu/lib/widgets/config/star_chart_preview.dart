@@ -8,7 +8,7 @@ import '../../enums/enum_panel_system_type.dart';
 /// 星盘预览组件
 class StarChartPreview extends StatelessWidget {
   /// 命盘配置
-  final PanelConfig config;
+  final BasePanelConfig config;
 
   /// 预览高度
   final double height;

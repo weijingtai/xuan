@@ -83,7 +83,7 @@ class ZhouTianModelManager {
   }
 
   /// 根据PanelConfig获取对应的ZhouTianModel
-  ZhouTianModel getZhouTianModelBy(PanelConfig config) {
+  ZhouTianModel getZhouTianModelBy(BasePanelConfig config) {
     if (!_isLoaded) {
       throw StateError(
           'ZhouTianModelManager has not been loaded yet. Call load() first.');

@@ -12,7 +12,7 @@ class QiZhengSiYuPanEntity {
   String divinationRequestInfoUuid;
 
   DivinationDatetimeModel divinationDatetimeModel;
-  PanelConfig panelConfig;
+  BasePanelConfig panelConfig;
   BasePanelModel panelModel;
   QiZhengSiYuPanEntity({
     required this.uuid,
@@ -32,7 +32,7 @@ class QiZhengSiYuPanEntity {
     DateTime? deletedAt,
     String? divinationRequestInfoUuid,
     DivinationDatetimeModel? divinationDatetimeModel,
-    PanelConfig? panelConfig,
+    BasePanelConfig? panelConfig,
     BasePanelModel? panelModel,
   }) {
     return QiZhengSiYuPanEntity(

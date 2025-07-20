@@ -1,5 +1,5 @@
+import 'package:common/module.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/fate_year_month_pair.dart';
 
 import 'fate_manager.dart';
 
@@ -21,7 +21,7 @@ class DongWeiChildXianManager {
     EnumDestinyTwelveGong.XiongDi,
     EnumDestinyTwelveGong.CaiBo,
   ];
-  List<EnumDestinyTwelveGong> calculate(YearMonthPair mingXianPair) {
+  List<EnumDestinyTwelveGong> calculate(YearMonth mingXianPair) {
     final allGongSeq = [...childXianGongSeq, ...childXianGongSeq];
     if (mingXianPair.month != 0) {
       return allGongSeq.sublist(0, mingXianPair.year);
