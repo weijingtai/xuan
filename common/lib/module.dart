@@ -16,6 +16,7 @@ export 'datamodel/basic_diviation_info.dart';
 export 'datamodel/basic_person_info.dart';
 
 export 'models/divination_info_model.dart';
+export 'models/chinese_date_info.dart';
 
 // export 'utils/julian_day_converter.dart';
 
