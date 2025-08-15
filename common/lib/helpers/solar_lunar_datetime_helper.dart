@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:common/datamodel/basic_person_info.dart' as my;
 import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:common/models/chinese_date_info.dart';
 import 'package:common/models/jie_qi_info.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/models/seventy_two_phenology.dart';
@@ -16,7 +17,9 @@ import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import '../datamodel/location.dart' as my;
 import '../datamodel/location.dart';
+import '../features/datetime_details/input_info_params.dart';
 import '../shared/enums/enum_jia_zi.dart';
+import '../shared/enums/enum_three_yuan.dart';
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -30,6 +33,116 @@ class SolarLunarDateTimeHelper {
     final standardOffset = tzLocation.currentTimeZone.offset;
     final isDST = offset != standardOffset;
     return isDST;
+  }
+
+  static ChineseDateInfo cacluateChineseDateInfo(
+      DateTime time, ZiShiStrategy strategy) {
+    Lunar lunar;
+    switch (strategy) {
+      case ZiShiStrategy.startFrom23:
+        // 当时间为23点时 算作第二天的子时
+        if (time.hour == 23) {
+          // copy this time
+          DateTime time0 = DateTime.parse(dateFormat.format(time));
+          DateTime newTime = time0.add(const Duration(hours: 1));
+          lunar = Lunar.fromDate(newTime);
+        } else {
+          lunar = Lunar.fromDate(time);
+        }
+        break;
+      case ZiShiStrategy.startFrom0:
+        // 以每日零点作为换日柱与子时，每个时辰相对 startFrom23 中的时间断向后平移一个小时
+        if (time.hour % 2 == 1) {
+          lunar = Lunar.fromDate(time.subtract(const Duration(hours: 1)));
+        } else {
+          lunar = Lunar.fromDate(time);
+        }
+        break;
+      case ZiShiStrategy.splitedZi:
+        lunar = Lunar.fromDate(time);
+        print(lunar.getBaZi());
+        break;
+    }
+
+    List<String> eightCharsStr = lunar.getBaZi();
+
+    EightChars eightChars = EightChars(
+        year: JiaZi.getFromGanZhiValue(eightCharsStr[0])!,
+        month: JiaZi.getFromGanZhiValue(eightCharsStr[1])!,
+        day: JiaZi.getFromGanZhiValue(eightCharsStr[2])!,
+        time: JiaZi.getFromGanZhiValue(eightCharsStr[3])!);
+
+    // 获取 七十二物候
+    Phenology wuHou = Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
+    String jieQi;
+    DateTime jieQiDateTime;
+    DateTime jieQiEndAt;
+    // final DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    if (lunar.getCurrentJieQi() == null) {
+      jieQi = lunar.getPrevJieQi().getName();
+      jieQiDateTime =
+          dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
+      jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
+    } else {
+      jieQi = lunar.getCurrentJieQi()!.getName();
+      jieQiDateTime =
+          dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
+      // 如果当天是节气，getNextJieQi() 还是当前这个，所以需要加2天时间再取
+      jieQiEndAt = dateFormat.parse(lunar
+          .getCurrentJieQi()!
+          .getSolar()
+          .next(2)
+          .getLunar()
+          .getNextJieQi()
+          .getSolar()
+          .toYmdHms());
+    }
+    var threeYuanNineYun = calculateThreeYuanNineYun(lunar.getYear());
+    return ChineseDateInfo(
+        threeYuan: threeYuanNineYun.item1,
+        nineYun: threeYuanNineYun.item2,
+        eightChars: eightChars,
+        phenology: wuHou,
+        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
+        lunarDay: dayMap[lunar.getDayInChinese()]!,
+        isLeapMonth:
+            LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap(),
+        jieQiInfo: JieQiInfo(
+          jieQi: TwentyFourJieQi.fromName(jieQi),
+          startAt: jieQiDateTime,
+          endAt: jieQiEndAt,
+        ));
+  }
+
+  /// 根据年份计算三元九运
+  static Tuple2<YuanYunOrder, NineYun> calculateThreeYuanNineYun(int year) {
+    // 以1864年为基准点，每运20年，每元60年，每个大三元180年
+    int yearOffset = year - 1864;
+
+    // 使用数学取模运算确保结果在0-179范围内
+    int yearInCycle = yearOffset % 180;
+    if (yearInCycle < 0) {
+      yearInCycle += 180;
+    }
+
+    // 计算是第几运（0-8，对应一运到九运）
+    int yunIndex = yearInCycle ~/ 20;
+    yunIndex = yunIndex.clamp(0, 8);
+
+    // 计算三元
+    YuanYunOrder yuanName;
+    if (yunIndex < 3) {
+      yuanName = YuanYunOrder.upper; // 上元：一、二、三运
+    } else if (yunIndex < 6) {
+      yuanName = YuanYunOrder.middle; // 中元：四、五、六运
+    } else {
+      yuanName = YuanYunOrder.lower; // 下元：七、八、九运
+    }
+
+    // 计算九运
+    NineYun nineYun = NineYun.values[yunIndex];
+
+    return Tuple2(yuanName, nineYun);
   }
 
   // item1 八字
@@ -99,10 +212,10 @@ class SolarLunarDateTimeHelper {
       required Location? location,
       required bool isDST,
       required bool isSeersLocation}) {
-    Tuple4<EightChars, Lunar, Phenology, JieQiInfo> eightChars =
+    final Tuple4<EightChars, Lunar, Phenology, JieQiInfo> chineseDateInfo =
         getEighthChars(dateTime);
 
-    final Lunar lunar = eightChars.item2;
+    final Lunar lunar = chineseDateInfo.item2;
     bool isLeapMonth =
         LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
     final result = DivinationDatetimeModel.standard(
@@ -110,12 +223,12 @@ class SolarLunarDateTimeHelper {
       queryUuid: queryUuid,
       datetime: dateTime,
       timezoneStr: timezoneStr,
-      bazi: eightChars.item1,
-      lunarMonth: monthMap[eightChars.item2.getMonthInChinese()]!,
-      lunarDay: dayMap[eightChars.item2.getDayInChinese()]!,
+      bazi: chineseDateInfo.item1,
+      lunarMonth: monthMap[chineseDateInfo.item2.getMonthInChinese()]!,
+      lunarDay: dayMap[chineseDateInfo.item2.getDayInChinese()]!,
       isLeapMonth: isLeapMonth,
       isSeersLocation: isSeersLocation,
-      jieQiInfo: eightChars.item4,
+      jieQiInfo: chineseDateInfo.item4,
       isDst: isDST,
       location: location,
     );
@@ -131,9 +244,8 @@ class SolarLunarDateTimeHelper {
       required int hourAdjusted,
       required Location? location,
       required bool isSeersLocation}) {
-    Tuple4<EightChars, Lunar, Phenology, JieQiInfo> eightChars =
-        getEighthChars(dateTime);
-    final Lunar lunar = eightChars.item2;
+    final chineseDateInfo = getEighthChars(dateTime);
+    final Lunar lunar = chineseDateInfo.item2;
     bool isLeapMonth =
         LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
     return DivinationDatetimeModel.removeDST(
@@ -142,12 +254,12 @@ class SolarLunarDateTimeHelper {
         hourAdjusted: hourAdjusted,
         datetime: dateTime,
         timezoneStr: timezoneStr,
-        bazi: eightChars.item1,
-        lunarMonth: monthMap[eightChars.item2.getMonthInChinese()]!,
-        lunarDay: dayMap[eightChars.item2.getDayInChinese()]!,
+        bazi: chineseDateInfo.item1,
+        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
+        lunarDay: dayMap[lunar.getDayInChinese()]!,
         isLeapMonth: isLeapMonth,
         isSeersLocation: isSeersLocation,
-        jieQiInfo: eightChars.item4,
+        jieQiInfo: chineseDateInfo.item4,
         location: location);
   }
 
@@ -169,9 +281,8 @@ class SolarLunarDateTimeHelper {
             address.province.coordinates.longitude);
 
     // print("meanDateTime: $meanDateTime");
-    Tuple4<EightChars, Lunar, Phenology, JieQiInfo> eightChars =
-        getEighthChars(meanDateTime);
-    final Lunar lunar = eightChars.item2;
+    final chineseDateInfo = getEighthChars(meanDateTime);
+    final Lunar lunar = chineseDateInfo.item2;
     bool isLeapMonth =
         LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
 
@@ -180,13 +291,13 @@ class SolarLunarDateTimeHelper {
         queryUuid: queryUuid,
         datetime: meanDateTime,
         timezoneStr: tzDateTime.timeZoneName,
-        bazi: eightChars.item1,
-        lunarMonth: monthMap[eightChars.item2.getMonthInChinese()]!,
-        lunarDay: dayMap[eightChars.item2.getDayInChinese()]!,
+        bazi: chineseDateInfo.item1,
+        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
+        lunarDay: dayMap[lunar.getDayInChinese()]!,
         isLeapMonth: isLeapMonth,
         isSeersLocation: isSeersLocation,
         address: address,
-        jieQiInfo: eightChars.item4);
+        jieQiInfo: chineseDateInfo.item4);
   }
 
   /// 方法将会自动处理夏令时，即，将时间调整到夏令时前的时间
@@ -242,9 +353,8 @@ class SolarLunarDateTimeHelper {
     // meanDateTime, coordinates.longitude);
     DateTime trueSolarTime = calculateTrueSolarTimeFromLocalClockTime(
         localDatetime, coordinates.longitude, timezoneStr);
-    Tuple4<EightChars, Lunar, Phenology, JieQiInfo> eightChars =
-        getEighthChars(trueSolarTime);
-    final Lunar lunar = eightChars.item2;
+    final chineseDateInfo = getEighthChars(trueSolarTime);
+    final Lunar lunar = chineseDateInfo.item2;
     bool isLeapMonth =
         LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
     return DivinationDatetimeModel.trueSolar(
@@ -252,13 +362,13 @@ class SolarLunarDateTimeHelper {
       queryUuid: queryUuid,
       datetime: trueSolarTime,
       timezoneStr: timezoneStr,
-      bazi: eightChars.item1,
-      lunarMonth: monthMap[eightChars.item2.getMonthInChinese()]!,
-      lunarDay: dayMap[eightChars.item2.getDayInChinese()]!,
+      bazi: chineseDateInfo.item1,
+      lunarMonth: monthMap[chineseDateInfo.item2.getMonthInChinese()]!,
+      lunarDay: dayMap[chineseDateInfo.item2.getDayInChinese()]!,
       isLeapMonth: isLeapMonth,
       isSeersLocation: isSeersLocation,
       coordinates: coordinates,
-      jieQiInfo: eightChars.item4,
+      jieQiInfo: chineseDateInfo.item4,
     );
   }
 

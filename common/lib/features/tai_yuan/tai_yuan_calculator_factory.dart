@@ -1,5 +1,5 @@
 import 'package:common/datamodel/datetime_divination_datamodel.dart';
-import 'package:common/tai_yuan/tai_yuan_model.dart';
+import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 
 import 'tai_yuan_calculator.dart';
 import 'enum_calculate_strategy.dart';
