@@ -1,6 +1,6 @@
 import 'package:common/shared/shared.dart';
 
-import '../../datamodel/datetime_divination_datamodel.dart';
+import '../../../datamodel/datetime_divination_datamodel.dart';
 import '../tai_yuan_calculator.dart';
 import '../tai_yuan_model.dart';
 import '../enum_calculate_strategy.dart';

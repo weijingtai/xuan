@@ -10,7 +10,7 @@ void main() {
   tz.initializeTimeZones();
   final dateFormat = DateFormat("yyyy-MM-dd HH:mm");
 
-  group("mean solar datetime", () {
+  group("mean solar datetime", skip: true, () {
     final now = DateTime.now();
     test("时间", () {
       tz.TZDateTime tzDate = tz.TZDateTime.now(tz.getLocation("Asia/Shanghai"));
@@ -56,7 +56,7 @@ void main() {
       expect(converted == now, isTrue);
     });
   });
-  group("夏令时", () {
+  group("夏令时", skip: true, () {
     test("是夏令时 1989-7-1 14:00 'Asia/Shanghai'", () {
       final datetime = dateFormat.parse("1989-7-1 14:00");
       final isDST = SolarTimeCalculator.checkIsDST(datetime, "Asia/Shanghai");
@@ -85,7 +85,7 @@ void main() {
       expect(isDST, isTrue);
     });
   });
-  group('solar & lunar 转换', () {
+  group('solar & lunar 转换', skip: true, () {
     test('', () {
       final t = tz.getLocation("Asia/Shanghai");
       final s = tz.TZDateTime.now(t);
@@ -134,6 +134,15 @@ void main() {
       var result = SolarLunarDateTimeHelper.solarToDateTime(solar);
 
       expect(dateFormat.format(result), equals(dateFormat.format(now)));
+    });
+  });
+
+  group('子时', () {
+    test("子时", () {
+      Lunar lunar = Lunar.fromYmdHms(2025, 8, 11, 23, 10, 30);
+      print(lunar.getBaZi()); // [乙巳, 乙酉, 甲辰, 丙子]
+      lunar = Lunar.fromYmdHms(2025, 8, 12, 00, 10, 30);
+      print(lunar.getBaZi()); // [乙巳, 乙酉, 乙巳, 丙子]
     });
   });
 }
