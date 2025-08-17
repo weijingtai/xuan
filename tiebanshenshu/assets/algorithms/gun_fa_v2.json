@@ -1,0 +1,116 @@
+{
+  "name": "八卦滚法V2-原子化实现",
+  "version": "1.0.0",
+  "description": "使用原子操作流实现的八卦滚法V2。",
+  "createdAt": "2025-08-17T16:44:00.000Z",
+  "updatedAt": "2025-08-17T16:44:00.000Z",
+  "globalConfig": {
+    "gun_fa_v2_config": {
+      "evenNumberConfig": { "numberOperationStrategy": "mode", "factorNumber": 8, "guaConversionStrategy": "toHouTian", "withLength": true },
+      "oddNumberConfig": { "numberOperationStrategy": "mode", "factorNumber": 8, "guaConversionStrategy": "toXianTian", "withLength": true },
+      "isOddAsTopGua": true,
+      "ganToNumberStrategy": "taiXuanNumber",
+      "zhiToNumberStrategy": "taiXuanNumber",
+      "firstGuaType": "互",
+      "secondGuaStrategy": { "needExchange": false, "needCuoGua": false, "guaType": "本", "baseGuaSource": "first", "needVariation": true },
+      "thirdGuaStrategy": { "needExchange": false, "needCuoGua": false, "guaType": "互", "baseGuaSource": "first" },
+      "fourthGuaStrategy": { "needExchange": false, "needCuoGua": false, "guaType": "互", "baseGuaSource": "second" }
+    }
+  },
+  "steps": [
+    {
+      "id": "generate_first_four_gua",
+      "name": "生成前四卦",
+      "operationId": "generate_four_gua",
+      "inputs": {
+        "fourZhu": "input.fourZhu",
+        "threeYuan": "input.threeYuan",
+        "gender": "input.gender",
+        "config": "config.gun_fa_v2_config"
+      },
+      "outputs": {
+        "fourGuaList": "intermediate.first_four_gua",
+        "variationBase": "intermediate.variation_base"
+      }
+    },
+    {
+      "id": "get_fifth_bianyao_num",
+      "name": "计算第五卦变爻基数",
+      "operationId": "math_calculation",
+      "inputs": {
+        "operands": ["{{intermediate.variation_base}}", 6],
+        "operation": "modulo"
+      },
+      "outputs": { "result": "intermediate.fifth_bianyao_num" }
+    },
+    {
+      "id": "get_change_positions",
+      "name": "获取变爻位置",
+      "operationId": "get_change_positions",
+      "inputs": { "remainder": "{{intermediate.fifth_bianyao_num}}" },
+      "outputs": { "positions": "intermediate.change_positions" }
+    },
+    {
+      "id": "generate_last_four_gua",
+      "name": "生成后四卦",
+      "operationId": "loop",
+      "inputs": {
+        "items": "intermediate.first_four_gua",
+        "operation": {
+          "operationId": "apply_gua_exchange_transform",
+          "inputs": {
+            "gua": "{{currentItem}}",
+            "positions": "{{intermediate.change_positions}}"
+          }
+        }
+      },
+      "outputs": { "results": "intermediate.last_four_gua_results" }
+    },
+    {
+      "id": "extract_last_four_gua_strings",
+      "name": "提取后四卦字符串",
+      "operationId": "data_mapping",
+      "inputs": {
+        "data": "intermediate.last_four_gua_results",
+        "mapping_rules": { "resultGua": "gua" }
+      },
+      "outputs": { "mapped_data": "intermediate.last_four_gua" }
+    },
+    {
+      "id": "combine_eight_gua",
+      "name": "合并八个卦",
+      "operationId": "array_composition",
+      "inputs": {
+        "elements": ["{{intermediate.first_four_gua}}", "{{intermediate.last_four_gua}}"],
+        "mode": "flatten"
+      },
+      "outputs": { "composed_array": "intermediate.eight_gua_list" }
+    },
+    {
+      "id": "calculate_all_tiaowen",
+      "name": "计算所有条文",
+      "operationId": "loop",
+      "inputs": {
+        "items": "intermediate.eight_gua_list",
+        "operation": {
+          "operationId": "get_gua_three_numbers",
+          "inputs": { "gua": "{{currentItem}}" }
+        }
+      },
+      "outputs": { "results": "intermediate.three_numbers_results" }
+    },
+    {
+      "id": "calculate_final_tiaowen_list",
+      "name": "生成最终条文列表",
+      "operationId": "loop",
+      "inputs": {
+        "items": "intermediate.three_numbers_results",
+        "operation": {
+          "operationId": "calculate_tiaowen_from_numbers",
+          "inputs": { "numbers": "{{currentItem.numbers}}" }
+        }
+      },
+      "outputs": { "results": "output.final_tiaowen_list" }
+    }
+  ]
+}

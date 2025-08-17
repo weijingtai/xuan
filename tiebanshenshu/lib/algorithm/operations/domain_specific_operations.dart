@@ -110,12 +110,92 @@ class CalculateTaixuanSumsAtom extends AtomicOperation {
   }
 }
 
+class GenerateFourGuaAtom extends AtomicOperation {
+  GenerateFourGuaAtom()
+      : super(
+          id: 'generate_four_gua',
+          name: '生成前四卦',
+          category: '领域专用',
+          description: '根据四柱、三元、性别和多种配置策略，生成基础的前四卦。',
+          version: 'v0.1',
+        );
+
+  @override
+  Map<String, ParameterDefinition> get inputParameters => {
+        'fourZhu': ParameterDefinition(name: 'fourZhu', type: ParameterType.any, required: true),
+        'threeYuan': ParameterDefinition(name: 'threeYuan', type: ParameterType.str, required: true),
+        'gender': ParameterDefinition(name: 'gender', type: ParameterType.str, required: true),
+        'config': ParameterDefinition(name: 'config', type: ParameterType.dict, required: true, description: '包含所有计算策略的配置对象'),
+      };
+
+  @override
+  Map<String, ParameterDefinition> get outputParameters => {
+        'basicGua': ParameterDefinition(name: 'basicGua', type: ParameterType.str, required: true),
+        'basicNumber': ParameterDefinition(name: 'basicNumber', type: ParameterType.intNum, required: true),
+        'variationBase': ParameterDefinition(name: 'variationBase', type: ParameterType.intNum, required: true),
+        'fourGuaList': ParameterDefinition(name: 'fourGuaList', type: ParameterType.array, required: true),
+      };
+
+  @override
+  Map<String, ParameterDefinition> get configParameters => {};
+
+  @override
+  Future<Map<String, dynamic>> execute(
+    ExecutionContext context,
+    Map<String, dynamic> inputs,
+    Map<String, dynamic> config,
+  ) async {
+    throw UnimplementedError(
+        "The core logic for 'generate_four_gua' is highly complex and has not been implemented.");
+  }
+}
+
+
+/// Wrapper class for domain-specific operations.
+class GetChangePositionsAtom extends AtomicOperation {
+  GetChangePositionsAtom() : super(id: 'get_change_positions', name: '获取变爻位置', category: '领域专用', description: '根据余数获取需要变化的爻位置', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'remainder': ParameterDefinition(name: 'remainder', type: ParameterType.intNum, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'positions': ParameterDefinition(name: 'positions', type: ParameterType.array, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class ApplyGuaExchangeTransformAtom extends AtomicOperation {
+  ApplyGuaExchangeTransformAtom() : super(id: 'apply_gua_exchange_transform', name: '执行卦变换', category: '领域专用', description: '执行卦的变爻和上下交换', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'gua': ParameterDefinition(name: 'gua', type: ParameterType.str, required: true), 'positions': ParameterDefinition(name: 'positions', type: ParameterType.array, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'resultGua': ParameterDefinition(name: 'resultGua', type: ParameterType.str, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class GetGuaThreeNumbersAtom extends AtomicOperation {
+  GetGuaThreeNumbersAtom() : super(id: 'get_gua_three_numbers', name: '获取卦三数', category: '领域专用', description: '获取一个卦对应的天地人三数', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'gua': ParameterDefinition(name: 'gua', type: ParameterType.str, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'numbers': ParameterDefinition(name: 'numbers', type: ParameterType.dict, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class CalculateTiaowenFromNumbersAtom extends AtomicOperation {
+  CalculateTiaowenFromNumbersAtom() : super(id: 'calculate_tiaowen_from_numbers', name: '根据三数计算条文', category: '领域专用', description: '根据天地人三数计算条文列表', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'numbers': ParameterDefinition(name: 'numbers', type: ParameterType.dict, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'tiaowenList': ParameterDefinition(name: 'tiaowenList', type: ParameterType.array, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+
 /// Wrapper class for domain-specific operations.
 class DomainSpecificOperations {
   static List<AtomicOperation> getOperations() {
     return [
       GenerateNajiaAtom(),
       CalculateTaixuanSumsAtom(),
+      GenerateFourGuaAtom(),
+      GetChangePositionsAtom(),
+      ApplyGuaExchangeTransformAtom(),
+      GetGuaThreeNumbersAtom(),
+      CalculateTiaowenFromNumbersAtom(),
     ];
   }
 }
