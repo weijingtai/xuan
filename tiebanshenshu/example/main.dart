@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/data/repositories/algorithm_repository.dart';
 import 'package:tiebanshenshu/data/repositories/atomic_operation_repository.dart';
 import 'package:tiebanshenshu/data/repositories/mock_algorithm_repository.dart';
-import 'package:tiebanshenshu/data/repositories/mock_atomic_operation_repository.dart';
+import 'package:tiebanshenshu/data/repositories/production_atomic_operation_repository.dart';
 import 'package:tiebanshenshu/ui/views/algorithm_editor_view.dart';
 import 'package:tiebanshenshu/ui/views/algorithm_list_view.dart';
 import 'package:tiebanshenshu/ui/views/step_editor_view.dart';
@@ -24,7 +24,7 @@ class AlgorithmEditorApp extends StatelessWidget {
           create: (_) => MockAlgorithmRepository(),
         ),
         Provider<AtomicOperationRepository>(
-          create: (_) => MockAtomicOperationRepository(),
+          create: (_) => ProductionAtomicOperationRepository(),
         ),
       ],
       child: MaterialApp(
