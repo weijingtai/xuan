@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:tiebanshenshu/algorithm/models/atomic_operation.dart';
-import 'package.collection/collection.dart';
+import 'package:collection/collection.dart';
 import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
 import 'package:tiebanshenshu/data/repositories/atomic_operation_repository.dart';
 

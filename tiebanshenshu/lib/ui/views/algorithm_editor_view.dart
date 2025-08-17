@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
-import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/ui/viewmodels/algorithm_editor_viewmodel.dart';
 
 class AlgorithmEditorView extends StatefulWidget {
@@ -28,16 +27,21 @@ class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
             },
           ),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () async {
-                final success = await _viewModel.saveAlgorithm();
-                if (mounted) {
-                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(success ? '保存成功' : '保存失败: ${_viewModel.error}')),
-                  );
-                }
-              },
+            Consumer<AlgorithmEditorViewModel>(
+              builder: (context, vm, _) => IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: () async {
+                  final success = await vm.saveAlgorithm();
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(success
+                              ? '保存成功'
+                              : '保存失败: ${vm.error}')),
+                    );
+                  }
+                },
+              ),
             ),
           ],
         ),
@@ -81,7 +85,7 @@ class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
                         onPressed: () async {
                           final newStep = await Navigator.pushNamed(
                             context,
-                            '/algorithm_editor/step',
+                            '/step',
                             arguments: {
                               'precedingSteps': vm.algorithm!.steps,
                             },
@@ -123,7 +127,7 @@ class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
                                   onPressed: () async {
                                     final updatedStep = await Navigator.pushNamed(
                                       context,
-                                      '/algorithm_editor/step',
+                                      '/step',
                                       arguments: {
                                         'editingStep': step,
                                         'precedingSteps': vm.algorithm!.steps.sublist(0, index),

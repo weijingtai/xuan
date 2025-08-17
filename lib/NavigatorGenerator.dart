@@ -1,9 +1,5 @@
 import 'package:common/main.dart';
 import 'package:flutter/material.dart';
-import 'package:tiebanshenshu/ui/views/algorithm_editor_view.dart';
-import 'package:tiebanshenshu/ui/views/algorithm_list_view.dart';
-import 'package:tiebanshenshu/ui/views/step_editor_view.dart';
-import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
 import 'package:logger/logger.dart';
 
 import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
@@ -18,18 +14,6 @@ class NavigatorGenerator {
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    '/algorithm_editor': (context, {arguments}) => const AlgorithmListView(),
-    '/algorithm_editor/edit': (context, {arguments}) {
-      final args = arguments as Map<String, dynamic>?;
-      return AlgorithmEditorView(algorithmId: args?['id'] as String?);
-    },
-    '/algorithm_editor/step': (context, {arguments}) {
-      final args = arguments as Map<String, dynamic>;
-      return StepEditorView(
-        editingStep: args['editingStep'] as ExecutionStep?,
-        precedingSteps: args['precedingSteps'] as List<ExecutionStep>,
-      );
-    },
     // "/": (context,{arguments}) => RootPage(),
     // "/": (context, {arguments}) => CityPickerPage(),
     "/one_year": (context, {arguments}) => OneYearCircle(),

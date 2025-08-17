@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/algorithm/models/atomic_operation.dart';
 import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
 import 'package:tiebanshenshu/ui/viewmodels/step_editor_viewmodel.dart';
-import 'package:provider/provider.dart';
 
 class StepEditorView extends StatefulWidget {
   final ExecutionStep? editingStep;
@@ -32,14 +31,16 @@ class _StepEditorViewState extends State<StepEditorView> {
         appBar: AppBar(
           title: Text(widget.editingStep == null ? '创建新步骤' : '编辑步骤'),
           actions: [
-            IconButton(
-              icon: const Icon(Icons.save),
-              onPressed: () {
-                final step = _viewModel.buildStep();
-                if (step != null) {
-                  Navigator.of(context).pop(step);
-                }
-              },
+            Consumer<StepEditorViewModel>(
+              builder: (context, vm, _) => IconButton(
+                icon: const Icon(Icons.save),
+                onPressed: () {
+                  final step = vm.buildStep();
+                  if (step != null) {
+                    Navigator.of(context).pop(step);
+                  }
+                },
+              ),
             )
           ],
         ),
