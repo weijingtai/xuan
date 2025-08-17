@@ -10,7 +10,7 @@ import 'package:json_annotation/json_annotation.dart';
 import '../../helpers/solar_lunar_datetime_helper.dart';
 import '../../models/chinese_date_info.dart';
 import '../../models/divination_datetime.dart';
-import 'calculation_config.dart';
+import 'calculation_strategy_config.dart';
 import 'processors/solar_time_processor.dart';
 
 @JsonEnum()
