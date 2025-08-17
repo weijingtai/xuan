@@ -44,7 +44,7 @@ class AlgorithmListView extends StatelessWidget {
                   onTap: () {
                     Navigator.pushNamed(
                       context,
-                      '/algorithm_editor/edit',
+                      '/edit',
                       arguments: {'id': summary.id},
                     );
                   },
@@ -55,7 +55,7 @@ class AlgorithmListView extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            Navigator.pushNamed(context, '/algorithm_editor/edit');
+            Navigator.pushNamed(context, '/edit');
           },
           child: const Icon(Icons.add),
           tooltip: '创建新算法',

@@ -7,10 +7,6 @@ import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:tiebanshenshu/data/repositories/algorithm_repository.dart';
-import 'package:tiebanshenshu/data/repositories/atomic_operation_repository.dart';
-import 'package:tiebanshenshu/data/repositories/mock_algorithm_repository.dart';
-import 'package:tiebanshenshu/data/repositories/mock_atomic_operation_repository.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
@@ -61,12 +57,6 @@ void main() async {
     runApp(
       MultiProvider(
         providers: [
-          Provider<AlgorithmRepository>(
-            create: (_) => MockAlgorithmRepository(),
-          ),
-          Provider<AtomicOperationRepository>(
-            create: (_) => MockAtomicOperationRepository(),
-          ),
           Provider<db.AppDatabase>(
             create: (ctx) => db.AppDatabase(),
             dispose: (ctx, db) => db.close(),
@@ -136,12 +126,11 @@ class MyApp extends StatelessWidget {
       ),
       showSemanticsDebugger: false,
       onGenerateRoute: NavigatorGenerator.generateRoute,
-      initialRoute: '/algorithm_editor',
       // initialRoute: '/qizhengsiyu',
       // initialRoute: '/one_year',
       // initialRoute: '/dev', // 七政四余
       // initialRoute: '/common/dev', // 占测记录
-      // initialRoute: '/qizhengsiyu/panel', // 七政四余
+      initialRoute: '/qizhengsiyu/panel', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
       // initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲

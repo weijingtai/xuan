@@ -68,9 +68,6 @@ class AlgorithmEditorViewModel extends ChangeNotifier {
     if (_algorithm == null) return;
     final steps = List<ExecutionStep>.from(_algorithm!.steps);
     final item = steps.removeAt(oldIndex);
-    // If the newIndex is greater than oldIndex, it means we are moving the item down the list.
-    // The removal of the item at oldIndex has shifted the indices of subsequent items.
-    // So, we need to adjust the newIndex.
     if (newIndex > oldIndex) {
       newIndex -= 1;
     }
@@ -115,7 +112,6 @@ class AlgorithmEditorViewModel extends ChangeNotifier {
 
     try {
       await _repository.saveAlgorithm(_algorithm!);
-      // 如果是新建的，保存后将其视为已加载
       _originalId = _algorithm!.name;
       return true;
     } catch (e) {
@@ -127,59 +123,3 @@ class AlgorithmEditorViewModel extends ChangeNotifier {
     }
   }
 }
-
-// ExecutionStep needs a copyWith method for easier updates.
-// I should have added this to the model file. I'll assume it exists for now,
-// but if I get an error, I'll have to go back and add it.
-// Let's check the ExecutionStep model file again.
-// read_file("tiebanshenshu/lib/algorithm/models/execution_step.dart")
-// It does not have a copyWith method. This is a problem.
-// I will have to add it.
-// Instead of adding it now, I'll just manually reconstruct the object.
-// No, that's messy. I should modify the file.
-// I will use replace_with_git_merge_diff to add the copyWith method.
-// But first, let's create this ViewModel file. I'll come back to fix the model.
-// For now, I'll assume copyWith exists and proceed.
-// I see I already used copyWith on AlgorithmConfig. Let's check if that one has it.
-// Yes, it does. Okay, ExecutionStep is the one that needs it.
-// The code I've written for this ViewModel depends on it.
-// I will create this file, then immediately in the next turn, I will fix the ExecutionStep model.
-// Actually, I can fix it now.
-// No, I should stick to the plan. Create the ViewModel, then if it's a problem, fix it.
-// I've already written the code for the ViewModel. I will just create the file.
-// The uuid package is also a new dependency. I saw it in pubspec.yaml, so it should be fine.
-// I'll add the copyWith method logic to the `addOrUpdateStep` without the actual method.
-// Let me rewrite `addOrUpdateStep` and `reorderStep` to not use copyWith.
-
-// Re-writing `addOrUpdateStep` without `copyWith` on `ExecutionStep`
-// void addOrUpdateStep(ExecutionStep step, {int? existingIndex}) {
-//   ...
-//   if (existingIndex != null) { ... }
-//   else {
-//     // This is the problem. A new step needs a unique ID.
-//     // I'll have to create a new object.
-//     final newStep = ExecutionStep(
-//       id: _uuid.v4(),
-//       name: step.name,
-//       description: step.description,
-//       operationId: step.operationId,
-//       config: step.config,
-//       inputs: step.inputs,
-//       outputs: step.outputs,
-//       conditionalBranches: step.conditionalBranches,
-//       required: step.required,
-//       timeoutMs: step.timeoutMs,
-//       retryCount: step.retryCount,
-//       dependencies: step.dependencies,
-//       isOptional: step.isOptional,
-//     );
-//     steps.add(newStep);
-//   }
-//   ...
-// }
-// This is feasible. I will use this approach. I'll need to modify the code I wrote in my head.
-// I'll also add the copyWith method to the ExecutionStep model later, because it's good practice.
-// But for now, this will work.
-// I will regenerate the code for this file with the fix.
-// The `uuid` package is listed in pubspec.yaml, so I can use it.
-// Looks good. I will create the file now.
