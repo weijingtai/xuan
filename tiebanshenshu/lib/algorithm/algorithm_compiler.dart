@@ -66,6 +66,7 @@ class AlgorithmCompiler {
         inputs: inputs,
         config: config,
         operationRegistry: _operationRegistry,
+        compiler: this, // Pass self to context
       );
 
       // 执行算法

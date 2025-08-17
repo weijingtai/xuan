@@ -1,0 +1,90 @@
+{
+  "name": "太玄四柱-原子化实现 (v2 - 模块化)",
+  "version": "2.0.0",
+  "description": "使用子流程和高级循环实现的模块化太玄四柱取数法。",
+  "createdAt": "2025-08-16T19:57:00.000Z",
+  "updatedAt": "2025-08-16T19:57:00.000Z",
+  "globalConfig": {},
+  "steps": [
+    {
+      "id": "get_four_zhu_details",
+      "name": "获取四柱详情",
+      "operationId": "field_extraction",
+      "inputs": {
+        "data": "input.birthInfo",
+        "fields": [
+          "fourZhu.yearGanzhi", "fourZhu.monthGanzhi", "fourZhu.dayGanzhi", "fourZhu.timeGanzhi",
+          "fourZhu.isYangGanYear"
+        ]
+      },
+      "outputs": { "extracted_fields": "intermediate.four_zhu_details" }
+    },
+    {
+      "id": "prepare_pillar_list",
+      "name": "准备四柱干支列表",
+      "operationId": "array_composition",
+      "inputs": {
+        "elements": [
+          "{{intermediate.four_zhu_details.fourZhu.yearGanzhi}}",
+          "{{intermediate.four_zhu_details.fourZhu.monthGanzhi}}",
+          "{{intermediate.four_zhu_details.fourZhu.dayGanzhi}}",
+          "{{intermediate.four_zhu_details.fourZhu.timeGanzhi}}"
+        ]
+      },
+      "outputs": { "composed_array": "intermediate.pillar_ganzhi_list" }
+    },
+    {
+      "id": "loop_over_pillars",
+      "name": "循环计算各柱基本数",
+      "operationId": "loop",
+      "inputs": {
+        "items": "intermediate.pillar_ganzhi_list",
+        "operation": {
+          "operationId": "run_sub_flow",
+          "inputs": {
+            "algorithmId": "calculate_one_pillar",
+            "inputs": {
+              "gan": "{{currentItem[0]}}",
+              "zhi": "{{currentItem[1]}}",
+              "is_yang": "{{intermediate.four_zhu_details.fourZhu.isYangGanYear}}"
+            }
+          }
+        }
+      },
+      "outputs": {
+        "results": "intermediate.pillar_results"
+      }
+    },
+    {
+      "id": "extract_base_numbers",
+      "name": "提取基本数列表",
+      "operationId": "data_mapping",
+      "inputs": {
+        "data": "intermediate.pillar_results",
+        "mapping_rules": { "outputs.base_number": "base_number" }
+      },
+      "outputs": {
+        "mapped_data": "intermediate.base_numbers_list"
+      }
+    },
+    {
+      "id": "calculate_final_tiaowen",
+      "name": "计算最终条文",
+      "description": "对每个基本数进行加减96的运算, 此处仅为示例，只做加法",
+      "operationId": "loop",
+      "inputs": {
+        "items": "intermediate.base_numbers_list",
+        "operation": {
+          "operationId": "math_calculation",
+          "inputs": {
+            "operands": ["{{currentItem.base_number}}", 96],
+            "operation": "add"
+          }
+        }
+      },
+      "outputs": {
+        "results": "output.final_tiaowen"
+      }
+    }
+  ]
+}
