@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tiebanshenshu/data/repositories/mock_algorithm_repository.dart';
+import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
+import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/ui/viewmodels/algorithm_editor_viewmodel.dart';
 
 class AlgorithmEditorView extends StatefulWidget {
@@ -13,20 +14,12 @@ class AlgorithmEditorView extends StatefulWidget {
 }
 
 class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
-  late final AlgorithmEditorViewModel _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    // In a real app, the repository would be provided from a higher-level provider
-    _viewModel = AlgorithmEditorViewModel(repository: MockAlgorithmRepository());
-    _viewModel.loadAlgorithm(widget.algorithmId);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return ChangeNotifierProvider(
+      create: (context) => AlgorithmEditorViewModel(
+        repository: Provider.of(context, listen: false),
+      )..loadAlgorithm(widget.algorithmId),
       child: Scaffold(
         appBar: AppBar(
           title: Consumer<AlgorithmEditorViewModel>(
@@ -85,11 +78,17 @@ class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
                     children: [
                       Text('执行步骤', style: Theme.of(context).textTheme.titleLarge),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          // TODO: Navigate to StepEditorView for a new step
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('添加新步骤')),
+                        onPressed: () async {
+                          final newStep = await Navigator.pushNamed(
+                            context,
+                            '/algorithm_editor/step',
+                            arguments: {
+                              'precedingSteps': vm.algorithm!.steps,
+                            },
                           );
+                          if (newStep is ExecutionStep) {
+                            vm.addOrUpdateStep(newStep);
+                          }
                         },
                         icon: const Icon(Icons.add),
                         label: const Text('添加步骤'),
@@ -121,11 +120,18 @@ class _AlgorithmEditorViewState extends State<AlgorithmEditorView> {
                               children: [
                                 IconButton(
                                   icon: const Icon(Icons.edit, size: 20),
-                                  onPressed: () {
-                                    // TODO: Navigate to StepEditorView to edit this step
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('编辑步骤: ${step.id}')),
+                                  onPressed: () async {
+                                    final updatedStep = await Navigator.pushNamed(
+                                      context,
+                                      '/algorithm_editor/step',
+                                      arguments: {
+                                        'editingStep': step,
+                                        'precedingSteps': vm.algorithm!.steps.sublist(0, index),
+                                      },
                                     );
+                                    if (updatedStep is ExecutionStep) {
+                                      vm.addOrUpdateStep(updatedStep, existingIndex: index);
+                                    }
                                   },
                                 ),
                                 IconButton(

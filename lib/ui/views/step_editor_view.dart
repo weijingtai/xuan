@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/algorithm/models/atomic_operation.dart';
 import 'package:tiebanshenshu/algorithm/models/execution_step.dart';
-import 'package:tiebanshenshu/data/repositories/mock_atomic_operation_repository.dart';
 import 'package:tiebanshenshu/ui/viewmodels/step_editor_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 class StepEditorView extends StatefulWidget {
   final ExecutionStep? editingStep;
@@ -20,23 +20,14 @@ class StepEditorView extends StatefulWidget {
 }
 
 class _StepEditorViewState extends State<StepEditorView> {
-  late final StepEditorViewModel _viewModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _viewModel = StepEditorViewModel(
-      // In a real app, the repository would be provided from a higher-level provider
-      atomicOperationRepository: MockAtomicOperationRepository(),
-      editingStep: widget.editingStep,
-      precedingSteps: widget.precedingSteps,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider.value(
-      value: _viewModel,
+    return ChangeNotifierProvider(
+      create: (context) => StepEditorViewModel(
+        atomicOperationRepository: Provider.of(context, listen: false),
+        editingStep: widget.editingStep,
+        precedingSteps: widget.precedingSteps,
+      ),
       child: Scaffold(
         appBar: AppBar(
           title: Text(widget.editingStep == null ? '创建新步骤' : '编辑步骤'),
