@@ -17,22 +17,45 @@ class MockAlgorithmRepository implements AlgorithmRepository {
 
   @override
   Future<List<AlgorithmSummary>> getAlgorithmSummaries() async {
-    // 模拟从一个索引或多个文件中读取摘要信息
-    // 这里我们硬编码一个指向我们示例文件的摘要
-    final sampleSummary = AlgorithmSummary(
-      id: "sample_algorithm_1", // 这个ID对应于assets中的文件名
-      name: "太玄四柱（示例）",
-      description: "这是一个用于演示的示例算法流程。",
-    );
+    // Dynamically load all algorithms from the assets directory.
+    final manifestContent = await rootBundle.loadString('AssetManifest.json');
+    final Map<String, dynamic> manifestMap = json.decode(manifestContent);
 
-    // 添加内存中新建的算法摘要
+    final algorithmAssets = manifestMap.keys
+        .where((String key) => key.startsWith('assets/algorithms/'))
+        .toList();
+
+    final summaries = <AlgorithmSummary>[];
+    for (final path in algorithmAssets) {
+      try {
+        final jsonString = await rootBundle.loadString(path);
+        final Map<String, dynamic> configMap = json.decode(jsonString);
+
+        // Extract the ID from the filename, e.g., "assets/algorithms/gun_fa_v2.json" -> "gun_fa_v2"
+        final id = path.split('/').last.replaceAll('.json', '');
+
+        summaries.add(AlgorithmSummary(
+          id: id,
+          name: configMap['name'] ?? '未命名算法',
+          description: configMap['description'] ?? '无描述',
+        ));
+      } catch (e) {
+        // Ignore files that fail to parse
+        print("Failed to load or parse algorithm from $path: $e");
+      }
+    }
+
+    // Also include any new algorithms created in-memory during the session
     final cachedSummaries = _inMemoryCache.values.map((config) => AlgorithmSummary(
-      id: config.name, // 简单起见，用name作为ID
+      id: config.name, // In-memory algorithms might not have a persistent ID yet
       name: config.name,
       description: config.description
     )).toList();
 
-    return [sampleSummary, ...cachedSummaries];
+    // Combine and return, avoiding duplicates if any were cached
+    final combined = [...summaries, ...cachedSummaries];
+    final uniqueIds = <String>{};
+    return combined.where((summary) => uniqueIds.add(summary.id)).toList();
   }
 
   @override
