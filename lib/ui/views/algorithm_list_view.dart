@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:tiebanshenshu/ui/viewmodels/algorithm_list_viewmodel.dart';
-import 'package:tiebanshenshu/data/repositories/mock_algorithm_repository.dart'; // Using mock for prototype
 
 class AlgorithmListView extends StatelessWidget {
   const AlgorithmListView({Key? key}) : super(key: key);
@@ -9,9 +8,9 @@ class AlgorithmListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      // In a real app, the repository would be provided from a higher-level provider
-      create: (_) => AlgorithmListViewModel(repository: MockAlgorithmRepository())
-        ..loadAlgorithms(),
+      create: (context) => AlgorithmListViewModel(
+        repository: Provider.of(context, listen: false),
+      )..loadAlgorithms(),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('算法列表'),
@@ -43,9 +42,10 @@ class AlgorithmListView extends StatelessWidget {
                   subtitle: Text(summary.description, maxLines: 2, overflow: TextOverflow.ellipsis,),
                   trailing: const Icon(Icons.chevron_right),
                   onTap: () {
-                    // TODO: Navigate to AlgorithmEditorView with summary.id
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('导航到编辑页: ${summary.id}')),
+                    Navigator.pushNamed(
+                      context,
+                      '/algorithm_editor/edit',
+                      arguments: {'id': summary.id},
                     );
                   },
                 );
@@ -55,10 +55,7 @@ class AlgorithmListView extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () {
-            // TODO: Navigate to AlgorithmEditorView with null id
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('导航到新建算法页')),
-            );
+            Navigator.pushNamed(context, '/algorithm_editor/edit');
           },
           child: const Icon(Icons.add),
           tooltip: '创建新算法',
