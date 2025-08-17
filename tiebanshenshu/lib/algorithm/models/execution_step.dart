@@ -72,6 +72,39 @@ class ExecutionStep {
     this.isOptional = false,
   });
 
+  /// 复制实例并更新字段
+  ExecutionStep copyWith({
+    String? id,
+    String? name,
+    String? description,
+    String? operationId,
+    Map<String, dynamic>? config,
+    Map<String, String>? inputs,
+    Map<String, String>? outputs,
+    List<ConditionalBranch>? conditionalBranches,
+    bool? required,
+    int? timeoutMs,
+    int? retryCount,
+    List<String>? dependencies,
+    bool? isOptional,
+  }) {
+    return ExecutionStep(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      operationId: operationId ?? this.operationId,
+      config: config ?? this.config,
+      inputs: inputs ?? this.inputs,
+      outputs: outputs ?? this.outputs,
+      conditionalBranches: conditionalBranches ?? this.conditionalBranches,
+      required: required ?? this.required,
+      timeoutMs: timeoutMs ?? this.timeoutMs,
+      retryCount: retryCount ?? this.retryCount,
+      dependencies: dependencies ?? this.dependencies,
+      isOptional: isOptional ?? this.isOptional,
+    );
+  }
+
   /// 从JSON创建实例
   factory ExecutionStep.fromJson(Map<String, dynamic> json) {
     return ExecutionStep(
