@@ -1,0 +1,137 @@
+{
+  "name": "计算单个地支基本数",
+  "version": "1.0.0",
+  "description": "一个可复用的子流程，用于计算单个地支（年/月/日/时）的太玄基本数。",
+  "createdAt": "2025-08-16T19:50:00.000Z",
+  "updatedAt": "2025-08-16T19:50:00.000Z",
+  "globalConfig": {
+    "tianganGuaMap": {
+      "甲": "乾", "壬": "乾", "乙": "坤", "癸": "坤", "丙": "艮",
+      "丁": "兑", "戊": "坎", "己": "离", "庚": "震", "辛": "巽"
+    },
+    "dizhiGuaMap": {
+      "子": "坎", "亥": "坎", "丑": "坤", "寅": "震", "卯": "乾", "辰": "兑",
+      "巳": "离", "午": "离", "未": "艮", "申": "艮", "酉": "乾", "戌": "巽"
+    },
+    "taixuanNumberMap": {
+      "甲": 1, "乙": 2, "丙": 3, "丁": 4, "戊": 5, "己": 6, "庚": 7, "辛": 8, "壬": 9, "癸": 10,
+      "子": 1, "丑": 2, "寅": 3, "卯": 4, "辰": 5, "巳": 6, "午": 7, "未": 8, "申": 9, "亥": 10
+    }
+  },
+  "steps": [
+    {
+      "id": "map_gan_to_gua",
+      "name": "干转卦",
+      "operationId": "data_mapping",
+      "inputs": {
+        "data": "input.gan",
+        "mapping_rules": "config.tianganGuaMap"
+      },
+      "outputs": {
+        "mapped_data": "intermediate.gan_gua"
+      }
+    },
+    {
+      "id": "map_zhi_to_gua",
+      "name": "支转卦",
+      "operationId": "data_mapping",
+      "inputs": {
+        "data": "input.zhi",
+        "mapping_rules": "config.dizhiGuaMap"
+      },
+      "outputs": {
+        "mapped_data": "intermediate.zhi_gua"
+      }
+    },
+    {
+      "id": "compose_hexagram",
+      "name": "组合重卦",
+      "operationId": "object_construction",
+      "inputs": {
+        "fields": {
+          "upper": "intermediate.gan_gua",
+          "lower": "intermediate.zhi_gua"
+        }
+      },
+      "outputs": {
+        "constructed_object": "intermediate.hexagram"
+      }
+    },
+    {
+      "id": "generate_najia",
+      "name": "生成纳甲",
+      "operationId": "generate_najia",
+      "inputs": {
+        "hexagram": "intermediate.hexagram",
+        "isYang": "input.is_yang"
+      },
+      "outputs": {
+        "najia_list": "intermediate.najia_list"
+      }
+    },
+    {
+      "id": "calculate_taixuan_sums",
+      "name": "计算太玄数和",
+      "operationId": "calculate_taixuan_sums",
+      "inputs": {
+        "najia_list": "intermediate.najia_list",
+        "taixuan_map": "config.taixuanNumberMap"
+      },
+      "outputs": {
+        "taixuan_sums": "intermediate.taixuan_sums"
+      }
+    },
+    {
+      "id": "split_sums",
+      "name": "拆分太玄数和",
+      "operationId": "split_list",
+      "inputs": {
+        "list": "intermediate.taixuan_sums",
+        "index": 3
+      },
+      "outputs": {
+        "part1": "intermediate.sums_top",
+        "part2": "intermediate.sums_bottom"
+      }
+    },
+    {
+      "id": "sum_top_trigram",
+      "name": "求和上卦数",
+      "operationId": "math_calculation",
+      "inputs": {
+        "operands": "intermediate.sums_top",
+        "operation": "add"
+      },
+      "outputs": {
+        "result": "intermediate.top_sum"
+      }
+    },
+    {
+      "id": "sum_bottom_trigram",
+      "name": "求和下卦数",
+      "operationId": "math_calculation",
+      "inputs": {
+        "operands": "intermediate.sums_bottom",
+        "operation": "add"
+      },
+      "outputs": {
+        "result": "intermediate.bottom_sum"
+      }
+    },
+    {
+      "id": "format_base_number",
+      "name": "格式化基本数",
+      "operationId": "format_string",
+      "inputs": {
+        "template": "{{top}}{{bottom}}",
+        "variables": {
+          "top": "intermediate.top_sum",
+          "bottom": "intermediate.bottom_sum"
+        }
+      },
+      "outputs": {
+        "result": "output.base_number"
+      }
+    }
+  ]
+}

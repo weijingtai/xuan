@@ -3,6 +3,7 @@
 /// 管理算法执行过程中的状态和数据
 library execution_context;
 
+import '../algorithm_compiler.dart';
 import '../error_handler.dart';
 import 'algorithm_config.dart';
 import '../atomic_operation_registry.dart';
@@ -19,6 +20,9 @@ class ExecutionContext {
 
   /// 原子操作注册表
   final AtomicOperationRegistry operationRegistry;
+
+  /// 编译器实例 (用于子流程)
+  final AlgorithmCompiler? compiler;
 
   /// 中间结果存储
   final Map<String, dynamic> _intermediateResults = {};
@@ -42,6 +46,7 @@ class ExecutionContext {
     required this.inputs,
     required this.config,
     required this.operationRegistry,
+    this.compiler,
     ExecutionContext? parent,
   }) : startTime = DateTime.now(),
        _parent = parent;
@@ -309,6 +314,7 @@ class ExecutionContext {
       inputs: inputs,
       config: config,
       operationRegistry: operationRegistry,
+      compiler: compiler, // Pass compiler to child context
       parent: this,
     );
   }

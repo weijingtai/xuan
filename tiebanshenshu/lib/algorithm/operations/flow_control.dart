@@ -192,68 +192,43 @@ class ConditionalOperation extends AtomicOperation {
   }
 }
 
-/// 循环操作
+/// 循环操作 (v0.2 - 支持执行任意原子操作)
 class LoopOperation extends AtomicOperation {
   LoopOperation()
-    : super(
-        id: 'loop',
-        name: '循环操作',
-        category: '流程控制',
-        description: '对数据集合执行循环处理',
-        version: 'v0.1',
-      );
+      : super(
+          id: 'loop',
+          name: '循环操作',
+          category: '流程控制',
+          description: '对数据集合执行循环处理，可在循环体中调用其他原子操作。',
+          version: 'v0.2',
+        );
 
   @override
   Map<String, ParameterDefinition> get inputParameters => {
-    'items': ParameterDefinition(
-      name: 'items',
-      type: ParameterType.array,
-      required: true,
-      description: '待循环处理的数据集合',
-    ),
-    'operation': ParameterDefinition(
-      name: 'operation',
-      type: ParameterType.dict,
-      required: true,
-      description: '循环体操作配置',
-      defaultValue: {},
-    ),
-    'max_iterations': ParameterDefinition(
-      name: 'max_iterations',
-      type: ParameterType.intNum,
-      required: false,
-      description: '最大迭代次数限制',
-      defaultValue: 1000,
-    ),
-  };
+        'items': ParameterDefinition(
+          name: 'items',
+          type: ParameterType.array,
+          required: true,
+          description: '待循环处理的数据集合',
+        ),
+        'operation': ParameterDefinition(
+          name: 'operation',
+          type: ParameterType.dict,
+          required: true,
+          description: '循环体操作配置, 包含 operationId 和 inputs',
+          defaultValue: {},
+        ),
+      };
 
   @override
   Map<String, ParameterDefinition> get outputParameters => {
-    'results': ParameterDefinition(
-      name: 'results',
-      type: ParameterType.array,
-      required: true,
-      description: '循环处理结果集合',
-    ),
-    'iterations': ParameterDefinition(
-      name: 'iterations',
-      type: ParameterType.intNum,
-      required: true,
-      description: '实际执行的迭代次数',
-    ),
-    'total_items': ParameterDefinition(
-      name: 'total_items',
-      type: ParameterType.intNum,
-      required: true,
-      description: '输入数据项总数',
-    ),
-    'completed': ParameterDefinition(
-      name: 'completed',
-      type: ParameterType.boolean,
-      required: true,
-      description: '是否完成所有项的处理',
-    ),
-  };
+        'results': ParameterDefinition(
+          name: 'results',
+          type: ParameterType.array,
+          required: true,
+          description: '循环处理结果集合',
+        ),
+      };
 
   @override
   Map<String, ParameterDefinition> get configParameters => {};
@@ -265,114 +240,98 @@ class LoopOperation extends AtomicOperation {
     Map<String, dynamic> config,
   ) async {
     final items = input['items'] as List? ?? [];
-    final operation = input['operation'] as Map<String, dynamic>? ?? {};
-    final maxIterations = input['max_iterations'] as int? ?? 1000;
+    final operationConfig = input['operation'] as Map<String, dynamic>? ?? {};
 
     final results = <dynamic>[];
-    int iterations = 0;
-
+    int index = 0;
     for (final item in items) {
-      if (iterations >= maxIterations) {
-        break;
-      }
-
-      // 创建循环上下文
       final loopContext = context.createChild();
-      loopContext.setVariable('current_item', item);
-      loopContext.setVariable('current_index', iterations);
+      loopContext.setVariable('currentItem', item);
+      loopContext.setVariable('currentIndex', index);
 
-      // 执行循环体操作
-      final result = await _executeLoopBody(operation, loopContext);
+      final result = await _executeLoopBody(operationConfig, loopContext);
       results.add(result);
-
-      iterations++;
+      index++;
     }
 
     return {
       'results': results,
-      'iterations': iterations,
-      'total_items': items.length,
-      'completed': iterations == items.length,
     };
   }
 
   Future<dynamic> _executeLoopBody(
-    Map<String, dynamic> operation,
+    Map<String, dynamic> operationConfig,
     ExecutionContext loopContext,
   ) async {
-    final operationType = operation['type'] as String? ?? 'transform';
-    final config = operation['config'] as Map<String, dynamic>? ?? {};
-
-    switch (operationType) {
-      case 'transform':
-        return _transformItem(config, loopContext);
-      case 'filter':
-        return _filterItem(config, loopContext);
-      case 'aggregate':
-        return _aggregateItem(config, loopContext);
-      default:
-        return loopContext.getVariable('current_item');
+    final operationId = operationConfig['operationId'] as String?;
+    if (operationId == null) {
+      throw ArgumentError('Loop operation configuration must contain an "operationId".');
     }
+
+    final operation = loopContext.operationRegistry.getOperation(operationId);
+    if (operation == null) {
+      throw ArgumentError('Operation "$operationId" not found in registry.');
+    }
+
+    final inputsConfig = operationConfig['inputs'] as Map<String, dynamic>? ?? {};
+    final resolvedInputs = _resolveInputs(inputsConfig, loopContext);
+
+    // The config for the inner atom is not supported in this version, pass empty map
+    return await operation.execute(loopContext, resolvedInputs, {});
   }
 
-  dynamic _transformItem(
-    Map<String, dynamic> config,
-    ExecutionContext context,
+  Map<String, dynamic> _resolveInputs(
+    Map<String, dynamic> inputsConfig,
+    ExecutionContext loopContext,
   ) {
-    final item = context.getVariable('current_item');
-    final transformRules = config['rules'] as Map<String, dynamic>? ?? {};
+    final resolved = <String, dynamic>{};
+    inputsConfig.forEach((key, value) {
+      resolved[key] = _resolveValue(value, loopContext);
+    });
+    return resolved;
+  }
 
-    if (item is Map<String, dynamic>) {
-      final transformed = <String, dynamic>{};
+  dynamic _resolveValue(dynamic value, ExecutionContext loopContext) {
+    if (value is! String) {
+      return value;
+    }
 
-      for (final entry in transformRules.entries) {
-        final sourceField = entry.key;
-        final targetField = entry.value as String;
+    final regex = RegExp(r'\{\{([\w\.\[\]]+)\}\}');
+    return value.replaceAllMapped(regex, (match) {
+      final varPath = match.group(1)!;
 
-        if (item.containsKey(sourceField)) {
-          transformed[targetField] = item[sourceField];
+      // Handle array access like currentItem[0]
+      final arrayRegex = RegExp(r'(\w+)\[(\d+)\]');
+      final arrayMatch = arrayRegex.firstMatch(varPath);
+
+      if (arrayMatch != null) {
+        final varName = arrayMatch.group(1)!;
+        final index = int.parse(arrayMatch.group(2)!);
+        final list = loopContext.getVariable(varName);
+        if (list is String && index < list.length) {
+          return list[index];
         }
+        if (list is List && index < list.length) {
+          return list[index].toString();
+        }
+        return match.group(0)!; // Return original if not found
       }
 
-      return transformed;
-    }
+      // Handle field access like currentItem.field
+      final parts = varPath.split('.');
+      dynamic resolvedVar = loopContext.getVariable(parts.first);
 
-    return item;
-  }
-
-  Future<bool> _filterItem(
-    Map<String, dynamic> config,
-    ExecutionContext context,
-  ) async {
-    final condition = config['condition'] as Map<String, dynamic>? ?? {};
-
-    if (condition.isEmpty) {
-      return true;
-    }
-
-    final conditionalOp = ConditionalOperation();
-    final result = await conditionalOp.execute(
-      context,
-      {'condition': condition, 'true_value': true, 'false_value': false},
-      {}, // 空的配置参数
-    );
-
-    return result['result'] as bool;
-  }
-
-  dynamic _aggregateItem(
-    Map<String, dynamic> config,
-    ExecutionContext context,
-  ) {
-    final item = context.getVariable('current_item');
-    final operation = config['operation'] as String? ?? 'sum';
-    final field = config['field'] as String?;
-
-    if (field != null && item is Map<String, dynamic>) {
-      return item[field];
-    }
-
-    return item;
+      if (resolvedVar != null && parts.length > 1) {
+        for (int i = 1; i < parts.length; i++) {
+          if (resolvedVar is Map<String, dynamic> && resolvedVar.containsKey(parts[i])) {
+            resolvedVar = resolvedVar[parts[i]];
+          } else {
+            return match.group(0)!; // Return original placeholder if path is invalid
+          }
+        }
+      }
+      return resolvedVar.toString();
+    });
   }
 }
 
@@ -476,10 +435,94 @@ class SwitchOperation extends AtomicOperation {
   }
 }
 
+class RunSubFlowAtom extends AtomicOperation {
+  RunSubFlowAtom()
+      : super(
+          id: 'run_sub_flow',
+          name: '执行子流程',
+          category: '流程控制',
+          description: '调用并执行另一个已定义的算法作为子流程。',
+          version: 'v0.1',
+        );
+
+  @override
+  Map<String, ParameterDefinition> get inputParameters => {
+        'algorithmId': ParameterDefinition(
+          name: 'algorithmId',
+          type: ParameterType.str,
+          required: true,
+          description: '要执行的子算法的ID。',
+        ),
+        'inputs': ParameterDefinition(
+          name: 'inputs',
+          type: ParameterType.dict,
+          required: false,
+          description: '传递给子流程的输入数据映射。',
+          defaultValue: {},
+        ),
+        'version': ParameterDefinition(
+          name: 'version',
+          type: ParameterType.str,
+          required: false,
+          description: '要执行的子算法的版本。',
+        ),
+        'useCache': ParameterDefinition(
+          name: 'useCache',
+          type: ParameterType.boolean,
+          required: false,
+          description: '子流程执行是否使用缓存。',
+          defaultValue: true,
+        ),
+      };
+
+  @override
+  Map<String, ParameterDefinition> get outputParameters => {
+        'outputs': ParameterDefinition(
+          name: 'outputs',
+          type: ParameterType.dict,
+          required: true,
+          description: '子流程返回的输出结果。',
+        ),
+      };
+
+  @override
+  Map<String, ParameterDefinition> get configParameters => {};
+
+  @override
+  Future<Map<String, dynamic>> execute(
+    ExecutionContext context,
+    Map<String, dynamic> inputs,
+    Map<String, dynamic> config,
+  ) async {
+    final compiler = context.compiler;
+    if (compiler == null) {
+      throw StateError(
+          'RunSubFlowAtom cannot be executed because the AlgorithmCompiler is not available in the ExecutionContext.');
+    }
+
+    final algorithmId = inputs['algorithmId'] as String;
+    final subFlowInputs = inputs['inputs'] as Map<String, dynamic>? ?? {};
+    final version = inputs['version'] as String?;
+    final useCache = inputs['useCache'] as bool? ?? true;
+
+    final result = await compiler.executeAlgorithm(
+      algorithmId,
+      subFlowInputs,
+      version: version,
+      useCache: useCache,
+    );
+
+    return {
+      'outputs': result,
+    };
+  }
+}
+
+
 /// 流程控制操作包装类
 class FlowControl {
   /// 获取所有流程控制类操作实例
   static List<AtomicOperation> getOperations() {
-    return [ConditionalOperation(), LoopOperation(), SwitchOperation()];
+    return [ConditionalOperation(), LoopOperation(), SwitchOperation(), RunSubFlowAtom()];
   }
 }

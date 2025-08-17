@@ -8,6 +8,8 @@ import 'package:tiebanshenshu/algorithm/operations/composition_construction.dart
 import 'package:tiebanshenshu/algorithm/operations/aggregation_calculation.dart';
 import 'package:tiebanshenshu/algorithm/operations/flow_control.dart';
 import 'package:tiebanshenshu/algorithm/operations/validation_generation.dart';
+import 'package:tiebanshenshu/algorithm/operations/domain_specific_operations.dart';
+import 'package:tiebanshenshu/algorithm/operations/utility_operations.dart';
 
 class ProductionAtomicOperationRepository implements AtomicOperationRepository {
   late final List<AtomicOperation> _allAtoms;
@@ -21,6 +23,8 @@ class ProductionAtomicOperationRepository implements AtomicOperationRepository {
       ...AggregationCalculation.getOperations(),
       ...FlowControl.getOperations(),
       ...ValidationGeneration.getOperations(),
+      ...DomainSpecificOperations.getOperations(),
+      ...UtilityOperations.getOperations(),
     ];
   }
 
