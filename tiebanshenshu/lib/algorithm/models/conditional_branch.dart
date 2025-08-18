@@ -16,6 +16,7 @@ class ConditionalBranch extends Equatable {
   final String condition;
 
   /// 条件描述
+  @JsonKey(defaultValue: '')
   final String description;
 
   /// 真分支步骤ID列表
@@ -25,9 +26,11 @@ class ConditionalBranch extends Equatable {
   final List<String>? falseSteps;
 
   /// 条件类型
+  @JsonKey(defaultValue: ConditionType.expression)
   final ConditionType type;
 
   /// 条件参数
+  @JsonKey(defaultValue: {})
   final Map<String, dynamic> parameters;
 
   const ConditionalBranch({
@@ -40,14 +43,8 @@ class ConditionalBranch extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    condition,
-    description,
-    trueSteps,
-    falseSteps,
-    type,
-    parameters,
-  ];
+  List<Object?> get props =>
+      [condition, description, trueSteps, falseSteps, type, parameters];
 
   /// 从JSON创建实例
   factory ConditionalBranch.fromJson(Map<String, dynamic> json) =>

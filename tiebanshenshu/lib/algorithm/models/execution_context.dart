@@ -3,15 +3,11 @@
 /// 管理算法执行过程中的状态和数据
 library execution_context;
 
-import 'package:json_annotation/json_annotation.dart';
-
 import '../algorithm_compiler.dart';
 import '../error_handler.dart';
 import 'algorithm_config.dart';
 import '../atomic_operation_registry.dart';
 import 'execution_step.dart';
-
-part 'execution_context.g.dart';
 
 /// 执行上下文类
 /// Version: v0.1
@@ -388,7 +384,6 @@ class ExecutionContext {
 
 /// 执行记录类
 /// Version: v0.1
-@JsonSerializable()
 class ExecutionRecord {
   /// 步骤ID
   final String stepId;
@@ -437,13 +432,40 @@ class ExecutionRecord {
     return null;
   }
 
-  factory ExecutionRecord.fromJson(Map<String, dynamic> json) =>
-      _$ExecutionRecordFromJson(json);
-
   /// 从JSON创建实例
-  Map<String, dynamic> toJson() => _$ExecutionRecordToJson(this);
+  factory ExecutionRecord.fromJson(Map<String, dynamic> json) {
+    return ExecutionRecord(
+      stepId: json['stepId'] as String,
+      stepName: json['stepName'] as String,
+      operationId: json['operationId'] as String,
+      startTime: DateTime.parse(json['startTime'] as String),
+      endTime: json['endTime'] != null
+          ? DateTime.parse(json['endTime'] as String)
+          : null,
+      status: ExecutionStatus.values.firstWhere(
+        (status) => status.name == json['status'],
+      ),
+      inputs: json['inputs'] as Map<String, dynamic>,
+      outputs: json['outputs'] as Map<String, dynamic>,
+      errorMessage: json['errorMessage'] as String?,
+    );
+  }
 
   /// 转换为JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'stepId': stepId,
+      'stepName': stepName,
+      'operationId': operationId,
+      'startTime': startTime.toIso8601String(),
+      if (endTime != null) 'endTime': endTime!.toIso8601String(),
+      'status': status.name,
+      'inputs': inputs,
+      'outputs': outputs,
+      if (errorMessage != null) 'errorMessage': errorMessage,
+    };
+  }
+
   @override
   String toString() {
     return 'ExecutionRecord(stepId: $stepId, status: $status, duration: ${duration?.inMilliseconds}ms)';
@@ -458,7 +480,6 @@ class ExecutionRecord {
 
 /// 执行错误类
 /// Version: v0.1
-@JsonSerializable()
 class ExecutionError {
   /// 错误代码
   final String code;
@@ -495,11 +516,31 @@ class ExecutionError {
   });
 
   /// 从JSON创建实例
-  factory ExecutionError.fromJson(Map<String, dynamic> json) =>
-      _$ExecutionErrorFromJson(json);
+  factory ExecutionError.fromJson(Map<String, dynamic> json) {
+    return ExecutionError(
+      code: json['code'] as String,
+      message: json['message'] as String,
+      stepId: json['stepId'] as String?,
+      operationId: json['operationId'] as String?,
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      details: json['details'] as Map<String, dynamic>? ?? {},
+      originalException: json['originalException'],
+      errorType: json['errorType'] as ErrorType,
+    );
+  }
 
   /// 转换为JSON
-  Map<String, dynamic> toJson() => _$ExecutionErrorToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'message': message,
+      if (stepId != null) 'stepId': stepId,
+      if (operationId != null) 'operationId': operationId,
+      'timestamp': timestamp.toIso8601String(),
+      'details': details,
+    };
+  }
+
   @override
   String toString() {
     return 'ExecutionError(code: $code, message: $message, stepId: $stepId, operationId: $operationId)';
@@ -513,22 +554,17 @@ class ExecutionError {
 /// Version: v0.1
 enum ExecutionStatus {
   /// 等待执行
-  @JsonValue('pending')
   pending,
 
   /// 正在执行
-  @JsonValue('running')
   running,
 
   /// 执行成功
-  @JsonValue('success')
   success,
 
   /// 执行失败
-  @JsonValue('failed')
   failed,
 
   /// 已跳过
-  @JsonValue('skipped')
   skipped,
 }

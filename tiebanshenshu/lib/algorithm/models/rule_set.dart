@@ -10,24 +10,28 @@ part 'rule_set.g.dart';
 
 /// 规则集类
 /// Version: v0.2 (json_serializable)
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class RuleSet extends Equatable {
   /// 规则集名称
   final String name;
 
   /// 规则集描述
+  @JsonKey(defaultValue: '')
   final String description;
 
   /// 规则列表
   final List<Rule> rules;
 
   /// 规则集类型
+  @JsonKey(defaultValue: RuleSetType.standard)
   final RuleSetType type;
 
   /// 优先级
+  @JsonKey(defaultValue: 0)
   final int priority;
 
   /// 是否启用
+  @JsonKey(defaultValue: true)
   final bool enabled;
 
   const RuleSet({
@@ -40,18 +44,10 @@ class RuleSet extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    name,
-    description,
-    rules,
-    type,
-    priority,
-    enabled,
-  ];
+  List<Object?> get props => [name, description, rules, type, priority, enabled];
 
   /// 从JSON创建实例
-  factory RuleSet.fromJson(Map<String, dynamic> json) =>
-      _$RuleSetFromJson(json);
+  factory RuleSet.fromJson(Map<String, dynamic> json) => _$RuleSetFromJson(json);
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => _$RuleSetToJson(this);
@@ -85,6 +81,7 @@ class Rule extends Equatable {
   final String name;
 
   /// 规则描述
+  @JsonKey(defaultValue: '')
   final String description;
 
   /// 条件表达式
@@ -94,12 +91,15 @@ class Rule extends Equatable {
   final Map<String, dynamic> action;
 
   /// 优先级
+  @JsonKey(defaultValue: 0)
   final int priority;
 
   /// 是否启用
+  @JsonKey(defaultValue: true)
   final bool enabled;
 
   /// 规则参数
+  @JsonKey(defaultValue: {})
   final Map<String, dynamic> parameters;
 
   const Rule({
@@ -114,16 +114,8 @@ class Rule extends Equatable {
   });
 
   @override
-  List<Object?> get props => [
-    id,
-    name,
-    description,
-    condition,
-    action,
-    priority,
-    enabled,
-    parameters,
-  ];
+  List<Object?> get props =>
+      [id, name, description, condition, action, priority, enabled, parameters];
 
   /// 从JSON创建实例
   factory Rule.fromJson(Map<String, dynamic> json) => _$RuleFromJson(json);
@@ -139,24 +131,20 @@ class Rule extends Equatable {
 
 /// 规则集类型枚举
 /// Version: v0.2 (json_serializable)
+@JsonEnum()
 enum RuleSetType {
   /// 标准规则集
-  @JsonValue('standard')
   standard,
 
   /// 条件规则集
-  @JsonValue('conditional')
   conditional,
 
   /// 验证规则集
-  @JsonValue('validation')
   validation,
 
   /// 转换规则集
-  @JsonValue('transformation')
   transformation,
 
   /// 自定义规则集
-  @JsonValue('custom')
   custom,
 }

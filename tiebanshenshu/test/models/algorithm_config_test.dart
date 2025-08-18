@@ -7,7 +7,10 @@ void main() {
     final createdAt = DateTime.now();
     final updatedAt = DateTime.now().add(const Duration(hours: 1));
 
-    final mockStep = ExecutionStep(id: 'step1', operationId: 'test_op');
+    final mockStep = ExecutionStep(
+      id: 'step1',
+      operationId: 'test_op',
+    );
 
     final mockConfig = AlgorithmConfig(
       name: 'Test Algorithm',

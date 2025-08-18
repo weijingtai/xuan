@@ -12,7 +12,7 @@ part 'algorithm_config.g.dart';
 
 /// 算法配置类
 /// Version: v0.2 (json_serializable)
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class AlgorithmConfig extends Equatable {
   /// 算法名称
   final String name;
@@ -30,6 +30,7 @@ class AlgorithmConfig extends Equatable {
   final Map<String, dynamic>? globalConfig;
 
   /// 规则集
+  @JsonKey(defaultValue: [])
   final List<RuleSet> ruleSets;
 
   /// 创建时间
@@ -51,15 +52,15 @@ class AlgorithmConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-    name,
-    version,
-    description,
-    steps,
-    globalConfig,
-    ruleSets,
-    createdAt,
-    updatedAt,
-  ];
+        name,
+        version,
+        description,
+        steps,
+        globalConfig,
+        ruleSets,
+        createdAt,
+        updatedAt
+      ];
 
   /// 从JSON创建实例
   factory AlgorithmConfig.fromJson(Map<String, dynamic> json) =>

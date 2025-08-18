@@ -5,11 +5,7 @@ library atomic_operation;
 
 import 'dart:core';
 
-import 'package:json_annotation/json_annotation.dart';
-
 import 'execution_context.dart';
-
-part 'atomic_operation.g.dart';
 
 /// 原子操作抽象类
 /// Version: v0.1
@@ -116,7 +112,6 @@ abstract class AtomicOperation {
 
 /// 参数定义类
 /// Version: v0.1
-@JsonSerializable()
 class ParameterDefinition {
   /// 参数名称
   final String name;
@@ -167,11 +162,34 @@ class ParameterDefinition {
   }
 
   /// 从JSON创建实例
-  factory ParameterDefinition.fromJson(Map<String, dynamic> json) =>
-      _$ParameterDefinitionFromJson(json);
+  factory ParameterDefinition.fromJson(Map<String, dynamic> json) {
+    return ParameterDefinition(
+      name: json['name'] as String,
+      description: json['description'] as String,
+      type: ParameterType.values.firstWhere(
+        (type) => type.name == json['type'],
+      ),
+      required: json['required'] as bool? ?? true,
+      defaultValue: json['defaultValue'],
+      validationRules: (json['validationRules'] as List<dynamic>? ?? [])
+          .map((rule) => ValidationRule.fromJson(rule as Map<String, dynamic>))
+          .toList(),
+      exampleValue: json['exampleValue'],
+    );
+  }
 
   /// 转换为JSON
-  Map<String, dynamic> toJson() => _$ParameterDefinitionToJson(this);
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'description': description,
+      'type': type.name,
+      'required': required,
+      if (defaultValue != null) 'defaultValue': defaultValue,
+      'validationRules': validationRules.map((rule) => rule.toJson()).toList(),
+      if (exampleValue != null) 'exampleValue': exampleValue,
+    };
+  }
 
   @override
   String toString() {
