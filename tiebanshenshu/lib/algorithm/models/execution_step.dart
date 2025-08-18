@@ -109,20 +109,20 @@ class ExecutionStep {
   factory ExecutionStep.fromJson(Map<String, dynamic> json) {
     return ExecutionStep(
       id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
+      name: json['name'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       operationId: json['operationId'] as String,
-      config: json['config'] as Map<String, dynamic>,
-      inputs: Map<String, String>.from(json['inputs'] as Map),
-      outputs: Map<String, String>.from(json['outputs'] as Map),
-      conditionalBranches: json['conditionalBranches'] != null
-          ? (json['conditionalBranches'] as List<dynamic>)
-              .map((branch) => ConditionalBranch.fromJson(branch as Map<String, dynamic>))
-              .toList()
-          : null,
+      config: json['config'] as Map<String, dynamic>? ?? const {},
+      inputs: Map<String, String>.from(json['inputs'] as Map? ?? const {}),
+      outputs: Map<String, String>.from(json['outputs'] as Map? ?? const {}),
+      conditionalBranches: (json['conditionalBranches'] as List<dynamic>? ?? [])
+          .map((branch) => ConditionalBranch.fromJson(branch as Map<String, dynamic>))
+          .toList(),
       required: json['required'] as bool? ?? true,
       timeoutMs: json['timeoutMs'] as int?,
       retryCount: json['retryCount'] as int? ?? 0,
+      dependencies: (json['dependencies'] as List<dynamic>? ?? const []).map((e) => e.toString()).toList(),
+      isOptional: json['isOptional'] as bool? ?? false,
     );
   }
 
