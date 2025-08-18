@@ -11,66 +11,55 @@ part 'execution_step.g.dart';
 
 /// 执行步骤类
 /// Version: v0.2 (json_serializable)
-@JsonSerializable(explicitToJson: true)
+@JsonSerializable()
 class ExecutionStep extends Equatable {
   /// 步骤ID
   final String id;
-  
+
   /// 步骤名称
-  @JsonKey(defaultValue: '')
   final String name;
-  
+
   /// 步骤描述
-  @JsonKey(defaultValue: '')
   final String description;
-  
+
   /// 操作ID
   final String operationId;
-  
+
   /// 步骤配置
-  @JsonKey(defaultValue: {})
   final Map<String, dynamic> config;
-  
+
   /// 输入映射
-  @JsonKey(defaultValue: {})
   final Map<String, String> inputs;
-  
+
   /// 输出映射
-  @JsonKey(defaultValue: {})
   final Map<String, String> outputs;
-  
+
   /// 条件分支
   final List<ConditionalBranch>? conditionalBranches;
-  
+
   /// 是否必需
   @JsonKey(defaultValue: true)
   final bool required;
-  
+
   /// 超时时间（毫秒）
   final int? timeoutMs;
-  
+
   /// 重试次数
-  @JsonKey(defaultValue: 0)
   final int retryCount;
 
   /// 依赖步骤列表
-  @JsonKey(defaultValue: [])
   final List<String> dependencies;
-  
+
   /// 是否可选（非必需）
-  @JsonKey(defaultValue: false)
   final bool isOptional;
-  
+
   /// 操作类型（兼容性别名）
-  @JsonKey(includeFromJson: false, includeToJson: false)
   String get operationType => operationId;
-  
+
   /// 输入映射（兼容性别名）
-  @JsonKey(includeFromJson: false, includeToJson: false)
   Map<String, String> get inputMapping => inputs;
-  
+
   /// 输出映射（兼容性别名）
-  @JsonKey(includeFromJson: false, includeToJson: false)
   Map<String, String> get outputMapping => outputs;
 
   const ExecutionStep({
@@ -91,20 +80,20 @@ class ExecutionStep extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        operationId,
-        config,
-        inputs,
-        outputs,
-        conditionalBranches,
-        required,
-        timeoutMs,
-        retryCount,
-        dependencies,
-        isOptional,
-      ];
+    id,
+    name,
+    description,
+    operationId,
+    config,
+    inputs,
+    outputs,
+    conditionalBranches,
+    required,
+    timeoutMs,
+    retryCount,
+    dependencies,
+    isOptional,
+  ];
 
   /// 从JSON创建实例
   factory ExecutionStep.fromJson(Map<String, dynamic> json) =>
@@ -147,7 +136,8 @@ class ExecutionStep extends Equatable {
   }
 
   /// 是否有条件分支
-  bool get hasConditionalBranches => conditionalBranches != null && conditionalBranches!.isNotEmpty;
+  bool get hasConditionalBranches =>
+      conditionalBranches != null && conditionalBranches!.isNotEmpty;
 
   /// 获取输入键列表
   List<String> get inputKeys => inputs.keys.toList();

@@ -14,23 +14,20 @@ part 'conditional_branch.g.dart';
 class ConditionalBranch extends Equatable {
   /// 条件表达式
   final String condition;
-  
+
   /// 条件描述
-  @JsonKey(defaultValue: '')
   final String description;
-  
+
   /// 真分支步骤ID列表
   final List<String> trueSteps;
-  
+
   /// 假分支步骤ID列表
   final List<String>? falseSteps;
-  
+
   /// 条件类型
-  @JsonKey(defaultValue: ConditionType.expression)
   final ConditionType type;
-  
+
   /// 条件参数
-  @JsonKey(defaultValue: {})
   final Map<String, dynamic> parameters;
 
   const ConditionalBranch({
@@ -43,8 +40,14 @@ class ConditionalBranch extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [condition, description, trueSteps, falseSteps, type, parameters];
+  List<Object?> get props => [
+    condition,
+    description,
+    trueSteps,
+    falseSteps,
+    type,
+    parameters,
+  ];
 
   /// 从JSON创建实例
   factory ConditionalBranch.fromJson(Map<String, dynamic> json) =>
@@ -65,16 +68,16 @@ class ConditionalBranch extends Equatable {
 enum ConditionType {
   /// 表达式条件
   expression,
-  
+
   /// 数值比较
   numeric,
-  
+
   /// 字符串匹配
   string,
-  
+
   /// 布尔值
   boolean,
-  
+
   /// 自定义函数
   custom,
 }

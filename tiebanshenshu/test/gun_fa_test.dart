@@ -9,12 +9,19 @@ void main() {
     late FourZhu testFourZhu;
 
     setUp(() {
-      calculator = EightGuaGunFaCalculatorV2();
       testFourZhu = FourZhu(
         yearGanzhi: "丙戌",
         monthGanzhi: "庚寅",
         dayGanzhi: "丁亥",
         timeGanzhi: "辛亥",
+      );
+      calculator = EightGuaGunFaCalculatorV2(
+        fourZhu: testFourZhu,
+        evenNumberConfig: null,
+        oddNumberConfig: null,
+        isOddAsTopGua: null,
+        ganToNumberStrategy: null,
+        zhiToNumberStrategy: null,
       );
     });
 
