@@ -44,10 +44,18 @@ class RuleSet extends Equatable {
   });
 
   @override
-  List<Object?> get props => [name, description, rules, type, priority, enabled];
+  List<Object?> get props => [
+    name,
+    description,
+    rules,
+    type,
+    priority,
+    enabled,
+  ];
 
   /// 从JSON创建实例
-  factory RuleSet.fromJson(Map<String, dynamic> json) => _$RuleSetFromJson(json);
+  factory RuleSet.fromJson(Map<String, dynamic> json) =>
+      _$RuleSetFromJson(json);
 
   /// 转换为JSON
   Map<String, dynamic> toJson() => _$RuleSetToJson(this);
@@ -114,8 +122,16 @@ class Rule extends Equatable {
   });
 
   @override
-  List<Object?> get props =>
-      [id, name, description, condition, action, priority, enabled, parameters];
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    condition,
+    action,
+    priority,
+    enabled,
+    parameters,
+  ];
 
   /// 从JSON创建实例
   factory Rule.fromJson(Map<String, dynamic> json) => _$RuleFromJson(json);

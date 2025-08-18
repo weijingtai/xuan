@@ -52,15 +52,15 @@ class AlgorithmConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-        name,
-        version,
-        description,
-        steps,
-        globalConfig,
-        ruleSets,
-        createdAt,
-        updatedAt
-      ];
+    name,
+    version,
+    description,
+    steps,
+    globalConfig,
+    ruleSets,
+    createdAt,
+    updatedAt,
+  ];
 
   /// 从JSON创建实例
   factory AlgorithmConfig.fromJson(Map<String, dynamic> json) =>
