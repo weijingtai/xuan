@@ -33,11 +33,11 @@ class ExecutionStep extends Equatable {
 
   /// 输入映射
   @JsonKey(defaultValue: {})
-  final Map<String, String> inputs;
+  final Map<String, dynamic> inputs;
 
   /// 输出映射
   @JsonKey(defaultValue: {})
-  final Map<String, String> outputs;
+  final Map<String, dynamic> outputs;
 
   /// 条件分支
   final List<ConditionalBranch>? conditionalBranches;
@@ -67,11 +67,11 @@ class ExecutionStep extends Equatable {
 
   /// 输入映射（兼容性别名）
   @JsonKey(includeFromJson: false, includeToJson: false)
-  Map<String, String> get inputMapping => inputs;
+  Map<String, dynamic> get inputMapping => inputs;
 
   /// 输出映射（兼容性别名）
   @JsonKey(includeFromJson: false, includeToJson: false)
-  Map<String, String> get outputMapping => outputs;
+  Map<String, dynamic> get outputMapping => outputs;
 
   const ExecutionStep({
     required this.id,
@@ -91,20 +91,20 @@ class ExecutionStep extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        description,
-        operationId,
-        config,
-        inputs,
-        outputs,
-        conditionalBranches,
-        required,
-        timeoutMs,
-        retryCount,
-        dependencies,
-        isOptional,
-      ];
+    id,
+    name,
+    description,
+    operationId,
+    config,
+    inputs,
+    outputs,
+    conditionalBranches,
+    required,
+    timeoutMs,
+    retryCount,
+    dependencies,
+    isOptional,
+  ];
 
   /// 从JSON创建实例
   factory ExecutionStep.fromJson(Map<String, dynamic> json) =>
@@ -147,7 +147,8 @@ class ExecutionStep extends Equatable {
   }
 
   /// 是否有条件分支
-  bool get hasConditionalBranches => conditionalBranches != null && conditionalBranches!.isNotEmpty;
+  bool get hasConditionalBranches =>
+      conditionalBranches != null && conditionalBranches!.isNotEmpty;
 
   /// 获取输入键列表
   List<String> get inputKeys => inputs.keys.toList();
