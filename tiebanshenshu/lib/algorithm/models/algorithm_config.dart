@@ -3,12 +3,17 @@
 /// 定义算法的完整配置结构
 library algorithm_config;
 
+import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'execution_step.dart';
 import 'rule_set.dart';
 
+part 'algorithm_config.g.dart';
+
 /// 算法配置类
-/// Version: v0.1
-class AlgorithmConfig {
+/// Version: v0.2 (json_serializable)
+@JsonSerializable(explicitToJson: true)
+class AlgorithmConfig extends Equatable {
   /// 算法名称
   final String name;
 
@@ -25,6 +30,7 @@ class AlgorithmConfig {
   final Map<String, dynamic>? globalConfig;
 
   /// 规则集
+  @JsonKey(defaultValue: [])
   final List<RuleSet> ruleSets;
 
   /// 创建时间
@@ -44,23 +50,24 @@ class AlgorithmConfig {
     required this.updatedAt,
   });
 
+  @override
+  List<Object?> get props => [
+        name,
+        version,
+        description,
+        steps,
+        globalConfig,
+        ruleSets,
+        createdAt,
+        updatedAt
+      ];
+
   /// 从JSON创建实例
-  factory AlgorithmConfig.fromJson(Map<String, dynamic> json) {
-    return AlgorithmConfig(
-      name: json['name'] as String,
-      version: json['version'] as String,
-      description: json['description'] as String,
-      steps: (json['steps'] as List<dynamic>)
-          .map((step) => ExecutionStep.fromJson(step as Map<String, dynamic>))
-          .toList(),
-      globalConfig: json['globalConfig'] as Map<String, dynamic>?,
-      ruleSets: (json['ruleSets'] as List<dynamic>? ?? [])
-          .map((ruleSet) => RuleSet.fromJson(ruleSet as Map<String, dynamic>))
-          .toList(),
-      createdAt: DateTime.parse(json['createdAt'] as String),
-      updatedAt: DateTime.parse(json['updatedAt'] as String),
-    );
-  }
+  factory AlgorithmConfig.fromJson(Map<String, dynamic> json) =>
+      _$AlgorithmConfigFromJson(json);
+
+  /// 转换为JSON
+  Map<String, dynamic> toJson() => _$AlgorithmConfigToJson(this);
 
   /// 复制配置
   AlgorithmConfig copyWith({
@@ -83,20 +90,6 @@ class AlgorithmConfig {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
-  }
-
-  /// 转换为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'version': version,
-      'description': description,
-      'steps': steps.map((step) => step.toJson()).toList(),
-      'globalConfig': globalConfig,
-      'ruleSets': ruleSets.map((ruleSet) => ruleSet.toJson()).toList(),
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-    };
   }
 
   /// 获取指定ID的步骤

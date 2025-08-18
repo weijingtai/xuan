@@ -1,66 +1,56 @@
 /// 规则集模型
-/// Version: v0.1
+/// Version: v0.2 (json_serializable)
 /// 定义算法中使用的规则集合
 library rule_set;
 
+import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'rule_set.g.dart';
+
 /// 规则集类
-/// Version: v0.1
-class RuleSet {
+/// Version: v0.2 (json_serializable)
+@JsonSerializable(explicitToJson: true)
+class RuleSet extends Equatable {
   /// 规则集名称
   final String name;
   
   /// 规则集描述
+  @JsonKey(defaultValue: '')
   final String description;
   
   /// 规则列表
   final List<Rule> rules;
   
   /// 规则集类型
+  @JsonKey(defaultValue: RuleSetType.standard)
   final RuleSetType type;
   
   /// 优先级
+  @JsonKey(defaultValue: 0)
   final int priority;
   
   /// 是否启用
+  @JsonKey(defaultValue: true)
   final bool enabled;
 
   const RuleSet({
     required this.name,
-    required this.description,
+    this.description = '',
     required this.rules,
     this.type = RuleSetType.standard,
     this.priority = 0,
     this.enabled = true,
   });
 
+  @override
+  List<Object?> get props => [name, description, rules, type, priority, enabled];
+
   /// 从JSON创建实例
-  factory RuleSet.fromJson(Map<String, dynamic> json) {
-    return RuleSet(
-      name: json['name'] as String,
-      description: json['description'] as String,
-      rules: (json['rules'] as List<dynamic>)
-          .map((rule) => Rule.fromJson(rule as Map<String, dynamic>))
-          .toList(),
-      type: RuleSetType.values.firstWhere(
-        (type) => type.name == json['type'],
-        orElse: () => RuleSetType.standard,
-      ),
-      priority: json['priority'] as int? ?? 0,
-      enabled: json['enabled'] as bool? ?? true,
-    );
-  }
+  factory RuleSet.fromJson(Map<String, dynamic> json) => _$RuleSetFromJson(json);
 
   /// 转换为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'description': description,
-      'rules': rules.map((rule) => rule.toJson()).toList(),
-      'type': type.name,
-      'priority': priority,
-      'enabled': enabled,
-    };
-  }
+  Map<String, dynamic> toJson() => _$RuleSetToJson(this);
 
   /// 根据ID获取规则
   Rule? getRuleById(String ruleId) {
@@ -81,8 +71,9 @@ class RuleSet {
 }
 
 /// 规则类
-/// Version: v0.1
-class Rule {
+/// Version: v0.2 (json_serializable)
+@JsonSerializable()
+class Rule extends Equatable {
   /// 规则ID
   final String id;
   
@@ -90,6 +81,7 @@ class Rule {
   final String name;
   
   /// 规则描述
+  @JsonKey(defaultValue: '')
   final String description;
   
   /// 条件表达式
@@ -99,18 +91,21 @@ class Rule {
   final Map<String, dynamic> action;
   
   /// 优先级
+  @JsonKey(defaultValue: 0)
   final int priority;
   
   /// 是否启用
+  @JsonKey(defaultValue: true)
   final bool enabled;
   
   /// 规则参数
+  @JsonKey(defaultValue: {})
   final Map<String, dynamic> parameters;
 
   const Rule({
     required this.id,
     required this.name,
-    required this.description,
+    this.description = '',
     required this.condition,
     required this.action,
     this.priority = 0,
@@ -118,33 +113,15 @@ class Rule {
     this.parameters = const {},
   });
 
+  @override
+  List<Object?> get props =>
+      [id, name, description, condition, action, priority, enabled, parameters];
+
   /// 从JSON创建实例
-  factory Rule.fromJson(Map<String, dynamic> json) {
-    return Rule(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      condition: json['condition'] as String,
-      action: json['action'] as Map<String, dynamic>,
-      priority: json['priority'] as int? ?? 0,
-      enabled: json['enabled'] as bool? ?? true,
-      parameters: json['parameters'] as Map<String, dynamic>? ?? {},
-    );
-  }
+  factory Rule.fromJson(Map<String, dynamic> json) => _$RuleFromJson(json);
 
   /// 转换为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'condition': condition,
-      'action': action,
-      'priority': priority,
-      'enabled': enabled,
-      'parameters': parameters,
-    };
-  }
+  Map<String, dynamic> toJson() => _$RuleToJson(this);
 
   @override
   String toString() {
@@ -153,7 +130,8 @@ class Rule {
 }
 
 /// 规则集类型枚举
-/// Version: v0.1
+/// Version: v0.2 (json_serializable)
+@JsonEnum()
 enum RuleSetType {
   /// 标准规则集
   standard,
