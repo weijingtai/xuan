@@ -2,8 +2,8 @@
   "name": "计算单个地支基本数",
   "version": "1.0.0",
   "description": "一个可复用的子流程，用于计算单个地支（年/月/日/时）的太玄基本数。",
-  "createdAt": "2025-08-16T19:50:00.000Z",
-  "updatedAt": "2025-08-16T19:50:00.000Z",
+  "createdAt": "2025-08-17T19:04:00.000Z",
+  "updatedAt": "2025-08-17T19:04:00.000Z",
   "globalConfig": {
     "tianganGuaMap": {
       "甲": "乾", "壬": "乾", "乙": "坤", "癸": "坤", "丙": "艮",
@@ -18,11 +18,14 @@
       "子": 1, "丑": 2, "寅": 3, "卯": 4, "辰": 5, "巳": 6, "午": 7, "未": 8, "申": 9, "亥": 10
     }
   },
+  "ruleSets": [],
   "steps": [
     {
       "id": "map_gan_to_gua",
       "name": "干转卦",
+      "description": "",
       "operationId": "data_mapping",
+      "config": {},
       "inputs": {
         "data": "input.gan",
         "mapping_rules": "config.tianganGuaMap"
@@ -34,7 +37,9 @@
     {
       "id": "map_zhi_to_gua",
       "name": "支转卦",
+      "description": "",
       "operationId": "data_mapping",
+      "config": {},
       "inputs": {
         "data": "input.zhi",
         "mapping_rules": "config.dizhiGuaMap"
@@ -46,7 +51,9 @@
     {
       "id": "compose_hexagram",
       "name": "组合重卦",
+      "description": "",
       "operationId": "object_construction",
+      "config": {},
       "inputs": {
         "fields": {
           "upper": "intermediate.gan_gua",
@@ -60,7 +67,9 @@
     {
       "id": "generate_najia",
       "name": "生成纳甲",
+      "description": "",
       "operationId": "generate_najia",
+      "config": {},
       "inputs": {
         "hexagram": "intermediate.hexagram",
         "isYang": "input.is_yang"
@@ -72,7 +81,9 @@
     {
       "id": "calculate_taixuan_sums",
       "name": "计算太玄数和",
+      "description": "",
       "operationId": "calculate_taixuan_sums",
+      "config": {},
       "inputs": {
         "najia_list": "intermediate.najia_list",
         "taixuan_map": "config.taixuanNumberMap"
@@ -84,7 +95,9 @@
     {
       "id": "split_sums",
       "name": "拆分太玄数和",
+      "description": "",
       "operationId": "split_list",
+      "config": {},
       "inputs": {
         "list": "intermediate.taixuan_sums",
         "index": 3
@@ -97,7 +110,9 @@
     {
       "id": "sum_top_trigram",
       "name": "求和上卦数",
+      "description": "",
       "operationId": "math_calculation",
+      "config": {},
       "inputs": {
         "operands": "intermediate.sums_top",
         "operation": "add"
@@ -109,7 +124,9 @@
     {
       "id": "sum_bottom_trigram",
       "name": "求和下卦数",
+      "description": "",
       "operationId": "math_calculation",
+      "config": {},
       "inputs": {
         "operands": "intermediate.sums_bottom",
         "operation": "add"
@@ -121,7 +138,9 @@
     {
       "id": "format_base_number",
       "name": "格式化基本数",
+      "description": "",
       "operationId": "format_string",
+      "config": {},
       "inputs": {
         "template": "{{top}}{{bottom}}",
         "variables": {

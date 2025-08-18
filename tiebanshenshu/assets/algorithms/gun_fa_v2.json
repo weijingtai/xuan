@@ -2,8 +2,8 @@
   "name": "八卦滚法V2-原子化实现",
   "version": "1.0.0",
   "description": "使用原子操作流实现的八卦滚法V2。",
-  "createdAt": "2025-08-17T16:44:00.000Z",
-  "updatedAt": "2025-08-17T16:44:00.000Z",
+  "createdAt": "2025-08-17T19:06:00.000Z",
+  "updatedAt": "2025-08-17T19:06:00.000Z",
   "globalConfig": {
     "gun_fa_v2_config": {
       "evenNumberConfig": { "numberOperationStrategy": "mode", "factorNumber": 8, "guaConversionStrategy": "toHouTian", "withLength": true },
@@ -17,11 +17,14 @@
       "fourthGuaStrategy": { "needExchange": false, "needCuoGua": false, "guaType": "互", "baseGuaSource": "second" }
     }
   },
+  "ruleSets": [],
   "steps": [
     {
       "id": "generate_first_four_gua",
       "name": "生成前四卦",
+      "description": "调用高级原子，生成前四卦",
       "operationId": "generate_four_gua",
+      "config": {},
       "inputs": {
         "fourZhu": "input.fourZhu",
         "threeYuan": "input.threeYuan",
@@ -36,7 +39,9 @@
     {
       "id": "get_fifth_bianyao_num",
       "name": "计算第五卦变爻基数",
+      "description": "取变爻基数的模",
       "operationId": "math_calculation",
+      "config": {},
       "inputs": {
         "operands": ["{{intermediate.variation_base}}", 6],
         "operation": "modulo"
@@ -46,14 +51,18 @@
     {
       "id": "get_change_positions",
       "name": "获取变爻位置",
+      "description": "根据余数获取爻位",
       "operationId": "get_change_positions",
+      "config": {},
       "inputs": { "remainder": "{{intermediate.fifth_bianyao_num}}" },
       "outputs": { "positions": "intermediate.change_positions" }
     },
     {
       "id": "generate_last_four_gua",
       "name": "生成后四卦",
+      "description": "循环遍历前四卦，应用变换",
       "operationId": "loop",
+      "config": {},
       "inputs": {
         "items": "intermediate.first_four_gua",
         "operation": {
@@ -69,7 +78,9 @@
     {
       "id": "extract_last_four_gua_strings",
       "name": "提取后四卦字符串",
+      "description": "从结果对象中提取卦字符串",
       "operationId": "data_mapping",
+      "config": {},
       "inputs": {
         "data": "intermediate.last_four_gua_results",
         "mapping_rules": { "resultGua": "gua" }
@@ -79,7 +90,9 @@
     {
       "id": "combine_eight_gua",
       "name": "合并八个卦",
+      "description": "合并前四卦和后四卦",
       "operationId": "array_composition",
+      "config": {},
       "inputs": {
         "elements": ["{{intermediate.first_four_gua}}", "{{intermediate.last_four_gua}}"],
         "mode": "flatten"
@@ -89,7 +102,9 @@
     {
       "id": "calculate_all_tiaowen",
       "name": "计算所有条文",
+      "description": "循环遍历八卦，计算条文",
       "operationId": "loop",
+      "config": {},
       "inputs": {
         "items": "intermediate.eight_gua_list",
         "operation": {
@@ -102,7 +117,9 @@
     {
       "id": "calculate_final_tiaowen_list",
       "name": "生成最终条文列表",
+      "description": "循环遍历三数，生成条文列表",
       "operationId": "loop",
+      "config": {},
       "inputs": {
         "items": "intermediate.three_numbers_results",
         "operation": {

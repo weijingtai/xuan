@@ -2,14 +2,17 @@
   "name": "太玄四柱-原子化实现 (v2 - 模块化)",
   "version": "2.0.0",
   "description": "使用子流程和高级循环实现的模块化太玄四柱取数法。",
-  "createdAt": "2025-08-16T19:57:00.000Z",
-  "updatedAt": "2025-08-16T19:57:00.000Z",
+  "createdAt": "2025-08-17T19:05:00.000Z",
+  "updatedAt": "2025-08-17T19:05:00.000Z",
   "globalConfig": {},
+  "ruleSets": [],
   "steps": [
     {
       "id": "get_four_zhu_details",
       "name": "获取四柱详情",
+      "description": "提取所有需要的干支和阴阳属性",
       "operationId": "field_extraction",
+      "config": {},
       "inputs": {
         "data": "input.birthInfo",
         "fields": [
@@ -22,7 +25,9 @@
     {
       "id": "prepare_pillar_list",
       "name": "准备四柱干支列表",
+      "description": "将四个干支组合成一个列表，用于循环",
       "operationId": "array_composition",
+      "config": {},
       "inputs": {
         "elements": [
           "{{intermediate.four_zhu_details.fourZhu.yearGanzhi}}",
@@ -36,7 +41,9 @@
     {
       "id": "loop_over_pillars",
       "name": "循环计算各柱基本数",
+      "description": "循环调用子流程，为每个地支计算基本数",
       "operationId": "loop",
+      "config": {},
       "inputs": {
         "items": "intermediate.pillar_ganzhi_list",
         "operation": {
@@ -58,7 +65,9 @@
     {
       "id": "extract_base_numbers",
       "name": "提取基本数列表",
+      "description": "从子流程结果中提取所有基本数",
       "operationId": "data_mapping",
+      "config": {},
       "inputs": {
         "data": "intermediate.pillar_results",
         "mapping_rules": { "outputs.base_number": "base_number" }
@@ -72,6 +81,7 @@
       "name": "计算最终条文",
       "description": "对每个基本数进行加减96的运算, 此处仅为示例，只做加法",
       "operationId": "loop",
+      "config": {},
       "inputs": {
         "items": "intermediate.base_numbers_list",
         "operation": {
