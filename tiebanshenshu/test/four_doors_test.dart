@@ -10,14 +10,14 @@ void main() {
     late FourZhu testFourZhu;
 
     setUp(() {
-      calculator = FourDoorsCalculatorV2();
-      // calculator = FourDoorsCalculator();
       testFourZhu = FourZhu(
         yearGanzhi: "丙子",
         monthGanzhi: "壬辰",
         dayGanzhi: "庚申",
         timeGanzhi: "甲申",
       );
+      calculator = FourDoorsCalculatorV2(fourZhu: testFourZhu);
+      // calculator = FourDoorsCalculator();
     });
 
     test('GuaGenerationStrategy 验证', () {
