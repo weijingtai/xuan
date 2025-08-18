@@ -221,6 +221,38 @@ class CalculateTiaowenFromNumbersAtom extends AtomicOperation {
 
 
 /// Wrapper class for domain-specific operations.
+class GuaToGanzhiAtom extends AtomicOperation {
+  GuaToGanzhiAtom() : super(id: 'gua_to_ganzhi', name: '卦转干支', category: '领域专用', description: '将卦象根据阴阳属性转换为对应的天干和地支', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'gua': ParameterDefinition(name: 'gua', type: ParameterType.str, required: true), 'isYang': ParameterDefinition(name: 'isYang', type: ParameterType.boolean, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'gan': ParameterDefinition(name: 'gan', type: ParameterType.str, required: true), 'zhi': ParameterDefinition(name: 'zhi', type: ParameterType.str, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class CalculateFourDoorsTiaowenAtom extends AtomicOperation {
+  CalculateFourDoorsTiaowenAtom() : super(id: 'calculate_four_doors_tiaowen', name: '计算四门条文', category: '领域专用', description: '执行四门法最终的条文计算', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'xiantianNumbers': ParameterDefinition(name: 'xiantianNumbers', type: ParameterType.array, required: true), 'secretNumbers': ParameterDefinition(name: 'secretNumbers', type: ParameterType.array, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'tiaowenList': ParameterDefinition(name: 'tiaowenList', type: ParameterType.array, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class CalculateYuanhuiNumberAtom extends AtomicOperation {
+  CalculateYuanhuiNumberAtom() : super(id: 'calculate_yuanhui_number', name: '计算元会数', category: '领域专用', description: '根据四柱计算元会基本数', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'fourZhu': ParameterDefinition(name: 'fourZhu', type: ParameterType.any, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'yuanhuiNumber': ParameterDefinition(name: 'yuanhuiNumber', type: ParameterType.intNum, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
+class CalculateYunshiNumberAtom extends AtomicOperation {
+  CalculateYunshiNumberAtom() : super(id: 'calculate_yunshi_number', name: '计算运世数', category: '领域专用', description: '根据四柱计算运世基本数', version: 'v0.1');
+  @override Map<String, ParameterDefinition> get inputParameters => {'fourZhu': ParameterDefinition(name: 'fourZhu', type: ParameterType.any, required: true)};
+  @override Map<String, ParameterDefinition> get outputParameters => {'yunshiNumber': ParameterDefinition(name: 'yunshiNumber', type: ParameterType.intNum, required: true)};
+  @override Map<String, ParameterDefinition> get configParameters => {};
+  @override Future<Map<String, dynamic>> execute(ExecutionContext context, Map<String, dynamic> inputs, Map<String, dynamic> config) async => throw UnimplementedError();
+}
+
 class DomainSpecificOperations {
   static List<AtomicOperation> getOperations() {
     return [
@@ -231,6 +263,10 @@ class DomainSpecificOperations {
       ApplyGuaExchangeTransformAtom(),
       GetGuaThreeNumbersAtom(),
       CalculateTiaowenFromNumbersAtom(),
+      GuaToGanzhiAtom(),
+      CalculateFourDoorsTiaowenAtom(),
+      CalculateYuanhuiNumberAtom(),
+      CalculateYunshiNumberAtom(),
     ];
   }
 }
