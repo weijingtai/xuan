@@ -53,8 +53,8 @@ class AlgorithmConfig {
       steps: (json['steps'] as List<dynamic>)
           .map((step) => ExecutionStep.fromJson(step as Map<String, dynamic>))
           .toList(),
-      globalConfig: json['globalConfig'] as Map<String, dynamic>,
-      ruleSets: (json['ruleSets'] as List<dynamic>)
+      globalConfig: json['globalConfig'] as Map<String, dynamic>?,
+      ruleSets: (json['ruleSets'] as List<dynamic>? ?? [])
           .map((ruleSet) => RuleSet.fromJson(ruleSet as Map<String, dynamic>))
           .toList(),
       createdAt: DateTime.parse(json['createdAt'] as String),
