@@ -34,13 +34,11 @@ class MockAlgorithmRepository implements AlgorithmRepository {
         // Extract the ID from the filename, e.g., "assets/algorithms/gun_fa_v2.json" -> "gun_fa_v2"
         final id = path.split('/').last.replaceAll('.json', '');
 
-        summaries.add(
-          AlgorithmSummary(
-            id: id,
-            name: configMap['name'] ?? '未命名算法',
-            description: configMap['description'] ?? '无描述',
-          ),
-        );
+        summaries.add(AlgorithmSummary(
+          id: id,
+          name: configMap['name'] ?? '未命名算法',
+          description: configMap['description'] ?? '无描述',
+        ));
       } catch (e) {
         // Ignore files that fail to parse
         print("Failed to load or parse algorithm from $path: $e");
@@ -48,16 +46,11 @@ class MockAlgorithmRepository implements AlgorithmRepository {
     }
 
     // Also include any new algorithms created in-memory during the session
-    final cachedSummaries = _inMemoryCache.values
-        .map(
-          (config) => AlgorithmSummary(
-            id: config
-                .name, // In-memory algorithms might not have a persistent ID yet
-            name: config.name,
-            description: config.description,
-          ),
-        )
-        .toList();
+    final cachedSummaries = _inMemoryCache.values.map((config) => AlgorithmSummary(
+      id: config.name, // In-memory algorithms might not have a persistent ID yet
+      name: config.name,
+      description: config.description
+    )).toList();
 
     // Combine and return, avoiding duplicates if any were cached
     final combined = [...summaries, ...cachedSummaries];

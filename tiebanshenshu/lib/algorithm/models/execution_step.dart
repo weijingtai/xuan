@@ -91,20 +91,20 @@ class ExecutionStep extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    description,
-    operationId,
-    config,
-    inputs,
-    outputs,
-    conditionalBranches,
-    required,
-    timeoutMs,
-    retryCount,
-    dependencies,
-    isOptional,
-  ];
+        id,
+        name,
+        description,
+        operationId,
+        config,
+        inputs,
+        outputs,
+        conditionalBranches,
+        required,
+        timeoutMs,
+        retryCount,
+        dependencies,
+        isOptional,
+      ];
 
   /// 从JSON创建实例
   factory ExecutionStep.fromJson(Map<String, dynamic> json) =>
@@ -120,8 +120,8 @@ class ExecutionStep extends Equatable {
     String? description,
     String? operationId,
     Map<String, dynamic>? config,
-    Map<String, String>? inputs,
-    Map<String, String>? outputs,
+    Map<String, dynamic>? inputs,
+    Map<String, dynamic>? outputs,
     List<ConditionalBranch>? conditionalBranches,
     bool? required,
     int? timeoutMs,
@@ -147,8 +147,7 @@ class ExecutionStep extends Equatable {
   }
 
   /// 是否有条件分支
-  bool get hasConditionalBranches =>
-      conditionalBranches != null && conditionalBranches!.isNotEmpty;
+  bool get hasConditionalBranches => conditionalBranches != null && conditionalBranches!.isNotEmpty;
 
   /// 获取输入键列表
   List<String> get inputKeys => inputs.keys.toList();

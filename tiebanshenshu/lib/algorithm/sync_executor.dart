@@ -50,37 +50,36 @@ class SyncExecutor {
     ExecutionStep step,
     ExecutionContext context,
   ) async {
-    final inputs = <String, dynamic>{};
+    final resolvedInputs = <String, dynamic>{};
 
-    // 处理输入映射
     for (final entry in step.inputMapping.entries) {
       final inputKey = entry.key;
-      final sourceKey = entry.value;
+      final sourceValue = entry.value;
 
-      // 从不同来源获取数据
-      if (sourceKey.startsWith('input.')) {
-        // 从原始输入获取
-        final key = sourceKey.substring(6); // 移除 'input.' 前缀
-        inputs[inputKey] = context.getInput(key);
-      } else if (sourceKey.startsWith('intermediate.')) {
-        // 从中间结果获取
-        final key = sourceKey.substring(13); // 移除 'intermediate.' 前缀
-        inputs[inputKey] = context.getIntermediateResult(key);
-      } else if (sourceKey.startsWith('output.')) {
-        // 从输出结果获取
-        final key = sourceKey.substring(7); // 移除 'output.' 前缀
-        inputs[inputKey] = context.getOutput(key);
-      } else if (sourceKey.startsWith('config.')) {
-        // 从全局配置获取
-        final key = sourceKey.substring(7); // 移除 'config.' 前缀
-        inputs[inputKey] = context.getGlobalConfig(key);
+      if (sourceValue is String) {
+        if (sourceValue.startsWith('input.')) {
+          final key = sourceValue.substring(6);
+          resolvedInputs[inputKey] = context.getInput(key);
+        } else if (sourceValue.startsWith('intermediate.')) {
+          final key = sourceValue.substring(13);
+          resolvedInputs[inputKey] = context.getIntermediateResult(key);
+        } else if (sourceValue.startsWith('output.')) {
+          final key = sourceValue.substring(7);
+          resolvedInputs[inputKey] = context.getOutput(key);
+        } else if (sourceValue.startsWith('config.')) {
+          final key = sourceValue.substring(7);
+          resolvedInputs[inputKey] = context.getGlobalConfig(key);
+        } else {
+          // It's a string literal
+          resolvedInputs[inputKey] = sourceValue;
+        }
       } else {
-        // 直接使用字面值
-        inputs[inputKey] = sourceKey;
+        // It's a non-string literal (int, bool, list, map, etc.)
+        resolvedInputs[inputKey] = sourceValue;
       }
     }
 
-    return inputs;
+    return resolvedInputs;
   }
 
   /// 处理输出数据
