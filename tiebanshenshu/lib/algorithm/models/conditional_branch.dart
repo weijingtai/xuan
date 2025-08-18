@@ -1,15 +1,22 @@
 /// 条件分支模型
-/// Version: v0.1
+/// Version: v0.2 (json_serializable)
 /// 定义条件逻辑和分支执行
 library conditional_branch;
 
+import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'conditional_branch.g.dart';
+
 /// 条件分支类
-/// Version: v0.1
-class ConditionalBranch {
+/// Version: v0.2 (json_serializable)
+@JsonSerializable()
+class ConditionalBranch extends Equatable {
   /// 条件表达式
   final String condition;
   
   /// 条件描述
+  @JsonKey(defaultValue: '')
   final String description;
   
   /// 真分支步骤ID列表
@@ -19,48 +26,32 @@ class ConditionalBranch {
   final List<String>? falseSteps;
   
   /// 条件类型
+  @JsonKey(defaultValue: ConditionType.expression)
   final ConditionType type;
   
   /// 条件参数
+  @JsonKey(defaultValue: {})
   final Map<String, dynamic> parameters;
 
   const ConditionalBranch({
     required this.condition,
-    required this.description,
+    this.description = '',
     required this.trueSteps,
     this.falseSteps,
     this.type = ConditionType.expression,
     this.parameters = const {},
   });
 
+  @override
+  List<Object?> get props =>
+      [condition, description, trueSteps, falseSteps, type, parameters];
+
   /// 从JSON创建实例
-  factory ConditionalBranch.fromJson(Map<String, dynamic> json) {
-    return ConditionalBranch(
-      condition: json['condition'] as String,
-      description: json['description'] as String,
-      trueSteps: List<String>.from(json['trueSteps'] as List),
-      falseSteps: json['falseSteps'] != null
-          ? List<String>.from(json['falseSteps'] as List)
-          : null,
-      type: ConditionType.values.firstWhere(
-        (type) => type.name == json['type'],
-        orElse: () => ConditionType.expression,
-      ),
-      parameters: json['parameters'] as Map<String, dynamic>? ?? {},
-    );
-  }
+  factory ConditionalBranch.fromJson(Map<String, dynamic> json) =>
+      _$ConditionalBranchFromJson(json);
 
   /// 转换为JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'condition': condition,
-      'description': description,
-      'trueSteps': trueSteps,
-      if (falseSteps != null) 'falseSteps': falseSteps,
-      'type': type.name,
-      'parameters': parameters,
-    };
-  }
+  Map<String, dynamic> toJson() => _$ConditionalBranchToJson(this);
 
   @override
   String toString() {
@@ -69,7 +60,8 @@ class ConditionalBranch {
 }
 
 /// 条件类型枚举
-/// Version: v0.1
+/// Version: v0.2 (json_serializable)
+@JsonEnum()
 enum ConditionType {
   /// 表达式条件
   expression,
