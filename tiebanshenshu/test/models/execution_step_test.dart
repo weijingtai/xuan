@@ -15,7 +15,7 @@ void main() {
       description: 'A step for testing',
       operationId: 'test_op',
       config: {'retries': 3},
-      inputs: {'input1': 'source1'},
+      inputs: {'input1': 'intermediate.source1', 'literalValue': 123},
       outputs: {'output1': 'dest1'},
       conditionalBranches: [mockBranch],
       required: true,
@@ -32,6 +32,38 @@ void main() {
 
       // Assert
       expect(deserializedStep, equals(mockStep));
+      expect(deserializedStep.inputs['literalValue'], 123);
+    });
+
+    test('should correctly serialize and deserialize various literal types in inputs', () {
+      // Arrange
+      final stepWithLiterals = ExecutionStep(
+        id: 'step_with_literals',
+        operationId: 'op_literals',
+        inputs: {
+          'a_string': 'hello world',
+          'an_int': 42,
+          'a_double': 3.14,
+          'a_bool': true,
+          'a_list': [1, 'two', false],
+          'a_map': {'key': 'value'},
+          'a_variable': 'intermediate.data'
+        },
+      );
+
+      // Act
+      final json = stepWithLiterals.toJson();
+      final deserializedStep = ExecutionStep.fromJson(json);
+
+      // Assert
+      expect(deserializedStep, equals(stepWithLiterals));
+      expect(deserializedStep.inputs['a_string'], 'hello world');
+      expect(deserializedStep.inputs['an_int'], 42);
+      expect(deserializedStep.inputs['a_double'], 3.14);
+      expect(deserializedStep.inputs['a_bool'], true);
+      expect(deserializedStep.inputs['a_list'], [1, 'two', false]);
+      expect(deserializedStep.inputs['a_map']['key'], 'value');
+      expect(deserializedStep.inputs['a_variable'], 'intermediate.data');
     });
 
     test('should handle nullable and default value fields correctly', () {
