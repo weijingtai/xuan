@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
+import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/enums.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
@@ -144,8 +145,171 @@ class QiZhengSiYuPanSizeDataModel {
   }
 }
 
+class BeautyViewPageParams {
+  DivinationInfoModel? divinationInfoModel;
+  DivinationTypeDataModel divinationTypeDataModel;
+  // pan uuid
+  String? panUuid;
+  BeautyViewPageParams({
+    required this.divinationTypeDataModel,
+    this.divinationInfoModel,
+    this.panUuid,
+  }) : assert(divinationInfoModel != null || panUuid != null,
+            '必须提供 divinationInfoModel 或 uuid 中的一个参数');
+
+  static BeautyViewPageParams get devDefault {
+    // 根据注释中的JSON数据创建DivinationInfoModel
+    final jsonData = {
+      "divination": {
+        "uuid": "01971a88-45a0-7fff-ad25-2123d9955f2c",
+        "createdAt": "2025-05-28T22:33:47.000",
+        "lastUpdatedAt": "2025-05-28T22:33:47.000",
+        "deletedAt": null,
+        "divinationTypeUuid": "b07421dc-6ef5-4959-afd3-7c618b152fb4",
+        "fateYear": null,
+        "question": "卜问前程，开发《七政四余》",
+        "detail": "卜问前程，开发《七政四余》",
+        "ownerSeekerUuid": null,
+        "gender": "male",
+        "seekerName": "wjt",
+        "tinyPredict": null,
+        "directlyPredict": null
+      },
+      "divinationDatetime": {
+        "uuid": "01971a88-45a1-7582-b2d6-bfbeacef71ea",
+        "createdAt": "2025-05-28T22:33:47.000",
+        "lastUpdatedAt": "2025-05-28T22:33:47.000",
+        "deletedAt": null,
+        "timingType": "solar",
+        "datetime": "2025-05-28T22:33:37.000",
+        "yearGanZhi": "乙巳",
+        "monthGanZhi": "辛巳",
+        "dayGanZhi": "丁酉",
+        "timeGanZhi": "辛亥",
+        "lunarMonth": 5,
+        "isLeapMonth": false,
+        "lunarDay": 2,
+        "timingInfoUuid": "0b80fd88-a3c9-4582-a4a3-802e49b65787",
+        "location": {
+          "preciseCoordinates": {
+            "latitude": 36.08602199797812,
+            "longitude": -115.25735962437955
+          },
+          "address": {
+            "countryName": "United States",
+            "countryId": 233,
+            "regionId": 2,
+            "province": {
+              "code": "1458",
+              "parentCode": "233",
+              "level": 1,
+              "name": "Nevada",
+              "latitude": 38.8026097,
+              "longitude": -116.419389
+            },
+            "city": {
+              "code": "126881",
+              "parentCode": "1458",
+              "level": 2,
+              "name": "Spring Valley",
+              "latitude": 36.10803,
+              "longitude": -115.245
+            },
+            "area": null,
+            "timezone": "America/Los_Angeles"
+          },
+          "isReverseSpeculation": false
+        },
+        "timingInfoListJson": [
+          {
+            "uuid": "0b80fd88-a3c9-4582-a4a3-802e49b65787",
+            "isDst": true,
+            "isSeersLocation": true,
+            "observer": {
+              "coordinate": null,
+              "location": {
+                "preciseCoordinates": {
+                  "latitude": 36.08602199797812,
+                  "longitude": -115.25735962437955
+                },
+                "address": {
+                  "countryName": "United States",
+                  "countryId": 233,
+                  "regionId": 2,
+                  "province": {
+                    "code": "1458",
+                    "parentCode": "233",
+                    "level": 1,
+                    "name": "Nevada",
+                    "latitude": 38.8026097,
+                    "longitude": -116.419389
+                  },
+                  "city": {
+                    "code": "126881",
+                    "parentCode": "1458",
+                    "level": 2,
+                    "name": "Spring Valley",
+                    "latitude": 36.10803,
+                    "longitude": -115.245
+                  },
+                  "area": null,
+                  "timezone": "America/Los_Angeles"
+                },
+                "isReverseSpeculation": false
+              },
+              "timezoneStr": "America/Los_Angeles",
+              "type": "阳历",
+              "hourAdjusted": null,
+              "isManualCalibration": false
+            },
+            "datetime": "2025-05-28T22:33:37.000",
+            "yearJiaZi": "乙巳",
+            "monthJiaZi": "辛巳",
+            "dayJiaZi": "丁酉",
+            "timeJiaZi": "辛亥",
+            "lunarMonth": 5,
+            "isLeapMonth": false,
+            "lunarDay": 2,
+            "jieQiInfo": {
+              "jieQi": "小满",
+              "startAt": "2025-05-21T02:54:23.000",
+              "endAt": "2025-06-05T17:56:16.000"
+            }
+          }
+        ],
+        "divinationUuid": "01971a88-45a0-7fff-ad25-2123d9955f2c",
+        "username": null,
+        "nickname": null,
+        "gender": "male"
+      }
+    };
+
+    // 从JSON创建DivinationInfoModel
+    final divinationInfoModel = DivinationInfoModel.fromJson(jsonData);
+
+    // 创建DivinationTypeDataModel
+    final divinationTypeDataModel = DivinationTypeDataModel(
+      uuid: "b07421dc-6ef5-4959-afd3-7c618b152fb4",
+      createdAt: DateTime.parse("2025-05-28T22:33:47.000"),
+      lastUpdatedAt: DateTime.parse("2025-05-28T22:33:47.000"),
+      deletedAt: null,
+      name: "占测", // 根据divinationType推断
+      description: "七政四余占测",
+      isCustomized: false,
+      isAvailable: true,
+    );
+
+    return BeautyViewPageParams(
+      divinationTypeDataModel: divinationTypeDataModel,
+      divinationInfoModel: divinationInfoModel,
+    );
+  }
+}
+
 class BeautyViewPage extends StatefulWidget {
-  const BeautyViewPage({super.key});
+  final BeautyViewPageParams params;
+  const BeautyViewPage({super.key, required this.params});
+  // const BeautyViewPage({super.key});
 
   @override
   State<BeautyViewPage> createState() => _BeautyViewPageState();
@@ -201,18 +365,22 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
   late QiZhengSiYuPanSizeDataModel panelSizeDataModel;
 
+  @deprecated
   Future<void> devInit() async {
     final res = await Future.wait([
       loadDiviniation(),
     ]);
-    context
-        .read<BeautyPageViewModel>()
-        .setLifeObserver(res[0] as DivinationInfoModel);
+    init_calculate(res[0] as DivinationInfoModel);
+  }
+
+  init_calculate(DivinationInfoModel divinationInfoModel) {
+    context.read<BeautyPageViewModel>().setLifeObserver(divinationInfoModel);
     context
         .read<BeautyPageViewModel>()
         .calculate(context.read<BeautyPageViewModel>().lifeObserver!);
   }
 
+  @deprecated
   Future<DivinationInfoModel> loadDiviniation() async {
     var divinations = await context
         .read<DevEnterPageViewModel>()
@@ -224,8 +392,13 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         .appDatabase
         .seekersDao
         .getSeekersByDivinationUuid(divinations.last.uuid);
+
     var res = DivinationInfoModel(
         divination: divinations.last, divinationDatetime: seeker.first);
+
+    print("!!!!!!!!!");
+    print(jsonEncode(res));
+    print("!!!!!!!!!");
 
     return res;
   }
@@ -234,9 +407,11 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   void initState() {
     // TODO: implement initState
     super.initState();
-    devInit().then((value) {
-      logger.d("devInit finished");
-    });
+    // devInit().then((value) {
+    //   logger.d("devInit finished");
+    // });
+    Future.delayed(Duration(seconds: 3),
+        () => {init_calculate(widget.params.divinationInfoModel!)});
     // 0°02′02‘’ 一天
     _jupiterController = AnimationController(
         vsync: this, duration: const Duration(seconds: 1062))
@@ -800,9 +975,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               if (dongWei == null) {
                 return SizedBox();
               }
-              final Map<EnumTwelveGong, YearMonth> gongYearMapper = Map.fromEntries(dongWei
-                  .daXianResult.daXianGongs
-                  .map((e) => MapEntry(e.gong, e.totalYears)));
+              final Map<EnumTwelveGong, YearMonth> gongYearMapper =
+                  Map.fromEntries(dongWei.daXianResult.daXianGongs
+                      .map((e) => MapEntry(e.gong, e.totalYears)));
               return Transform.rotate(
                 angle: -30 * pi / 180,
                 child: DaXianRing(
@@ -1443,7 +1618,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
           border: Border.all(color: Colors.black87, width: 1),
-       ),
+        ),
         child: Stack(
           alignment: Alignment.center,
           children: uiBasicLifeStarList

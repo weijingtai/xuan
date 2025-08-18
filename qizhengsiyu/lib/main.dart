@@ -2,6 +2,8 @@ import 'dart:math' as math;
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
+import 'package:common/database/app_database.dart' as rootDB;
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
@@ -12,6 +14,7 @@ import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/gong_12_dizhi.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/gong_ming_li_ring.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
+import 'package:timezone/data/latest.dart' as tz;
 import 'package:tuple/tuple.dart';
 
 import 'data/datasources/local/app_database.dart';
@@ -23,36 +26,33 @@ import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
 import 'domain/usecases/save_calculated_panel_usecase.dart';
 import 'navigator.dart';
 
-void main(){
-  runApp(
-      MultiProvider(
-        providers: [
-          Provider<AppDatabase>(
-            create: (ctx) => AppDatabase(),
-            dispose: (ctx, db) => db.close(),
-          ),
-          Provider<IQiZhengSiYuPanRepository>(
-            create: (ctx) => QiZhengSiYuPanRepository(
-              appDatabase: ctx.read<AppDatabase>(),
-            ),
-          ),
-          Provider<SaveCalculatedPanelUseCase>(
-              create: (ctx) => SaveCalculatedPanelUseCase(
-                  qiZhengSiYuPanRepository:
-                  ctx.read<IQiZhengSiYuPanRepository>())),
-          // Provider<DevEnterPageViewModel>(
-          //     create: (ctx) => DevEnterPageViewModel(appDatabase: ctx.read<AppDatabase>())),
-          ChangeNotifierProvider<BeautyPageViewModel>(
-              create: (ctx) => BeautyPageViewModel(
-                  calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
-                  saveCalculatedPanelUseCase:ctx.read<SaveCalculatedPanelUseCase>())),
-        ],
-        child: const MyApp(),
-      )
-  );
-
-
-
+void main() {
+  runApp(MultiProvider(
+    providers: [
+      // Provider<rootDB.AppDatabase>(
+      //   create: (ctx) => rootDB.AppDatabase(),
+      //   dispose: (context, rootdb) => rootdb.close(),
+      // ),
+      Provider<AppDatabase>(
+        create: (ctx) => AppDatabase(),
+        dispose: (ctx, db) => db.close(),
+      ),
+      Provider<IQiZhengSiYuPanRepository>(
+        create: (ctx) => QiZhengSiYuPanRepository(
+          appDatabase: ctx.read<AppDatabase>(),
+        ),
+      ),
+      Provider<SaveCalculatedPanelUseCase>(
+          create: (ctx) => SaveCalculatedPanelUseCase(
+              qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
+      ChangeNotifierProvider<BeautyPageViewModel>(
+          create: (ctx) => BeautyPageViewModel(
+              calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+              saveCalculatedPanelUseCase:
+                  ctx.read<SaveCalculatedPanelUseCase>())),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {

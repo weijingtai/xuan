@@ -292,7 +292,7 @@ class BeautyPageViewModel extends ChangeNotifier {
     BasePanelModel basicPanelModel;
     try {
       basicPanelModel = await _generateBasePanelService.calculate();
-      print(jsonEncode(basicPanelModel.toJson()));
+      // print(jsonEncode(basicPanelModel.toJson()));
       // _basicLifeStarsAngle =
       // StarsAngle.fromMapper(basicPanelModel.starAngleMapper);
       // _uiBasicLifeStars = // 使用原始角度计算 UI 数据
@@ -821,10 +821,10 @@ class BeautyPageViewModel extends ChangeNotifier {
           .map((e) => OtherShenSha.fromJson(e))
           .toList();
 
-
       return ShenShaManager(
-          shenShaService: ShenShaService(repository: ShenShaRepositoryImpl(localDataSource: ShenShaLocalDataSourceImpl()))
-      );
+          shenShaService: ShenShaService(
+              repository: ShenShaRepositoryImpl(
+                  localDataSource: ShenShaLocalDataSourceImpl())));
       debugPrint("ShenSha data loaded successfully.");
       // return ShenShaManager(
       //     tianGanShenSha: tianGanShenSha,
@@ -867,7 +867,10 @@ class BeautyPageViewModel extends ChangeNotifier {
 
       debugPrint("HuaYao data loaded successfully.");
 
-      return HuaYaoManager(huaYaoService: HuaYaoService(repository: HuaYaoRepositoryImpl(localDataSource: HuaYaoLocalDataSourceImpl())));
+      return HuaYaoManager(
+          huaYaoService: HuaYaoService(
+              repository: HuaYaoRepositoryImpl(
+                  localDataSource: HuaYaoLocalDataSourceImpl())));
       // return HuaYaoManager(
       //   tianGanHuaYao: tianGanHuaYao,
       //   diZhiHuaYao: diZhiHuaYao,

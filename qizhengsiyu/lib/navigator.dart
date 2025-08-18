@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/presentation/pages/primary_page.dart';
 
-
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
@@ -28,7 +27,8 @@ class NavigatorGenerator {
     //       child: const BeautyViewPage(),
     //       // child: ShiJiaQiMenViewPage(),
     //     ),
-    "/qizhengsiyu/panel": (context, {arguments}) => const BeautyViewPage()
+    "/qizhengsiyu/panel": (context, {arguments}) =>
+        BeautyViewPage(params: BeautyViewPageParams.devDefault)
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

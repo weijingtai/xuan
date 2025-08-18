@@ -18,7 +18,8 @@ import 'package:xuan/pages/root_page.dart';
 import 'package:xuan/routes.dart';
 import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:qizhengsiyu/data/datasources/local/app_database.dart' as app74db;
+import 'package:qizhengsiyu/data/datasources/local/app_database.dart'
+    as app74db;
 import 'package:qizhengsiyu/data/repositories/qizhengsiyu_pan_repository.dart'
     as app74rep;
 import 'package:qizhengsiyu/data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart'
