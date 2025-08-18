@@ -1,7 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_stars_four_type.dart';
+import '../../../enums/enum_stars_four_type.dart';
+
 
 part 'stars_four_relationship.g.dart';
 

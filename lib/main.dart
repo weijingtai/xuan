@@ -9,8 +9,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
-import 'package:qizhengsiyu/usecases/calculate_fate_dong_wei_usecase.dart';
+import 'package:qizhengsiyu/domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
@@ -18,12 +18,12 @@ import 'package:xuan/pages/root_page.dart';
 import 'package:xuan/routes.dart';
 import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:qizhengsiyu/database/app_database.dart' as app74db;
-import 'package:qizhengsiyu/repositories/qizhengsiyu_pan_repository.dart'
+import 'package:qizhengsiyu/data/datasources/local/app_database.dart' as app74db;
+import 'package:qizhengsiyu/data/repositories/qizhengsiyu_pan_repository.dart'
     as app74rep;
-import 'package:qizhengsiyu/repositories/interfaces/i_qizhengsiyu_pan_repository.dart'
+import 'package:qizhengsiyu/data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart'
     as app74rep;
-import 'package:qizhengsiyu/usecases/save_calculated_panel_usecase.dart'
+import 'package:qizhengsiyu/domain/usecases/save_calculated_panel_usecase.dart'
     as app74usecase;
 
 import 'NavigatorGenerator.dart';

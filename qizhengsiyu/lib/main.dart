@@ -4,16 +4,16 @@ import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/body_life_circle_widget.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/gong_12_dizhi.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/gong_ming_li_ring.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
-import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
-import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi.dart';
 import 'package:tuple/tuple.dart';
 
-import 'widgets/rings/body_life_circle_widget.dart';
-import 'widgets/rings/circle_text_painter.dart';
-import 'widgets/rings/gong_ming_li_ring.dart';
+import 'domain/entities/models/body_life_model.dart';
+import 'domain/entities/models/naming_degree_pair.dart';
 import 'navigator.dart';
 
 void main() => runApp(const MyApp());

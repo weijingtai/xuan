@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 
-import '../../enums/enum_school.dart';
+import '../../../enums/enum_school.dart';
 
 /// 流派选择器组件
 class SchoolSelector extends StatelessWidget {

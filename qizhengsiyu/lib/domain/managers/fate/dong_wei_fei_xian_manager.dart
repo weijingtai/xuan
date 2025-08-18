@@ -3,7 +3,7 @@ import 'package:common/module.dart';
 import 'package:common/utils.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import '../../models/fate_dong_wei_da_xian.dart';
+import '../../entities/models/fate_dong_wei_da_xian.dart';
 
 // 洞微飞限
 class DongWeiFeiXianManager {

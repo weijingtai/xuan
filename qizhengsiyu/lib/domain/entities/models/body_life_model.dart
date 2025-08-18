@@ -2,7 +2,6 @@ import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import '../enums/enum_settle_life_body.dart';
 import 'naming_degree_pair.dart';
 
 part 'body_life_model.g.dart';

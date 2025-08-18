@@ -1,11 +1,11 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 
+import 'domain/entities/models/naming_degree_pair.dart';
+import 'domain/entities/models/star_inn_gong_degree.dart';
 import 'enums/enum_qi_zheng.dart';
 import 'enums/enum_twelve_gong.dart';
-import 'models/star_inn_gong_degree.dart';
 
 const EightGua_NaJia_Gong = {
   "乾": EnumTwelveGong.Hai,

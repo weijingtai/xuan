@@ -1,7 +1,7 @@
 import 'package:common/models/divination_datetime.dart';
-import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/observer_position.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
+
+import 'base_panel_model.dart';
 
 class QiZhengSiYuPanEntity {
   String uuid;

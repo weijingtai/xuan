@@ -1,10 +1,12 @@
 import 'package:common/enums.dart';
 import 'package:decimal/decimal.dart';
+import 'package:meta/meta.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/models/zhou_tian_model.dart';
 
-import '../models/star_enter_info.dart';
+import '../domain/entities/models/naming_degree_pair.dart';
+import '../domain/entities/models/star_enter_info.dart';
+import '../domain/entities/models/zhou_tian_model.dart';
+
 
 // 计算每个星体的进入宫位和星宿
 class StarEnterInfoCalculator {
@@ -214,6 +216,43 @@ class StarEnterInfoCalculator {
 
     throw Exception('未找到对应的宫位');
   }
+  @visibleForTesting // 标记为测试可见，因为它可能是内部辅助方法但逻辑复杂
+  static bool isInDegreeRange(
+      double theStartDegree, double theEndDegree, double doTestDegree) {
+    // 将所有角度规范化到 [0, 360) 范围
+    double normalizeAngle(double angle) {
+      angle = angle % 360;
+      if (angle < 0) {
+        angle += 360;
+      }
+      return angle;
+    }
+
+    double startDegree = normalizeAngle(theStartDegree);
+    double endDegree = normalizeAngle(theEndDegree);
+    double testedDegree = normalizeAngle(doTestDegree);
+
+    // 如果起始角度等于结束角度，表示范围覆盖整个圆，除了起始点本身（取决于包含性）
+    // 当前逻辑抛出错误，保留原逻辑，但需注意这种情况可能需要特殊处理
+    if (startDegree == endDegree) {
+      // 通常表示一个点或整个圆。在角度范围判断中，相等可能表示空范围或整个圆。
+      // 根据原代码逻辑，此处认为无效范围。
+      // print(
+      //     "isInDegreeRange called with startDegree == endDegree ($startDegree). This might be an edge case or invalid input.");
+      return false; // 或者根据具体需求判断是否为整个圆
+      // throw ArgumentError("startDegree == endDegree is not a valid range for simple check.");
+    }
+
+    if (startDegree < endDegree) {
+      // 正常范围，例如 30 到 60 度
+      return testedDegree >= startDegree && testedDegree <= endDegree;
+    } else {
+      // 跨越 0/360 边界的范围，例如 330 到 30 度
+      // 测试角度在 [startDegree, 360) 或 [0, endDegree] 范围内
+      return testedDegree >= startDegree || testedDegree <= endDegree;
+    }
+  }
+
 
   static double toDecimal(double value, int scale) {
     return Decimal.parse(value.toString()).round(scale: scale).toDouble();

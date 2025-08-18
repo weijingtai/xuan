@@ -1,18 +1,18 @@
 import 'package:common/enums.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_qi_zheng.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../models/eleven_stars_info.dart';
-import '../models/observer_position.dart';
-import '../models/panel_stars_info.dart';
-import '../models/star_enter_info.dart';
-import '../models/stars_angle.dart';
-import '../qi_zheng_si_yu_constant_resources.dart';
-import '../utils/star_degree_inn_gong_helper.dart';
-import '../utils/star_walking_info_utils.dart';
+import '../../enums/enum_qi_zheng.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../../qi_zheng_si_yu_constant_resources.dart';
+import '../../utils/star_degree_inn_gong_helper.dart';
+import '../../utils/star_walking_info_utils.dart';
+import '../entities/models/eleven_stars_info.dart';
+import '../entities/models/naming_degree_pair.dart';
+import '../entities/models/observer_position.dart';
+import '../entities/models/panel_stars_info.dart';
+import '../entities/models/star_enter_info.dart';
+import '../entities/models/stars_angle.dart';
 import 'star_angle_strategy.dart';
 
 class StarBodyModelBuilder {

@@ -1,11 +1,11 @@
 import 'package:drift/drift.dart';
 import 'package:common/models/divination_datetime.dart';
-import '../../converters/panel_model_converter.dart';
-import '../../converters/panel_config_converter.dart';
-import '../../converters/divination_datetime_converter.dart';
-import '../../models/base_panel_model.dart';
-import '../../models/panel_config.dart';
-import '../../models/pan_entity.dart';
+
+import '../../../../domain/entities/models/pan_entity.dart';
+import '../../../models/converters/divination_datetime_converter.dart';
+import '../../../models/converters/panel_config_converter.dart';
+import '../../../models/converters/panel_model_converter.dart';
+
 
 @UseRowClass(QiZhengSiYuPanEntity)
 class QizhengsiyuPanTable extends Table {

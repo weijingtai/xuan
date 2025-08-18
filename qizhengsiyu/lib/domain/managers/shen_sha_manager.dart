@@ -9,6 +9,8 @@ import 'package:qizhengsiyu/domain/services/shen_sha_service.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 
+import '../../enums/enum_hua_yao_shen_sha.dart';
+
 class ShenShaManager {
   final ShenShaService shenShaService;
 

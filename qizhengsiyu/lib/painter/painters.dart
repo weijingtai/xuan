@@ -2,7 +2,8 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import '../pages/ui_star_model.dart';
+import '../presentation/models/ui_star_model.dart';
+
 
 class MyCirclePainter extends CustomPainter {
   double radians;

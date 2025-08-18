@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/services.dart';
-import 'package:qizhengsiyu/domain/entities/entities_temp/hua_yao.dart';
+
+import '../../../domain/entities/models/hua_yao.dart';
 
 abstract class HuaYaoLocalDataSource {
   Future<List<TianGanHuaYao>> getTianGanHuaYao();

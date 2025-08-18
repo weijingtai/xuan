@@ -1,6 +1,7 @@
 import 'dart:math';
 
-import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
+import 'package:qizhengsiyu/domain/services/generate_base_panel_service.dart';
+
 
 // --- 主函数：示例用法 ---
 void main() {

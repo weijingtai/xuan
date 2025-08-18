@@ -1,8 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/domain/services/life_body_model_builder.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
-import 'package:qizhengsiyu/services/life_body_model_builder.dart';
 
 void main() {
   group("确定命宫", () {

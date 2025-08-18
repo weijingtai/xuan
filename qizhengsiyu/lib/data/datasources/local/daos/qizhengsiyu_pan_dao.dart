@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:qizhengsiyu/models/pan_entity.dart';
+import '../../../../domain/entities/models/pan_entity.dart';
 import '../app_database.dart';
 import '../tables/qizhengsiyu_pan_table.dart';
 

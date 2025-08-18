@@ -2,9 +2,13 @@ import 'dart:convert';
 
 import 'dart:convert';
 
+import 'package:common/models/shen_sha_bundled.dart';
 import 'package:common/models/shen_sha_gan_zhi.dart';
+import 'package:common/models/shen_sha_tian_gan.dart';
 import 'package:flutter/services.dart';
 import 'package:qizhengsiyu/domain/entities/entities_temp/di_zhi_shen_sha.dart';
+
+import '../../../domain/entities/models/di_zhi_shen_sha.dart';
 
 abstract class ShenShaLocalDataSource {
   Future<List<TianGanShenSha>> getTianGanShenSha();

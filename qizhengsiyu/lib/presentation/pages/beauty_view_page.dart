@@ -10,30 +10,28 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/module.dart';
-import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
-import 'package:qizhengsiyu/models/eleven_stars_info.dart';
-import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
-import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
 
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../models/body_life_model.dart';
+import '../../domain/entities/models/base_panel_model.dart';
+import '../../domain/entities/models/body_life_model.dart';
+import '../../domain/entities/models/eleven_stars_info.dart';
+import '../../domain/entities/models/observer_position.dart';
+import '../../domain/entities/models/panel_stars_info.dart';
+import '../../domain/entities/models/passage_year_panel_model.dart';
+import '../../domain/entities/models/stars_angle.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../../painter/painters.dart';
+import '../../painter/star_body_ring_painter.dart';
+import '../../painter/star_xiu_ring_painter.dart';
+import '../../qi_zheng_si_yu_ui_constant_resources.dart';
+import '../models/ui_star_model.dart';
 import '../widgets/rings/body_life_circle_widget.dart';
 import '../widgets/rings/da_xian_ring.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
-import '../models/panel_stars_info.dart';
-import '../models/stars_angle.dart';
-import '../models/observer_position.dart';
-import '../painter/painters.dart';
-import '../painter/star_body_ring_painter.dart';
-import '../painter/star_xiu_ring_painter.dart';
-import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
-import '../qi_zheng_si_yu_ui_constant_resources.dart';
 import '../widgets/star_body.dart';
 import 'beauty_page_viewmodel.dart';
 
@@ -802,7 +800,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               if (dongWei == null) {
                 return SizedBox();
               }
-              final gongYearMapper = Map.fromEntries(dongWei
+              final Map<EnumTwelveGong, YearMonth> gongYearMapper = Map.fromEntries(dongWei
                   .daXianResult.daXianGongs
                   .map((e) => MapEntry(e.gong, e.totalYears)));
               return Transform.rotate(
@@ -1445,7 +1443,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
           border: Border.all(color: Colors.black87, width: 1),
-        ),
+       ),
         child: Stack(
           alignment: Alignment.center,
           children: uiBasicLifeStarList

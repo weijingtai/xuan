@@ -1,7 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/eleven_stars_info.dart';
+
+import 'eleven_stars_info.dart';
 
 class StarToStarRelationshipModel {
   /// 本类用于存储星体与星体之间的位置关系

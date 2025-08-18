@@ -1,6 +1,7 @@
 import 'package:qizhengsiyu/data/datasources/local/hua_yao_local_data_source.dart';
 import 'package:qizhengsiyu/domain/repositories/hua_yao_repository.dart';
-import 'package:qizhengsiyu/domain/entities/entities_temp/hua_yao.dart';
+
+import '../../domain/entities/models/hua_yao.dart';
 
 class HuaYaoRepositoryImpl implements HuaYaoRepository {
   final HuaYaoLocalDataSource localDataSource;

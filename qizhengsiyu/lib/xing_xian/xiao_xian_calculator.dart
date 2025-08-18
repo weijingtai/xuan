@@ -2,11 +2,9 @@ import 'package:common/enums.dart';
 import 'package:common/models/year_month.dart';
 import 'package:qizhengsiyu/xing_xian/gong_constellation_mapping.dart';
 
+import '../domain/entities/models/star_enter_info.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../enums/enum_xing_xian_type.dart';
-import '../models/observer_position.dart';
-import '../models/star_enter_info.dart';
-import '../models/zhou_tian_model.dart';
 import 'base_xian_calculator.dart';
 import 'base_xian_palace.dart';
 import 'da_xian_constellation_passage_info.dart';

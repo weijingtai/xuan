@@ -3,8 +3,9 @@ import 'dart:math' as math;
 import 'package:sweph/sweph.dart';
 import 'package:common/enums.dart';
 
-import '../models/star_angle_raw_info.dart';
-import '../enums/enum_panel_system_type.dart';
+import '../../enums/enum_panel_system_type.dart';
+import '../entities/models/star_angle_raw_info.dart';
+
 
 abstract class StarAngleStrategy {
   StarAngleRawInfo calculate(

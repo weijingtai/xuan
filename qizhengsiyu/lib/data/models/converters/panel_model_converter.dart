@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
-import '../models/base_panel_model.dart';
+
+import '../../../domain/entities/models/base_panel_model.dart';
 
 class BasePanelModelConverter extends TypeConverter<BasePanelModel, String> {
   const BasePanelModelConverter();

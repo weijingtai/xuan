@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:qizhengsiyu/widgets/rings/sector_painter.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/sector_painter.dart';
 
 import 'enum_ring_text_direction.dart';
 

@@ -1,5 +1,9 @@
+
+import 'package:common/models/shen_sha_bundled.dart';
 import 'package:common/models/shen_sha_gan_zhi.dart';
-import 'package:qizhengsiyu/domain/entities/entities_temp/di_zhi_shen_sha.dart';
+import 'package:common/models/shen_sha_tian_gan.dart';
+
+import '../entities/models/di_zhi_shen_sha.dart';
 
 abstract class ShenShaRepository {
   Future<List<TianGanShenSha>> getTianGanShenSha();

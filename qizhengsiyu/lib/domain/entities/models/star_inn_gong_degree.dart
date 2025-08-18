@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../qi_zheng_si_yu_constant_resources.dart';
+import '../../../qi_zheng_si_yu_constant_resources.dart';
 import 'naming_degree_pair.dart';
 
 part 'star_inn_gong_degree.g.dart';

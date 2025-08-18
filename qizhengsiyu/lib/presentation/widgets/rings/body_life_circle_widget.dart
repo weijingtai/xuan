@@ -1,10 +1,11 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
-import 'package:qizhengsiyu/widgets/rings/circle_text_painter.dart';
 import 'package:tuple/tuple.dart';
+
+import '../../../domain/entities/models/body_life_model.dart';
+import 'circle_text_painter.dart';
 
 /// 身命圆环显示组件
 class BodyLifeCircleWidget extends StatelessWidget {

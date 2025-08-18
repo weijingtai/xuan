@@ -1,12 +1,10 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/xing_xian/base_xian_palace.dart';
 
 import '../enums/enum_twelve_gong.dart';
 import '../enums/enum_xing_xian_type.dart';
 import 'package:common/models/year_month.dart';
-import '../models/zhou_tian_model.dart';
 import 'da_xian_palace_info.dart';
 import 'da_xian_constellation_passage_info.dart';
 import 'fei_xian_detail_palace.dart';

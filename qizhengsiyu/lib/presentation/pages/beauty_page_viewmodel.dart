@@ -12,26 +12,32 @@ import 'package:common/module.dart';
 import 'package:flutter/foundation.dart'; // 使用 @visibleForTesting
 import 'package:flutter/material.dart'; // ChangeNotifier 仍然需要
 import 'package:flutter/services.dart';
-import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
-import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
-import 'package:qizhengsiyu/pages/ui_star_model.dart';
-import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
+import 'package:qizhengsiyu/data/datasources/local/hua_yao_local_data_source.dart';
+import 'package:qizhengsiyu/data/repositories/hua_yao_repository_impl.dart';
+import 'package:qizhengsiyu/domain/services/hua_yao_service.dart';
+import 'package:qizhengsiyu/domain/services/shen_sha_service.dart';
 
 import 'package:timezone/timezone.dart' as tz;
 import 'package:uuid/v7.dart';
 
-import '../managers/zhou_tian_model_manager.dart';
-import '../models/base_panel_model.dart';
-import '../models/body_life_model.dart';
-import '../models/passage_year_panel_model.dart';
-import '../models/di_zhi_shen_sha.dart';
-import '../models/hua_yao.dart';
-import '../models/observer_position.dart';
-import '../models/star_angle_speed.dart';
-import '../models/stars_angle.dart';
-import '../usecases/calculate_fate_dong_wei_usecase.dart';
-import '../usecases/save_calculated_panel_usecase.dart';
+import '../../data/datasources/local/shen_sha_local_data_source.dart';
+import '../../data/repositories/shen_sha_repository_impl.dart';
+import '../../domain/entities/models/base_panel_model.dart';
+import '../../domain/entities/models/body_life_model.dart';
+import '../../domain/entities/models/di_zhi_shen_sha.dart';
+import '../../domain/entities/models/hua_yao.dart';
+import '../../domain/entities/models/observer_position.dart';
+import '../../domain/entities/models/panel_config.dart';
+import '../../domain/entities/models/passage_year_panel_model.dart';
+import '../../domain/entities/models/star_angle_speed.dart';
+import '../../domain/entities/models/stars_angle.dart';
+import '../../domain/managers/hua_yao_manager.dart';
+import '../../domain/managers/shen_sha_manager.dart';
+import '../../domain/managers/zhou_tian_model_manager.dart';
+import '../../domain/services/generate_base_panel_service.dart';
+import '../../domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import '../../domain/usecases/save_calculated_panel_usecase.dart';
+import '../models/ui_star_model.dart';
 import 'StarsResolver.dart';
 
 /// 七政四余星盘计算和数据管理的 ViewModel。
@@ -815,14 +821,18 @@ class BeautyPageViewModel extends ChangeNotifier {
           .map((e) => OtherShenSha.fromJson(e))
           .toList();
 
-      debugPrint("ShenSha data loaded successfully.");
+
       return ShenShaManager(
-          tianGanShenSha: tianGanShenSha,
-          yearDiZhiShenSha: yearDiZhiShenSha,
-          monthDiZhiShenSha: monthDiZhiShenSha,
-          ganZhiShenSha: ganzhiShenSha,
-          bundledShenSha: bundledShenSha,
-          otherShenSha: otherShenSha);
+          shenShaService: ShenShaService(repository: ShenShaRepositoryImpl(localDataSource: ShenShaLocalDataSourceImpl()))
+      );
+      debugPrint("ShenSha data loaded successfully.");
+      // return ShenShaManager(
+      //     tianGanShenSha: tianGanShenSha,
+      //     yearDiZhiShenSha: yearDiZhiShenSha,
+      //     monthDiZhiShenSha: monthDiZhiShenSha,
+      //     ganZhiShenSha: ganzhiShenSha,
+      //     bundledShenSha: bundledShenSha,
+      //     otherShenSha: otherShenSha);
     } catch (e) {
       debugPrint("Error loading ShenSha data: $e");
       // 加载失败，可能需要抛出错误或返回一个空管理器
@@ -856,11 +866,13 @@ class BeautyPageViewModel extends ChangeNotifier {
           .toList();
 
       debugPrint("HuaYao data loaded successfully.");
-      return HuaYaoManager(
-        tianGanHuaYao: tianGanHuaYao,
-        diZhiHuaYao: diZhiHuaYao,
-        othersHuaYao: othersHuaYao,
-      );
+
+      return HuaYaoManager(huaYaoService: HuaYaoService(repository: HuaYaoRepositoryImpl(localDataSource: HuaYaoLocalDataSourceImpl())));
+      // return HuaYaoManager(
+      //   tianGanHuaYao: tianGanHuaYao,
+      //   diZhiHuaYao: diZhiHuaYao,
+      //   othersHuaYao: othersHuaYao,
+      // );
     } catch (e) {
       debugPrint("Error loading HuaYao data: $e");
       // 加载失败，可能需要抛出错误或返回一个空管理器

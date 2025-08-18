@@ -1,4 +1,5 @@
-import 'package:qizhengsiyu/domain/entities/entities_temp/hua_yao.dart';
+
+import '../entities/models/hua_yao.dart';
 
 abstract class HuaYaoRepository {
   Future<List<TianGanHuaYao>> getTianGanHuaYao();

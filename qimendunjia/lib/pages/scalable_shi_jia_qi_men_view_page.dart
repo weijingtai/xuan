@@ -1939,9 +1939,7 @@ class _ScalableShiJiaQiMenViewPageState
           onPressed: () async {
             if (dateTimeValueNotifier.value != null) {
               InteractiveToast.slide(
-                context,
-                // leading: leadingWidget(),
-                // trailing: trailingWidget(),
+                context: context,
                 title: const Text("不能重复"),
                 toastStyle: const ToastStyle(titleLeadingGap: 10),
                 toastSetting: const SlidingToastSetting(

@@ -4,7 +4,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_panel_system_type.dart';
+import '../../../enums/enum_panel_system_type.dart';
 import 'naming_degree_pair.dart';
 
 part 'zhou_tian_model.g.dart';

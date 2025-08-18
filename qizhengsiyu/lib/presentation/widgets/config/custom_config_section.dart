@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 import 'package:qizhengsiyu/enums/enum_school.dart';
+
+import '../../../domain/entities/models/panel_config.dart';
 
 /// 自定义配置部分
 class CustomConfigSection extends StatefulWidget {

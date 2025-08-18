@@ -1,11 +1,12 @@
 import 'package:common/datamodel/divination_request_info_datamodel.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:flutter/rendering.dart';
-import 'package:qizhengsiyu/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'package:uuid/uuid.dart';
-import '../models/base_panel_model.dart';
-import '../models/pan_entity.dart';
-import '../models/panel_config.dart';
+
+import '../../data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
+import '../entities/models/base_panel_model.dart';
+import '../entities/models/pan_entity.dart';
+import '../entities/models/panel_config.dart';
 
 class SaveCalculatedPanelUseCase {
   // final BasePanelDao _basePanelDao;

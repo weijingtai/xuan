@@ -1,9 +1,9 @@
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_dong_wei_type.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../managers/fate/dong_wei_da_xian_manager.dart';
+import '../../../enums/enum_dong_wei_type.dart';
+import '../../../enums/enum_twelve_gong.dart';
+
 
 part 'fate_dong_wei_da_xian.g.dart';
 

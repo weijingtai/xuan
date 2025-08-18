@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/four_season_relationship_type.dart';
+import '../../../enums/four_season_relationship_type.dart';
 
 part 'four_season_model.g.dart';
 

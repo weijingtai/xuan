@@ -5,39 +5,39 @@ import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/utils.dart';
 import 'package:flutter/services.dart';
-import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
-import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
-import 'package:qizhengsiyu/models/hua_yao.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
-import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
-import 'package:qizhengsiyu/models/star_angle_speed.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
-import 'package:qizhengsiyu/models/stars_angle.dart';
-import 'package:qizhengsiyu/models/zhou_tian_model.dart';
 import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-import '../enums/enum_panel_system_type.dart';
-import '../enums/enum_qi_zheng.dart';
-import '../enums/enum_settle_life_body.dart';
-import '../models/base_panel_model.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/observer_position.dart';
-import '../utils/star_enter_info_calculator.dart';
+import '../../enums/enum_panel_system_type.dart';
+import '../../enums/enum_qi_zheng.dart';
+import '../../enums/enum_settle_life_body.dart';
+import '../../utils/star_enter_info_calculator.dart';
+import '../entities/models/base_panel_model.dart';
+import '../entities/models/body_life_model.dart';
+import '../entities/models/hua_yao.dart';
+import '../entities/models/naming_degree_pair.dart';
+import '../entities/models/observer_position.dart';
+import '../entities/models/panel_config.dart';
+import '../entities/models/passage_year_panel_model.dart';
+import '../entities/models/star_angle_speed.dart';
+import '../entities/models/star_enter_info.dart';
+import '../entities/models/stars_angle.dart';
+import '../entities/models/zhou_tian_model.dart';
+import '../managers/hua_yao_manager.dart';
+import '../managers/shen_sha_manager.dart';
+import '../managers/zhou_tian_model_manager.dart';
 import 'an_shen_li_ming_service.dart';
 import 'star_angle_strategy.dart';
 
 class GenerateBasePanelService {
+  final ZhouTianModelManager zhouTianModelManager;
   final BasePanelConfig panelConfig;
   final ObserverPosition observerPosition;
+
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
 
-  final ZhouTianModelManager zhouTianModelManager;
 
   GenerateBasePanelService(
       {required this.panelConfig,
@@ -79,7 +79,7 @@ class GenerateBasePanelService {
         orderDestinyTwelveGong(bodyLifeModel);
     // 6. 计算神煞位置
     final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper =
-        shenShaManager.calculate(
+        await shenShaManager.calculate(
             observerPosition.yearGanZhi,
             observerPosition.monthGanZhi,
             observerPosition.timeGanZhi,
@@ -105,7 +105,7 @@ class GenerateBasePanelService {
     // }
 
     // 7. 计算化曜位置
-    final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
+    final Map<HuaYao, EnumStars> huaYaoMapper = await huaYaoManager.calculate(
       mingGong: bodyLifeModel.lifeGong,
       yearJiaZi: observerPosition.yearGanZhi,
       monthJiaZi: observerPosition.monthGanZhi,
@@ -172,7 +172,7 @@ class GenerateBasePanelService {
 
     // 6. 计算神煞位置
     final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper =
-        shenShaManager.calculate(
+        await shenShaManager.calculate(
             daXianObserver.yearGanZhi,
             daXianObserver.monthGanZhi,
             daXianObserver.timeGanZhi,
@@ -186,7 +186,7 @@ class GenerateBasePanelService {
           key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
     });
     // 7. 计算化曜位置
-    final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
+    final Map<HuaYao, EnumStars> huaYaoMapper = await huaYaoManager.calculate(
       mingGong: basePanel.bodyLifeModel.lifeGong,
       yearJiaZi: daXianObserver.yearGanZhi,
       monthJiaZi: daXianObserver.monthGanZhi,

@@ -2,7 +2,7 @@ import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_twelve_gong.dart';
+import '../../../enums/enum_twelve_gong.dart';
 import 'body_life_model.dart';
 import 'hua_yao.dart';
 import 'star_angle_speed.dart';

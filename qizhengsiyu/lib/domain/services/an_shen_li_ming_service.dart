@@ -1,15 +1,16 @@
 import 'package:common/enums.dart';
 import 'package:common/utils.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/models/eleven_stars_info.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
 
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_twelve_gong.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/star_enter_info.dart';
-import '../models/star_inn_gong_degree.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../entities/models/body_life_model.dart';
+import '../entities/models/eleven_stars_info.dart';
+import '../entities/models/naming_degree_pair.dart';
+import '../entities/models/star_enter_info.dart';
+import '../entities/models/star_inn_gong_degree.dart';
+
 
 class SettleLifeBodyService {
   // 地支在黄道的顺序，逆时针 戌->酉...->子->亥

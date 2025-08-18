@@ -1,4 +1,4 @@
-import 'package:qizhengsiyu/models/pan_entity.dart';
+import '../../../domain/entities/models/pan_entity.dart';
 import '../qizhengsiyu_pan_repository.dart';
 
 abstract class IQiZhengSiYuPanRepository {

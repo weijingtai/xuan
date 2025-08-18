@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
-import '../models/panel_config.dart';
+
+import '../../../domain/entities/models/panel_config.dart';
 
 class PanelConfigConverter extends TypeConverter<BasePanelConfig, String> {
   const PanelConfigConverter();

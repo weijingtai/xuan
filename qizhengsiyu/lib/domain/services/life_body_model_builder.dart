@@ -3,16 +3,16 @@ import 'dart:math';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/utils.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
 import 'package:tuple/tuple.dart';
 
-import '../enums/enum_settle_life_body.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/star_inn_gong_degree.dart';
-import '../qi_zheng_si_yu_constant_resources.dart';
-import '../utils/star_degree_inn_gong_helper.dart';
+import '../../enums/enum_settle_life_body.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../../qi_zheng_si_yu_constant_resources.dart';
+import '../../utils/star_degree_inn_gong_helper.dart';
+import '../entities/models/body_life_model.dart';
+import '../entities/models/naming_degree_pair.dart';
+import '../entities/models/star_inn_gong_degree.dart';
+
 
 @Deprecated("使用 SettleLifeBodyService 代替")
 class LifeBodyModelBuilder {

@@ -1,7 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+
+import 'naming_degree_pair.dart';
 
 part 'star_enter_info.g.dart';
 

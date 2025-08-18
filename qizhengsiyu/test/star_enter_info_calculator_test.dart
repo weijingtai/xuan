@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:common/enums.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/models/zhou_tian_model.dart';
 import 'package:qizhengsiyu/utils/coordinate_converter.dart';
 import 'package:qizhengsiyu/utils/star_enter_info_calculator.dart';
 

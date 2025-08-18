@@ -1,6 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/star_angle_raw_info.dart';
 
 part 'star_position_raw_data.g.dart';
 

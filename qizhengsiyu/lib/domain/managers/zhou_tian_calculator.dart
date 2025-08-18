@@ -2,9 +2,10 @@ import 'dart:math';
 
 import 'package:common/enums.dart';
 
-import '../enums/enum_twelve_gong.dart';
-import '../models/zhou_tian_model.dart';
-import '../xing_xian/gong_constellation_mapping.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../../xing_xian/gong_constellation_mapping.dart';
+import '../entities/models/zhou_tian_model.dart';
+
 
 // --- 计算逻辑 ---
 class ZhouTianCalculator {

@@ -2,19 +2,19 @@ import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
-import 'package:qizhengsiyu/viewmodels/panel_config_viewmodel.dart';
-import 'package:qizhengsiyu/widgets/common/responsive_grid.dart';
-import 'package:qizhengsiyu/widgets/common/water_ink_card.dart';
-import 'package:qizhengsiyu/widgets/config/basic_info_section.dart';
-import 'package:qizhengsiyu/widgets/config/location_section.dart';
-import 'package:qizhengsiyu/widgets/config/custom_config_section.dart';
-import 'package:qizhengsiyu/widgets/config/school_selector.dart';
-import 'package:qizhengsiyu/widgets/config/star_chart_preview.dart';
 import 'package:slide_switcher/slide_switcher.dart';
 
-import '../enums/enum_school.dart';
+import '../../domain/entities/models/panel_config.dart';
+import '../../enums/enum_school.dart';
+import '../viewmodels/panel_config_viewmodel.dart';
+import '../widgets/common/water_ink_card.dart';
+import '../widgets/config/basic_info_section.dart';
+import '../widgets/config/custom_config_section.dart';
+import '../widgets/config/location_section.dart';
+import '../widgets/config/school_selector.dart';
+import '../widgets/config/star_chart_preview.dart';
+
 
 /// 七政四余命盘配置页面
 class QiZhengSiYuConfigPage extends StatefulWidget {
@@ -460,7 +460,7 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
         const SizedBox(height: AppTheme.spacing8),
         SchoolSelector(
           selectedSchool: _selectedSchool,
-          onSchoolSelected: (school) {
+          onSchoolSelected: (EnumSchoolType school) {
             setState(() {
               _selectedSchool = school;
             });

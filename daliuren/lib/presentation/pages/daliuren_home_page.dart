@@ -386,7 +386,7 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
             // if (_selectedDateTimeForPan != null) {
             // viewModel.calculateByDivinationInfo(widget.divinationInfoModel);
             // } else {
-            InteractiveToast.slide(context, title: const Text("请先选择时间或使用现在时间"));
+            InteractiveToast.slide(context: context, title: const Text("请先选择时间或使用现在时间"));
             // }
           },
           child: const Text('依时间排盘'),
@@ -411,7 +411,7 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
               isValid = false;
             }
             if (!isValid) {
-              InteractiveToast.slide(context,
+              InteractiveToast.slide(context: context,
                   title: const Text("请完成干支、局数等必要选择"));
               return;
             }

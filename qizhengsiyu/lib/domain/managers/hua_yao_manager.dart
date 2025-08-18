@@ -6,6 +6,9 @@ import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../enums/enum_hua_yao.dart';
+import '../../enums/enum_hua_yao_shen_sha.dart';
+
 class HuaYaoManager {
   final HuaYaoService huaYaoService;
 

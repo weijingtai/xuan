@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/pages/ui_star_model.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:qizhengsiyu/utils/star_degree_inn_gong_helper.dart';
 import 'package:tuple/tuple.dart';

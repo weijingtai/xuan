@@ -1,8 +1,8 @@
-import 'package:qizhengsiyu/models/pan_entity.dart';
-import 'package:qizhengsiyu/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
-import '../database/daos/qizhengsiyu_pan_dao.dart';
-import '../database/database_provider.dart';
-import "../database/app_database.dart";
+
+import '../../domain/entities/models/pan_entity.dart';
+import '../datasources/local/app_database.dart';
+import '../datasources/local/daos/qizhengsiyu_pan_dao.dart';
+import 'interfaces/i_qizhengsiyu_pan_repository.dart';
 
 class QiZhengSiYuPanRepository extends IQiZhengSiYuPanRepository {
   QiZhengSiYuPanDao get _localStorage => _appDatabase.qiZhengSiYuPanDao;

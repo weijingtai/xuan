@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import '../../enums/enum_twelve_gong.dart';
+import '../../../enums/enum_twelve_gong.dart';
 import 'enum_ring_text_direction.dart';
 
 class CircleTextPainter extends CustomPainter {

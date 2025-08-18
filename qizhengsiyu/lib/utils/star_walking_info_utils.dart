@@ -4,8 +4,9 @@ import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:sweph/sweph.dart';
 import 'package:tuple/tuple.dart';
 
-import '../models/observer_position.dart';
-import '../models/stars_angle.dart';
+import '../domain/entities/models/observer_position.dart';
+import '../domain/entities/models/stars_angle.dart';
+
 
 class StarWalkingInfoUtils {
   static FiveStarWalkingInfo calculateStarWalkingInfo(

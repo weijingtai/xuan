@@ -5,6 +5,8 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:qizhengsiyu/domain/entities/models/observer_position.dart';
 import 'package:qizhengsiyu/domain/entities/models/stars_angle.dart';
 
+import '../entities/models/panel_stars_info.dart';
+
 class AstroService {
   StarsAngle calculateAllStarsAngleOnZodiac(
       BaseObserverPosition observerPosition, DateTime datetime) {

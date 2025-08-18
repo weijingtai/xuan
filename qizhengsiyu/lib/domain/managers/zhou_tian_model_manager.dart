@@ -3,14 +3,13 @@ import 'dart:io';
 import 'package:common/enums.dart';
 import 'package:flutter/services.dart';
 import 'package:tuple/tuple.dart';
-import '../models/zhou_tian_model.dart';
-import '../models/panel_config.dart';
-import '../models/naming_degree_pair.dart';
-import '../enums/enum_panel_system_type.dart';
 
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import '../xing_xian/gong_constellation_mapping.dart';
+import '../../enums/enum_panel_system_type.dart';
+import '../../xing_xian/gong_constellation_mapping.dart';
+import '../entities/models/panel_config.dart';
+import '../entities/models/zhou_tian_model.dart';
 import 'zhou_tian_calculator.dart';
 
 class ZhouTianModelManager {

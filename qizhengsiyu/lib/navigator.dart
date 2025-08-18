@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
-import 'package:qizhengsiyu/pages/beauty_view_page.dart';
-import 'package:qizhengsiyu/pages/primary_page.dart';
-import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
+import 'package:qizhengsiyu/presentation/pages/beauty_view_page.dart';
+import 'package:qizhengsiyu/presentation/pages/primary_page.dart';
 
-import 'pages/qi_zheng_si_yu_config_page.dart';
-import 'viewmodels/panel_config_viewmodel.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
