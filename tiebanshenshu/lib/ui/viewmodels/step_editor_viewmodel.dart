@@ -13,9 +13,9 @@ class StepEditorViewModel extends ChangeNotifier {
     required AtomicOperationRepository atomicOperationRepository,
     List<ExecutionStep> precedingSteps = const [],
     ExecutionStep? editingStep,
-  })  : _atomicOperationRepository = atomicOperationRepository,
-        _precedingSteps = precedingSteps,
-        _editingStep = editingStep {
+  }) : _atomicOperationRepository = atomicOperationRepository,
+       _precedingSteps = precedingSteps,
+       _editingStep = editingStep {
     // Initialize state
     _initialize();
   }
@@ -43,11 +43,11 @@ class StepEditorViewModel extends ChangeNotifier {
   late String _stepDescription;
   String get stepDescription => _stepDescription;
 
-  late Map<String, String> _inputMapping;
-  Map<String, String> get inputMapping => _inputMapping;
+  late Map<String, dynamic> _inputMapping;
+  Map<String, dynamic> get inputMapping => _inputMapping;
 
-  late Map<String, String> _outputMapping;
-  Map<String, String> get outputMapping => _outputMapping;
+  late Map<String, dynamic> _outputMapping;
+  Map<String, dynamic> get outputMapping => _outputMapping;
 
   late Map<String, dynamic> _configMapping;
   Map<String, dynamic> get configMapping => _configMapping;
@@ -152,7 +152,9 @@ class StepEditorViewModel extends ChangeNotifier {
     }
 
     return ExecutionStep(
-      id: _editingStep?.id ?? 'new_step_${DateTime.now().millisecondsSinceEpoch}',
+      id:
+          _editingStep?.id ??
+          'new_step_${DateTime.now().millisecondsSinceEpoch}',
       name: _stepName,
       description: _stepDescription,
       operationId: _selectedAtom!.id,

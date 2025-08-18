@@ -117,7 +117,7 @@ class ParameterDefinition {
   final String name;
 
   /// 参数描述
-  final String description;
+  final String? description;
 
   /// 参数类型
   final ParameterType type;
@@ -136,7 +136,7 @@ class ParameterDefinition {
 
   const ParameterDefinition({
     required this.name,
-    required this.description,
+    this.description,
     required this.type,
     this.required = true,
     this.defaultValue,
