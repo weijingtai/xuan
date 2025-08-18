@@ -346,19 +346,6 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   final GlobalKey key1 = GlobalKey();
   final GlobalKey key2 = GlobalKey();
 
-  late AnimationController _jupiterController; // 木星
-  late AnimationController _saturnController; // 土星
-  late AnimationController _venusController; // 金星
-  late AnimationController _mercuryController; // 水星
-  late AnimationController _marsController; // 火星
-
-  late AnimationController _sunController; // 太阳
-  late AnimationController _moonController; // 月亮
-
-  late AnimationController _luoHouJiDuController; // 罗睺 计都
-  late AnimationController _yueBeiController; // 月孛
-  late AnimationController _ziQiController; // 紫炁
-
   double yuStarSize = 16;
   double zhengStarSize = 26;
   double yinYangStarSize = 32;
@@ -396,10 +383,6 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     var res = DivinationInfoModel(
         divination: divinations.last, divinationDatetime: seeker.first);
 
-    print("!!!!!!!!!");
-    print(jsonEncode(res));
-    print("!!!!!!!!!");
-
     return res;
   }
 
@@ -412,88 +395,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     // });
     Future.delayed(Duration(seconds: 3),
         () => {init_calculate(widget.params.divinationInfoModel!)});
-    // 0°02′02‘’ 一天
-    _jupiterController = AnimationController(
-        vsync: this, duration: const Duration(seconds: 1062))
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _jupiterController.repeat();
-        }
-      });
 
-    // 土星 0°00′59'' 一天
-    _saturnController = AnimationController(
-        vsync: this, duration: const Duration(seconds: 2197))
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _saturnController.repeat();
-        }
-      });
-
-    // 金星 1°33′ 一天
-    _venusController = AnimationController(
-        vsync: this, duration: const Duration(seconds: 1393))
-      ..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _venusController.repeat();
-        }
-      });
-
-    // 水星 4°5′ 一天
-    _mercuryController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 88))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _mercuryController.repeat();
-            }
-          });
-
-    // 火星 0°32′ 一天
-    _marsController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 675))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _marsController.repeat();
-            }
-          });
-
-    _sunController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 360))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _sunController.repeat();
-            }
-          });
-    // 月亮 13°10′35" 一天
-    _moonController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 27))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _moonController.repeat();
-            }
-          });
-
-    _luoHouJiDuController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 12))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _luoHouJiDuController.repeat();
-            }
-          });
-    _yueBeiController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 18))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _yueBeiController.repeat();
-            }
-          });
-    _ziQiController =
-        AnimationController(vsync: this, duration: const Duration(seconds: 14))
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed) {
-              _ziQiController.repeat();
-            }
-          });
     panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
         starBodyRadius: 16,
         centerSize: 128,
@@ -524,18 +426,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   @override
   void dispose() {
     // TODO: implement dispose
-    _jupiterController.dispose();
-    _saturnController.dispose();
-    _venusController.dispose();
-    _mercuryController.dispose();
-    _marsController.dispose();
 
-    _sunController.dispose();
-    _moonController.dispose();
-
-    _luoHouJiDuController.dispose();
-    _yueBeiController.dispose();
-    _ziQiController.dispose();
     showTaiJiDianButtonNotifier.dispose();
     _destiny12GongListNotifier.dispose();
     _selectedTaiJiDestiny12GongListNotifier.dispose();
