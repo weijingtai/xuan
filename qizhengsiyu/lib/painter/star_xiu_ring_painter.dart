@@ -6,9 +6,12 @@ import 'dart:math' as math;
 
 import '../models/star_inn_gong_degree.dart';
 
+import 'package:qizhengsiyu/services/drawing_strategy.dart';
+
 class StarXiuRingPainter extends CustomPainter {
   double outerSize;
   double innerSize;
+  final DrawingStrategy strategy;
   Map<TwentyEightStarInn, StarInnGongDegreeInfo> mapper;
   Map<EnumStars, Color> sevenZhengColorMapper;
 
@@ -21,6 +24,7 @@ class StarXiuRingPainter extends CustomPainter {
       // required this.ringWidth,
       required this.outerSize,
       required this.innerSize,
+      required this.strategy,
       required this.mapper,
       required this.sevenZhengColorMapper,
       this.tickLength = 5,
@@ -45,27 +49,32 @@ class StarXiuRingPainter extends CustomPainter {
     // Draw inner ring
     canvas.drawCircle(canvasCenter, innerRadius, ringPaint);
 
-    final Paint scalePaint = Paint()
-      ..color = Colors.blueAccent
-      ..strokeWidth = .5
-      ..style = PaintingStyle.stroke;
+    final rectCircle = Rect.fromCircle(center: canvasCenter, radius: innerRadius + (ringWidth * .5));
 
-    final rectCircle = Rect.fromCircle(
-        center: canvasCenter, radius: innerRadius + (ringWidth * .5));
+    final totalDivisions = strategy.getTotalDivisions();
+    final scaleFactor = totalDivisions / 360.0;
+
+    // Helper to convert logical angle to canvas radian
+    double angleToRadian(double angle) {
+      return (angle / totalDivisions) * 2 * math.pi;
+    }
 
     for (StarInnGongDegreeInfo starXiuType in mapper.values) {
-      final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
-      final double sweepAngle = -starXiuType.totalDegree * math.pi / 180;
+      final scaledStartAngle = starXiuType.degreeStartAt * scaleFactor;
+      final scaledTotalDegree = starXiuType.totalDegree * scaleFactor;
 
-      final path = Path()..addArc(rectCircle, angle, sweepAngle);
+      final double startAngle = angleToRadian(totalDivisions - scaledStartAngle);
+      final double sweepAngle = -angleToRadian(scaledTotalDegree);
+
+      final path = Path()..addArc(rectCircle, startAngle, sweepAngle);
       final paint = Paint()
         ..color = sevenZhengColorMapper[starXiuType.starXiu.sevenZheng]!
         ..style = PaintingStyle.stroke
         ..strokeWidth = ringWidth - 10; // 调整线宽
       canvas.drawPath(path, paint);
     }
+
     for (StarInnGongDegreeInfo starXiuType in mapper.values) {
-      // double lineLength = ringWidth;
       drawXingXiuName(
           canvas, starXiuType, canvasCenter, outerRadius, ringWidth);
     }
@@ -81,34 +90,40 @@ class StarXiuRingPainter extends CustomPainter {
 
     final double centerX = center.dx;
     final double centerY = center.dy;
-    for (int i = 0; i < 360; i++) {
-      final double angle = i * math.pi / 180;
+    final totalDivisions = strategy.getTotalDivisions();
+
+    for (int i = 0; i < totalDivisions; i++) {
+      final double angle = (i / totalDivisions) * 2 * math.pi;
       double cosAngle = math.cos(angle);
       double sinAngle = math.sin(angle);
       double length = tickLength;
-      if (i % 15 == 0) {
+
+      // Keep the tick length logic based on degrees for consistency
+      int degree = (i * 360 / totalDivisions).round();
+      if (degree % 15 == 0) {
         length = tickLength * 2;
-      } else if (i % 5 == 0) {
+      } else if (degree % 5 == 0) {
         length = tickLength * 1.5;
       }
+
       double outerXY = outerRadius - length;
       final double outerX = centerX + outerRadius * cosAngle;
       final double outerY = centerY + outerRadius * sinAngle;
       final double innerX = centerX + outerXY * cosAngle;
       final double innerY = centerY + outerXY * sinAngle;
-      // Draw scale line near the outer ring
+
       canvas.drawLine(
         Offset(outerX, outerY),
         Offset(innerX, innerY),
         scalePaint,
       );
+
       double innerXY = innerRadius + length;
       final double innerTickStartX = centerX + innerRadius * cosAngle;
       final double innerTickStartY = centerY + innerRadius * sinAngle;
       final double innerTickEndX = centerX + innerXY * cosAngle;
       final double innerTickEndY = centerY + innerXY * sinAngle;
 
-      // Draw scale line near the inner ring
       canvas.drawLine(
         Offset(innerTickStartX, innerTickStartY),
         Offset(innerTickEndX, innerTickEndY),
@@ -119,10 +134,14 @@ class StarXiuRingPainter extends CustomPainter {
 
   void drawXingXiuName(Canvas canvas, StarInnGongDegreeInfo starXiuType,
       Offset canvasCenter, double outerRadius, double lineLength) {
-    double angle =
-        (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
-            math.pi /
-            180;
+    final totalDivisions = strategy.getTotalDivisions();
+    final scaleFactor = totalDivisions / 360.0;
+
+    final scaledStartAngle = starXiuType.degreeStartAt * scaleFactor;
+    final scaledTotalDegree = starXiuType.totalDegree * scaleFactor;
+    final centerAngle = scaledStartAngle + scaledTotalDegree / 2;
+
+    double angle = (totalDivisions - centerAngle) / totalDivisions * 2 * math.pi;
     final double cosAngle = math.cos(angle);
     final double sinAngle = math.sin(angle);
     final double outerX = canvasCenter.dx + outerRadius * cosAngle;

@@ -16,14 +16,23 @@ import 'package:tuple/tuple.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 import '../enums/enum_twelve_gong.dart';
+import '../models/panel_config.dart';
 import '../models/panel_stars_info.dart';
 import '../models/observer_position.dart';
 import '../painter/star_xiu_ring_painter.dart';
+import '../services/drawing_strategy.dart';
+import '../enums/enum_panel_system_type.dart';
 import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
+import 'package:common/enums.dart';
+import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
+import 'package:qizhengsiyu/enums/enum_panel_ring.dart';
+import 'package:qizhengsiyu/enums/enum_school.dart';
 import '../qi_zheng_si_yu_ui_constant_resources.dart';
 
 class BeautyPage extends StatefulWidget {
-  const BeautyPage({super.key});
+  final PanelConfig panelConfig;
+
+  const BeautyPage({super.key, required this.panelConfig});
 
   @override
   State<BeautyPage> createState() => _BeautyPageState();
@@ -32,6 +41,10 @@ class BeautyPage extends StatefulWidget {
 class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
   final GlobalKey key1 = GlobalKey();
   final GlobalKey key2 = GlobalKey();
+
+  // Drawing Strategy
+  late DrawingStrategy _drawingStrategy;
+  late PanelConfig _panelConfig;
 
   late AnimationController _jupiterController; // 木星
   late AnimationController _saturnController; // 土星
@@ -62,6 +75,24 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
   void initState() {
     // TODO: implement initState
     super.initState();
+
+    // Initialize the PanelConfig and DrawingStrategy
+    // This is a temporary setup for demonstration.
+    // In a real implementation, this config would be passed in from the config page.
+    _panelConfig = widget.panelConfig;
+
+    switch (_panelConfig.circularSystem) {
+      case CircularSystem.Degrees360:
+        _drawingStrategy = DrawingStrategy360();
+        break;
+      case CircularSystem.Days365:
+        _drawingStrategy = DrawingStrategy365();
+        break;
+      case CircularSystem.Days365_25:
+        _drawingStrategy = DrawingStrategy365_25();
+        break;
+    }
+
     // 0°02′02‘’ 一天
     _jupiterController = AnimationController(
         vsync: this, duration: const Duration(seconds: 1062))
@@ -356,6 +387,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
                       child: CustomPaint(
                           size: const Size(292, 292),
                           painter: TwelveZhiGongCircleRingPrinter(
+                            strategy: _drawingStrategy,
                             innerRadius: 86,
                             outerRadius: 148,
                             twelveGongList: [
@@ -431,7 +463,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
                                     style: TextStyle(fontSize: 14, height: 1.2),
                                   ),
                                   Text(
-                                    "六度",
+                                    _drawingStrategy.formatAngle(6.0),
                                     style: TextStyle(fontSize: 12, height: 1.2),
                                   ),
                                 ],
@@ -887,7 +919,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
       // angle: (120 * pi) / 180,
       angle: 0,
       child: Transform.rotate(
-          angle: (120 - uiStarBody.angle) * pi / 180,
+          angle: (120 / _drawingStrategy.getTotalDivisions() * 2 * pi) - (uiStarBody.angle / _drawingStrategy.getTotalDivisions() * 2 * pi),
           child: Container(
             width: 32 + 64,
             height: 610,
@@ -949,7 +981,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
       // angle: (120 * pi) / 180,
       angle: 0,
       child: Transform.rotate(
-          angle: (120 - degree) * pi / 180,
+          angle: (120 / _drawingStrategy.getTotalDivisions() * 2 * pi) - (degree / _drawingStrategy.getTotalDivisions() * 2 * pi),
           child: Container(
             width: 32 + oWidth,
             // height: 560,
@@ -1050,6 +1082,7 @@ class _BeautyPageState extends State<BeautyPage> with TickerProviderStateMixin {
         child: CustomPaint(
           size: Size(size, size),
           painter: StarXiuRingPainter(
+            strategy: _drawingStrategy,
             outerSize: size,
             innerSize: size - ringWidth,
             mapper: QiZhengSiYuConstantResources

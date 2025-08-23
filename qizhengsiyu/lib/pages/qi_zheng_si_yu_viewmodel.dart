@@ -6,7 +6,9 @@ import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
+import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
+import 'package:qizhengsiyu/utils/angle_conversion_utils.dart';
 import 'package:sweph/sweph.dart';
 
 import 'package:timezone/timezone.dart' as tz;
@@ -59,6 +61,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
   ObserverPosition? _observerPosition;
 
+  PanelConfig? panelConfig;
+
   BuildContext context;
   QiZhengSiYuViewModel(this.context);
 
@@ -94,7 +98,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     _observerPosition = null;
   }
 
-  void calculate(ObserverPosition observerPosition) {
+  void calculate(ObserverPosition observerPosition, PanelConfig config) {
+    this.panelConfig = config;
     _doCalculateLifePanel(observerPosition);
     _observerPosition = observerPosition;
 
@@ -115,8 +120,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         EnumStarHiddenType.degree15,
         StarPanelType.ZodiacTropicalOriginalClassicStarsInnSystemMapper.mapper,
         isDayOrNight: true);
-    _uiBasicLifeStars =
-        calculateUIStars(_basicLifeStarsAngle!, _baseMiniSafetyAngle);
+    _uiBasicLifeStars = calculateUIStars(
+        _basicLifeStarsAngle!, _baseMiniSafetyAngle, panelConfig!);
 
     if (observerPosition.fateLifeDateTime != null) {
       _fateLifeStarsAngle = calculateAllStarsAngleOnZodiac(
@@ -127,77 +132,88 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
           StarPanelType
               .ZodiacTropicalOriginalClassicStarsInnSystemMapper.mapper,
           isDayOrNight: true);
-      _uiFateLifeStars =
-          calculateUIStars(_fateLifeStarsAngle!, _fateMiniSafetyAngle);
+      _uiFateLifeStars = calculateUIStars(
+          _fateLifeStarsAngle!, _fateMiniSafetyAngle, panelConfig!);
     }
   }
 
   List<UIStarModel> calculateUIStars(
-      StarsAngle starsAngle, double miniSafetyAngle) {
+      StarsAngle starsAngle, double miniSafetyAngle, PanelConfig config) {
     List<UIStarModel> unadjustedStarList = [
       UIStarModel(
         star: EnumStars.Sun,
-        originalAngle: starsAngle.sun,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.sun, config.circularSystem),
         priority: 4,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Moon,
-        originalAngle: starsAngle.moon,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.moon, config.circularSystem),
         priority: 3,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Venus,
-        originalAngle: starsAngle.Venus,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.Venus, config.circularSystem),
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Jupiter,
-        originalAngle: starsAngle.Jupiter,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.Jupiter, config.circularSystem),
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Mercury,
-        originalAngle: starsAngle.water,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.water, config.circularSystem),
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Mars,
-        originalAngle: starsAngle.Mars,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.Mars, config.circularSystem),
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Saturn,
-        originalAngle: starsAngle.Saturn,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.Saturn, config.circularSystem),
         priority: 2,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Qi,
-        originalAngle: starsAngle.qi,
+        originalAngle:
+            AngleConverter.convertAngle(starsAngle.qi, config.circularSystem),
         priority: 1,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Bei,
-        originalAngle: starsAngle.lilith,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.lilith, config.circularSystem),
         priority: 1,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Luo,
-        originalAngle: starsAngle.southNode,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.southNode, config.circularSystem),
         priority: 1,
         rangeAngleEachSide: miniSafetyAngle,
       ),
       UIStarModel(
         star: EnumStars.Ji,
-        originalAngle: starsAngle.northNode,
+        originalAngle: AngleConverter.convertAngle(
+            starsAngle.northNode, config.circularSystem),
         priority: 1,
         rangeAngleEachSide: miniSafetyAngle,
       ),

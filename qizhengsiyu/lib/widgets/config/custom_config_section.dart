@@ -29,6 +29,9 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
   // 星宿制式
   late StarInnSystem _zodiacSystem;
 
+  // 周天度量
+  late CircularSystem _circularSystem;
+
   // 流派典籍
   late List<String> _classicBook;
 
@@ -50,6 +53,8 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
         widget.initialConfig?.coordinateSystem ?? CoordinateSystem.Ecliptic;
     _zodiacSystem =
         widget.initialConfig?.starInnSystem ?? StarInnSystem.Tropical;
+    _circularSystem =
+        widget.initialConfig?.circularSystem ?? CircularSystem.Degrees360;
     _classicBook = widget.initialConfig?.classicBooks ?? [];
     // _showGods = widget.initialConfig?.sh ?? true;
     // _showPalaces = widget.initialConfig?.showPalaces ?? true;
@@ -61,6 +66,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
     // final config = PanelConfig(
     //   coordinateSystem: _coordinateSystem,
     //   zodiacSystem: _zodiacSystem,
+    //   circularSystem: _circularSystem,
     //   classicBook: _classicBook,
     //   showGods: _showGods,
     //   showPalaces: _showPalaces,
@@ -122,6 +128,71 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                         _updateConfig();
                       },
                     ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: AppTheme.spacing16),
+
+        // 周天度量选择
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppTheme.borderRadius),
+            border: Border.all(color: const Color(0xFFEEEEEE)),
+          ),
+          padding: const EdgeInsets.all(AppTheme.spacing16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '周天度量',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+              ),
+              const SizedBox(height: AppTheme.spacing12),
+              Column(
+                children: [
+                  _buildRadioTile(
+                    title: '天体度数',
+                    subtitle: '360°',
+                    value: CircularSystem.Degrees360,
+                    groupValue: _circularSystem,
+                    onChanged: (value) {
+                      setState(() {
+                        _circularSystem = value!;
+                      });
+                      _updateConfig();
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacing8),
+                  _buildRadioTile(
+                    title: '周天日数 (整)',
+                    subtitle: '365日',
+                    value: CircularSystem.Days365,
+                    groupValue: _circularSystem,
+                    onChanged: (value) {
+                      setState(() {
+                        _circularSystem = value!;
+                      });
+                      _updateConfig();
+                    },
+                  ),
+                  const SizedBox(height: AppTheme.spacing8),
+                  _buildRadioTile(
+                    title: '周天日数 (闰)',
+                    subtitle: '365.25日',
+                    value: CircularSystem.Days365_25,
+                    groupValue: _circularSystem,
+                    onChanged: (value) {
+                      setState(() {
+                        _circularSystem = value!;
+                      });
+                      _updateConfig();
+                    },
                   ),
                 ],
               ),

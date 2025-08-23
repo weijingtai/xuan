@@ -4,10 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
+import 'package:qizhengsiyu/services/drawing_strategy.dart';
+
 class TwelveZhiGongCircleRingPrinter extends CustomPainter {
   final double innerRadius;
   final double outerRadius;
-  late final double sweepAngleDegree;
+  final DrawingStrategy strategy;
   List<EnumTwelveGong> twelveGongList;
   late TextStyle textStyle;
   bool isReverseText = false;
@@ -33,7 +35,7 @@ class TwelveZhiGongCircleRingPrinter extends CustomPainter {
     required this.innerRadius,
     required this.outerRadius,
     required this.starColorMapper,
-    double? eachAngleDegree,
+    required this.strategy,
     required this.twelveGongList,
     this.isReverseText = true,
     this.isHorizontalText = true,
@@ -43,13 +45,7 @@ class TwelveZhiGongCircleRingPrinter extends CustomPainter {
     this.outerPadding = 12,
     this.textStyle =
         const TextStyle(color: Colors.black, fontSize: 18, height: 1.2),
-  }) {
-    if (twelveGongList.isNotEmpty) {
-      sweepAngleDegree = 360 / twelveGongList.length;
-    } else {
-      sweepAngleDegree = eachAngleDegree ?? 360;
-    }
-  }
+  });
 
   void debugPaint(Canvas canvas, Size size, Offset center) {
     // canvas.translate(center.dx, center.dy);
@@ -77,110 +73,78 @@ class TwelveZhiGongCircleRingPrinter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    double eachDegreeOfPI = pi / 180;
     final center = Offset(size.width / 2, size.height / 2);
-    // canvas.save();
-
-    canvas.translate(size.width / 2, size.height / 2);
-    // canvas.translate(center.dx, center.dy);
-    canvas.rotate(pi / 4);
-
-    final res = sweepAngleDegree * 0.5 * eachDegreeOfPI;
-    final double startAngle = pi / 2 - res;
-    final double sweepAngle = sweepAngleDegree * eachDegreeOfPI;
+    final totalDivisions = strategy.getTotalDivisions();
+    final houseAngles = strategy.getHouseDivisionAngles();
     final fanRingWidth = outerRadius - innerRadius;
+    final arcDrawCircleRadius = innerRadius + (fanRingWidth / 2);
 
-    // 固定的颜色
-    final Paint paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = fanRingWidth;
+    final backgroundPaint = Paint()..style = PaintingStyle.stroke..strokeWidth = fanRingWidth;
+    final borderPaint = Paint()..color = Colors.grey..style = PaintingStyle.stroke..strokeWidth = 1;
 
-    // canvas.translate(center.dx, center.dy);
-    // 计算每个扇环的中心角度
-    // double angle = startAngle;
-    double arcDrawCircleRadius = innerRadius + (fanRingWidth * 0.5);
-    double textRotationAngle = startAngle + sweepAngle / 2;
-    int total = 360 ~/ sweepAngleDegree;
-    total = twelveGongList.length;
-    // 12点方向为起始点
-    canvas.rotate(pi - pi / 4);
-    // 9点方向为起始点 -- not work
-    // canvas.rotate(pi/4);
-    // 6点方向为起始点 -- not work
-    // canvas.rotate(-pi/4);
-    // 3点方向为起始点 -- not work
-    // canvas.rotate(pi + pi/4);
+    // Helper to convert logical angle to canvas radian
+    // 0 is at the top, clockwise
+    double angleToRadian(double angle) {
+      return (angle / totalDivisions) * 2 * pi - (pi / 2);
+    }
 
-    final Paint borderPaint = Paint()
-      ..color = Colors.grey
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1;
+    // Draw house sectors and text
+    for (int i = 0; i < houseAngles.length; i++) {
+      final startAngleValue = houseAngles[i];
+      final endAngleValue = (i + 1 < houseAngles.length) ? houseAngles[i+1] : totalDivisions;
+      final sweepAngleValue = endAngleValue - startAngleValue;
 
-    for (int i = 0; i < total; i++) {
-      EnumTwelveGong gong = twelveGongList[i];
-      String gongName = gong.fullname;
-      // 绘制扇环
-      Path path = Path()
-        ..addArc(
-          Rect.fromCircle(center: Offset.zero, radius: arcDrawCircleRadius),
-          startAngle,
-          sweepAngle,
-        );
+      final startAngleRadian = angleToRadian(startAngleValue);
+      final sweepAngleRadian = (sweepAngleValue / totalDivisions) * 2 * pi;
 
-      // 绘制一条从圆心到圆环的线
-      // path.moveTo(0, 0);
-      // path.lineTo(0, -arcDrawCircleRadius);
-      // path.close();
+      final gong = twelveGongList[i];
 
-      // canvas.drawArc(Rect.fromCircle(center: Offset.zero, radius: arcDrawCircleRadius), startAngle, sweepAngle, false, paint);
-      // textList = textList ?? [text!];
-      // var textListLength = text!= null ?text!.length:textList?[i].length;
-      // var lastChar = textList![i][textListLength! - 1];
-      // debugPrint("lastChar: $lastChar");
+      // Draw the colored sector
       if (withBackgroundColor) {
-        paint.color = starColorMapper[gong.zheng]!;
+        backgroundPaint.color = starColorMapper[gong.zheng]!;
+        canvas.drawArc(
+          Rect.fromCircle(center: center, radius: arcDrawCircleRadius),
+          startAngleRadian,
+          sweepAngleRadian,
+          false,
+          backgroundPaint,
+        );
       }
 
-      canvas.drawPath(path, paint);
+      // Draw the text
+      final textAngleValue = startAngleValue + sweepAngleValue / 2;
+      final textAngleRadian = angleToRadian(textAngleValue);
 
-      // canvas.drawShadow(path, Colors.blue.withOpacity(0.4), 5, false);
-      if (gongName.length == 1) {
-        // 绘制文字
-        paintSingleChar(
-            canvas, size, gongName, center, textRotationAngle, fanRingWidth);
-      } else {
-        if (isHorizontalText) {
-          // 绘制文字
-          paintSingleChar(
-              canvas, size, gongName, center, textRotationAngle, fanRingWidth);
-        } else {
-          // 绘制文字
-          paintVerticalText(
-              canvas, size, gongName, center, textRotationAngle, fanRingWidth);
-        }
-      }
-      if (isAntiClockwise) {
-        canvas.rotate(-(pi * 2) / total);
-      } else {
-        canvas.rotate((pi * 2) / total);
-      }
+      canvas.save();
+      canvas.translate(center.dx, center.dy);
+      canvas.rotate(textAngleRadian);
+
+      final textSpan = TextSpan(text: gong.fullname, style: textStyle);
+      final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr)..layout();
+
+      // Position text in the middle of the ring
+      final textOffset = Offset(-textPainter.width / 2, -arcDrawCircleRadius - textPainter.height / 2);
+
+      // This part is tricky. For simplicity, I'm drawing horizontal text.
+      // The original had complex logic for vertical/reversed text which needs more work.
+      // I'll rotate the text to be upright relative to the circle's orientation.
+      canvas.rotate(-textAngleRadian); // Counter-rotate to make text horizontal
+
+      final textX = (arcDrawCircleRadius) * cos(textAngleRadian);
+      final textY = (arcDrawCircleRadius) * sin(textAngleRadian);
+
+      textPainter.paint(canvas, Offset(textX - textPainter.width/2, textY - textPainter.height/2));
+
+      canvas.restore();
     }
 
-    for (int i = 0; i < total; i++) {
-      if (i == 0) {
-        canvas.rotate(-eachDegreeOfPI * 15);
-      } else {
-        canvas.rotate(-eachDegreeOfPI * 30);
-      }
-      Path borderPath = Path();
-      borderPath.moveTo(0, innerRadius);
-      borderPath.lineTo(0, outerRadius);
-      borderPath.close();
-      canvas.drawPath(borderPath, borderPaint);
-      // break;
+    // Draw border lines for each house
+    for (final angle in houseAngles) {
+      final angleRadian = angleToRadian(angle);
+      final startPoint = Offset(center.dx + innerRadius * cos(angleRadian), center.dy + innerRadius * sin(angleRadian));
+      final endPoint = Offset(center.dx + outerRadius * cos(angleRadian), center.dy + outerRadius * sin(angleRadian));
+      canvas.drawLine(startPoint, endPoint, borderPaint);
     }
-    // canvas.save();
   }
 
   void paintSingleChar(Canvas canvas, Size size, String text, Offset center,

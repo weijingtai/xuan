@@ -47,3 +47,16 @@ enum StarInnSystem {
   final String name;
   const StarInnSystem(this.name);
 }
+
+/// 周天度量系统
+enum CircularSystem {
+  @JsonValue("天体度数")
+  Degrees360("天体度数 (360°)"),
+  @JsonValue("周天日数(整)")
+  Days365("周天日数 (365日)"),
+  @JsonValue("周天日数(闰)")
+  Days365_25("周天日数 (365.25日)");
+
+  final String name;
+  const CircularSystem(this.name);
+}

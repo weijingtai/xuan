@@ -44,6 +44,9 @@ class PanelConfig {
   /// 命盘排列顺序
   List<EnumPanelRing> panelRingOrder;
 
+  /// 周天度量系统
+  CircularSystem circularSystem;
+
   PanelConfig(
       {required this.queryType,
       required this.coordinateSystem,
@@ -55,7 +58,8 @@ class PanelConfig {
       required this.withAscendant,
       required this.huaYaoType,
       required this.panelRingOrder,
-      required this.classicBooks});
+      required this.classicBooks,
+      required this.circularSystem});
   // copy with
   PanelConfig copyWith({
     EnumQueryType? queryType,
@@ -69,6 +73,7 @@ class PanelConfig {
     bool? withAscendant,
     EnumHuaYaoType? huaYaoType,
     List<EnumPanelRing>? panelRingOrder,
+    CircularSystem? circularSystem,
   }) {
     return PanelConfig(
       queryType: queryType ?? this.queryType,
@@ -82,6 +87,7 @@ class PanelConfig {
       withAscendant: withAscendant ?? this.withAscendant,
       huaYaoType: huaYaoType ?? this.huaYaoType,
       panelRingOrder: panelRingOrder ?? this.panelRingOrder,
+      circularSystem: circularSystem ?? this.circularSystem,
     );
   }
 
