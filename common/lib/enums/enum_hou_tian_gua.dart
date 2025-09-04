@@ -4,22 +4,70 @@ import 'package:json_annotation/json_annotation.dart';
 import 'enum_di_zhi.dart';
 import 'enum_five_xing.dart';
 
-// enum XianTianGua {
-//   Qian(1, "乾", "南",),
-//   Dui(2, "兑", "东南"),
-//   Li(3, "离", "东"),
-//   Zhen(4, "震", "东北"),
-//   Xun(5, "巽", "东南"),
-//   Kan(6, "坎", "西"),
-//   Gen(7, "艮", "西北"),
-//   Kun(8, "坤", "北");
+enum XianTianGua {
+  @JsonValue("乾")
+  Qian(1, "乾", "南"),
+  @JsonValue("兑")
+  Dui(2, "兑", "东南"),
+  @JsonValue("离")
+  Li(3, "离", "东"),
+  @JsonValue("震")
+  Zhen(4, "震", "东北"),
+  @JsonValue("巽")
+  Xun(5, "巽", "东南"),
+  @JsonValue("坎")
+  Kan(6, "坎", "西"),
+  @JsonValue("艮")
+  Gen(7, "艮", "西北"),
+  @JsonValue("坤")
+  Kun(8, "坤", "北");
 
-//   final int order;
-//   final String name;
-//   final String direction;
-//   final TianGan tianGan;
-//   const XianTianGua(this.order, this.name, this.direction, this.tianGan);
-// }
+  final int order;
+  final String name;
+  final String direction;
+  const XianTianGua(this.order, this.name, this.direction);
+}
+
+enum Enum8Gua {
+  @JsonValue("乾")
+  Qian("乾"),
+  @JsonValue("兑")
+  Dui("兑"),
+  @JsonValue("离")
+  Li("离"),
+  @JsonValue("震")
+  Zhen("震"),
+  @JsonValue("巽")
+  Xun("巽"),
+  @JsonValue("坎")
+  Kan("坎"),
+  @JsonValue("艮")
+  Gen("艮"),
+  @JsonValue("坤")
+  Kun("坤");
+
+  final String name;
+  String get value => name;
+  const Enum8Gua(this.name);
+
+  /// 转换为先天八卦
+  XianTianGua toXianTianGua() {
+    return XianTianGua.values.firstWhere((e) => e.name == name);
+  }
+
+  /// 转换为后天八卦
+  HouTianGua toHouTianGua() {
+    return HouTianGua.values.firstWhere((e) => e.name == name);
+  }
+
+  /// 从字符串值获取枚举
+  static Enum8Gua fromValue(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+}
 
 enum HouTianGua {
   @JsonValue("坎")
