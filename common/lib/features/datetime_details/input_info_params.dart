@@ -2,6 +2,7 @@ import 'dart:core';
 
 import 'package:common/datamodel/location.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:timezone/timezone.dart' as tz;
 
 import '../../models/chinese_date_info.dart';
 import 'calculation_strategy_config.dart';
