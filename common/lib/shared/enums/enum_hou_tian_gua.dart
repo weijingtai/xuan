@@ -29,26 +29,28 @@ enum XianTianGua {
 
 enum Enum8Gua {
   @JsonValue("乾")
-  Qian("乾", "天"),
+  Qian("乾", "天", "111"),
   @JsonValue("兑")
-  Dui("兑", "泽"),
+  Dui("兑", "泽", "110"),
   @JsonValue("离")
-  Li("离", "火"),
+  Li("离", "火", "101"),
   @JsonValue("震")
-  Zhen("震", "雷"),
+  Zhen("震", "雷", "100"),
   @JsonValue("巽")
-  Xun("巽", "风"),
+  Xun("巽", "风", "011"),
   @JsonValue("坎")
-  Kan("坎", "水"),
+  Kan("坎", "水", "010"),
   @JsonValue("艮")
-  Gen("艮", "雷"),
+  Gen("艮", "山", "001"),
   @JsonValue("坤")
-  Kun("坤", "地");
+  Kun("坤", "地", "000");
 
   final String name;
   final String nickname;
+  final String bottomTopBinaryStr;
+  String get topBottomBinaryStr => bottomTopBinaryStr.split('').reversed.join();
   String get value => name;
-  const Enum8Gua(this.name, this.nickname);
+  const Enum8Gua(this.name, this.nickname, this.bottomTopBinaryStr);
 
   /// 转换为先天八卦
   XianTianGua toXianTianGua() {
@@ -68,6 +70,22 @@ enum Enum8Gua {
   static Enum8Gua fromValue(String value) {
     return Enum8Gua.values.firstWhere(
       (e) => e.name == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+
+  /// 从二进制字符串获取枚举
+  static Enum8Gua fromBottomTopBinaryStr(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.bottomTopBinaryStr == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+
+  /// 从顶部到底部的二进制字符串获取枚举
+  static Enum8Gua fromTopBottomBinaryStr(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.topBottomBinaryStr == value,
       orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
     );
   }
