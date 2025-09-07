@@ -30,25 +30,26 @@ enum XianTianGua {
 
 enum Enum8Gua {
   @JsonValue("乾")
-  Qian("乾"),
+  Qian("乾", "天"),
   @JsonValue("兑")
-  Dui("兑"),
+  Dui("兑", "泽"),
   @JsonValue("离")
-  Li("离"),
+  Li("离", "火"),
   @JsonValue("震")
-  Zhen("震"),
+  Zhen("震", "雷"),
   @JsonValue("巽")
-  Xun("巽"),
+  Xun("巽", "风"),
   @JsonValue("坎")
-  Kan("坎"),
+  Kan("坎", "水"),
   @JsonValue("艮")
-  Gen("艮"),
+  Gen("艮", "雷"),
   @JsonValue("坤")
-  Kun("坤");
+  Kun("坤", "地");
 
   final String name;
+  final String nickname;
   String get value => name;
-  const Enum8Gua(this.name);
+  const Enum8Gua(this.name, this.nickname);
 
   /// 转换为先天八卦
   XianTianGua toXianTianGua() {
@@ -58,6 +59,10 @@ enum Enum8Gua {
   /// 转换为后天八卦
   HouTianGua toHouTianGua() {
     return HouTianGua.values.firstWhere((e) => e.name == name);
+  }
+
+  Enum8Gua getByNickname(String nickname) {
+    return Enum8Gua.values.firstWhere((e) => e.nickname == nickname);
   }
 
   /// 从字符串值获取枚举
