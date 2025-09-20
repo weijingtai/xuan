@@ -1,9 +1,9 @@
 import 'package:common/dev_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:tiebanshenshu/ui/pages/dev_page.dart';
 
 import 'providers/datetime_provider.dart';
-import 'ui/pages/node_editor_example_page.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -62,27 +62,8 @@ class AlgorithmEditorApp extends StatelessWidget {
         initialRoute: '/dev',
         onGenerateRoute: (settings) {
           switch (settings.name) {
-            // case '/':
-            //   return MaterialPageRoute(
-            //     builder: (_) => const AlgorithmListView(),
-            //   );
-            // case '/edit':
-            //   final args = settings.arguments as Map<String, dynamic>?;
-            //   return MaterialPageRoute(
-            //     builder: (_) => AlgorithmEditorView(algorithmId: args?['id']),
-            //   );
-            // case '/step':
-            //   final args = settings.arguments as Map<String, dynamic>;
-            //   return MaterialPageRoute(
-            //     builder: (_) => StepEditorView(
-            //       editingStep: args['editingStep'] as ExecutionStep?,
-            //       precedingSteps: args['precedingSteps'] as List<ExecutionStep>,
-            //     ),
-            //   );
             case '/dev':
-              return MaterialPageRoute(builder: (_) => NodeEditorExampleApp());
-            // case '/devCard':
-            //   return MaterialPageRoute(builder: (_) => FlowCardMapperPage());
+              return MaterialPageRoute(builder: (_) => DevPage());
 
             default:
               return MaterialPageRoute(
