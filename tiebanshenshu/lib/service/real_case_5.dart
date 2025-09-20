@@ -39,7 +39,7 @@ class TaiXuanEachZhu {
   }
 
   /// 干支列表
-  List<String> get ganzhiList => gua.ganzhiList;
+  List<String> get ganzhiList => gua.topBottomGanZhiList;
 
   /// 生成太玄每柱实例
   static TaiXuanEachZhu generate(String ganzhi, bool isYangYear) {
@@ -53,7 +53,7 @@ class TaiXuanEachZhu {
       getEachYaoGan(isYangYear),
     );
 
-    final List<String> sixyaoGanzhi = gua.ganzhiList;
+    final List<String> sixyaoGanzhi = gua.topBottomGanZhiList;
     final int topGanzhiSum = calculateEachEightGuaGanzhiSum(
       sixyaoGanzhi.sublist(0, 3),
     );
