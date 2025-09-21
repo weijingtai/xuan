@@ -1,5 +1,8 @@
 import 'dart:core';
 
+import 'package:common/enums.dart';
+import 'package:common/shared/enums/enum_hou_tian_gua.dart';
+
 // 二进制str转八经卦
 const Map<String, String> binaryStrGuaMapper = {
   "111": "乾",
@@ -88,12 +91,38 @@ const Map<String, String> dizhiFivexingMapper = {
   "戌": "土",
 };
 
+Map<DiZhi, Enum8Gua> diZhiGuaMapper = {
+  DiZhi.getFromValue("子")!: Enum8Gua.fromValue("坎")!,
+  DiZhi.getFromValue("亥")!: Enum8Gua.fromValue("坎")!,
+  DiZhi.getFromValue("丑")!: Enum8Gua.fromValue("坤")!,
+  DiZhi.getFromValue("寅")!: Enum8Gua.fromValue("震")!,
+  DiZhi.getFromValue("卯")!: Enum8Gua.fromValue("乾")!,
+  DiZhi.getFromValue("辰")!: Enum8Gua.fromValue("兑")!,
+  DiZhi.getFromValue("巳")!: Enum8Gua.fromValue("离")!,
+  DiZhi.getFromValue("午")!: Enum8Gua.fromValue("离")!,
+  DiZhi.getFromValue("未")!: Enum8Gua.fromValue("艮")!,
+  DiZhi.getFromValue("申")!: Enum8Gua.fromValue("艮")!,
+  DiZhi.getFromValue("酉")!: Enum8Gua.fromValue("乾")!,
+  DiZhi.getFromValue("戌")!: Enum8Gua.fromValue("巽")!,
+};
+Map<TianGan, Enum8Gua> tianGanGuaMapper = {
+  TianGan.getFromValue('甲')!: Enum8Gua.fromValue("乾")!,
+  TianGan.getFromValue('壬')!: Enum8Gua.fromValue("乾")!,
+  TianGan.getFromValue("乙")!: Enum8Gua.fromValue("坤")!,
+  TianGan.getFromValue("癸")!: Enum8Gua.fromValue("坤")!,
+  TianGan.getFromValue("丙")!: Enum8Gua.fromValue("艮")!,
+  TianGan.getFromValue("丁")!: Enum8Gua.fromValue("兑")!,
+  TianGan.getFromValue("戊")!: Enum8Gua.fromValue("坎")!,
+  TianGan.getFromValue("己")!: Enum8Gua.fromValue("离")!,
+  TianGan.getFromValue("庚")!: Enum8Gua.fromValue("震")!,
+  TianGan.getFromValue("辛")!: Enum8Gua.fromValue("巽")!,
+};
+
 const Map<String, String> dizhiGuaMapper = {
   "子": "坎",
   "亥": "坎",
   "丑": "坤",
   "寅": "震",
-  // "卯":"震",
   "卯": "乾",
   "辰": "兑",
   "巳": "离",
