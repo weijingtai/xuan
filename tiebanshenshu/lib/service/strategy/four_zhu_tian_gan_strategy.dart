@@ -3,7 +3,11 @@
 /// 将四柱天干取数法算法封装为标准计算策略
 library;
 
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_tian_gan.dart';
+import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';
+import '../../utils/tiao_wen_calculator.dart';
 import '../classic/four_zhu_tian_gan_calculatioin.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
@@ -13,14 +17,13 @@ import 'standard_calculation_strategy.dart';
 /// 包含执行四柱天干取数法所需的所有参数
 class FourZhuTianGanStrategyParams extends BaseCalculationParams {
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
-  const FourZhuTianGanStrategyParams({
-    required this.fourZhu,
-  });
+  FourZhuTianGanStrategyParams({required this.eightChars});
 
   @override
-  String get description => "四柱天干取数法计算参数：四柱信息(${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi})";
+  String get description =>
+      "四柱天干取数法计算参数：四柱信息(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})";
 }
 
 /// 四柱天干取数法计算结果
@@ -29,37 +32,22 @@ class FourZhuTianGanStrategyParams extends BaseCalculationParams {
 class FourZhuTianGanStrategyResult extends BaseCalculationResult {
   /// 主要结果：条文编号（列表中的第一个）
   final int tiaoWenNumber;
-  
-  /// 四柱信息
-  final FourZhu fourZhu;
-  
+
   /// 基础数字
-  final int baseNumber;
-  
-  /// 完整条文编号列表（用于调试）
-  final List<int> tiaoWenNumberList;
-  
-  /// 天干数字映射表
-  final Map<String, int> ganNumberMapping;
+  int get baseNumber => tiaoWenNumber;
 
-  const FourZhuTianGanStrategyResult({
-    required this.tiaoWenNumber,
-    required this.fourZhu,
-    required this.baseNumber,
-    required this.tiaoWenNumberList,
-    required this.ganNumberMapping,
-  });
-
-  @override
-  String get summary => "四柱天干取数法结果：条文编号 $tiaoWenNumber（基础数：$baseNumber）";
+  FourZhuTianGanStrategyResult({required this.tiaoWenNumber});
 }
 
 /// 四柱天干取数法计算策略
 ///
 /// 实现四柱天干取数法的标准计算策略
-class FourZhuTianGanStrategy 
-    extends StandardCalculationStrategy<FourZhuTianGanStrategyParams, FourZhuTianGanStrategyResult> {
-
+class FourZhuTianGanStrategy
+    extends
+        StandardCalculationStrategy<
+          FourZhuTianGanStrategyParams,
+          FourZhuTianGanStrategyResult
+        > {
   @override
   String get name => "四柱天干取数法";
 
@@ -79,24 +67,39 @@ class FourZhuTianGanStrategy
 
   @override
   FourZhuTianGanStrategyResult calculate(FourZhuTianGanStrategyParams params) {
-    // 复用原有算法逻辑
-    final originalCalculation = FourZhuTianGanCalculation();
-    final originalParams = FourZhuTianGanParams(fourZhu: params.fourZhu);
-    
-    final originalResult = originalCalculation.calculate(originalParams);
-    
-    // 提取第一个条文编号作为主要结果
-    final tiaoWenNumber = originalResult.tiaoWenNumberList.isNotEmpty 
-        ? originalResult.tiaoWenNumberList.first 
-        : originalResult.baseNumber;
-    
-    // 封装为新的Result对象
-    return FourZhuTianGanStrategyResult(
-      tiaoWenNumber: tiaoWenNumber,
-      fourZhu: originalResult.fourZhu,
-      baseNumber: originalResult.baseNumber,
-      tiaoWenNumberList: originalResult.tiaoWenNumberList,
-      ganNumberMapping: originalResult.ganNumberMapping,
-    );
+    // 天干数字映射表
+
+    // 获取四柱天干
+    final eightChars = params.eightChars;
+    final yearGan = eightChars.year.gan;
+    final monthGan = eightChars.month.gan;
+    final dayGan = eightChars.day.gan;
+    final timeGan = eightChars.time.gan;
+
+    // 按照月、日、时、年的顺序排列天干配数，得到四位基本数
+    final monthNumber = Constants.fourZhuTianGanNumberMapper[monthGan]!;
+    final dayNumber = Constants.fourZhuTianGanNumberMapper[dayGan]!;
+    final timeNumber = Constants.fourZhuTianGanNumberMapper[timeGan]!;
+    final yearNumber = Constants.fourZhuTianGanNumberMapper[yearGan]!;
+
+    // 组合成四位数：月日时年
+    final baseNumber =
+        monthNumber * 1000 + dayNumber * 100 + timeNumber * 10 + yearNumber;
+
+    // // 以基本数为基础递加96七次，得到8个条文编号
+    // final tiaoWenNumberList =
+    //     TiaowenCalculator.calculateTiaoWenListByAddFactorTimes(
+    //       baseNumber,
+    //       7,
+    //       defaultFactor: 96,
+    //       returnWithBase: true,
+    //     );
+
+    // // 提取第一个条文编号作为主要结果
+    // final tiaoWenNumber = tiaoWenNumberList.isNotEmpty
+    //     ? tiaoWenNumberList.first
+    //     : baseNumber;
+
+    return FourZhuTianGanStrategyResult(tiaoWenNumber: baseNumber);
   }
 }

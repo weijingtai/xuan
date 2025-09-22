@@ -117,6 +117,18 @@ Map<TianGan, Enum8Gua> tianGanGuaMapper = {
   TianGan.getFromValue("庚")!: Enum8Gua.fromValue("震")!,
   TianGan.getFromValue("辛")!: Enum8Gua.fromValue("巽")!,
 };
+const Map<TianGan, int> fourZhuTianGanNumberMapper = {
+  TianGan.JIA: 1,
+  TianGan.YI: 6,
+  TianGan.BING: 2,
+  TianGan.DING: 7,
+  TianGan.WU: 3,
+  TianGan.JI: 8,
+  TianGan.GENG: 4,
+  TianGan.XIN: 9,
+  TianGan.REN: 5,
+  TianGan.GUI: 0,
+};
 
 const Map<String, String> dizhiGuaMapper = {
   "子": "坎",
@@ -268,6 +280,27 @@ const Map<String, int> houTianGuaNumberMapper = {
   "兑": 7,
   "艮": 8,
   "离": 9,
+};
+Map<Enum8Gua, int> xianGuaNumberMapper = {
+  Enum8Gua.Qian: 1,
+  Enum8Gua.Dui: 2,
+  Enum8Gua.Li: 3,
+  Enum8Gua.Zhen: 4,
+  Enum8Gua.Xun: 5,
+  Enum8Gua.Kan: 6,
+  Enum8Gua.Gen: 7,
+  Enum8Gua.Kun: 8,
+};
+
+Map<Enum8Gua, int> houGuaNumberMapper = {
+  Enum8Gua.Kan: 1,
+  Enum8Gua.Kun: 2,
+  Enum8Gua.Zhen: 3,
+  Enum8Gua.Xun: 4,
+  Enum8Gua.Qian: 6,
+  Enum8Gua.Dui: 7,
+  Enum8Gua.Gen: 8,
+  Enum8Gua.Li: 9,
 };
 
 const Map<String, List<int>> guaBinaryMapper = {
@@ -494,7 +527,32 @@ const Map<String, int> taixuanGanNumberMapper = {
   "戊": 5,
   "癸": 5,
 };
-
+const Map<TianGan, int> taiXuanGanNumberMapper = {
+  TianGan.JIA: 9,
+  TianGan.JI: 9,
+  TianGan.YI: 8,
+  TianGan.GENG: 8,
+  TianGan.BING: 7,
+  TianGan.XIN: 7,
+  TianGan.DING: 6,
+  TianGan.REN: 6,
+  TianGan.WU: 5,
+  TianGan.GUI: 5,
+};
+const Map<DiZhi, int> taiXuanZhiNumberMapper = {
+  DiZhi.ZI: 9,
+  DiZhi.CHOU: 8,
+  DiZhi.YIN: 7,
+  DiZhi.MAO: 6,
+  DiZhi.CHEN: 5,
+  DiZhi.SI: 4,
+  DiZhi.WU: 9,
+  DiZhi.WEI: 8,
+  DiZhi.SHEN: 7,
+  DiZhi.YOU: 6,
+  DiZhi.XU: 5,
+  DiZhi.HAI: 4,
+};
 const Map<String, int> taixuanZhiNumberMapper = {
   "子": 9,
   "丑": 8,
@@ -545,4 +603,69 @@ const Map<String, int> guaBasicNumberUnderMapper = {
   "坎": 3150,
   "艮": 3690,
   "坤": 4230,
+};
+const Map<Enum8Gua, List<DiZhi>> outerGuaYaoDiZhi = {
+  Enum8Gua.Qian: [DiZhi.WU, DiZhi.SHEN, DiZhi.XU],
+  Enum8Gua.Kun: [DiZhi.CHOU, DiZhi.HAI, DiZhi.YOU],
+  Enum8Gua.Zhen: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
+  Enum8Gua.Xun: [DiZhi.CHOU, DiZhi.HAI, DiZhi.YOU],
+  Enum8Gua.Kan: [DiZhi.YIN, DiZhi.CHEN, DiZhi.WU],
+  Enum8Gua.Li: [DiZhi.MAO, DiZhi.CHOU, DiZhi.HAI],
+  Enum8Gua.Gen: [DiZhi.CHEN, DiZhi.WU, DiZhi.SHEN],
+  Enum8Gua.Dui: [DiZhi.SI, DiZhi.MAO, DiZhi.CHOU],
+};
+
+///  下->上 爻
+const Map<Enum8Gua, List<DiZhi>> innerGuaYaoDiZhi = {
+  Enum8Gua.Qian: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
+  Enum8Gua.Kun: [DiZhi.WEI, DiZhi.SI, DiZhi.MAO],
+  Enum8Gua.Zhen: [DiZhi.WU, DiZhi.SHEN, DiZhi.XU],
+  Enum8Gua.Xun: [DiZhi.WEI, DiZhi.SI, DiZhi.MAO],
+  Enum8Gua.Kan: [DiZhi.SHEN, DiZhi.XU, DiZhi.ZI],
+  Enum8Gua.Li: [DiZhi.YOU, DiZhi.WEI, DiZhi.SI],
+  Enum8Gua.Gen: [DiZhi.XU, DiZhi.ZI, DiZhi.YIN],
+  Enum8Gua.Dui: [DiZhi.HAI, DiZhi.YOU, DiZhi.WEI],
+};
+
+const Map<Enum8Gua, List<TianGan>> innerGuaYaoTianGan = {
+  Enum8Gua.Qian: [TianGan.JIA, TianGan.JIA, TianGan.JIA],
+  Enum8Gua.Dui: [TianGan.DING, TianGan.DING, TianGan.DING],
+  Enum8Gua.Li: [TianGan.JI, TianGan.JI, TianGan.JI],
+  Enum8Gua.Zhen: [TianGan.GENG, TianGan.GENG, TianGan.GENG],
+  Enum8Gua.Xun: [TianGan.XIN, TianGan.XIN, TianGan.XIN],
+  Enum8Gua.Kan: [TianGan.WU, TianGan.WU, TianGan.WU],
+  Enum8Gua.Gen: [TianGan.BING, TianGan.BING, TianGan.BING],
+  Enum8Gua.Kun: [TianGan.YI, TianGan.YI, TianGan.YI],
+};
+const Map<Enum8Gua, List<TianGan>> yinGuaYaoTianGan = {
+  Enum8Gua.Qian: [TianGan.JIA, TianGan.JIA, TianGan.JIA],
+  Enum8Gua.Dui: [TianGan.DING, TianGan.DING, TianGan.DING],
+  Enum8Gua.Li: [TianGan.JI, TianGan.JI, TianGan.JI],
+  Enum8Gua.Zhen: [TianGan.GENG, TianGan.GENG, TianGan.GENG],
+  Enum8Gua.Xun: [TianGan.XIN, TianGan.XIN, TianGan.XIN],
+  Enum8Gua.Kan: [TianGan.WU, TianGan.WU, TianGan.WU],
+  Enum8Gua.Gen: [TianGan.BING, TianGan.BING, TianGan.BING],
+  Enum8Gua.Kun: [TianGan.YI, TianGan.YI, TianGan.YI],
+};
+
+const Map<Enum8Gua, List<TianGan>> outerGuaYaoTianGan = {
+  Enum8Gua.Qian: [TianGan.REN, TianGan.REN, TianGan.REN],
+  Enum8Gua.Dui: [TianGan.DING, TianGan.DING, TianGan.DING],
+  Enum8Gua.Li: [TianGan.JI, TianGan.JI, TianGan.JI],
+  Enum8Gua.Zhen: [TianGan.GENG, TianGan.GENG, TianGan.GENG],
+  Enum8Gua.Xun: [TianGan.XIN, TianGan.XIN, TianGan.XIN],
+  Enum8Gua.Kan: [TianGan.WU, TianGan.WU, TianGan.WU],
+  Enum8Gua.Gen: [TianGan.BING, TianGan.BING, TianGan.BING],
+  Enum8Gua.Kun: [TianGan.GUI, TianGan.GUI, TianGan.GUI],
+};
+
+const Map<Enum8Gua, List<TianGan>> yangGuaYaoTianGan = {
+  Enum8Gua.Qian: [TianGan.REN, TianGan.REN, TianGan.REN],
+  Enum8Gua.Dui: [TianGan.DING, TianGan.DING, TianGan.DING],
+  Enum8Gua.Li: [TianGan.JI, TianGan.JI, TianGan.JI],
+  Enum8Gua.Zhen: [TianGan.GENG, TianGan.GENG, TianGan.GENG],
+  Enum8Gua.Xun: [TianGan.XIN, TianGan.XIN, TianGan.XIN],
+  Enum8Gua.Kan: [TianGan.WU, TianGan.WU, TianGan.WU],
+  Enum8Gua.Gen: [TianGan.BING, TianGan.BING, TianGan.BING],
+  Enum8Gua.Kun: [TianGan.GUI, TianGan.GUI, TianGan.GUI],
 };

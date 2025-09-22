@@ -2,6 +2,7 @@ import 'package:tiebanshenshu/utils/utils.dart' as GuaUtils;
 
 import '../constant/constants.dart' as NumberMaps;
 
+@Deprecated("使用TiaoWenCalculator")
 class TiaowenCalculator {
   /// 加则法计算条文数字
   ///
@@ -223,7 +224,8 @@ class TiaowenCalculator {
   /// [returnWithBase] 是否包含基数，默认为false
   /// 返回结果列表，包含递减后的结果列表
   static List<int> calculateTiaoWenListBySubMultipleFactorTimes(
-    int baseNumber, {
+    int baseNumber,
+    List<int> list, {
     List<int> multipleList = const [2, 4, 8, 16],
     int defaultFactor = 48,
     bool returnWithBase = false,
@@ -329,7 +331,7 @@ class TiaowenCalculator {
       result.addAll(
         calculateTiaoWenListBySubMultipleFactorTimes(
           baseNumber,
-          multipleList: [2, 4, 8, 16],
+          [2, 4, 8, 16],
           defaultFactor: 48,
           returnWithBase: false,
         ),

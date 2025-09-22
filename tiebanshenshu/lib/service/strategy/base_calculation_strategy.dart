@@ -47,6 +47,6 @@ abstract class BaseCalculationParams {
 
 /// 所有算法结果的基础抽象类
 abstract class BaseCalculationResult {
-  /// 结果摘要
-  int get baseNumber;
+  // /// 结果摘要
+  // int get baseNumber;
 }

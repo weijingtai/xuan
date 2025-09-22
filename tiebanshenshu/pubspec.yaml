@@ -62,6 +62,7 @@ flutter:
 
   assets:
     - assets/algorithms/
+    - assets/all_tiao_wen_v1.csv
 
   # 添加着色器声明以支持fl_nodes包
   shaders:

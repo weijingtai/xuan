@@ -189,6 +189,7 @@ class YuanTangGua {
     return [
       ...TiaowenCalculator.calculateTiaoWenListBySubMultipleFactorTimes(
         tiaowenNumberXiantianBenhu,
+        [2, 4, 8, 16],
       ),
       ...TiaowenCalculator.calculateTiaoWenListByAddMultipleFactorTimes(
         tiaowenNumberXiantianBenhu,
@@ -201,6 +202,7 @@ class YuanTangGua {
     return [
       ...TiaowenCalculator.calculateTiaoWenListBySubMultipleFactorTimes(
         tiaowenNumberHoutianBenhu,
+        [2, 4, 8, 16],
       ),
       ...TiaowenCalculator.calculateTiaoWenListByAddMultipleFactorTimes(
         tiaowenNumberHoutianBenhu,

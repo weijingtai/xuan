@@ -3,7 +3,14 @@
 /// 将太玄取数法（1）算法封装为标准计算策略
 library;
 
+import 'package:collection/collection.dart';
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+
+import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';
+import '../../utils/tiao_wen_calculator.dart';
 import '../classic/tai_xuan_four_zhu_calculation.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
@@ -13,53 +20,32 @@ import 'standard_calculation_strategy.dart';
 /// 包含执行太玄取数法（1）所需的所有参数
 class TaiXuanFourZhuStrategyParams extends BaseCalculationParams {
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
-  const TaiXuanFourZhuStrategyParams({
-    required this.fourZhu,
-  });
+  TaiXuanFourZhuStrategyParams({required this.eightChars});
 
   @override
-  String get description => "太玄取数法（1）计算参数：四柱信息(${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi})";
+  String get description =>
+      "太玄取数法（1）计算参数：四柱信息(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})";
 }
 
 /// 太玄取数法（1）计算结果
 ///
 /// 包含太玄取数法（1）的计算结果，主要结果为条文编号
 class TaiXuanFourZhuStrategyResult extends BaseCalculationResult {
-  /// 主要结果：条文编号（列表中的第一个）
-  final int tiaoWenNumber;
-  
-  /// 四柱信息
-  final FourZhu fourZhu;
-  
-  /// 是否阳年
-  final bool isYangYear;
-  
-  /// 四柱基本数列表
-  final List<int> fourZhuBaseNumberList;
-  
-  /// 所有条文编号列表
-  final List<int> allTiaoWenNumberList;
-
-  const TaiXuanFourZhuStrategyResult({
-    required this.tiaoWenNumber,
-    required this.fourZhu,
-    required this.isYangYear,
-    required this.fourZhuBaseNumberList,
-    required this.allTiaoWenNumberList,
-  });
-
-  @override
-  String get summary => "太玄取数法（1）结果：条文编号 $tiaoWenNumber（阳年：$isYangYear，基本数列表：$fourZhuBaseNumberList）";
+  final List<int> baseTiaoWenList;
+  TaiXuanFourZhuStrategyResult({required this.baseTiaoWenList});
 }
 
 /// 太玄取数法（1）计算策略
 ///
 /// 实现太玄取数法（1）的标准计算策略
-class TaiXuanFourZhuStrategy 
-    extends StandardCalculationStrategy<TaiXuanFourZhuStrategyParams, TaiXuanFourZhuStrategyResult> {
-
+class TaiXuanFourZhuStrategy
+    extends
+        StandardCalculationStrategy<
+          TaiXuanFourZhuStrategyParams,
+          TaiXuanFourZhuStrategyResult
+        > {
   @override
   String get name => "太玄取数法（1）";
 
@@ -82,26 +68,119 @@ class TaiXuanFourZhuStrategy
 
   @override
   TaiXuanFourZhuStrategyResult calculate(TaiXuanFourZhuStrategyParams params) {
-    // 复用原有算法逻辑
-    final originalCalculation = TaiXuanFourZhuCalculation();
-    final originalParams = TaiXuanFourZhuParams(fourZhu: params.fourZhu);
-    
-    final originalResult = originalCalculation.calculate(originalParams);
-    
-    // 提取第一个条文编号作为主要结果
-    final tiaoWenNumber = originalResult.allTiaoWenNumberList.isNotEmpty 
-        ? originalResult.allTiaoWenNumberList.first 
-        : (originalResult.fourZhuBaseNumberList.isNotEmpty 
-            ? originalResult.fourZhuBaseNumberList.first 
-            : 0);
-    
-    // 封装为新的Result对象
-    return TaiXuanFourZhuStrategyResult(
-      tiaoWenNumber: tiaoWenNumber,
-      fourZhu: originalResult.fourZhu,
-      isYangYear: originalResult.isYangYear,
-      fourZhuBaseNumberList: originalResult.fourZhuBaseNumberList,
-      allTiaoWenNumberList: originalResult.allTiaoWenNumberList,
+    // 从 EightChars 创建 FourZhu
+    final fourZhu = FourZhu(
+      yearGanzhi: params.eightChars.year.name,
+      monthGanzhi: params.eightChars.month.name,
+      dayGanzhi: params.eightChars.day.name,
+      timeGanzhi: params.eightChars.time.name,
     );
+
+    final isYangYear = params.eightChars.year.gan.isYang;
+
+    // 生成四柱的太玄数据
+    final yearZhuBaseNumber = _generateTaiXuanEachZhu(
+      params.eightChars.year,
+      isYangYear,
+    );
+    final monthZhuBaseNumber = _generateTaiXuanEachZhu(
+      params.eightChars.month,
+      isYangYear,
+    );
+    final dayZhuBaseNumber = _generateTaiXuanEachZhu(
+      params.eightChars.day,
+      isYangYear,
+    );
+    final timeZhuBaseNumber = _generateTaiXuanEachZhu(
+      params.eightChars.time,
+      isYangYear,
+    );
+
+    // 四柱基本数列表
+    final fourZhuBaseNumberList = [
+      yearZhuBaseNumber,
+      monthZhuBaseNumber,
+      dayZhuBaseNumber,
+      timeZhuBaseNumber,
+    ];
+
+    return TaiXuanFourZhuStrategyResult(baseTiaoWenList: fourZhuBaseNumberList);
+  }
+
+  /// 生成太玄每柱实例
+  /// 生成每柱的太玄数据
+  ///
+  /// 步骤说明:
+  /// 1. 从干支中提取天干和地支，并映射到对应的卦
+  /// 2. 根据天干卦和地支卦生成六爻卦
+  /// 3. 获取六爻卦的干支列表
+  /// 4. 分别计算上卦和下卦的干支和
+  /// 5. 将上下卦数字组合成基础数
+  int _generateTaiXuanEachZhu(JiaZi ganzhi, bool isYangYear) {
+    // 步骤1: 获取天干对应的卦和地支对应的卦
+    final Enum8Gua ganGua = Constants.tianGanGuaMapper[ganzhi.gan]!;
+    final Enum8Gua zhiGua = Constants.diZhiGuaMapper[ganzhi.zhi]!;
+
+    var pura = PureSixYaoGua.by8Gua(ganGua, zhiGua);
+
+    // 步骤3: 分上下3爻分别进行计算
+    var botYaoList = pura.yaoList.sublist(0, 3); // 获取前三个爻
+    var topYaoList = pura.yaoList.sublist(3); // 获取后三个爻
+
+    // 对没爻进行纳甲[阴阳]、纳支
+    final Map<Enum8Gua, List<TianGan>> ganMapper;
+    if (isYangYear) {
+      ganMapper = Constants.yangGuaYaoTianGan;
+    } else {
+      ganMapper = Constants.yinGuaYaoTianGan;
+    }
+    for (var i = 0; i < botYaoList.length; i++) {
+      botYaoList[i].naJia = ganMapper[pura.bottomGua]![i];
+      botYaoList[i].naZhi = Constants.innerGuaYaoDiZhi[pura.bottomGua]![i];
+    }
+    for (var i = 0; i < topYaoList.length; i++) {
+      topYaoList[i].naJia = ganMapper[pura.topGua]![i];
+      topYaoList[i].naZhi = Constants.innerGuaYaoDiZhi[pura.topGua]![i];
+    }
+    // 分别计算每个爻的 干支太玄数取数，并求和
+    int botSum = botYaoList
+        .map(
+          (y) =>
+              Constants.taiXuanGanNumberMapper[y.naJia!]! +
+              Constants.taiXuanZhiNumberMapper[y.naZhi!]!,
+        )
+        .whereNot((t) => t != 10)
+        .reduce((a, b) => a + b);
+
+    int topSum = topYaoList
+        .map(
+          (y) =>
+              Constants.taiXuanGanNumberMapper[y.naJia!]! +
+              Constants.taiXuanZhiNumberMapper[y.naZhi!]!,
+        )
+        .whereNot((t) => t != 10)
+        .reduce((a, b) => a + b);
+
+    return topSum * 100 + botSum;
+  }
+
+  /// 计算太玄干支和
+  int _calculateTaixuanGanzhiSum(String ganzhi) {
+    return Constants.taixuanGanNumberMapper[ganzhi[0]]! +
+        Constants.taixuanZhiNumberMapper[ganzhi[1]]!;
+  }
+
+  /// 计算每个八卦干支和
+  int _calculateEachEightGuaGanzhiSum(List<String> ganzhiList) {
+    int sum = 0;
+    for (final String ganzhi in ganzhiList) {
+      final int tmp = _calculateTaixuanGanzhiSum(ganzhi);
+      if (tmp == 10) {
+        continue;
+      } else {
+        sum += tmp;
+      }
+    }
+    return sum;
   }
 }
