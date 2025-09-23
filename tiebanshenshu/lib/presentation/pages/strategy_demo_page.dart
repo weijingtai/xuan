@@ -102,6 +102,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("------ build  ---- $_isInitialized");
     return Scaffold(
       appBar: AppBar(
         title: const Text('Strategy演示'),
@@ -124,11 +125,13 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
 
   /// 构建加载状态
   Widget _buildLoadingState() {
+    print("------ _buildLoadingState");
     return const Center(child: LargeLoadingWidget(message: '正在初始化Strategy...'));
   }
 
   /// 构建主要内容
   Widget _buildContent() {
+    print("------ _buildContent");
     return RefreshIndicator(
       onRefresh: _refreshAll,
       child: ListView(

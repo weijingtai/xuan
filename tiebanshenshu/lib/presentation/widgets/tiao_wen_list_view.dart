@@ -80,14 +80,7 @@ class TiaoWenListView extends StatelessWidget {
       );
     }
 
-    return ListView.builder(
-      itemCount: tiaoWenList.length,
-      itemBuilder: (context, index) {
-        final tiaoWenItem = tiaoWenList[index];
-        // 直接返回TiaoWenItem Widget，因为它已经是一个完整的Widget
-        return tiaoWenItem;
-      },
-    );
+    return Column(children: tiaoWenList);
   }
 }
 
