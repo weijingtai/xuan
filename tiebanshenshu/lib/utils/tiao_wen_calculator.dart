@@ -1,4 +1,4 @@
-import 'package:tiebanshenshu/utils/utils.dart' as GuaUtils;
+import 'utils.dart' as GuaUtils;
 
 import '../constant/constants.dart' as NumberMaps;
 

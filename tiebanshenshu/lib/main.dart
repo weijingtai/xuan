@@ -1,9 +1,12 @@
 import 'package:common/dev_constant.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:tiebanshenshu/ui/pages/dev_page.dart';
+import 'ui/pages/dev_page.dart';
+import 'presentation/pages/strategy_demo_page.dart';
+import 'presentation/pages/tai_xuan_interactive_page.dart';
 
 import 'providers/datetime_provider.dart';
+import 'infrastructure/di/strategy_providers.dart';
 
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -18,6 +21,8 @@ void main() {
           create: (_) =>
               DateTimeProvider()..updateDateTime(DevConstant.dev_usa),
         ),
+        // Strategy相关的Provider配置
+        ...StrategyProviders.providers,
         // ...AppProviders.providers,
         // ChangeNotifierProvider(create: (_) => DataPanelViewModel()),
         // ChangeNotifierProvider(
@@ -64,6 +69,12 @@ class AlgorithmEditorApp extends StatelessWidget {
           switch (settings.name) {
             case '/dev':
               return MaterialPageRoute(builder: (_) => DevPage());
+            
+            case '/strategy-demo':
+              return MaterialPageRoute(builder: (_) => const StrategyDemoPage());
+            
+            case '/tai-xuan-interactive':
+              return MaterialPageRoute(builder: (_) => const TaiXuanInteractivePage());
 
             default:
               return MaterialPageRoute(

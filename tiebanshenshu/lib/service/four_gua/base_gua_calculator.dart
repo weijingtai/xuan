@@ -1,4 +1,4 @@
-import 'package:tiebanshenshu/service/calculation_strategy.dart';
+import '../calculation_strategy.dart';
 
 import '../../constant/constants.dart';
 import '../../constant/constants.dart' as constants;

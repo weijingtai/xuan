@@ -6,7 +6,7 @@ library;
 import 'package:collection/collection.dart';
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import '../../domain/pure_six_yao_gua.dart';
 
 import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';
@@ -127,39 +127,48 @@ class TaiXuanFourZhuStrategy
     var botYaoList = pura.yaoList.sublist(0, 3); // 获取前三个爻
     var topYaoList = pura.yaoList.sublist(3); // 获取后三个爻
 
-    // 对没爻进行纳甲[阴阳]、纳支
+    // 对每爻进行纳甲[阴阳]、纳支
     final Map<Enum8Gua, List<TianGan>> ganMapper;
     if (isYangYear) {
       ganMapper = Constants.yangGuaYaoTianGan;
     } else {
       ganMapper = Constants.yinGuaYaoTianGan;
     }
+
+    // 下卦纳甲纳支
     for (var i = 0; i < botYaoList.length; i++) {
       botYaoList[i].naJia = ganMapper[pura.bottomGua]![i];
       botYaoList[i].naZhi = Constants.innerGuaYaoDiZhi[pura.bottomGua]![i];
     }
+
+    // 上卦纳甲纳支
     for (var i = 0; i < topYaoList.length; i++) {
       topYaoList[i].naJia = ganMapper[pura.topGua]![i];
-      topYaoList[i].naZhi = Constants.innerGuaYaoDiZhi[pura.topGua]![i];
+      topYaoList[i].naZhi = Constants.outerGuaYaoDiZhi[pura.topGua]![i];
     }
-    // 分别计算每个爻的 干支太玄数取数，并求和
-    int botSum = botYaoList
-        .map(
-          (y) =>
-              Constants.taiXuanGanNumberMapper[y.naJia!]! +
-              Constants.taiXuanZhiNumberMapper[y.naZhi!]!,
-        )
-        .whereNot((t) => t != 10)
-        .reduce((a, b) => a + b);
 
-    int topSum = topYaoList
+    // 分别计算每个爻的干支太玄数取数，并求和（排除和为10的情况）
+    List<int> botSums = botYaoList
         .map(
           (y) =>
               Constants.taiXuanGanNumberMapper[y.naJia!]! +
               Constants.taiXuanZhiNumberMapper[y.naZhi!]!,
         )
-        .whereNot((t) => t != 10)
-        .reduce((a, b) => a + b);
+        .where((t) => t != 10) // 修正过滤条件
+        .toList();
+
+    List<int> topSums = topYaoList
+        .map(
+          (y) =>
+              Constants.taiXuanGanNumberMapper[y.naJia!]! +
+              Constants.taiXuanZhiNumberMapper[y.naZhi!]!,
+        )
+        .where((t) => t != 10) // 修正过滤条件
+        .toList();
+
+    // 计算总和，如果没有有效数字则为0
+    int botSum = botSums.isEmpty ? 0 : botSums.reduce((a, b) => a + b);
+    int topSum = topSums.isEmpty ? 0 : topSums.reduce((a, b) => a + b);
 
     return topSum * 100 + botSum;
   }

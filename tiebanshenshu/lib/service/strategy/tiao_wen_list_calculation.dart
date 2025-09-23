@@ -97,20 +97,6 @@ class TiaoWenListCalculationConfig {
   }
 }
 
-class TiaoWenListResult {
-  TiaoWenListCalculationConfig config;
-  bool withSub;
-  int baseNumber;
-  List<int> allTiaoWen;
-
-  TiaoWenListResult({
-    required this.config,
-    required this.withSub,
-    required this.baseNumber,
-    required this.allTiaoWen,
-  });
-}
-
 enum TiaoWenCalculationListType { generator, one_by_one, customized }
 
 class TiaoWenListCalculator {
@@ -118,16 +104,30 @@ class TiaoWenListCalculator {
 
   TiaoWenListCalculator(this.config);
 
-  TiaoWenListResult calculate(int baseNumber) {
+  TiaoWenListCalculationResult calculate(int baseNumber) {
     List<int> allTiaoWen = config.calculationList
         .map((e) => baseNumber + e)
         .toList();
 
-    return TiaoWenListResult(
+    return TiaoWenListCalculationResult(
       config: config,
       withSub: config.withSub,
       baseNumber: baseNumber,
-      allTiaoWen: allTiaoWen,
+      tiaoWenNumbers: allTiaoWen,
     );
   }
+}
+
+class TiaoWenListCalculationResult {
+  TiaoWenListCalculationConfig config;
+  bool withSub;
+  int baseNumber;
+  List<int> tiaoWenNumbers;
+
+  TiaoWenListCalculationResult({
+    required this.config,
+    required this.withSub,
+    required this.baseNumber,
+    required this.tiaoWenNumbers,
+  });
 }

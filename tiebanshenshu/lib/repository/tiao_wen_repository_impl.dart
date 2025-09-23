@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:common/enums.dart';
@@ -16,6 +17,10 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
   static List<TiaoWenDataModel>? _cachedTiaoWenList;
   static Map<int, TiaoWenDataModel>? _cachedTiaoWenMap;
 
+  // 并发安全控制
+  static final Completer<void>? _loadingCompleter = null;
+  static Completer<void>? _currentLoadingCompleter;
+
   // 私有构造函数
   TiaoWenRepositoryImpl._({required this.tiaoWenDataPath});
 
@@ -30,17 +35,29 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
   /// 从 CSV 资源文件加载条文数据
   ///
   /// 加载并缓存所有条文数据，提高后续访问性能
+  /// 使用Completer机制确保并发安全，多个同时调用只会加载一次
   Future<void> _loadTiaoWenFromAssets() async {
+    // 如果数据已经加载完成，直接返回
     if (_cachedTiaoWenList != null && _cachedTiaoWenMap != null) {
       return;
     }
+
+    // 如果正在加载中，等待当前加载完成
+    if (_currentLoadingCompleter != null) {
+      await _currentLoadingCompleter!.future;
+      return;
+    }
+
+    // 开始新的加载过程
+    _currentLoadingCompleter = Completer<void>();
 
     try {
       final String csvString = await rootBundle.loadString(tiaoWenDataPath);
       final List<String> lines = csvString.split('\n');
 
-      _cachedTiaoWenList = [];
-      _cachedTiaoWenMap = {};
+      // 创建临时变量，避免在加载过程中其他线程访问到不完整的数据
+      final List<TiaoWenDataModel> tempList = [];
+      final Map<int, TiaoWenDataModel> tempMap = {};
 
       for (String line in lines) {
         if (line.trim().isEmpty) continue;
@@ -48,16 +65,28 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
         try {
           final tiaoWen = _parseCsvLine(line);
           if (tiaoWen != null) {
-            _cachedTiaoWenList!.add(tiaoWen);
-            _cachedTiaoWenMap![tiaoWen.id] = tiaoWen;
+            tempList.add(tiaoWen);
+            tempMap[tiaoWen.id] = tiaoWen;
           }
         } catch (e) {
           // 记录解析错误但继续处理其他数据
           print('Error parsing TiaoWen line: $line, error: $e');
         }
       }
+
+      // 原子性地更新缓存
+      _cachedTiaoWenList = tempList;
+      _cachedTiaoWenMap = tempMap;
+
+      // 标记加载完成
+      _currentLoadingCompleter!.complete();
     } catch (e) {
+      // 加载失败，标记错误
+      _currentLoadingCompleter!.completeError(e);
       throw Exception('Failed to load TiaoWen data: $e');
+    } finally {
+      // 清理加载状态
+      _currentLoadingCompleter = null;
     }
   }
 
