@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:common/dev_constant.dart';
 import 'package:common/models/eight_chars.dart';
 
-import '../../providers/tai_xuan_four_zhu_interactive_provider.dart';
+import '../viewmodels/tai_xuan_four_zhu_interactive_view_model.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
 import '../widgets/interactive_session_header.dart';
@@ -92,7 +92,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   Future<void> _initializeSession() async {
     if (_selectedEightChars == null) return;
 
-    final provider = context.read<TaiXuanFourZhuInteractiveProvider>();
+    final provider = context.read<TaiXuanFourZhuInteractiveViewModel>();
 
     await provider.startSession(
       _selectedEightChars!,
@@ -112,7 +112,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      body: Consumer<TaiXuanFourZhuInteractiveProvider>(
+      body: Consumer<TaiXuanFourZhuInteractiveViewModel>(
         builder: (context, provider, child) {
           return _buildBody(provider);
         },
@@ -126,7 +126,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
       title: const Text('太玄四柱交互式计算'),
       elevation: 0,
       actions: [
-        Consumer<TaiXuanFourZhuInteractiveProvider>(
+        Consumer<TaiXuanFourZhuInteractiveViewModel>(
           builder: (context, provider, child) {
             return PopupMenuButton<String>(
               onSelected: (value) => _handleMenuAction(value, provider),
@@ -166,7 +166,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建主体内容
-  Widget _buildBody(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildBody(TaiXuanFourZhuInteractiveViewModel provider) {
     if (!_isInitialized) {
       return const Center(child: LargeLoadingWidget(message: '正在初始化交互式会话...'));
     }
@@ -190,7 +190,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建主要内容
-  Widget _buildMainContent(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildMainContent(TaiXuanFourZhuInteractiveViewModel provider) {
     return Column(
       children: [
         // 会话头部信息
@@ -209,7 +209,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建内容区域
-  Widget _buildContentArea(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildContentArea(TaiXuanFourZhuInteractiveViewModel provider) {
     if (provider.isLoading) {
       return _buildLoadingContent(provider);
     }
@@ -226,7 +226,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建加载内容
-  Widget _buildLoadingContent(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildLoadingContent(TaiXuanFourZhuInteractiveViewModel provider) {
     String message = '处理中...';
 
     if (provider.isStartingSession) {
@@ -243,7 +243,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建交互内容
-  Widget _buildInteractiveContent(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildInteractiveContent(TaiXuanFourZhuInteractiveViewModel provider) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -269,7 +269,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建当前步骤信息
-  Widget _buildCurrentStepInfo(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildCurrentStepInfo(TaiXuanFourZhuInteractiveViewModel provider) {
     final theme = Theme.of(context);
 
     return Card(
@@ -300,7 +300,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建完成内容
-  Widget _buildCompletedContent(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildCompletedContent(TaiXuanFourZhuInteractiveViewModel provider) {
     return InteractiveResultWidget(
       provider: provider,
       onRestart: () => _restartSession(provider),
@@ -308,7 +308,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建错误状态
-  Widget _buildErrorState(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildErrorState(TaiXuanFourZhuInteractiveViewModel provider) {
     return Center(
       child: CustomErrorWidget(
         message: provider.errorMessage ?? '发生未知错误',
@@ -320,7 +320,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 构建底部操作栏
-  Widget _buildBottomActionBar(TaiXuanFourZhuInteractiveProvider provider) {
+  Widget _buildBottomActionBar(TaiXuanFourZhuInteractiveViewModel provider) {
     if (!provider.hasSession || provider.hasError) {
       return const SizedBox.shrink();
     }
@@ -368,7 +368,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   /// 处理菜单操作
   void _handleMenuAction(
     String action,
-    TaiXuanFourZhuInteractiveProvider provider,
+    TaiXuanFourZhuInteractiveViewModel provider,
   ) {
     switch (action) {
       case 'undo':
@@ -385,7 +385,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
 
   /// 选择候选项
   Future<void> _selectCandidate(
-    TaiXuanFourZhuInteractiveProvider provider,
+    TaiXuanFourZhuInteractiveViewModel provider,
     TiaoWenCandidate candidate,
   ) async {
     try {
@@ -403,7 +403,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
   }
 
   /// 撤销步骤
-  Future<void> _undoStep(TaiXuanFourZhuInteractiveProvider provider) async {
+  Future<void> _undoStep(TaiXuanFourZhuInteractiveViewModel provider) async {
     try {
       await provider.undoStep();
     } catch (e) {
@@ -420,7 +420,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
 
   /// 重新开始会话
   Future<void> _restartSession(
-    TaiXuanFourZhuInteractiveProvider provider,
+    TaiXuanFourZhuInteractiveViewModel provider,
   ) async {
     final confirmed = await _showConfirmDialog(
       '重新开始',
@@ -449,7 +449,7 @@ class _TaiXuanInteractivePageState extends State<TaiXuanInteractivePage>
 
   /// 重试操作
   Future<void> _retryOperation(
-    TaiXuanFourZhuInteractiveProvider provider,
+    TaiXuanFourZhuInteractiveViewModel provider,
   ) async {
     if (provider.inputEightChars != null) {
       await _initializeSession();

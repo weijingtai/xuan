@@ -19,8 +19,9 @@ class StrategyDemoPage extends StatefulWidget {
 }
 
 class _StrategyDemoPageState extends State<StrategyDemoPage> {
-  final ScrollController _scrollController = ScrollController();
+  final PageController _pageController = PageController();
   bool _isInitialized = false;
+  int _currentPageIndex = 0;
 
   @override
   void initState() {
@@ -32,7 +33,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -105,11 +106,16 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     print("------ build  ---- $_isInitialized");
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Strategy演示'),
+        title: Text(_getPageTitle()),
         actions: [
           IconButton(
-            onPressed: _refreshAll,
+            onPressed: _refreshCurrent,
             icon: const Icon(Icons.refresh),
+            tooltip: '刷新当前',
+          ),
+          IconButton(
+            onPressed: _refreshAll,
+            icon: const Icon(Icons.refresh_outlined),
             tooltip: '刷新所有',
           ),
           IconButton(
@@ -120,6 +126,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         ],
       ),
       body: _isInitialized ? _buildContent() : _buildLoadingState(),
+      bottomNavigationBar: _isInitialized ? _buildBottomNavigationBar() : null,
     );
   }
 
@@ -132,19 +139,20 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
   /// 构建主要内容
   Widget _buildContent() {
     print("------ _buildContent");
-    return RefreshIndicator(
-      onRefresh: _refreshAll,
-      child: ListView(
-        controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 16.0),
-        children: [
-          // 数据源信息
-          _buildDataSourceInfo(),
+    return PageView(
+      controller: _pageController,
+      onPageChanged: (index) {
+        setState(() {
+          _currentPageIndex = index;
+        });
+      },
+      children: [
+        // 数据源信息页面
+        _buildDataSourcePage(),
 
-          const SizedBox(height: 16.0),
-
-          // Strategy卡片列表
-          Consumer<DayGanZhiGuaViewModel>(
+        // 日干支卦页面
+        _buildStrategyPage(
+          child: Consumer<DayGanZhiGuaViewModel>(
             builder: (context, viewModel, child) {
               return StrategyCard(
                 title: '日干支卦',
@@ -153,23 +161,182 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
               );
             },
           ),
+        ),
 
-          Consumer<FourZhuTianGanViewModel>(
+        // 四柱天干页面
+        _buildStrategyPage(
+          child: Consumer<FourZhuTianGanViewModel>(
             builder: (context, viewModel, child) {
-              return StrategyCard(title: '四柱天干', viewModel: viewModel);
+              return StrategyCard(
+                title: '四柱天干',
+                viewModel: viewModel,
+                initiallyExpanded: true,
+              );
             },
           ),
+        ),
 
-          Consumer<TaiXuanFourZhuViewModel>(
+        // 太玄四柱页面
+        _buildStrategyPage(
+          child: Consumer<TaiXuanFourZhuViewModel>(
             builder: (context, viewModel, child) {
-              return StrategyCard(title: '太玄四柱', viewModel: viewModel);
+              return StrategyCard(
+                title: '太玄四柱',
+                viewModel: viewModel,
+                initiallyExpanded: true,
+              );
             },
           ),
+        ),
+      ],
+    );
+  }
 
-          // 底部间距
-          const SizedBox(height: 32.0),
+  /// 获取当前页面标题
+  String _getPageTitle() {
+    switch (_currentPageIndex) {
+      case 0:
+        return 'Strategy演示 - 数据源';
+      case 1:
+        return 'Strategy演示 - 日干支卦';
+      case 2:
+        return 'Strategy演示 - 四柱天干';
+      case 3:
+        return 'Strategy演示 - 太玄四柱';
+      default:
+        return 'Strategy演示';
+    }
+  }
+
+  /// 刷新当前页面
+  Future<void> _refreshCurrent() async {
+    try {
+      switch (_currentPageIndex) {
+        case 1:
+          await context.read<DayGanZhiGuaViewModel>().refresh();
+          break;
+        case 2:
+          await context.read<FourZhuTianGanViewModel>().refresh();
+          break;
+        case 3:
+          await context.read<TaiXuanFourZhuViewModel>().refresh();
+          break;
+        default:
+          // 数据源页面不需要刷新
+          break;
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('刷新完成'), duration: Duration(seconds: 2)),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('刷新失败: $e'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
+  }
+
+  /// 构建数据源信息页面
+  Widget _buildDataSourcePage() {
+    return RefreshIndicator(
+      onRefresh: _refreshAll,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDataSourceInfo(),
+            const SizedBox(height: 24.0),
+            _buildPageInstructions(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 构建策略页面
+  Widget _buildStrategyPage({required Widget child}) {
+    return RefreshIndicator(
+      onRefresh: _refreshCurrent,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: child,
+      ),
+    );
+  }
+
+  /// 构建页面说明
+  Widget _buildPageInstructions() {
+    final theme = Theme.of(context);
+
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(12.0),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.help_outline,
+                color: theme.colorScheme.primary,
+                size: 20.0,
+              ),
+              const SizedBox(width: 8.0),
+              Text(
+                '使用说明',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12.0),
+          Text(
+            '• 左右滑动切换不同的策略页面\n'
+            '• 使用底部导航栏快速跳转\n'
+            '• 下拉刷新当前页面数据\n'
+            '• 点击右上角按钮刷新所有数据',
+            style: theme.textTheme.bodyMedium,
+          ),
         ],
       ),
+    );
+  }
+
+  /// 构建底部导航栏
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      type: BottomNavigationBarType.fixed,
+      currentIndex: _currentPageIndex,
+      onTap: (index) {
+        _pageController.animateToPage(
+          index,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      },
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.data_object), label: '数据源'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.calendar_today),
+          label: '日干支卦',
+        ),
+        BottomNavigationBarItem(icon: Icon(Icons.view_column), label: '四柱天干'),
+        BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: '太玄四柱'),
+      ],
     );
   }
 

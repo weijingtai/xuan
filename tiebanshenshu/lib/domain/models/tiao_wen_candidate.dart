@@ -3,37 +3,50 @@
 /// 定义交互式策略中的条文候选项数据结构
 library;
 
+import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+part 'tiao_wen_candidate.g.dart';
+
 /// 条文候选项类型枚举
 enum TiaoWenCandidateType {
   /// 基础数值选择
+  @JsonValue('baseNumber')
   baseNumber,
 
   /// 卦象选择
+  @JsonValue('gua')
   gua,
 
   /// 干支选择
+  @JsonValue('ganzhi')
   ganzhi,
 
   /// 四柱选择
+  @JsonValue('fourZhu')
   fourZhu,
 
   /// 卦象映射选择
+  @JsonValue('guaMapping')
   guaMapping,
 
   /// 确认选择
+  @JsonValue('confirmation')
   confirmation,
 
   /// 计算方法选择
+  @JsonValue('calculationMethod')
   calculationMethod,
 
   /// 其他自定义类型
+  @JsonValue('custom')
   custom,
 }
 
 /// 条文候选项
 ///
 /// 表示交互式策略中用户可以选择的候选项
-class TiaoWenCandidate {
+@JsonSerializable()
+class TiaoWenCandidate extends Equatable {
   /// 候选项唯一标识
   final String id;
 
@@ -285,4 +298,24 @@ class TiaoWenCandidate {
         'isEnabled: $isEnabled, '
         'metadata: $metadata)';
   }
+
+  /// 从 JSON 数据创建候选项
+  factory TiaoWenCandidate.fromJson(Map<String, dynamic> json) =>
+      _$TiaoWenCandidateFromJson(json);
+
+  /// 将候选项转换为 JSON 数据
+  Map<String, dynamic> toJson() => _$TiaoWenCandidateToJson(this);
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [
+    id,
+    displayName,
+    description,
+    type,
+    value,
+    isDefault,
+    isEnabled,
+    metadata,
+  ];
 }

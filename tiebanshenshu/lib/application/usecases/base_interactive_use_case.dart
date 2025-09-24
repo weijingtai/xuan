@@ -42,7 +42,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionNotFoundException] 会话不存在
   /// - [SessionStateException] 会话状态异常
   /// - [UseCaseExecutionException] UseCase执行失败
-  Future<List<TiaoWenCandidate>> getCandidates(String sessionId);
+  Future<List<TiaoWenCandidate>> getCandidates(InteractiveSession session);
 
   /// 选择候选项并进入下一步
   ///
@@ -56,7 +56,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionStateException] 会话状态异常
   /// - [UseCaseExecutionException] UseCase执行失败
   Future<InteractiveSession> selectCandidate(
-    String sessionId,
+    InteractiveSession session,
     String candidateId,
   );
 
@@ -71,7 +71,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionStateException] 会话状态异常
   /// - [UseCaseExecutionException] UseCase执行失败
   Future<InteractiveSession> adjustStep(
-    String sessionId,
+    InteractiveSession sessionId,
     Map<String, dynamic> adjustments,
   );
 
@@ -87,7 +87,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionStateException] 会话状态异常
   /// - [UseCaseExecutionException] UseCase执行失败
   Future<InteractiveSession> jumpTo(
-    String sessionId,
+    InteractiveSession sessionId,
     int stepIndex,
   );
 
@@ -100,7 +100,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionNotFoundException] 会话不存在
   /// - [SessionStateException] 会话状态异常（如无法撤销）
   /// - [UseCaseExecutionException] UseCase执行失败
-  Future<InteractiveSession> undo(String sessionId);
+  Future<InteractiveSession> undo(InteractiveSession session);
 
   /// 获取无限列表的下一批数据
   ///
@@ -114,7 +114,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [SessionStateException] 会话状态异常
   /// - [UseCaseExecutionException] UseCase执行失败
   Future<List<dynamic>> getInfiniteList(
-    String sessionId,
+    InteractiveSession session,
     int offset,
     int limit,
   );
@@ -131,7 +131,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [TiaoWenListCalculationException] 条文列表计算失败
   /// - [TiaoWenDataException] 条文数据获取失败
   /// - [UseCaseExecutionException] UseCase执行失败
-  Future<TiaoWenListResult> completeCalculation(String sessionId);
+  Future<TiaoWenListResult> completeCalculation(InteractiveSession session);
 
   /// 获取会话信息
   ///

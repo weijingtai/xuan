@@ -137,6 +137,35 @@ abstract class BaseTiaoWenListViewModel extends ChangeNotifier {
         final useCaseException = exception as UseCaseExecutionException;
         return '业务逻辑执行错误：${useCaseException.useCaseName} - ${useCaseException.message}';
 
+      // 皇极取数法特有异常处理
+      case HuangJiCalculationException:
+        final huangJiException = exception as HuangJiCalculationException;
+        return '皇极取数法计算错误：${huangJiException.calculationStep ?? '未知步骤'} - ${huangJiException.message}';
+
+      case TaiXuanNumberCalculationException:
+        final taiXuanException = exception as TaiXuanNumberCalculationException;
+        return '太玄数计算错误：${taiXuanException.calculationType ?? '未知类型'} - ${taiXuanException.message}';
+
+      case InitialNumberCalculationException:
+        final initialException = exception as InitialNumberCalculationException;
+        return '初刻数计算错误：${initialException.message}';
+
+      case SecondaryNumberCalculationException:
+        final secondaryException = exception as SecondaryNumberCalculationException;
+        return '次条文数计算错误：${secondaryException.message}';
+
+      case BaseNumberSelectionException:
+        final selectionException = exception as BaseNumberSelectionException;
+        return '基础数选择错误：${selectionException.message}';
+
+      case FinalNumbersCalculationException:
+        final finalException = exception as FinalNumbersCalculationException;
+        return '最终条文数计算错误：${finalException.message}';
+
+      case HuangJiInteractiveSessionException:
+        final sessionException = exception as HuangJiInteractiveSessionException;
+        return '交互式会话错误：${sessionException.message}';
+
       default:
         return '未知错误：${exception.message}';
     }

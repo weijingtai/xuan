@@ -37,6 +37,15 @@ class InteractiveStrategyConfig extends Equatable {
   /// 是否启用动画效果
   final bool enableAnimations;
 
+  /// 调整步长（如30、1、5等）
+  final int stepSize;
+
+  /// 候选条文数量（一次展示多少个）
+  final int candidateCount;
+
+  /// 最大步骤数
+  final int maxSteps;
+
   const InteractiveStrategyConfig({
     this.enableFourZhuConfirmation = true,
     this.enableCalculationMethodSelection = true,
@@ -48,6 +57,9 @@ class InteractiveStrategyConfig extends Equatable {
     this.autoSaveSession = true,
     this.showDetailedProgress = true,
     this.enableAnimations = true,
+    this.stepSize = 30,
+    this.candidateCount = 10,
+    this.maxSteps = 5,
   });
 
   /// 创建默认配置
@@ -65,6 +77,9 @@ class InteractiveStrategyConfig extends Equatable {
       allowJump: false,
       showDetailedProgress: false,
       enableAnimations: false,
+      stepSize: 1,
+      candidateCount: 3,
+      maxSteps: 3,
     );
   }
 
@@ -78,6 +93,9 @@ class InteractiveStrategyConfig extends Equatable {
       allowJump: true,
       showDetailedProgress: true,
       enableAnimations: true,
+      stepSize: 30,
+      candidateCount: 15,
+      maxSteps: 10,
     );
   }
 
@@ -93,6 +111,9 @@ class InteractiveStrategyConfig extends Equatable {
     bool? autoSaveSession,
     bool? showDetailedProgress,
     bool? enableAnimations,
+    int? stepSize,
+    int? candidateCount,
+    int? maxSteps,
   }) {
     return InteractiveStrategyConfig(
       enableFourZhuConfirmation:
@@ -110,6 +131,9 @@ class InteractiveStrategyConfig extends Equatable {
       autoSaveSession: autoSaveSession ?? this.autoSaveSession,
       showDetailedProgress: showDetailedProgress ?? this.showDetailedProgress,
       enableAnimations: enableAnimations ?? this.enableAnimations,
+      stepSize: stepSize ?? this.stepSize,
+      candidateCount: candidateCount ?? this.candidateCount,
+      maxSteps: maxSteps ?? this.maxSteps,
     );
   }
 
@@ -151,6 +175,9 @@ class InteractiveStrategyConfig extends Equatable {
     autoSaveSession,
     showDetailedProgress,
     enableAnimations,
+    stepSize,
+    candidateCount,
+    maxSteps,
   ];
 
   @override
@@ -165,7 +192,10 @@ class InteractiveStrategyConfig extends Equatable {
         'sessionTimeoutMinutes: $sessionTimeoutMinutes, '
         'autoSaveSession: $autoSaveSession, '
         'showDetailedProgress: $showDetailedProgress, '
-        'enableAnimations: $enableAnimations'
+        'enableAnimations: $enableAnimations, '
+        'stepSize: $stepSize, '
+        'candidateCount: $candidateCount, '
+        'maxSteps: $maxSteps'
         ')';
   }
 }

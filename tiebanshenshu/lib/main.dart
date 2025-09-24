@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'ui/pages/dev_page.dart';
 import 'presentation/pages/strategy_demo_page.dart';
 import 'presentation/pages/tai_xuan_interactive_page.dart';
+import 'presentation/pages/huang_ji_interactive_page.dart';
 
 import 'providers/datetime_provider.dart';
 import 'infrastructure/di/strategy_providers.dart';
@@ -69,12 +70,21 @@ class AlgorithmEditorApp extends StatelessWidget {
           switch (settings.name) {
             case '/dev':
               return MaterialPageRoute(builder: (_) => DevPage());
-            
+
             case '/strategy-demo':
-              return MaterialPageRoute(builder: (_) => const StrategyDemoPage());
-            
+              return MaterialPageRoute(
+                builder: (_) => const StrategyDemoPage(),
+              );
+
             case '/tai-xuan-interactive':
-              return MaterialPageRoute(builder: (_) => const TaiXuanInteractivePage());
+              return MaterialPageRoute(
+                builder: (_) => const TaiXuanInteractivePage(),
+              );
+
+            case '/huang-ji-interactive':
+              return MaterialPageRoute(
+                builder: (_) => const HuangJiInteractivePage(),
+              );
 
             default:
               return MaterialPageRoute(

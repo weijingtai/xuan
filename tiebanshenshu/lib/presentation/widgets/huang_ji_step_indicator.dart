@@ -1,23 +1,23 @@
-/// 交互式步骤指示器组件
+/// 皇极取数法步骤指示器组件
 ///
-/// 显示当前步骤进度和导航
+/// 显示皇极取数法的当前步骤进度和导航
 library;
 
 import 'package:flutter/material.dart';
 
-import '../viewmodels/tai_xuan_four_zhu_interactive_view_model.dart';
+import '../../domain/models/huang_ji_interactive_step.dart';
+import '../viewmodels/huang_ji_interactive_view_model.dart';
 
-/// 交互式步骤指示器组件
-class InteractiveStepIndicator extends StatelessWidget {
+/// 皇极取数法步骤指示器组件
+class HuangJiStepIndicator extends StatelessWidget {
   /// Provider实例
-  final TaiXuanFourZhuInteractiveViewModel provider;
+  final HuangJiInteractiveViewModel provider;
 
-  const InteractiveStepIndicator({super.key, required this.provider});
+  const HuangJiStepIndicator({super.key, required this.provider});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final session = provider.currentSession!;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
@@ -35,7 +35,7 @@ class InteractiveStepIndicator extends StatelessWidget {
           const SizedBox(height: 12.0),
 
           // 步骤列表
-          if (session.steps.isNotEmpty) _buildStepList(theme),
+          _buildStepList(theme),
         ],
       ),
     );
@@ -43,22 +43,27 @@ class InteractiveStepIndicator extends StatelessWidget {
 
   /// 构建进度条
   Widget _buildProgressBar(ThemeData theme) {
+    final currentStepIndex = provider.currentStep.index;
+    final totalSteps = HuangJiInteractiveStep.values.length;
+    final progress = (currentStepIndex + 1) / totalSteps;
+
     return Column(
       children: [
-        // 进度信息
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '进度',
+              '步骤 ${currentStepIndex + 1} / $totalSteps',
               style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
+
             Text(
-              provider.getStepProgressText(),
+              '${(progress * 100).toInt()}%',
               style: theme.textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.primary,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ],
@@ -66,10 +71,9 @@ class InteractiveStepIndicator extends StatelessWidget {
 
         const SizedBox(height: 8.0),
 
-        // 进度条
         LinearProgressIndicator(
-          value: provider.sessionProgress,
-          backgroundColor: theme.colorScheme.surfaceVariant,
+          value: progress,
+          backgroundColor: theme.colorScheme.outline.withOpacity(0.2),
           valueColor: AlwaysStoppedAnimation<Color>(theme.colorScheme.primary),
         ),
       ],
@@ -78,20 +82,18 @@ class InteractiveStepIndicator extends StatelessWidget {
 
   /// 构建步骤列表
   Widget _buildStepList(ThemeData theme) {
-    final session = provider.currentSession!;
-    final steps = session.steps;
-    final currentIndex = session.currentStepIndex;
+    final currentStepIndex = provider.currentStep.index;
 
     return SizedBox(
       height: 60.0,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: steps.length,
+        itemCount: HuangJiInteractiveStep.values.length,
         itemBuilder: (context, index) {
-          final step = steps[index];
-          final isActive = index == currentIndex;
-          final isCompleted = index < currentIndex;
-          final isClickable = provider.canJump && index <= currentIndex;
+          final step = HuangJiInteractiveStep.values[index];
+          final isActive = index == currentStepIndex;
+          final isCompleted = index < currentStepIndex;
+          final isClickable = provider.canJump && index <= currentStepIndex;
 
           return GestureDetector(
             onTap: isClickable && !provider.isLoading
@@ -102,7 +104,7 @@ class InteractiveStepIndicator extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8.0),
               child: _buildStepItem(
                 theme,
-                step.stepName,
+                step.name,
                 index + 1,
                 isActive,
                 isCompleted,
@@ -127,23 +129,19 @@ class InteractiveStepIndicator extends StatelessWidget {
     Color backgroundColor;
     Color textColor;
     Color borderColor;
-    IconData? icon;
 
     if (isCompleted) {
       backgroundColor = theme.colorScheme.primary.withOpacity(0.1);
       textColor = theme.colorScheme.primary;
       borderColor = theme.colorScheme.primary;
-      icon = Icons.check;
     } else if (isActive) {
-      backgroundColor = theme.colorScheme.secondary.withOpacity(0.1);
-      textColor = theme.colorScheme.secondary;
-      borderColor = theme.colorScheme.secondary;
-      icon = Icons.radio_button_checked;
+      backgroundColor = theme.colorScheme.primaryContainer;
+      textColor = theme.colorScheme.onPrimaryContainer;
+      borderColor = theme.colorScheme.primary;
     } else {
-      backgroundColor = theme.colorScheme.surfaceVariant;
+      backgroundColor = theme.colorScheme.surface;
       textColor = theme.colorScheme.onSurface.withOpacity(0.6);
       borderColor = theme.colorScheme.outline.withOpacity(0.3);
-      icon = Icons.radio_button_unchecked;
     }
 
     return Container(
@@ -156,30 +154,47 @@ class InteractiveStepIndicator extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // 步骤图标和编号
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) Icon(icon, size: 16.0, color: textColor),
-              const SizedBox(width: 4.0),
-              Text(
-                '$stepNumber',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          // 步骤编号或完成图标
+          Container(
+            width: 24.0,
+            height: 24.0,
+            decoration: BoxDecoration(
+              color: isCompleted
+                  ? theme.colorScheme.primary
+                  : Colors.transparent,
+              shape: BoxShape.circle,
+              border: isCompleted
+                  ? null
+                  : Border.all(color: borderColor, width: 1.0),
+            ),
+            child: Center(
+              child: isCompleted
+                  ? Icon(
+                      Icons.check,
+                      size: 16.0,
+                      color: theme.colorScheme.onPrimary,
+                    )
+                  : Text(
+                      stepNumber.toString(),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: textColor,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+            ),
           ),
 
-          const SizedBox(height: 4.0),
+          const SizedBox(height: 2.0),
 
           // 步骤名称
           Text(
             stepName,
-            style: theme.textTheme.bodySmall?.copyWith(color: textColor),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: textColor,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            ),
             textAlign: TextAlign.center,
-            maxLines: 1,
+            maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ],
@@ -188,11 +203,7 @@ class InteractiveStepIndicator extends StatelessWidget {
   }
 
   /// 跳转到指定步骤
-  Future<void> _jumpToStep(int stepIndex) async {
-    try {
-      await provider.jumpToStep(stepIndex);
-    } catch (e) {
-      // 错误处理由Provider负责
-    }
+  void _jumpToStep(int stepIndex) {
+    provider.jumpToStep(stepIndex);
   }
 }

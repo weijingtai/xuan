@@ -6,12 +6,12 @@ library;
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/foundation.dart';
 
-import '../domain/models/interactive_session.dart';
-import '../domain/models/interactive_strategy_config.dart';
-import '../domain/models/tiao_wen_candidate.dart';
-import '../domain/models/tiao_wen_list_result.dart';
-import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
-import '../usecases/tai_xuan_four_zhu_interactive_use_case.dart';
+import '../../domain/models/interactive_session.dart';
+import '../../domain/models/interactive_strategy_config.dart';
+import '../../domain/models/tiao_wen_candidate.dart';
+import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
+import '../../usecases/tai_xuan_four_zhu_interactive_use_case.dart';
 
 /// 交互式Provider状态枚举
 enum InteractiveProviderState {
@@ -49,11 +49,11 @@ enum InteractiveProviderState {
 /// 太玄四柱交互式Provider
 ///
 /// 负责管理交互式计算的完整流程状态
-class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
+class TaiXuanFourZhuInteractiveViewModel extends ChangeNotifier {
   final TaiXuanFourZhuInteractiveUseCase _useCase;
 
   /// 构造函数
-  TaiXuanFourZhuInteractiveProvider(this._useCase);
+  TaiXuanFourZhuInteractiveViewModel(this._useCase);
 
   // 状态管理
   InteractiveProviderState _state = InteractiveProviderState.initial;
@@ -231,9 +231,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _setState(InteractiveProviderState.loadingCandidates);
       _clearError();
 
-      _currentCandidates = await _useCase.getCandidates(
-        _currentSession!.sessionId,
-      );
+      _currentCandidates = await _useCase.getCandidates(_currentSession!);
       _setState(InteractiveProviderState.candidatesLoaded);
     } catch (e) {
       _setError('加载候选项失败: ${e.toString()}', _convertToException(e));
@@ -254,7 +252,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _clearError();
 
       _currentSession = await _useCase.selectCandidate(
-        _currentSession!.sessionId,
+        _currentSession!,
         candidateId,
       );
 
@@ -284,7 +282,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _clearError();
 
       _currentSession = await _useCase.adjustStep(
-        _currentSession!.sessionId,
+        _currentSession!,
         adjustments,
       );
 
@@ -308,10 +306,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _setState(InteractiveProviderState.processingSelection);
       _clearError();
 
-      _currentSession = await _useCase.jumpTo(
-        _currentSession!.sessionId,
-        stepIndex,
-      );
+      _currentSession = await _useCase.jumpTo(_currentSession!, stepIndex);
 
       // 重新加载候选项
       await loadCandidates();
@@ -331,7 +326,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _setState(InteractiveProviderState.processingSelection);
       _clearError();
 
-      _currentSession = await _useCase.undo(_currentSession!.sessionId);
+      _currentSession = await _useCase.undo(_currentSession!);
 
       // 重新加载候选项
       await loadCandidates();
@@ -350,11 +345,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
     }
 
     try {
-      return await _useCase.getInfiniteList(
-        _currentSession!.sessionId,
-        offset,
-        limit,
-      );
+      return await _useCase.getInfiniteList(_currentSession!, offset, limit);
     } catch (e) {
       _setError('获取无限列表失败: ${e.toString()}', _convertToException(e));
       return [];
@@ -382,9 +373,7 @@ class TaiXuanFourZhuInteractiveProvider extends ChangeNotifier {
       _setState(InteractiveProviderState.calculating);
       _clearError();
 
-      _finalResult = await _useCase.completeCalculation(
-        _currentSession!.sessionId,
-      );
+      _finalResult = await _useCase.completeCalculation(_currentSession!);
       _setState(InteractiveProviderState.completed);
     } catch (e) {
       _setError('完成计算失败: ${e.toString()}', _convertToException(e));

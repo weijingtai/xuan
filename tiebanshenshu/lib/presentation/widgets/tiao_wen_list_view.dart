@@ -23,6 +23,7 @@ class TiaoWenListView extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRetry,
+    required result,
   });
 
   @override
@@ -80,7 +81,14 @@ class TiaoWenListView extends StatelessWidget {
       );
     }
 
-    return Column(children: tiaoWenList);
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: tiaoWenList.length,
+      itemBuilder: (context, index) {
+        return tiaoWenList[index];
+      },
+    );
   }
 }
 
@@ -166,17 +174,21 @@ class CompactTiaoWenListView extends StatelessWidget {
     final items = result.tiaoWenItems.take(maxItems).toList();
     final hasMore = result.tiaoWenCount > maxItems;
 
-    return Column(
-      children: [
-        ...items.map(
-          (item) => CompactTiaoWenItem(
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: items.length + (hasMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index < items.length) {
+          final item = items[index];
+          return CompactTiaoWenItem(
             number: item.number,
             content: item.content,
             ageInfo: item.ageInfo,
-          ),
-        ),
-        if (hasMore)
-          Padding(
+          );
+        } else {
+          // 显示"还有更多"的提示
+          return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               '还有 ${result.tiaoWenCount - maxItems} 条...',
@@ -184,8 +196,9 @@ class CompactTiaoWenListView extends StatelessWidget {
                 color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               ),
             ),
-          ),
-      ],
+          );
+        }
+      },
     );
   }
 }

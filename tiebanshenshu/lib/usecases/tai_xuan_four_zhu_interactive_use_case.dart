@@ -136,15 +136,12 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<List<TiaoWenCandidate>> getCandidates(String sessionId) async {
+  Future<List<TiaoWenCandidate>> getCandidates(InteractiveSession session) async {
     try {
       // 1. 验证会话ID
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 获取候选项
+      // 2. 获取候选项
       final candidates = await _strategy.getCandidates(session);
 
       return candidates;
@@ -164,25 +161,22 @@ class TaiXuanFourZhuInteractiveUseCase
 
   @override
   Future<InteractiveSession> selectCandidate(
-    String sessionId,
+    InteractiveSession session,
     String candidateId,
   ) async {
     try {
       // 1. 验证参数
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
       validateCandidateId(candidateId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 选择候选项
+      // 2. 选择候选项
       final updatedSession = await _strategy.selectCandidate(
         session,
         candidateId,
       );
 
-      // 4. 更新会话存储
-      _sessions[sessionId] = updatedSession;
+      // 3. 更新会话存储
+      _sessions[session.sessionId] = updatedSession;
 
       return updatedSession;
     } catch (e) {
@@ -202,21 +196,18 @@ class TaiXuanFourZhuInteractiveUseCase
 
   @override
   Future<InteractiveSession> adjustStep(
-    String sessionId,
+    InteractiveSession session,
     Map<String, dynamic> adjustments,
   ) async {
     try {
       // 1. 验证会话ID
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 调整步骤
+      // 2. 调整步骤
       final updatedSession = await _strategy.adjustStep(session, adjustments);
 
-      // 4. 更新会话存储
-      _sessions[sessionId] = updatedSession;
+      // 3. 更新会话存储
+      _sessions[session.sessionId] = updatedSession;
 
       return updatedSession;
     } catch (e) {
@@ -234,22 +225,22 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<InteractiveSession> jumpTo(String sessionId, int stepIndex) async {
+  Future<InteractiveSession> jumpTo(
+    InteractiveSession session,
+    int stepIndex,
+  ) async {
     try {
       // 1. 验证参数
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 验证步骤索引
+      // 2. 验证步骤索引
       validateStepIndex(stepIndex, session.steps.length - 1);
 
-      // 4. 跳转到指定步骤
+      // 3. 跳转到指定步骤
       final updatedSession = await _strategy.jumpTo(session, stepIndex);
 
-      // 5. 更新会话存储
-      _sessions[sessionId] = updatedSession;
+      // 4. 更新会话存储
+      _sessions[session.sessionId] = updatedSession;
 
       return updatedSession;
     } catch (e) {
@@ -268,19 +259,16 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<InteractiveSession> undo(String sessionId) async {
+  Future<InteractiveSession> undo(InteractiveSession session) async {
     try {
       // 1. 验证会话ID
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 撤销到上一步
+      // 2. 撤销到上一步
       final updatedSession = await _strategy.undo(session);
 
-      // 4. 更新会话存储
-      _sessions[sessionId] = updatedSession;
+      // 3. 更新会话存储
+      _sessions[session.sessionId] = updatedSession;
 
       return updatedSession;
     } catch (e) {
@@ -299,18 +287,15 @@ class TaiXuanFourZhuInteractiveUseCase
 
   @override
   Future<List<dynamic>> getInfiniteList(
-    String sessionId,
+    InteractiveSession session,
     int offset,
     int limit,
   ) async {
     try {
       // 1. 验证会话ID
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 获取无限列表数据
+      // 2. 获取无限列表数据
       final data = await _strategy.getInfiniteList(session, offset, limit);
 
       return data;
@@ -329,24 +314,21 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<TiaoWenListResult> completeCalculation(String sessionId) async {
+  Future<TiaoWenListResult> completeCalculation(InteractiveSession session) async {
     try {
       // 1. 验证会话ID
-      validateSessionId(sessionId);
+      validateSessionId(session.sessionId);
 
-      // 2. 获取会话
-      final session = await getSession(sessionId);
-
-      // 3. 检查会话是否已完成
+      // 2. 检查会话是否已完成
       if (!session.isCompleted) {
-        throw SessionNotCompletedException('会话尚未完成: $sessionId');
+        throw SessionNotCompletedException('会话尚未完成: ${session.sessionId}');
       }
 
-      // 4. 完成策略计算
+      // 3. 完成策略计算
       final strategyResult = await _strategy.completeCalculation(session);
       final baseTiaoWenList = strategyResult.baseTiaoWenList;
 
-      // 5. 根据配置扩展条文列表
+      // 4. 根据配置扩展条文列表
       final allTiaoWenNumbers = <int>[];
       for (final baseNumber in baseTiaoWenList) {
         final calculator = TiaoWenListCalculator(_defaultCalculationConfig);
@@ -354,18 +336,18 @@ class TaiXuanFourZhuInteractiveUseCase
         allTiaoWenNumbers.addAll(calculationResult.tiaoWenNumbers);
       }
 
-      // 6. 调用Repository获取条文实体
+      // 5. 调用Repository获取条文实体
       final tiaoWenEntities = await _repository.getByIdList(
         queryList: allTiaoWenNumbers,
       );
 
-      // 7. 转换为UseCase结果
+      // 6. 转换为UseCase结果
       return TiaoWenListResult.success(
         tiaoWenNumbers: allTiaoWenNumbers,
         tiaoWenEntities: tiaoWenEntities,
         calculationMethod: '太玄四柱交互式',
         sourceData: {
-          'sessionId': sessionId,
+          'sessionId': session.sessionId,
           'selectedEightChars': strategyResult.selectedEightChars.toString(),
           'selectedCalculationMethod': strategyResult.selectedCalculationMethod,
           'selectionHistory': strategyResult.selectionHistory,
@@ -464,9 +446,9 @@ class TaiXuanFourZhuInteractiveUseCase
   void validateCandidateId(String candidateId) {
     if (candidateId.isEmpty) {
       throw InputValidationException(
-        "候选项id为空",
-        message: '候选项ID不能为空',
+        '候选项ID不能为空',
         parameterName: 'candidateId',
+        message: '候选项ID不能为空',
       );
     }
   }

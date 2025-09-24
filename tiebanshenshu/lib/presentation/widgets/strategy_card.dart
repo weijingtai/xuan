@@ -97,8 +97,11 @@ class _StrategyCardState extends State<StrategyCard> {
     return ListenableBuilder(
       listenable: widget.viewModel,
       builder: (context, child) {
+        return _buildStateContent();
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
+          height: 1024,
+          width: 512,
           child: _buildStateContent(),
         );
       },
@@ -154,6 +157,7 @@ class _StrategyCardState extends State<StrategyCard> {
                     ),
                   )
                   .toList(),
+              result: null,
             ),
           ],
         );

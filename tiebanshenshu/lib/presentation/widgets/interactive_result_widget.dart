@@ -6,13 +6,13 @@ library;
 import 'package:flutter/material.dart';
 import 'package:tiebanshenshu/presentation/widgets/tiao_wen_item.dart';
 
-import '../../providers/tai_xuan_four_zhu_interactive_provider.dart';
+import '../viewmodels/tai_xuan_four_zhu_interactive_view_model.dart';
 import '../widgets/tiao_wen_list_view.dart';
 
 /// 交互式结果组件
 class InteractiveResultWidget extends StatelessWidget {
   /// Provider实例
-  final TaiXuanFourZhuInteractiveProvider provider;
+  final TaiXuanFourZhuInteractiveViewModel provider;
 
   /// 重新开始回调
   final VoidCallback onRestart;
@@ -194,7 +194,7 @@ class InteractiveResultWidget extends StatelessWidget {
         .toList();
     return Container(
       padding: const EdgeInsets.all(16.0),
-      child: TiaoWenListView(tiaoWenList: tiaoWenList),
+      child: TiaoWenListView(tiaoWenList: tiaoWenList, result: null),
     );
   }
 

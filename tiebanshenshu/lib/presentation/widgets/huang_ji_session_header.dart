@@ -1,18 +1,18 @@
-/// 交互式会话头部组件
+/// 皇极取数法会话头部组件
 ///
-/// 显示会话基本信息和状态
+/// 显示皇极取数法会话的基本信息和状态
 library;
 
 import 'package:flutter/material.dart';
 
-import '../viewmodels/tai_xuan_four_zhu_interactive_view_model.dart';
+import '../viewmodels/huang_ji_interactive_view_model.dart';
 
-/// 交互式会话头部组件
-class InteractiveSessionHeader extends StatelessWidget {
+/// 皇极取数法会话头部组件
+class HuangJiSessionHeader extends StatelessWidget {
   /// Provider实例
-  final TaiXuanFourZhuInteractiveViewModel provider;
+  final HuangJiInteractiveViewModel provider;
 
-  const InteractiveSessionHeader({super.key, required this.provider});
+  const HuangJiSessionHeader({super.key, required this.provider});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class InteractiveSessionHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 会话状态和八字信息
+          // 会话状态和四柱信息
           Row(
             children: [
               // 状态指示器
@@ -38,8 +38,8 @@ class InteractiveSessionHeader extends StatelessWidget {
 
               const SizedBox(width: 12.0),
 
-              // 八字信息
-              Expanded(child: _buildEightCharsInfo(theme)),
+              // 四柱信息
+              Expanded(child: _buildFourZhuInfo(theme)),
             ],
           ),
 
@@ -60,7 +60,7 @@ class InteractiveSessionHeader extends StatelessWidget {
     IconData statusIcon;
 
     if (provider.isLoading) {
-      statusColor = theme.colorScheme.secondary;
+      statusColor = theme.colorScheme.primary;
       statusIcon = Icons.hourglass_empty;
     } else if (provider.hasError) {
       statusColor = theme.colorScheme.error;
@@ -68,12 +68,12 @@ class InteractiveSessionHeader extends StatelessWidget {
     } else if (provider.isCompleted) {
       statusColor = Colors.green;
       statusIcon = Icons.check_circle_outline;
-    } else if (provider.canInteract) {
-      statusColor = theme.colorScheme.primary;
-      statusIcon = Icons.touch_app;
+    } else if (provider.isCancelled) {
+      statusColor = theme.colorScheme.outline;
+      statusIcon = Icons.cancel_outlined;
     } else {
-      statusColor = theme.colorScheme.onSurface.withOpacity(0.6);
-      statusIcon = Icons.radio_button_unchecked;
+      statusColor = theme.colorScheme.primary;
+      statusIcon = Icons.play_circle_outline;
     }
 
     return Container(
@@ -83,43 +83,18 @@ class InteractiveSessionHeader extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.0),
         border: Border.all(color: statusColor.withOpacity(0.3), width: 1.0),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (provider.isLoading)
-            SizedBox(
-              width: 16.0,
-              height: 16.0,
-              child: CircularProgressIndicator(
-                strokeWidth: 2.0,
-                valueColor: AlwaysStoppedAnimation<Color>(statusColor),
-              ),
-            )
-          else
-            Icon(statusIcon, size: 16.0, color: statusColor),
-
-          const SizedBox(width: 6.0),
-
-          Text(
-            provider.getProviderStateDisplayText(),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: statusColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
+      child: Icon(statusIcon, color: statusColor, size: 20.0),
     );
   }
 
-  /// 构建八字信息
-  Widget _buildEightCharsInfo(ThemeData theme) {
-    final eightChars = provider.inputEightChars;
-    if (eightChars == null) {
+  /// 构建四柱信息
+  Widget _buildFourZhuInfo(ThemeData theme) {
+    final fourZhu = provider.inputEightChars;
+    if (fourZhu == null) {
       return Text(
-        '未设置八字',
+        '四柱信息未加载',
         style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onPrimaryContainer.withOpacity(0.7),
         ),
       );
     }
@@ -128,16 +103,20 @@ class InteractiveSessionHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '八字信息',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.7),
+          '皇极取数法',
+          style: theme.textTheme.titleMedium?.copyWith(
+            color: theme.colorScheme.onPrimaryContainer,
+            fontWeight: FontWeight.bold,
           ),
         ),
-        const SizedBox(height: 2.0),
+
+        const SizedBox(height: 4.0),
+
         Text(
-          eightChars.toString(),
+          '${fourZhu.year.name} ${fourZhu.month.name} ${fourZhu.day.name} ${fourZhu.time.name}',
           style: theme.textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+            color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
+            fontFamily: 'monospace',
           ),
         ),
       ],
@@ -162,7 +141,7 @@ class InteractiveSessionHeader extends StatelessWidget {
         _buildDetailItem(
           theme,
           '状态',
-          provider.getSessionStatusDisplayText(),
+          provider.getStateDisplayText(),
           Icons.info_outline,
         ),
 
@@ -192,13 +171,15 @@ class InteractiveSessionHeader extends StatelessWidget {
         Icon(
           icon,
           size: 14.0,
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          color: theme.colorScheme.onPrimaryContainer.withOpacity(0.6),
         ),
+
         const SizedBox(width: 4.0),
+
         Text(
           '$label: $value',
           style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurface.withOpacity(0.8),
+            color: theme.colorScheme.onPrimaryContainer.withOpacity(0.8),
           ),
         ),
       ],

@@ -12,8 +12,8 @@ TiaoWenDataModel _$TiaoWenDataModelFromJson(Map<String, dynamic> json) =>
       setName: $enumDecode(_$DiZhiEnumMap, json['setName']),
       content1: json['content1'] as String,
       content2: json['content2'] as String?,
-      ageSet1: (json['ageSet1'] as List<dynamic>)
-          .map((e) => (e as num).toInt())
+      ageSet1: (json['ageSet1'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
           .toList(),
       ageSet2: (json['ageSet2'] as List<dynamic>?)
           ?.map((e) => (e as num).toInt())
