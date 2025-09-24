@@ -36,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String ICONS_ASSETS_PATH = "assets/icons/";
+  String ICONS_ASSETS_PATH = "icons";
   GlobalKey renYearGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
   GlobalKey renMonthGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
   GlobalKey renDayGanZhiShakeKey = GlobalKey<ShakeWidgetState>();
