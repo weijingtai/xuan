@@ -12,7 +12,7 @@ import '../../domain/models/huang_ji_calculation_result.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
-import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
 import '../../repository/datamodels/tiao_wen_datamodel.dart';
 import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/huang_ji_calculation_strategy.dart';
@@ -89,7 +89,7 @@ class HuangJiInteractiveUseCase
         print('❌ 错误类型: ${e.runtimeType}');
         print('❌ 错误信息: $e');
       }
-      
+
       if (e is InputValidationException ||
           e is HuangJiInteractiveSessionException) {
         rethrow;
@@ -266,7 +266,7 @@ class HuangJiInteractiveUseCase
   /// - [SessionNotCompletedException] 会话未完成
   /// - [TiaoWenDataException] 条文数据获取失败
   /// - [UseCaseExecutionException] UseCase执行失败
-  Future<TiaoWenListResult> completeCalculation(
+  Future<MultiBaseNumberResult> completeCalculation(
     InteractiveSession session,
   ) async {
     try {
@@ -283,8 +283,12 @@ class HuangJiInteractiveUseCase
         session,
       );
       // HuangJiCalculationResult.success(initialNumber: initialNumber, secondaryNumber: secondaryNumber, baseNumber: baseNumber, finalNumbers: finalNumbers, calculationSteps: calculationSteps)
-      final tiaoWenListResult = TiaoWenListResult.success(
-        tiaoWenNumbers: calculationResult.finalNumbers,
+      // 转换为MultiBaseNumberResult
+      final multiResult = MultiBaseNumberResult.success(
+        algorithmName: "皇极经世取数（一）",
+        algorithmDescription: "基于皇极经世取数法的交互式计算",
+        calculationParams: "交互式会话: ${session.sessionId}",
+        baseNumbers: [], // 皇极取数法可能需要适配BaseNumberModel
         tiaoWenEntities: calculationResult.tiaoWenDataList!
             .map(
               (e) => TiaoWenDataModel(
@@ -297,16 +301,10 @@ class HuangJiInteractiveUseCase
               ),
             )
             .toList(),
-        calculationMethod: "皇极经世取数（一）",
         sourceData: calculationResult.calculationSteps,
       );
-      // 构建TiaoWenListResult
-      // final tiaoWenListResult = TiaoWenListResult.fromHuangJiResult(
-      //   calculationResult,
-      //   calculationMethod: '皇极取数法交互式',
-      // );
 
-      return tiaoWenListResult;
+      return multiResult;
     } catch (e) {
       if (e is SessionNotFoundException ||
           e is SessionNotCompletedException ||
@@ -314,10 +312,11 @@ class HuangJiInteractiveUseCase
           e is HuangJiInteractiveSessionException) {
         rethrow;
       }
-      throw UseCaseExecutionException(
-        message: '完成交互式计算失败: ${e.toString()}',
-        useCaseName: name,
-        originalException: e,
+      return MultiBaseNumberResult.error(
+        algorithmName: "皇极经世取数（一）",
+        algorithmDescription: "基于皇极经世取数法的交互式计算",
+        calculationParams: "会话ID: ${session.sessionId}",
+        errorMessage: '完成交互式计算失败: ${e.toString()}',
       );
     }
   }

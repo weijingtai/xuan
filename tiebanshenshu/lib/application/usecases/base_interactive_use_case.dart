@@ -7,7 +7,10 @@ import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
-import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
+import '../../domain/models/base_number_tiao_wen_list_model.dart';
+import '../../repository/tiao_wen_repository.dart';
+import '../../repository/datamodels/tiao_wen_datamodel.dart';
 
 /// 交互式UseCase的基础抽象类
 ///
@@ -122,7 +125,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// 完成交互式计算并获取最终结果
   ///
   /// [sessionId] 会话ID
-  /// 返回条文列表结果
+  /// 返回多基础数结果
   ///
   /// 抛出异常：
   /// - [SessionNotFoundException] 会话不存在
@@ -131,7 +134,7 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// - [TiaoWenListCalculationException] 条文列表计算失败
   /// - [TiaoWenDataException] 条文数据获取失败
   /// - [UseCaseExecutionException] UseCase执行失败
-  Future<TiaoWenListResult> completeCalculation(InteractiveSession session);
+  Future<MultiBaseNumberResult> completeCalculation(InteractiveSession session);
 
   /// 获取会话信息
   ///
@@ -176,4 +179,70 @@ abstract class BaseInteractiveUseCase<TParams> {
   /// [maxStepIndex] 最大步骤索引
   /// 如果验证失败，抛出异常
   void validateStepIndex(int stepIndex, int maxStepIndex);
+
+  /// 批量查询条文数据的公共方法
+  ///
+  /// 适用于交互式UseCase中需要批量获取条文数据的场景
+  /// [tiaoWenNumbers] 条文编号列表
+  /// [repository] 条文数据仓库
+  /// 返回条文数据列表
+  Future<List<TiaoWenDataModel>> batchQueryTiaoWenData(
+    List<int> tiaoWenNumbers,
+    TiaoWenRepository repository,
+  ) async {
+    try {
+      return await repository.getByIdList(queryList: tiaoWenNumbers);
+    } catch (e) {
+      throw TiaoWenDataException(
+        message: '批量查询条文数据失败: ${e.toString()}',
+        tiaoWenNumbers: tiaoWenNumbers,
+        originalException: e,
+      );
+    }
+  }
+
+  /// 创建简单的BaseNumberTiaoWenListModel列表的公共方法
+  ///
+  /// 适用于交互式UseCase中需要将条文编号转换为BaseNumberTiaoWenListModel的场景
+  /// [tiaoWenNumbers] 条文编号列表
+  /// [tiaoWenEntities] 条文数据列表（可选，如果提供则直接使用，否则创建空的模型）
+  /// 返回BaseNumberTiaoWenListModel列表
+  List<BaseNumberTiaoWenListModel> createSimpleBaseNumberTiaoWenListModels(
+    List<int> tiaoWenNumbers, {
+    List<TiaoWenDataModel>? tiaoWenEntities,
+  }) {
+    final models = <BaseNumberTiaoWenListModel>[];
+    
+    for (int i = 0; i < tiaoWenNumbers.length; i++) {
+      final tiaoWenNumber = tiaoWenNumbers[i];
+      
+      // 如果提供了条文数据，则查找对应的条文
+      TiaoWenDataModel? tiaoWenEntity;
+      if (tiaoWenEntities != null) {
+        try {
+          tiaoWenEntity = tiaoWenEntities.firstWhere(
+            (entity) => entity.id == tiaoWenNumber,
+          );
+        } catch (e) {
+          // 如果找不到对应的条文，则为null
+          tiaoWenEntity = null;
+        }
+      }
+
+      // 创建BaseNumberTiaoWenListModel
+      final model = BaseNumberTiaoWenListModel(
+        baseNumber: tiaoWenNumber,
+        name: '条文$tiaoWenNumber',
+        description: '条文编号: $tiaoWenNumber',
+        source: BaseNumberSource.interactive, // 交互式来源
+        baseTiaoWen: tiaoWenEntity,
+        tiaoWenNumbers: [tiaoWenNumber], // 简单模式下只包含自身
+        tiaoWenDataList: tiaoWenEntity != null ? [tiaoWenEntity] : [],
+      );
+      
+      models.add(model);
+    }
+    
+    return models;
+  }
 }

@@ -11,6 +11,9 @@ import '../../utils/tiao_wen_calculator.dart';
 import '../classic/four_zhu_tian_gan_calculatioin.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
+import '../../domain/models/base_number_model_result.dart';
+import '../../domain/models/base_number_model.dart';
+import 'tiao_wen_list_calculation.dart';
 
 /// 四柱天干取数法计算参数
 ///
@@ -26,18 +29,8 @@ class FourZhuTianGanStrategyParams extends BaseCalculationParams {
       "四柱天干取数法计算参数：四柱信息(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})";
 }
 
-/// 四柱天干取数法计算结果
-///
-/// 包含四柱天干取数法的计算结果，主要结果为条文编号
-class FourZhuTianGanStrategyResult extends BaseCalculationResult {
-  /// 主要结果：条文编号（列表中的第一个）
-  final int tiaoWenNumber;
-
-  /// 基础数字
-  int get baseNumber => tiaoWenNumber;
-
-  FourZhuTianGanStrategyResult({required this.tiaoWenNumber});
-}
+// 四柱天干取数法现在使用MultiBaseNumberResult
+// 不再需要单独的FourZhuTianGanStrategyResult类
 
 /// 四柱天干取数法计算策略
 ///
@@ -46,7 +39,7 @@ class FourZhuTianGanStrategy
     extends
         StandardCalculationStrategy<
           FourZhuTianGanStrategyParams,
-          FourZhuTianGanStrategyResult
+          BaseNumberModelResult
         > {
   @override
   String get name => "四柱天干取数法";
@@ -66,40 +59,59 @@ class FourZhuTianGanStrategy
   String get school => "四柱天干流派";
 
   @override
-  FourZhuTianGanStrategyResult calculate(FourZhuTianGanStrategyParams params) {
-    // 天干数字映射表
+  BaseNumberModelResult calculate(FourZhuTianGanStrategyParams params) {
+    try {
+      // 获取四柱天干
+      final eightChars = params.eightChars;
+      final yearGan = eightChars.year.gan;
+      final monthGan = eightChars.month.gan;
+      final dayGan = eightChars.day.gan;
+      final timeGan = eightChars.time.gan;
 
-    // 获取四柱天干
-    final eightChars = params.eightChars;
-    final yearGan = eightChars.year.gan;
-    final monthGan = eightChars.month.gan;
-    final dayGan = eightChars.day.gan;
-    final timeGan = eightChars.time.gan;
+      // 按照月、日、时、年的顺序排列天干配数，得到四位基本数
+      final monthNumber = Constants.fourZhuTianGanNumberMapper[monthGan]!;
+      final dayNumber = Constants.fourZhuTianGanNumberMapper[dayGan]!;
+      final timeNumber = Constants.fourZhuTianGanNumberMapper[timeGan]!;
+      final yearNumber = Constants.fourZhuTianGanNumberMapper[yearGan]!;
 
-    // 按照月、日、时、年的顺序排列天干配数，得到四位基本数
-    final monthNumber = Constants.fourZhuTianGanNumberMapper[monthGan]!;
-    final dayNumber = Constants.fourZhuTianGanNumberMapper[dayGan]!;
-    final timeNumber = Constants.fourZhuTianGanNumberMapper[timeGan]!;
-    final yearNumber = Constants.fourZhuTianGanNumberMapper[yearGan]!;
+      // 组合成四位数：月日时年
+      final baseNumber =
+          monthNumber * 1000 + dayNumber * 100 + timeNumber * 10 + yearNumber;
 
-    // 组合成四位数：月日时年
-    final baseNumber =
-        monthNumber * 1000 + dayNumber * 100 + timeNumber * 10 + yearNumber;
+      // 创建单个基础数模型
+      final baseNumberModel = BaseNumberModel.create(
+        baseNumber: baseNumber,
+        name: "四柱天干组合数",
+        description:
+            "月${monthGan.name}(${monthNumber})日${dayGan.name}(${dayNumber})时${timeGan.name}(${timeNumber})年${yearGan.name}(${yearNumber})组合：$baseNumber",
+        source: BaseNumberSource.combined,
+      );
 
-    // // 以基本数为基础递加96七次，得到8个条文编号
-    // final tiaoWenNumberList =
-    //     TiaowenCalculator.calculateTiaoWenListByAddFactorTimes(
-    //       baseNumber,
-    //       7,
-    //       defaultFactor: 96,
-    //       returnWithBase: true,
-    //     );
-
-    // // 提取第一个条文编号作为主要结果
-    // final tiaoWenNumber = tiaoWenNumberList.isNotEmpty
-    //     ? tiaoWenNumberList.first
-    //     : baseNumber;
-
-    return FourZhuTianGanStrategyResult(tiaoWenNumber: baseNumber);
+      return BaseNumberModelResult.success(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        baseNumbers: [baseNumberModel],
+        sourceData: {
+          'eightChars': {
+            'year': {'gan': yearGan.name, 'number': yearNumber},
+            'month': {'gan': monthGan.name, 'number': monthNumber},
+            'day': {'gan': dayGan.name, 'number': dayNumber},
+            'time': {'gan': timeGan.name, 'number': timeNumber},
+          },
+          'baseNumber': baseNumber,
+          'calculation':
+              'month($monthNumber) * 1000 + day($dayNumber) * 100 + time($timeNumber) * 10 + year($yearNumber)',
+        },
+      );
+    } catch (e) {
+      return BaseNumberModelResult.error(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        errorMessage: "四柱天干计算失败: $e",
+        sourceData: {'error': e.toString(), 'params': params.description},
+      );
+    }
   }
 }

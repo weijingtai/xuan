@@ -4,7 +4,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:tiebanshenshu/domain/models/tiao_wen_list_result.dart';
+import 'package:tiebanshenshu/domain/models/multi_base_number_result.dart';
 import 'package:tiebanshenshu/presentation/widgets/tiao_wen_item.dart';
 
 import '../viewmodels/huang_ji_interactive_view_model.dart';
@@ -266,7 +266,7 @@ class HuangJiResultWidget extends StatelessWidget {
   }
 
   /// 构建条文列表
-  Widget _buildTiaoWenList(BuildContext context, TiaoWenListResult result) {
+  Widget _buildTiaoWenList(BuildContext context, MultiBaseNumberResult result) {
     print("--------- ${result}");
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,7 +282,7 @@ class HuangJiResultWidget extends StatelessWidget {
 
         Expanded(
           child: TiaoWenListView(
-            tiaoWenList: result.tiaoWenEntities
+            tiaoWenList: result.tiaoWenEntities != null ? result.tiaoWenEntities!
                 .map(
                   (e) => TiaoWenItem(
                     number: e.id,
@@ -290,8 +290,8 @@ class HuangJiResultWidget extends StatelessWidget {
                     ageInfo: e.ageSet1 != null ? e.ageSet1!.join(", ") : '--',
                   ),
                 )
-                .toList(),
-            result: result,
+                .toList() : [],
+            result: null, // TiaoWenListView 需要 UITiaoWenListResultModel，这里传 null
           ),
         ),
       ],

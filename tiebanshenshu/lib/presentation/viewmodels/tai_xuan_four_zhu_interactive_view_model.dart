@@ -9,7 +9,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
-import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../../usecases/tai_xuan_four_zhu_interactive_use_case.dart';
 
@@ -59,7 +59,7 @@ class TaiXuanFourZhuInteractiveViewModel extends ChangeNotifier {
   InteractiveProviderState _state = InteractiveProviderState.initial;
   InteractiveSession? _currentSession;
   List<TiaoWenCandidate> _currentCandidates = [];
-  TiaoWenListResult? _finalResult;
+  MultiBaseNumberResult? _finalResult;
   String? _errorMessage;
   Exception? _lastException;
 
@@ -78,7 +78,7 @@ class TaiXuanFourZhuInteractiveViewModel extends ChangeNotifier {
       List.unmodifiable(_currentCandidates);
 
   /// 最终计算结果
-  TiaoWenListResult? get finalResult => _finalResult;
+  MultiBaseNumberResult? get finalResult => _finalResult;
 
   /// 错误消息
   String? get errorMessage => _errorMessage;

@@ -1,6 +1,9 @@
 import 'package:common/models/eight_chars.dart';
 
-import '../application/usecases/base_get_tiao_wen_list_use_case.dart';
+import 'base_get_tiao_wen_list_use_case.dart';
+import '../domain/models/base_number_model.dart';
+import '../domain/models/base_number_tiao_wen_list_model.dart';
+import '../domain/models/multi_base_number_result.dart';
 import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../domain/models/tiao_wen_list_result.dart';
 import '../domain/models/tiao_wen_list_state.dart';
@@ -25,17 +28,21 @@ class FourZhuTianGanTiaoWenListUseCase
   );
 
   @override
+  TiaoWenRepository get repository => _repository;
+
   String get name => '四柱天干UseCase';
 
   @override
   String get description => '基于四柱天干计算条文列表的UseCase';
 
   @override
-  Future<TiaoWenListResult> execute(
+  Future<MultiBaseNumberResult> execute(
     FourZhuTianGanUseCaseParams params, {
     TiaoWenListCalculationConfig? calculationConfig,
   }) async {
     try {
+      TiaoWenListCalculationConfig effectiveConfig =
+          calculationConfig ?? defaultCalculationConfig;
       // 1. 验证参数
       validateParams(params);
 
@@ -44,36 +51,39 @@ class FourZhuTianGanTiaoWenListUseCase
         eightChars: params.eightChars,
       );
       final strategyResult = _strategy.calculate(strategyParams);
-      final baseNumber = strategyResult.baseNumber;
 
-      // 3. 根据配置扩展条文列表
-      final effectiveConfig = calculationConfig ?? defaultCalculationConfig;
-      final calculator = TiaoWenListCalculator(effectiveConfig);
-      final calculationResult = calculator.calculate(baseNumber);
-      final tiaoWenNumbers = calculationResult.tiaoWenNumbers;
+      // 检查计算是否成功
+      if (strategyResult.hasError) {
+        throw Exception("四柱天干计算失败: ${strategyResult.errorMessage}");
+      }
 
-      // 4. 调用Repository获取条文实体
-      final tiaoWenEntities = await _repository.getByIdList(
-        queryList: tiaoWenNumbers,
+      // 3. 使用基类模板方法处理条文列表（特殊逐个处理模式）
+      final tiaoWenListResult = await super.processWithIndividualQuery(
+        strategyResult.baseNumbers,
+        effectiveConfig,
+        _customFourZhuProcessor,
       );
 
-      // 5. 转换为UseCase结果
-      return TiaoWenListResult.success(
-        tiaoWenNumbers: tiaoWenNumbers,
-        tiaoWenEntities: tiaoWenEntities,
-        calculationMethod: '四柱天干',
+      // 4. 创建并返回MultiBaseNumberResult
+      return MultiBaseNumberResult.success(
+        algorithmName: '四柱天干',
+        algorithmDescription: '四柱天干取数法',
+        calculationParams: params.eightChars.toString(),
+        baseNumberTiaoWenList: tiaoWenListResult,
         sourceData: {
           'eightChars': params.eightChars.toString(),
-          'baseNumber': baseNumber,
-          'tiaoWenNumbers': tiaoWenNumbers,
           'calculationConfig': effectiveConfig.desc ?? 'N/A',
-          'tiaoWenCount': tiaoWenNumbers.length,
-          'tiaoWenEntities': tiaoWenEntities.map((e) => e.toJson()).toList(),
+          'tiaoWenCount': tiaoWenListResult.fold<int>(
+            0,
+            (sum, model) => sum + model.tiaoWenCount,
+          ),
         },
       );
     } catch (e) {
-      return TiaoWenListResult.error(
-        calculationMethod: '四柱天干',
+      return MultiBaseNumberResult.error(
+        algorithmName: '四柱天干',
+        algorithmDescription: '四柱天干取数法',
+        calculationParams: params.eightChars.toString(),
         errorMessage: e.toString(),
         sourceData: {
           'eightChars': params.eightChars.toString(),
@@ -92,6 +102,45 @@ class FourZhuTianGanTiaoWenListUseCase
         parameterName: '四柱太玄',
       );
     }
+  }
+
+  /// 四柱天干特有的自定义处理函数
+  ///
+  /// 实现基础数插入条文列表首位的特殊逻辑
+  /// [baseNumber] 基础数模型
+  /// [config] 计算配置
+  /// [repository] 条文数据仓库
+  /// 返回填充了条文数据的BaseNumberTiaoWenListModel
+  static Future<BaseNumberTiaoWenListModel> _customFourZhuProcessor(
+    BaseNumberModel baseNumber,
+    TiaoWenListCalculationConfig config,
+    TiaoWenRepository repository,
+  ) async {
+    // 使用配置计算条文编号
+    final tiaoWenNumbers = TiaoWenListCalculator(
+      config,
+    ).calculate(baseNumber.baseNumber);
+
+    // 修正数据：如果基础数已在条文编号列表中，则移除它
+    if (tiaoWenNumbers.tiaoWenNumbers.contains(baseNumber.baseNumber)) {
+      tiaoWenNumbers.tiaoWenNumbers.remove(baseNumber.baseNumber);
+    }
+
+    // 将基础数插入到条文列表首位
+    tiaoWenNumbers.tiaoWenNumbers.insert(0, baseNumber.baseNumber);
+
+    // 获取包括基础数在内的所有条文
+    final tiaoWenEntities = await repository.getByIdList(
+      queryList: tiaoWenNumbers.tiaoWenNumbers,
+    );
+
+    // 创建BaseNumberTiaoWenListModel
+    return BaseNumberTiaoWenListModel.fromBaseModelWithData(
+      baseTiaoWen: tiaoWenEntities[0],
+      baseModel: baseNumber,
+      calculationConfig: config,
+      tiaoWenDataList: tiaoWenEntities.skip(1).toList(),
+    );
   }
 }
 

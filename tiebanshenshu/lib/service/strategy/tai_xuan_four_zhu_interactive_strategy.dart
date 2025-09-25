@@ -6,12 +6,17 @@ library;
 import 'package:collection/collection.dart';
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/domain/models/tiao_wen_list_state.dart';
 
 import '../../constant/constants.dart' as Constants;
 import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
+import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
+import '../../domain/models/multi_base_number_result.dart';
+import '../../domain/models/base_number_model.dart';
+import '../../domain/models/base_number_model_result.dart';
 import '../strategy/tiao_wen_list_calculation.dart';
 import 'base_interactive_strategy.dart';
 import 'tai_xuan_four_zhu_strategy.dart';
@@ -50,8 +55,8 @@ class TaiXuanFourZhuInteractiveStrategyParams
 /// 太玄四柱交互式策略结果
 ///
 /// 包含交互式计算的完整结果和过程信息
-class TaiXuanFourZhuInteractiveStrategyResult
-    extends TaiXuanFourZhuStrategyResult {
+/// 现在继承自MultiBaseNumberResult以统一结果类型
+class TaiXuanFourZhuInteractiveStrategyResult extends MultiBaseNumberResult {
   /// 交互式会话信息
   final InteractiveSession session;
 
@@ -65,12 +70,98 @@ class TaiXuanFourZhuInteractiveStrategyResult
   final Map<String, dynamic> selectionHistory;
 
   TaiXuanFourZhuInteractiveStrategyResult({
-    required super.baseTiaoWenList,
+    required super.algorithmName,
+    required super.algorithmDescription,
+    required super.calculationParams,
+    required super.baseNumberTiaoWenList,
+    required super.state,
+    super.errorMessage,
+    required super.calculationTime,
+    required super.sourceData,
     required this.session,
     required this.selectedEightChars,
     required this.selectedCalculationMethod,
     required this.selectionHistory,
   });
+
+  /// 兼容性属性：获取基础条文列表
+  List<int> get baseTiaoWenList {
+    return baseNumberTiaoWenList.map((bn) => bn.baseNumber).toList();
+  }
+
+  /// 适配器方法：转换为BaseNumberModelResult兼容格式
+  ///
+  /// 这个方法提供了与BaseNumberModelResult的兼容性，
+  /// 允许交互式结果在需要BaseNumberModelResult的地方使用
+  BaseNumberModelResult toBaseNumberModelResult() {
+    // 从BaseNumberTiaoWenListModel提取BaseNumberModel
+    final baseNumbers = baseNumberTiaoWenList.map((tiaoWenModel) {
+      return BaseNumberModel.create(
+        baseNumber: tiaoWenModel.baseNumber,
+        name: tiaoWenModel.name,
+        description: tiaoWenModel.description,
+        source: tiaoWenModel.source,
+      );
+    }).toList();
+
+    return BaseNumberModelResult(
+      algorithmName: algorithmName,
+      algorithmDescription: algorithmDescription,
+      calculationParams: calculationParams,
+      baseNumbers: baseNumbers,
+      calculationTime: calculationTime,
+      sourceData: {
+        ...sourceData,
+        'interactiveSession': session.sessionId,
+        'selectedEightChars': selectedEightChars.toString(),
+        'selectedCalculationMethod': selectedCalculationMethod,
+        'adaptedFromInteractiveResult': true,
+      },
+      errorMessage: errorMessage,
+    );
+  }
+
+  /// 适配器方法：从BaseNumberModelResult创建交互式结果
+  ///
+  /// 这个静态方法允许从BaseNumberModelResult创建交互式结果，
+  /// 用于向后兼容或数据转换场景
+  static TaiXuanFourZhuInteractiveStrategyResult fromBaseNumberModelResult(
+    BaseNumberModelResult baseResult,
+    InteractiveSession session,
+    EightChars selectedEightChars,
+    String selectedCalculationMethod,
+    Map<String, dynamic> selectionHistory,
+  ) {
+    // 将BaseNumberModel转换为BaseNumberTiaoWenListModel
+    final baseNumberTiaoWenList = baseResult.baseNumbers.map((baseModel) {
+      return BaseNumberTiaoWenListModel.fromBaseModelWithData(
+        baseModel: baseModel,
+
+        tiaoWenDataList: [], // 空的条文数据列表，需要后续填充
+        calculationConfig: null,
+      );
+    }).toList();
+
+    return TaiXuanFourZhuInteractiveStrategyResult(
+      algorithmName: baseResult.algorithmName,
+      algorithmDescription: "${baseResult.algorithmDescription}（交互式适配）",
+      calculationParams: baseResult.calculationParams,
+      baseNumberTiaoWenList: baseNumberTiaoWenList,
+      state: baseResult.hasError
+          ? TiaoWenListState.error
+          : TiaoWenListState.success,
+      errorMessage: baseResult.errorMessage,
+      calculationTime: baseResult.calculationTime,
+      sourceData: {
+        ...baseResult.sourceData,
+        'adaptedFromBaseNumberModelResult': true,
+      },
+      session: session,
+      selectedEightChars: selectedEightChars,
+      selectedCalculationMethod: selectedCalculationMethod,
+      selectionHistory: selectionHistory,
+    );
+  }
 }
 
 /// 太玄四柱交互式策略
@@ -316,8 +407,25 @@ class TaiXuanFourZhuInteractiveStrategy
     );
     final standardResult = _standardStrategy.calculate(standardParams);
 
+    // 合并会话信息到源数据
+    final enhancedSourceData = Map<String, dynamic>.from(
+      standardResult.sourceData,
+    );
+    enhancedSourceData.addAll({
+      'session': session,
+      'selectionHistory': selectionHistory,
+      'selectedCalculationMethod': selectedCalculationMethod,
+      'interactive': true,
+    });
+
     return TaiXuanFourZhuInteractiveStrategyResult(
-      baseTiaoWenList: standardResult.baseTiaoWenList,
+      algorithmName: standardResult.algorithmName,
+      algorithmDescription: "${standardResult.algorithmDescription}（交互式）",
+      calculationParams: standardResult.calculationParams,
+      baseNumberTiaoWenList: standardResult.baseNumbers,
+      errorMessage: standardResult.errorMessage,
+      calculationTime: standardResult.calculationTime,
+      sourceData: enhancedSourceData,
       session: session,
       selectedEightChars: selectedEightChars,
       selectedCalculationMethod: selectedCalculationMethod,

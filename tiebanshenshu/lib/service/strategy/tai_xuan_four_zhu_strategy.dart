@@ -14,6 +14,8 @@ import '../../utils/tiao_wen_calculator.dart';
 import '../classic/tai_xuan_four_zhu_calculation.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
+import '../../domain/models/base_number_model_result.dart';
+import '../../domain/models/base_number_model.dart';
 
 /// 太玄取数法（1）计算参数
 ///
@@ -29,13 +31,8 @@ class TaiXuanFourZhuStrategyParams extends BaseCalculationParams {
       "太玄取数法（1）计算参数：四柱信息(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})";
 }
 
-/// 太玄取数法（1）计算结果
-///
-/// 包含太玄取数法（1）的计算结果，主要结果为条文编号
-class TaiXuanFourZhuStrategyResult extends BaseCalculationResult {
-  final List<int> baseTiaoWenList;
-  TaiXuanFourZhuStrategyResult({required this.baseTiaoWenList});
-}
+// 太玄取数法（1）现在使用MultiBaseNumberResult
+// 不再需要单独的TaiXuanFourZhuStrategyResult类
 
 /// 太玄取数法（1）计算策略
 ///
@@ -44,7 +41,7 @@ class TaiXuanFourZhuStrategy
     extends
         StandardCalculationStrategy<
           TaiXuanFourZhuStrategyParams,
-          TaiXuanFourZhuStrategyResult
+          BaseNumberModelResult
         > {
   @override
   String get name => "太玄取数法（1）";
@@ -67,44 +64,89 @@ class TaiXuanFourZhuStrategy
   String get school => "太玄取数流派";
 
   @override
-  TaiXuanFourZhuStrategyResult calculate(TaiXuanFourZhuStrategyParams params) {
-    // 从 EightChars 创建 FourZhu
-    final fourZhu = FourZhu(
-      yearGanzhi: params.eightChars.year.name,
-      monthGanzhi: params.eightChars.month.name,
-      dayGanzhi: params.eightChars.day.name,
-      timeGanzhi: params.eightChars.time.name,
-    );
+  BaseNumberModelResult calculate(TaiXuanFourZhuStrategyParams params) {
+    try {
+      // 从 EightChars 创建 FourZhu
+      final fourZhu = FourZhu(
+        yearGanzhi: params.eightChars.year.name,
+        monthGanzhi: params.eightChars.month.name,
+        dayGanzhi: params.eightChars.day.name,
+        timeGanzhi: params.eightChars.time.name,
+      );
 
-    final isYangYear = params.eightChars.year.gan.isYang;
+      final isYangYear = params.eightChars.year.gan.isYang;
 
-    // 生成四柱的太玄数据
-    final yearZhuBaseNumber = _generateTaiXuanEachZhu(
-      params.eightChars.year,
-      isYangYear,
-    );
-    final monthZhuBaseNumber = _generateTaiXuanEachZhu(
-      params.eightChars.month,
-      isYangYear,
-    );
-    final dayZhuBaseNumber = _generateTaiXuanEachZhu(
-      params.eightChars.day,
-      isYangYear,
-    );
-    final timeZhuBaseNumber = _generateTaiXuanEachZhu(
-      params.eightChars.time,
-      isYangYear,
-    );
+      // 生成四柱的太玄数据
+      final yearZhuBaseNumber = _generateTaiXuanEachZhu(
+        params.eightChars.year,
+        isYangYear,
+      );
+      final monthZhuBaseNumber = _generateTaiXuanEachZhu(
+        params.eightChars.month,
+        isYangYear,
+      );
+      final dayZhuBaseNumber = _generateTaiXuanEachZhu(
+        params.eightChars.day,
+        isYangYear,
+      );
+      final timeZhuBaseNumber = _generateTaiXuanEachZhu(
+        params.eightChars.time,
+        isYangYear,
+      );
 
-    // 四柱基本数列表
-    final fourZhuBaseNumberList = [
-      yearZhuBaseNumber,
-      monthZhuBaseNumber,
-      dayZhuBaseNumber,
-      timeZhuBaseNumber,
-    ];
+      // 创建基础数模型列表
+      final baseNumbers = [
+        BaseNumberModel.create(
+          baseNumber: yearZhuBaseNumber,
+          name: "年柱太玄数",
+          description: "年柱${params.eightChars.year.name}的太玄计算结果",
+          source: BaseNumberSource.yearZhu,
+        ),
+        BaseNumberModel.create(
+          baseNumber: monthZhuBaseNumber,
+          name: "月柱太玄数",
+          description: "月柱${params.eightChars.month.name}的太玄计算结果",
+          source: BaseNumberSource.monthZhu,
+        ),
+        BaseNumberModel.create(
+          baseNumber: dayZhuBaseNumber,
+          name: "日柱太玄数",
+          description: "日柱${params.eightChars.day.name}的太玄计算结果",
+          source: BaseNumberSource.dayZhu,
+        ),
+        BaseNumberModel.create(
+          baseNumber: timeZhuBaseNumber,
+          name: "时柱太玄数",
+          description: "时柱${params.eightChars.time.name}的太玄计算结果",
+          source: BaseNumberSource.timeZhu,
+        ),
+      ];
 
-    return TaiXuanFourZhuStrategyResult(baseTiaoWenList: fourZhuBaseNumberList);
+      return BaseNumberModelResult.success(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        baseNumbers: baseNumbers,
+        sourceData: {
+          'fourZhu': fourZhu,
+          'isYangYear': isYangYear,
+          'baseNumbers': [
+            yearZhuBaseNumber,
+            monthZhuBaseNumber,
+            dayZhuBaseNumber,
+            timeZhuBaseNumber,
+          ],
+        },
+      );
+    } catch (e) {
+      return BaseNumberModelResult.error(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        errorMessage: "太玄四柱计算失败: $e",
+        sourceData: {'error': e.toString(), 'params': params.description},
+      );
+    }
   }
 
   /// 生成太玄每柱实例

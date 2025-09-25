@@ -15,7 +15,7 @@ import '../../domain/models/huang_ji_interactive_step.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
-import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../../domain/four_zhu.dart';
 import '../../domain/models/tiao_wen_list_state.dart';
@@ -68,7 +68,7 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       HuangJiInteractiveProviderState.initial;
   InteractiveSession? _currentSession;
   List<TiaoWenCandidate> _currentCandidates = [];
-  TiaoWenListResult? _finalResult;
+  MultiBaseNumberResult? _finalResult;
   String? _errorMessage;
   Exception? _lastException;
 
@@ -94,7 +94,7 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       List.unmodifiable(_currentCandidates);
 
   /// 最终计算结果
-  TiaoWenListResult? get finalResult => _finalResult;
+  MultiBaseNumberResult? get finalResult => _finalResult;
 
   /// 错误消息
   String? get errorMessage => _errorMessage;

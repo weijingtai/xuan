@@ -1,4 +1,5 @@
 import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/tiao_wen_list_state.dart';
 import '../../repository/datamodels/tiao_wen_datamodel.dart';
 
@@ -75,6 +76,18 @@ class UITiaoWenListResultModel {
   /// 从Domain结果创建UI模型
   factory UITiaoWenListResultModel.fromDomain(TiaoWenListResult domainResult) {
     return UITiaoWenListResultModel(domainResult);
+  }
+
+  /// 从MultiBaseNumberResult创建UI模型
+  factory UITiaoWenListResultModel.fromMultiBaseNumberResult(MultiBaseNumberResult multiResult) {
+    // 创建一个兼容的TiaoWenListResult
+    final tiaoWenListResult = TiaoWenListResult.success(
+      tiaoWenNumbers: multiResult.allTiaoWenNumbers,
+      tiaoWenEntities: multiResult.tiaoWenEntities ?? [],
+      calculationMethod: multiResult.algorithmName,
+      sourceData: multiResult.sourceData,
+    );
+    return UITiaoWenListResultModel(tiaoWenListResult);
   }
 
   /// 条文编号列表

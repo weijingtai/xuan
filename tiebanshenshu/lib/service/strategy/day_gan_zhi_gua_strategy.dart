@@ -9,6 +9,9 @@ import '../../constant/constants.dart' as Constants;
 import '../../domain/pure_six_yao_gua.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
+import '../../domain/models/base_number_model_result.dart';
+import '../../domain/models/base_number_model.dart';
+import 'tiao_wen_list_calculation.dart';
 
 /// 日柱变卦取数法计算参数
 ///
@@ -23,14 +26,8 @@ class DayGanZhiGuaStrategyParams extends BaseCalculationParams {
   String get description => "日柱变卦取数法计算参数：四柱信息(${dayGanZhi})";
 }
 
-class DayGanZhiGuaStrategyResult extends BaseCalculationResult {
-  final int tiaoWenNumber;
-
-  DayGanZhiGuaStrategyResult({required this.tiaoWenNumber});
-
-  @override
-  int get baseNumber => tiaoWenNumber;
-}
+// 日柱变卦取数法现在使用MultiBaseNumberResult
+// 不再需要单独的DayGanZhiGuaStrategyResult类
 
 /// 日柱变卦取数法计算结果
 ///
@@ -79,7 +76,7 @@ class DayGanZhiGuaStrategy
     extends
         StandardCalculationStrategy<
           DayGanZhiGuaStrategyParams,
-          DayGanZhiGuaStrategyResult
+          BaseNumberModelResult
         > {
   @override
   String get name => "日柱变卦取数法";
@@ -100,24 +97,63 @@ class DayGanZhiGuaStrategy
   String get school => "日柱变卦流派";
 
   @override
-  DayGanZhiGuaStrategyResult calculate(DayGanZhiGuaStrategyParams params) {
-    final dayGanzhi = params.dayGanZhi;
+  BaseNumberModelResult calculate(DayGanZhiGuaStrategyParams params) {
+    try {
+      final dayGanzhi = params.dayGanZhi;
 
-    // 计算基本卦：日支为上卦，日干为下卦
-    final Enum8Gua dayDownGu = Constants.tianGanGuaMapper[dayGanzhi.gan]!;
-    final Enum8Gua dayUpGu = Constants.diZhiGuaMapper[dayGanzhi.zhi]!;
-    // 第一卦
-    final PureSixYaoGua pure = PureSixYaoGua.by8Gua(dayUpGu, dayDownGu);
+      // 计算基本卦：日支为上卦，日干为下卦
+      final Enum8Gua dayDownGu = Constants.tianGanGuaMapper[dayGanzhi.gan]!;
+      final Enum8Gua dayUpGu = Constants.diZhiGuaMapper[dayGanzhi.zhi]!;
+      // 第一卦
+      final PureSixYaoGua pure = PureSixYaoGua.by8Gua(dayUpGu, dayDownGu);
 
-    // 第二卦
-    // 计算互卦：第一卦的互卦为第二卦
-    final Gua64Enum huGua = pure.hu;
+      // 第二卦
+      // 计算互卦：第一卦的互卦为第二卦
+      final Gua64Enum huGua = pure.hu;
 
-    // 计算基本数：组合四位数
-    final baseNumber = _calculateBaseNumber(pure.gua, huGua);
+      // 计算基本数：组合四位数
+      final baseNumber = _calculateBaseNumber(pure.gua, huGua);
 
-    // 封装为新的Result对象
-    return DayGanZhiGuaStrategyResult(tiaoWenNumber: baseNumber);
+      // 创建基础数模型
+      final baseNumberModel = BaseNumberModel.create(
+        baseNumber: baseNumber,
+        name: "日柱变卦数",
+        description:
+            "日柱${dayGanzhi.name}变卦计算：基本卦${pure.gua.name}，互卦${huGua.name}，基础数$baseNumber",
+        source: BaseNumberSource.dayZhu,
+      );
+
+      return BaseNumberModelResult.success(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        baseNumbers: [baseNumberModel],
+        sourceData: {
+          'dayGanzhi': dayGanzhi.name,
+          'dayGan': dayGanzhi.gan.name,
+          'dayZhi': dayGanzhi.zhi.name,
+          'dayDownGua': dayDownGu.name,
+          'dayUpGua': dayUpGu.name,
+          'baseGua': pure.gua.name,
+          'huGua': huGua.name,
+          'baseNumber': baseNumber,
+          'calculation': {
+            'firstUp': Constants.houGuaNumberMapper[pure.gua.top],
+            'firstDown': Constants.houGuaNumberMapper[pure.gua.bottom],
+            'secondUp': Constants.xianGuaNumberMapper[huGua.top],
+            'secondDown': Constants.xianGuaNumberMapper[huGua.bottom],
+          },
+        },
+      );
+    } catch (e) {
+      return BaseNumberModelResult.error(
+        algorithmName: name,
+        algorithmDescription: description,
+        calculationParams: params.description,
+        errorMessage: "日柱变卦计算失败: $e",
+        sourceData: {'error': e.toString(), 'params': params.description},
+      );
+    }
   }
 
   /// 计算基本卦

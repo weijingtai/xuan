@@ -7,10 +7,15 @@ import 'package:common/models/eight_chars.dart';
 
 import '../application/usecases/base_interactive_use_case.dart';
 import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
+import '../domain/models/base_number_model.dart';
+import '../domain/models/base_number_tiao_wen_list_model.dart';
+import '../domain/models/base_number_model_result.dart';
 import '../domain/models/interactive_session.dart';
 import '../domain/models/interactive_strategy_config.dart';
 import '../domain/models/tiao_wen_candidate.dart';
 import '../domain/models/tiao_wen_list_result.dart';
+import '../domain/models/multi_base_number_result.dart';
+import '../domain/models/tiao_wen_list_state.dart';
 import '../repository/tiao_wen_repository.dart';
 import '../service/strategy/tai_xuan_four_zhu_interactive_strategy.dart';
 import '../service/strategy/tiao_wen_list_calculation.dart';
@@ -136,7 +141,9 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<List<TiaoWenCandidate>> getCandidates(InteractiveSession session) async {
+  Future<List<TiaoWenCandidate>> getCandidates(
+    InteractiveSession session,
+  ) async {
     try {
       // 1. 验证会话ID
       validateSessionId(session.sessionId);
@@ -314,7 +321,9 @@ class TaiXuanFourZhuInteractiveUseCase
   }
 
   @override
-  Future<TiaoWenListResult> completeCalculation(InteractiveSession session) async {
+  Future<MultiBaseNumberResult> completeCalculation(
+    InteractiveSession session,
+  ) async {
     try {
       // 1. 验证会话ID
       validateSessionId(session.sessionId);
@@ -326,36 +335,42 @@ class TaiXuanFourZhuInteractiveUseCase
 
       // 3. 完成策略计算
       final strategyResult = await _strategy.completeCalculation(session);
-      final baseTiaoWenList = strategyResult.baseTiaoWenList;
 
-      // 4. 根据配置扩展条文列表
-      final allTiaoWenNumbers = <int>[];
-      for (final baseNumber in baseTiaoWenList) {
-        final calculator = TiaoWenListCalculator(_defaultCalculationConfig);
-        final calculationResult = calculator.calculate(baseNumber);
-        allTiaoWenNumbers.addAll(calculationResult.tiaoWenNumbers);
+      // 检查计算状态
+      if (strategyResult.state != TiaoWenListState.success) {
+        throw Exception('策略计算失败: ${strategyResult.state}');
       }
 
-      // 5. 调用Repository获取条文实体
-      final tiaoWenEntities = await _repository.getByIdList(
-        queryList: allTiaoWenNumbers,
+      // 4. 获取所有条文编号
+      final allTiaoWenNumbers = strategyResult.allTiaoWenNumbers;
+
+      // 5. 使用基类公共方法批量查询条文数据
+      final tiaoWenEntities = await batchQueryTiaoWenData(
+        allTiaoWenNumbers,
+        _repository,
       );
 
-      // 6. 转换为UseCase结果
-      return TiaoWenListResult.success(
-        tiaoWenNumbers: allTiaoWenNumbers,
+      // 6. 使用基类公共方法创建BaseNumberTiaoWenListModel列表
+      final baseNumberModels = createSimpleBaseNumberTiaoWenListModels(
+        allTiaoWenNumbers,
         tiaoWenEntities: tiaoWenEntities,
-        calculationMethod: '太玄四柱交互式',
+      );
+
+      // 7. 转换为UseCase结果
+      return MultiBaseNumberResult.success(
+        algorithmName: '太玄四柱交互式',
+        algorithmDescription: '基于太玄四柱交互式策略计算条文列表',
+        calculationParams:
+            '八字: ${strategyResult.selectedEightChars.toString()}, 计算方法: ${strategyResult.selectedCalculationMethod}',
+        baseNumberTiaoWenList: baseNumberModels,
         sourceData: {
           'sessionId': session.sessionId,
           'selectedEightChars': strategyResult.selectedEightChars.toString(),
           'selectedCalculationMethod': strategyResult.selectedCalculationMethod,
           'selectionHistory': strategyResult.selectionHistory,
-          'baseTiaoWenList': baseTiaoWenList,
           'allTiaoWenNumbers': allTiaoWenNumbers,
           'calculationConfig': _defaultCalculationConfig.desc ?? 'N/A',
           'tiaoWenCount': allTiaoWenNumbers.length,
-          'tiaoWenEntities': tiaoWenEntities.map((e) => e.toJson()).toList(),
           'sessionDuration': session.duration.inSeconds,
           'stepsCount': session.steps.length,
         },
@@ -369,10 +384,11 @@ class TaiXuanFourZhuInteractiveUseCase
           e is InputValidationException) {
         rethrow;
       }
-      throw UseCaseExecutionException(
-        message: '完成计算失败: ${e.toString()}',
-        useCaseName: name,
-        originalException: e,
+      return MultiBaseNumberResult.error(
+        algorithmName: '太玄四柱交互式',
+        algorithmDescription: '基于太玄四柱交互式策略计算条文列表',
+        calculationParams: '会话ID: ${session.sessionId}',
+        errorMessage: '完成计算失败: ${e.toString()}',
       );
     }
   }
@@ -492,4 +508,66 @@ class TaiXuanFourZhuInteractiveUseCase
 
   /// 获取所有会话ID
   List<String> get allSessionIds => _sessions.keys.toList();
+
+  /// 获取默认计算配置
+  TiaoWenListCalculationConfig get defaultCalculationConfig =>
+      _defaultCalculationConfig;
+
+  /// 适配器方法：完成计算并返回BaseNumberModelResult兼容格式
+  ///
+  /// 这个方法提供了与BaseNumberModelResult的兼容性，
+  /// 允许交互式UseCase在需要BaseNumberModelResult的地方使用
+  Future<BaseNumberModelResult> completeCalculationAsBaseNumberResult(
+    String sessionId,
+  ) async {
+    try {
+      // 1. 获取会话
+      final session = await getSession(sessionId);
+
+      // 2. 完成常规的交互式计算
+      final multiBaseResult = await completeCalculation(session);
+
+      // 3. 检查计算是否成功
+      if (multiBaseResult.hasError) {
+        return BaseNumberModelResult.error(
+          algorithmName: multiBaseResult.algorithmName,
+          algorithmDescription: multiBaseResult.algorithmDescription,
+          calculationParams: multiBaseResult.calculationParams,
+          errorMessage: multiBaseResult.errorMessage ?? '交互式计算失败',
+          sourceData: multiBaseResult.sourceData,
+        );
+      }
+
+      // 4. 转换为BaseNumberModelResult格式
+      final baseNumbers = multiBaseResult.baseNumberTiaoWenList.map((
+        tiaoWenModel,
+      ) {
+        return BaseNumberModel.create(
+          baseNumber: tiaoWenModel.baseNumber,
+          name: tiaoWenModel.name,
+          description: tiaoWenModel.description,
+          source: tiaoWenModel.source,
+        );
+      }).toList();
+
+      return BaseNumberModelResult.success(
+        algorithmName: multiBaseResult.algorithmName,
+        algorithmDescription: multiBaseResult.algorithmDescription,
+        calculationParams: multiBaseResult.calculationParams,
+        baseNumbers: baseNumbers,
+        sourceData: {
+          ...multiBaseResult.sourceData,
+          'adaptedFromInteractiveUseCase': true,
+          'originalResultType': 'MultiBaseNumberResult',
+        },
+      );
+    } catch (e) {
+      return BaseNumberModelResult.error(
+        algorithmName: '太玄四柱交互式',
+        algorithmDescription: '基于太玄四柱交互式策略计算条文列表',
+        calculationParams: '会话ID: $sessionId',
+        errorMessage: '适配器转换失败: ${e.toString()}',
+      );
+    }
+  }
 }

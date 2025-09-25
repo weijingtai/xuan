@@ -1,12 +1,15 @@
 import 'package:common/shared/enums/enum_jia_zi.dart';
 
-import '../application/usecases/base_get_tiao_wen_list_use_case.dart';
+import 'base_get_tiao_wen_list_use_case.dart';
+import '../domain/models/multi_base_number_result.dart';
+import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../domain/models/tiao_wen_list_result.dart';
 import '../domain/models/tiao_wen_list_state.dart';
 import '../repository/tiao_wen_repository.dart';
 import '../service/strategy/day_gan_zhi_gua_strategy.dart';
 import '../service/strategy/tiao_wen_list_calculation.dart';
+import './base_get_tiao_wen_list_use_case.dart';
 
 /// 日干支卦条文列表UseCase实现
 ///
@@ -25,17 +28,22 @@ class DayGanZhiGuaTiaoWenListUseCase
   );
 
   @override
+  TiaoWenRepository get repository => _repository;
+
+  @override
   String get name => '日干支卦UseCase';
 
   @override
   String get description => '基于日干支卦计算条文列表的UseCase';
 
   @override
-  Future<TiaoWenListResult> execute(
+  Future<MultiBaseNumberResult> execute(
     DayGanZhiGuaUseCaseParams params, {
     TiaoWenListCalculationConfig? calculationConfig,
   }) async {
     try {
+      TiaoWenListCalculationConfig effectiveConfig =
+          calculationConfig ?? defaultCalculationConfig;
       // 1. 验证参数
       validateParams(params);
 
@@ -44,38 +52,41 @@ class DayGanZhiGuaTiaoWenListUseCase
         dayGanZhi: params.dayGanZhi,
       );
       final strategyResult = _strategy.calculate(strategyParams);
-      final baseTiaoWenNumber = strategyResult.tiaoWenNumber;
 
-      // 3. 根据基础条文和TiaoWenListCalculationConfig计算所有条文列表
-      final effectiveConfig = calculationConfig ?? defaultCalculationConfig;
-      final calculator = TiaoWenListCalculator(effectiveConfig);
-      final calculationResult = calculator.calculate(baseTiaoWenNumber);
-      final allTiaoWenNumbers = calculationResult.tiaoWenNumbers;
+      // 检查计算是否成功
+      if (strategyResult.hasError) {
+        throw Exception("日柱变卦计算失败: ${strategyResult.errorMessage}");
+      }
 
-      // 4. 调用Repository获取条文Entity结果集
-      final tiaoWenEntities = await _repository.getByIdList(
-        queryList: allTiaoWenNumbers,
+      // 3. 使用基类模板方法处理条文列表
+      final updatedBaseNumbers = await super.processWithBatchQuery(
+        strategyResult.baseNumbers,
+        effectiveConfig,
       );
 
-      // 5. 转换为UseCase结果
-      return TiaoWenListResult.success(
-        tiaoWenNumbers: allTiaoWenNumbers,
-        tiaoWenEntities: tiaoWenEntities,
-        calculationMethod: '日干支卦',
+      // 4. 创建并返回MultiBaseNumberResult
+      return MultiBaseNumberResult.success(
+        algorithmName: strategyResult.algorithmName,
+        algorithmDescription: strategyResult.algorithmDescription,
+        calculationParams: strategyResult.calculationParams,
         sourceData: {
-          'dayGanZhi': params.dayGanZhi.name,
-          'baseTiaoWenNumber': baseTiaoWenNumber,
+          ...strategyResult.sourceData,
           'calculationConfig': effectiveConfig.desc ?? 'Unknown',
-          'tiaoWenCount': allTiaoWenNumbers.length,
-          'tiaoWenEntities': tiaoWenEntities.map((e) => e.toJson()).toList(),
+          'tiaoWenCount': updatedBaseNumbers.fold<int>(
+            0,
+            (sum, model) => sum + model.tiaoWenCount,
+          ),
         },
+        baseNumberTiaoWenList: updatedBaseNumbers,
       );
     } catch (e) {
       if (e is TiaoWenCalculationException) {
         rethrow;
       }
-      return TiaoWenListResult.error(
-        calculationMethod: '日干支卦',
+      return MultiBaseNumberResult.error(
+        algorithmName: '日干支卦',
+        algorithmDescription: '日柱变卦取数法',
+        calculationParams: params.dayGanZhi.name,
         errorMessage: e.toString(),
         sourceData: {'dayGanZhi': params.dayGanZhi.name, 'error': e.toString()},
       );

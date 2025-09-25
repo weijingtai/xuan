@@ -161,9 +161,10 @@ class InteractiveResultWidget extends StatelessWidget {
   /// 构建条文列表
   Widget _buildTiaoWenList(BuildContext context, dynamic result) {
     // 获取条文列表结果
-    final tiaoWenListResult = provider.finalResult;
+    final multiBaseNumberResult = provider.finalResult;
 
-    if (tiaoWenListResult == null) {
+    if (multiBaseNumberResult == null ||
+        multiBaseNumberResult.tiaoWenEntities == null) {
       return Container(
         padding: const EdgeInsets.all(16.0),
         child: Card(
@@ -183,7 +184,7 @@ class InteractiveResultWidget extends StatelessWidget {
         ),
       );
     }
-    final tiaoWenList = tiaoWenListResult.tiaoWenEntities
+    final tiaoWenList = multiBaseNumberResult.tiaoWenEntities!
         .map(
           (e) => TiaoWenItem(
             number: e.id,

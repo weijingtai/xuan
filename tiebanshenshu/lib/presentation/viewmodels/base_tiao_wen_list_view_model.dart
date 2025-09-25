@@ -5,7 +5,7 @@ library;
 
 import 'package:flutter/foundation.dart';
 import '../../domain/models/tiao_wen_list_state.dart';
-import '../../domain/models/tiao_wen_list_result.dart';
+import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../models/ui_tiao_wen_list_result_model.dart';
 
@@ -71,9 +71,9 @@ abstract class BaseTiaoWenListViewModel extends ChangeNotifier {
   ///
   /// [domainResult] Domain层计算结果
   @protected
-  void setSuccess(TiaoWenListResult domainResult) {
+  void setSuccess(MultiBaseNumberResult domainResult) {
     _state = TiaoWenListState.success;
-    _result = UITiaoWenListResultModel.fromDomain(domainResult);
+    _result = UITiaoWenListResultModel.fromMultiBaseNumberResult(domainResult);
     _errorMessage = null;
     _lastException = null;
     notifyListeners();
@@ -177,12 +177,22 @@ abstract class BaseTiaoWenListViewModel extends ChangeNotifier {
   /// 自动处理加载状态和异常捕获
   @protected
   Future<void> safeExecute(
-    Future<TiaoWenListResult> Function() operation,
+    Future<MultiBaseNumberResult> Function() operation,
   ) async {
     try {
       setLoading();
       final result = await operation();
-      setSuccess(result);
+      if (result.isSuccess) {
+        setSuccess(result);
+      } else {
+        // 处理MultiBaseNumberResult中的错误
+        final wrappedException = UseCaseExecutionException(
+          useCaseName: name,
+          message: result.errorMessage ?? '计算失败',
+          originalException: null,
+        );
+        setError(wrappedException);
+      }
     } on TiaoWenCalculationException catch (e) {
       setError(e);
     } catch (e) {
