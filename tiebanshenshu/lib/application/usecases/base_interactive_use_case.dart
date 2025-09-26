@@ -4,6 +4,7 @@
 library;
 
 import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
+import '../../domain/models/base_number_model.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
@@ -212,10 +213,10 @@ abstract class BaseInteractiveUseCase<TParams> {
     List<TiaoWenDataModel>? tiaoWenEntities,
   }) {
     final models = <BaseNumberTiaoWenListModel>[];
-    
+
     for (int i = 0; i < tiaoWenNumbers.length; i++) {
       final tiaoWenNumber = tiaoWenNumbers[i];
-      
+
       // 如果提供了条文数据，则查找对应的条文
       TiaoWenDataModel? tiaoWenEntity;
       if (tiaoWenEntities != null) {
@@ -234,15 +235,15 @@ abstract class BaseInteractiveUseCase<TParams> {
         baseNumber: tiaoWenNumber,
         name: '条文$tiaoWenNumber',
         description: '条文编号: $tiaoWenNumber',
-        source: BaseNumberSource.interactive, // 交互式来源
+        source: BaseNumberSource.custom, // 交互式来源
         baseTiaoWen: tiaoWenEntity,
         tiaoWenNumbers: [tiaoWenNumber], // 简单模式下只包含自身
         tiaoWenDataList: tiaoWenEntity != null ? [tiaoWenEntity] : [],
       );
-      
+
       models.add(model);
     }
-    
+
     return models;
   }
 }

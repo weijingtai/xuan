@@ -4,8 +4,13 @@
 library;
 
 import 'package:equatable/equatable.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'interactive_strategy_config.g.dart';
 
 /// 交互式策略配置
+///
+@JsonSerializable()
 class InteractiveStrategyConfig extends Equatable {
   /// 是否启用四柱确认步骤
   final bool enableFourZhuConfirmation;
@@ -198,4 +203,9 @@ class InteractiveStrategyConfig extends Equatable {
         'maxSteps: $maxSteps'
         ')';
   }
+
+  factory InteractiveStrategyConfig.fromJson(Map<String, dynamic> json) =>
+      _$InteractiveStrategyConfigFromJson(json);
+
+  Map<String, dynamic> toJson() => _$InteractiveStrategyConfigToJson(this);
 }

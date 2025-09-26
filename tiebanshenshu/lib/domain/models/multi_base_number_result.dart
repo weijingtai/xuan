@@ -61,7 +61,7 @@ class MultiBaseNumberResult extends BaseCalculationResult {
     required String calculationParams,
     required List<BaseNumberTiaoWenListModel> baseNumberTiaoWenList,
     required Map<String, dynamic> sourceData,
-    // List<TiaoWenDataModel>? tiaoWenEntities,
+    List<TiaoWenDataModel>? tiaoWenEntities,
   }) {
     return MultiBaseNumberResult(
       algorithmName: algorithmName,
@@ -71,7 +71,7 @@ class MultiBaseNumberResult extends BaseCalculationResult {
       state: TiaoWenListState.success,
       calculationTime: DateTime.now(),
       sourceData: sourceData,
-      // tiaoWenEntities: tiaoWenEntities,
+      tiaoWenEntities: tiaoWenEntities,
     );
   }
 

@@ -45,4 +45,12 @@ class HuangJiCalculationParams extends BaseCalculationParams {
   @override
   // TODO: implement description
   String get description => "皇极取数法一";
+
+  @override
+  HuangJiCalculationParams copyWith({
+    EightChars? eightChars,
+    required int baseNumber,
+  }) {
+    return HuangJiCalculationParams(eightChars: eightChars ?? this.eightChars);
+  }
 }

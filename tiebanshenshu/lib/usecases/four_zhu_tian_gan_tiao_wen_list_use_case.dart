@@ -64,12 +64,18 @@ class FourZhuTianGanTiaoWenListUseCase
         _customFourZhuProcessor,
       );
 
-      // 4. 创建并返回MultiBaseNumberResult
+      // 4. 提取所有条文实体
+      final allTiaoWenEntities = tiaoWenListResult
+          .expand((model) => model.tiaoWenDataList)
+          .toList();
+
+      // 5. 创建并返回MultiBaseNumberResult
       return MultiBaseNumberResult.success(
         algorithmName: '四柱天干',
         algorithmDescription: '四柱天干取数法',
         calculationParams: params.eightChars.toString(),
         baseNumberTiaoWenList: tiaoWenListResult,
+        tiaoWenEntities: allTiaoWenEntities,
         sourceData: {
           'eightChars': params.eightChars.toString(),
           'calculationConfig': effectiveConfig.desc ?? 'N/A',

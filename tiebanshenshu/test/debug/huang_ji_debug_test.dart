@@ -8,14 +8,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/models/huang_ji_calculation_params.dart';
 import 'package:tiebanshenshu/service/strategy/huang_ji_calculation_strategy.dart';
-import 'package:tiebanshenshu/service/strategy/huang_ji_interactive_strategy.dart';
 import 'package:tiebanshenshu/application/usecases/huang_ji_interactive_use_case.dart';
 import 'package:tiebanshenshu/presentation/viewmodels/huang_ji_interactive_view_model.dart';
 
 void main() {
   group('皇极交互调试测试', () {
     late HuangJiCalculationStrategy calculationStrategy;
-    late HuangJiInteractiveStrategy interactiveStrategy;
     late HuangJiInteractiveUseCase useCase;
     late HuangJiInteractiveViewModel viewModel;
 
@@ -23,8 +21,7 @@ void main() {
       // 初始化测试组件
       calculationStrategy = HuangJiCalculationStrategy();
       // 注意：这里需要根据实际的依赖注入方式来初始化
-      // interactiveStrategy = HuangJiInteractiveStrategy(calculationStrategy, repository);
-      // useCase = HuangJiInteractiveUseCase(interactiveStrategy);
+      // useCase = HuangJiInteractiveUseCase(sessionService, candidateService, calculationStrategy, repository);
       // viewModel = HuangJiInteractiveViewModel(useCase);
     });
 

@@ -111,10 +111,9 @@ class InteractiveResultWidget extends StatelessWidget {
 
   /// 构建结果统计
   Widget _buildResultStats(ThemeData theme, dynamic result) {
-    // 这里需要根据实际的TiaoWenListResult结构来获取数据
-    // 暂时使用占位符
-    final tiaoWenCount = result.tiaoWenNumbers?.length ?? 0;
-    final calculationMethod = result.calculationMethod ?? '未知';
+    // 这里需要根据实际的MultiBaseNumberResult结构来获取数据
+    final tiaoWenCount = result.allTiaoWenNumbers?.length ?? 0;
+    final calculationMethod = result.algorithmName ?? '未知';
 
     return Wrap(
       spacing: 16.0,

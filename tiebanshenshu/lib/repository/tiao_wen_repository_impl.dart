@@ -165,11 +165,23 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
 
   /// 解析年龄集合字符串
   /// 格式: (47) 或 (21 22) 或 (11 12)
+  /// 支持各种不规范格式: 小数点、冒号、连字符、字母等
   List<int>? _parseAgeSet(String ageSetStr) {
     if (ageSetStr.isEmpty) return null;
 
-    // 移除括号
-    String cleaned = ageSetStr.replaceAll('(', '').replaceAll(')', '').trim();
+    // 移除括号和其他特殊字符
+    String cleaned = ageSetStr
+        .replaceAll('(', '')
+        .replaceAll(')', '')
+        .replaceAll('.', '')  // 移除小数点
+        .replaceAll(':', ' ') // 冒号替换为空格
+        .replaceAll('-', ' ') // 连字符替换为空格
+        .replaceAll('μ', ' ') // 特殊字符替换为空格
+        .replaceAll("'", ' ') // 单引号替换为空格
+        .replaceAll(RegExp(r'[a-zA-Z\u4e00-\u9fa5]'), '') // 移除字母和中文字符
+        .replaceAll(RegExp(r'\s+'), ' ') // 多个空格合并为一个
+        .trim();
+    
     if (cleaned.isEmpty) return null;
 
     try {
@@ -178,14 +190,19 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
       final List<int> numbers = [];
 
       for (String numStr in numberStrs) {
-        if (numStr.trim().isNotEmpty) {
-          numbers.add(int.parse(numStr.trim()));
+        final trimmed = numStr.trim();
+        if (trimmed.isNotEmpty) {
+          // 尝试解析为整数
+          final parsed = int.tryParse(trimmed);
+          if (parsed != null) {
+            numbers.add(parsed);
+          }
         }
       }
 
       return numbers.isEmpty ? null : numbers;
     } catch (e) {
-      print('Error parsing age set: $ageSetStr, error: $e');
+      // 静默处理解析错误，避免日志污染
       return null;
     }
   }

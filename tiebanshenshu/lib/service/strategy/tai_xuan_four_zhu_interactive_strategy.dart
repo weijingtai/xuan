@@ -138,7 +138,10 @@ class TaiXuanFourZhuInteractiveStrategyResult extends MultiBaseNumberResult {
         baseModel: baseModel,
 
         tiaoWenDataList: [], // 空的条文数据列表，需要后续填充
-        calculationConfig: null,
+        calculationConfig: TiaoWenListCalculationConfig.fromMultiples(
+          baseNumber: 96,
+          multipleList: [1, 2, 3, 4],
+        ),
       );
     }).toList();
 
@@ -364,10 +367,9 @@ class TaiXuanFourZhuInteractiveStrategy
       final baseTiaoWenList =
           session.resultData!['baseTiaoWenList'] as List<int>?;
       if (baseTiaoWenList != null) {
-        // 使用默认配置创建TiaoWenListCalculator
-        final defaultConfig = TiaoWenListCalculationConfig.fromMultiples(
-          baseNumber: 1,
-          multipleList: [2, 4, 8, 16],
+        // 使用太玄四柱标准配置创建TiaoWenListCalculator
+        final defaultConfig = TiaoWenListCalculationConfig.listAdd(
+          customList: [96, 192, 384, 768],
           withSub: true,
         );
 
@@ -422,7 +424,17 @@ class TaiXuanFourZhuInteractiveStrategy
       algorithmName: standardResult.algorithmName,
       algorithmDescription: "${standardResult.algorithmDescription}（交互式）",
       calculationParams: standardResult.calculationParams,
-      baseNumberTiaoWenList: standardResult.baseNumbers,
+      baseNumberTiaoWenList: standardResult.baseNumbers
+          .map(
+            (e) => BaseNumberTiaoWenListModel.fromBaseModel(
+              baseModel: e,
+              calculationConfig: TiaoWenListCalculationConfig.listAdd(
+            customList: [96, 192, 384, 768],
+            withSub: true,
+          ),
+            ),
+          )
+          .toList(),
       errorMessage: standardResult.errorMessage,
       calculationTime: standardResult.calculationTime,
       sourceData: enhancedSourceData,
@@ -430,6 +442,7 @@ class TaiXuanFourZhuInteractiveStrategy
       selectedEightChars: selectedEightChars,
       selectedCalculationMethod: selectedCalculationMethod,
       selectionHistory: selectionHistory,
+      state: TiaoWenListState.success,
     );
   }
 

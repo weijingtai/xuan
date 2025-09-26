@@ -363,6 +363,7 @@ class TaiXuanFourZhuInteractiveUseCase
         calculationParams:
             '八字: ${strategyResult.selectedEightChars.toString()}, 计算方法: ${strategyResult.selectedCalculationMethod}',
         baseNumberTiaoWenList: baseNumberModels,
+        tiaoWenEntities: tiaoWenEntities,
         sourceData: {
           'sessionId': session.sessionId,
           'selectedEightChars': strategyResult.selectedEightChars.toString(),

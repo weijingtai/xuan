@@ -64,7 +64,12 @@ class DayGanZhiGuaTiaoWenListUseCase
         effectiveConfig,
       );
 
-      // 4. 创建并返回MultiBaseNumberResult
+      // 4. 提取所有条文实体
+      final allTiaoWenEntities = updatedBaseNumbers
+          .expand((model) => model.tiaoWenDataList)
+          .toList();
+
+      // 5. 创建并返回MultiBaseNumberResult
       return MultiBaseNumberResult.success(
         algorithmName: strategyResult.algorithmName,
         algorithmDescription: strategyResult.algorithmDescription,
@@ -78,6 +83,7 @@ class DayGanZhiGuaTiaoWenListUseCase
           ),
         },
         baseNumberTiaoWenList: updatedBaseNumbers,
+        tiaoWenEntities: allTiaoWenEntities,
       );
     } catch (e) {
       if (e is TiaoWenCalculationException) {

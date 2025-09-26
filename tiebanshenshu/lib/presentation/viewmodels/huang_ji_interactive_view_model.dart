@@ -169,8 +169,16 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
   bool get canJump => hasSession && !isLoading;
 
   /// 是否需要用户选择
-  bool get needsUserSelection =>
-      _currentStep == HuangJiInteractiveStep.userSelection;
+  bool get needsUserSelection {
+    final result = _currentStep == HuangJiInteractiveStep.userSelection;
+    if (kDebugMode) {
+      print('🔍 needsUserSelection 检查:');
+      print('   - _currentStep: $_currentStep');
+      print('   - HuangJiInteractiveStep.userSelection: ${HuangJiInteractiveStep.userSelection}');
+      print('   - 结果: $result');
+    }
+    return result;
+  }
 
   /// 启动交互式会话
   ///
@@ -235,6 +243,16 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
 
       if (kDebugMode) {
         print('🎉 HuangJiInteractiveViewModel: 会话启动完成');
+        print('🔍 最终状态检查:');
+        print('   - hasSession: $hasSession');
+        print('   - needsUserSelection: $needsUserSelection');
+        print('   - currentCandidates.length: ${_currentCandidates.length}');
+        print('   - currentStep: $_currentStep');
+        print('   - state: $_state');
+        if (_currentSession?.currentStep != null) {
+          print('   - session.currentStep.stepName: ${_currentSession!.currentStep!.stepName}');
+          print('   - session.currentStep.candidates.length: ${_currentSession!.currentStep!.candidates.length}');
+        }
       }
     } catch (e) {
       if (kDebugMode) {
@@ -282,8 +300,31 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       if (kDebugMode) {
         print('✅ HuangJiInteractiveViewModel: UseCase.getCandidates 完成');
         print('📊 候选项数量: ${candidates.length}');
-        for (int i = 0; i < candidates.length && i < 3; i++) {
-          print('📋 候选项${i + 1}: ${candidates[i].displayName}');
+
+        // 显示前10个候选项
+        for (int i = 0; i < candidates.length && i < 10; i++) {
+          print(
+            '📋 候选项${i + 1}: ${candidates[i].displayName} (ID: ${candidates[i].id})',
+          );
+        }
+
+        // 如果候选项数量异常，显示更多信息
+        if (candidates.length < 100) {
+          print('⚠️ 警告：候选项数量异常少，预期应该有384个');
+          print('🔍 显示所有候选项:');
+          for (int i = 0; i < candidates.length; i++) {
+            print(
+              '📋 候选项${i + 1}: ${candidates[i].displayName} (ID: ${candidates[i].id}, Type: ${candidates[i].type})',
+            );
+          }
+        } else {
+          // 显示最后几个候选项以验证范围
+          print('📋 最后几个候选项:');
+          for (int i = candidates.length - 3; i < candidates.length; i++) {
+            print(
+              '📋 候选项${i + 1}: ${candidates[i].displayName} (ID: ${candidates[i].id})',
+            );
+          }
         }
       }
 
@@ -369,7 +410,7 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
 
   /// 跳转到指定步骤
   ///
-  /// [stepIndex] 目标步骤索引
+  /// [stepIndex] 目标步骤索引（HuangJiInteractiveStep的枚举索引）
   Future<void> jumpToStep(int stepIndex) async {
     if (!hasSession || !canJump) {
       _handleError('跳转失败', Exception('当前状态不支持跳转'));
@@ -377,12 +418,71 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     }
 
     try {
+      if (kDebugMode) {
+        print('🔄 HuangJiInteractiveViewModel: 跳转到步骤');
+        print('📊 请求的枚举步骤索引: $stepIndex');
+        print('📊 当前会话步骤数: ${_currentSession!.steps.length}');
+        print('📊 当前会话步骤索引: ${_currentSession!.currentStepIndex}');
+        print('📊 当前步骤: ${_currentStep.name}');
+      }
+
       _setState(HuangJiInteractiveProviderState.processingSelection);
       _clearError();
 
-      final updatedSession = await _useCase.jumpTo(_currentSession!, stepIndex);
+      // 根据请求的步骤索引和当前会话状态决定如何处理
+      final targetStep = HuangJiInteractiveStep.values[stepIndex];
+
+      if (kDebugMode) {
+        print('📊 目标步骤: ${targetStep.name}');
+      }
+
+      // 检查是否可以跳转到目标步骤
+      if (!_canJumpToStep(targetStep)) {
+        if (kDebugMode) {
+          print('⚠️ 无法跳转到步骤: ${targetStep.name}');
+        }
+        _setState(HuangJiInteractiveProviderState.sessionActive);
+        return;
+      }
+
+      // 如果目标步骤是当前步骤，直接返回
+      if (targetStep == _currentStep) {
+        if (kDebugMode) {
+          print('ℹ️ 已在目标步骤: ${targetStep.name}');
+        }
+        _setState(HuangJiInteractiveProviderState.sessionActive);
+        return;
+      }
+
+      // 对于皇极取数法，目前只有一个会话步骤（基础数选择）
+      // 所有UI步骤都对应这个会话步骤，只是显示不同的状态
+      final sessionStepIndex = 0; // 始终跳转到第一个（也是唯一的）会话步骤
+
+      // 验证会话步骤索引是否有效
+      if (sessionStepIndex >= _currentSession!.steps.length) {
+        if (kDebugMode) {
+          print(
+            '❌ 无效的会话步骤索引: $sessionStepIndex，有效范围: 0-${_currentSession!.steps.length - 1}',
+          );
+        }
+        _handleError('跳转失败', Exception('会话步骤不存在'));
+        return;
+      }
+
+      if (kDebugMode) {
+        print('📊 会话步骤索引: $sessionStepIndex');
+      }
+
+      final updatedSession = await _useCase.jumpTo(
+        _currentSession!,
+        sessionStepIndex,
+      );
 
       _currentSession = updatedSession;
+
+      // 手动设置当前步骤为目标步骤
+      _currentStep = targetStep;
+
       _updateSessionData(updatedSession);
       _setState(HuangJiInteractiveProviderState.sessionActive);
 
@@ -390,8 +490,47 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       if (needsUserSelection) {
         await loadCandidates();
       }
+
+      if (kDebugMode) {
+        print('✅ 跳转成功到步骤: ${targetStep.name}');
+      }
     } catch (e) {
+      if (kDebugMode) {
+        print('❌ 跳转失败: $e');
+      }
       _handleError('跳转失败', e);
+    }
+  }
+
+  /// 检查是否可以跳转到指定步骤
+  ///
+  /// [targetStep] 目标步骤
+  bool _canJumpToStep(HuangJiInteractiveStep targetStep) {
+    // 如果没有会话，不能跳转
+    if (!hasSession) return false;
+
+    // 根据当前会话状态和步骤进度判断
+    switch (targetStep) {
+      case HuangJiInteractiveStep.initialization:
+        // 总是可以回到初始化步骤
+        return true;
+
+      case HuangJiInteractiveStep.secondaryCalculation:
+        // 如果已经有会话，可以跳转到次条文数计算
+        return hasSession;
+
+      case HuangJiInteractiveStep.userSelection:
+        // 如果有候选项或已经选择了基础数，可以跳转到用户选择
+        return hasSession &&
+            (_currentCandidates.isNotEmpty || _selectedBaseNumber != null);
+
+      case HuangJiInteractiveStep.finalCalculation:
+        // 如果已经选择了基础数，可以跳转到最终计算
+        return _selectedBaseNumber != null;
+
+      case HuangJiInteractiveStep.completed:
+        // 如果有最终结果，可以跳转到完成步骤
+        return _finalNumbers.isNotEmpty;
     }
   }
 
@@ -444,34 +583,131 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     }
 
     // 优先从resultData读取，如果没有则从configData读取
-    _initialNumber = resultData['initialNumber'] as int? ?? 
-                    configData['initialNumber'] as int?;
-    _secondaryNumber = resultData['secondaryNumber'] as int? ?? 
-                      configData['secondaryNumber'] as int?;
-    _selectedBaseNumber = resultData['selectedBaseNumber'] as int? ?? 
-                         configData['selectedBaseNumber'] as int?;
+    _initialNumber =
+        resultData['initialNumber'] as int? ??
+        configData['initialNumber'] as int?;
+    _secondaryNumber =
+        resultData['secondaryNumber'] as int? ??
+        configData['secondaryNumber'] as int?;
+    _selectedBaseNumber =
+        resultData['selectedBaseNumber'] as int? ??
+        configData['selectedBaseNumber'] as int?;
 
-    final finalNumbersData = resultData['finalNumbers'] ?? configData['finalNumbers'];
+    // 如果还没有selectedBaseNumber，尝试从当前步骤的stepData中读取
+    if (_selectedBaseNumber == null && session.currentStep?.stepData != null) {
+      _selectedBaseNumber = session.currentStep!.stepData!['selectedBaseNumber'] as int?;
+      if (kDebugMode && _selectedBaseNumber != null) {
+        print('📊 从当前步骤stepData中读取selectedBaseNumber: $_selectedBaseNumber');
+      }
+    }
+
+    final finalNumbersData =
+        resultData['finalNumbers'] ?? configData['finalNumbers'];
     if (finalNumbersData is List) {
       _finalNumbers = finalNumbersData.cast<int>();
     }
 
     // currentStep优先从resultData读取，如果没有则从configData读取
-    final currentStepId = resultData['currentStep'] as String? ?? 
-                         configData['currentStep'] as String?;
+    final currentStepId =
+        resultData['currentStep'] as String? ??
+        configData['currentStep'] as String?;
     if (currentStepId != null) {
       _currentStep =
           HuangJiInteractiveStep.fromString(currentStepId) ??
           HuangJiInteractiveStep.initialization;
-      
+
       if (kDebugMode) {
         print('📊 currentStepId: $currentStepId');
         print('📊 解析后的currentStep: $_currentStep');
       }
     } else {
-      if (kDebugMode) {
-        print('⚠️ 未找到currentStep，使用默认值: initialization');
+      // 根据会话状态推断当前步骤
+      if (session.steps.isNotEmpty) {
+        final currentStep = session.currentStep;
+        if (currentStep != null) {
+          if (kDebugMode) {
+            print('🔍 步骤映射分析:');
+            print('   - 步骤名称: ${currentStep.stepName}');
+            print('   - 步骤状态: ${currentStep.status}');
+            print('   - 候选项数量: ${currentStep.candidates.length}');
+          }
+          
+          // 根据步骤名称推断HuangJiInteractiveStep
+          if (currentStep.stepName == 'base_number_selection') {
+            _currentStep = HuangJiInteractiveStep.userSelection;
+            if (kDebugMode) {
+              print('✅ 步骤映射: base_number_selection -> userSelection');
+            }
+          } else if (currentStep.stepName == 'user_selection') {
+            _currentStep = HuangJiInteractiveStep.userSelection;
+            if (kDebugMode) {
+              print('✅ 步骤映射: user_selection -> userSelection');
+            }
+          } else if (currentStep.stepName == 'final_confirmation') {
+            _currentStep = HuangJiInteractiveStep.finalCalculation;
+            if (kDebugMode) {
+              print('✅ 步骤映射: final_confirmation -> finalCalculation');
+            }
+          } else {
+            _currentStep = HuangJiInteractiveStep.initialization;
+            if (kDebugMode) {
+              print('⚠️ 未知步骤名称，映射到: initialization');
+            }
+          }
+        } else {
+          _currentStep = HuangJiInteractiveStep.initialization;
+          if (kDebugMode) {
+            print('⚠️ 当前步骤为null，设置为: initialization');
+          }
+        }
+      } else {
+        _currentStep = HuangJiInteractiveStep.initialization;
+        if (kDebugMode) {
+          print('⚠️ 没有步骤，设置为: initialization');
+        }
       }
+
+      if (kDebugMode) {
+        print('📊 步骤推断结果: $_currentStep');
+        print('📊 会话步骤数: ${session.steps.length}');
+        print('📊 当前步骤索引: ${session.currentStepIndex}');
+        if (session.currentStep != null) {
+          print('📊 当前步骤名称: ${session.currentStep!.stepName}');
+        }
+      }
+    }
+
+    // 更新候选项数据
+    if (session.currentStep != null) {
+      _currentCandidates = List.from(session.currentStep!.candidates);
+      
+      if (kDebugMode) {
+        print('📊 候选项数据更新完成');
+        print('📊 候选项数量: ${_currentCandidates.length}');
+        if (_currentCandidates.isNotEmpty) {
+          print('📊 第一个候选项: ${_currentCandidates.first.displayName}');
+        }
+      }
+    } else {
+      _currentCandidates.clear();
+      
+      if (kDebugMode) {
+        print('⚠️ 没有当前步骤，清空候选项');
+      }
+    }
+
+    // 如果步骤变为final_calculation且有选择的基础数，自动触发最终计算
+    if (_currentStep == HuangJiInteractiveStep.finalCalculation && 
+        _selectedBaseNumber != null && 
+        _state != HuangJiInteractiveProviderState.calculating &&
+        _state != HuangJiInteractiveProviderState.completed) {
+      if (kDebugMode) {
+        print('🚀 HuangJiInteractiveViewModel: 检测到final_calculation步骤，自动触发最终计算');
+        print('📊 选择的基础数: $_selectedBaseNumber');
+      }
+      
+      // 异步触发计算，避免在setState期间调用
+      Future.microtask(() => _completeCalculation());
     }
   }
 
