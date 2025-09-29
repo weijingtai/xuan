@@ -150,14 +150,24 @@ class HuangJiDataCalculationFormula {
 abstract class DataBaseNumberDefinition {
   String name;
   String description;
-  int number;
+  int rawNumber; // 存储原始数字结果
   final BaseNumberDefinitionType type;
+  
   DataBaseNumberDefinition({
-    required this.number,
+    required this.rawNumber,
     required this.name,
     required this.description,
     required this.type,
   });
+
+  /// 获取处理后的数字，确保始终 ≤ 13000
+  /// 如果 rawNumber > 13000 则返回 rawNumber - 12000
+  int get number {
+    if (rawNumber > 13000) {
+      return rawNumber - 12000;
+    }
+    return rawNumber;
+  }
 
   Map<String, dynamic> toJson();
 }
@@ -285,7 +295,7 @@ class DataPredefinedBaseNumber extends DataBaseNumberDefinition {
   // final int sourceValue; // 原始的元会或运世数值
 
   DataPredefinedBaseNumber({
-    required super.number,
+    required super.rawNumber,
     required super.name,
     required super.description,
     required this.source,
@@ -308,7 +318,7 @@ class DataDerivedBaseNumber extends DataBaseNumberDefinition {
   // final List<String> calculationSteps; // 计算步骤记录
 
   DataDerivedBaseNumber({
-    required super.number,
+    required super.rawNumber,
     required super.name,
     required super.description,
     required this.parentGroupId,
@@ -350,10 +360,19 @@ class DataSelectableBaseNumber extends DataBaseNumberDefinition {
   final DataBaseNumberDefinition initialCandidate; // 初刻数的实际计算结果
   final int? candidateValue; // 候选值（初刻数）
   bool get isCompleted => candidateValue != null; // 是否被选中
+  
   @override
-  int get number => candidateValue ?? initialCandidate.number; // 最终选择的数值
+  int get number {
+    final rawValue = candidateValue ?? initialCandidate.number;
+    // 应用与父类相同的逻辑：如果 > 13000 则减去 12000
+    if (rawValue > 13000) {
+      return rawValue - 12000;
+    }
+    return rawValue;
+  }
+  
   DataSelectableBaseNumber({
-    required super.number,
+    required super.rawNumber,
     required super.name,
     required super.description,
     required this.initialCandidate,

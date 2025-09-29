@@ -275,7 +275,7 @@ class PredefinedBaseNumber extends BaseNumberDefinition {
       name: name,
       description: description,
       initialCandidate: toData(yhys),
-      number: -1,
+      rawNumber: -1,
     );
   }
 
@@ -291,7 +291,7 @@ class PredefinedBaseNumber extends BaseNumberDefinition {
       name: name,
       description: description,
       source: source,
-      number: number,
+      rawNumber: number,
     );
   }
 }
@@ -338,7 +338,7 @@ class DerivedBaseNumber extends BaseNumberDefinition {
       name: name,
       description: description,
       parentGroupId: parentGroupId,
-      number: dataParts.fold(0, (prev, e) => prev + e.number),
+      rawNumber: dataParts.fold(0, (prev, e) => prev + e.number),
       calculationParts: dataParts,
     );
   }
@@ -372,7 +372,7 @@ class SelectableBaseNumber extends BaseNumberDefinition {
       name: name,
       description: description,
       initialCandidate: initialCandidateFormula.toData(yhys),
-      number: -1,
+      rawNumber: -1,
     );
   }
 }

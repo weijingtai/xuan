@@ -24,7 +24,7 @@ void main() {
   group('皇极公式数据类 JSON 序列化测试', () {
     test('DataPredefinedBaseNumber JSON 序列化和反序列化', () {
       final dataPredefined = DataPredefinedBaseNumber(
-        number: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
+        rawNumber: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
         name: "元会基础数",
         description: "来自元会的基础数",
         source: NumberSource.yuanHui,
@@ -32,7 +32,7 @@ void main() {
 
       // 测试 JSON 序列化
       final json = dataPredefined.toJson();
-      expect(json['number'], equals(1210));
+      expect(json['rawNumber'], equals(1210));
       expect(json['name'], equals("元会基础数"));
       expect(json['source'], equals('元会'));
       expect(json['type'], equals('predefined'));
@@ -135,7 +135,7 @@ void main() {
       );
 
       final dataDerived = DataDerivedBaseNumber(
-        number: 600, // 月干百位的值
+        rawNumber: 600, // 月干百位的值
         name: "派生基础数",
         description: "从元会基础数派生",
         parentGroupId: "base_one",
@@ -144,7 +144,7 @@ void main() {
 
       // 测试 JSON 序列化
       final json = dataDerived.toJson();
-      expect(json['number'], equals(600));
+      expect(json['rawNumber'], equals(600));
       expect(json['name'], equals("派生基础数"));
       expect(json['parentGroupId'], equals("base_one"));
       expect(json['calculationParts'], isA<List>());
@@ -162,14 +162,14 @@ void main() {
     test('DataSelectableBaseNumber JSON 序列化和反序列化', () {
       // 创建初始候选基础数
       final initialCandidate = DataPredefinedBaseNumber(
-        number: testYuanHuiYunShi.timeGanNumber, // 7
+        rawNumber: testYuanHuiYunShi.timeGanNumber, // 7
         name: "初刻数",
         description: "时干太玄数",
         source: NumberSource.yunShi,
       );
 
       final dataSelectable = DataSelectableBaseNumber(
-        number: 37, // 初刻数 + 30
+        rawNumber: 37, // 初刻数 + 30
         name: "选择式基础数",
         description: "通过初刻数±30确定",
         initialCandidate: initialCandidate,
@@ -182,7 +182,7 @@ void main() {
 
       // 测试 JSON 序列化
       final json = dataSelectable.toJson();
-      expect(json['number'], equals(37));
+      expect(json['rawNumber'], equals(37));
       expect(json['name'], equals("选择式基础数"));
       expect(json['candidateValue'], equals(37));
       expect(json['initialCandidate'], isA<Map>());
@@ -237,7 +237,7 @@ void main() {
     test('DataCalculationGroup JSON 序列化和反序列化', () {
       // 创建基础数定义
       final baseNumberDef = DataPredefinedBaseNumber(
-        number: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
+        rawNumber: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
         name: "元会基础数",
         description: "来自元会的基础数",
         source: NumberSource.yuanHui,
@@ -283,7 +283,7 @@ void main() {
     test('HuangJiDataCalculationFormula JSON 序列化和反序列化', () {
       // 创建基础数定义
       final baseNumberDef = DataPredefinedBaseNumber(
-        number: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
+        rawNumber: testYuanHuiYunShi.yuanHuiMergeNumber.number, // 1210
         name: "元会基础数",
         description: "来自元会的基础数",
         source: NumberSource.yuanHui,
