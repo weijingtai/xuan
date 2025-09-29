@@ -16,6 +16,47 @@ abstract class StandardCalculationStrategy<
   @override
   StrategyCategory get category => StrategyCategory.standard;
 
+  /// 获取默认的条文计算配置
+  ///
+  /// 标准策略的默认实现，子类应该重写以提供特定的配置
+  @override
+  TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
+    return GenericTiaoWenCalculationConfig.customList(
+      name: "标准策略默认配置",
+      description: "基础数±100：±100",
+      customList: [0, 100],
+      withSub: true,
+    );
+  }
+
+  /// 计算条文列表（使用指定配置）
+  ///
+  /// 标准策略的默认实现，子类可以重写
+  @override
+  List<int> calculateTiaoWenListWithConfig(
+    int baseNumber, 
+    P params, 
+    TiaoWenCalculationConfig config,
+  ) {
+    final context = <String, dynamic>{
+      'baseNumber': baseNumber,
+      'params': params,
+    };
+    
+    return config.calculateTiaoWenList(baseNumber, context);
+  }
+
+  /// 获取支持的条文计算配置选项
+  ///
+  /// 标准策略的默认实现，子类应该重写以提供特定的配置选项
+  @override
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
+    return [defaultTiaoWenCalculationConfig];
+  }
+
+  @override
+  String get tiaoWenCalculationDescription => defaultTiaoWenCalculationConfig.description;
+
   /// 计算方法
   ///
   /// 执行计算并返回结果

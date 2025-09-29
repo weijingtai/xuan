@@ -18,6 +18,7 @@ import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../strategy/tiao_wen_list_calculation.dart';
+import 'base_calculation_strategy.dart';
 import 'base_interactive_strategy.dart';
 import 'tai_xuan_four_zhu_strategy.dart';
 
@@ -209,6 +210,92 @@ class TaiXuanFourZhuInteractiveStrategy
 
   @override
   InteractiveStrategyConfig get config => _config;
+
+  /// 获取默认的条文计算配置
+  @override
+  TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
+    return _standardStrategy.defaultTiaoWenCalculationConfig;
+  }
+
+  /// 计算条文列表（使用指定配置）
+  @override
+  List<int> calculateTiaoWenListWithConfig(
+    int baseNumber,
+    TaiXuanFourZhuInteractiveStrategyParams params,
+    TiaoWenCalculationConfig config,
+  ) {
+    // 将交互式参数转换为标准参数
+    final standardParams = TaiXuanFourZhuStrategyParams(
+      eightChars: params.eightChars,
+    );
+
+    return _standardStrategy.calculateTiaoWenListWithConfig(
+      baseNumber,
+      standardParams,
+      config,
+    );
+  }
+
+  /// 获取支持的条文计算配置选项
+  @override
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
+    return _standardStrategy.supportedTiaoWenCalculationConfigs;
+  }
+
+  @override
+  String get tiaoWenCalculationDescription =>
+      _standardStrategy.tiaoWenCalculationDescription;
+
+  /// 实现基础的calculate方法（用于兼容性）
+  ///
+  /// 交互式策略的主要计算逻辑在completeCalculation中，
+  /// 这个方法提供基础的非交互式计算能力
+  @override
+  TaiXuanFourZhuInteractiveStrategyResult calculate(
+    TaiXuanFourZhuInteractiveStrategyParams params,
+  ) {
+    // 使用标准策略进行计算
+    final standardParams = TaiXuanFourZhuStrategyParams(
+      eightChars: params.eightChars,
+    );
+    final standardResult = _standardStrategy.calculate(standardParams);
+
+    // 创建一个简化的交互式结果（无实际交互）
+    final mockSession = InteractiveSession.create(
+      sessionId: 'mock_${DateTime.now().millisecondsSinceEpoch}',
+      strategyName: name,
+      sessionConfig: {'originalParams': params},
+    );
+
+    return TaiXuanFourZhuInteractiveStrategyResult(
+      algorithmName: standardResult.algorithmName,
+      algorithmDescription: "${standardResult.algorithmDescription}（非交互模式）",
+      calculationParams: standardResult.calculationParams,
+      baseNumberTiaoWenList: standardResult.baseNumbers
+          .map(
+            (e) => BaseNumberTiaoWenListModel.fromBaseModel(
+              baseModel: e,
+              calculationConfig:
+                  (defaultTiaoWenCalculationConfig
+                          as GenericTiaoWenCalculationConfig)
+                      .toTiaoWenListCalculationConfig(),
+            ),
+          )
+          .toList(),
+      errorMessage: standardResult.errorMessage,
+      calculationTime: standardResult.calculationTime,
+      sourceData: {
+        ...standardResult.sourceData,
+        'interactive': false,
+        'mode': 'direct_calculation',
+      },
+      session: mockSession,
+      selectedEightChars: params.eightChars,
+      selectedCalculationMethod: 'standard',
+      selectionHistory: {},
+      state: TiaoWenListState.success,
+    );
+  }
 
   @override
   Future<InteractiveSession> startSession(
@@ -429,9 +516,9 @@ class TaiXuanFourZhuInteractiveStrategy
             (e) => BaseNumberTiaoWenListModel.fromBaseModel(
               baseModel: e,
               calculationConfig: TiaoWenListCalculationConfig.listAdd(
-            customList: [96, 192, 384, 768],
-            withSub: true,
-          ),
+                customList: [96, 192, 384, 768],
+                withSub: true,
+              ),
             ),
           )
           .toList(),

@@ -63,6 +63,34 @@ class _DevPageState extends State<DevPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/huang-ji-case-8-interactive');
+              },
+              icon: const Icon(Icons.calculate_outlined),
+              label: const Text('皇极取数法二'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/huang-ji-case-9-interactive');
+              },
+              icon: const Icon(Icons.calculate_rounded),
+              label: const Text('皇极取数法三'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
           ],
         ),
       ),

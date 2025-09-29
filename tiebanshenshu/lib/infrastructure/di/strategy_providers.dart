@@ -84,7 +84,6 @@ class StrategyProviders {
       create: (context) => TaiXuanFourZhuTiaoWenListUseCase(
         context.read<TaiXuanFourZhuStrategy>(),
         context.read<TiaoWenRepository>(),
-        context.read<TiaoWenListCalculationConfig>(),
       ),
     ),
 

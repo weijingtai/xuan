@@ -1,6 +1,8 @@
 import 'package:common/models/eight_chars.dart';
 
+import '../repository/datamodels/tiao_wen_datamodel.dart';
 import 'base_get_tiao_wen_list_use_case.dart';
+import '../service/strategy/tiao_wen_list_calculation.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../domain/models/tiao_wen_list_result.dart';
@@ -8,23 +10,24 @@ import '../domain/models/tiao_wen_list_state.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../repository/tiao_wen_repository.dart';
 import '../service/strategy/tai_xuan_four_zhu_strategy.dart';
-import '../service/strategy/tiao_wen_list_calculation.dart';
+import '../service/strategy/base_calculation_strategy.dart';
 
 /// 太玄四柱条文列表UseCase实现
 ///
 /// 负责处理基于太玄四柱计算条文列表的业务逻辑
-/// 完整流程：Strategy计算基础数字 -> 根据配置扩展条文列表 -> Repository获取条文实体
+/// 完整流程：Strategy计算基础数字并处理条文计算 -> Repository获取条文实体
 class TaiXuanFourZhuTiaoWenListUseCase
     extends BaseGetTiaoWenListUseCase<TaiXuanFourZhuUseCaseParams> {
   final TaiXuanFourZhuStrategy _strategy;
   final TiaoWenRepository _repository;
-  final TiaoWenListCalculationConfig defaultCalculationConfig;
 
-  TaiXuanFourZhuTiaoWenListUseCase(
-    this._strategy,
-    this._repository,
-    this.defaultCalculationConfig,
-  );
+  TaiXuanFourZhuTiaoWenListUseCase(this._strategy, this._repository);
+
+  @override
+  TiaoWenListCalculationConfig get defaultCalculationConfig =>
+      (_strategy.defaultTiaoWenCalculationConfig
+              as GenericTiaoWenCalculationConfig)
+          .toTiaoWenListCalculationConfig();
 
   @override
   TiaoWenRepository get repository => _repository;
@@ -41,8 +44,6 @@ class TaiXuanFourZhuTiaoWenListUseCase
     TiaoWenListCalculationConfig? calculationConfig,
   }) async {
     try {
-      TiaoWenListCalculationConfig config =
-          calculationConfig ?? defaultCalculationConfig;
       // 1. 验证参数
       validateParams(params);
 
@@ -57,31 +58,64 @@ class TaiXuanFourZhuTiaoWenListUseCase
         throw Exception("太玄四柱计算失败: ${strategyResult.errorMessage}");
       }
 
-      // 3. 使用基类模板方法处理条文列表
-      final updatedBaseNumbers = await processWithBatchQuery(
-        strategyResult.baseNumbers,
-        config,
-      );
+      // 3. 使用条文列表计算配置（默认或用户指定）
+      final effectiveConfig = calculationConfig ?? defaultCalculationConfig;
 
-      // 4. 提取所有条文实体
-      final allTiaoWenEntities = updatedBaseNumbers
+      // 4. 为每个基础数计算条文列表并获取条文数据
+      final baseNumberTiaoWenList = <BaseNumberTiaoWenListModel>[];
+
+      for (final baseNumber in strategyResult.baseNumbers) {
+        // 使用TiaoWenListCalculator计算条文列表
+        final calculator = TiaoWenListCalculator(effectiveConfig);
+        final calculationResult = calculator.calculate(baseNumber.baseNumber);
+        final tiaoWenNumbers = calculationResult.tiaoWenNumbers;
+
+        // 从Repository获取条文数据
+        final tiaoWenDataList = <TiaoWenDataModel>[];
+        for (final number in tiaoWenNumbers) {
+          try {
+            final tiaoWenData = await _repository.getById(number);
+            if (tiaoWenData != null) {
+              tiaoWenDataList.add(tiaoWenData);
+            }
+          } catch (e) {
+            // 记录错误但继续处理其他条文
+            print('获取条文数据失败 (number: $number): $e');
+          }
+        }
+
+        // 创建BaseNumberTiaoWenListModel
+        baseNumberTiaoWenList.add(
+          BaseNumberTiaoWenListModel(
+            baseNumber: baseNumber.baseNumber,
+            tiaoWenDataList: tiaoWenDataList,
+            name: baseNumber.name,
+            description: baseNumber.description,
+            source: baseNumber.source,
+            tiaoWenNumbers: tiaoWenNumbers,
+          ),
+        );
+      }
+
+      // 5. 提取所有条文实体
+      final allTiaoWenEntities = baseNumberTiaoWenList
           .expand((model) => model.tiaoWenDataList)
           .toList();
 
-      // 5. 创建并返回MultiBaseNumberResult
+      // 6. 创建并返回MultiBaseNumberResult
       return MultiBaseNumberResult.success(
         algorithmName: strategyResult.algorithmName,
         algorithmDescription: strategyResult.algorithmDescription,
         calculationParams: strategyResult.calculationParams,
         sourceData: {
           ...strategyResult.sourceData,
-          'calculationConfig': config.desc ?? 'N/A',
-          'tiaoWenCount': updatedBaseNumbers.fold<int>(
+          'tiaoWenCalculationMethod': effectiveConfig.desc ?? 'N/A',
+          'tiaoWenCount': baseNumberTiaoWenList.fold<int>(
             0,
             (sum, model) => sum + model.tiaoWenCount,
           ),
         },
-        baseNumberTiaoWenList: updatedBaseNumbers,
+        baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: allTiaoWenEntities,
       );
     } catch (e) {
@@ -96,6 +130,20 @@ class TaiXuanFourZhuTiaoWenListUseCase
         },
       );
     }
+  }
+
+  /// 获取支持的条文计算配置选项
+  ///
+  /// 返回用户可以选择的预设配置列表
+  List<TiaoWenCalculationConfig> getSupportedTiaoWenCalculationConfigs() {
+    return _strategy.supportedTiaoWenCalculationConfigs;
+  }
+
+  /// 获取默认的条文计算配置
+  ///
+  /// 返回Strategy的默认配置
+  TiaoWenCalculationConfig getDefaultTiaoWenCalculationConfig() {
+    return _strategy.defaultTiaoWenCalculationConfig;
   }
 
   @override

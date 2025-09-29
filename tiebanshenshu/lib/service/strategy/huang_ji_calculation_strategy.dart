@@ -113,7 +113,7 @@ class HuangJiCalculationStrategy
         print('❌ 错误类型: ${e.runtimeType}');
         print('❌ 错误信息: $e');
       }
-      
+
       if (e is TiaoWenCalculationException) {
         rethrow;
       }
@@ -433,11 +433,141 @@ class HuangJiCalculationStrategy
     return candidates;
   }
 
+  /// 计算另外两种方案中新增的最终条文数列表
+  ///
+  /// 该函数包含了《皇极取数法二》和《皇极取数法三》中独有的条文计算规则。
+  /// 这些规则的核心是引入了新的衍生“基础数”。
+  Map<String, int> _calculateAdditionalFinalNumbers(
+    EightChars fourZhu,
+    int baseNumber, // 这个是“基础数一”，即校准后的元会数
+  ) {
+    // 首先，获取所有需要的原始太玄数，与原函数保持一致
+    final yearGanNumber = Constants.taiXuanGanNumberMapper[fourZhu.year.gan]!;
+    final monthGanNumber = Constants.taiXuanGanNumberMapper[fourZhu.month.gan]!;
+    final dayGanNumber = Constants.taiXuanGanNumberMapper[fourZhu.day.gan]!;
+    final dayZhiNumber = Constants.taiXuanZhiNumberMapper[fourZhu.day.zhi]!;
+    final timeGanNumber = Constants.taiXuanGanNumberMapper[fourZhu.time.gan]!;
+    final timeZhiNumber = Constants.taiXuanZhiNumberMapper[fourZhu.time.zhi]!;
+
+    // 重新计算运世数，因为它是多个计算的基础
+    final yunShiNumber = _calculateYunShiNumber(fourZhu);
+
+    // 用于存储新增条文数的Map，使用描述性键名以区分
+    final additionalNumbers = <String, int>{};
+
+    // --- 方案二：“对称修正双核”方案新增的计算 ---
+    // 该方案的核心是定义了一个新的“基础数二”，即修正后的运世数
+
+    // 1. 定义《皇极取数法二》的“基础数二”
+    // 公式: 运世基础数 + 年干太玄数
+    final baseNumber2Method2 = yunShiNumber + yearGanNumber;
+
+    // 2. 基于“基础数一”的新增条文
+    // 公式: 基础数一 + 日干(十位数) = 条文数
+    additionalNumbers['方案二_基础数一_加_日干十位'] = baseNumber + dayGanNumber * 10;
+
+    // 3. 基于“基础数二”的系列条文
+    // 公式: 基础数二 + 月干(百位数) = 条文数
+    additionalNumbers['方案二_基础数二_加_月干百位'] =
+        baseNumber2Method2 + monthGanNumber * 100;
+
+    // 公式: 基础数二 + 日干(十位数) = 条文数
+    additionalNumbers['方案二_基础数二_加_日干十位'] =
+        baseNumber2Method2 + dayGanNumber * 10;
+
+    // 公式: 基础数二 + 时干个位数 = 条文数
+    additionalNumbers['方案二_基础数二_加_时干个位'] = baseNumber2Method2 + timeGanNumber;
+
+    // --- 方案三：“递进衍生”方案新增的计算 ---
+    // 该方案的核心是定义了多个衍生的基础数 (基础数二, 基础数三, 基础数四)
+
+    // 1. 定义《皇极取数法三》的“基础数二”
+    // 公式: 基础数一 + 日干支合数（日干十位、日支个位）
+    final dayPillarNumber = dayGanNumber * 10 + dayZhiNumber; // 日干支合数
+    final baseNumber2Method3 = baseNumber + dayPillarNumber;
+
+    // 2. 基于“基础数二”的系列条文
+    // 公式: 基础数二 + 时干个位 = 条文数
+    additionalNumbers['方案三_基础数二_加_时干个位'] = baseNumber2Method3 + timeGanNumber;
+
+    // 公式: 基础数二 + 时支个位 = 条文数
+    additionalNumbers['方案三_基础数二_加_时支个位'] = baseNumber2Method3 + timeZhiNumber;
+
+    // 3. 定义《皇极取数法三》的“基础数三”
+    // 公式: 运世基本数 + 年干太玄千位
+    // 注意: 这里“年干太玄千位”通常理解为 年干数 * 1000
+    final baseNumber3Method3 = yunShiNumber + yearGanNumber * 1000;
+
+    // 4. 定义《皇极取数法三》的“基础数四”
+    // 公式: 基础数三 + 日干支合数
+    final baseNumber4Method3 = baseNumber3Method3 + dayPillarNumber;
+
+    // 5. 基于“基础数四”的系列条文
+    // 公式: 基础数四 + 时干(个位数) = 条文数
+    additionalNumbers['方案三_基础数四_加_时干个位'] = baseNumber4Method3 + timeGanNumber;
+
+    // 公式: 基础数四 + 时支(个位数) = 条文数
+    additionalNumbers['方案三_基础数四_加_时支个位'] = baseNumber4Method3 + timeZhiNumber;
+
+    return additionalNumbers;
+  }
+
   /// 验证候选数是否有效
   bool isValidCandidateNumber(int candidateNumber) {
     // 基本验证：数字应该在合理范围内
     return candidateNumber > 0 && candidateNumber <= 13000;
   }
+
+  /// 获取默认的条文计算配置
+  @override
+  TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
+    return HuangJiTiaoWenCalculationConfig();
+  }
+
+  /// 计算条文列表（使用指定配置）
+  @override
+  List<int> calculateTiaoWenListWithConfig(
+    int baseNumber,
+    HuangJiCalculationParams params,
+    TiaoWenCalculationConfig config,
+  ) {
+    // 构建计算上下文
+    final context = <String, dynamic>{
+      'eightChars': params.eightChars,
+      'baseNumber': baseNumber,
+    };
+
+    try {
+      return config.calculateTiaoWenList(baseNumber, context);
+    } catch (e) {
+      throw HuangJiCalculationException(
+        message: '皇极取数法计算失败: $e',
+        code: '10',
+        originalException: e,
+        calculationStep: '条文列表计算',
+        fourZhuInfo: params.eightChars.toString(),
+      );
+    }
+  }
+
+  /// 获取支持的条文计算配置选项
+  @override
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
+    return [
+      HuangJiTiaoWenCalculationConfig(),
+      // 皇极取数法也可以支持简化的通用配置作为备选
+      GenericTiaoWenCalculationConfig.customList(
+        name: "皇极简化配置",
+        description: "简化的皇极取数：基础数±100",
+        customList: [0, 100],
+        withSub: true,
+      ),
+    ];
+  }
+
+  @override
+  String get tiaoWenCalculationDescription =>
+      defaultTiaoWenCalculationConfig.description;
 
   @override
   // TODO: implement detailSteps

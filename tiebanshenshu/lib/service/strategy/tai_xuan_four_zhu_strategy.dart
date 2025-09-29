@@ -215,6 +215,50 @@ class TaiXuanFourZhuStrategy
     return topSum * 100 + botSum;
   }
 
+  /// 获取默认的条文计算配置
+  @override
+  TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
+    return GenericTiaoWenCalculationConfig.taiXuanStandard();
+  }
+
+  /// 计算条文列表（使用指定配置）
+  @override
+  List<int> calculateTiaoWenListWithConfig(
+    int baseNumber, 
+    TaiXuanFourZhuStrategyParams params, 
+    TiaoWenCalculationConfig config,
+  ) {
+    // 构建计算上下文
+    final context = <String, dynamic>{
+      'eightChars': params.eightChars,
+    };
+    
+    return config.calculateTiaoWenList(baseNumber, context);
+  }
+
+  /// 获取支持的条文计算配置选项
+  @override
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
+    return [
+      GenericTiaoWenCalculationConfig.taiXuanStandard(),
+      GenericTiaoWenCalculationConfig.customList(
+        name: "简化配置",
+        description: "仅±96：±96",
+        customList: [0, 96],
+        withSub: true,
+      ),
+      GenericTiaoWenCalculationConfig.customList(
+        name: "扩展配置",
+        description: "基础数分别各±96六次：±96、±192、±384、±768、±1536、±3072",
+        customList: [0, 96, 192, 384, 768, 1536, 3072],
+        withSub: true,
+      ),
+    ];
+  }
+
+  @override
+  String get tiaoWenCalculationDescription => defaultTiaoWenCalculationConfig.description;
+
   /// 计算太玄干支和
   int _calculateTaixuanGanzhiSum(String ganzhi) {
     return Constants.taixuanGanNumberMapper[ganzhi[0]]! +

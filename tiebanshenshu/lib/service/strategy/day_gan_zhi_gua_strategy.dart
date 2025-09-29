@@ -96,6 +96,62 @@ class DayGanZhiGuaStrategy
   @override
   String get school => "日柱变卦流派";
 
+  /// 获取默认的条文计算配置
+  @override
+  TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
+    return GenericTiaoWenCalculationConfig.customList(
+      name: "日柱变卦标准配置",
+      description: "基础数±1000：±1000",
+      customList: [0, 1000],
+      withSub: true,
+    );
+  }
+
+  /// 计算条文列表（使用指定配置）
+  @override
+  List<int> calculateTiaoWenListWithConfig(
+    int baseNumber,
+    DayGanZhiGuaStrategyParams params,
+    TiaoWenCalculationConfig config,
+  ) {
+    // 构建计算上下文
+    final context = <String, dynamic>{
+      'dayGanZhi': params.dayGanZhi,
+      'baseNumber': baseNumber,
+    };
+
+    return config.calculateTiaoWenList(baseNumber, context);
+  }
+
+  /// 获取支持的条文计算配置选项
+  @override
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
+    return [
+      GenericTiaoWenCalculationConfig.customList(
+        name: "日柱变卦标准配置",
+        description: "基础数±1000：±1000",
+        customList: [0, 1000],
+        withSub: true,
+      ),
+      GenericTiaoWenCalculationConfig.customList(
+        name: "日柱变卦简化配置",
+        description: "仅基础数：无变化",
+        customList: [0],
+        withSub: false,
+      ),
+      GenericTiaoWenCalculationConfig.customList(
+        name: "日柱变卦扩展配置",
+        description: "基础数±500、±1000、±2000：多层变化",
+        customList: [0, 500, 1000, 2000],
+        withSub: true,
+      ),
+    ];
+  }
+
+  @override
+  String get tiaoWenCalculationDescription =>
+      defaultTiaoWenCalculationConfig.description;
+
   @override
   BaseNumberModelResult calculate(DayGanZhiGuaStrategyParams params) {
     try {

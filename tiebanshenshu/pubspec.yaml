@@ -36,6 +36,7 @@ dependencies:
   http: ^1.5.0
   path_provider: ^2.1.5
   logger: ^2.0.1
+  tuple: ^2.0.2
   # flutter_timezone: ^4.1.0
   
   flutter_localizations:
