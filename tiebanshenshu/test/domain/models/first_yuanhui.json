@@ -5,11 +5,13 @@
     "name": "元会·基础数一",
     "description": "元会数 + 年干(千位）= 条文数(用户选择)",
     "type": "derived",
+    "isSelectable": false,
     "parentGroupId": "元会·基础数一",
     "baseNumberDefinition": {
       "name": "元会基础数",
       "description": "元会基础数",
       "type": "predefined",
+      "isSelectable": false,
       "source": "元会"
     },
     "parts": [

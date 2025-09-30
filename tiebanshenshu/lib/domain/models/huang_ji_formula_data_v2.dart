@@ -155,11 +155,14 @@ abstract class DataBaseNumberDefinition {
   int rawNumber; // 存储原始数字结果
   final BaseNumberDefinitionType type;
 
+  bool isSelectable;
+
   DataBaseNumberDefinition({
     required this.rawNumber,
     required this.name,
     required this.description,
     required this.type,
+    required this.isSelectable,
   });
 
   /// 获取处理后的数字，确保始终 ≤ 13000
@@ -311,6 +314,7 @@ class DataPredefinedBaseNumber extends DataBaseNumberDefinition {
     required super.description,
     required this.source,
     super.type = BaseNumberDefinitionType.predefined,
+    super.isSelectable = false,
     // required this.sourceValue,
   });
 
@@ -349,6 +353,7 @@ class DataDerivedBaseNumber extends DataBaseNumberDefinition {
     required this.calculationParts,
     required this.baseNumberDefinition,
     super.type = BaseNumberDefinitionType.derived,
+    super.isSelectable = false,
     // this.calculationSteps = const [],
   });
 
@@ -402,6 +407,7 @@ class DataSelectableBaseNumber extends DataBaseNumberDefinition {
     required this.initialCandidate,
     this.candidateValue,
     super.type = BaseNumberDefinitionType.selectable,
+    super.isSelectable = false,
   });
 
   factory DataSelectableBaseNumber.fromJson(Map<String, dynamic> json) =>

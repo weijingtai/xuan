@@ -195,7 +195,6 @@ Map<String, dynamic> _$DataDerivedBaseNumberToJson(
 ) => <String, dynamic>{
   'name': instance.name,
   'description': instance.description,
-  'rawNumber': instance.rawNumber,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
   'parentGroupId': instance.parentGroupId,
   'calculationParts': DataDerivedBaseNumber._calculationPartsToJson(
@@ -204,6 +203,7 @@ Map<String, dynamic> _$DataDerivedBaseNumberToJson(
   'baseNumberDefinition': DataBaseNumberDefinitionConverter._toJson(
     instance.baseNumberDefinition,
   ),
+  'rawNumber': instance.rawNumber,
 };
 
 DataSelectableBaseNumber _$DataSelectableBaseNumberFromJson(

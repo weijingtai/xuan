@@ -10,15 +10,18 @@
         "name": "元会基础数",
         "description": "根据元会基础数+年干(千位数）=条文数(用户选择)",
         "type": "selectable",
+        "isSelectable": false,
         "initialCandidateFormula": {
           "name": "元会·基础数一",
           "description": "元会数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
+          "isSelectable": false,
           "parentGroupId": "元会·基础数一",
           "baseNumberDefinition": {
             "name": "元会基础数",
             "description": "元会基础数",
             "type": "predefined",
+            "isSelectable": false,
             "source": "元会"
           },
           "parts": [
@@ -71,20 +74,24 @@
         "name": "元会基础数",
         "description": "根据元会基础数+年干(千位数）=条文数(用户选择)",
         "type": "selectable",
+        "isSelectable": false,
         "initialCandidateFormula": {
           "name": "元会·基础数二",
           "description": "元会数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
+          "isSelectable": false,
           "parentGroupId": "元会·基础数二",
           "baseNumberDefinition": {
             "name": "元会基础数",
             "description": "元会基础数",
             "type": "derived",
+            "isSelectable": false,
             "parentGroupId": "元会·基础数二",
             "baseNumberDefinition": {
               "name": "元会基础数",
               "description": "元会基础数",
               "type": "predefined",
+              "isSelectable": false,
               "source": "元会"
             },
             "parts": [
@@ -163,15 +170,18 @@
         "name": "运世基础数",
         "description": "根据运世基础数+年干(千位数）=条文数(用户选择)",
         "type": "selectable",
+        "isSelectable": false,
         "initialCandidateFormula": {
           "name": "运世·基础数一",
           "description": "运世基础数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
+          "isSelectable": false,
           "parentGroupId": "运世·基础数一",
           "baseNumberDefinition": {
             "name": "运世基础数",
             "description": "运世基础数",
             "type": "predefined",
+            "isSelectable": false,
             "source": "运世"
           },
           "parts": [
@@ -224,20 +234,24 @@
         "name": "运世基础数",
         "description": "根据运世基础数+年干(千位数）=条文数(用户选择)",
         "type": "selectable",
+        "isSelectable": false,
         "initialCandidateFormula": {
           "name": "运世·基础数二",
           "description": "运世数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
+          "isSelectable": false,
           "parentGroupId": "运世·基础数二",
           "baseNumberDefinition": {
             "name": "运世基础数",
             "description": "运世基础数",
             "type": "derived",
+            "isSelectable": false,
             "parentGroupId": "运世·基础数二",
             "baseNumberDefinition": {
               "name": "运世基础数",
               "description": "运世基础数",
               "type": "predefined",
+              "isSelectable": false,
               "source": "运世"
             },
             "parts": [

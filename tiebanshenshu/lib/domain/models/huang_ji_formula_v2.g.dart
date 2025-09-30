@@ -53,6 +53,7 @@ PredefinedBaseNumber _$PredefinedBaseNumberFromJson(
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.predefined,
+  isSelectable: json['isSelectable'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$PredefinedBaseNumberToJson(
@@ -61,6 +62,7 @@ Map<String, dynamic> _$PredefinedBaseNumberToJson(
   'name': instance.name,
   'description': instance.description,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
+  'isSelectable': instance.isSelectable,
   'source': _$NumberSourceEnumMap[instance.source]!,
 };
 
@@ -90,6 +92,7 @@ DerivedBaseNumber _$DerivedBaseNumberFromJson(Map<String, dynamic> json) =>
             json['type'],
           ) ??
           BaseNumberDefinitionType.derived,
+      isSelectable: json['isSelectable'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$DerivedBaseNumberToJson(DerivedBaseNumber instance) =>
@@ -97,6 +100,7 @@ Map<String, dynamic> _$DerivedBaseNumberToJson(DerivedBaseNumber instance) =>
       'name': instance.name,
       'description': instance.description,
       'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
+      'isSelectable': instance.isSelectable,
       'parentGroupId': instance.parentGroupId,
       'baseNumberDefinition': const BaseNumberDefinitionConverter().toJson(
         instance.baseNumberDefinition,
@@ -115,6 +119,7 @@ SelectableBaseNumber _$SelectableBaseNumberFromJson(
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.selectable,
+  isSelectable: json['isSelectable'] as bool? ?? true,
 );
 
 Map<String, dynamic> _$SelectableBaseNumberToJson(
@@ -123,6 +128,7 @@ Map<String, dynamic> _$SelectableBaseNumberToJson(
   'name': instance.name,
   'description': instance.description,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
+  'isSelectable': instance.isSelectable,
   'initialCandidateFormula': const BaseNumberDefinitionConverter().toJson(
     instance.initialCandidateFormula,
   ),

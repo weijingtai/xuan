@@ -179,10 +179,12 @@ abstract class BaseNumberDefinition {
   String name;
   String description;
   final BaseNumberDefinitionType type;
+  bool isSelectable;
   BaseNumberDefinition({
     required this.name,
     required this.description,
     required this.type,
+    required this.isSelectable,
   });
 
   Map<String, dynamic> toJson();
@@ -266,6 +268,7 @@ class PredefinedBaseNumber extends BaseNumberDefinition {
     required super.description,
     required this.source,
     super.type = BaseNumberDefinitionType.predefined,
+    super.isSelectable = false,
   });
   factory PredefinedBaseNumber.fromJson(Map<String, dynamic> json) =>
       _$PredefinedBaseNumberFromJson(json);
@@ -293,6 +296,7 @@ class PredefinedBaseNumber extends BaseNumberDefinition {
       description: description,
       source: source,
       rawNumber: number,
+      isSelectable: isSelectable,
     );
   }
 }
@@ -317,6 +321,7 @@ class DerivedBaseNumber extends BaseNumberDefinition {
     required this.parentGroupId,
     required this.parts,
     super.type = BaseNumberDefinitionType.derived,
+    super.isSelectable = false,
   });
   factory DerivedBaseNumber.fromJson(Map<String, dynamic> json) =>
       _$DerivedBaseNumberFromJson(json);
@@ -345,6 +350,7 @@ class DerivedBaseNumber extends BaseNumberDefinition {
       rawNumber: dataParts.fold(0, (prev, e) => prev + e.rawNumber),
       calculationParts: dataParts,
       baseNumberDefinition: baseNumberDefinition.toData(yhys),
+      isSelectable: isSelectable,
     );
   }
 }
@@ -361,6 +367,7 @@ class SelectableBaseNumber extends BaseNumberDefinition {
     required super.description,
     required this.initialCandidateFormula,
     super.type = BaseNumberDefinitionType.selectable,
+    super.isSelectable = false,
   });
   factory SelectableBaseNumber.fromJson(Map<String, dynamic> json) =>
       _$SelectableBaseNumberFromJson(json);
@@ -378,6 +385,7 @@ class SelectableBaseNumber extends BaseNumberDefinition {
       description: description,
       initialCandidate: initialCandidateFormula.toData(yhys),
       rawNumber: -1,
+      isSelectable: isSelectable,
     );
   }
 }

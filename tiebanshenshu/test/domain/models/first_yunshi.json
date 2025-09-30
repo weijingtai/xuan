@@ -5,6 +5,7 @@
     "name": "运世基础数",
     "description": "运世基础数",
     "type": "predefined",
+    "isSelectable": false,
     "source": "运世"
   },
   "formulas": [
