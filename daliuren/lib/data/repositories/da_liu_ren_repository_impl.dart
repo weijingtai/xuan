@@ -4,10 +4,14 @@ import 'package:flutter/services.dart';
 import 'package:common/enums.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:daliuren/domain/repositories/da_liu_ren_repository.dart';
+import 'package:daliuren/domain/services/da_liu_ren_calculation_service.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:daliuren/model/da_liu_ren_pan_model.dart';
 
 class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
+  final DaLiuRenCalculationService calculationService;
+
+  DaLiuRenRepositoryImpl({required this.calculationService});
   static const String _yangAssetPath = "assets/da_liu_ren/甲午庚牛羊_阳.json";
   static const String _yinAssetPath = "assets/da_liu_ren/甲午庚牛羊_阴.json";
   static const String _juMapperPath = "assets/da_liu_ren/ju_mapper.json";
@@ -129,40 +133,16 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
   @override
   Future<DaLiuRenKePan> calculateDivination(DateTime dateTime, {String? question}) async {
     try {
-      // Ensure data is loaded
+      // Ensure data is loaded (for future use of YuDing data, etc.)
       await loadDivinationData();
 
-      // Convert DateTime to Chinese calendar components using lunar package
-      // This is a simplified placeholder - in real implementation this would use:
-      // import 'package:lunar/calendar/Lunar.dart';
-      // var lunar = Lunar.fromDate(dateTime);
-      // var baZi = lunar.getBaZi();
-
-      // For now, creating a placeholder calculation
-      final eightChatStr = "甲子 丙寅 戊辰 庚午"; // Placeholder - would be calculated
-      final monthGeneral = MonthGeneral.ZI_SHEN_HOU; // Would be calculated from jieqi
-
-      final kePan = DaLiuRenKePan(
-        panDateTime: dateTime,
-        question: question,
-        eightChatStr: eightChatStr,
-        monthGeneral: monthGeneral,
-      );
+      // Use CalculationService to perform real calculation
+      final kePan = calculationService.calculate(dateTime, question: question);
 
       return kePan;
     } catch (e) {
-      // 在 Web 环境下如果遇到 JSArray 问题，使用简化的占位符
       print('Error in calculateDivination: $e');
-
-      // 创建一个最简单的占位符对象
-      final kePan = DaLiuRenKePan(
-        panDateTime: dateTime,
-        question: question,
-        eightChatStr: "甲子 乙丑 丙寅 丁卯", // 简化的八字
-        monthGeneral: MonthGeneral.ZI_SHEN_HOU,
-      );
-
-      return kePan;
+      rethrow; // 不再吞掉异常,让上层处理
     }
   }
 
