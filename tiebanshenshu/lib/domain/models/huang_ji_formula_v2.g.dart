@@ -11,6 +11,7 @@ HuangJiCalculationFormula _$HuangJiCalculationFormulaFromJson(
 ) => HuangJiCalculationFormula(
   id: (json['id'] as num).toInt(),
   name: json['name'] as String,
+  description: json['description'] as String,
   groups: HuangJiCalculationFormula._groupsFromJson(json['groups'] as List),
 );
 
@@ -19,6 +20,7 @@ Map<String, dynamic> _$HuangJiCalculationFormulaToJson(
 ) => <String, dynamic>{
   'id': instance.id,
   'name': instance.name,
+  'description': instance.description,
   'groups': HuangJiCalculationFormula._groupsToJson(instance.groups),
 };
 
@@ -77,6 +79,9 @@ DerivedBaseNumber _$DerivedBaseNumberFromJson(Map<String, dynamic> json) =>
     DerivedBaseNumber(
       name: json['name'] as String,
       description: json['description'] as String,
+      baseNumberDefinition: const BaseNumberDefinitionConverter().fromJson(
+        json['baseNumberDefinition'] as Map<String, dynamic>,
+      ),
       parentGroupId: json['parentGroupId'] as String,
       parts: DerivedBaseNumber._partsFromJson(json['parts'] as List),
       type:
@@ -93,6 +98,9 @@ Map<String, dynamic> _$DerivedBaseNumberToJson(DerivedBaseNumber instance) =>
       'description': instance.description,
       'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
       'parentGroupId': instance.parentGroupId,
+      'baseNumberDefinition': const BaseNumberDefinitionConverter().toJson(
+        instance.baseNumberDefinition,
+      ),
       'parts': DerivedBaseNumber._partsToJson(instance.parts),
     };
 
@@ -194,6 +202,7 @@ Map<String, dynamic> _$CompositeNumberPartToJson(
 TiaoWenFormula _$TiaoWenFormulaFromJson(Map<String, dynamic> json) =>
     TiaoWenFormula(
       name: json['name'] as String,
+      description: json['description'] as String,
       parts: json['parts'] == null
           ? const []
           : TiaoWenFormula._partsFromJson(json['parts'] as List),
@@ -202,5 +211,6 @@ TiaoWenFormula _$TiaoWenFormulaFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$TiaoWenFormulaToJson(TiaoWenFormula instance) =>
     <String, dynamic>{
       'name': instance.name,
+      'description': instance.description,
       'parts': TiaoWenFormula._partsToJson(instance.parts),
     };

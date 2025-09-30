@@ -8,11 +8,37 @@ part of 'yuan_hui_yun_shi.dart';
 
 YuanHuiYunShi _$YuanHuiYunShiFromJson(Map<String, dynamic> json) =>
     YuanHuiYunShi(
-      year: $enumDecode(_$JiaZiEnumMap, json['year']),
-      month: $enumDecode(_$JiaZiEnumMap, json['month']),
-      day: $enumDecode(_$JiaZiEnumMap, json['day']),
-      time: $enumDecode(_$JiaZiEnumMap, json['time']),
-    );
+        year: $enumDecode(_$JiaZiEnumMap, json['year']),
+        month: $enumDecode(_$JiaZiEnumMap, json['month']),
+        day: $enumDecode(_$JiaZiEnumMap, json['day']),
+        time: $enumDecode(_$JiaZiEnumMap, json['time']),
+      )
+      ..yearZhi = $enumDecode(_$DiZhiEnumMap, json['yearZhi'])
+      ..yearGan = $enumDecode(_$TianGanEnumMap, json['yearGan'])
+      ..yearZhiNumber = (json['yearZhiNumber'] as num).toInt()
+      ..yearGanNumber = (json['yearGanNumber'] as num).toInt()
+      ..monthZhi = $enumDecode(_$DiZhiEnumMap, json['monthZhi'])
+      ..monthGan = $enumDecode(_$TianGanEnumMap, json['monthGan'])
+      ..monthZhiNumber = (json['monthZhiNumber'] as num).toInt()
+      ..monthGanNumber = (json['monthGanNumber'] as num).toInt()
+      ..dayZhi = $enumDecode(_$DiZhiEnumMap, json['dayZhi'])
+      ..dayGan = $enumDecode(_$TianGanEnumMap, json['dayGan'])
+      ..dayZhiNumber = (json['dayZhiNumber'] as num).toInt()
+      ..dayGanNumber = (json['dayGanNumber'] as num).toInt()
+      ..timeZhi = $enumDecode(_$DiZhiEnumMap, json['timeZhi'])
+      ..timeGan = $enumDecode(_$TianGanEnumMap, json['timeGan'])
+      ..timeZhiNumber = (json['timeZhiNumber'] as num).toInt()
+      ..timeGanNumber = (json['timeGanNumber'] as num).toInt()
+      ..yuanNumber = (json['yuanNumber'] as num).toInt()
+      ..huiNumber = (json['huiNumber'] as num).toInt()
+      ..yunNumber = (json['yunNumber'] as num).toInt()
+      ..shiNumber = (json['shiNumber'] as num).toInt()
+      ..yuanHuiMergeNumber = HuangJiBaseNumber.fromJson(
+        json['yuanHuiMergeNumber'] as Map<String, dynamic>,
+      )
+      ..yunShiMergeNumber = HuangJiBaseNumber.fromJson(
+        json['yunShiMergeNumber'] as Map<String, dynamic>,
+      );
 
 Map<String, dynamic> _$YuanHuiYunShiToJson(YuanHuiYunShi instance) =>
     <String, dynamic>{
@@ -20,6 +46,28 @@ Map<String, dynamic> _$YuanHuiYunShiToJson(YuanHuiYunShi instance) =>
       'month': _$JiaZiEnumMap[instance.month]!,
       'day': _$JiaZiEnumMap[instance.day]!,
       'time': _$JiaZiEnumMap[instance.time]!,
+      'yearZhi': _$DiZhiEnumMap[instance.yearZhi]!,
+      'yearGan': _$TianGanEnumMap[instance.yearGan]!,
+      'yearZhiNumber': instance.yearZhiNumber,
+      'yearGanNumber': instance.yearGanNumber,
+      'monthZhi': _$DiZhiEnumMap[instance.monthZhi]!,
+      'monthGan': _$TianGanEnumMap[instance.monthGan]!,
+      'monthZhiNumber': instance.monthZhiNumber,
+      'monthGanNumber': instance.monthGanNumber,
+      'dayZhi': _$DiZhiEnumMap[instance.dayZhi]!,
+      'dayGan': _$TianGanEnumMap[instance.dayGan]!,
+      'dayZhiNumber': instance.dayZhiNumber,
+      'dayGanNumber': instance.dayGanNumber,
+      'timeZhi': _$DiZhiEnumMap[instance.timeZhi]!,
+      'timeGan': _$TianGanEnumMap[instance.timeGan]!,
+      'timeZhiNumber': instance.timeZhiNumber,
+      'timeGanNumber': instance.timeGanNumber,
+      'yuanNumber': instance.yuanNumber,
+      'huiNumber': instance.huiNumber,
+      'yunNumber': instance.yunNumber,
+      'shiNumber': instance.shiNumber,
+      'yuanHuiMergeNumber': instance.yuanHuiMergeNumber,
+      'yunShiMergeNumber': instance.yunShiMergeNumber,
     };
 
 const _$JiaZiEnumMap = {
@@ -83,4 +131,33 @@ const _$JiaZiEnumMap = {
   JiaZi.XIN_YOU: '辛酉',
   JiaZi.REN_XU: '壬戌',
   JiaZi.GUI_HAI: '癸亥',
+};
+
+const _$DiZhiEnumMap = {
+  DiZhi.ZI: '子',
+  DiZhi.CHOU: '丑',
+  DiZhi.YIN: '寅',
+  DiZhi.MAO: '卯',
+  DiZhi.CHEN: '辰',
+  DiZhi.SI: '巳',
+  DiZhi.WU: '午',
+  DiZhi.WEI: '未',
+  DiZhi.SHEN: '申',
+  DiZhi.YOU: '酉',
+  DiZhi.XU: '戌',
+  DiZhi.HAI: '亥',
+};
+
+const _$TianGanEnumMap = {
+  TianGan.JIA: '甲',
+  TianGan.YI: '乙',
+  TianGan.BING: '丙',
+  TianGan.DING: '丁',
+  TianGan.WU: '戊',
+  TianGan.JI: '己',
+  TianGan.GENG: '庚',
+  TianGan.XIN: '辛',
+  TianGan.REN: '壬',
+  TianGan.GUI: '癸',
+  TianGan.KONG_WANG: '空亡',
 };

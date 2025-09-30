@@ -121,6 +121,9 @@ class HuangJiBaseNumber extends HuangJiNumber {
   BaseNumberType baseNumberType;
   NumberSource numberSource;
   int orinialNumber;
+  int get number {
+    return checkToTiaoWenNumber(orinialNumber);
+  }
 
   HuangJiBaseNumber({
     required String name,

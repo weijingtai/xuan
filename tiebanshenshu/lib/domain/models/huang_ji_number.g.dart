@@ -36,10 +36,10 @@ Map<String, dynamic> _$HuangJiBaseNumberToJson(HuangJiBaseNumber instance) =>
     <String, dynamic>{
       'name': instance.name,
       'description': instance.description,
-      'number': instance.number,
       'baseNumberType': _$BaseNumberTypeEnumMap[instance.baseNumberType]!,
       'numberSource': _$NumberSourceEnumMap[instance.numberSource]!,
       'orinialNumber': instance.orinialNumber,
+      'number': instance.number,
     };
 
 const _$BaseNumberTypeEnumMap = {

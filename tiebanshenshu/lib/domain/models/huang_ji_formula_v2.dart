@@ -72,12 +72,14 @@ class BaseNumberDefinitionConverter
 class HuangJiCalculationFormula {
   final int id;
   final String name; // 例如："皇极取数法三"
+  final String description; // 例如："元会公式"
   @JsonKey(fromJson: _groupsFromJson, toJson: _groupsToJson)
   final List<CalculationGroup> groups; // 按顺序包含所有计算组
 
   HuangJiCalculationFormula({
     required this.id,
     required this.name,
+    required this.description,
     required this.groups,
   });
   factory HuangJiCalculationFormula.fromJson(Map<String, dynamic> json) =>
@@ -176,7 +178,6 @@ class CalculationGroup {
 abstract class BaseNumberDefinition {
   String name;
   String description;
-
   final BaseNumberDefinitionType type;
   BaseNumberDefinition({
     required this.name,
@@ -303,13 +304,16 @@ class DerivedBaseNumber extends BaseNumberDefinition {
   /// 派生的来源是哪个计算组的ID。
   final String parentGroupId;
 
+  @BaseNumberDefinitionConverter()
+  final BaseNumberDefinition baseNumberDefinition;
+
   /// 在父基础数之上，需要进行哪些运算来得到当前基础数。
   @JsonKey(fromJson: _partsFromJson, toJson: _partsToJson)
   final List<CalculationPart> parts;
-
   DerivedBaseNumber({
     required super.name,
     required super.description,
+    required this.baseNumberDefinition,
     required this.parentGroupId,
     required this.parts,
     super.type = BaseNumberDefinitionType.derived,
@@ -338,8 +342,9 @@ class DerivedBaseNumber extends BaseNumberDefinition {
       name: name,
       description: description,
       parentGroupId: parentGroupId,
-      rawNumber: dataParts.fold(0, (prev, e) => prev + e.number),
+      rawNumber: dataParts.fold(0, (prev, e) => prev + e.rawNumber),
       calculationParts: dataParts,
+      baseNumberDefinition: baseNumberDefinition.toData(yhys),
     );
   }
 }
@@ -510,10 +515,15 @@ class CompositeNumberPart extends CalculationPart {
 @JsonSerializable()
 class TiaoWenFormula {
   final String name;
+  final String description;
   @JsonKey(fromJson: _partsFromJson, toJson: _partsToJson)
   final List<CalculationPart> parts;
 
-  TiaoWenFormula({required this.name, this.parts = const []});
+  TiaoWenFormula({
+    required this.name,
+    required this.description,
+    this.parts = const [],
+  });
 
   factory TiaoWenFormula.fromJson(Map<String, dynamic> json) =>
       _$TiaoWenFormulaFromJson(json);
@@ -535,6 +545,10 @@ class TiaoWenFormula {
 
   TiaoWenFormulaData toData(YuanHuiYunShi yhys) {
     var dataParts = parts.map((e) => e.toData(yhys)).toList();
-    return TiaoWenFormulaData(name: name, parts: dataParts);
+    return TiaoWenFormulaData(
+      name: name,
+      parts: dataParts,
+      description: description,
+    );
   }
 }

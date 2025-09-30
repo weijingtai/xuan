@@ -129,12 +129,14 @@ TiaoWenFormulaData _$TiaoWenFormulaDataFromJson(Map<String, dynamic> json) =>
     TiaoWenFormulaData(
       name: json['name'] as String,
       parts: TiaoWenFormulaData._partsFromJson(json['parts'] as List),
+      description: json['description'] as String,
     );
 
 Map<String, dynamic> _$TiaoWenFormulaDataToJson(TiaoWenFormulaData instance) =>
     <String, dynamic>{
       'name': instance.name,
       'parts': TiaoWenFormulaData._partsToJson(instance.parts),
+      'description': instance.description,
     };
 
 DataPredefinedBaseNumber _$DataPredefinedBaseNumberFromJson(
@@ -180,6 +182,9 @@ DataDerivedBaseNumber _$DataDerivedBaseNumberFromJson(
   calculationParts: DataDerivedBaseNumber._calculationPartsFromJson(
     json['calculationParts'] as List,
   ),
+  baseNumberDefinition: DataBaseNumberDefinitionConverter._fromJson(
+    json['baseNumberDefinition'] as Map<String, dynamic>,
+  ),
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.derived,
@@ -195,6 +200,9 @@ Map<String, dynamic> _$DataDerivedBaseNumberToJson(
   'parentGroupId': instance.parentGroupId,
   'calculationParts': DataDerivedBaseNumber._calculationPartsToJson(
     instance.calculationParts,
+  ),
+  'baseNumberDefinition': DataBaseNumberDefinitionConverter._toJson(
+    instance.baseNumberDefinition,
   ),
 };
 

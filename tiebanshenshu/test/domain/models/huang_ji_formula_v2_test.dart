@@ -57,6 +57,11 @@ void main() {
         description: "从元会基础数派生",
         parentGroupId: "base_one",
         parts: [singlePart],
+        baseNumberDefinition: PredefinedBaseNumber(
+          name: "元会基础数",
+          description: "来自元会的基础数",
+          source: NumberSource.yuanHui,
+        ),
       );
 
       // 测试 JSON 序列化
@@ -78,6 +83,11 @@ void main() {
         description: "用于计算初刻数",
         parentGroupId: "base_one",
         parts: [],
+        baseNumberDefinition: PredefinedBaseNumber(
+          name: "元会基础数",
+          description: "来自元会的基础数",
+          source: NumberSource.yuanHui,
+        ),
       );
 
       final selectable = SelectableBaseNumber(
@@ -189,7 +199,10 @@ void main() {
 
       final dataResult = singlePart.toData(testYuanHuiYunShi);
       expect(dataResult.name, equals("年干千位"));
-      expect(dataResult.number, equals(testYuanHuiYunShi.yearGanNumber * 1000));
+      expect(
+        dataResult.rawNumber,
+        equals(testYuanHuiYunShi.yearGanNumber * 1000),
+      );
     });
 
     test('DerivedBaseNumber toData 转换', () {
@@ -206,6 +219,11 @@ void main() {
         description: "从元会基础数派生",
         parentGroupId: "base_one",
         parts: [singlePart],
+        baseNumberDefinition: PredefinedBaseNumber(
+          name: "元会基础数",
+          description: "来自元会的基础数",
+          source: NumberSource.yuanHui,
+        ),
       );
 
       final dataResult = derived.toData(testYuanHuiYunShi);
@@ -246,6 +264,7 @@ void main() {
       final tiaoWenFormula = TiaoWenFormula(
         name: "条文一",
         parts: [yearGanPart, monthGanPart],
+        description: "年干千位+月干百位",
       );
 
       // 创建计算组
@@ -260,6 +279,8 @@ void main() {
       final huangJiFormula = HuangJiCalculationFormula(
         id: 1,
         name: "皇极取数法测试",
+
+        description: "test: 来源《铁板神数预测学》中《皇极取数》",
         groups: [calculationGroup],
       );
 

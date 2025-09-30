@@ -56,7 +56,7 @@ void main() {
       );
 
       // 验证计算结果
-      expect(dataSingle.number, equals(8000)); // 8 * 1000
+      expect(dataSingle.rawNumber, equals(8000)); // 8 * 1000
       expect(dataSingle.raw, equals(8));
 
       // 测试 JSON 序列化
@@ -71,7 +71,7 @@ void main() {
       // 测试反序列化
       final restored = DataSingleNumberPart.fromJson(json);
       expect(restored.name, equals("年干千位"));
-      expect(restored.number, equals(8000));
+      expect(restored.rawNumber, equals(8000));
       expect(restored.raw, equals(8));
       expect(restored.fourZhuGanZhiType, equals(FourZhuGanZhiType.gan));
       expect(restored.fourZhuName, equals(FourZhuName.year));
@@ -105,7 +105,7 @@ void main() {
       );
 
       // 验证计算结果
-      expect(dataComposite.number, equals(69)); // 60 + 9
+      expect(dataComposite.rawNumber, equals(69)); // 60 + 9
       expect(dataComposite.dataComponents.length, equals(2));
 
       // 测试 JSON 序列化
@@ -118,7 +118,7 @@ void main() {
       // 测试反序列化
       final restored = DataCompositeNumberPart.fromJson(json);
       expect(restored.name, equals("日干支合数"));
-      expect(restored.number, equals(69));
+      expect(restored.rawNumber, equals(69));
       expect(restored.dataComponents.length, equals(2));
       expect(restored.type, equals(CalculationPartType.compositeNumber));
     });
@@ -140,6 +140,12 @@ void main() {
         description: "从元会基础数派生",
         parentGroupId: "base_one",
         calculationParts: [monthGanHundreds],
+        baseNumberDefinition: DataPredefinedBaseNumber(
+          rawNumber: testYuanHuiYunShi.yuanHuiMergeNumber.number,
+          name: "元会基础数",
+          description: "元会基础数",
+          source: NumberSource.yuanHui,
+        ),
       );
 
       // 测试 JSON 序列化
@@ -219,6 +225,7 @@ void main() {
 
       final tiaoWenData = TiaoWenFormulaData(
         name: "元会·条文一",
+        description: "年干千位 + 月干百位",
         parts: [yearGanThousands, monthGanHundreds],
       );
 
@@ -255,6 +262,7 @@ void main() {
 
       final tiaoWenData = TiaoWenFormulaData(
         name: "元会·条文一",
+        description: "年干千位",
         parts: [yearGanThousands],
       );
 
@@ -301,6 +309,7 @@ void main() {
 
       final tiaoWenData = TiaoWenFormulaData(
         name: "元会·条文一",
+        description: "年干千位",
         parts: [yearGanThousands],
       );
 
@@ -387,6 +396,7 @@ void main() {
       final tiaoWenFormula = TiaoWenFormula(
         name: "元会·条文一",
         parts: [yearGanThousands, monthGanHundreds],
+        description: "元会·条文一",
       );
 
       final calculationGroup = CalculationGroup(
@@ -399,6 +409,7 @@ void main() {
       final formula = HuangJiCalculationFormula(
         id: 1,
         name: "皇极取数法一",
+        description: "test: 来源《铁板神数预测学》中《皇极取数》",
         groups: [calculationGroup],
       );
 
@@ -421,11 +432,11 @@ void main() {
 
       // 验证计算部分的数值
       final yearGanPart = dataTiaoWen.parts[0] as DataSingleNumberPart;
-      expect(yearGanPart.number, equals(8000)); // 8 * 1000
+      expect(yearGanPart.rawNumber, equals(8000)); // 8 * 1000
       expect(yearGanPart.raw, equals(8));
 
       final monthGanPart = dataTiaoWen.parts[1] as DataSingleNumberPart;
-      expect(monthGanPart.number, equals(600)); // 6 * 100
+      expect(monthGanPart.rawNumber, equals(600)); // 6 * 100
       expect(monthGanPart.raw, equals(6));
     });
 
@@ -471,6 +482,7 @@ void main() {
       final complexFormula = TiaoWenFormula(
         name: "运世·条文一",
         parts: [dayGanZhiComposite, timeGanUnits],
+        description: '运世·条文一',
       );
 
       final complexGroup = CalculationGroup(
@@ -483,6 +495,7 @@ void main() {
       final complexCalculationFormula = HuangJiCalculationFormula(
         id: 2,
         name: "皇极取数法二",
+        description: "test: 来源《铁板神数预测学》中《运世取数》",
         groups: [complexGroup],
       );
 
@@ -502,13 +515,13 @@ void main() {
       // 验证组合数字部分
       final compositeData = dataTiaoWen.parts[0] as DataCompositeNumberPart;
       expect(compositeData.name, equals("日干支合数"));
-      expect(compositeData.number, equals(69)); // 60 + 9
+      expect(compositeData.rawNumber, equals(69)); // 60 + 9
       expect(compositeData.dataComponents.length, equals(2));
 
       // 验证时干个位
       final timeGanData = dataTiaoWen.parts[1] as DataSingleNumberPart;
       expect(timeGanData.name, equals("时干个位"));
-      expect(timeGanData.number, equals(7)); // 7 * 1
+      expect(timeGanData.rawNumber, equals(7)); // 7 * 1
       expect(timeGanData.raw, equals(7));
     });
   });

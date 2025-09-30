@@ -73,7 +73,12 @@ void main() {
       final compositeFormula = CompositeNumberPart(
         name: "四柱合数",
         description: "年干千位+月干百位+日干十位+时支个位",
-        components: [yearGanThousands, monthGanHundreds, dayGanTens, timeZhiUnits],
+        components: [
+          yearGanThousands,
+          monthGanHundreds,
+          dayGanTens,
+          timeZhiUnits,
+        ],
       );
 
       // 4. 创建条文公式
@@ -140,10 +145,12 @@ void main() {
 
       final dataComposite = dataTiaoWenOne.parts[0] as DataCompositeNumberPart;
       expect(dataComposite.components.length, equals(4));
-      
+
       // 验证各个组件的数值
-      final expectedYearGan = testYuanHuiYunShi.yearGanNumber * 1000; // 8 * 1000 = 8000
-      final expectedMonthGan = testYuanHuiYunShi.monthGanNumber * 100; // 6 * 100 = 600
+      final expectedYearGan =
+          testYuanHuiYunShi.yearGanNumber * 1000; // 8 * 1000 = 8000
+      final expectedMonthGan =
+          testYuanHuiYunShi.monthGanNumber * 100; // 6 * 100 = 600
       final expectedDayGan = testYuanHuiYunShi.dayGanNumber * 10; // 6 * 10 = 60
       final expectedTimeZhi = testYuanHuiYunShi.timeZhiNumber; // 4
 
@@ -152,14 +159,21 @@ void main() {
       expect(dataComposite.components[2].number, equals(expectedDayGan));
       expect(dataComposite.components[3].number, equals(expectedTimeZhi));
 
-      final expectedTotal = expectedYearGan + expectedMonthGan + expectedDayGan + expectedTimeZhi;
-      expect(dataComposite.number, equals(expectedTotal)); // 8000 + 600 + 60 + 4 = 8664
+      final expectedTotal =
+          expectedYearGan + expectedMonthGan + expectedDayGan + expectedTimeZhi;
+      expect(
+        dataComposite.rawNumber,
+        equals(expectedTotal),
+      ); // 8000 + 600 + 60 + 4 = 8664
 
       // 12. 验证条文二的计算结果
       final dataTiaoWenTwo = dataGroupOne.dataFormulas[1];
       expect(dataTiaoWenTwo.name, equals("条文二：年月干"));
       expect(dataTiaoWenTwo.parts.length, equals(2));
-      expect(dataTiaoWenTwo.number, equals(expectedYearGan + expectedMonthGan)); // 8600
+      expect(
+        dataTiaoWenTwo.number,
+        equals(expectedYearGan + expectedMonthGan),
+      ); // 8600
 
       // 13. 验证第二组数据
       final dataGroupTwo = dataFormula.groups[1];
@@ -204,12 +218,16 @@ void main() {
       // 5. 转换为数据模型
       final dataFormula = formulaWithDerived.toData(testYuanHuiYunShi);
       final dataGroup = dataFormula.groups.first;
-      final dataBaseNumber = dataGroup.baseNumberDefinition as DataDerivedBaseNumber;
+      final dataBaseNumber =
+          dataGroup.baseNumberDefinition as DataDerivedBaseNumber;
 
       // 6. 验证派生基础数的计算
       expect(dataBaseNumber.parentGroupId, equals("base_one"));
       expect(dataBaseNumber.calculationParts.length, equals(1));
-      expect(dataBaseNumber.number, equals(testYuanHuiYunShi.dayZhiNumber)); // 日支个位 = 9
+      expect(
+        dataBaseNumber.number,
+        equals(testYuanHuiYunShi.dayZhiNumber),
+      ); // 日支个位 = 9
     });
 
     test('选择式基础数的完整流程测试', () {
@@ -254,11 +272,18 @@ void main() {
       // 5. 转换为数据模型
       final dataFormula = formulaWithSelectable.toData(testYuanHuiYunShi);
       final dataGroup = dataFormula.groups.first;
-      final dataBaseNumber = dataGroup.baseNumberDefinition as DataSelectableBaseNumber;
+      final dataBaseNumber =
+          dataGroup.baseNumberDefinition as DataSelectableBaseNumber;
 
       // 6. 验证选择式基础数的计算
-      expect(dataBaseNumber.initialCandidateNumber, equals(testYuanHuiYunShi.timeGanNumber)); // 时干个位 = 7
-      expect(dataBaseNumber.number, equals(testYuanHuiYunShi.timeGanNumber)); // 默认使用初始候选数
+      expect(
+        dataBaseNumber.initialCandidateNumber,
+        equals(testYuanHuiYunShi.timeGanNumber),
+      ); // 时干个位 = 7
+      expect(
+        dataBaseNumber.number,
+        equals(testYuanHuiYunShi.timeGanNumber),
+      ); // 默认使用初始候选数
     });
 
     test('与原有测试数据的兼容性验证', () {

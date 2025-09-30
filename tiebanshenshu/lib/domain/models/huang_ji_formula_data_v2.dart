@@ -80,12 +80,14 @@ class DataCalculationGroup {
   final String description; // 例如: "围绕基础数一的计算"
 
   /// 本组所使用的"基础数"是如何定义的。
-  ///
   @JsonKey(
     fromJson: DataBaseNumberDefinitionConverter._fromJson,
     toJson: DataBaseNumberDefinitionConverter._toJson,
   )
   final DataBaseNumberDefinition baseNumberDefinition;
+
+  int get rawNumber => baseNumberDefinition.number;
+  int get number => baseNumberDefinition.number;
 
   /// 使用上述"基础数"进行的一系列条文计算公式。
   @JsonKey(fromJson: _dataFormulasFromJson, toJson: _dataFormulasToJson)
@@ -152,7 +154,7 @@ abstract class DataBaseNumberDefinition {
   String description;
   int rawNumber; // 存储原始数字结果
   final BaseNumberDefinitionType type;
-  
+
   DataBaseNumberDefinition({
     required this.rawNumber,
     required this.name,
@@ -176,14 +178,15 @@ abstract class DataBaseNumberDefinition {
 abstract class DataCalculationPart {
   final String name;
   final String description;
-  final int number; // 实际计算出的数值
+  final int rawNumber; // 实际计算出的数值
+  int get number => HuangJiBaseNumber.checkToTiaoWenNumber(rawNumber);
 
   final CalculationPartType type;
 
   DataCalculationPart({
     required this.name,
     required this.description,
-    required this.number,
+    required this.rawNumber,
     required this.type,
   });
 
@@ -204,14 +207,14 @@ class DataSingleNumberPart extends DataCalculationPart {
     required this.numberPlace,
     required this.raw,
     super.type = CalculationPartType.singleNumber,
-  }) : super(number: raw * numberPlace.factor);
+  }) : super(rawNumber: raw * numberPlace.factor);
   factory DataSingleNumberPart.fromJson(Map<String, dynamic> json) =>
       _$DataSingleNumberPartFromJson(json);
 
   @override
   Map<String, dynamic> toJson() {
     final json = _$DataSingleNumberPartToJson(this);
-    json['number'] = number; // 确保包含计算出的 number 字段
+    json['number'] = rawNumber; // 确保包含计算出的 number 字段
     return json;
   }
 }
@@ -230,9 +233,9 @@ class DataCompositeNumberPart extends DataCalculationPart {
     required this.dataComponents,
     super.type = CalculationPartType.compositeNumber,
   }) : super(
-         number: dataComponents.fold(
+         rawNumber: dataComponents.fold(
            0,
-           (prev, component) => prev + component.number,
+           (prev, component) => prev + component.rawNumber,
          ),
        );
   factory DataCompositeNumberPart.fromJson(Map<String, dynamic> json) =>
@@ -241,7 +244,7 @@ class DataCompositeNumberPart extends DataCalculationPart {
   @override
   Map<String, dynamic> toJson() {
     final json = _$DataCompositeNumberPartToJson(this);
-    json['number'] = number; // 确保包含计算出的 number 字段
+    json['number'] = rawNumber; // 确保包含计算出的 number 字段
     return json;
   }
 
@@ -266,8 +269,16 @@ class TiaoWenFormulaData {
   final String name;
   @JsonKey(fromJson: _partsFromJson, toJson: _partsToJson)
   final List<DataCalculationPart> parts;
+  final String description;
+  int get rawNumber =>
+      parts.fold(0, (prev, component) => prev + component.rawNumber);
+  int get number => HuangJiBaseNumber.checkToTiaoWenNumber(rawNumber);
 
-  TiaoWenFormulaData({required this.name, required this.parts});
+  TiaoWenFormulaData({
+    required this.name,
+    required this.parts,
+    required this.description,
+  });
   factory TiaoWenFormulaData.fromJson(Map<String, dynamic> json) =>
       _$TiaoWenFormulaDataFromJson(json);
   Map<String, dynamic> toJson() => _$TiaoWenFormulaDataToJson(this);
@@ -316,14 +327,27 @@ class DataDerivedBaseNumber extends DataBaseNumberDefinition {
   @JsonKey(fromJson: _calculationPartsFromJson, toJson: _calculationPartsToJson)
   final List<DataCalculationPart> calculationParts; // 实际的计算部分数据
   // final List<String> calculationSteps; // 计算步骤记录
+  @JsonKey(
+    fromJson: DataBaseNumberDefinitionConverter._fromJson,
+    toJson: DataBaseNumberDefinitionConverter._toJson,
+  )
+  final DataBaseNumberDefinition baseNumberDefinition;
+
+  @override
+  int get rawNumber {
+    return calculationParts.fold(
+      baseNumberDefinition.number,
+      (prev, component) => prev + component.rawNumber,
+    );
+  }
 
   DataDerivedBaseNumber({
     required super.rawNumber,
     required super.name,
     required super.description,
     required this.parentGroupId,
-    // required this.parentBaseNumber,
     required this.calculationParts,
+    required this.baseNumberDefinition,
     super.type = BaseNumberDefinitionType.derived,
     // this.calculationSteps = const [],
   });
@@ -360,7 +384,7 @@ class DataSelectableBaseNumber extends DataBaseNumberDefinition {
   final DataBaseNumberDefinition initialCandidate; // 初刻数的实际计算结果
   final int? candidateValue; // 候选值（初刻数）
   bool get isCompleted => candidateValue != null; // 是否被选中
-  
+
   @override
   int get number {
     final rawValue = candidateValue ?? initialCandidate.number;
@@ -370,7 +394,7 @@ class DataSelectableBaseNumber extends DataBaseNumberDefinition {
     }
     return rawValue;
   }
-  
+
   DataSelectableBaseNumber({
     required super.rawNumber,
     required super.name,
