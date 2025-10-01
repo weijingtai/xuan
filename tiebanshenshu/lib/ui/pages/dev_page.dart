@@ -91,6 +91,36 @@ class _DevPageState extends State<DevPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).pushNamed('/tiebanshenshu/multi_selection');
+              },
+              icon: const Icon(Icons.select_all),
+              label: const Text('皇极多基数选择'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/tiebanshenshu/huang_ji_demo');
+              },
+              icon: const Icon(Icons.science),
+              label: const Text('皇极6A演示'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
           ],
         ),
       ),

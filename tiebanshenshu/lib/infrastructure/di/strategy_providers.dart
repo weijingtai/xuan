@@ -3,8 +3,10 @@ import 'package:provider/single_child_widget.dart';
 
 import '../../application/services/candidate_generation_service.dart';
 import '../../application/services/interactive_session_service.dart';
+import '../../application/services/multi_base_number_selection_service.dart';
 import '../../application/usecases/huang_ji_interactive_use_case.dart';
 import '../../presentation/viewmodels/huang_ji_interactive_view_model.dart';
+import '../../presentation/viewmodels/multi_base_number_selection_view_model.dart';
 import '../../repository/repository_factory.dart';
 import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/day_gan_zhi_gua_strategy.dart';
@@ -63,6 +65,11 @@ class StrategyProviders {
     Provider<CandidateGenerationService>(
       create: (context) =>
           CandidateGenerationServiceImpl(context.read<TiaoWenRepository>()),
+    ),
+    Provider<MultiBaseNumberSelectionService>(
+      create: (context) => MultiBaseNumberSelectionService(
+        context.read<CandidateGenerationService>(),
+      ),
     ),
 
     // UseCase层
@@ -129,6 +136,13 @@ class StrategyProviders {
     ChangeNotifierProvider<TaiXuanFourZhuInteractiveViewModel>(
       create: (context) => TaiXuanFourZhuInteractiveViewModel(
         context.read<TaiXuanFourZhuInteractiveUseCase>(),
+      ),
+    ),
+
+    // Multi Base Number Selection Provider层
+    ChangeNotifierProvider<MultiBaseNumberSelectionViewModel>(
+      create: (context) => MultiBaseNumberSelectionViewModel(
+        context.read<MultiBaseNumberSelectionService>(),
       ),
     ),
   ];

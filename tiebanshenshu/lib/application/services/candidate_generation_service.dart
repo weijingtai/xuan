@@ -11,6 +11,9 @@ import '../../repository/tiao_wen_repository.dart';
 
 /// 候选项生成服务接口
 abstract class CandidateGenerationService {
+  /// 获取条文数据仓库
+  TiaoWenRepository get tiaoWenRepository;
+
   /// 生成基础数选择候选项
   Future<List<TiaoWenCandidate>> generateBaseNumberCandidates({
     required String strategyName,
@@ -37,6 +40,9 @@ class CandidateGenerationServiceImpl implements CandidateGenerationService {
   final TiaoWenRepository _tiaoWenRepository;
 
   CandidateGenerationServiceImpl(this._tiaoWenRepository);
+
+  @override
+  TiaoWenRepository get tiaoWenRepository => _tiaoWenRepository;
   @override
   Future<List<TiaoWenCandidate>> generateBaseNumberCandidates({
     required String strategyName,

@@ -111,13 +111,15 @@ class _CandidateSelectionWidgetState extends State<CandidateSelectionWidget>
 
   /// 构建候选项列表
   Widget _buildCandidateList() {
-    return ListView.builder(
+    return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
-      itemCount: widget.candidates.length,
-      itemBuilder: (context, index) {
-        final candidate = widget.candidates[index];
-        return _buildCandidateItem(candidate, index);
-      },
+      child: Column(
+        children: widget.candidates.asMap().entries.map((entry) {
+          final index = entry.key;
+          final candidate = entry.value;
+          return _buildCandidateItem(candidate, index);
+        }).toList(),
+      ),
     );
   }
 

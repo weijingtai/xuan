@@ -11,7 +11,7 @@ DataCalculationGroup _$DataCalculationGroupFromJson(
 ) => DataCalculationGroup(
   groupId: json['groupId'] as String,
   description: json['description'] as String,
-  baseNumberDefinition: DataBaseNumberDefinitionConverter._fromJson(
+  baseNumberDefinition: DataBaseNumberDefinitionConverter.fromJsonConvertor(
     json['baseNumberDefinition'] as Map<String, dynamic>,
   ),
   dataFormulas: DataCalculationGroup._dataFormulasFromJson(
@@ -24,7 +24,7 @@ Map<String, dynamic> _$DataCalculationGroupToJson(
 ) => <String, dynamic>{
   'groupId': instance.groupId,
   'description': instance.description,
-  'baseNumberDefinition': DataBaseNumberDefinitionConverter._toJson(
+  'baseNumberDefinition': DataBaseNumberDefinitionConverter.toJsonConvertor(
     instance.baseNumberDefinition,
   ),
   'dataFormulas': DataCalculationGroup._dataFormulasToJson(
@@ -149,6 +149,7 @@ DataPredefinedBaseNumber _$DataPredefinedBaseNumberFromJson(
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.predefined,
+  isSelectable: json['isSelectable'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$DataPredefinedBaseNumberToJson(
@@ -158,6 +159,7 @@ Map<String, dynamic> _$DataPredefinedBaseNumberToJson(
   'description': instance.description,
   'rawNumber': instance.rawNumber,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
+  'isSelectable': instance.isSelectable,
   'source': _$NumberSourceEnumMap[instance.source]!,
 };
 
@@ -182,12 +184,13 @@ DataDerivedBaseNumber _$DataDerivedBaseNumberFromJson(
   calculationParts: DataDerivedBaseNumber._calculationPartsFromJson(
     json['calculationParts'] as List,
   ),
-  baseNumberDefinition: DataBaseNumberDefinitionConverter._fromJson(
+  baseNumberDefinition: DataBaseNumberDefinitionConverter.fromJsonConvertor(
     json['baseNumberDefinition'] as Map<String, dynamic>,
   ),
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.derived,
+  isSelectable: json['isSelectable'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$DataDerivedBaseNumberToJson(
@@ -196,11 +199,12 @@ Map<String, dynamic> _$DataDerivedBaseNumberToJson(
   'name': instance.name,
   'description': instance.description,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
+  'isSelectable': instance.isSelectable,
   'parentGroupId': instance.parentGroupId,
   'calculationParts': DataDerivedBaseNumber._calculationPartsToJson(
     instance.calculationParts,
   ),
-  'baseNumberDefinition': DataBaseNumberDefinitionConverter._toJson(
+  'baseNumberDefinition': DataBaseNumberDefinitionConverter.toJsonConvertor(
     instance.baseNumberDefinition,
   ),
   'rawNumber': instance.rawNumber,
@@ -212,13 +216,14 @@ DataSelectableBaseNumber _$DataSelectableBaseNumberFromJson(
   rawNumber: (json['rawNumber'] as num).toInt(),
   name: json['name'] as String,
   description: json['description'] as String,
-  initialCandidate: DataBaseNumberDefinitionConverter._fromJson(
+  initialCandidate: DataBaseNumberDefinitionConverter.fromJsonConvertor(
     json['initialCandidate'] as Map<String, dynamic>,
   ),
   candidateValue: (json['candidateValue'] as num?)?.toInt(),
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.selectable,
+  isSelectable: json['isSelectable'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$DataSelectableBaseNumberToJson(
@@ -228,7 +233,8 @@ Map<String, dynamic> _$DataSelectableBaseNumberToJson(
   'description': instance.description,
   'rawNumber': instance.rawNumber,
   'type': _$BaseNumberDefinitionTypeEnumMap[instance.type]!,
-  'initialCandidate': DataBaseNumberDefinitionConverter._toJson(
+  'isSelectable': instance.isSelectable,
+  'initialCandidate': DataBaseNumberDefinitionConverter.toJsonConvertor(
     instance.initialCandidate,
   ),
   'candidateValue': instance.candidateValue,

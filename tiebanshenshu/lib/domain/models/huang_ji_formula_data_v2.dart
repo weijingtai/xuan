@@ -11,15 +11,15 @@ class DataBaseNumberDefinitionConverter
 
   @override
   DataBaseNumberDefinition fromJson(Map<String, dynamic> json) {
-    return _fromJson(json);
+    return fromJsonConvertor(json);
   }
 
   @override
   Map<String, dynamic> toJson(DataBaseNumberDefinition object) {
-    return _toJson(object);
+    return toJsonConvertor(object);
   }
 
-  static DataBaseNumberDefinition _fromJson(Map<String, dynamic> json) {
+  static DataBaseNumberDefinition fromJsonConvertor(Map<String, dynamic> json) {
     final type = BaseNumberDefinitionType.fromValue(json['type'] as String);
     switch (type) {
       case BaseNumberDefinitionType.selectable:
@@ -31,7 +31,7 @@ class DataBaseNumberDefinitionConverter
     }
   }
 
-  static Map<String, dynamic> _toJson(DataBaseNumberDefinition object) {
+  static Map<String, dynamic> toJsonConvertor(DataBaseNumberDefinition object) {
     final json = <String, dynamic>{};
     if (object is DataSelectableBaseNumber) {
       json.addAll(object.toJson());
@@ -81,8 +81,8 @@ class DataCalculationGroup {
 
   /// 本组所使用的"基础数"是如何定义的。
   @JsonKey(
-    fromJson: DataBaseNumberDefinitionConverter._fromJson,
-    toJson: DataBaseNumberDefinitionConverter._toJson,
+    fromJson: DataBaseNumberDefinitionConverter.fromJsonConvertor,
+    toJson: DataBaseNumberDefinitionConverter.toJsonConvertor,
   )
   final DataBaseNumberDefinition baseNumberDefinition;
 
@@ -332,8 +332,8 @@ class DataDerivedBaseNumber extends DataBaseNumberDefinition {
   final List<DataCalculationPart> calculationParts; // 实际的计算部分数据
   // final List<String> calculationSteps; // 计算步骤记录
   @JsonKey(
-    fromJson: DataBaseNumberDefinitionConverter._fromJson,
-    toJson: DataBaseNumberDefinitionConverter._toJson,
+    fromJson: DataBaseNumberDefinitionConverter.fromJsonConvertor,
+    toJson: DataBaseNumberDefinitionConverter.toJsonConvertor,
   )
   final DataBaseNumberDefinition baseNumberDefinition;
 
@@ -383,8 +383,8 @@ class DataDerivedBaseNumber extends DataBaseNumberDefinition {
 @JsonSerializable()
 class DataSelectableBaseNumber extends DataBaseNumberDefinition {
   @JsonKey(
-    fromJson: DataBaseNumberDefinitionConverter._fromJson,
-    toJson: DataBaseNumberDefinitionConverter._toJson,
+    fromJson: DataBaseNumberDefinitionConverter.fromJsonConvertor,
+    toJson: DataBaseNumberDefinitionConverter.toJsonConvertor,
   )
   final DataBaseNumberDefinition initialCandidate; // 初刻数的实际计算结果
   final int? candidateValue; // 候选值（初刻数）

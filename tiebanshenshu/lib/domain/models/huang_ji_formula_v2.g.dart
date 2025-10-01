@@ -119,7 +119,7 @@ SelectableBaseNumber _$SelectableBaseNumberFromJson(
   type:
       $enumDecodeNullable(_$BaseNumberDefinitionTypeEnumMap, json['type']) ??
       BaseNumberDefinitionType.selectable,
-  isSelectable: json['isSelectable'] as bool? ?? true,
+  isSelectable: json['isSelectable'] as bool? ?? false,
 );
 
 Map<String, dynamic> _$SelectableBaseNumberToJson(

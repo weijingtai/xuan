@@ -1,6 +1,11 @@
 import 'package:common/dev_constant.dart';
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'domain/models/multi_base_number_selection.dart';
+import 'domain/models/yuan_hui_yun_shi.dart';
+import 'presentation/pages/multi_base_number_selection_page.dart';
 import 'ui/pages/dev_page.dart';
 import 'presentation/pages/strategy_demo_page.dart';
 import 'presentation/pages/tai_xuan_interactive_page.dart';
@@ -66,8 +71,26 @@ class AlgorithmEditorApp extends StatelessWidget {
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         initialRoute: '/dev',
+        // onGenerateRoute: NavigatorGenerator.generateRoute,
         onGenerateRoute: (settings) {
           switch (settings.name) {
+            case "/tiebanshenshu/multi_selection":
+              return MaterialPageRoute(
+                builder: (context) => MultiBaseNumberSelectionPage(
+                  yuanHuiYunShi: YuanHuiYunShi.fromEightChars(
+                    EightChars(
+                      year: JiaZi.GUI_SI, // 癸巳
+                      month: JiaZi.JIA_ZI, // 甲子
+                      day: JiaZi.DING_YOU, // 丁酉
+                      time: JiaZi.GUI_MAO, // 癸卯
+                    ),
+                  ),
+                  requiredTypes: [
+                    BaseNumberSelectionType.yuanHui,
+                    BaseNumberSelectionType.yunShi,
+                  ],
+                ),
+              );
             case '/dev':
               return MaterialPageRoute(builder: (_) => DevPage());
 
