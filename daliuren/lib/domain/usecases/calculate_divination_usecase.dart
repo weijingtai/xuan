@@ -11,12 +11,15 @@ class CalculateDivinationUseCase
   @override
   Future<DaLiuRenKePan> call(DateTimeParams params) async {
     try {
+      print('🟢 [UseCase] CalculateDivinationUseCase.call() - Calling Repository...');
       final result = await repository.calculateDivination(
         params.dateTime,
         question: params.question,
       );
+      print('🟢 [UseCase] Repository returned result successfully');
       return result;
     } catch (e) {
+      print('🔴 [UseCase] Error in CalculateDivinationUseCase: $e');
       throw DivinationFailure('Failed to calculate divination: $e');
     }
   }

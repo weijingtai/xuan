@@ -27,9 +27,11 @@ class _DaLiuRenViewState extends State<DaLiuRenView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.deepPurpleAccent,
         title: Consumer<DaLiuRenViewModel>(
           builder: (context, viewModel, child) {
-            if (viewModel.currentDivination != null && viewModel.juNumber != null) {
+            if (viewModel.currentDivination != null &&
+                viewModel.juNumber != null) {
               final divination = viewModel.currentDivination!;
               return Text(
                 "${divination.dayJiaZi.name}日·${divination.timeJiaZi.diZhi.name}时·"

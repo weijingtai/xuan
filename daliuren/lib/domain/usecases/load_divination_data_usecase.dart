@@ -9,8 +9,11 @@ class LoadDivinationDataUseCase extends UseCase<void, NoParams> {
   @override
   Future<void> call(NoParams params) async {
     try {
+      print('🟢 [UseCase] LoadDivinationDataUseCase.call() - Loading data from Repository...');
       await repository.loadDivinationData();
+      print('🟢 [UseCase] Data loaded successfully from Repository');
     } catch (e) {
+      print('🔴 [UseCase] Error in LoadDivinationDataUseCase: $e');
       throw DivinationFailure('Failed to load divination data: $e');
     }
   }

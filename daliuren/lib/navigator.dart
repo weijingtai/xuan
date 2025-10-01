@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:provider/provider.dart';
 
 import 'pages/dev.dart';
 import 'pages/my_home_page.dart';
+import 'presentation/views/da_liu_ren_view.dart';
+import 'di/dependency_injection.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    "/daliuren": (context, {arguments}) => const MyHomePage(
-          title: "大六壬",
+    "/daliuren": (context, {arguments}) => MultiProvider(
+          providers: DependencyInjection.getProviders(),
+          child: const DaLiuRenView(),
+        ),
+    "/daliuren/old": (context, {arguments}) => const MyHomePage(
+          title: "大六壬(旧版)",
         ),
     "/daliuren/dev": (context, {arguments}) => const DevMyWidget()
   };

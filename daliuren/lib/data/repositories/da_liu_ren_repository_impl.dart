@@ -24,6 +24,7 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
 
   @override
   Future<void> loadDivinationData() async {
+    print('🟡 [Repository] loadDivinationData() called');
     try {
       await Future.wait([
         _loadYuDingData(),
@@ -31,8 +32,9 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
         _loadPanData(YinYang.YANG),
         _loadPanData(YinYang.YIN),
       ]);
+      print('🟡 [Repository] All divination data loaded successfully');
     } catch (e) {
-      print('Warning: Failed to load some divination data: $e');
+      print('🔴 [Repository] Failed to load some divination data: $e');
       // 允许部分数据加载失败，应用仍可继续运行
     }
   }
@@ -132,16 +134,19 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
 
   @override
   Future<DaLiuRenKePan> calculateDivination(DateTime dateTime, {String? question}) async {
+    print('🟡 [Repository] calculateDivination() called for $dateTime');
     try {
       // Ensure data is loaded (for future use of YuDing data, etc.)
       await loadDivinationData();
 
+      print('🟡 [Repository] Calling CalculationService.calculate()...');
       // Use CalculationService to perform real calculation
       final kePan = calculationService.calculate(dateTime, question: question);
+      print('🟡 [Repository] CalculationService returned KePan successfully');
 
       return kePan;
     } catch (e) {
-      print('Error in calculateDivination: $e');
+      print('🔴 [Repository] Error in calculateDivination: $e');
       rethrow; // 不再吞掉异常,让上层处理
     }
   }

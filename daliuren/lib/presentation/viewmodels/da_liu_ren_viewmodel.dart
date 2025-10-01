@@ -45,12 +45,16 @@ class DaLiuRenViewModel extends BaseViewModel {
   Future<void> initializeData() async {
     if (_isDataLoaded) return;
 
+    print('🔵 [ViewModel] initializeData() called');
     setLoading();
     try {
+      print('🔵 [ViewModel] Calling LoadDivinationDataUseCase...');
       await _loadDivinationDataUseCase.call(NoParams());
       _isDataLoaded = true;
+      print('🔵 [ViewModel] Data loaded successfully');
       setSuccess();
     } catch (e) {
+      print('🔴 [ViewModel] Error loading data: $e');
       setError(e is DivinationFailure ? e.message : e.toString());
     }
   }
@@ -74,14 +78,18 @@ class DaLiuRenViewModel extends BaseViewModel {
       await initializeData();
     }
 
+    print('🔵 [ViewModel] _calculateDivination() called for ${_selectedDateTime}');
     setLoading();
     try {
       final params = DateTimeParams(_selectedDateTime, question: _question);
+      print('🔵 [ViewModel] Calling CalculateDivinationUseCase...');
       final divination = await _calculateDivinationUseCase.call(params);
       _currentDivination = divination;
+      print('🔵 [ViewModel] Calculation successful: ${divination.dayJiaZi.name}日');
       _updateDivinationProperties();
       setSuccess();
     } catch (e) {
+      print('🔴 [ViewModel] Calculation error: $e');
       setError(e is DivinationFailure ? e.message : e.toString());
     }
   }
