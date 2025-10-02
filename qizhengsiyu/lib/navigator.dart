@@ -1,8 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
+import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/presentation/pages/primary_page.dart';
+
+import 'data/datasources/local/app_database.dart';
+import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
+import 'data/repositories/qizhengsiyu_pan_repository.dart';
+import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import 'domain/usecases/save_calculated_panel_usecase.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -27,8 +34,32 @@ class NavigatorGenerator {
     //       child: const BeautyViewPage(),
     //       // child: ShiJiaQiMenViewPage(),
     //     ),
+    // "/qizhengsiyu/panel": (context, {arguments}) =>
+    //     BeautyViewPage(params: BeautyViewPageParams.devDefault)
+
     "/qizhengsiyu/panel": (context, {arguments}) =>
-        BeautyViewPage(params: BeautyViewPageParams.devDefault)
+        MultiProvider(
+          providers: [
+            Provider<AppDatabase>(
+              create: (ctx) => AppDatabase(),
+              dispose: (ctx, db) => db.close(),
+            ),
+            Provider<IQiZhengSiYuPanRepository>(
+              create: (ctx) => QiZhengSiYuPanRepository(
+                appDatabase: ctx.read<AppDatabase>(),
+              ),
+            ),
+            Provider<SaveCalculatedPanelUseCase>(
+                create: (ctx) => SaveCalculatedPanelUseCase(
+                    qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
+            ChangeNotifierProvider<BeautyPageViewModel>(
+                create: (ctx) => BeautyPageViewModel(
+                    calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+                    saveCalculatedPanelUseCase:
+                    ctx.read<SaveCalculatedPanelUseCase>())),
+          ],
+          child: BeautyViewPage(params: BeautyViewPageParams.devDefault),
+        )
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
