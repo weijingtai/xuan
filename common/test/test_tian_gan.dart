@@ -1,4 +1,5 @@
 import 'package:common/enums.dart';
+import 'package:common/enums/enum_tian_gan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,9 +1,9 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/datamodel/basic_person_info.dart';
+import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/shared/shared.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +14,8 @@ import 'package:slide_switcher/slide_switcher.dart';
 import 'package:timezone/timezone.dart' as tz;
 // import 'package:timezone/data/latest.dart' as tz;
 
+import '../enums/enum_gender.dart';
+import '../enums/enum_tian_gan.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';
@@ -202,7 +204,7 @@ class _EightCharsInputState extends State<EightCharsInput>
         EightChars(year: year!, month: month!, day: day!, time: time!));
     if (dateTimeList.isEmpty) {
       InteractiveToast.pop(
-        context: context,
+        context,
         title: const Text("用户输入的八字没有找到对应时间，请查正"),
         trailing: trailingWidget(),
         leading: leadingWidget(),
@@ -282,8 +284,7 @@ class _EightCharsInputState extends State<EightCharsInput>
                             generateTimeGanzhi(_selectedDayNotifier.value!);
                       }
                     }
-                    showJiaZiPicker(context, jz, initJiaZiList)
-                        .then((JiaZi? value) {
+                    showJiaZiPicker(context, jz, initJiaZiList).then((value) {
                       if (notifier.value == value) {
                         return true;
                       }

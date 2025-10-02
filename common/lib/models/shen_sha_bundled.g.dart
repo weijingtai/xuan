@@ -26,6 +26,8 @@ Map<String, dynamic> _$BundledShenShaToJson(BundledShenSha instance) =>
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
       'offset': instance.offset,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
     };
 
 const _$BundledShenShaTypeEnumMap = {
@@ -60,4 +62,6 @@ Map<String, dynamic> _$OtherShenShaToJson(OtherShenSha instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
     };

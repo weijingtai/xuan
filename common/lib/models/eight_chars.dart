@@ -1,9 +1,8 @@
+import 'package:common/enums/enum_di_zhi.dart';
+import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/enums/enum_tian_gan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import '../shared/enums/enum_di_zhi.dart';
-import '../shared/enums/enum_jia_zi.dart';
-import '../shared/enums/enum_tian_gan.dart';
 
 part 'eight_chars.g.dart';
 

@@ -9,8 +9,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/domain/usecases/calculate_fate_dong_wei_usecase.dart';
-import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
@@ -18,14 +16,6 @@ import 'package:xuan/pages/root_page.dart';
 import 'package:xuan/routes.dart';
 import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:qizhengsiyu/data/datasources/local/app_database.dart'
-    as app74db;
-import 'package:qizhengsiyu/data/repositories/qizhengsiyu_pan_repository.dart'
-    as app74rep;
-import 'package:qizhengsiyu/data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart'
-    as app74rep;
-import 'package:qizhengsiyu/domain/usecases/save_calculated_panel_usecase.dart'
-    as app74usecase;
 
 import 'NavigatorGenerator.dart';
 
@@ -62,25 +52,6 @@ void main() async {
             create: (ctx) => db.AppDatabase(),
             dispose: (ctx, db) => db.close(),
           ),
-          Provider<app74db.AppDatabase>(
-            create: (ctx) => app74db.AppDatabase(),
-            dispose: (ctx, db) => db.close(),
-          ),
-          Provider<app74rep.IQiZhengSiYuPanRepository>(
-            create: (ctx) => app74rep.QiZhengSiYuPanRepository(
-              appDatabase: ctx.read<app74db.AppDatabase>(),
-            ),
-          ),
-          Provider<app74usecase.SaveCalculatedPanelUseCase>(
-              create: (ctx) => app74usecase.SaveCalculatedPanelUseCase(
-                  qiZhengSiYuPanRepository:
-                      ctx.read<app74rep.IQiZhengSiYuPanRepository>())),
-          ChangeNotifierProvider<BeautyPageViewModel>(
-              create: (ctx) => BeautyPageViewModel(
-                  calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
-                  saveCalculatedPanelUseCase:
-                      ctx.read<app74usecase.SaveCalculatedPanelUseCase>())
-                ..init()),
           Provider<db.WorldInfoDatabase>(
             create: (ctx) => db.WorldInfoDatabase(),
             dispose: (ctx, db) => db.close(),
@@ -131,8 +102,9 @@ class MyApp extends StatelessWidget {
       // initialRoute: '/one_year',
       // initialRoute: '/dev', // 七政四余
       // initialRoute: '/common/dev', // 占测记录
-      initialRoute: '/qizhengsiyu/panel', // 七政四余
+      // initialRoute: '/qizhengsiyu/panel', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
+      initialRoute: '/daliuren', // 大六壬 (MVVM)
       // initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲
       // initialRoute: '/', // main

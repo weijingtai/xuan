@@ -1,5 +1,5 @@
-import 'package:common/datamodel/datetime_divination_datamodel.dart';
-import 'package:common/shared/shared.dart';
+import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/enums/enum_jia_zi.dart';
 import 'tai_yuan_model.dart';
 import 'enum_calculate_strategy.dart';
 
@@ -37,7 +37,7 @@ class TaiYuanResult {
 /// 胎元计算策略抽象接口
 abstract class TaiYuanCalculator {
   /// 计算胎元
-  TaiYuanModel calculate(DatatimeDivinationDetailsDataModel datetimeData,
+  TaiYuanModel calculate(BaseDivinationDatetimeDataModel datetimeData,
       {DateTime? conceptionDate,
       required bool withAdjust,
       bool isTestTubeBaby = false,
@@ -50,8 +50,8 @@ abstract class TaiYuanCalculator {
   /// [originalTaiYuan] 原始胎元model
   /// [standardMatureMonths] 标准怀孕月数（默认10个月）
   /// 返回调整后的胎元model
-  TaiYuanModel? adjustForPrematureOrPostmature(TaiYuanModel originalTaiYuan,
-      DatatimeDivinationDetailsDataModel birthInfo,
+  TaiYuanModel? adjustForPrematureOrPostmature(
+      TaiYuanModel originalTaiYuan, BaseDivinationDatetimeDataModel birthInfo,
       {int standardMatureMonths = 10}) {
     JiaZi adjustedTaiYuan = originalTaiYuan.taiYuanGanZhi;
     int actualMatureMonths = originalTaiYuan.totalMatureMonth.toInt();

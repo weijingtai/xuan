@@ -1,5 +1,7 @@
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
+
+import '../enums/enum_gender.dart';
+import '../enums/enum_jia_zi.dart';
 
 enum DivinationType {
   destiny(pageIndex: 0, name: "命理"),

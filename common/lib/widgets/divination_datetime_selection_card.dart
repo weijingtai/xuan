@@ -333,7 +333,7 @@ class _DivinationDatetimeSelectionCardWidgetState
       });
     } else {
       InteractiveToast.pop(
-        context: context,
+        context,
         title: const Text("为了便于后续操作请先选择出生地"),
         toastSetting: const PopupToastSetting(
           animationDuration: Duration(seconds: 2),

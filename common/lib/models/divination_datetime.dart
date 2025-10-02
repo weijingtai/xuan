@@ -5,7 +5,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../datamodel/location.dart';
 import '../datamodel/observer_datamodel.dart';
-import '../shared/enums/enum_jia_zi.dart';
 import 'eight_chars.dart';
 import 'jie_qi_info.dart';
 

@@ -24,7 +24,6 @@ class NavigatorGenerator {
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
     final String? name = settings.name;
-    print(settings.name);
     if (name != null && name.isNotEmpty) {
       final Function? pageContentBuilder = routes[name];
       if (pageContentBuilder != null) {

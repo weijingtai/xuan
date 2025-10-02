@@ -3,13 +3,14 @@ import 'dart:math' as math;
 import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/shen_sha_item.dart';
 import 'package:tuple/tuple.dart';
 
 import 'enum_ring_text_direction.dart';
 import 'sector_painter.dart';
 
 class AllShenShaRing extends StatelessWidget {
-  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaMapper;
+  final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper;
   final double outerRadius;
   final double innerRadius;
   final RingTextDirection shaTextDirection;

@@ -1,13 +1,15 @@
-enum FuFanYinEnum {
+
+
+enum FuFanYinEnum{
+
   Fan_Yin("反吟"), // 反吟
   Fu_Yin("伏吟"), // 伏吟
   Not(""); // 既不是伏吟，也不是反吟
-
   final String name;
   const FuFanYinEnum(this.name);
-}
 
-enum GongFuFanYin {
+}
+enum GongFuFanYin{
   // 六甲之时，星、门、值符皆伏吟
   FAN_YIN_DOOR, // 只有门反吟
   FAN_YIN_STAR, // 只有星反吟

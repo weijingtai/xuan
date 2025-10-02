@@ -3,6 +3,7 @@ import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../../enums/enum_twelve_gong.dart';
+import '../../../presentation/widgets/rings/shen_sha_item.dart';
 import 'body_life_model.dart';
 import 'hua_yao.dart';
 import 'star_angle_speed.dart';
@@ -26,7 +27,7 @@ class BasePanelModel {
   // 5. 计算命理十二宫
   final Map<EnumTwelveGong, EnumDestinyTwelveGong> twelveGongMapper;
   // 6. 计算神煞位置
-  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper;
+  final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper;
 
   // 7. 计算化曜 - 改写为按星体分组的化曜映射
   final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper;
@@ -56,7 +57,7 @@ class BasePanelModel {
     Map<EnumStars, BaseFiveStarWalkingInfo>? fiveStarWalkingTypeMapper,
     BodyLifeModel? bodyLifeModel,
     Map<EnumTwelveGong, EnumDestinyTwelveGong>? twelveGongMapper,
-    Map<EnumTwelveGong, List<ShenShaItem>>? shenShaItemMapper,
+    Map<EnumTwelveGong, List<ShenSha>>? shenShaItemMapper,
     Map<EnumStars, List<HuaYaoItem>>? huaYaoItemMapper,
     Map<EnumTwelveGong, TwelveZhangSheng>? twelveZhangShengGongMapper,
   }) {

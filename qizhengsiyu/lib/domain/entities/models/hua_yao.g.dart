@@ -21,6 +21,8 @@ HuaYao _$HuaYaoFromJson(Map<String, dynamic> json) => HuaYao(
 Map<String, dynamic> _$HuaYaoToJson(HuaYao instance) => <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'type': _$ShenShaTypeEnumMap[instance.type]!,
     };
 
@@ -63,6 +65,8 @@ Map<String, dynamic> _$HuaYaoItemToJson(HuaYaoItem instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'type': _$ShenShaTypeEnumMap[instance.type]!,
     };
 
@@ -82,6 +86,8 @@ Map<String, dynamic> _$OthersHuaYaoToJson(OthersHuaYao instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'type': _$ShenShaTypeEnumMap[instance.type]!,
     };
 
@@ -106,6 +112,8 @@ Map<String, dynamic> _$TianGanHuaYaoToJson(TianGanHuaYao instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'type': _$ShenShaTypeEnumMap[instance.type]!,
       'locationMapper': instance.locationMapper.map(
           (k, e) => MapEntry(_$TianGanEnumMap[k]!, _$EnumStarsEnumMap[e]!)),
@@ -159,6 +167,8 @@ Map<String, dynamic> _$DiZhiHuaYaoToJson(DiZhiHuaYao instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'type': _$ShenShaTypeEnumMap[instance.type]!,
       'locationMapper': instance.locationMapper
           .map((k, e) => MapEntry(_$DiZhiEnumMap[k]!, _$EnumStarsEnumMap[e]!)),

@@ -36,7 +36,6 @@ import 'package:sliding_switch/sliding_switch.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
-import '../enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_most_popular_ge_ju.dart';
 import '../enums/enum_nine_stars.dart';
 import '../enums/enum_san_zha_wu_jia.dart';
@@ -53,8 +52,6 @@ import '../ui_models/ui_pan_meta_model.dart';
 import '../ui_models/ui_ten_gan_key_ying_ge_ju.dart';
 import '../utils/qi_men_ju_calculator.dart';
 import '../widgets/each_gong_widget.dart';
-import '../widgets/pan_info_display.dart';
-import '../widgets/pan_settings_panel.dart';
 import '../widgets/qi_yi_wang_shuai.dart';
 import '../widgets/ten_gan_ke_ying_yin_zhang.dart';
 import 'beatiful_page.dart';
@@ -73,7 +70,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
   // Size panSize = Size(590, 590);
   double baseEachGongSize = 256;
   Offset panOffset = const Offset(0, 0);
-  Size panSize = const Size(1016, 1016);
+  Size panSize = const Size(816, 816);
   double eachPaddingSize = 8;
 
   // Map<HouTianGua,UITenGanKeYingGeJu> geJuMapper = {};
@@ -355,25 +352,14 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                   Consumer<ShiJiaQiMenViewModel>(
                       builder: (context, viewModel, child) {
                         print("UI: build pan when ${viewModel.shiJiaQiMen}");
-                        if (viewModel.shiJiaQiMen == null) {
-                          return const SizedBox(
-                              height: 160); // Placeholder height
-                        }
-                        return PanInfoDisplay(
-                          shiJiaQiMen: viewModel.shiJiaQiMen,
-                          panDateTime: dateTimeValueNotifier
-                              .value, // Or directly from viewModel.shiJiaQiMen.panDateTime
-                          panInfoTextStyle: panInfoTextStyle,
-                          twelveDiZhiTextStyle: twelveDiZhiTextStyle,
-                          tianGanTextStyle: tianGanTextStyle,
-                          eightDoorTextStyle: eightDoorTextStyle,
-                          nineStarTextStyle: nineStarTextStyle,
-                          plateType: plateTypeNotifier.value,
-                        );
+                        // return viewModel.shiJiaQiMen != null ? buildPanInfo(viewModel.shiJiaQiMen!):child!;
+                        return viewModel.shiJiaQiMen != null
+                            ? buildPanInfoRow(viewModel.shiJiaQiMen!)
+                            : child!;
                       },
-                      // Child is not strictly needed here if PanInfoDisplay handles the null case,
-                      // but kept for consistency if there was a default child before.
-                      child: const SizedBox(height: 160)),
+                      child: const SizedBox(
+                        height: 160,
+                      )),
                   Stack(
                     alignment: Alignment.center,
                     children: [
@@ -392,79 +378,124 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                                 return child!;
                               }
                             },
-                            // buildSelectionPan() is now replaced by PanSettingsPanel
-                            child: PanSettingsPanel(
-                              plateTypeNotifier: plateTypeNotifier,
-                              arrangeTypeNotifier: arrangeTypeNotifier,
-                              jiGongHintNotifier: jiGongHintNotifier,
-                              monthTokenTypeNotifier: monthTokenTypeNotifier,
-                              godWithGongTypeNotifier: godWithGongTypeNotifier,
-                              starGongTypeNotifier: starGongTypeNotifier,
-                              doorGongTypeNotifier: doorGongTypeNotifier,
-                              ganGongTypeNotifier: ganGongTypeNotifier,
-                              selectedDateTimeNotifier:
-                                  selectedDateTimeNotifier,
-                              onArrangePlatePressed: () {},
-                              onClearPlatePressed: () {},
-                              onSelectDateTimePressed: () async {},
-                              // onArrangePlatePressed: _onArrangePlatePressed,
-                              // onClearPlatePressed: _onClearPlatePressed,
-                              // onSelectDateTimePressed: _onSelectDateTimePressed,
-                              onYearJiaZiChanged: (value) => yearJiaZi = value,
-                              onMonthJiaZiChanged: (value) =>
-                                  monthJiaZi = value,
-                              onDayJiaZiChanged: (value) => dayJiaZi = value,
-                              onTimeJiaZiChanged: (value) => timeJiaZi = value,
-                              onDunJuChanged: (value) {
-                                if (value != null) {
-                                  List<String> splitedList = value.split("");
-                                  String numStr = splitedList[2];
-                                  yinYangDun = splitedList.first == "阳"
-                                      ? YinYang.YANG
-                                      : YinYang.YIN;
-                                  juNumber = ConstResourcesMapper
-                                      .chineseNumberMapper.entries
-                                      .firstWhere((e) => e.value == numStr)
-                                      .key;
-                                } else {
-                                  yinYangDun = null;
-                                  juNumber = null;
-                                }
-                              },
-                              yearGanZhiShakeKey: yearGanZhiShakeKey
-                                  as GlobalKey<ShakeWidgetState>,
-                              monthGanZhiShakeKey: monthGanZhiShakeKey
-                                  as GlobalKey<ShakeWidgetState>,
-                              dayGanZhiShakeKey: dayGanZhiShakeKey
-                                  as GlobalKey<ShakeWidgetState>,
-                              timeGanZhiShakeKey: timeGanZhiShakeKey
-                                  as GlobalKey<ShakeWidgetState>,
-                              dunGanZhiShakeKey: dunGanZhiShakeKey
-                                  as GlobalKey<ShakeWidgetState>,
-                              switcherInactivatedStyle:
-                                  switcherInactivatedStyle,
-                              switcherActivatedStyle: switcherActivatedStyle,
-                              zhuanPanActivatedStyle: zhuanPanActivatedStyle,
-                              feiPanActivatedStyle: feiPanActivatedStyle,
-                            ),
+                            child: buildSelectionPan(),
                           )),
                     ],
                   ),
-                  // The SizedBox for manual UI height adjustment might need to be part of PanSettingsPanel if it's related to its content size
-                  ValueListenableBuilder(
-                      valueListenable: arrangeTypeNotifier,
-                      builder: (ctx, arrangeType, _) {
-                        if (arrangeType == ArrangeType.MANUALLY) {
-                          // This SizedBox was likely to push content down when manual UI was shown.
-                          // If manuallyJu() is part of PanSettingsPanel, this might not be needed here.
-                          // For now, keeping it to maintain layout, but review when manuallyJu is moved.
-                          return const SizedBox(height: 48 + 32);
-                        }
-                        return const SizedBox.shrink();
-                      }),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (dateTimeValueNotifier.value == null) {
+                            if (arrangeTypeNotifier.value ==
+                                ArrangeType.MANUALLY) {
+                              if ([
+                                yearJiaZi,
+                                monthJiaZi,
+                                dayJiaZi,
+                                timeJiaZi,
+                                yinYangDun
+                              ].any((e) => e == null)) {
+                                if (yearJiaZi == null) {
+                                  (yearGanZhiShakeKey.currentState!
+                                          as ShakeWidgetState)
+                                      .shake();
+                                }
+                                if (monthJiaZi == null) {
+                                  (monthGanZhiShakeKey.currentState!
+                                          as ShakeWidgetState)
+                                      .shake();
+                                }
+                                if (dayJiaZi == null) {
+                                  (dayGanZhiShakeKey.currentState!
+                                          as ShakeWidgetState)
+                                      .shake();
+                                }
+                                if (timeJiaZi == null) {
+                                  (timeGanZhiShakeKey.currentState!
+                                          as ShakeWidgetState)
+                                      .shake();
+                                }
+                                if (yinYangDun == null) {
+                                  (dunGanZhiShakeKey.currentState!
+                                          as ShakeWidgetState)
+                                      .shake();
+                                }
+                              } else {
+                                // shiJiaZhuanPanQiMenValueNotifier.value = create(DateTime.now());
+                                create(DateTime.now());
+                              }
+                            } else {
+                              selectedDateTimeNotifier.value ??= DateTime.now();
+                              dateTimeValueNotifier.value =
+                                  selectedDateTimeNotifier.value;
+                              create(dateTimeValueNotifier.value!);
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors
+                              .white, // Background coloronPrimary: Colors.white, // Text color
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 15), // Padding
+                          textStyle: const TextStyle(
+                              fontSize: 18,
+                              color: Colors.black87), // Text style
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded corners
+                          ),
+                        ),
+                        child: const Text('排盘'),
+                      ),
+                      const SizedBox(
+                        width: 12,
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (dateTimeValueNotifier.value != null) {
+                            selectedDateTimeNotifier.value = null;
+                            dateTimeValueNotifier.value = null;
+                            yearJiaZi = null;
+                            monthJiaZi = null;
+                            dayJiaZi = null;
+                            timeJiaZi = null;
+                            yinYangDun = null;
+                            juNumber = null;
+                            jieQi = null;
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors
+                              .white, // Background coloronPrimary: Colors.white, // Text color
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 15), // Padding
+                          textStyle: const TextStyle(
+                              fontSize: 18, color: Colors.red), // Text style
+                          shape: RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(10), // Rounded corners
+                          ),
+                        ),
+                        child: const Text('清除'),
+                      ),
+                      const SizedBox(
+                        width: 16,
+                      ),
+                      selectDateTimeButton()
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 56,
+                  ),
                   const SizedBox(
                     height: 1000,
-                  ) // This seems like a large spacer, might be for scrolling?
+                  )
                 ],
               ),
             ),
@@ -732,8 +763,36 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
     );
   }
 
-  // Removed buildPanInfoRow, buildCenterPanTime, buildPanInfo, buildCenterFourZhu
-  // as their logic is now in PanInfoDisplay widget.
+  Widget buildPanInfoRow(ShiJiaQiMen pan) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        SizedBox(
+          width: 220,
+          height: 120,
+          child: ValueListenableBuilder<DateTime?>(
+              valueListenable: dateTimeValueNotifier,
+              // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
+              builder: (ctx, dateTime, child) =>
+                  dateTime != null ? buildCenterPanTime(dateTime) : child!,
+              child: const SizedBox()),
+        ),
+        SizedBox(
+          width: 240,
+          height: 160,
+          // padding: EdgeInsets.symmetric(vertical: 8,horizontal: 12),
+          // margin: EdgeInsets.symmetric(vertical: 12,horizontal: 24),
+          child: buildPanInfo(pan),
+        ),
+        SizedBox(
+          width: 260,
+          height: 150,
+          child: buildCenterFourZhu(pan),
+        ),
+      ],
+    );
+  }
 
   List<Widget> tianMenDiHuaRenMenGuiLu() {
     return [
@@ -1925,7 +1984,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
           onPressed: () async {
             if (dateTimeValueNotifier.value != null) {
               InteractiveToast.slide(
-                context: context,
+                context,
                 // leading: leadingWidget(),
                 title: const Text("不能重复"),
                 // trailing: trailingWidget(),

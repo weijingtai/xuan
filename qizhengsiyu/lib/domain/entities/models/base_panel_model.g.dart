@@ -33,7 +33,7 @@ BasePanelModel _$BasePanelModelFromJson(Map<String, dynamic> json) =>
         (k, e) => MapEntry(
             $enumDecode(_$EnumTwelveGongEnumMap, k),
             (e as List<dynamic>)
-                .map((e) => ShenShaItem.fromJson(e as Map<String, dynamic>))
+                .map((e) => ShenSha.fromJson(e as Map<String, dynamic>))
                 .toList()),
       ),
       huaYaoItemMapper: (json['huaYaoItemMapper'] as Map<String, dynamic>).map(

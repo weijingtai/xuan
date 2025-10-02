@@ -768,7 +768,7 @@ class _GongWidgetWidgetState extends State<GongWidget> {
 
   void diPanGanTapped(TianGan gan) {
     InteractiveToast.slide(
-      context: context,
+      context,
       // leading: leadingWidget(),
       title: Text("地盘：${gan.name}"),
       // trailing: trailingWidget(),

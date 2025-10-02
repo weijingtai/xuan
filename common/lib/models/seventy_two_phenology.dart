@@ -1,6 +1,5 @@
+import 'package:common/enums/enum_twenty_four_jie_qi.dart';
 import 'package:json_annotation/json_annotation.dart';
-
-import '../shared/enums/enum_twenty_four_jie_qi.dart';
 
 part 'seventy_two_phenology.g.dart';
 

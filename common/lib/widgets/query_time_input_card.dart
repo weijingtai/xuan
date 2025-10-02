@@ -5,11 +5,11 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/common_logger.dart';
 import 'package:common/datamodel/basic_person_info.dart';
+import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/models/sp_location_datamodel.dart';
 import 'package:common/models/sp_timezone_datamodel.dart';
-import 'package:common/shared/shared.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_input_card.dart';
@@ -33,8 +33,12 @@ import 'package:uuid/uuid.dart';
 // import 'package:timezone/data/latest.dart' as tz;
 
 import '../datamodel/location.dart';
+import '../enums/enum_datetime_type.dart';
+import '../enums/enum_gender.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
 import '../models/divination_datetime.dart';
+import 'eight_chars_selection_card.dart';
+import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';
 import '../viewmodels/timezone_location_viewmodel.dart';
 
@@ -112,10 +116,10 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
     _tabSelectNotifier =
         ValueNotifier<DateTimeType>(widget.defaultDateTimeType);
     _tabSelectNotifier.addListener(() {
-      // _pageController.animateToPage(
-      //     getPageIndexByDateTimeType(_tabSelectNotifier.value),
-      //     duration: const Duration(milliseconds: 800),
-      //     curve: Curves.easeInOut);
+      _pageController.animateToPage(
+          getPageIndexByDateTimeType(_tabSelectNotifier.value),
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut);
     });
 
     _timezoneLocationViewModel.isDefaultTimezoneNotifier.addListener(() {
@@ -744,10 +748,6 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 initialIndex: tabIndex.index,
                 onSelect: (index) {
                   _tabSelectNotifier.value = getDateTimeTypeByPageIndex(index);
-                  // _pageController.animateToPage(
-                  //     getPageIndexByDateTimeType(_tabSelectNotifier.value),
-                  //     duration: const Duration(milliseconds: 800),
-                  //     curve: Curves.easeInOut);
                   _pageController.animateToPage(index,
                       duration: Duration(milliseconds: 400),
                       curve: Curves.bounceIn);
@@ -2163,7 +2163,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
       });
     } else {
       InteractiveToast.pop(
-        context:context,
+        context,
         title: const Text("为了便于后续操作请先选择出生地"),
         toastSetting: const PopupToastSetting(
           animationDuration: Duration(seconds: 2),

@@ -1,455 +1,20 @@
 import 'package:common/enums.dart';
-import 'package:daliuren/domain/entities/raw_pan_info_model.dart';
+import 'package:daliuren/model/da_liu_ren_gong.dart';
+import 'package:daliuren/model/enum_gui_ren.dart';
+import 'package:daliuren/model/enum_nine_zong_men.dart';
+import 'package:daliuren/model/three_chuan.dart';
+import 'package:daliuren/model/three_chuan_detail_type.dart';
+import 'package:daliuren/model/three_chuan_she_hai.dart';
+import 'package:daliuren/model/three_chuan_yao_ke.dart';
+import 'package:daliuren/model/three_chuan_zei_ke.dart';
+import 'package:daliuren/model/zei_key_type.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:tuple/tuple.dart';
 
-import '../core/constants/da_liu_ren_common_constants.dart';
-import '../domain/enums/each_class_zei_ke_type.dart';
-import '../domain/enums/gui_ren.dart';
-import '../domain/enums/nine_zong_men.dart';
-import '../domain/enums/she_hai_type.dart';
-import '../domain/enums/yao_ke_type.dart';
-import '../domain/enums/zei_ke_type.dart';
 import 'da_liu_ren_panel.dart';
-import 'three_chuan_details.dart';
-
-part 'da_liu_ren_ke_pan.g.dart';
-
-@JsonSerializable()
-class EachChuan extends RawEachChuan {
-  // int order;
-  // DiZhi diZhi;
-  TianGan? get tianGan => jiaZi?.tianGan;
-  JiaZi? jiaZi;
-  // GuiRen guiRen;
-  // LiuQin liuQin;
-  EachChuan({
-    required super.order,
-    required super.guiRen,
-    required super.liuQin,
-    required super.diZhi,
-    this.jiaZi,
-  });
-
-  factory EachChuan.fromJson(Map<String, dynamic> json) =>
-      _$EachChuanFromJson(json);
-  Map<String, dynamic> toJson() => _$EachChuanToJson(this);
-}
-
-@JsonSerializable()
-class EachClass extends RawEachClass {
-  // final int order;
-  // DiZhi sky;
-  // DiZhi ground;
-  bool get isFirstClass => order == 0;
-  // GuiRen guiRen;
-  int? sheHaiTimes;
-
-  List<int>? otherSameSkyGroundIndexList;
-
-  bool get isBieZeClass => otherSameSkyGroundIndexList != null;
-
-  EachClassZeiKeType? zeiKeType; //  当为 "null"时标识没有“贼克”关系
-
-  bool?
-      isSkyKeDayGan; // 上神是否是克“日干”的 上神克日干时为“true”, 上神受日干克为“false”，上神与日干无关系时为“null”
-  bool isSkySameYinYangWithDayGan = false; // 上神和日干是否是同阴阳的
-  // int? sheHaiShenQianTimes; // 涉害深浅次数，当为“null”时，表示没有涉害
-  EachClass({
-    required super.order,
-    required super.sky,
-    required super.ground,
-    required super.guiRen,
-    this.isSkyKeDayGan = false,
-    this.isSkySameYinYangWithDayGan = false,
-    // this.isFirstClass = false,
-  }) {
-    // 当前为“贼” -- “下克上”
-    bool isZei =
-        FiveXingRelationship.checkRelationship(sky.fiveXing, ground.fiveXing) ==
-            FiveXingRelationship.KE;
-    if (isZei) {
-      zeiKeType = EachClassZeiKeType.ZEI;
-    }
-    // 当前为“克” -- “上克下”
-    bool isKe =
-        FiveXingRelationship.checkRelationship(ground.fiveXing, sky.fiveXing) ==
-            FiveXingRelationship.KE;
-    if (isKe) {
-      zeiKeType = EachClassZeiKeType.KE;
-    }
-  }
-  factory EachClass.fromJson(Map<String, dynamic> json) =>
-      _$EachClassFromJson(json);
-  Map<String, dynamic> toJson() => _$EachClassToJson(this);
-}
-
-@JsonSerializable()
-class EachGong extends RawEachGong {
-  TianGan? get tianGan => jiaZi?.tianGan;
-  JiaZi? jiaZi;
-
-  EachGong({
-    required super.skyPanDiZhi,
-    required super.groundPanDiZhi,
-    required super.guiRen,
-    this.jiaZi,
-    // this.tianGan,
-  });
-  factory EachGong.fromJson(Map<String, dynamic> json) =>
-      _$EachGongFromJson(json);
-  Map<String, dynamic> toJson() => _$EachGongToJson(this);
-}
-
-@JsonSerializable()
-class FirstClass extends EachClass {
-  TianGan tianGan;
-  FirstClass({
-    required DiZhi sky,
-    required DiZhi ground,
-    required GuiRen guiRen,
-    required this.tianGan,
-  }) : super(
-            order: 0,
-            sky: sky,
-            ground: DaLiuRenCommonConstants.tianGanJiGongMapper[tianGan]!,
-            guiRen: guiRen) {
-    // 当前为“贼” -- “下克上”
-    bool isZei = FiveXingRelationship.checkRelationship(
-            sky.fiveXing, tianGan.fiveXing) ==
-        FiveXingRelationship.KE;
-    zeiKeType = null;
-    isSkyKeDayGan = null;
-    if (isZei) {
-      zeiKeType = EachClassZeiKeType.ZEI;
-      isSkyKeDayGan = false;
-    }
-    // print("${tianGan.value} --- ${sky.value} --- $isZei --- ${zeiKeType?.name}");
-    // 当前为“克” -- “上克下”
-    bool isKe = FiveXingRelationship.checkRelationship(
-            tianGan.fiveXing, sky.fiveXing) ==
-        FiveXingRelationship.KE;
-    if (isKe) {
-      zeiKeType = EachClassZeiKeType.KE;
-      isSkyKeDayGan = true;
-    }
-    isSkySameYinYangWithDayGan = tianGan.yinYang == sky.yinYang;
-  }
-  factory FirstClass.fromJson(Map<String, dynamic> json) =>
-      _$FirstClassFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$FirstClassToJson(this);
-}
-
-@JsonSerializable()
-class FourClass {
-  // late final List<EachClass> _classList;
-  late final bool isFullClass; // 是否为4课齐全
-  late final bool isThreeClassOnly; // 是否为3课
-  late final bool isFuYin; // 是否为伏吟
-  late final bool isFanYin; // 是否为反吟
-
-  late final FirstClass first;
-  late final EachClass second;
-  late final EachClass third;
-  late final EachClass fourth;
-  // 当四课不备时，相同的两颗是谁
-  List<EachClass>? sameSkyGroundClassList;
-
-  FourClass(
-      {required this.first,
-      required this.second,
-      required this.third,
-      required this.fourth,
-      required this.isFuYin,
-      required this.isFanYin,
-      required this.isThreeClassOnly,
-      required this.isFullClass,
-      this.sameSkyGroundClassList});
-  List<EachClass> get listAllClass => [first, second, third, fourth];
-
-  FourClass.fastGenerate(
-      {required JiaZi dayGanZhi,
-      required Map<DiZhi, EachGong> eachGongMapper}) {
-    // print(eachGongMapper.values.map((d)=>d.groundPanDiZhi.value));
-    var dayGan = dayGanZhi.tianGan;
-    var dayZhi = dayGanZhi.diZhi;
-    // 获取天干寄宫
-    var jiZhi = DaLiuRenCommonConstants.tianGanJiGongMapper[dayGan]!;
-    var firstGong = eachGongMapper[jiZhi]!;
-    first = FirstClass(
-        sky: firstGong.skyPanDiZhi,
-        ground: jiZhi,
-        guiRen: firstGong.guiRen,
-        tianGan: dayGan);
-
-    var secondGround = firstGong.skyPanDiZhi;
-    var secondSky = eachGongMapper[secondGround]!;
-    var secondGong = eachGongMapper[secondGround]!;
-    second = createEachClass(
-        dayGan, 1, secondGong.skyPanDiZhi, secondGround, secondGong.guiRen);
-
-    var thirdGround = dayZhi;
-    var thridGong = eachGongMapper[thirdGround]!;
-    third = createEachClass(
-        dayGan, 2, thridGong.skyPanDiZhi, thirdGround, thridGong.guiRen);
-
-    var fourthGround = thridGong.skyPanDiZhi;
-    var fourthGong = eachGongMapper[fourthGround]!;
-    fourth = createEachClass(
-        dayGan, 3, fourthGong.skyPanDiZhi, fourthGround, fourthGong.guiRen);
-
-    List<EachClass> classList = [first, second, third, fourth];
-    // 检查是否为伏吟
-    isFuYin = _checkIsFuYin(classList);
-    isFanYin = _checkIsFanYin(classList);
-
-    if (isFuYin || isFanYin) {
-      isThreeClassOnly = false;
-      isFullClass = false;
-    } else if (!isFuYin && !isFanYin) {
-      // 只在不是伏吟是查看是否为四课补全
-      isFullClass = checkIsFullClass(classList);
-      if (!isFullClass) {
-        isThreeClassOnly = _setupBieZe(classList);
-      } else {
-        isThreeClassOnly = false;
-      }
-    } else {
-      isThreeClassOnly = false;
-      isFullClass = false;
-    }
-  }
-
-  FourClass.generate(
-      {required TianGan firstGround,
-      required DiZhi firstSky,
-      required DiZhi secondSky,
-      required DiZhi secondGround,
-      required DiZhi thirdSky,
-      required DiZhi thirdGround,
-      required DiZhi fourthSky,
-      required DiZhi fourthGround,
-      required JiaZi dayGanZhi,
-      required Map<DiZhi, EachGong> eachGongMapper}) {
-    // print all sky and ground
-    var dayGan = dayGanZhi.tianGan;
-    var dayZhi = dayGanZhi.diZhi;
-    // 获取天干寄宫
-    var jiZhi = DaLiuRenCommonConstants.tianGanJiGongMapper[dayGan]!;
-    // var firstGround = dayGan;
-    // var firstSky = eachGongMapper[jiZhi]!.skyPanDiZhi;
-    // print("------- ${firstSky.value}");
-    // print("------- ${firstGround.value}");
-    var firstGods = eachGongMapper.values
-        .firstWhere((g) => g.skyPanDiZhi == firstSky)
-        .guiRen;
-    first = FirstClass(
-        sky: firstSky, ground: jiZhi, guiRen: firstGods, tianGan: firstGround);
-
-    // var secondGround =firstSky;
-    // var secondSky = eachGongMapper[secondGround]!.skyPanDiZhi;
-    var secondGods = eachGongMapper.values
-        .firstWhere((g) => g.skyPanDiZhi == secondSky)
-        .guiRen;
-    second = createEachClass(dayGan, 1, secondSky, secondGround, secondGods);
-
-    // var thirdGround =dayZhi;
-    // var thirdSky = eachGongMapper[thirdGround]!.skyPanDiZhi;
-    var thirdGods = eachGongMapper.values
-        .firstWhere((g) => g.skyPanDiZhi == thirdSky)
-        .guiRen;
-    third = createEachClass(dayGan, 2, thirdSky, thirdGround, thirdGods);
-
-    // var fourthGround = thirdSky;
-    // var fourthSky = eachGongMapper[fourthGround]!.skyPanDiZhi;
-    var fourthGods = eachGongMapper.values
-        .firstWhere((g) => g.skyPanDiZhi == fourthSky)
-        .guiRen;
-    fourth = createEachClass(dayGan, 3, fourthSky, fourthGround, fourthGods);
-
-    List<EachClass> classList = [first, second, third, fourth];
-    // 检查是否为伏吟
-    isFuYin = _checkIsFuYin(classList);
-    isFanYin = _checkIsFanYin(classList);
-    if (isFuYin || isFanYin) {
-      isThreeClassOnly = false;
-    } else if (!isFuYin && !isFanYin) {
-      // 只在不是伏吟是查看是否为四课补全
-      isFullClass = checkIsFullClass(classList);
-      if (!isFullClass) {
-        isThreeClassOnly = _setupBieZe(classList);
-      } else {
-        isThreeClassOnly = false;
-      }
-    } else {
-      isThreeClassOnly = false;
-    }
-  }
-
-  // 检查是否为反吟
-  static bool _checkIsFuYin(List<EachClass> classList) {
-    // 1. 检查第二课 与 第三课 是否 sky == ground
-    return classList[1].sky == classList[1].ground &&
-        classList[2].sky == classList[2].ground;
-  }
-
-  // 检查是否为伏吟
-  static bool _checkIsFanYin(List<EachClass> classList) {
-    // 1. 检查第二课 与 第三课 是否 为六冲
-    return DiZhiChong.getOtherDiZhi(classList[1].sky) == classList[1].ground &&
-        DiZhiChong.getOtherDiZhi(classList[2].sky) == classList[2].ground;
-  }
-
-  /// @return 为‘true’时标识为 别责，只备三课，
-  static bool _setupBieZe(List<EachClass> classList) {
-    // 跳过 first class, first class 的 ground 永远为天干，不会与其他相同
-    Map<String, List<int>> singleSet = Map<String, List<int>>.fromEntries(
-        classList.map((e) => MapEntry("${e.sky.value}${e.ground.value}", [])));
-
-    for (var each in classList) {
-      String tmpKey = "${each.sky.value}${each.ground.value}";
-      singleSet[tmpKey]!.add(each.order);
-    }
-    // print(classList.map((e)=>"${e.ground.value}${e.sky.value}${e.otherSameSkyGroundIndexList}"));
-    // print(jsonEncode(_singleSet));
-    // 找到那个List中index最多，并根据其中的index找到对应的 EachClass 并设置
-    if (singleSet.keys.length == 1) {
-      for (var each in classList) {
-        each.otherSameSkyGroundIndexList =
-            singleSet.values.first.where((i) => i != each.order).toList();
-      }
-      return false;
-    } else if (singleSet.keys.length == 2) {
-      // 找到 value.length 为 2 的key
-
-      var tmpKey =
-          singleSet.keys.firstWhere((key) => singleSet[key]!.length == 2);
-      // 从 _classList 中找到所有相同"sky""ground"的eachClass
-      for (var each in classList) {
-        if (tmpKey == "${each.sky.value}${each.ground.value}") {
-          each.otherSameSkyGroundIndexList =
-              singleSet[tmpKey]!.where((i) => i != each.order).toList();
-        }
-      }
-      return true;
-    } else if (singleSet.keys.length == 3) {
-      // 找到 value.length 为 2 的key
-      var tmpKey =
-          singleSet.keys.firstWhere((key) => singleSet[key]!.length == 2);
-      // 从 _classList 中找到所有相同"sky""ground"的eachClass
-      for (var each in classList) {
-        if (tmpKey == "${each.sky.value}${each.ground.value}") {
-          each.otherSameSkyGroundIndexList =
-              singleSet[tmpKey]!.where((i) => i != each.order).toList();
-        }
-      }
-      // print(classList.map((e)=>"${e.ground.value}${e.sky.value}${e.otherSameSkyGroundIndexList}"));
-      return true;
-    } else {
-      throw Exception("四课去重出现问题，没找但相同的的课");
-    }
-  }
-
-  static bool checkIsFullClass(List<EachClass> classList) {
-    return classList
-            .map((each) {
-              if (each.isFirstClass) {
-                FirstClass first = each as FirstClass;
-                // return "${first.sky.value}${first.tianGan.value}";
-                return "${first.sky.value}${first.ground.value}";
-              } else {
-                return "${each.sky.value}${each.ground.value}";
-              }
-            })
-            .toSet()
-            .length ==
-        4;
-  }
-
-  static EachClass createEachClass(
-      TianGan dayGan, int order, DiZhi sky, DiZhi ground, GuiRen guiRen) {
-    var skyKeDayGan =
-        FiveXingRelationship.checkRelationship(dayGan.fiveXing, sky.fiveXing) ==
-            FiveXingRelationship.KE;
-    var dayGanKeSky =
-        FiveXingRelationship.checkRelationship(sky.fiveXing, dayGan.fiveXing) ==
-            FiveXingRelationship.KE;
-    bool? isSkyKeDayGan;
-    if (skyKeDayGan) {
-      isSkyKeDayGan = true;
-    } else if (dayGanKeSky) {
-      isSkyKeDayGan = false;
-    }
-    // print("${dayGan.value} ${sky.value}${ground.value} ${dayGan.yinYang == sky.yinYang}");
-    return EachClass(
-      order: order,
-      sky: sky,
-      ground: ground,
-      guiRen: guiRen,
-      isSkyKeDayGan: isSkyKeDayGan,
-      isSkySameYinYangWithDayGan: dayGan.yinYang == sky.yinYang,
-    );
-  }
-
-  String toDebugString() {
-    return "四\t三\t二\t一\r\n"
-        "${fourth.sky.value}\t${third.sky.value}\t${second.sky.value}\t${first.sky.value}\r\n"
-        "${fourth.ground.value}\t${third.ground.value}\t${second.ground.value}\t${first.tianGan.value}(${first.ground.value})";
-  }
-
-  EachClass getAsIndex(int index) {
-    // get xxxGround and xxxSky as index of list
-    // when item1 is true, item3 will be TianGan Data type, item2 always be DiZhi
-    // index will start from 0 to 3
-    // var res = _classList.firstWhere((e)=>e.order == index);
-    // print(_classList.map((e)=>"${e.order}${e.sky.value}${e.ground.value}"));
-    // print(res.order);
-    // print("${res.sky.value}${res.ground.value}");
-    // return _classList.firstWhere((e)=>e.order == index);
-    // return _classList[index];
-    switch (index) {
-      case 0:
-        return first;
-      // return Tuple3<int,DiZhi,TianGan>(0,firstSky,firstGround);
-      case 1:
-        // return Tuple3<int,DiZhi,DiZhi>(1,secondSky,secondGround);
-        return second;
-      case 2:
-        // return Tuple3<int,DiZhi,DiZhi>(2,thirdSky,thirdGround);
-        return third;
-      case 3:
-        // return Tuple3<int,DiZhi,DiZhi>(3,fourthSky,fourthGround);
-        return fourth;
-      default:
-        throw IndexError.withLength(index, 4);
-    }
-  }
-
-  factory FourClass.fromJson(Map<String, dynamic> json) =>
-      _$FourClassFromJson(json);
-  Map<String, dynamic> toJson() => _$FourClassToJson(this);
-}
-
-@JsonSerializable()
-class ThreeChuan {
-  NineZongMen nineZongMen;
-  EachChuan first;
-  EachChuan second;
-  EachChuan third;
-
-  ThreeChuan({
-    required this.nineZongMen,
-    required this.first,
-    required this.second,
-    required this.third,
-  });
-
-  factory ThreeChuan.fromJson(Map<String, dynamic> json) =>
-      _$ThreeChuanFromJson(json);
-  Map<String, dynamic> toJson() => _$ThreeChuanToJson(this);
-}
+import 'each_chuan.dart';
+import 'each_class.dart';
+import 'four_class.dart';
 
 class DaLiuRenKePan extends DaLiuRenPanel {
   DateTime panDateTime;
@@ -495,7 +60,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     TianGan.GUI: const Tuple2<DiZhi, DiZhi>(DiZhi.SI, DiZhi.MAO),
     TianGan.XIN: const Tuple2<DiZhi, DiZhi>(DiZhi.WU, DiZhi.YIN),
   };
-  late Map<DiZhi, EachGong> gongMapper = {};
+  late Map<DiZhi, DaLiuRenGong> gongMapper = {};
 
   // List<String> dayChen = ["卯","辰","巳","午","未","申"];
   static final List<DiZhi> DAY_CHEN = [
@@ -564,11 +129,11 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     }
     for (var diZhi in DiZhi.listAll) {
       DiZhi skyDiZhi = _tianDiPanMapper[diZhi]!;
-      gongMapper[diZhi] = EachGong(
+      gongMapper[diZhi] = DaLiuRenGong(
           skyPanDiZhi: skyDiZhi,
           groundPanDiZhi: diZhi,
           guiRen: _godsMapper[diZhi]!,
-          // tianGan: tmpMapper[skyDiZhi]?.tianGan,
+          tianGan: tmpMapper[skyDiZhi]?.tianGan,
           jiaZi: tmpMapper[diZhi]);
     }
 
@@ -578,8 +143,8 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     threeChuan = calculateThreeChuan(dayJiaZi, fourClass, gongMapper);
   }
 
-  static ThreeChuan calculateThreeChuan(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan calculateThreeChuan(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     // 首先进行 伏吟 与 反吟
     // 伏吟
     ThreeChuan? checkFuYinFirstResult =
@@ -636,8 +201,8 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     // return zeiKeiTop!;
   }
 
-  static ThreeChuan? checkByBieZe(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByBieZe(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     // 是否为四课齐备
     // bool isFullClass = fourClass.isFullClass;
     if (!fourClass.isThreeClassOnly) {
@@ -657,7 +222,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     TianGan gan = dayJiaZi.tianGan;
     DiZhi dayGanSkyDiZhi = fourClass.first.sky;
     // DaLiuRenGong dayGanSkyGong = gongMapper.values.firstWhere((g)=>g.skyPanDiZhi == dayGanSkyDiZhi);
-    EachGong chuChuanGong;
+    DaLiuRenGong chuChuanGong;
     // 阳日干别责
     if (dayJiaZi.tianGan.isYang) {
       // 取天干五合中另一干
@@ -665,8 +230,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
           TianGanFiveCombine.getFiveCombineWithOtherTianGan(gan);
       TianGan otherGan = combine.item2;
       // 找到 otherGan 的寄宫
-      DiZhi otherGanJiGong =
-          DaLiuRenCommonConstants.tianGanJiGongMapper[otherGan]!;
+      DiZhi otherGanJiGong = tenGanJiGongMapper[otherGan]!;
       // 根据otherGanJiGong 找到对应天盘的值作为初传
       chuChuanGong = gongMapper[otherGanJiGong]!;
     } else {
@@ -687,19 +251,19 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       chuChuanGong =
           gongMapper.values.firstWhere((e) => e.skyPanDiZhi == firstDiZhi);
     }
-    EachGong firstGong = gongMapper.values
+    DaLiuRenGong firstGong = gongMapper.values
         .firstWhere((g) => g.skyPanDiZhi == chuChuanGong.skyPanDiZhi);
-    EachGong secondGong =
+    DaLiuRenGong secondGong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == dayGanSkyDiZhi);
-    EachGong thirdGong =
+    DaLiuRenGong thirdGong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == dayGanSkyDiZhi);
     return _buildThreeChuan(
         dayJiaZi, NineZongMen.BIE_ZE, firstGong, secondGong, thirdGong);
   }
 
   // 伏吟
-  static ThreeChuan? checkByFuYin(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByFuYin(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     // 伏吟的规则为 “寅上寅”，“申上申”
     if (!fourClass.isFuYin) {
       // 当前不是“伏吟”
@@ -771,11 +335,11 @@ class DaLiuRenKePan extends DaLiuRenPanel {
         }
       }
     }
-    EachGong firstGong =
+    DaLiuRenGong firstGong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == firstChuanDiZhi);
-    EachGong secondGong =
+    DaLiuRenGong secondGong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == secondChuanDiZhi);
-    EachGong thirdGong =
+    DaLiuRenGong thirdGong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == thirdChuanDiZhi);
     return _buildThreeChuan(
         dayJiaZi, NineZongMen.FU_YIN, firstGong, secondGong, thirdGong);
@@ -799,8 +363,8 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   // 反吟
-  static ThreeChuan? checkByFanYin(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByFanYin(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     if (!fourClass.isFanYin) {
       // 当前不是“反吟”
       return null;
@@ -808,11 +372,11 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     if ([JiaZi.WU_CHEN, JiaZi.WU_XU].contains(dayJiaZi)) {
       if (fourClass.first.sky == DiZhi.HAI &&
           [DiZhi.XU, DiZhi.CHEN].contains(fourClass.third.sky)) {
-        EachGong firstGong =
+        DaLiuRenGong firstGong =
             gongMapper.values.firstWhere((g) => g.skyPanDiZhi == DiZhi.SI);
-        EachGong secondGong =
+        DaLiuRenGong secondGong =
             gongMapper.values.firstWhere((g) => g.skyPanDiZhi == DiZhi.HAI);
-        EachGong thirdGong =
+        DaLiuRenGong thirdGong =
             gongMapper.values.firstWhere((g) => g.skyPanDiZhi == DiZhi.SI);
 
         return _buildThreeChuan(
@@ -837,11 +401,11 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       DiZhi secondChuanDiZhi = fourClass.third.sky;
       DiZhi thirdChuanDiZhi = fourClass.first.sky;
 
-      EachGong firstGong =
+      DaLiuRenGong firstGong =
           gongMapper.values.firstWhere((g) => g.skyPanDiZhi == firstChuanDiZhi);
-      EachGong secondGong = gongMapper.values
+      DaLiuRenGong secondGong = gongMapper.values
           .firstWhere((g) => g.skyPanDiZhi == secondChuanDiZhi);
-      EachGong thirdGong =
+      DaLiuRenGong thirdGong =
           gongMapper.values.firstWhere((g) => g.skyPanDiZhi == thirdChuanDiZhi);
 
       return _buildThreeChuan(
@@ -852,7 +416,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   static ThreeChuan? _buildThreeChuan(JiaZi dayJiaZi, NineZongMen nineZongMen,
-      EachGong firstGong, EachGong secondGong, EachGong thirdGong) {
+      DaLiuRenGong firstGong, DaLiuRenGong secondGong, DaLiuRenGong thirdGong) {
     EachChuan firstChuan = EachChuan(
         order: 1,
         guiRen: firstGong.guiRen,
@@ -878,8 +442,8 @@ class DaLiuRenKePan extends DaLiuRenPanel {
         third: thirdChuan);
   }
 
-  static ThreeChuan? checkByBaZhuan(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByBaZhuan(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     // 1.概念：当干支同位，四课又无克，需要取阳顺三神或阴逆三神为用，曰八专课。
     // 八专日有五，除癸丑日俱有克，无克者甲寅、庚申。刚日从阳，主超进顺布。
     // 己未、丁未柔日主退缩，逆行。中末传俱并日上神。
@@ -904,12 +468,11 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       return zeiKe;
     }
 
-    if (DaLiuRenCommonConstants.tianGanJiGongMapper[dayJiaZi.tianGan]! !=
-        dayJiaZi.diZhi) {
+    if (tenGanJiGongMapper[dayJiaZi.tianGan]! != dayJiaZi.diZhi) {
       return null; // 当前并非“八专”
     }
     EachChuan firstChuan;
-    EachGong firstGong;
+    DaLiuRenGong firstGong;
     // 之后，才为真的八专
     // 1. 日干为阳，以日干上神在天盘顺时针数3神为初传；
     if (dayJiaZi.gan.isYang) {
@@ -947,7 +510,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
     }
     // 中传末传都用 日干上神
     DiZhi dayGanSkyDiZhi = fourClass.first.sky;
-    EachGong gong =
+    DaLiuRenGong gong =
         gongMapper.values.firstWhere((g) => g.skyPanDiZhi == dayGanSkyDiZhi);
 
     // EachChuan secondChuan = EachChuan(
@@ -967,7 +530,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   static ThreeChuan? checkByZeiKe(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper,
+      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, DaLiuRenGong> gongMapper,
       {bool callByBieZe = false}) {
     List<int> keIndexList = []; // 上克下 为顺克， 保存一到四课的index,如何存在“克”则将index此List
     List<int> zeiIndexList = []; // 下克下 为贼克， 保存一到四课的index,如何存在“克”则将index此List
@@ -1340,8 +903,8 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   @deprecated
-  static ThreeChuan? checkByZeiKe2(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByZeiKe2(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     List<int> keIndexList = []; // 上克下 为顺克，保存一到四课的index,如何存在“克”则将index此List
     List<int> zeiIndexList = []; // 下克上 为贼克，保存一到四课的index,如何存在“克”则将index此List
 
@@ -1482,7 +1045,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
 // 处理多个贼课或克课
   @deprecated
   static EachClass? _handleMultipleZeiKe(JiaZi dayJiaZi, FourClass fourClass,
-      Map<DiZhi, EachGong> gongMapper, List<int> indexList, bool isKe) {
+      Map<DiZhi, DaLiuRenGong> gongMapper, List<int> indexList, bool isKe) {
     List<EachClass> sameYinYangWithDayGan = [];
 
     for (int index in indexList) {
@@ -1504,7 +1067,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   static ThreeChuan? checkByYaoKe(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper,
+      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, DaLiuRenGong> gongMapper,
       {bool callByBieZe = false}) {
     // 遥克 1：上神克日干
     YaoKeType? yaoKeType;
@@ -1713,13 +1276,13 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   // 昴星，前提四课全
-  static ThreeChuan? checkByMaoXing(
-      JiaZi dayJiaZi, FourClass fourClass, Map<DiZhi, EachGong> gongMapper) {
+  static ThreeChuan? checkByMaoXing(JiaZi dayJiaZi, FourClass fourClass,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
     // currentPanel.forEach((k,v)=>print("${k.value} ${v.value}"));
     // gongMapper.forEach((k,v)=>print("${k.value} ${v.groundPanDiZhi.value} ${v.skyPanDiZhi.value}"));
-    EachGong chuChuanGong;
-    EachGong secondChuanGong;
-    EachGong thirdChuanGong;
+    DaLiuRenGong chuChuanGong;
+    DaLiuRenGong secondChuanGong;
+    DaLiuRenGong thirdChuanGong;
     DiZhi chuChuanDiZhi;
     EachChuan first;
 
@@ -1727,13 +1290,12 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       // 阳日干取酉上发初传
       chuChuanGong = gongMapper[DiZhi.YOU]!;
       first = EachChuan(
-        order: 1,
-        diZhi: chuChuanGong.skyPanDiZhi,
-        guiRen: chuChuanGong.guiRen,
-        liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
-            dayJiaZi.tianGan, chuChuanGong.skyPanDiZhi),
-        // tianGan: chuChuanGong.tianGan
-      );
+          order: 1,
+          diZhi: chuChuanGong.skyPanDiZhi,
+          guiRen: chuChuanGong.guiRen,
+          liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
+              dayJiaZi.tianGan, chuChuanGong.skyPanDiZhi),
+          tianGan: chuChuanGong.tianGan);
 
       // 阳日干 支上神末中传
       secondChuanGong = gongMapper[dayJiaZi.diZhi]!;
@@ -1742,7 +1304,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
           .firstWhere((g) => g.skyPanDiZhi == fourClass.first.sky);
     } else {
       // 阴日干取酉下发初传
-      EachGong underYouFaYongGOng =
+      DaLiuRenGong underYouFaYongGOng =
           gongMapper.values.firstWhere((g) => g.skyPanDiZhi == DiZhi.YOU);
       chuChuanDiZhi = underYouFaYongGOng.groundPanDiZhi;
       chuChuanGong =
@@ -1755,7 +1317,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
         guiRen: chuChuanGong.guiRen,
         liuQin:
             LiuQin.getLiuQinByForTianGanDiZhi(dayJiaZi.tianGan, chuChuanDiZhi),
-        // tianGan: chuChuanGong.tianGan,
+        tianGan: chuChuanGong.tianGan,
       );
       // 阳日干 干上神为中传
       secondChuanGong = gongMapper.values
@@ -1770,7 +1332,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       guiRen: secondChuanGong.guiRen,
       liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
           dayJiaZi.tianGan, secondChuanGong.skyPanDiZhi),
-      // tianGan: secondChuanGong.tianGan,
+      tianGan: secondChuanGong.tianGan,
     );
     var third = EachChuan(
       order: 3,
@@ -1778,7 +1340,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       guiRen: thirdChuanGong.guiRen,
       liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
           dayJiaZi.tianGan, thirdChuanGong.skyPanDiZhi),
-      // tianGan: thirdChuanGong.tianGan,
+      tianGan: thirdChuanGong.tianGan,
     );
     return ThreeChuan(
         nineZongMen: NineZongMen.MAO_XING,
@@ -1791,34 +1353,35 @@ class DaLiuRenKePan extends DaLiuRenPanel {
 
   // TODO: remove `Map<DiZhi, DiZhi> currentPanel` from arguments
   static Tuple3<EachChuan, EachChuan, EachChuan> createEachThreeChuan(
-      JiaZi dayJiaZi, EachClass chuChuanZhu, Map<DiZhi, EachGong> gongMapper) {
-    EachGong firstChuanGong = gongMapper.values
+      JiaZi dayJiaZi,
+      EachClass chuChuanZhu,
+      Map<DiZhi, DaLiuRenGong> gongMapper) {
+    DaLiuRenGong firstChuanGong = gongMapper.values
         .firstWhere((gong) => gong.skyPanDiZhi == chuChuanZhu.sky);
     EachChuan firstChuan = EachChuan(
-      order: 1,
-      diZhi: firstChuanGong.skyPanDiZhi,
-      guiRen: firstChuanGong.guiRen,
-      liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
-          dayJiaZi.gan, firstChuanGong.skyPanDiZhi),
-      // tianGan: firstChuanGong.tianGan
-    );
-    EachGong secondChuanGong = gongMapper[firstChuanGong.skyPanDiZhi]!;
+        order: 1,
+        diZhi: firstChuanGong.skyPanDiZhi,
+        guiRen: firstChuanGong.guiRen,
+        liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
+            dayJiaZi.gan, firstChuanGong.skyPanDiZhi),
+        tianGan: firstChuanGong.tianGan);
+    DaLiuRenGong secondChuanGong = gongMapper[firstChuanGong.skyPanDiZhi]!;
     EachChuan secondChuan = EachChuan(
       order: 2,
       diZhi: secondChuanGong.skyPanDiZhi,
       guiRen: secondChuanGong.guiRen,
       liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
           dayJiaZi.gan, secondChuanGong.skyPanDiZhi),
-      // tianGan: secondChuanGong.tianGan,
+      tianGan: secondChuanGong.tianGan,
     );
-    EachGong thirdChuanGong = gongMapper[secondChuanGong.skyPanDiZhi]!;
+    DaLiuRenGong thirdChuanGong = gongMapper[secondChuanGong.skyPanDiZhi]!;
     EachChuan thirdChuan = EachChuan(
       order: 3,
       diZhi: thirdChuanGong.skyPanDiZhi,
       guiRen: thirdChuanGong.guiRen,
       liuQin: LiuQin.getLiuQinByForTianGanDiZhi(
           dayJiaZi.gan, thirdChuanGong.skyPanDiZhi),
-      // tianGan: thirdChuanGong.tianGan,
+      tianGan: thirdChuanGong.tianGan,
     );
     return Tuple3<EachChuan, EachChuan, EachChuan>(
         firstChuan, secondChuan, thirdChuan);
@@ -1838,7 +1401,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
       JiaZi dayJiaZi,
       FourClass fourClass,
       List<EachClass> allEachClass,
-      Map<DiZhi, EachGong> gongMapper,
+      Map<DiZhi, DaLiuRenGong> gongMapper,
       bool isKe) {
     // 涉害前 使用 “孟仲法”
     Tuple2<SheHaiType, EachClass>? mengZhong =
@@ -1894,7 +1457,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
 
   // TODO: remove `Map<DiZhi, DiZhi> currentPanel` from arguments
   static int sheHaiShenQianTimes(
-      DiZhi sky, Map<DiZhi, EachGong> gongMapper, bool isKe) {
+      DiZhi sky, Map<DiZhi, DaLiuRenGong> gongMapper, bool isKe) {
     // 将地盘与天盘分为两个独立的list
     List<DiZhi> diPanList = [];
     List<DiZhi> tianPanList = [];
@@ -2178,7 +1741,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   static FourClass calculateFourClass(
-      JiaZi dayGanZhi, Map<DiZhi, EachGong> eachGongMapper) {
+      JiaZi dayGanZhi, Map<DiZhi, DaLiuRenGong> eachGongMapper) {
     return FourClass.fastGenerate(
         dayGanZhi: dayGanZhi, eachGongMapper: eachGongMapper);
   }
@@ -2252,7 +1815,7 @@ class DaLiuRenKePan extends DaLiuRenPanel {
   }
 
   @override
-  Map<DiZhi, EachGong> getGongMapper() {
+  Map<DiZhi, DaLiuRenGong> getGongMapper() {
     return gongMapper;
   }
 

@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../enums/enum_ji_xiong.dart';
 import 'shen_sha.dart';
 
 part 'shen_sha_tian_gan.g.dart';

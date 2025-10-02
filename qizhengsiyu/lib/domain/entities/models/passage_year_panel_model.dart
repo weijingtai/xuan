@@ -3,6 +3,7 @@ import 'package:common/models/shen_sha.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../../../enums/enum_twelve_gong.dart';
+import '../../../presentation/widgets/rings/shen_sha_item.dart';
 import 'hua_yao.dart';
 import 'star_angle_speed.dart';
 import 'star_enter_info.dart';
@@ -20,7 +21,7 @@ class PassageYearPanelModel {
   final Map<EnumStars, BaseFiveStarWalkingInfo> fiveStarWalkingTypeMapper;
 
   // 6. 计算神煞位置
-  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper;
+  final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper;
 
   // 7. 计算化曜
   // final Map<HuaYao, EnumStars> huaYaoMapper;
@@ -48,7 +49,7 @@ class PassageYearPanelModel {
     Map<EnumStars, EnteredInfo>? enteredGongMapper,
     Map<EnumStars, BaseFiveStarWalkingInfo>? fiveStarWalkingTypeMapper,
     Map<EnumTwelveGong, EnumDestinyTwelveGong>? twelveGongMapper,
-    Map<EnumTwelveGong, List<ShenShaItem>>? shenShaItemMapper,
+    Map<EnumTwelveGong, List<ShenSha>>? shenShaItemMapper,
     Map<EnumStars, List<HuaYaoItem>>? huaYaoItemMapper,
     Map<EnumTwelveGong, TwelveZhangSheng>? twelveZhangShengGongMapper,
   }) {

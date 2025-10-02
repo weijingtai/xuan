@@ -1,6 +1,7 @@
 import 'dart:ui';
 
-import 'package:common/shared/shared.dart';
+import 'package:common/enums/enum_stars.dart';
+
 
 class QiZhengSiYuUIConstantResources {
   static final Map<EnumStars, Color> zhengColorMap = {

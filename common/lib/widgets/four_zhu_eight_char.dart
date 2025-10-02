@@ -1,7 +1,10 @@
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tuple/tuple.dart';
+
+import '../enums/enum_di_zhi.dart';
+import '../enums/enum_jia_zi.dart';
+import '../enums/enum_tian_gan.dart';
 
 class FourZhuEightChar extends StatelessWidget {
   final JiaZi year;

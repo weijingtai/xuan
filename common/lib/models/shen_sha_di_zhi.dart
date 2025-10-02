@@ -1,8 +1,8 @@
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../shared/enums/enum_di_zhi.dart';
-import '../shared/enums/enum_ji_xiong.dart';
+import '../enums/enum_di_zhi.dart';
+import '../enums/enum_ji_xiong.dart';
 import 'shen_sha.dart';
 part 'shen_sha_di_zhi.g.dart';
 

@@ -1,7 +1,7 @@
 import 'package:common/models/shen_sha.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../shared/enums/enum_ji_xiong.dart';
+import '../enums/enum_ji_xiong.dart';
 
 part 'shen_sha_bundled.g.dart';
 
@@ -20,11 +20,7 @@ class BundledShenSha extends ShenSha {
   String name;
   JiXiongEnum jiXiong;
   int offset; // 马前诸煞的offset 是相对于 红鸾的而非太岁
-
-  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? descriptionList;
-
-  @JsonKey(includeFromJson: true, includeToJson: false)
   List<String>? locationDescriptionList;
 
   BundledShenSha(this.type, this.name, this.jiXiong, this.offset,

@@ -1,0 +1,175 @@
+Analyzing daliuren...                                           
+
+   info • Use 'const' for final variables initialized to a constant value • lib/data/repositories/da_liu_ren_repository_impl.dart:72:5 • prefer_const_declarations
+   info • Use 'const' for final variables initialized to a constant value • lib/data/repositories/da_liu_ren_repository_impl.dart:73:5 • prefer_const_declarations
+warning • The declaration '_getPanByJuNumber' isn't referenced • lib/data/repositories/da_liu_ren_repository_impl.dart:85:28 • unused_element
+warning • The declaration '_getPanByTimeZhi' isn't referenced • lib/data/repositories/da_liu_ren_repository_impl.dart:93:28 • unused_element
+warning • The declaration '_checkPanJu' isn't referenced • lib/data/repositories/da_liu_ren_repository_impl.dart:100:15 • unused_element
+   info • The variable name 'TWELVE_GODS_LIST' isn't a lowerCamelCase identifier • lib/model/da_liu_ren_ke_pan.dart:32:16 • non_constant_identifier_names
+   info • The variable name 'DAY_CHEN' isn't a lowerCamelCase identifier • lib/model/da_liu_ren_ke_pan.dart:66:28 • non_constant_identifier_names
+warning • The value of the local variable 'firstChuan' isn't used • lib/model/da_liu_ren_ke_pan.dart:474:15 • unused_local_variable
+   info • Missing a deprecation message • lib/model/da_liu_ren_ke_pan.dart:905:3 • provide_deprecation_message
+   info • Missing a deprecation message • lib/model/da_liu_ren_ke_pan.dart:1046:3 • provide_deprecation_message
+warning • The declaration '_handleMultipleZeiKe' isn't referenced • lib/model/da_liu_ren_ke_pan.dart:1047:21 • unused_element
+warning • Dead code • lib/model/da_liu_ren_ke_pan.dart:1563:9 • dead_code
+warning • Dead code • lib/model/da_liu_ren_ke_pan.dart:1685:9 • dead_code
+   info • Missing a deprecation message • lib/model/da_liu_ren_ke_pan.dart:1785:3 • provide_deprecation_message
+   info • The variable name 'calculate_gui_ren' isn't a lowerCamelCase identifier • lib/model/da_liu_ren_ke_pan.dart:1786:30 • non_constant_identifier_names
+   info • The constant name 'GUI_REN' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:18:3 • constant_identifier_names
+   info • The constant name 'TENG_SHE' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:20:3 • constant_identifier_names
+   info • The constant name 'ZHU_QUE' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:22:3 • constant_identifier_names
+   info • The constant name 'LIU_HE' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:24:3 • constant_identifier_names
+   info • The constant name 'GOU_CHEN' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:26:3 • constant_identifier_names
+   info • The constant name 'QING_LONG' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:28:3 • constant_identifier_names
+   info • The constant name 'TIAN_KONG' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:30:3 • constant_identifier_names
+   info • The constant name 'BAI_HU' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:32:3 • constant_identifier_names
+   info • The constant name 'TAI_CHANG' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:34:3 • constant_identifier_names
+   info • The constant name 'XUAN_WU' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:36:3 • constant_identifier_names
+   info • The constant name 'TAI_YIN' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:38:3 • constant_identifier_names
+   info • The constant name 'TIAN_HOU' isn't a lowerCamelCase identifier • lib/model/enum_gui_ren.dart:40:3 • constant_identifier_names
+   info • The constant name 'ZEI_KE' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:6:3 • constant_identifier_names
+   info • The constant name 'BI_YONG' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:9:3 • constant_identifier_names
+   info • The constant name 'SHE_HAI' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:12:3 • constant_identifier_names
+   info • The constant name 'YAO_KE' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:15:3 • constant_identifier_names
+   info • The constant name 'MAO_XING' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:18:3 • constant_identifier_names
+   info • The constant name 'BIE_ZE' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:21:3 • constant_identifier_names
+   info • The constant name 'BA_ZHUAN' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:24:3 • constant_identifier_names
+   info • The constant name 'FU_YIN' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:27:3 • constant_identifier_names
+   info • The constant name 'FAN_YIN' isn't a lowerCamelCase identifier • lib/model/enum_nine_zong_men.dart:30:3 • constant_identifier_names
+warning • Unused import: 'dart:convert' • lib/model/four_class.dart:1:8 • unused_import
+warning • Unused import: 'package:daliuren/model/enum_nine_zong_men.dart' • lib/model/four_class.dart:6:8 • unused_import
+warning • Unused import: 'package:tuple/tuple.dart' • lib/model/four_class.dart:8:8 • unused_import
+warning • The value of the local variable 'secondSky' isn't used • lib/model/four_class.dart:58:9 • unused_local_variable
+warning • The value of the local variable 'dayZhi' isn't used • lib/model/four_class.dart:108:9 • unused_local_variable
+   info • The constant name 'SHI_RU_KE' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:5:3 • constant_identifier_names
+   info • The constant name 'YUAN_SHOU_KE' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:7:3 • constant_identifier_names
+   info • The constant name 'CHONG_SHEN_KE' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:9:3 • constant_identifier_names
+   info • The constant name 'SHEN_QIAN' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:16:3 • constant_identifier_names
+   info • The constant name 'QU_ZHI' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:18:3 • constant_identifier_names
+   info • The constant name 'JIAN_JI' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:20:3 • constant_identifier_names
+   info • The constant name 'CHA_WEI' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:22:3 • constant_identifier_names
+   info • The constant name 'ZHUI_XIA' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:24:3 • constant_identifier_names
+   info • The constant name 'GAO_SHI_KE' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:29:3 • constant_identifier_names
+   info • The constant name 'TAN_SHE_KE' isn't a lowerCamelCase identifier • lib/model/three_chuan_detail_type.dart:31:3 • constant_identifier_names
+   info • The constant name 'ZEI' isn't a lowerCamelCase identifier • lib/model/zei_key_type.dart:5:3 • constant_identifier_names
+   info • The constant name 'KE' isn't a lowerCamelCase identifier • lib/model/zei_key_type.dart:7:3 • constant_identifier_names
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:57:32 • deprecated_member_use
+   info • The variable name 'build_four_ke' isn't a lowerCamelCase identifier • lib/pages/dev.dart:62:10 • non_constant_identifier_names
+warning • The value of the local variable 'otherFontSize' isn't used • lib/pages/dev.dart:64:12 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:68:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:75:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:82:30 • deprecated_member_use
+warning • The value of the local variable 'height' isn't used • lib/pages/dev.dart:87:12 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:187:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/dev.dart:191:55 • deprecated_member_use
+   info • The variable name 'ICONS_ASSETS_PATH' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:39:10 • non_constant_identifier_names
+   info • The variable name 'pan_base_info' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:477:10 • non_constant_identifier_names
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:549:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:591:57 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:605:43 • avoid_print
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:630:56 • unnecessary_brace_in_string_interps
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:670:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:712:57 • deprecated_member_use
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:751:56 • unnecessary_brace_in_string_interps
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:803:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:809:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:846:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:852:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:889:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:895:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:932:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:938:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:975:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:981:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1022:46 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1028:46 • deprecated_member_use
+   info • Unnecessary instance of 'Container' • lib/pages/my_home_page.dart:1083:20 • avoid_unnecessary_containers
+   info • The variable name 'yu_ding' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1158:10 • non_constant_identifier_names
+   info • Unnecessary instance of 'Container' • lib/pages/my_home_page.dart:1161:9 • avoid_unnecessary_containers
+   info • Unnecessary instance of 'Container' • lib/pages/my_home_page.dart:1167:9 • avoid_unnecessary_containers
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1245:7 • avoid_print
+   info • The variable name 'build_panel_model' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1250:10 • non_constant_identifier_names
+   info • The variable name 'build_panel' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1282:10 • non_constant_identifier_names
+   info • The variable name 'panel_center' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1292:10 • non_constant_identifier_names
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1313:23 • avoid_print
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1317:23 • avoid_print
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1319:25 • avoid_print
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1321:27 • avoid_print
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1326:27 • avoid_print
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:1349:42 • unnecessary_brace_in_string_interps
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1350:50 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1351:41 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1385:60 • deprecated_member_use
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1417:31 • avoid_print
+   info • Don't invoke 'print' in production code • lib/pages/my_home_page.dart:1432:31 • avoid_print
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1465:38 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1477:40 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1485:41 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1522:26 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1533:28 • deprecated_member_use
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:1542:26 • unnecessary_brace_in_string_interps
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1543:34 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1544:25 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1577:44 • deprecated_member_use
+warning • Dead code • lib/pages/my_home_page.dart:1596:5 • dead_code
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:1634:32 • unnecessary_brace_in_string_interps
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1635:40 • prefer_const_constructors
+   info • Use 'const' with the constructor to improve performance • lib/pages/my_home_page.dart:1636:31 • prefer_const_constructors
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1671:50 • deprecated_member_use
+   info • Unnecessary instance of 'Container' • lib/pages/my_home_page.dart:1698:12 • avoid_unnecessary_containers
+   info • The variable name 'build_four_ke' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1767:10 • non_constant_identifier_names
+warning • The value of the local variable 'otherFontSize' isn't used • lib/pages/my_home_page.dart:1769:12 • unused_local_variable
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1773:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1780:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1787:30 • deprecated_member_use
+warning • The value of the local variable 'height' isn't used • lib/pages/my_home_page.dart:1792:12 • unused_local_variable
+   info • The variable name 'build_san_chuan' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1891:10 • non_constant_identifier_names
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1896:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1905:30 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:1912:30 • deprecated_member_use
+   info • The variable name 'each_zhu' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:1994:10 • non_constant_identifier_names
+   info • The variable name 'panel_gong' isn't a lowerCamelCase identifier • lib/pages/my_home_page.dart:2047:10 • non_constant_identifier_names
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2181:28 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2456:34 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2469:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2490:32 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2501:32 • deprecated_member_use
+warning • The value of the local variable 'middleWidth' isn't used • lib/pages/my_home_page.dart:2508:12 • unused_local_variable
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:2534:34 • unnecessary_brace_in_string_interps
+   info • Unnecessary instance of 'Container' • lib/pages/my_home_page.dart:2588:11 • avoid_unnecessary_containers
+   info • Unnecessary braces in a string interpolation • lib/pages/my_home_page.dart:2626:12 • unnecessary_brace_in_string_interps
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2633:55 • deprecated_member_use
+   info • 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss • lib/pages/my_home_page.dart:2637:55 • deprecated_member_use
+  error • The method 'fold' isn't defined for the type 'Either' • lib/presentation/viewmodels/da_liu_ren_viewmodel.dart:52:12 • undefined_method
+  error • The method 'fold' isn't defined for the type 'Either' • lib/presentation/viewmodels/da_liu_ren_viewmodel.dart:85:12 • undefined_method
+  error • The argument type 'Object' can't be assigned to the parameter type 'DateTime'.  • lib/presentation/views/widgets/datetime_selector_widget.dart:75:36 • argument_type_not_assignable
+warning • Publishable packages can't have 'path' dependencies • pubspec.yaml:52:5 • invalid_dependency
+warning • The value of the local variable 'revGodsNameList' isn't used • test/da_liu_ren_test.dart:29:18 • unused_local_variable
+warning • The value of the local variable 'monthGeneral' isn't used • test/da_liu_ren_test.dart:49:13 • unused_local_variable
+warning • The value of the local variable 'revGodsNameList' isn't used • test/each_class_test.dart:20:18 • unused_local_variable
+warning • The value of the local variable 'dayJiaZi' isn't used • test/each_class_test.dart:22:11 • unused_local_variable
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fan_yin.dart:65:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fan_yin.dart:94:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fu_yin.dart:65:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fu_yin.dart:96:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fu_yin.dart:127:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fu_yin.dart:157:7 • avoid_print
+   info • Don't invoke 'print' in production code • test/nine_zong_men_fu_yin.dart:187:7 • avoid_print
+warning • The value of the local variable 'diZhiList' isn't used • test/nine_zong_men_mao_xing_test.dart:13:17 • unused_local_variable
+warning • The value of the local variable 'monthGeneral' isn't used • test/nine_zong_men_mao_xing_test.dart:15:11 • unused_local_variable
+warning • The value of the local variable 'diZhiList' isn't used • test/nine_zong_men_she_hai.dart:11:17 • unused_local_variable
+warning • The value of the local variable 'monthGeneral' isn't used • test/nine_zong_men_she_hai.dart:13:11 • unused_local_variable
+warning • The value of the local variable 'dipanlistDev' isn't used • test/nine_zong_men_she_hai.dart:46:19 • unused_local_variable
+warning • The value of the local variable 'tianpanlistDev' isn't used • test/nine_zong_men_she_hai.dart:48:19 • unused_local_variable
+warning • The value of the local variable 'diZhiList' isn't used • test/nine_zong_men_yao_ke_test.dart:13:17 • unused_local_variable
+warning • The value of the local variable 'monthGeneral' isn't used • test/nine_zong_men_yao_ke_test.dart:15:11 • unused_local_variable
+warning • The value of the local variable 'fourClass2' isn't used • test/only_dart_generat_from_json.dart:50:17 • unused_local_variable
+   info • The variable name 'read_yu_ding' isn't a lowerCamelCase identifier • test/only_dart_generat_from_json.dart:97:6 • non_constant_identifier_names
+   info • The variable name 'read_from_file' isn't a lowerCamelCase identifier • test/only_dart_generat_from_json.dart:133:6 • non_constant_identifier_names
+   info • Don't invoke 'print' in production code • test/only_dart_generat_from_json.dart:206:5 • avoid_print
+   info • The variable name 'test_four_class' isn't a lowerCamelCase identifier • test/only_dart_generat_from_json.dart:219:6 • non_constant_identifier_names
+warning • The value of the local variable 'yaoKeSkyKeDayGanList' isn't used • test/only_dart_generat_from_json.dart:221:19 • unused_local_variable
+warning • The value of the local variable 'yaoKeDayGanKeSkyList' isn't used • test/only_dart_generat_from_json.dart:224:19 • unused_local_variable
+   info • The variable name 'test_three_chuan' isn't a lowerCamelCase identifier • test/only_dart_generat_from_json.dart:266:6 • non_constant_identifier_names
+
+171 issues found. (ran in 2.1s)

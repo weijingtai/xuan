@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
+import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
 import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
@@ -315,7 +316,7 @@ class BeautyPageViewModel extends ChangeNotifier {
           basicPanelModel: basicPanelModel,
           panelConfig: panelConfig,
           divinationDatetimeModel: timingInfo,
-          requestInfo: _divinationInfoModel!.divination);
+          requestInfo: _divinationInfoModel!.divinationDatetime);
     } catch (e) {
       debugPrint("Error calculating basic panel: $e");
       // 根据需要处理错误
@@ -583,7 +584,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    DatatimeDivinationDetailsDataModel _tmp =
+    BaseDivinationDatetimeDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -732,7 +733,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
+    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;

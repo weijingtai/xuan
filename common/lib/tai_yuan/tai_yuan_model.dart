@@ -1,4 +1,5 @@
-import 'package:common/shared/shared.dart';
+import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/enums/enum_di_zhi.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:lunar/lunar.dart';

@@ -1,6 +1,9 @@
 import 'package:common/enums.dart';
+import 'package:daliuren/model/da_liu_ren_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
-import 'package:daliuren/domain/enums/gui_ren.dart';
+import 'package:daliuren/model/enum_gui_ren.dart';
+import 'package:daliuren/model/four_class.dart';
+import 'package:daliuren/model/three_chuan.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -17,9 +20,9 @@ void main() {
         Map<DiZhi, DiZhi>.fromIterables(diSeq, monthGeneralSeq);
     Map<DiZhi, GuiRen> currentDiGodsMapper =
         Map<DiZhi, GuiRen>.fromIterables(diSeq, godsNameList);
-    Map<DiZhi, EachGong> currentPanWithGods = {};
+    Map<DiZhi, DaLiuRenGong> currentPanWithGods = {};
     for (var di in diSeq) {
-      currentPanWithGods[di] = EachGong(
+      currentPanWithGods[di] = DaLiuRenGong(
           guiRen: currentDiGodsMapper[di]!,
           skyPanDiZhi: currentTianDiMapper[di]!,
           groundPanDiZhi: di);
@@ -133,7 +136,7 @@ void main() {
 }
 
 FourClass createFourClass(JiaZi dayJiaZi, String first, String second,
-    String third, String fourth, Map<DiZhi, EachGong> eachGongMapper) {
+    String third, String fourth, Map<DiZhi, DaLiuRenGong> eachGongMapper) {
   // List<String> each = fourClassString.split(" ").toList();
   //
   // String first = each[3];

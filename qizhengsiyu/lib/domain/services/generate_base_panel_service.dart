@@ -12,6 +12,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../enums/enum_panel_system_type.dart';
 import '../../enums/enum_qi_zheng.dart';
 import '../../enums/enum_settle_life_body.dart';
+import '../../presentation/widgets/rings/shen_sha_item.dart';
 import '../../utils/star_enter_info_calculator.dart';
 import '../entities/models/base_panel_model.dart';
 import '../entities/models/body_life_model.dart';
@@ -88,10 +89,10 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             observerPosition.isDayBirth);
 
-    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+    final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
       return MapEntry(
-          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+          key, value.map((e) => e).toList());
     });
 
     // 将神煞从ShenSha 处理成 String
@@ -180,10 +181,10 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             daXianObserver.isDayBirth);
-    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+    final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
       return MapEntry(
-          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+          key, value.map((e) => e).toList());
     });
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = await huaYaoManager.calculate(

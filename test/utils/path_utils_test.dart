@@ -1,8 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:xuan/utils/path_utils.dart';
 import 'package:path/path.dart' as path;
 import 'dart:io';
-
-import 'package:xuan/utils/path_utils.dart';
 
 void main() {
   test('测试路径工具类', () {

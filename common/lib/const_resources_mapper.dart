@@ -1,6 +1,10 @@
-import 'package:common/shared/shared.dart';
+import 'package:common/enums/enum_hou_tian_gua.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+import 'enums/enum_di_zhi.dart';
+import 'enums/enum_ji_xiong.dart';
+import 'enums/enum_tian_gan.dart';
 
 class ConstResourcesMapper {
   static const Map<TianGan, Color> zodiacGanColors = {

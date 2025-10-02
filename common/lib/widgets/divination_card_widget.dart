@@ -1,4 +1,4 @@
-import 'package:common/datamodel/divination_request_info_datamodel.dart';
+import 'package:common/datamodel/divination_data_model.dart';
 import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:flutter/gestures.dart';
@@ -227,7 +227,6 @@ class _DivinationCardWidgetState extends State<DivinationCardWidget> {
                 .read<DevEnterPageViewModel>()
                 .selectedDivinaionTypeNotifier,
             builder: (ctx, selecetedDivinationType, _) {
-              // debugPrint("buildRealTime: $selecetedDivinationType");
               return ValueListenableBuilder(
                 valueListenable: context
                     .read<DevEnterPageViewModel>()

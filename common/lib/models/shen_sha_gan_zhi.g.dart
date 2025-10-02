@@ -29,6 +29,8 @@ Map<String, dynamic> _$GanZhiShenShaToJson(GanZhiShenSha instance) =>
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
+      'descriptionList': instance.descriptionList,
+      'locationDescriptionList': instance.locationDescriptionList,
       'locationMapper': instance.locationMapper.map((k, e) => MapEntry(
           _$DiZhiEnumMap[k]!, e.map((e) => _$JiaZiEnumMap[e]!).toList())),
     };

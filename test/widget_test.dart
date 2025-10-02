@@ -6,7 +6,6 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter/material.dart';
-// 需要先运行 flutter pub get 来获取 flutter_test 包
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:xuan/main.dart';

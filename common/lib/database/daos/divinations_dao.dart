@@ -1,5 +1,5 @@
+import 'package:common/datamodel/divination_data_model.dart';
 import 'package:drift/drift.dart';
-import '../../datamodel/divination_request_info_datamodel.dart';
 import '../app_database.dart';
 import '../tables/tables.dart';
 
@@ -11,14 +11,14 @@ class DivinationsDao extends DatabaseAccessor<AppDatabase>
   final AppDatabase db;
   DivinationsDao(this.db) : super(db);
 
-  SimpleSelectStatement<$DivinationsTable, DivinationRequestInfoDataModel>
-      _baseSelect() => select(db.divinations);
+  SimpleSelectStatement<$DivinationsTable, DivinationDataModel> _baseSelect() =>
+      select(db.divinations);
 
-  Future<List<DivinationRequestInfoDataModel>> getAllDivinations() {
+  Future<List<DivinationDataModel>> getAllDivinations() {
     return (_baseSelect()..where((tbl) => tbl.deletedAt.isNull())).get();
   }
 
-  Future<DivinationRequestInfoDataModel?> getDivinationByUuid(String uuid) {
+  Future<DivinationDataModel?> getDivinationByUuid(String uuid) {
     return (_baseSelect()
           ..where((t) => t.uuid.equals(uuid) & t.deletedAt.isNull()))
         .getSingleOrNull();

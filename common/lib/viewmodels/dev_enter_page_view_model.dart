@@ -2,6 +2,7 @@ import 'package:common/database/app_database.dart' as db;
 import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/datamodel/seeker_model.dart';
 import 'package:common/datamodel/timing_divination_model.dart';
+import 'package:common/enums/enum_datetime_type.dart';
 import 'package:common/models/divination_info_model.dart';
 import 'package:common/module.dart';
 import 'package:common/viewmodels/divination_meta_info.dart';
@@ -15,7 +16,8 @@ import 'package:uuid/v5.dart';
 import 'package:uuid/v7.dart';
 
 import '../database/app_database.dart';
-import '../datamodel/divination_request_info_datamodel.dart';
+import '../datamodel/divination_data_model.dart';
+import '../enums/enum_gender.dart';
 
 class DevEnterPageViewModel extends ChangeNotifier {
   // 获取当前位置
@@ -70,7 +72,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
 
   loadDivinationTypes() async {
     final List<DivinationTypeDataModel> divinationTypes =
-        await appDatabase.divinationTypesDao.listAvailable();
+        await appDatabase!.divinationTypesDao.listAvailable();
     divinationTypesListNotifier.value = divinationTypes;
     selectedDivinaionTypeNotifier.value = divinationTypes.first;
   }
@@ -130,7 +132,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
 
   // Future<Tuple2<DivinationDataModel, TimingDivinationModel>>
   Future<DivinationInfoModel> create() async {
-    DivinationRequestInfoDataModel divination = generateDivination();
+    DivinationDataModel divination = generateDivination();
     DivinationsCompanion divinationsCompanion =
         generateDivinationCompanion(divination);
 
@@ -152,7 +154,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
       // print((res[1]! as SeekerModel)?.location?.toJson());
       // print("~~~~~~~~");
       return DivinationInfoModel(
-          divination: res[0]! as DivinationRequestInfoDataModel,
+          divination: res[0]! as DivinationDataModel,
           divinationDatetime: res[1]! as SeekerModel);
     } else {
       TimingDivinationsCompanion timing =
@@ -168,34 +170,33 @@ class DevEnterPageViewModel extends ChangeNotifier {
             .getTimingDivinationByUuid(timing.uuid.value)
       ]);
       return DivinationInfoModel(
-          divination: res[0]! as DivinationRequestInfoDataModel,
+          divination: res[0]! as DivinationDataModel,
           divinationDatetime: res[1]! as TimingDivinationModel);
     }
   }
 
-  DivinationRequestInfoDataModel generateDivination() {
+  DivinationDataModel generateDivination() {
     // check value is all there
     DateTime now = DateTime.now();
-    DivinationRequestInfoDataModel divinationDataModel =
-        DivinationRequestInfoDataModel(
-            uuid: UuidV7().generate(),
-            createdAt: now,
-            lastUpdatedAt: now,
-            deletedAt: null,
-            divinationTypeUuid: selectedDivinaionTypeNotifier.value!.uuid,
-            fateYear: yearJiaZi.value?.toString(),
-            question: question.value,
-            detail: question.value,
-            ownerSeekerUuid: null,
-            gender: genderNotifier.value,
-            seekerName: username.value ?? nickname.value,
-            tinyPredict: null,
-            directlyPredict: null);
+    DivinationDataModel divinationDataModel = DivinationDataModel(
+        uuid: UuidV7().generate(),
+        createdAt: now,
+        lastUpdatedAt: now,
+        deletedAt: null,
+        divinationTypeUuid: selectedDivinaionTypeNotifier.value!.uuid,
+        fateYear: yearJiaZi.value?.toString(),
+        question: question.value,
+        detail: question.value,
+        ownerSeekerUuid: null,
+        gender: genderNotifier.value,
+        seekerName: username.value ?? nickname.value,
+        tinyPredict: null,
+        directlyPredict: null);
     return divinationDataModel;
   }
 
   DivinationsCompanion generateDivinationCompanion(
-      DivinationRequestInfoDataModel divinationDataModel) {
+      DivinationDataModel divinationDataModel) {
     return DivinationsCompanion(
         uuid: Value(divinationDataModel.uuid),
         createdAt: Value(divinationDataModel.createdAt),

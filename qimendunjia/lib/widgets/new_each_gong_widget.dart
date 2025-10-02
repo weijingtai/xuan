@@ -1188,7 +1188,7 @@ class _NewEachGongWidgetState extends State<NewEachGongWidget> {
 
   void diPanGanTapped(TianGan gan) {
     InteractiveToast.slide(
-      context: context,
+      context,
       // leading: leadingWidget(),
       title: Text("地盘：${gan.name}"),
       // trailing: trailingWidget(),
