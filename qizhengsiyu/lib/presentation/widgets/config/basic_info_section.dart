@@ -276,7 +276,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
                     ),
               ),
               const SizedBox(height: AppTheme.spacing12),
-              selectDateTimeButton(),
+              selectDateTimeButton(context),
               // DateTimePicker(
               //   initialDateTime: _birthDateTime,
               //   onDateTimeChanged: (dateTime) {
@@ -386,7 +386,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
     );
   }
 
-  Widget selectDateTimeButton() {
+  Widget selectDateTimeButton(BuildContext ctx) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
@@ -437,8 +437,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
         ElevatedButton(
           onPressed: () async {
             InteractiveToast.slide(
-              context,
-              // leading: leadingWidget(),
+              context: context,
               title: const Text("不能重复"),
               // trailing: trailingWidget(),
               toastStyle: const ToastStyle(titleLeadingGap: 10),
