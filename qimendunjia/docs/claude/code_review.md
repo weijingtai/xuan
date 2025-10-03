@@ -13,7 +13,262 @@
 
 ### 1. 架构设计
 
-#### 1.1 清晰的分层架构
+#### 1.1 双架构实现 ⭐ 新增
+```
+✅ 提供两套完整架构供学习和对比
+- 传统架构: ViewModel + View 直接通信
+- MVVM+UseCase: Clean Architecture 分层设计
+
+两套架构独立运行,互不干扰,便于:
+- 对比不同架构模式的优劣
+- 根据项目规模选择合适架构
+- 学习现代架构设计理念
+```
+
+#### 1.2 MVVM+UseCase 架构实现 ⭐ 新增
+```
+✅ Clean Architecture 完整实现
+
+Domain Layer (业务核心):
+├── Entities (纯业务实体)
+│   ├── QiMenPan - 奇门盘实体
+│   ├── EachGong - 宫位实体
+│   └── ShiJiaJu - 局信息实体
+├── Repository Interfaces (数据契约)
+│   ├── QiMenCalculatorRepository
+│   └── QiMenDataRepository
+└── UseCases (业务用例)
+    ├── CalculateJuUseCase - 计算局数
+    ├── ArrangePanUseCase - 排盘
+    └── SelectGongUseCase - 选择宫位
+
+Data Layer (数据处理):
+├── DataSources
+│   ├── JsonDataSource - JSON文件读取
+│   ├── ChaiBuCalculatorDataSource - 拆补法计算器
+│   ├── ZhiRunCalculatorDataSource - 置润法计算器
+│   ├── MaoShanCalculatorDataSource - 茅山法计算器
+│   ├── YinPanCalculatorDataSource - 阴盘法计算器
+│   └── CacheDataSource - 内存缓存
+└── Repository Implementations
+    ├── QiMenCalculatorRepositoryImpl
+    └── QiMenDataRepositoryImpl
+
+Presentation Layer (界面展示):
+├── ViewModels
+│   └── QiMenViewModel - 状态管理
+└── Pages
+    └── QiMenMvvmPage - UI界面
+
+Dependency Injection:
+└── ServiceLocator - 依赖注入容器
+```
+
+#### 1.3 依赖注入实现 ⭐ 新增
+```dart
+// ✅ ServiceLocator 管理所有依赖
+class ServiceLocator {
+  void init() {
+    // 1. 注册数据源
+    _registerDataSources();
+    // 2. 注册仓储
+    _registerRepositories();
+    // 3. 注册用例
+    _registerUseCases();
+    // 4. 注册ViewModel
+    _registerViewModels();
+  }
+
+  QiMenViewModel createQiMenViewModel() {
+    return QiMenViewModel(
+      get<CalculateJuUseCase>(),
+      get<ArrangePanUseCase>(),
+      get<SelectGongUseCase>(),
+    );
+  }
+}
+
+// 应用启动时初始化
+void main() {
+  serviceLocator.init();
+  runApp(const QiMenDunJiaApp());
+}
+```
+
+#### 1.4 UseCase 模式实现 ⭐ 新增
+```dart
+// ✅ CalculateJuUseCase - 封装计算局数业务逻辑
+class CalculateJuUseCase extends UseCase<ShiJiaJu, CalculateJuParams> {
+  final QiMenCalculatorRepository _repository;
+
+  CalculateJuUseCase(this._repository);
+
+  @override
+  Future<ShiJiaJu> execute(CalculateJuParams params) async {
+    try {
+      return await _repository.calculateJu(
+        dateTime: params.dateTime,
+        arrangeType: params.arrangeType,
+      );
+    } catch (e) {
+      throw QiMenCalculationException('计算局数失败: $e');
+    }
+  }
+}
+
+// ✅ ArrangePanUseCase - 封装排盘业务逻辑
+class ArrangePanUseCase extends UseCase<QiMenPan, ArrangePanParams> {
+  final QiMenCalculatorRepository _calculatorRepository;
+
+  @override
+  Future<QiMenPan> execute(ArrangePanParams params) async {
+    return await _calculatorRepository.arrangePan(
+      ju: params.ju,
+      plateType: params.plateType,
+      settings: params.settings,
+    );
+  }
+}
+
+// ✅ SelectGongUseCase - 封装选择宫位业务逻辑
+class SelectGongUseCase extends UseCase<GongDetailInfo, SelectGongParams> {
+  final QiMenDataRepository _dataRepository;
+
+  @override
+  Future<GongDetailInfo> execute(SelectGongParams params) async {
+    // 并行加载所有宫位详情数据
+    final results = await Future.wait([
+      _loadTenGanKeYing(gong),
+      _loadDoorStarKeYing(gong),
+      _loadQiYiRuGong(gong),
+      _loadEightDoorKeYing(params.pan, gong),
+    ]);
+
+    return GongDetailInfo(
+      gong: gong,
+      tenGanKeYing: results[0],
+      doorStarKeYing: results[1],
+      qiYiRuGong: results[2],
+      doorKeYing: results[3],
+    );
+  }
+}
+```
+
+#### 1.5 Repository 模式实现 ⭐ 新增
+```dart
+// ✅ Repository 接口定义（Domain层）
+abstract class QiMenCalculatorRepository {
+  Future<ShiJiaJu> calculateJu({
+    required DateTime dateTime,
+    required ArrangeType arrangeType,
+  });
+
+  Future<QiMenPan> arrangePan({
+    required ShiJiaJu ju,
+    required PlateType plateType,
+    required PanSettings settings,
+  });
+}
+
+// ✅ Repository 实现（Data层）
+class QiMenCalculatorRepositoryImpl implements QiMenCalculatorRepository {
+  final Map<ArrangeType, QiMenCalculatorDataSource> _calculators;
+
+  @override
+  Future<ShiJiaJu> calculateJu({
+    required DateTime dateTime,
+    required ArrangeType arrangeType,
+  }) async {
+    final calculator = _calculators[arrangeType];
+    if (calculator == null) {
+      throw QiMenCalculationException('不支持的起盘方式: $arrangeType');
+    }
+    return await calculator.calculateJu(dateTime);
+  }
+}
+```
+
+#### 1.6 状态管理优化 ⭐ 新增
+```dart
+// ✅ QiMenViewModel - 清晰的状态管理
+enum QiMenViewState {
+  initial,      // 初始状态
+  calculating,  // 计算中
+  arranging,    // 排盘中
+  loadingGongDetail,  // 加载宫位详情
+  success,      // 成功
+  error,        // 错误
+}
+
+class QiMenViewModel extends ChangeNotifier {
+  QiMenViewState _state = QiMenViewState.initial;
+  String? _errorMessage;
+
+  // 清晰的状态标识
+  bool get isLoading => _state == QiMenViewState.calculating ||
+                        _state == QiMenViewState.arranging;
+  bool get hasError => _state == QiMenViewState.error;
+  bool get hasData => _currentPan != null;
+
+  // 清晰的业务方法
+  Future<void> calculateAndArrangePan({
+    required DateTime dateTime,
+    required ArrangeType arrangeType,
+    required PlateType plateType,
+  }) async {
+    // 1. 计算局数
+    _state = QiMenViewState.calculating;
+    notifyListeners();
+    final ju = await _calculateJuUseCase.execute(...);
+
+    // 2. 排盘
+    _state = QiMenViewState.arranging;
+    notifyListeners();
+    final pan = await _arrangePanUseCase.execute(...);
+
+    // 3. 成功
+    _state = QiMenViewState.success;
+    _currentPan = pan;
+    notifyListeners();
+  }
+}
+```
+
+#### 1.7 架构选择页面 ⭐ 新增
+```dart
+// ✅ ArchitectureSelectionPage - 用户友好的架构选择
+class ArchitectureSelectionPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          // 传统架构卡片
+          _buildArchitectureCard(
+            title: '传统架构版本',
+            subtitle: 'ViewModel + UI直接通信',
+            description: '• 简单直接\n• 快速开发\n• 适合小型项目',
+            color: Colors.blue,
+            route: '/qimendunjia',
+          ),
+
+          // MVVM+UseCase架构卡片
+          _buildArchitectureCard(
+            title: 'MVVM+UseCase版本',
+            subtitle: 'Clean Architecture分层架构',
+            description: '• Domain层独立\n• UseCase封装\n• Repository模式',
+            color: Colors.green,
+            route: '/qimendunjia/mvvm',
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+#### 1.8 清晰的分层架构 (原有)
 ```
 ✅ 良好的关注点分离
 - UI层: pages/, widgets/

@@ -15,7 +15,17 @@
 
 ## 2. 技术架构
 
-### 2.1 架构模式
+### 2.1 双架构实现
+
+本项目提供**两套完整的架构实现**，功能相同但设计理念不同：
+
+#### 2.1.1 传统架构 (路由: `/qimendunjia`)
+**设计特点:**
+- 简单直接的 ViewModel + View 模式
+- 业务逻辑集中在 ViewModel 中
+- 适合快速开发和原型验证
+
+**架构层级:**
 - **展示层**: Flutter Widget (primary_page.dart, shi_jia_qi_men_view_page.dart)
 - **状态管理**: Provider (ShiJiaQiMenViewModel)
 - **业务逻辑**:
@@ -23,6 +33,130 @@
   - 奇门盘模型 (ShiJiaQiMen)
   - 工具类 (ArrangePlateUtils, NineYiUtils等)
 - **数据层**: JSON数据文件 + 枚举定义
+
+#### 2.1.2 MVVM + UseCase 架构 (路由: `/qimendunjia/mvvm`)
+**设计特点:**
+- Clean Architecture 分层设计
+- Domain层独立，不依赖外层
+- UseCase 封装单一业务场景
+- Repository 模式分离数据层
+- 高度可测试和可维护
+
+**架构层级:**
+
+```
+┌─────────────────────────────────────────┐
+│         Presentation Layer              │
+│  ┌────────────────────────────────────┐ │
+│  │  QiMenMvvmPage (UI)                │ │
+│  │          ↓                         │ │
+│  │  QiMenViewModel (State)            │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+                 ↓
+┌─────────────────────────────────────────┐
+│           Domain Layer                  │
+│  ┌────────────────────────────────────┐ │
+│  │  UseCases (Business Logic)         │ │
+│  │  • CalculateJuUseCase              │ │
+│  │  • ArrangePanUseCase               │ │
+│  │  • SelectGongUseCase               │ │
+│  │          ↓                         │ │
+│  │  Repository Interfaces             │ │
+│  │  • QiMenCalculatorRepository       │ │
+│  │  • QiMenDataRepository             │ │
+│  │          ↓                         │ │
+│  │  Entities (Domain Models)          │ │
+│  │  • QiMenPan, EachGong, ShiJiaJu   │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+                 ↓
+┌─────────────────────────────────────────┐
+│            Data Layer                   │
+│  ┌────────────────────────────────────┐ │
+│  │  Repository Implementations        │ │
+│  │  • QiMenCalculatorRepositoryImpl   │ │
+│  │  • QiMenDataRepositoryImpl         │ │
+│  │          ↓                         │ │
+│  │  DataSources                       │ │
+│  │  • JsonDataSource (JSON files)    │ │
+│  │  • CalculatorDataSource (计算器)   │ │
+│  │  • CacheDataSource (缓存)         │ │
+│  └────────────────────────────────────┘ │
+└─────────────────────────────────────────┘
+                 ↓
+┌─────────────────────────────────────────┐
+│      Dependency Injection               │
+│  ServiceLocator (管理所有依赖)          │
+└─────────────────────────────────────────┘
+```
+
+**核心组件:**
+
+1. **Domain Layer** (`lib/domain/`)
+   - **Entities**: 纯业务实体，不依赖框架
+     - `QiMenPan`: 奇门盘实体
+     - `EachGong`: 宫位实体
+     - `ShiJiaJu`: 局信息实体
+   - **Repository Interfaces**: 定义数据操作契约
+     - `QiMenCalculatorRepository`: 计算器仓储接口
+     - `QiMenDataRepository`: 数据仓储接口
+   - **UseCases**: 封装单一业务场景
+     - `CalculateJuUseCase`: 计算局数用例
+     - `ArrangePanUseCase`: 排盘用例
+     - `SelectGongUseCase`: 选择宫位用例
+
+2. **Data Layer** (`lib/data/`)
+   - **DataSources**: 数据源实现
+     - `JsonDataSource`: JSON文件读取
+     - `ChaiBuCalculatorDataSource`: 拆补法计算器
+     - `ZhiRunCalculatorDataSource`: 置润法计算器
+     - `MaoShanCalculatorDataSource`: 茅山法计算器
+     - `YinPanCalculatorDataSource`: 阴盘法计算器
+     - `CacheDataSource`: 内存缓存
+   - **Repository Implementations**: 仓储接口实现
+     - `QiMenCalculatorRepositoryImpl`
+     - `QiMenDataRepositoryImpl`
+
+3. **Presentation Layer** (`lib/presentation/`)
+   - **ViewModels**: 状态管理
+     - `QiMenViewModel`: 奇门遁甲ViewModel
+       - 状态: initial/calculating/arranging/success/error
+       - 方法: calculateAndArrangePan(), selectGong(), reset()
+   - **Views**: UI页面
+     - `QiMenMvvmPage`: MVVM架构UI页面
+       - 架构标识展示
+       - 配置选择界面
+       - 状态可视化
+       - 盘信息展示
+
+4. **Dependency Injection** (`lib/di/`)
+   - **ServiceLocator**: 依赖注入容器
+     - 注册所有 DataSources
+     - 注册所有 Repositories
+     - 注册所有 UseCases
+     - 提供 ViewModel 工厂方法
+
+### 2.1.3 架构对比
+
+| 特性 | 传统架构 | MVVM+UseCase架构 |
+|------|----------|------------------|
+| **学习曲线** | 低 | 中 |
+| **代码复杂度** | 低 | 中 |
+| **可测试性** | 一般 | 优秀 |
+| **可维护性** | 一般 | 优秀 |
+| **解耦程度** | 中 | 高 |
+| **业务复用** | 困难 | 容易 |
+| **适用场景** | 小型项目 | 中大型项目 |
+| **团队协作** | 一般 | 优秀 |
+
+### 2.1.4 架构选择入口
+
+应用启动后会显示**架构选择页面** (ArchitectureSelectionPage)，用户可以选择:
+- 蓝色卡片: 传统架构版本
+- 绿色卡片: MVVM+UseCase版本
+
+两套架构完全独立运行，互不干扰，便于学习和对比。
 
 ### 2.2 核心模型
 

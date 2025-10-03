@@ -1088,7 +1088,7 @@ class _EachGongWidgetState extends State<EachGongWidget> {
         break;
       case GongAndDoorRelationship.BI_HE:
       case GongAndDoorRelationship.SHOU_SHEN:
-      _doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: const Color.fromRGBO(193, 18, 28, 1));
         break;
       case GongAndDoorRelationship.MEN_PO:
@@ -1104,7 +1104,7 @@ class _EachGongWidgetState extends State<EachGongWidget> {
         break;
       case GongAndDoorRelationship.SHOU_ZHI:
       case GongAndDoorRelationship.SHENG_GONG:
-      _doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: const Color.fromRGBO(121, 114, 110, 1));
         break;
       default:
@@ -1183,7 +1183,7 @@ class _EachGongWidgetState extends State<EachGongWidget> {
 
   void diPanGanTapped(TianGan gan) {
     InteractiveToast.slide(
-      context,
+      context: context,
       // leading: leadingWidget(),
       title: Text("地盘：${gan.name}"),
       // trailing: trailingWidget(),

@@ -30,7 +30,7 @@ dependencies:
     path: ../common
   dotlottie_loader: ^0.0.4
   auto_size_text: ^3.0.0
-  flutter_sliding_toast: ^1.4.2
+  flutter_sliding_toast: ^1.4.3
   json_serializable: ^6.8.0
   json_annotation: ^4.9.0
   flutter_animate: 4.5.0
@@ -53,6 +53,8 @@ dev_dependencies:
 flutter:
   assets:
     - assets/icons/
+    - assets/qi_men_dun_jia/
+    - assets/lotties/
 
   # To add assets to your package, add an assets section, like this:
   # assets:

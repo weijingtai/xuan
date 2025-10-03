@@ -4,12 +4,15 @@ import 'package:provider/provider.dart';
 import 'package:qimendunjia/pages/primary_page.dart';
 import 'package:qimendunjia/pages/scalable_shi_jia_qi_men_view_page.dart';
 import 'package:qimendunjia/pages/shi_jia_qi_men_view_model.dart';
+import 'package:qimendunjia/presentation/pages/qimen_mvvm_page.dart';
+import 'package:qimendunjia/di/service_locator.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
+    // 旧版实现（传统架构）
     // "/qimendunjia": (context, {arguments}) => PrimaryPage(),
     // "/qimendunjia": (context, {arguments}) => BeautifulPage(),
     "/qimendunjia": (context, {arguments}) => MultiProvider(
@@ -19,6 +22,12 @@ class NavigatorGenerator {
           ],
           child: ScalableShiJiaQiMenViewPage(),
           // child: ShiJiaQiMenViewPage(),
+        ),
+
+    // 新版实现（MVVM + UseCase架构）
+    "/qimendunjia/mvvm": (context, {arguments}) => ChangeNotifierProvider(
+          create: (_) => serviceLocator.createQiMenViewModel(),
+          child: const QiMenMvvmPage(),
         ),
   };
 
