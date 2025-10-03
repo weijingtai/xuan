@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
+import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/body_life_circle_widget.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
@@ -22,37 +23,18 @@ import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'data/repositories/qizhengsiyu_pan_repository.dart';
 import 'domain/entities/models/body_life_model.dart';
 import 'domain/entities/models/naming_degree_pair.dart';
+import 'domain/entities/models/panel_config.dart';
+import 'domain/entities/models/zhou_tian_model.dart';
+import 'domain/managers/hua_yao_manager.dart';
+import 'domain/managers/shen_sha_manager.dart';
+import 'domain/managers/zhou_tian_model_manager.dart';
 import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
 import 'domain/usecases/save_calculated_panel_usecase.dart';
 import 'navigator.dart';
+import 'di.dart';
 
 void main() {
-  runApp(MultiProvider(
-    providers: [
-      // Provider<rootDB.AppDatabase>(
-      //   create: (ctx) => rootDB.AppDatabase(),
-      //   dispose: (context, rootdb) => rootdb.close(),
-      // ),
-      Provider<AppDatabase>(
-        create: (ctx) => AppDatabase(),
-        dispose: (ctx, db) => db.close(),
-      ),
-      Provider<IQiZhengSiYuPanRepository>(
-        create: (ctx) => QiZhengSiYuPanRepository(
-          appDatabase: ctx.read<AppDatabase>(),
-        ),
-      ),
-      Provider<SaveCalculatedPanelUseCase>(
-          create: (ctx) => SaveCalculatedPanelUseCase(
-              qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
-      ChangeNotifierProvider<BeautyPageViewModel>(
-          create: (ctx) => BeautyPageViewModel(
-              calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
-              saveCalculatedPanelUseCase:
-                  ctx.read<SaveCalculatedPanelUseCase>())),
-    ],
-    child: const MyApp(),
-  ));
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -61,15 +43,45 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+    return MultiProvider(
+      providers: [
+        ...createProviders(),
+        Provider<AppDatabase>(
+          create: (ctx) => AppDatabase(),
+          dispose: (ctx, db) => db.close(),
+        ),
+        Provider<IQiZhengSiYuPanRepository>(
+          create: (ctx) => QiZhengSiYuPanRepository(
+            appDatabase: ctx.read<AppDatabase>(),
+          ),
+        ),
+        Provider<SaveCalculatedPanelUseCase>(
+            create: (ctx) => SaveCalculatedPanelUseCase(
+                qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
+        ChangeNotifierProvider<BeautyPageViewModel>(
+            create: (ctx) => BeautyPageViewModel(
+                  calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+                  saveCalculatedPanelUseCase:
+                      ctx.read<SaveCalculatedPanelUseCase>(),
+                  shenShaManager: ctx.read<ShenShaManager>(),
+                  huaYaoManager: ctx.read<HuaYaoManager>(),
+                  zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
+                )),
+        ChangeNotifierProvider<QiZhengSiYuViewModel>(
+            create: (ctx) => QiZhengSiYuViewModel(
+                  shenShaManager: ctx.read<ShenShaManager>(),
+                  huaYaoManager: ctx.read<HuaYaoManager>(),
+                  zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
+                )),
+      ],
+      child: MaterialApp(
+        title: 'Flutter Demo',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+        ),
+        initialRoute: "/qizhengsiyu/panel",
+        onGenerateRoute: NavigatorGenerator.generateRoute,
       ),
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      // showSemanticsDebugger: false,
-      initialRoute: "/qizhengsiyu/panel",
-      onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }
 }
@@ -86,6 +98,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    final zhouTianModelManager = context.read<ZhouTianModelManager>();
+    zhouTianModelManager.load();
+    final zhouTianModel =
+        zhouTianModelManager.getZhouTianModelBy(BasePanelConfig.defaultBasicPanelConfig());
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -118,7 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       EnumTwelveGong.You: ["田宅"],
                       EnumTwelveGong.Xu: ["兄弟"],
                       EnumTwelveGong.Hai: ["财帛"],
-                    },
+                    }, zhouTianModel: zhouTianModel,
                   ),
                   Normal12GongRing(
                     outerRadius: 150,
@@ -138,9 +154,9 @@ class _MyHomePageState extends State<MyHomePage> {
                       EnumTwelveGong.You: ["金牛"],
                       EnumTwelveGong.Xu: ["白羊"],
                       EnumTwelveGong.Hai: ["双鱼"],
-                    },
+                    }, zhouTianModel: zhouTianModel,
                   ),
-                  build12DiZhiGong(130, 80),
+                  build12DiZhiGong(130, 80, zhouTianModel),
                   DaXianRing(
                       gongYearsMapper: {
                         EnumTwelveGong.Zi: YearMonth(10, 3),
@@ -350,7 +366,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Widget build12DiZhiGong(double outerRadius, double innerRadius) {
+  Widget build12DiZhiGong(double outerRadius, double innerRadius, ZhouTianModel zhouTianModel) {
     TextStyle firstTextStyle =
         TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
@@ -372,6 +388,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return Gong12DiZhiRing(
       outerRadius: outerRadius,
       innerRadius: innerRadius,
+      zhouTianModel: zhouTianModel,
       // angleOffset: 3,
       shenShaMapper: {
         EnumTwelveGong.Zi: [

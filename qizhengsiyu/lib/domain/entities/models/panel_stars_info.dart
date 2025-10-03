@@ -130,6 +130,20 @@ class StarsAngle {
     required this.qi,
   });
 
+  Map<EnumStars, StarAngleSpeed> toMap() => {
+        EnumStars.Sun: StarAngleSpeed(angle: sun, speed: 0),
+        EnumStars.Moon: StarAngleSpeed(angle: moon, speed: 0),
+        EnumStars.Venus: StarAngleSpeed(angle: venus, speed: venusSpeed),
+        EnumStars.Jupiter: StarAngleSpeed(angle: jupiter, speed: jupiterSpeed),
+        EnumStars.Mars: StarAngleSpeed(angle: mars, speed: marsSpeed),
+        EnumStars.Saturn: StarAngleSpeed(angle: saturn, speed: saturnSpeed),
+        EnumStars.Mercury: StarAngleSpeed(angle: water, speed: waterSpeed),
+        EnumStars.Luo: StarAngleSpeed(angle: southNode, speed: 0),
+        EnumStars.Ji: StarAngleSpeed(angle: northNode, speed: 0),
+        EnumStars.Bei: StarAngleSpeed(angle: lilith, speed: 0),
+        EnumStars.Qi: StarAngleSpeed(angle: qi, speed: 0),
+      };
+
   double getByStar(EnumStars star) {
     double starAngle = 0;
     switch (star) {

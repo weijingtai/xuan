@@ -3,8 +3,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../../domain/entities/models/naming_degree_pair.dart';
 import 'enum_ring_text_direction.dart';
 import 'sector_painter.dart';
 
@@ -27,11 +29,14 @@ class Gong12DiZhiRing extends StatelessWidget {
   final bool isXu;
   final double baseGongOffsetAngle;
 
+  final ZhouTianModel zhouTianModel;
+
   const Gong12DiZhiRing({
     super.key,
     required this.shenShaMapper,
     required this.outerRadius,
     required this.innerRadius,
+    required this.zhouTianModel,
     this.baseGongOffsetAngle = 60,
     this.shaTextDirection = RingTextDirection.gravity,
     this.textLayoutStyle = DiZhiTextLayoutStyle.triangle,
@@ -42,7 +47,8 @@ class Gong12DiZhiRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double itemSize = outerRadius * 2;
-    final List<EnumTwelveGong> gongList = shenShaMapper.keys.toList();
+    final List<GongDegree> gongs = zhouTianModel.gongDegreeSeq;
+    double cumulativeAngle = 0;
 
     return SizedBox(
       width: itemSize,
@@ -50,13 +56,15 @@ class Gong12DiZhiRing extends StatelessWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          for (int i = 0; i < gongList.length; i++)
+          for (int i = 0; i < gongs.length; i++) ...[
             _buildGongSector(
-              index: i,
-              gong: gongList[i],
-              shenShaList: shenShaMapper[gongList[i]]!,
+              gong: gongs[i],
+              shenShaList: shenShaMapper[gongs[i].gong]!,
               itemSize: itemSize,
+              rotationAngle: cumulativeAngle,
             ),
+            () { cumulativeAngle += gongs[i].degree; return const SizedBox.shrink(); }(), // This is a trick to update the cumulativeAngle in a declarative way.
+          ]
         ],
       ),
     );
@@ -64,16 +72,16 @@ class Gong12DiZhiRing extends StatelessWidget {
 
   /// 构建单个宫位扇区
   Widget _buildGongSector({
-    required int index,
-    required EnumTwelveGong gong,
+    required GongDegree gong,
     required List<Text> shenShaList,
     required double itemSize,
+    required double rotationAngle,
   }) {
-    final double rotationAngle =
-        (index * 30 + baseGongOffsetAngle) * math.pi / 180;
+    final double rotationRadian =
+        (rotationAngle + baseGongOffsetAngle) * math.pi / 180;
 
     return Transform.rotate(
-      angle: rotationAngle,
+      angle: rotationRadian,
       child: SizedBox(
         width: itemSize,
         height: itemSize,
@@ -81,8 +89,7 @@ class Gong12DiZhiRing extends StatelessWidget {
           size: Size(itemSize, itemSize),
           painter: SectorPainter(
             startAngle: 0,
-            sweepRadian: 30 * math.pi / 180,
-            // color: Colors.teal[500]!.withAlpha(10 * (index + 1)),
+            sweepRadian: gong.degree * math.pi / 180, // Use dynamic sweep angle
             color: Colors.transparent,
             outerRadius: outerRadius,
             innerRadius: innerRadius,
@@ -92,7 +99,7 @@ class Gong12DiZhiRing extends StatelessWidget {
             shenShaList: shenShaList,
             outerRadius: outerRadius,
             innerRadius: innerRadius,
-            gongIndex: index,
+            gongIndex: zhouTianModel.gongDegreeSeq.indexWhere((g) => g.gong == gong.gong),
             textDirection: shaTextDirection,
             textLayoutStyle: textLayoutStyle,
             isShi: isShi,

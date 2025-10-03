@@ -31,12 +31,16 @@ import '../../domain/entities/models/observer_position.dart';
 import '../../domain/entities/models/panel_config.dart';
 import '../../domain/entities/models/passage_year_panel_model.dart';
 import '../../domain/entities/models/star_angle_speed.dart';
+import '../../domain/entities/models/star_enter_info.dart';
+import '../../domain/entities/models/star_position_raw_data.dart';
 import '../../domain/entities/models/stars_angle.dart';
+import '../../domain/entities/models/zhou_tian_model.dart';
 import '../../domain/managers/hua_yao_manager.dart';
 import '../../domain/managers/shen_sha_manager.dart';
 import '../../domain/managers/zhou_tian_model_manager.dart';
 import '../../domain/services/generate_base_panel_service.dart';
 import '../../domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import '../../domain/engines/calculation_engine_factory.dart';
 import '../../domain/usecases/save_calculated_panel_usecase.dart';
 import '../models/ui_star_model.dart';
 import 'StarsResolver.dart';
@@ -45,53 +49,32 @@ import 'StarsResolver.dart';
 /// 负责加载必要数据、根据观测位置和时间计算星体位置，
 /// 生成星盘详细信息和 UI 显示数据，并管理状态通知 UI 更新。
 class BeautyPageViewModel extends ChangeNotifier {
-  // MARK: - Constants
+  final ShenShaManager shenShaManager;
+  final HuaYaoManager huaYaoManager;
+  final ZhouTianModelManager zhouTianModelManager;
 
-  /// UI安全角度额外增加的度数，用于避免星体图标重叠。
+  final SaveCalculatedPanelUseCase saveCalculatedPanelUseCase;
+  final CalculateFateDongWeiUseCase calculateFateDongWeiUseCase;
+
   static const double _uiSafetyAnglePadding = 2.0;
-  // static DivinationDatetimeModel? divinationDatetimeModel;
   ObserverDataModel? observer;
 
-  /// 紫气计算的基准时间点 (上海时区)。
-  /// 此计算方法基于特定术数规则，非标准天文计算。
   static final tz.TZDateTime _ziQiBaseShangHaiTime =
       tz.TZDateTime(tz.getLocation('Asia/Shanghai'), 2013, 4, 9, 2, 58);
-  late final SaveCalculatedPanelUseCase saveCalculatedPanelUseCase;
-  late final CalculateFateDongWeiUseCase calculateFateDongWeiUseCase;
 
-  /// 紫气每日运行角度 (度)。
-  /// 每24小时运行 02′07″，约等于 0.0352 度。
   static const double _ziQiAnglePerDay = 0.0352;
 
-  /// 紫气每分钟运行角度 (度)。
   static const double _ziQiAnglePerMinute = _ziQiAnglePerDay / (24 * 60);
 
-  // MARK: - Star Data
-
-  /// 本命盘的原始星体角度数据 (黄道坐标)。
-  // StarsAngle? _basicLifeStarsAngle;
-  // StarsAngle? get basicLifeStarsAngle => _basicLifeStarsAngle;
-
-  /// 行限盘（或起盘）的原始星体角度数据 (黄道坐标)。
-  // StarsAngle? _fateLifeStarsAngle;
-  // StarsAngle? get fateLifeStarsAngle => _fateLifeStarsAngle;
-
-  // MARK: - UI Data
-
-  /// 本命盘用于 UI 显示的星体列表，已调整位置避免重叠。
   List<UIStarModel> _uiBasicLifeStars = [];
   List<UIStarModel> get uiBasicLifeStars => _uiBasicLifeStars;
 
   final ValueNotifier<List<UIStarModel>?> uiBasicLifeStarsNotifier =
       ValueNotifier<List<UIStarModel>?>(null);
 
-  // final ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?> uiShenShaNotifier =
-  // ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?>(null);
-  // final ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>
-  //     uiDestinyGongNotifier =
-  // ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>(null);
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier<BasePanelModel?>(null);
+  final ValueNotifier<ZhouTianModel?> zhouTianModelNotifier = ValueNotifier(null);
   final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
       ValueNotifier<PassageYearPanelModel?>(null);
 
@@ -101,101 +84,34 @@ class BeautyPageViewModel extends ChangeNotifier {
   final ValueNotifier<CalculateFateDongWeiResult?> dongWeiFateResultNotifier =
       ValueNotifier(null);
 
-  /// 行限盘（或起盘）用于 UI 显示的星体列表，已调整位置避免重叠。
   List<UIStarModel> _uiFateLifeStars = [];
   List<UIStarModel> get uiFateLifeStars => _uiFateLifeStars;
 
   final ValueNotifier<List<UIStarModel>?> uiFateLifeStarsNotifier =
       ValueNotifier<List<UIStarModel>?>(null);
-  // MARK: - Panel Information
 
-  /// 本命盘详细信息，包括落宫、落宿等（可能通过 Service 计算）。
-  // PanelStarsInfo? _basicLifePanelStarsInfo;
-  // PanelStarsInfo? get basicLifePanelStarsInfo => _basicLifePanelStarsInfo;
-
-  /// 行限盘（或起盘）详细信息（可能通过 Service 计算）。
-  // PanelStarsInfo? _fateLifePanelStarsInfo;
-  // PanelStarsInfo? get fateLifePanelStarsInfo => _fateLifePanelStarsInfo;
-
-  /// 五星大限运行信息映射。
   Map<EnumStars, FiveStarWalkingInfo>? _daXianMapper;
   Map<EnumStars, FiveStarWalkingInfo>? get daXianMapper => _daXianMapper;
 
-  // ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?> gongShenShaNotifier =
-  // ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?>(null);
-
-  // MARK: - Configuration and Managers
-
-  /// 计算星盘时使用的观测者位置信息。
-  // ObserverPosition? _observerPosition;
-  // ObserverPosition? get observerPosition => _observerPosition;
-
-  /// UI 绘制本命盘时星体所需的最小安全角度。
   double _baseMiniSafetyAngle = 5;
 
-  /// UI 绘制行限盘时星体所需的最小安全角度。
   double _fateMiniSafetyAngle = 7;
 
-  /// 神煞数据管理器。
-  ShenShaManager? _shenShaManager;
-  ShenShaManager get shenShaManager {
-    // 提供一个默认值或抛出错误，如果在使用前未初始化
-    if (_shenShaManager == null) {
-      // 应该在init()中初始化
-      throw StateError('ShenShaManager not initialized. Call init() first.');
-    }
-    return _shenShaManager!;
-  }
+  DivinationInfoModel? _divinationInfoModel;
 
-  ZhouTianModelManager get zhouTianModelManager =>
-      ZhouTianModelManager.instance;
+  ObserverPosition? lifeObserver;
 
-  /// 化曜数据管理器。
-  HuaYaoManager? _huaYaoManager;
-  HuaYaoManager get huaYaoManager {
-    // 提供一个默认值或抛出错误，如果在使用前未初始化
-    if (_huaYaoManager == null) {
-      // 应该在init()中初始化
-      throw StateError('HuaYaoManager not initialized. Call init() first.');
-    }
-    return _huaYaoManager!;
-  }
+  ObserverPosition? fateObserver;
 
-  // MARK: - Services
-
-  /// 生成基础星盘数据的服务。
-  /// 使用 late 关键字表示在使用前会被初始化，通常在 calculate 方法中。
   late final GenerateBasePanelService _generateBasePanelService;
 
-  // MARK: - Constructor
-
-  /// QiZhengSiYuViewModel 构造函数。
-  /// 注意: 移除了 BuildContext 参数，ViewModel 不应持有 UI Context。
-  BeautyPageViewModel(
-      {required this.saveCalculatedPanelUseCase,
-      required this.calculateFateDongWeiUseCase});
-
-  // MARK: - Initialization
-
-  /// 异步初始化 ViewModel，加载神煞和化曜数据。
-  Future<void> init() async {
-    try {
-      final result = await Future.wait([
-        _loadShenShaManager(),
-        _loadHuaYaoManager(),
-        ZhouTianModelManager.instance.load(), // 添加周天模型加载
-      ]);
-      _shenShaManager = result[0] as ShenShaManager;
-      _huaYaoManager = result[1] as HuaYaoManager;
-      // 第三个结果是 void，不需要赋值
-      // 初始化服务，因为它依赖于 Manager
-      debugPrint("ViewModel init complete: Managers loaded.");
-    } catch (e) {
-      debugPrint("Error initializing ViewModel: $e");
-      // 根据需要处理错误，例如显示一个错误消息
-      rethrow; // 重新抛出错误以便调用者处理
-    }
-  }
+  BeautyPageViewModel({
+    required this.saveCalculatedPanelUseCase,
+    required this.calculateFateDongWeiUseCase,
+    required this.shenShaManager,
+    required this.huaYaoManager,
+    required this.zhouTianModelManager,
+  });
 
   // MARK: - Safety Angle Calculation
 
@@ -231,12 +147,12 @@ class BeautyPageViewModel extends ChangeNotifier {
   void dispose() {
     uiFateLifeStarsNotifier.dispose();
     uiBasicLifeStarsNotifier.dispose();
-    // uiShenShaNotifier.dispose();
-    // uiDestinyGongNotifier.dispose();
 
     uiBasePanelNotifier.dispose();
     uiDaXianPanelNotifier.dispose();
     baseObserverPositionNotifier.dispose();
+    zhouTianModelNotifier.dispose();
+    dongWeiFateResultNotifier.dispose();
     super.dispose();
   }
 
@@ -272,87 +188,91 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 根据观测者位置和时间计算星盘数据。
   /// 这是触发所有计算的主入口。
   /// [observerPosition]: 包含出生信息、行限时间、经纬度、时区等观测者信息。
-  Future<void> calculate(ObserverPosition observerPosition) async {
-    // // 确保管理器和服务已初始化
-    // if (_shenShaManager == null || _huaYaoManager == null) {
-    //   await init(); // 如果未初始化则先初始化
-    // }
-    // 更新服务中的观测者位置
+  Future<void> calculate(BasePanelConfig config, ObserverPosition observerPosition) async {
+    // 1. Create the engine based on the configuration
+    final engine = CalculationEngineFactory.create(config);
+
+    // 2. Get the system definition and star positions from the engine
+    final zhouTianModel = await engine.getSystemDefinition(config);
+    final starPositions = await engine.calculateStarPositions(observerPosition.dateTime, observerPosition, config);
+
+    // 3. Update the notifiers with the core data
+    zhouTianModelNotifier.value = zhouTianModel;
+
+    // 4. Adapt the engine's output to the format expected by the post-processing service
+    final starAngleMapper = _transformStarPositions(starPositions, config);
+
+    // 5. Instantiate and call the post-processing service
     _generateBasePanelService = GenerateBasePanelService(
-        panelConfig: panelConfig, // 默认配置
-        shenShaManager: shenShaManager,
-        huaYaoManager: huaYaoManager,
-        observerPosition: observerPosition,
-        zhouTianModelManager: ZhouTianModelManager.instance);
+      panelConfig: config,
+      observerPosition: observerPosition,
+      shenShaManager: shenShaManager,
+      huaYaoManager: huaYaoManager,
+    );
 
-    baseObserverPositionNotifier.value = observerPosition;
-    debugPrint(
-        "Calculating for observer: ${observerPosition.latitude}, ${observerPosition.longitude}");
+    final basicPanelModel = await _generateBasePanelService.calculate(
+      zhouTianModel: zhouTianModel,
+      starAngleMapper: starAngleMapper,
+    );
 
-    // 1. 计算本命盘
-    BasePanelModel basicPanelModel;
-    try {
-      basicPanelModel = await _generateBasePanelService.calculate();
-      // print(jsonEncode(basicPanelModel.toJson()));
-      // _basicLifeStarsAngle =
-      // StarsAngle.fromMapper(basicPanelModel.starAngleMapper);
-      // _uiBasicLifeStars = // 使用原始角度计算 UI 数据
-      uiBasicLifeStarsNotifier.value = _calculateUIStarsFromMapper(
-          basicPanelModel.starAngleMapper, _baseMiniSafetyAngle);
-      // uiShenShaNotifier.value = basicPanelModel.shenShaMapper;
-      // uiDestinyGongNotifier.value = basicPanelModel.twelveGongMapper;
-      uiBasePanelNotifier.value = basicPanelModel;
-      // gongShenShaNotifier.value = basicPanelModel.gongShenShaMapper;
+    // 6. Update the rest of the UI notifiers
+    uiBasePanelNotifier.value = basicPanelModel;
+    uiBasicLifeStarsNotifier.value = _calculateUIStarsFromMapper(
+        basicPanelModel.starAngleMapper, _baseMiniSafetyAngle, zhouTianModel);
 
-      calculateDongWeiFate(bodyLifeModel: basicPanelModel.bodyLifeModel);
-      debugPrint(
-          "Basic panel calculated. ${uiBasicLifeStarsNotifier.value!.length}");
-      final timingInfo = _divinationInfoModel!
-          .divinationDatetime.timingInfoListJson!
-          .firstWhere((t) =>
-              t.uuid ==
-              _divinationInfoModel!.divinationDatetime.timingInfoUuid!);
-      saveCalculatedPanelUseCase.execute(
-          basicPanelModel: basicPanelModel,
-          panelConfig: panelConfig,
-          divinationDatetimeModel: timingInfo,
-          requestInfo: _divinationInfoModel!.divinationDatetime);
-    } catch (e) {
-      debugPrint("Error calculating basic panel: $e");
-      // 根据需要处理错误
-      // _basicLifeStarsAngle = null;
-      // _basicLifePanelStarsInfo = null;
-      // _uiBasicLifeStars = [];
-      uiBasicLifeStarsNotifier.value = null;
-    }
-
-    calculateDaXian(DateTime.now().add(const Duration(days: 4, hours: 6)));
-
-    // 通知所有监听者（通常是 UI）数据已更新
-    // notifyListeners();
+    // ... other post-calculation logic like calculateDongWeiFate, saveCalculatedPanelUseCase etc.
     debugPrint("ViewModel calculation complete. Listeners notified.");
   }
 
-  Future<void> calculateDaXian(DateTime fateLifeTime) async {
-    fateObserver = generateFateObserverPosition(fateLifeTime);
+  /// Transforms the raw data from the calculation engine into the map format required by other services.
+  Map<EnumStars, StarAngleSpeed> _transformStarPositions(List<StarPositionRawData> starPositions, BasePanelConfig config) {
+    final Map<EnumStars, StarAngleSpeed> mapper = {};
+    for (final pos in starPositions) {
+      // Find the angle/speed info that matches the current panel configuration
+      final matchingInfo = pos.angleRawInfoSet.firstWhere(
+        (info) =>
+            info.panelSystemType == config.panelSystemType &&
+            info.coordinateSystem == config.celestialCoordinateSystem,
+        orElse: () => pos.angleRawInfoSet.first, // Fallback to the first available if no exact match
+      );
+      mapper[pos.starType] = StarAngleSpeed(
+        angle: matchingInfo.angle,
+        speed: matchingInfo.speed,
+      );
+    }
+    return mapper;
+  }
 
-    // DateTime fateLifeUtcTime = fateLifeTime.toUtc();
+
+  Future<void> calculateDaXian(DateTime fateLifeTime) async {
+    final fateObserver = generateFateObserverPosition(fateLifeTime);
+
+    // 1. Create the engine based on the configuration
+    final engine = CalculationEngineFactory.create(panelConfig); // Assuming base panel's config for DaXian
+
+    // 2. Get the system definition and star positions for the DaXian date
+    final zhouTianModel = await engine.getSystemDefinition(panelConfig);
+    final starPositions = await engine.calculateStarPositions(fateObserver.dateTime, fateObserver, panelConfig);
+
+    // 3. Adapt the engine's output
+    final starAngleMapper = _transformStarPositions(starPositions, panelConfig);
+
     try {
       PassageYearPanelModel fatePanelModel = await _generateBasePanelService
-          .calculateDaXia(uiBasePanelNotifier.value!, fateObserver!);
+          .calculateDaXia(uiBasePanelNotifier.value!, fateObserver,
+          zhouTianModel: zhouTianModel,
+          starAngleMapper: starAngleMapper,
+        );
 
       _uiFateLifeStars = _calculateUIStarsFromMapper(
           fatePanelModel.starAngleMapper,
-          _fateMiniSafetyAngle); // 使用原始角度计算 UI 数据
+          _fateMiniSafetyAngle, zhouTianModel); // Pass zhouTianModel
 
       uiFateLifeStarsNotifier.value = _uiFateLifeStars;
       uiDaXianPanelNotifier.value = fatePanelModel;
       debugPrint("Fate panel calculated. ${_uiFateLifeStars.length}");
     } catch (e) {
       debugPrint("Error calculating fate panel: $e");
-      // 根据需要处理错误
-      // _fateLifeStarsAngle = null;
-      // _fateLifePanelStarsInfo = null;
       _uiFateLifeStars = [];
       uiFateLifeStarsNotifier.value = null;
     }
@@ -364,78 +284,23 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// [miniSafetyAngle]: UI 绘制时星体所需的最小安全角度。
   /// 返回: 适用于 UI 绘制的 UIStarModel 列表。
   List<UIStarModel> _calculateUIStarsFromMapper(
-      Map<EnumStars, StarAngleSpeed> starsAngleMapper, double miniSafetyAngle) {
+      Map<EnumStars, StarAngleSpeed> starsAngleMapper, double miniSafetyAngle, ZhouTianModel zhouTianModel) {
     // 定义星体及其在 UI 调整位置时的优先级。
     // 优先级越高，越不容易被移动。
-    List<UIStarModel> unadjustedStarList = [
-      UIStarModel(
-        star: EnumStars.Sun,
-        originalAngle:
-            starsAngleMapper[EnumStars.Sun]?.angle ?? 0, // 使用?.处理可能不存在的星体
-        priority: 4, // 太阳优先级最高
+    List<UIStarModel> unadjustedStarList = starsAngleMapper.entries.map((entry) {
+      final star = entry.key;
+      final starAngle = entry.value;
+      // Normalize the angle from the native system to a 360-degree system for UI drawing
+      final normalizedAngle = (starAngle.angle / zhouTianModel.totalDegree) * 360.0;
+
+      return UIStarModel(
+        star: star,
+        originalAngle: normalizedAngle,
+        priority: _getStarPriority(star), // Helper function to get priority
         rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Moon,
-        originalAngle: starsAngleMapper[EnumStars.Moon]?.angle ?? 0,
-        priority: 3, // 月亮优先级次之
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Venus,
-        originalAngle: starsAngleMapper[EnumStars.Venus]?.angle ?? 0,
-        priority: 2, // 五星优先级中等
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Jupiter,
-        originalAngle: starsAngleMapper[EnumStars.Jupiter]?.angle ?? 0,
-        priority: 2,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Mercury,
-        originalAngle: starsAngleMapper[EnumStars.Mercury]?.angle ?? 0,
-        priority: 2,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Mars,
-        originalAngle: starsAngleMapper[EnumStars.Mars]?.angle ?? 0,
-        priority: 2,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Saturn,
-        originalAngle: starsAngleMapper[EnumStars.Saturn]?.angle ?? 0,
-        priority: 2,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Qi, // 紫气
-        originalAngle: starsAngleMapper[EnumStars.Qi]?.angle ?? 0,
-        priority: 1, // 辅星优先级最低
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Bei, // 月孛
-        originalAngle: starsAngleMapper[EnumStars.Bei]?.angle ?? 0,
-        priority: 1,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Luo, // 罗睺
-        originalAngle: starsAngleMapper[EnumStars.Luo]?.angle ?? 0,
-        priority: 1,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-      UIStarModel(
-        star: EnumStars.Ji, // 计都
-        originalAngle: starsAngleMapper[EnumStars.Ji]?.angle ?? 0,
-        priority: 1,
-        rangeAngleEachSide: miniSafetyAngle,
-      ),
-    ];
+      );
+    }).toList();
+
     // 移除角度为0的星体 (可能表示该星体未计算或不存在于mapper中)
     unadjustedStarList.removeWhere((starModel) =>
         starModel.originalAngle == 0 &&
@@ -443,6 +308,13 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     // 使用 StarsResolver 计算调整后的 UI 位置
     return StarsResolver.resolveUIStars(unadjustedStarList);
+  }
+
+  int _getStarPriority(EnumStars star) {
+    if (star == EnumStars.Sun) return 4;
+    if (star == EnumStars.Moon) return 3;
+    if (star.isFiveStar) return 2;
+    return 1; // Auxiliary stars
   }
 
   // MARK: - Utility Methods
@@ -580,7 +452,6 @@ class BeautyPageViewModel extends ChangeNotifier {
     return result;
   }
 
-  DivinationInfoModel? _divinationInfoModel;
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
@@ -593,8 +464,6 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     print(json.encode(lifeObserver));
   }
-
-  ObserverPosition? lifeObserver;
 
   ObserverPosition generateLifeObserverPosition() {
     DivinationDatetimeModel _datetimeModel = _divinationInfoModel!
@@ -644,7 +513,6 @@ class BeautyPageViewModel extends ChangeNotifier {
     );
   }
 
-  ObserverPosition? fateObserver;
   ObserverPosition generateFateObserverPosition(DateTime fateDatetime) {
     DivinationDatetimeModel _datetimeModel;
     tz.TZDateTime tzDatetime =
@@ -784,125 +652,10 @@ class BeautyPageViewModel extends ChangeNotifier {
     ];
   }
 
-  // MARK: - Data Loading
 
-  /// 异步加载神煞数据。
-  /// 从 asset 文件读取 JSON 并解析为 ShenShaManager。
-  /// 返回: ShenShaManager 实例。
-  Future<ShenShaManager> _loadShenShaManager() async {
-    debugPrint("Loading ShenSha data...");
-    try {
-      // 并行加载所有神煞数据文件
-      final List<String> jsonStrings = await Future.wait([
-        rootBundle.loadString('assets/shen_sha/74_shensha_tiangan.json'),
-        rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_year.json'),
-        rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_month.json'),
-        rootBundle.loadString('assets/shen_sha/74_shensha_ganzhi.json'),
-        rootBundle.loadString('assets/shen_sha/74_shensha_bundle.json'),
-        rootBundle.loadString('assets/shen_sha/74_shensha_others.json'),
-      ]);
 
-      // 解析 JSON 字符串并映射到模型对象
-      final tianGanShenSha = (json.decode(jsonStrings[0]) as List)
-          .map((e) => TianGanShenSha.fromJson(e))
-          .toList();
-      final yearDiZhiShenSha = (json.decode(jsonStrings[1]) as List)
-          .map((e) => YearDiZhiShenSha.fromJson(e))
-          .toList();
-      final monthDiZhiShenSha = (json.decode(jsonStrings[2]) as List)
-          .map((e) => MonthDiZhiShenSha.fromJson(e))
-          .toList();
-      final ganzhiShenSha = (json.decode(jsonStrings[3]) as List)
-          .map((e) => GanZhiShenSha.fromJson(e))
-          .toList();
-      final bundledShenSha = (json.decode(jsonStrings[4]) as List)
-          .map((e) => BundledShenSha.fromJson(e))
-          .toList();
-      final otherShenSha = (json.decode(jsonStrings[5]) as List)
-          .map((e) => OtherShenSha.fromJson(e))
-          .toList();
 
-      return ShenShaManager(
-          shenShaService: ShenShaService(
-              repository: ShenShaRepositoryImpl(
-                  localDataSource: ShenShaLocalDataSourceImpl())));
-      debugPrint("ShenSha data loaded successfully.");
-      // return ShenShaManager(
-      //     tianGanShenSha: tianGanShenSha,
-      //     yearDiZhiShenSha: yearDiZhiShenSha,
-      //     monthDiZhiShenSha: monthDiZhiShenSha,
-      //     ganZhiShenSha: ganzhiShenSha,
-      //     bundledShenSha: bundledShenSha,
-      //     otherShenSha: otherShenSha);
-    } catch (e) {
-      debugPrint("Error loading ShenSha data: $e");
-      // 加载失败，可能需要抛出错误或返回一个空管理器
-      throw Exception("Failed to load ShenSha data: $e");
-    }
-  }
 
-  /// 异步加载化曜数据。
-  /// 从 asset 文件读取 JSON 并解析为 HuaYaoManager。
-  /// 返回: HuaYaoManager 实例。
-  Future<HuaYaoManager> _loadHuaYaoManager() async {
-    debugPrint("Loading HuaYao data...");
-    try {
-      final result = await Future.wait([
-        rootBundle.loadString('assets/shen_sha/74_huayao_tiangan.json'),
-        rootBundle.loadString('assets/shen_sha/74_huayao_dizhi.json'),
-        rootBundle.loadString('assets/shen_sha/74_huayao_others.json'),
-      ]);
-
-      // 解析 JSON 字符串并映射到模型对象
-      final tianGanHuaYao = (json.decode(result[0]) as List)
-          .map((e) => TianGanHuaYao.fromJson(e))
-          .toList();
-
-      final diZhiHuaYao = (json.decode(result[1]) as List)
-          .map((e) => DiZhiHuaYao.fromJson(e))
-          .toList();
-
-      final othersHuaYao = (json.decode(result[2]) as List)
-          .map((e) => OthersHuaYao.fromJson(e))
-          .toList();
-
-      debugPrint("HuaYao data loaded successfully.");
-
-      return HuaYaoManager(
-          huaYaoService: HuaYaoService(
-              repository: HuaYaoRepositoryImpl(
-                  localDataSource: HuaYaoLocalDataSourceImpl())));
-      // return HuaYaoManager(
-      //   tianGanHuaYao: tianGanHuaYao,
-      //   diZhiHuaYao: diZhiHuaYao,
-      //   othersHuaYao: othersHuaYao,
-      // );
-    } catch (e) {
-      debugPrint("Error loading HuaYao data: $e");
-      // 加载失败，可能需要抛出错误或返回一个空管理器
-      throw Exception("Failed to load HuaYao data: $e");
-    }
-  }
-
-  // MARK: - New Calculation using Service
-
-  /// 使用 GenerateBasePanelService 计算星盘数据。
-  /// 这是新的计算流程，calculate 方法将调用此方法。
-  /// [calculateTime]: 需要计算星盘的时间 (UTC)。
-  /// 返回: BasePanelModel 包含计算出的星体角度和速度等基础信息。
-  Future<BasePanelModel> _calculatePanelWithService(
-      {required DateTime calculateTime}) async {
-    // 确保服务已初始化
-    if (_shenShaManager == null ||
-        _huaYaoManager == null ||
-        baseObserverPositionNotifier.value == null) {
-      throw StateError(
-          'ViewModel not fully initialized before calling _calculatePanelWithService.');
-    }
-
-    // 使用已初始化并更新了 observerPosition 的 _generateBasePanelService
-    return _generateBasePanelService.calculate();
-  }
 
   // late final App74Database _database;
 

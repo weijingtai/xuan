@@ -18,15 +18,18 @@ import 'package:common/painter/circle_ring_printer.dart';
 import '../../domain/entities/models/base_panel_model.dart';
 import '../../domain/entities/models/body_life_model.dart';
 import '../../domain/entities/models/eleven_stars_info.dart';
+import '../../domain/entities/models/naming_degree_pair.dart';
 import '../../domain/entities/models/observer_position.dart';
 import '../../domain/entities/models/panel_stars_info.dart';
 import '../../domain/entities/models/passage_year_panel_model.dart';
 import '../../domain/entities/models/stars_angle.dart';
+import '../../domain/entities/models/zhou_tian_model.dart';
 import '../../enums/enum_twelve_gong.dart';
 import '../../painter/painters.dart';
 import '../../painter/star_body_ring_painter.dart';
 import '../../painter/star_xiu_ring_painter.dart';
 import '../../qi_zheng_si_yu_ui_constant_resources.dart';
+import '../../utils/star_enter_info_calculator.dart';
 import '../models/ui_star_model.dart';
 import '../widgets/rings/body_life_circle_widget.dart';
 import '../widgets/rings/da_xian_ring.dart';
@@ -363,8 +366,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   init_calculate(DivinationInfoModel divinationInfoModel) {
     context.read<BeautyPageViewModel>().setLifeObserver(divinationInfoModel);
     context
-        .read<BeautyPageViewModel>()
-        .calculate(context.read<BeautyPageViewModel>().lifeObserver!);
+        .read<BeautyPageViewModel>().calculate(
+            context.read<BeautyPageViewModel>().panelConfig,
+            context.read<BeautyPageViewModel>().lifeObserver!);
   }
 
   @deprecated
@@ -395,6 +399,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     // });
     Future.delayed(Duration(seconds: 3),
         () => {init_calculate(widget.params.divinationInfoModel!)});
+
+    Future.delayed(Duration(seconds: 5), () {
+      context.read<BeautyPageViewModel>().calculateDaXian(DateTime.now());
+    });
 
     panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
         starBodyRadius: 16,
@@ -555,9 +563,17 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Transform.rotate(
-                        angle: 30 * pi / 180,
-                        child: panel(starBodyRadius),
+                      ValueListenableBuilder<ZhouTianModel?>(
+                        valueListenable: context.read<BeautyPageViewModel>().zhouTianModelNotifier,
+                        builder: (ctx, zhouTianModel, _) {
+                          if (zhouTianModel == null) {
+                            return const CircularProgressIndicator(); // Or a placeholder
+                          }
+                          return Transform.rotate(
+                            angle: 30 * pi / 180,
+                            child: panel(starBodyRadius, zhouTianModel),
+                          );
+                        },
                       ),
                       const Expanded(child: SizedBox()),
                     ])),
@@ -781,9 +797,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  Widget panel(
-    double starBodyRadius,
-  ) {
+  Widget panel(double starBodyRadius, ZhouTianModel zhouTianModel) {
     // 黄道十二宫 从白羊开始
     List<String> zodiacList = <String>[
       "白羊",
@@ -855,6 +869,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             ))
         .toList();
 
+    final constellationPositions = StarEnterInfoCalculator.generateConstellationSequence(
+        zhouTianModel.alignmentPointAtConstellation,
+        zhouTianModel.starInnDegreeSeq);
+
     double rotating = 0;
     return Stack(
       alignment: Alignment.center,
@@ -883,13 +901,13 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 十二地支宫
         Transform.rotate(
           angle: -30 * pi / 180,
-          child: build12DiZhiGong(diZhi12GongOuter * .5, diZhi12GongInner * .5),
+          child: build12DiZhiGong(diZhi12GongOuter * .5, diZhi12GongInner * .5, zhouTianModel),
         ),
         // 黄道十二宫
         Transform.rotate(
           angle: -30 * pi / 180,
           child: zhouTian12GongRing(
-              zodiac12GongSizeInner * .5, zodiac12GongSizeOuter * .5),
+              zodiac12GongSizeInner * .5, zodiac12GongSizeOuter * .5,zhouTianModel),
         ),
         // 星次十二宫
         // drawRingWithTextList(starSeq12GongSizeOuter, 18, starSeqTextList),
@@ -897,21 +915,23 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         Transform.rotate(
           angle: -30 * pi / 180,
           child: buildMingLi12GongRing(
-              destiny12GongSizeInner * .5, destiny12GongSizeOuter * .5),
+              destiny12GongSizeInner * .5, destiny12GongSizeOuter * .5, zhouTianModel),
         ),
 
         Transform.rotate(
           angle: rotating * pi / 180,
-          child: starXiuRing(starXiu28RingSizeOuter, 40),
+          child: starXiuRing(starXiu28RingSizeOuter, 40, zhouTianModel, constellationPositions),
         ),
 
         draw12GongRingGrid(
           panelSizeDataModel.innerShenShaSizeInner,
           panelSizeDataModel.innerShenShaSizeOuter,
+          zhouTianModel,
         ),
         draw12GongRingGrid(
           panelSizeDataModel.outerShenShaSizeInner,
           panelSizeDataModel.outerShenShaSizeOuter,
+          zhouTianModel,
         ),
 
         // 大限星轨
@@ -1015,13 +1035,13 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               }
               return Transform.rotate(
                 angle: -30 * pi / 180,
-                child: AllShenShaRing(
-                  outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
-                  innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                  shenShaMapper: basePanel.shenShaItemMapper,
-                  gongOrder: EnumTwelveGong.listAll,
-                ),
-              );
+                                  child: AllShenShaRing(
+                                    outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
+                                    innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
+                                    shenShaMapper: basePanel.shenShaItemMapper,
+                                    gongOrder: EnumTwelveGong.listAll,
+                                    zhouTianModel: zhouTianModel,
+                                  ),              );
             },
             child: Container(
               width: panelSizeDataModel.innerShenShaSizeOuter,
@@ -1048,6 +1068,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
                     shenShaMapper: daXianPanel.shenShaItemMapper,
                     gongOrder: EnumTwelveGong.listAll,
+                    zhouTianModel: zhouTianModel,
                   ),
                 );
               },
@@ -1102,7 +1123,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  Widget build12DiZhiGong(double outerRadius, double innerRadius) {
+  Widget build12DiZhiGong(double outerRadius, double innerRadius, ZhouTianModel zhouTianModel) {
     TextStyle firstTextStyle =
         TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
@@ -1124,6 +1145,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Gong12DiZhiRing(
       outerRadius: outerRadius,
       innerRadius: innerRadius,
+      zhouTianModel: zhouTianModel,
       // angleOffset: 3,
       shenShaMapper: {
         EnumTwelveGong.Zi: [
@@ -2041,7 +2063,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   }
 
   // 二十八星宿 刻度环
-  Widget starXiuRing(double size, double ringWidth) {
+  Widget starXiuRing(double size, double ringWidth, ZhouTianModel zhouTianModel, List<ConstellationPosition> constellationPositions) {
     double outerRadius = size / 2;
     return Container(
         width: size, //
@@ -2057,53 +2079,14 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           painter: StarXiuRingPainter(
             outerSize: starXiu28RingSizeOuter,
             innerSize: starXiu28RingSizeInner,
-            mapper: QiZhengSiYuConstantResources
-                .ZodiacTropicalModernStarsInnSystemMapper,
+            zhouTianModel: zhouTianModel,
+            constellationPositions: constellationPositions, // Pass the calculated positions
             sevenZhengColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
           ),
         ));
   }
 
-  Widget rulingRing(double size, double ringWidth) {
-    double outerRadius = size / 2;
-    return Align(
-      alignment: Alignment.center,
-      child: Stack(
-        children: [
-          Container(
-              width: size, //
-              height: size,
-              alignment: Alignment.center,
-              child: CustomPaint(
-                size: Size(size, size),
-                painter: IndicatorScalePainter(
-                    ringWidth: ringWidth, tickLength: 7, indicatorAngle: 45.1),
-              )),
-          Container(
-              width: size, //
-              height: size,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border:
-                    Border.all(color: Colors.grey.withOpacity(.4), width: 1),
-                // color: Colors.black.withOpacity(.1),
-                borderRadius: BorderRadius.circular(outerRadius),
-              ),
-              child: CustomPaint(
-                size: Size(size, size),
-                painter: StarXiuRingPainter(
-                  outerSize: starXiu28RingSizeOuter,
-                  innerSize: starXiu28RingSizeInner,
-                  mapper: QiZhengSiYuConstantResources
-                      .ZodiacTropicalModernStarsInnSystemMapper,
-                  sevenZhengColorMapper:
-                      QiZhengSiYuUIConstantResources.zhengColorMap,
-                ),
-              )),
-        ],
-      ),
-    );
-  }
+
 
   Widget drawRing(double size, double ringWidth, List<String> contentList,
       TextStyle textStyle,
@@ -2509,7 +2492,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  Widget draw12GongRingGrid(double innerSize, double outerSize,
+  Widget draw12GongRingGrid(double innerSize, double outerSize, ZhouTianModel zhouTianModel,
       {double innerPadding = 2}) {
     double outerRadius = outerSize * .5;
     double innerRadius = innerSize * .5;
@@ -2531,6 +2514,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             painter: RingSheetPainter(
               innerRadius: innerRadius,
               outerRadius: outerRadius,
+              zhouTianModel: zhouTianModel,
             ),
           ),
         ));
@@ -2570,21 +2554,21 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   }
 
   // 周天12宫
-  Widget zhouTian12GongRing(double innerSize, double outerSize) {
-    return zodicalRing(innerSize, outerSize);
+  Widget zhouTian12GongRing(double innerSize, double outerSize,ZhouTianModel zhouTianModel) {
+    return zodicalRing(innerSize, outerSize,zhouTianModel);
   }
 
-  Widget zodicalRing(double innerSize, double outerSize) {
+  Widget zodicalRing(double innerSize, double outerSize,ZhouTianModel zhouTianModel) {
     return generateDefault12GongRing(
-        innerSize, outerSize, defaultZodiac12GongMapper);
+        innerSize, outerSize, defaultZodiac12GongMapper,zhouTianModel);
   }
 
-  Widget starSeqRing(double innerSize, double outerSize) {
+  Widget starSeqRing(double innerSize, double outerSize,ZhouTianModel zhouTianModel) {
     return generateDefault12GongRing(
-        innerSize, outerSize, defaultStarSeq12GongMapper);
+        innerSize, outerSize, defaultStarSeq12GongMapper,zhouTianModel);
   }
 
-  Widget buildMingLi12GongRing(double innerSize, double outerSize) {
+  Widget buildMingLi12GongRing(double innerSize, double outerSize, ZhouTianModel zhouTianModel) {
     return ValueListenableBuilder<BasePanelModel?>(
         valueListenable:
             context.read<BeautyPageViewModel>().uiBasePanelNotifier,
@@ -2593,10 +2577,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           final gongStrEntry = basePanel.twelveGongMapper.entries
               .map((en) => MapEntry(en.key, [en.value.name]));
           final resultMapper = Map.fromEntries(gongStrEntry);
-          return generateDefault12GongRing(innerSize, outerSize, resultMapper);
+          return generateDefault12GongRing(innerSize, outerSize, resultMapper, zhouTianModel);
         },
         child: generateDefault12GongRing(
-            innerSize, outerSize, defaultDestiny12GongMapper));
+            innerSize, outerSize, defaultDestiny12GongMapper, zhouTianModel));
   }
 
   Map<EnumTwelveGong, List<String>> defaultStarSeq12GongMapper = {
@@ -2643,52 +2627,20 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     EnumTwelveGong.Xu: ["兄弟"],
     EnumTwelveGong.Hai: ["财帛"],
   };
+
+
   Widget generateDefault12GongRing(double innerSize, double outerSize,
-      Map<EnumTwelveGong, List<String>> mapper) {
+      Map<EnumTwelveGong, List<String>> mapper, ZhouTianModel zhouTianModel) {
     return Normal12GongRing(
       outerRadius: outerSize,
       innerRadius: innerSize,
       baseGongOffsetAngle: 2 * 30,
       shenShaMapper: mapper,
+      zhouTianModel: zhouTianModel,
     );
   }
 
-  Widget draw12GongRing(
-      double innerSize, double outerSize, List<Text> contentList,
-      {double innerPadding = 2}) {
-    double outerRadius = outerSize * .5;
-    double innerRadius = innerSize * .5;
-    return Container(
-        alignment: Alignment.center,
-        height: outerSize,
-        width: outerSize,
-        decoration: BoxDecoration(
-          // color: Colors.red.withOpacity(.1),
-          borderRadius: BorderRadius.circular(outerSize),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-        child: Transform.rotate(
-          angle: 75 * pi / 180,
-          // angle: 0,
-          origin: Offset.zero,
-          child: CustomPaint(
-            size: Size(outerSize, outerSize),
-            painter: RingSheetPainter(
-              innerRadius: innerRadius,
-              outerRadius: outerRadius,
-            ),
-            // painter:TextCircleRingPainter(
-            //   innerRadius: innerRadius,
-            //   outerRadius: outerRadius,
-            //   textList: contentList,
-            //   isAntiClockwise: true,
-            //   innerPadding: 0,
-            //   isReverseText: false,
-            //   isHorizontalText: true,
-            // ),
-          ),
-        ));
-  }
+
 
   Widget drawRingWithTextList(
       double size, double ringWidth, List<Text> contentList,

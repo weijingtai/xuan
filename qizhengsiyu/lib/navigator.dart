@@ -4,10 +4,15 @@ import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/presentation/pages/primary_page.dart';
+import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
 
 import 'data/datasources/local/app_database.dart';
 import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'data/repositories/qizhengsiyu_pan_repository.dart';
+import 'di.dart';
+import 'domain/managers/hua_yao_manager.dart';
+import 'domain/managers/shen_sha_manager.dart';
+import 'domain/managers/zhou_tian_model_manager.dart';
 import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
 import 'domain/usecases/save_calculated_panel_usecase.dart';
 
@@ -37,29 +42,37 @@ class NavigatorGenerator {
     // "/qizhengsiyu/panel": (context, {arguments}) =>
     //     BeautyViewPage(params: BeautyViewPageParams.devDefault)
 
-    "/qizhengsiyu/panel": (context, {arguments}) =>
-        MultiProvider(
-          providers: [
-            Provider<AppDatabase>(
-              create: (ctx) => AppDatabase(),
-              dispose: (ctx, db) => db.close(),
-            ),
-            Provider<IQiZhengSiYuPanRepository>(
-              create: (ctx) => QiZhengSiYuPanRepository(
-                appDatabase: ctx.read<AppDatabase>(),
-              ),
-            ),
-            Provider<SaveCalculatedPanelUseCase>(
-                create: (ctx) => SaveCalculatedPanelUseCase(
-                    qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
-            ChangeNotifierProvider<BeautyPageViewModel>(
-                create: (ctx) => BeautyPageViewModel(
-                    calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
-                    saveCalculatedPanelUseCase:
-                    ctx.read<SaveCalculatedPanelUseCase>())),
-          ],
-          child: BeautyViewPage(params: BeautyViewPageParams.devDefault),
-        )
+    "/qizhengsiyu/panel": (context, {arguments}) =>MultiProvider(      providers: [
+      ...createProviders(),
+      Provider<AppDatabase>(
+        create: (ctx) => AppDatabase(),
+        dispose: (ctx, db) => db.close(),
+      ),
+      Provider<IQiZhengSiYuPanRepository>(
+        create: (ctx) => QiZhengSiYuPanRepository(
+          appDatabase: ctx.read<AppDatabase>(),
+        ),
+      ),
+      Provider<SaveCalculatedPanelUseCase>(
+          create: (ctx) => SaveCalculatedPanelUseCase(
+              qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
+      ChangeNotifierProvider<BeautyPageViewModel>(
+          create: (ctx) => BeautyPageViewModel(
+            calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+            saveCalculatedPanelUseCase:
+            ctx.read<SaveCalculatedPanelUseCase>(),
+            shenShaManager: ctx.read<ShenShaManager>(),
+            huaYaoManager: ctx.read<HuaYaoManager>(),
+            zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
+          )),
+      ChangeNotifierProvider<QiZhengSiYuViewModel>(
+          create: (ctx) => QiZhengSiYuViewModel(
+            shenShaManager: ctx.read<ShenShaManager>(),
+            huaYaoManager: ctx.read<HuaYaoManager>(),
+            zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
+          )),
+    ],
+        child:BeautyViewPage(params: BeautyViewPageParams.devDefault))
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

@@ -3,10 +3,38 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../../domain/entities/models/naming_degree_pair.dart';
 import 'enum_ring_text_direction.dart';
 import 'sector_painter.dart';
+
+class _CenterLayoutDelegate extends MultiChildLayoutDelegate {
+  final int itemCount;
+
+  _CenterLayoutDelegate({required this.itemCount});
+
+  @override
+  void performLayout(Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+
+    for (int i = 0; i < itemCount; i++) {
+      if (hasChild(i)) {
+        final childSize = layoutChild(i, BoxConstraints.loose(size));
+        positionChild(
+          i,
+          Offset(
+              center.dx - childSize.width / 2, center.dy - childSize.height / 2),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRelayout(_CenterLayoutDelegate oldDelegate) =>
+      oldDelegate.itemCount != itemCount;
+}
 
 class Normal12GongRing extends StatelessWidget {
   final Map<EnumTwelveGong, List<String>> shenShaMapper;
@@ -16,63 +44,60 @@ class Normal12GongRing extends StatelessWidget {
   final double baseGongOffsetAngle;
 
   final List<EnumTwelveGong> gongOrderSeq;
+  final ZhouTianModel zhouTianModel;
+
   const Normal12GongRing({
     super.key,
     required this.shenShaMapper,
     required this.outerRadius,
     required this.innerRadius,
     required this.baseGongOffsetAngle,
+    required this.zhouTianModel,
     this.shaTextDirection = RingTextDirection.gravity,
     this.gongOrderSeq = EnumTwelveGong.values,
   });
 
   @override
   Widget build(BuildContext context) {
-    // 收集所有神煞
-
-    // 每个item占据的空间是外半径的两倍
     final double itemSize = outerRadius * 2;
-
-    // 将角度转换为弧度
+    final List<GongDegree> gongs = zhouTianModel.gongDegreeSeq;
+    final List<double> cumulativeAngles = [];
+    double cumulativeAngle = 0;
+    for (int i = 0; i < gongs.length; i++) {
+      cumulativeAngles.add(cumulativeAngle);
+      cumulativeAngle += gongs[i].degree;
+    }
 
     return SizedBox(
       width: itemSize,
       height: itemSize,
       child: CustomMultiChildLayout(
-        delegate: _ShenShaLayoutDelegate(
-          itemCount: gongOrderSeq.length,
-          radius: 0, // 所有子项都从中心开始布局
-          itemSize: itemSize,
-        ),
+        delegate: _CenterLayoutDelegate(itemCount: gongs.length),
         children: [
-          for (int i = 0; i < gongOrderSeq.length; i++)
+          for (int i = 0; i < gongs.length; i++)
             LayoutId(
               id: i,
-              child: SizedBox(
-                  width: itemSize,
-                  height: itemSize,
-                  child: Transform.rotate(
-                    angle: (i * 30 + baseGongOffsetAngle) * math.pi / 180,
-                    child: CustomPaint(
-                      size: Size(itemSize, itemSize),
-                      painter: SectorPainter(
-                        startAngle: 0,
-                        sweepRadian: 30 * math.pi / 180,
-                        color: Colors.transparent,
-                        outerRadius: outerRadius,
-                        innerRadius: innerRadius,
-                        borderColor: Colors.black12,
-                      ),
-                      child: GongShenShaRing(
-                        outerRadius: outerRadius,
-                        innerRadius: innerRadius,
-                        gongAngleOffset: 0,
-                        textGongAngleOffset: i * 30 + baseGongOffsetAngle,
-                        shenShaList: shenShaMapper[gongOrderSeq[i]]!,
-                        // angleOffset: 3,
-                      ),
-                    ),
-                  )),
+              child: Transform.rotate(
+                angle: (cumulativeAngles[i] + baseGongOffsetAngle) * math.pi / 180,
+                child: CustomPaint(
+                  size: Size(itemSize, itemSize),
+                  painter: SectorPainter(
+                    startAngle: 0,
+                    sweepRadian: gongs[i].degree * math.pi / 180,
+                    color: Colors.transparent,
+                    outerRadius: outerRadius,
+                    innerRadius: innerRadius,
+                    borderColor: Colors.black12,
+                  ),
+                  child: GongShenShaRing(
+                    outerRadius: outerRadius,
+                    innerRadius: innerRadius,
+                    gongAngleOffset: 0,
+                    textGongAngleOffset: cumulativeAngles[i] + baseGongOffsetAngle,
+                    shenShaList: shenShaMapper[gongs[i].gong]!,
+                  ),
+                ),
+              ),
             ),
         ],
       ),
