@@ -1,7 +1,6 @@
+import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_jia_zi.dart';
-import '../enums/enum_gender.dart';
 import '../models/eight_chars.dart';
 
 part 'basic_diviation_info.g.dart';

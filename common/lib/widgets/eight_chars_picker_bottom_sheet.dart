@@ -1,7 +1,5 @@
-import 'package:common/enums/enum_di_zhi.dart';
-import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_tian_gan.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 import '../datamodel/location.dart';

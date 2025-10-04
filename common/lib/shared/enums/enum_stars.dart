@@ -1,6 +1,9 @@
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'enum_five_xing.dart';
+import 'enum_yin_yang.dart';
+
 enum EnumStars {
   @JsonValue("日")
   Sun("太阳", "日", FiveXing.HUO, YinYang.YANG, true), // 太阳

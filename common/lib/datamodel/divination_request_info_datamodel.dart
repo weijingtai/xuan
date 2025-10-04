@@ -1,16 +1,14 @@
-import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:common/enums.dart';
-import 'package:common/models/divination_datetime.dart';
-import 'package:common/enums/enum_gender.dart';
 
-import '../database/app_database.dart';
-
-part 'divination_data_model.g.dart';
+part 'divination_request_info_datamodel.g.dart';
 
 @JsonSerializable()
-class DivinationDataModel extends Equatable {
+class DivinationRequestInfoDataModel extends Equatable {
+  /// 当前数据类型为 占测请求 信息，
+  /// 如： 占测类型，占测者年命，占测者UUID（如果存在用户时），
+  /// 简单的吉凶等，以及一句话直断，占测问题，详细描述，
   final String uuid;
   final DateTime createdAt;
   final DateTime? lastUpdatedAt;
@@ -25,7 +23,7 @@ class DivinationDataModel extends Equatable {
   final String? tinyPredict;
   final String? directlyPredict;
 
-  const DivinationDataModel({
+  const DivinationRequestInfoDataModel({
     required this.uuid,
     required this.createdAt,
     this.lastUpdatedAt,
@@ -41,10 +39,10 @@ class DivinationDataModel extends Equatable {
     this.directlyPredict,
   });
 
-  factory DivinationDataModel.fromJson(Map<String, dynamic> json) =>
-      _$DivinationDataModelFromJson(json);
+  factory DivinationRequestInfoDataModel.fromJson(Map<String, dynamic> json) =>
+      _$DivinationRequestInfoDataModelFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DivinationDataModelToJson(this);
+  Map<String, dynamic> toJson() => _$DivinationRequestInfoDataModelToJson(this);
 
   @override
   List<Object?> get props => [

@@ -23,8 +23,6 @@ Map<String, dynamic> _$ZhangSheng12ShenShaToJson(
     <String, dynamic>{
       'name': instance.name,
       'jiXiong': _$JiXiongEnumEnumMap[instance.jiXiong]!,
-      'descriptionList': instance.descriptionList,
-      'locationDescriptionList': instance.locationDescriptionList,
     };
 
 const _$JiXiongEnumEnumMap = {

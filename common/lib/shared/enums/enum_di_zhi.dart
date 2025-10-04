@@ -1,7 +1,7 @@
-import 'package:common/enums/enum_month_token.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'enum_five_xing.dart';
+import 'enum_month_token.dart';
 import 'enum_tian_gan.dart';
 import 'enum_yin_yang.dart';
 

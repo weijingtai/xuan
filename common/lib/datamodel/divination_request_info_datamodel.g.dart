@@ -1,13 +1,14 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'divination_data_model.dart';
+part of 'divination_request_info_datamodel.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-DivinationDataModel _$DivinationDataModelFromJson(Map<String, dynamic> json) =>
-    DivinationDataModel(
+DivinationRequestInfoDataModel _$DivinationRequestInfoDataModelFromJson(
+        Map<String, dynamic> json) =>
+    DivinationRequestInfoDataModel(
       uuid: json['uuid'] as String,
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastUpdatedAt: json['lastUpdatedAt'] == null
@@ -27,8 +28,8 @@ DivinationDataModel _$DivinationDataModelFromJson(Map<String, dynamic> json) =>
       directlyPredict: json['directlyPredict'] as String?,
     );
 
-Map<String, dynamic> _$DivinationDataModelToJson(
-        DivinationDataModel instance) =>
+Map<String, dynamic> _$DivinationRequestInfoDataModelToJson(
+        DivinationRequestInfoDataModel instance) =>
     <String, dynamic>{
       'uuid': instance.uuid,
       'createdAt': instance.createdAt.toIso8601String(),

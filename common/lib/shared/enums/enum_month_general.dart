@@ -1,4 +1,4 @@
-import 'package:common/enums/enum_di_zhi.dart';
+import 'package:common/shared/enums/enum_di_zhi.dart';
 import 'package:tuple/tuple.dart';
 
 import 'enum_twenty_four_jie_qi.dart';
