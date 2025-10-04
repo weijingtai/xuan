@@ -1,8 +1,9 @@
-import 'package:common/enums/enum_di_zhi.dart';
-import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_tian_gan.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../shared/enums/enum_di_zhi.dart';
+import '../shared/enums/enum_jia_zi.dart';
+import '../shared/enums/enum_tian_gan.dart';
 
 part 'eight_chars.g.dart';
 
@@ -50,6 +51,13 @@ class EightChars extends Equatable {
   // Convert to string representation
   @override
   String toString() => '${year.name}年${month.name}月${day.name}日${time.name}时';
+  List<String> toStrList() => [
+        year.name,
+        month.name,
+        day.name,
+        time.name,
+      ];
+  String toStr() => "${year.name} ${month.name} ${day.name} ${time.name}";
 
   factory EightChars.fromJson(Map<String, dynamic> json) =>
       _$EightCharsFromJson(json);

@@ -1,16 +1,15 @@
-import 'package:common/enums/enum_datetime_type.dart';
-import 'package:common/enums/enum_gender.dart';
-import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/divination_datetime.dart';
+import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'base_divination_datetime_datamodel.dart';
+import '../shared/enums/enum_gender.dart';
+import 'datetime_divination_datamodel.dart';
 import 'location.dart';
 
 part 'seeker_model.g.dart';
 
 @JsonSerializable()
-class SeekerModel extends BaseDivinationDatetimeDataModel {
+class SeekerModel extends DatatimeDivinationDetailsDataModel {
   final String? username;
   final String? nickname;
   final Gender gender;

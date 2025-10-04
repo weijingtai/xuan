@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
-import '../enums/enum_twenty_four_jie_qi.dart';
+import '../shared/enums/enum_twenty_four_jie_qi.dart';
 
 part 'jie_qi_info.g.dart';
 

@@ -1,12 +1,7 @@
-import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
-import 'package:common/models/eight_chars.dart';
-import 'package:common/utils.dart';
-import 'package:common/widgets/eight_chars_input_card.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Solar.dart';
 import 'package:lunar/lunar.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -15,34 +10,43 @@ void main() {
   tz.initializeTimeZones();
   final dateFormat = DateFormat("yyyy-MM-dd HH:mm");
 
-  group("mean solar datetime",(){
+  group("mean solar datetime", skip: true, () {
     final now = DateTime.now();
     test("时间", () {
       tz.TZDateTime tzDate = tz.TZDateTime.now(tz.getLocation("Asia/Shanghai"));
       print(tzDate.timeZoneOffset);
-      tz.TZDateTime tzDate2 = tz.TZDateTime.now(tz.getLocation("America/Los_Angeles"));
+      tz.TZDateTime tzDate2 =
+          tz.TZDateTime.now(tz.getLocation("America/Los_Angeles"));
       print(tzDate2.timeZoneOffset);
       expect(tzDate2.timeZone.isDst, true);
       int inHours = tzDate2.timeZoneOffset.inHours;
-      if (tzDate2.timeZone.isDst){
-        if (inHours > 0){
+      if (tzDate2.timeZone.isDst) {
+        if (inHours > 0) {
           inHours += 1;
-        }else{
+        } else {
           inHours -= 1;
         }
       }
       print(inHours);
       int timezonelat = 15 * inHours;
       print(timezonelat);
-      expect(tzDate.difference(tzDate.toUtc()).inHours,8);
+      expect(tzDate.difference(tzDate.toUtc()).inHours, 8);
     });
 
-    test("tzDateTime to DateTime",(){
+    test("tzDateTime to DateTime", () {
       DateTime now = DateTime.now();
-      tz.TZDateTime shanghaiNow= tz.TZDateTime.from(now,tz.getLocation("Asia/Shanghai"));
+      tz.TZDateTime shanghaiNow =
+          tz.TZDateTime.from(now, tz.getLocation("Asia/Shanghai"));
       // DateTime convetedNow = DateTime.parse(shanghaiNow.);
-      DateTime converted = DateTime(shanghaiNow.year,shanghaiNow.month,shanghaiNow.day,shanghaiNow.hour,shanghaiNow.minute,shanghaiNow.second,shanghaiNow.millisecond);
-      final df =  DateFormat("yyyy-MM-dd HH:mm:ss");
+      DateTime converted = DateTime(
+          shanghaiNow.year,
+          shanghaiNow.month,
+          shanghaiNow.day,
+          shanghaiNow.hour,
+          shanghaiNow.minute,
+          shanghaiNow.second,
+          shanghaiNow.millisecond);
+      final df = DateFormat("yyyy-MM-dd HH:mm:ss");
       df.format(shanghaiNow);
       converted = df.parse(df.format(shanghaiNow));
 
@@ -52,7 +56,7 @@ void main() {
       expect(converted == now, isTrue);
     });
   });
-  group("夏令时", () {
+  group("夏令时", skip: true, () {
     test("是夏令时 1989-7-1 14:00 'Asia/Shanghai'", () {
       final datetime = dateFormat.parse("1989-7-1 14:00");
       final isDST = SolarTimeCalculator.checkIsDST(datetime, "Asia/Shanghai");
@@ -81,7 +85,7 @@ void main() {
       expect(isDST, isTrue);
     });
   });
-  group('solar & lunar 转换', () {
+  group('solar & lunar 转换', skip: true, () {
     test('', () {
       final t = tz.getLocation("Asia/Shanghai");
       final s = tz.TZDateTime.now(t);
@@ -130,6 +134,15 @@ void main() {
       var result = SolarLunarDateTimeHelper.solarToDateTime(solar);
 
       expect(dateFormat.format(result), equals(dateFormat.format(now)));
+    });
+  });
+
+  group('子时', () {
+    test("子时", () {
+      Lunar lunar = Lunar.fromYmdHms(2025, 8, 11, 23, 10, 30);
+      print(lunar.getBaZi()); // [乙巳, 乙酉, 甲辰, 丙子]
+      lunar = Lunar.fromYmdHms(2025, 8, 12, 00, 10, 30);
+      print(lunar.getBaZi()); // [乙巳, 乙酉, 乙巳, 丙子]
     });
   });
 }

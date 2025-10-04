@@ -5,6 +5,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../datamodel/location.dart';
 import '../datamodel/observer_datamodel.dart';
+import '../shared/enums/enum_jia_zi.dart';
 import 'eight_chars.dart';
 import 'jie_qi_info.dart';
 
@@ -32,7 +33,7 @@ part 'divination_datetime.g.dart';
 // 地区命名格式 （如 Asia/Shanghai）：动态适配 DST 和历史时区变化，推荐用于跨平台开发。
 
 enum EnumDatetimeType {
-  @JsonValue("阳历")
+  @JsonValue("标准时间")
   standard("标准时间"),
   @JsonValue("移除夏令时")
   removeDST("移除夏令时"),

@@ -1,8 +1,8 @@
-import 'package:common/datamodel/divination_data_model.dart';
+import 'package:common/datamodel/divination_request_info_datamodel.dart';
+import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:common/database/app_database.dart';
 import 'package:common/database/tables/tables.dart';
-import 'package:common/enums/enum_gender.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:provider/provider.dart';
 import 'package:common/datamodel/seeker_model.dart';
@@ -17,7 +17,7 @@ class DivinationHistoryRecordPage extends StatefulWidget {
 
 class _DivinationHistoryRecordPageState
     extends State<DivinationHistoryRecordPage> {
-  late Stream<List<DivinationDataModel>> _divinationsStream;
+  late Stream<List<DivinationRequestInfoDataModel>> _divinationsStream;
   late Stream<List<SeekerModel>> _seekersStream;
 
   @override
@@ -54,7 +54,7 @@ class _DivinationHistoryRecordPageState
         body: TabBarView(
           children: [
             // 占卜记录列表
-            StreamBuilder<List<DivinationDataModel>>(
+            StreamBuilder<List<DivinationRequestInfoDataModel>>(
               stream: _divinationsStream,
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
