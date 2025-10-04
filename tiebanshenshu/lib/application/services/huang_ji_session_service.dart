@@ -1,6 +1,16 @@
 /// 皇极取数法会话服务
 ///
-/// 负责管理皇极取数法会话的业务逻辑，包括会话创建、步骤管理、状态恢复等
+/// 职责：
+/// - 基于公式模板与八字创建皇极取数会话，初始化全部公式步骤
+/// - 管理会话状态流转：执行下一步、恢复到指定步骤、暂停/恢复/完成/取消
+/// - 管理用户交互：生成候选项、创建用户选择步骤、处理用户选择
+/// - 与 `TiaoWenRepository` 交互，按基础数读取条文内容用于候选显示
+/// - 提供当前步骤的候选与选择状态查询，供 UI 判断是否需要交互
+///
+/// 设计要点：
+/// - 通过内存 Map `_sessions` 管理多个并行会话，Key 为会话 ID
+/// - 使用 `HuangJiSessionManager` 完成会话公式实例的复制/推进/选择写入
+/// - 所有公开方法尽量保持幂等或抛出明确的业务异常，便于上层容错
 library;
 
 import 'package:flutter/foundation.dart';
@@ -30,6 +40,15 @@ class HuangJiSessionService {
   HuangJiSessionService(this._calculationStrategy, this._repository);
 
   /// 创建新的皇极取数会话
+  ///
+  /// 入参：
+  /// - `sessionName` 会话名称（用于展示/日志）
+  /// - `formulaTemplate` 皇极计算公式模板（用于初始化步骤）
+  /// - `eightChars` 八字数据（供策略/公式计算使用）
+  /// - `sessionConfig` 会话级配置（可选）
+  /// - `metadata` 额外元信息（可选）
+  /// 返回：已初始化的会话对象，包含公式实例与初始步骤状态
+  /// 错误：抛出 `SessionCreationException`，包含原始异常
   Future<HuangJiSession> createSession({
     required String sessionName,
     required HuangJiCalculationFormula formulaTemplate,
@@ -83,6 +102,11 @@ class HuangJiSessionService {
   }
 
   /// 执行下一步计算
+  ///
+  /// 行为：将当前公式实例的步骤索引 +1 并回写至会话；若已完成或无下一步则抛出状态异常
+  /// 入参：`sessionId` 会话标识
+  /// 返回：更新后的会话对象
+  /// 错误：`SessionStateException`（完成/无下一步/当前实例不存在）
   Future<HuangJiSession> executeNextStep(String sessionId) async {
     try {
       final session = _getSessionOrThrow(sessionId);
@@ -132,6 +156,15 @@ class HuangJiSessionService {
   }
 
   /// 选择候选项
+  ///
+  /// 行为：在指定公式步骤中选中候选项，将其映射为 `SelectionCandidate` 写入会话
+  /// 入参：
+  /// - `sessionId` 当前会话 ID
+  /// - `formulaName` 目标公式名称
+  /// - `stepId` 目标步骤 ID
+  /// - `candidateId` 待选择的候选项 ID
+  /// 返回：更新后的会话对象
+  /// 错误：入参不存在时抛 `ArgumentError`；其他错误原样抛出
   Future<HuangJiSession> selectCandidate(
     String sessionId,
     String formulaName,
@@ -201,6 +234,11 @@ class HuangJiSessionService {
   }
 
   /// 生成基础数候选项
+  ///
+  /// 行为：基于 `baseNumber` 生成 [原数, +30, -30] 三个候选项，标注默认推荐项
+  /// 入参：`sessionId`（校验存在）、`groupId`（候选分组标识）、`baseNumber`（原数）
+  /// 返回：候选项列表，不访问条文仓库
+  /// 错误：会话不存在时抛异常
   Future<List<TiaoWenCandidate>> generateBaseNumberCandidates(
     String sessionId,
     String groupId,
@@ -262,6 +300,18 @@ class HuangJiSessionService {
   }
 
   /// 创建用户选择步骤
+  ///
+  /// 行为：构造一个需要用户选择的计算步骤，附带候选项与分组信息
+  /// 入参：
+  /// - `session` 会话对象（用于生成默认 stepId）
+  /// - `stepType` 步骤类型
+  /// - `stepName` 步骤显示名称
+  /// - `description` 步骤描述
+  /// - `stepNumber` 步骤序号
+  /// - `candidates` 候选项列表
+  /// - `inputData` 输入数据字典
+  /// - `groupId`/`stepId` 可选，未提供则自动生成
+  /// 返回：`HuangJiCalculationStep` 对象，`requiresUserSelection=true`
   Future<HuangJiCalculationStep> createUserSelectionStep(
     HuangJiSession session,
     HuangJiStepType stepType,
@@ -295,6 +345,11 @@ class HuangJiSessionService {
   }
 
   /// 处理用户选择
+  ///
+  /// 行为：在会话中记录用户对某一步骤的候选选择，推进步骤状态
+  /// 入参：同 `selectCandidate`，另含 `selectionReason`（可选）
+  /// 返回：更新后的会话对象
+  /// 错误：入参不存在抛 `ArgumentError`；其他错误原样抛出
   Future<HuangJiSession> makeUserSelection(
     String sessionId,
     String formulaName,
@@ -365,6 +420,9 @@ class HuangJiSessionService {
   }
 
   /// 检查是否需要用户选择
+  ///
+  /// 行为：判断当前步骤存在、未完成且候选非空
+  /// 返回：布尔值；异常时返回 `false`
   bool requiresUserSelection(String sessionId) {
     try {
       final session = _getSessionOrThrow(sessionId);
@@ -382,6 +440,8 @@ class HuangJiSessionService {
   }
 
   /// 获取当前待选择的候选项
+  ///
+  /// 行为：返回当前步骤未完成时的候选项列表；异常或不满足条件返回 `null`
   List<TiaoWenCandidate>? getPendingCandidates(String sessionId) {
     try {
       final session = _getSessionOrThrow(sessionId);
@@ -398,6 +458,9 @@ class HuangJiSessionService {
   }
 
   /// 生成条文内容选择候选项
+  ///
+  /// 行为：基于 `baseNumber` 生成 [原数, +30, -30] 候选，并尝试从仓库读取对应条文内容作为描述
+  /// 返回：候选项列表（条文内容缺失时使用占位描述）
   Future<List<TiaoWenCandidate>> generateTiaoWenSelectionCandidates(
     int baseNumber,
     String groupId,
@@ -467,12 +530,14 @@ class HuangJiSessionService {
   }
 
   /// 获取当前步骤的候选项列表
+  /// 返回：候选项列表或 `null`
   List<TiaoWenCandidate>? getCurrentStepCandidates(String sessionId) {
     final session = getSession(sessionId);
     return session?.currentStep?.candidates;
   }
 
   /// 检查当前步骤是否需要用户选择
+  /// 返回：布尔值
   bool isCurrentStepWaitingForSelection(String sessionId) {
     final session = getSession(sessionId);
     final currentStep = session?.currentStep;
@@ -485,6 +550,7 @@ class HuangJiSessionService {
   }
 
   /// 获取当前步骤的选择状态
+  /// 返回：包含步骤存在、是否需选择、是否完成、候选数量、已选候选ID、步骤类型与名称的字典
   Map<String, dynamic> getCurrentStepSelectionStatus(String sessionId) {
     final session = getSession(sessionId);
     final currentStep = session?.currentStep;
@@ -516,6 +582,11 @@ class HuangJiSessionService {
   }
 
   /// 恢复会话到指定步骤
+  ///
+  /// 行为：将当前公式实例的 `currentStepIndex` 更新为指定索引
+  /// 入参：`sessionId`、`stepIndex`
+  /// 返回：更新后的会话对象
+  /// 错误：索引越界或无实例时抛出异常
   Future<HuangJiSession> restoreToStep(String sessionId, int stepIndex) async {
     try {
       final session = _getSessionOrThrow(sessionId);
@@ -560,6 +631,7 @@ class HuangJiSessionService {
   }
 
   /// 暂停会话
+  /// 返回：状态置为 `paused` 的会话对象
   Future<HuangJiSession> pauseSession(String sessionId) async {
     final session = _getSessionOrThrow(sessionId);
     final pausedSession = session.copyWith(
@@ -571,6 +643,7 @@ class HuangJiSessionService {
   }
 
   /// 恢复会话
+  /// 返回：状态置为 `inProgress` 的会话对象
   Future<HuangJiSession> resumeSession(String sessionId) async {
     final session = _getSessionOrThrow(sessionId);
     final resumedSession = session.copyWith(
@@ -582,6 +655,7 @@ class HuangJiSessionService {
   }
 
   /// 完成会话
+  /// 返回：状态置为 `completed` 并写入结果数据的会话对象
   Future<HuangJiSession> completeSession(
     String sessionId, {
     Map<String, dynamic>? resultData,
@@ -598,6 +672,7 @@ class HuangJiSessionService {
   }
 
   /// 取消会话
+  /// 返回：状态置为 `cancelled` 的会话对象
   Future<HuangJiSession> cancelSession(String sessionId) async {
     final session = _getSessionOrThrow(sessionId);
     final cancelledSession = session.copyWith(
@@ -610,11 +685,13 @@ class HuangJiSessionService {
   }
 
   /// 获取会话
+  /// 返回：会话或 `null`
   HuangJiSession? getSession(String sessionId) {
     return _sessions[sessionId];
   }
 
   /// 获取所有活跃会话
+  /// 返回：状态为进行中/暂停/等待选择的会话列表
   List<HuangJiSession> getActiveSessions() {
     return _sessions.values
         .where(
@@ -627,6 +704,7 @@ class HuangJiSessionService {
   }
 
   /// 删除会话
+  /// 返回：删除成功与否
   bool deleteSession(String sessionId) {
     return _sessions.remove(sessionId) != null;
   }
@@ -634,6 +712,7 @@ class HuangJiSessionService {
   // 私有辅助方法
 
   /// 获取会话或抛出异常
+  /// 错误：`SessionNotFoundException`
   HuangJiSession _getSessionOrThrow(String sessionId) {
     final session = _sessions[sessionId];
     if (session == null) {
@@ -643,6 +722,7 @@ class HuangJiSessionService {
   }
 
   /// 生成会话ID
+  /// 组成：时间戳 + 模 999999 的随机部分
   String _generateSessionId() {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
     final random = (timestamp % 999999);

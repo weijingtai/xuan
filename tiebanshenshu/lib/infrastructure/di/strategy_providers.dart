@@ -12,6 +12,7 @@ import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/day_gan_zhi_gua_strategy.dart';
 import '../../service/strategy/four_zhu_tian_gan_strategy.dart';
 import '../../service/strategy/huang_ji_calculation_strategy.dart';
+import '../../service/strategy/huang_ji_interactive_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_interactive_strategy.dart';
 import '../../service/strategy/tiao_wen_list_calculation.dart';
@@ -56,6 +57,9 @@ class StrategyProviders {
     // Interactive Strategy层
     Provider<TaiXuanFourZhuInteractiveStrategy>(
       create: (_) => TaiXuanFourZhuInteractiveStrategy(),
+    ),
+    Provider<HuangJiInteractiveStrategy>(
+      create: (_) => HuangJiInteractiveStrategy(),
     ),
 
     // Service层
@@ -104,10 +108,8 @@ class StrategyProviders {
     ),
     Provider<HuangJiInteractiveUseCase>(
       create: (context) => HuangJiInteractiveUseCase(
-        context.read<HuangJiCalculationStrategy>(),
-        context.read<TiaoWenRepository>(),
+        context.read<HuangJiInteractiveStrategy>(),
         context.read<InteractiveSessionService>(),
-        context.read<CandidateGenerationService>(),
       ),
     ),
 

@@ -1,6 +1,20 @@
 /// 皇极取数法计算策略
 ///
-/// 基于四柱的皇极取数法计算策略，支持完整的计算流程
+/// 职责：
+/// - 基于八字（四柱）实现皇极取数法的完整计算流程
+/// - 提供计算结果（初刻数、次条文数、基础数、最终条文数列表）与步骤详情
+/// - 提供条文计算配置以适配不同计算方案
+/// - 生成候选基础数并验证有效性，用于交互选择
+///
+/// 流程概览：
+/// 1) `calculate` 入口：参数校验 → 初刻数 → 次条文数 → 最终条文数列表 → 步骤详情
+/// 2) 初刻数：基于元会数与年干太玄千位，超出阈值按规则扣减
+/// 3) 次条文数：基于运世数与年干太玄千位，超出阈值按规则扣减
+/// 4) 最终条文数：围绕基础数与运世数，按年/月/日/时干支位数组合计算
+///
+/// 注意：
+/// - 标准策略不直接获取条文文本，仅返回数字列表；上层可结合仓库展示
+/// - `defaultTiaoWenCalculationConfig` 与 `supportedTiaoWenCalculationConfigs` 提供配置选择
 library;
 
 import 'package:common/models/eight_chars.dart';
@@ -35,6 +49,10 @@ class HuangJiCalculationStrategy
   StrategyCategory get category => StrategyCategory.standard;
 
   @override
+  /// 入口方法：执行完整皇极取数流程
+  /// 入参：`params` 包含八字等必要数据
+  /// 返回：`HuangJiCalculationResult`（含初刻数、次条文数、基础数、最终条文数列表与步骤详情）
+  /// 错误：抛出 `HuangJiCalculationException` 或其子类；包含四柱信息与原始异常
   HuangJiCalculationResult calculate(HuangJiCalculationParams params) {
     try {
       if (kDebugMode) {
@@ -126,6 +144,9 @@ class HuangJiCalculationStrategy
   }
 
   @override
+  /// 参数校验：确保必需的八字信息存在
+  /// 入参：`params` 计算参数
+  /// 错误：缺少八字时抛出 `InputValidationException`
   void validateParams(HuangJiCalculationParams params) {
     if (params.eightChars == null) {
       throw InputValidationException(
@@ -345,6 +366,8 @@ class HuangJiCalculationStrategy
   }
 
   /// 构建计算步骤详情
+  /// 行为：汇总计算过程的关键中间值与规则描述，便于 UI 展示与排障
+  /// 返回：包含太玄数、元会/运世、各阶段结果与规则说明的字典
   Map<String, dynamic> _buildCalculationSteps(
     EightChars fourZhu,
     int initialNumber,
@@ -410,6 +433,8 @@ class HuangJiCalculationStrategy
   /// 生成候选基础数列表
   ///
   /// 用于交互式选择，按照"30"递增或递减
+  /// 行为：以 `originalNumber` 为中心，生成向下与向上各 `count` 个，以 `step` 为步长的候选列表
+  /// 返回：候选基础数列表，首元素为原始数
   List<int> generateCandidateNumbers(
     int originalNumber, {
     int count = 10,
@@ -513,6 +538,8 @@ class HuangJiCalculationStrategy
   }
 
   /// 验证候选数是否有效
+  /// 行为：检查候选基础数范围是否在 (0, 13000] 之间
+  /// 返回：布尔值
   bool isValidCandidateNumber(int candidateNumber) {
     // 基本验证：数字应该在合理范围内
     return candidateNumber > 0 && candidateNumber <= 13000;
@@ -520,12 +547,17 @@ class HuangJiCalculationStrategy
 
   /// 获取默认的条文计算配置
   @override
+  /// 默认条文计算配置：皇极取数法配置
   TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
     return HuangJiTiaoWenCalculationConfig();
   }
 
   /// 计算条文列表（使用指定配置）
   @override
+  /// 使用指定的条文计算配置计算条文列表
+  /// 入参：基础数、计算参数、配置实例（需实现 `calculateTiaoWenList`）
+  /// 返回：条文数列表 `List<int>`
+  /// 错误：抛出 `HuangJiCalculationException`，包含步骤说明与四柱信息
   List<int> calculateTiaoWenListWithConfig(
     int baseNumber,
     HuangJiCalculationParams params,
@@ -552,6 +584,7 @@ class HuangJiCalculationStrategy
 
   /// 获取支持的条文计算配置选项
   @override
+  /// 返回支持的条文计算配置集合：默认配置 + 简化通用配置
   List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
     return [
       HuangJiTiaoWenCalculationConfig(),
@@ -566,14 +599,17 @@ class HuangJiCalculationStrategy
   }
 
   @override
+  /// 条文计算描述：取默认配置的说明文本
   String get tiaoWenCalculationDescription =>
       defaultTiaoWenCalculationConfig.description;
 
   @override
   // TODO: implement detailSteps
+  /// 详细步骤描述：暂未实现，返回占位内容
   List<String> get detailSteps => ["未实现"];
 
   @override
   // TODO: implement school
+  /// 所属流派/方案：当前为“皇极取数法一”
   String get school => "皇极取数法一";
 }
