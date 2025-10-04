@@ -50,6 +50,13 @@ class EightChars extends Equatable {
   // Convert to string representation
   @override
   String toString() => '${year.name}年${month.name}月${day.name}日${time.name}时';
+  List<String> toStrList() => [
+        year.name,
+        month.name,
+        day.name,
+        time.name,
+      ];
+  String toStr() => "${year.name} ${month.name} ${day.name} ${time.name}";
 
   factory EightChars.fromJson(Map<String, dynamic> json) =>
       _$EightCharsFromJson(json);

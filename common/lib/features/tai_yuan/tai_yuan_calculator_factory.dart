@@ -1,5 +1,5 @@
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
-import 'package:common/tai_yuan/tai_yuan_model.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
+import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 
 import 'tai_yuan_calculator.dart';
 import 'enum_calculate_strategy.dart';
@@ -18,7 +18,7 @@ class TaiYuanCalculatorFactory {
     TaiYuanCalculateStrategy.dayMasterYinYangMethod:
         DayMasterYinYangCalculator(),
   };
-  static TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  static TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       TaiYuanCalculateStrategy strategy,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,

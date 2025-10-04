@@ -1,12 +1,10 @@
-import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:lunar/calendar/Lunar.dart';
 import 'package:tuple/tuple.dart';
-import '../../datamodel/base_divination_datetime_datamodel.dart';
-import '../../helpers/solar_lunar_datetime_helper.dart';
-import '../../models/jie_qi_info.dart';
-import '../../models/seventy_two_phenology.dart';
+import '../../../datamodel/datetime_divination_datamodel.dart';
+import '../../../models/jie_qi_info.dart';
+import '../../../models/seventy_two_phenology.dart';
 import '../tai_yuan_by_days_model.dart';
 import '../tai_yuan_calculator.dart';
 import '../tai_yuan_model.dart';
@@ -19,7 +17,7 @@ class BirthdayCountbackCalculator extends TaiYuanCalculator {
       TaiYuanCalculateStrategy.birthdayCountbackMethod;
 
   @override
-  TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
       required bool withAdjust,
@@ -44,7 +42,8 @@ class BirthdayCountbackCalculator extends TaiYuanCalculator {
   /// [prematureDays] 早产天数（正数表示早产，负数表示晚产）
   /// [isTestTubeBaby] 是否试管婴儿
   /// 注意：当前函数功能并未得到应用层的“验证”，所以在调用前请自行确保参数的合理性
-  TaiYuanByDaysModel calculateByDays(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanByDaysModel calculateByDays(
+      DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       bool isTestTubeBaby = false,
       int actualMatureDays = 300}) {

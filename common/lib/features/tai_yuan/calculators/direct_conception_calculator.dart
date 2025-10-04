@@ -1,11 +1,11 @@
-import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/shared/shared.dart';
 import 'package:lunar/lunar.dart';
 import 'package:tuple/tuple.dart';
-import '../../datamodel/base_divination_datetime_datamodel.dart';
-import '../../helpers/solar_lunar_datetime_helper.dart';
-import '../../models/eight_chars.dart';
-import '../../models/jie_qi_info.dart';
-import '../../models/seventy_two_phenology.dart';
+import '../../../datamodel/datetime_divination_datamodel.dart';
+import '../../../helpers/solar_lunar_datetime_helper.dart';
+import '../../../models/eight_chars.dart';
+import '../../../models/jie_qi_info.dart';
+import '../../../models/seventy_two_phenology.dart';
 import '../tai_yuan_calculator.dart';
 import '../tai_yuan_model.dart';
 import '../enum_calculate_strategy.dart';
@@ -25,7 +25,7 @@ class DirectConceptionCalculator extends TaiYuanCalculator {
   }
 
   @override
-  TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+  TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
       {DateTime? conceptionDate,
       required bool withAdjust,
       bool isTestTubeBaby = false,

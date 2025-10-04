@@ -31,7 +31,7 @@ Map<String, dynamic> _$ObserverDataModelToJson(ObserverDataModel instance) =>
     };
 
 const _$EnumDatetimeTypeEnumMap = {
-  EnumDatetimeType.standard: '阳历',
+  EnumDatetimeType.standard: '标准时间',
   EnumDatetimeType.removeDST: '移除夏令时',
   EnumDatetimeType.meanSolar: '平太阳时',
   EnumDatetimeType.trueSolar: '真太阳时',
