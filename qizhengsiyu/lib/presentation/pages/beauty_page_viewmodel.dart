@@ -220,6 +220,8 @@ class BeautyPageViewModel extends ChangeNotifier {
     uiBasicLifeStarsNotifier.value = _calculateUIStarsFromMapper(
         basicPanelModel.starAngleMapper, _baseMiniSafetyAngle, zhouTianModel);
 
+    await calculateDongWeiFateFromCurrentPanel();
+
     // ... other post-calculation logic like calculateDongWeiFate, saveCalculatedPanelUseCase etc.
     debugPrint("ViewModel calculation complete. Listeners notified.");
   }
