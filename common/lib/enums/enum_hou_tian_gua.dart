@@ -1,25 +1,95 @@
-import 'package:common/enums/enum_tian_gan.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import 'enum_di_zhi.dart';
 import 'enum_five_xing.dart';
 
-// enum XianTianGua {
-//   Qian(1, "乾", "南",),
-//   Dui(2, "兑", "东南"),
-//   Li(3, "离", "东"),
-//   Zhen(4, "震", "东北"),
-//   Xun(5, "巽", "东南"),
-//   Kan(6, "坎", "西"),
-//   Gen(7, "艮", "西北"),
-//   Kun(8, "坤", "北");
+enum XianTianGua {
+  @JsonValue("乾")
+  Qian(1, "乾", "南"),
+  @JsonValue("兑")
+  Dui(2, "兑", "东南"),
+  @JsonValue("离")
+  Li(3, "离", "东"),
+  @JsonValue("震")
+  Zhen(4, "震", "东北"),
+  @JsonValue("巽")
+  Xun(5, "巽", "东南"),
+  @JsonValue("坎")
+  Kan(6, "坎", "西"),
+  @JsonValue("艮")
+  Gen(7, "艮", "西北"),
+  @JsonValue("坤")
+  Kun(8, "坤", "北");
 
-//   final int order;
-//   final String name;
-//   final String direction;
-//   final TianGan tianGan;
-//   const XianTianGua(this.order, this.name, this.direction, this.tianGan);
-// }
+  final int order;
+  final String name;
+  final String direction;
+  const XianTianGua(this.order, this.name, this.direction);
+}
+
+enum Enum8Gua {
+  @JsonValue("乾")
+  Qian("乾", "天", "111"),
+  @JsonValue("兑")
+  Dui("兑", "泽", "110"),
+  @JsonValue("离")
+  Li("离", "火", "101"),
+  @JsonValue("震")
+  Zhen("震", "雷", "100"),
+  @JsonValue("巽")
+  Xun("巽", "风", "011"),
+  @JsonValue("坎")
+  Kan("坎", "水", "010"),
+  @JsonValue("艮")
+  Gen("艮", "山", "001"),
+  @JsonValue("坤")
+  Kun("坤", "地", "000");
+
+  final String name;
+  final String nickname;
+  final String bottomTopBinaryStr;
+  String get topBottomBinaryStr => bottomTopBinaryStr.split('').reversed.join();
+  String get value => name;
+  const Enum8Gua(this.name, this.nickname, this.bottomTopBinaryStr);
+
+  /// 转换为先天八卦
+  XianTianGua toXianTianGua() {
+    return XianTianGua.values.firstWhere((e) => e.name == name);
+  }
+
+  /// 转换为后天八卦
+  HouTianGua toHouTianGua() {
+    return HouTianGua.values.firstWhere((e) => e.name == name);
+  }
+
+  Enum8Gua getByNickname(String nickname) {
+    return Enum8Gua.values.firstWhere((e) => e.nickname == nickname);
+  }
+
+  /// 从字符串值获取枚举
+  static Enum8Gua fromValue(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.name == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+
+  /// 从二进制字符串获取枚举
+  static Enum8Gua fromBottomTopBinaryStr(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.bottomTopBinaryStr == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+
+  /// 从顶部到底部的二进制字符串获取枚举
+  static Enum8Gua fromTopBottomBinaryStr(String value) {
+    return Enum8Gua.values.firstWhere(
+      (e) => e.topBottomBinaryStr == value,
+      orElse: () => throw ArgumentError('无法找到对应的八卦: $value'),
+    );
+  }
+}
 
 enum HouTianGua {
   @JsonValue("坎")

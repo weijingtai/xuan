@@ -1,6 +1,6 @@
-import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../../enums/enum_jia_zi.dart';
 import '../../models/eight_chars.dart';
 import '../../models/jie_qi_info.dart';
 import 'enum_calculate_strategy.dart';

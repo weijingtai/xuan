@@ -3,7 +3,6 @@ import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/datamodel/basic_person_info.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/shared/shared.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +13,8 @@ import 'package:slide_switcher/slide_switcher.dart';
 import 'package:timezone/timezone.dart' as tz;
 // import 'package:timezone/data/latest.dart' as tz;
 
+import '../enums/enum_jia_zi.dart';
+import '../enums/enum_tian_gan.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 import 'responseive_datetime_dialog.dart';

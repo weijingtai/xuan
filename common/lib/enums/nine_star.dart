@@ -1,5 +1,5 @@
-import 'package:common/shared/shared.dart';
 
+import '../../enums/enum_hou_tian_gua.dart';
 import 'enum_five_xing.dart';
 
 /// 九星枚举

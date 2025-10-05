@@ -2,7 +2,7 @@
 import 'package:common/models/eight_chars.dart';
 import 'package:common/models/jie_qi_info.dart';
 import 'package:common/models/seventy_two_phenology.dart';
-import 'package:common/shared/enums/enum_three_yuan.dart';
+import 'package:common/enums.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:lunar/lunar.dart';

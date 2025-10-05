@@ -194,6 +194,14 @@ enum TianGanFiveCombine {
     }
   }
 
+  static TianGan getOtherGan(TianGan tianGan) {
+    /// tuple.item2 为另一个天干
+    TianGanFiveCombine combine = getFiveCombineByTianGan(tianGan);
+    return combine.combine.item1 == tianGan
+        ? combine.combine.item2
+        : combine.combine.item1;
+  }
+
   static TianGanFiveCombine getFiveCombineByTianGan(TianGan tianGan) {
     switch (tianGan) {
       case TianGan.JIA:

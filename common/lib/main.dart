@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as db;
-import 'package:common/shared/shared.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +19,7 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'common_logger.dart';
+import 'enums/enum_hou_tian_gua.dart';
 import 'line_painter_widget.dart';
 
 Future<void> initServices() async {

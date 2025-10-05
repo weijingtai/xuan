@@ -1,7 +1,7 @@
-import 'package:common/shared/shared.dart';
 import 'package:lunar/lunar.dart';
 import 'package:tuple/tuple.dart';
 import '../../../datamodel/datetime_divination_datamodel.dart';
+import '../../../enums/enum_jia_zi.dart';
 import '../../../helpers/solar_lunar_datetime_helper.dart';
 import '../../../models/eight_chars.dart';
 import '../../../models/jie_qi_info.dart';

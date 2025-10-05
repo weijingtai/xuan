@@ -1,5 +1,6 @@
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
+
+import '../enums/enum_yin_yang.dart';
 
 class YaoWidget extends StatelessWidget {
   final YinYang yinYangYao;

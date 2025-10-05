@@ -1,6 +1,7 @@
-import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../enums/enum_datetime_type.dart';
+import '../enums/enum_gender.dart';
 import '../models/eight_chars.dart';
 import 'geo_location.dart';
 import 'location.dart';

@@ -7,7 +7,7 @@ import 'package:common/models/chinese_date_info.dart';
 import 'package:common/models/jie_qi_info.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/models/seventy_two_phenology.dart';
-import 'package:common/shared/shared.dart' show TwentyFourJieQi;
+import 'package:common/enums.dart';
 import 'package:intl/intl.dart';
 import 'package:lunar/lunar.dart';
 import 'package:sweph/sweph.dart';
@@ -18,8 +18,6 @@ import 'package:uuid/uuid.dart';
 import '../datamodel/location.dart' as my;
 import '../datamodel/location.dart';
 import '../features/datetime_details/input_info_params.dart';
-import '../shared/enums/enum_jia_zi.dart';
-import '../shared/enums/enum_three_yuan.dart';
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");

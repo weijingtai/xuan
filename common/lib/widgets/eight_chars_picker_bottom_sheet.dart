@@ -1,8 +1,10 @@
 import 'package:common/models/eight_chars.dart';
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 
 import '../datamodel/location.dart';
+import '../enums/enum_di_zhi.dart';
+import '../enums/enum_jia_zi.dart';
+import '../enums/enum_tian_gan.dart';
 
 /// 显示城市选择器底部弹窗
 Future<Address?> showEightCharsPickerBottomSheet({

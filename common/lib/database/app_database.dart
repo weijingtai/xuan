@@ -1,5 +1,4 @@
 import 'package:common/database/tables/tables.dart';
-import 'package:common/shared/shared.dart';
 import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +10,10 @@ import '../datamodel/location.dart';
 import '../datamodel/seeker_model.dart';
 import '../datamodel/sub_divination_type_data_model.dart';
 import '../datamodel/timing_divination_model.dart';
+import '../enums/enum_datetime_type.dart';
+import '../enums/enum_gender.dart';
+import '../enums/enum_jia_zi.dart';
+import '../enums/enum_panel_type.dart';
 import '../models/divination_datetime.dart';
 import 'connection.dart' as impl;
 import 'converters/nullable_location_converter.dart';
