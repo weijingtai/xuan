@@ -7,11 +7,6 @@
       "groupId": "元会·基础数一",
       "description": "元会基础数 + 年干(千位数） = 条文数` 以及根据次派生出的条文数",
       "baseNumberDefinition": {
-        "name": "元会基础数",
-        "description": "根据元会基础数+年干(千位数）=条文数(用户选择)",
-        "type": "selectable",
-        "isSelectable": false,
-        "initialCandidateFormula": {
           "name": "元会·基础数一",
           "description": "元会数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
@@ -34,8 +29,7 @@
               "numberPlace": "千"
             }
           ]
-        }
-      },
+        },
       "formulas": [
         {
           "name": "月干太玄(百位数）",

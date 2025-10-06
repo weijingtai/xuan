@@ -93,4 +93,17 @@ abstract class TiaoWenRepository {
     bool preserveOrder = false,
     bool skipNotFound = true,
   });
+
+  /// 批量获取条文内容
+  ///
+  /// [numbers] 条文数列表
+  /// 返回: Map<条文数, 条文内容>
+  /// 不存在的条文数不会出现在返回 Map 中
+  Future<Map<int, String>> getTiaoWenContentByNumbers(List<int> numbers);
+
+  /// 获取单个条文内容
+  ///
+  /// [number] 条文数
+  /// 返回: 条文内容字符串，不存在则返回 null
+  Future<String?> getTiaoWenContentByNumber(int number);
 }

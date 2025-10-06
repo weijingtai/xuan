@@ -6,12 +6,7 @@
     {
       "groupId": "元会·基础数一",
       "description": "元会基础数 + 年干(千位数） = 条文数` 以及根据次派生出的条文数",
-      "baseNumberDefinition": {
-        "name": "元会基础数",
-        "description": "根据元会基础数+年干(千位数）=条文数(用户选择)",
-        "type": "selectable",
-        "isSelectable": false,
-        "initialCandidateFormula": {
+      "baseNumberDefinition":{
           "name": "元会·基础数一",
           "description": "元会数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
@@ -34,8 +29,7 @@
               "numberPlace": "千"
             }
           ]
-        }
-      },
+        },
       "formulas": [
         {
           "name": "月干太玄(百位数）",
@@ -71,11 +65,6 @@
       "groupId": "元会·基础数二",
       "description": "元会·基础数一(元会+年干千位) + 日干互合(干十位+时干个位数） = 条文数` 以及根据次派生出的条文数",
       "baseNumberDefinition": {
-        "name": "元会基础数",
-        "description": "根据元会基础数+年干(千位数）=条文数(用户选择)",
-        "type": "selectable",
-        "isSelectable": false,
-        "initialCandidateFormula": {
           "name": "元会·基础数二",
           "description": "元会数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
@@ -130,8 +119,7 @@
               ]
             }
           ]
-        }
-      },
+        },
       "formulas": [
         {
           "name": "时干太玄(个位数）",
@@ -167,11 +155,6 @@
       "groupId": "运世·基础数一",
       "description": "运世基础数 + 年干(千位数） = 条文数` 以及根据次派生出的条文数",
       "baseNumberDefinition": {
-        "name": "运世基础数",
-        "description": "根据运世基础数+年干(千位数）=条文数(用户选择)",
-        "type": "selectable",
-        "isSelectable": false,
-        "initialCandidateFormula": {
           "name": "运世·基础数一",
           "description": "运世基础数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
@@ -194,8 +177,7 @@
               "numberPlace": "千"
             }
           ]
-        }
-      },
+        },
       "formulas": [
         {
           "name": "月干太玄(百位数）",
@@ -230,12 +212,7 @@
     {
       "groupId": "运世·基础数二",
       "description": "运世·基础数一(运世+年干千位) + 日干互合(干十位+时干个位数） = 条文数` 以及根据次派生出的条文数",
-      "baseNumberDefinition": {
-        "name": "运世基础数",
-        "description": "根据运世基础数+年干(千位数）=条文数(用户选择)",
-        "type": "selectable",
-        "isSelectable": false,
-        "initialCandidateFormula": {
+      "baseNumberDefinition":  {
           "name": "运世·基础数二",
           "description": "运世数 + 年干(千位）= 条文数(用户选择)",
           "type": "derived",
@@ -290,8 +267,7 @@
               ]
             }
           ]
-        }
-      },
+        },
       "formulas": [
         {
           "name": "时干太玄(个位数）",

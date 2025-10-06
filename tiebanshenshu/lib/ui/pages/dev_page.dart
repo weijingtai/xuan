@@ -94,6 +94,22 @@ class _DevPageState extends State<DevPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
+                Navigator.of(context).pushNamed('/tiebanshenshu/huang_ji_v2_demo');
+              },
+              icon: const Icon(Icons.new_releases),
+              label: const Text('皇极取数法 V2 新架构'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.green,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
                 Navigator.of(
                   context,
                 ).pushNamed('/tiebanshenshu/multi_selection');
@@ -114,6 +130,20 @@ class _DevPageState extends State<DevPage> {
               },
               icon: const Icon(Icons.science),
               label: const Text('皇极6A演示'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/tiebanshenshu/huang_ji');
+              },
+              icon: const Icon(Icons.science),
+              label: const Text('皇极交互6A演示'),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,

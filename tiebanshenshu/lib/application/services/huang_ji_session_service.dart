@@ -130,7 +130,9 @@ class HuangJiSessionService {
       );
 
       // 更新会话中的公式实例
-      final updatedInstances = List<FormulaInstance>.from(session.formulaInstances);
+      final updatedInstances = List<FormulaInstance>.from(
+        session.formulaInstances,
+      );
       updatedInstances[session.currentFormulaIndex] = updatedInstance;
 
       final updatedSession = session.copyWith(
@@ -173,29 +175,29 @@ class HuangJiSessionService {
   ) async {
     try {
       final session = _getSessionOrThrow(sessionId);
-      
+
       // 获取公式实例
       final instance = session.getFormulaInstance(formulaName);
       if (instance == null) {
         throw ArgumentError('Formula instance not found: $formulaName');
       }
-      
+
       // 找到对应的步骤
       final step = instance.calculationSteps.firstWhere(
         (s) => s.stepId == stepId,
         orElse: () => throw ArgumentError('Step not found: $stepId'),
       );
-      
+
       // 找到对应的候选项
       final candidate = step.candidates?.firstWhere(
         (c) => c.id == candidateId,
         orElse: () => throw ArgumentError('Candidate not found: $candidateId'),
       );
-      
+
       if (candidate == null) {
         throw ArgumentError('No candidates available for step: $stepId');
       }
-      
+
       // 创建SelectionCandidate
       final selectionCandidate = SelectionCandidate.fromBaseNumberDefinition(
         DataPredefinedBaseNumber(
@@ -205,7 +207,7 @@ class HuangJiSessionService {
           source: NumberSource.yunShi,
         ),
       );
-      
+
       // 使用HuangJiSessionManager来处理用户选择
       final updatedSession = HuangJiSessionManager.makeUserSelection(
         session: session,
@@ -324,9 +326,11 @@ class HuangJiSessionService {
     String? stepId,
   }) async {
     // 生成默认的stepId和groupId如果没有提供
-    final finalStepId = stepId ?? '${session.sessionId}_user_selection_${DateTime.now().millisecondsSinceEpoch}';
+    final finalStepId =
+        stepId ??
+        '${session.sessionId}_user_selection_${DateTime.now().millisecondsSinceEpoch}';
     final finalGroupId = groupId ?? 'user_selection_group';
-    
+
     return HuangJiCalculationStep(
       stepId: finalStepId,
       stepType: stepType,
@@ -359,29 +363,29 @@ class HuangJiSessionService {
   }) async {
     try {
       final session = _getSessionOrThrow(sessionId);
-      
+
       // 获取公式实例
       final instance = session.getFormulaInstance(formulaName);
       if (instance == null) {
         throw ArgumentError('Formula instance not found: $formulaName');
       }
-      
+
       // 找到对应的步骤
       final step = instance.calculationSteps.firstWhere(
         (s) => s.stepId == stepId,
         orElse: () => throw ArgumentError('Step not found: $stepId'),
       );
-      
+
       // 找到对应的候选项
       final candidate = step.candidates?.firstWhere(
         (c) => c.id == candidateId,
         orElse: () => throw ArgumentError('Candidate not found: $candidateId'),
       );
-      
+
       if (candidate == null) {
         throw ArgumentError('No candidates available for step: $stepId');
       }
-      
+
       // 创建SelectionCandidate
       final selectionCandidate = SelectionCandidate.fromBaseNumberDefinition(
         DataPredefinedBaseNumber(
@@ -391,7 +395,7 @@ class HuangJiSessionService {
           source: NumberSource.yunShi,
         ),
       );
-      
+
       // 使用HuangJiSessionManager来处理用户选择
       final updatedSession = HuangJiSessionManager.makeUserSelection(
         session: session,
@@ -591,12 +595,13 @@ class HuangJiSessionService {
     try {
       final session = _getSessionOrThrow(sessionId);
       final currentInstance = session.currentFormulaInstance;
-      
+
       if (currentInstance == null) {
         throw ArgumentError('当前没有活跃的公式实例');
       }
 
-      if (stepIndex < 0 || stepIndex >= currentInstance.calculationSteps.length) {
+      if (stepIndex < 0 ||
+          stepIndex >= currentInstance.calculationSteps.length) {
         throw ArgumentError('步骤索引超出范围: $stepIndex');
       }
 
@@ -606,14 +611,16 @@ class HuangJiSessionService {
       );
 
       // 更新会话中的公式实例
-      final updatedInstances = List<FormulaInstance>.from(session.formulaInstances);
+      final updatedInstances = List<FormulaInstance>.from(
+        session.formulaInstances,
+      );
       updatedInstances[session.currentFormulaIndex] = updatedInstance;
 
       final restoredSession = session.copyWith(
         formulaInstances: updatedInstances,
         lastActivityAt: DateTime.now(),
       );
-      
+
       _sessions[sessionId] = restoredSession;
 
       if (kDebugMode) {
@@ -728,7 +735,6 @@ class HuangJiSessionService {
     final random = (timestamp % 999999);
     return 'huang_ji_session_${timestamp}_$random';
   }
-
 }
 
 /// 会话相关异常

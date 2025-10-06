@@ -12,12 +12,15 @@ import 'package:provider/provider.dart';
 import '../../domain/four_zhu.dart';
 import '../../domain/models/huang_ji_interactive_step.dart';
 import '../../domain/models/interactive_strategy_config.dart';
+import '../../domain/models/multi_base_number_selection.dart';
 import '../viewmodels/huang_ji_interactive_view_model.dart';
 import '../widgets/candidate_selection_widget.dart';
+import '../widgets/huang_ji_interactive_widget.dart';
 import '../widgets/huang_ji_session_header.dart';
 import '../widgets/huang_ji_step_indicator.dart';
 import '../widgets/huang_ji_result_widget.dart';
 import '../widgets/loading_widget.dart';
+import '../widgets/multi_base_number_selection_widget.dart';
 
 /// 皇极取数法交互式页面
 class HuangJiInteractivePage extends StatefulWidget {
@@ -46,72 +49,31 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
 
   /// 启动交互式会话
   void _startSession() {
-    final provider = context.read<HuangJiInteractiveViewModel>();
-    provider.startSession(
+    context.read<HuangJiInteractiveViewModel>().startSession(
       widget.eightChars ?? DevConstant.dev_usa.standeredChineseInfo.eightChars,
       config: widget.config,
     );
   }
 
   /// 选择候选项
-  void _selectCandidate(HuangJiInteractiveViewModel provider, candidate) {
-    provider.selectCandidate(candidate);
+  void _selectCandidate(candidate) {
+    context.read<HuangJiInteractiveViewModel>().selectCandidate(candidate);
   }
 
   /// 撤销操作
-  void _undo(HuangJiInteractiveViewModel provider) {
-    provider.undo();
+  void _undo() {
+    context.read<HuangJiInteractiveViewModel>().undo();
   }
 
   /// 跳转到指定步骤
-  void _jumpToStep(HuangJiInteractiveViewModel provider, int stepIndex) {
-    provider.jumpToStep(stepIndex);
+  void _jumpToStep(int stepIndex) {
+    context.read<HuangJiInteractiveViewModel>().jumpToStep(stepIndex);
   }
 
   /// 重新开始
-  void _restart(HuangJiInteractiveViewModel provider) {
-    provider.reset();
+  void _restart() {
+    context.read<HuangJiInteractiveViewModel>().reset();
     _startSession();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('皇极取数法'),
-        elevation: 0,
-        actions: [
-          // 重新开始按钮
-          Consumer<HuangJiInteractiveViewModel>(
-            builder: (context, provider, child) {
-              return IconButton(
-                onPressed: provider.hasSession && !provider.isLoading
-                    ? () => _restart(provider)
-                    : null,
-                icon: const Icon(Icons.refresh),
-                tooltip: '重新开始',
-              );
-            },
-          ),
-        ],
-      ),
-      body: Consumer<HuangJiInteractiveViewModel>(
-        builder: (context, provider, child) {
-          return Column(
-            children: [
-              // 会话头部信息
-              if (provider.hasSession) HuangJiSessionHeader(provider: provider),
-
-              // 步骤指示器
-              if (provider.hasSession) HuangJiStepIndicator(provider: provider),
-
-              // 主要内容区域
-              Expanded(child: _buildMainContent(provider)),
-            ],
-          );
-        },
-      ),
-    );
   }
 
   /// 构建主要内容
@@ -152,11 +114,21 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
       return _buildCompletedContent(provider);
     }
 
-    if (provider.needsUserSelection && provider.currentCandidates.isNotEmpty) {
+    if ((provider.needsUserSelection ||
+            provider.currentStep == HuangJiInteractiveStep.initialization) &&
+        provider.currentCandidates.isNotEmpty) {
       if (kDebugMode) {
         print('🎨 HuangJiInteractivePage: 显示交互内容');
       }
-      return _buildInteractiveContent(provider);
+      return Consumer<HuangJiInteractiveViewModel>(
+        // builder 有三个参数: context, viewModel 实例, 和一个可选的 child
+        builder: (context, viewModel, child) {
+          // 当 viewModel.notifyListeners() 被调用时，只有这个 Text Widget 会被重建
+          return _buildInteractiveContent(viewModel);
+        },
+      );
+
+      // return context.read<HuangJiInteractiveViewModel>().selectionManager
     }
 
     // 默认显示等待状态
@@ -218,7 +190,7 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
             const SizedBox(height: 24.0),
 
             ElevatedButton.icon(
-              onPressed: () => _restart(provider),
+              onPressed: _restart,
               icon: const Icon(Icons.refresh),
               label: const Text('重新开始'),
             ),
@@ -235,27 +207,40 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
 
   /// 构建交互内容
   Widget _buildInteractiveContent(HuangJiInteractiveViewModel provider) {
+    print("??????");
+    final manager = provider.selectionManager;
+    print("??????");
+    if (manager == null) {
+      // 当没有 manager 时，直接使用 CandidateSelectionWidget
+      return CandidateSelectionWidget(
+        candidates: provider.currentCandidates,
+        onCandidateSelected: _selectCandidate,
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 当前步骤说明
-          _buildCurrentStepInfo(provider),
-
-          const SizedBox(height: 16.0),
-
-          // 候选项选择
           Expanded(
-            child: CandidateSelectionWidget(
-              candidates: provider.currentCandidates,
-              onCandidateSelected: (candidate) =>
-                  _selectCandidate(provider, candidate),
-              isLoading: provider.isProcessingSelection,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MultiBaseNumberSelectionWidget(
+                    manager: manager,
+                    onSelectionChanged: (type, candidate) {
+                      _selectCandidate(candidate);
+                    },
+                    showDetails: true,
+                    enableAnimations: true,
+                  ),
+                  const SizedBox(height: 80),
+                ],
+              ),
             ),
           ),
-
-          // 操作按钮
           if (provider.canUndo) ...[
             const SizedBox(height: 16.0),
             _buildActionButtons(provider),
@@ -263,6 +248,167 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
         ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('皇极取数法'),
+        elevation: 0,
+        actions: [
+          // 重新开始按钮
+          Consumer<HuangJiInteractiveViewModel>(
+            builder: (context, provider, child) {
+              return IconButton(
+                onPressed: provider.hasSession && !provider.isLoading
+                    ? _restart
+                    : null,
+                icon: const Icon(Icons.refresh),
+                tooltip: '重新开始',
+              );
+            },
+          ),
+        ],
+      ),
+      body: Consumer<HuangJiInteractiveViewModel>(
+        builder: (context, provider, child) {
+          return Column(
+            children: [
+              // 会话头部信息
+              if (provider.hasSession) HuangJiSessionHeader(provider: provider),
+
+              // 步骤指示器
+              if (provider.hasSession) HuangJiStepIndicator(provider: provider),
+
+              // 主要内容区域
+              Expanded(child: _buildMainContent(provider)),
+            ],
+          );
+        },
+      ),
+      bottomNavigationBar: _buildBottomBar(context),
+    );
+  }
+
+  /// 底部进度与操作栏
+  Widget? _buildBottomBar(BuildContext context) {
+    return Consumer<HuangJiInteractiveViewModel>(
+      builder: (context, provider, child) {
+        if (!provider.hasSession) return const SizedBox.shrink();
+
+        final theme = Theme.of(context);
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            border: Border(
+              top: BorderSide(
+                color: theme.colorScheme.outline.withOpacity(0.2),
+              ),
+            ),
+          ),
+          child: SafeArea(
+            child: Row(
+              children: [
+                // 进度信息
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        provider.isCompleted ? '计算完成' : '当前进度',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      if (!provider.isCompleted) ...[
+                        LinearProgressIndicator(
+                          value: _getBottomProgressValue(provider.currentStep),
+                          backgroundColor: theme.colorScheme.outline
+                              .withOpacity(0.2),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            theme.colorScheme.primary,
+                          ),
+                        ),
+
+                        const SizedBox(height: 4),
+
+                        Text(
+                          '${provider.getCurrentStepDisplayText()}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ] else ...[
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.check_circle,
+                              color: theme.colorScheme.primary,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '可以查看结果',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: theme.colorScheme.primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+
+                const SizedBox(width: 16),
+
+                // 操作按钮
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: provider.isLoading ? null : _undo,
+                      child: const Text('撤销'),
+                    ),
+
+                    const SizedBox(width: 12),
+
+                    ElevatedButton(
+                      onPressed: provider.isLoading ? null : _restart,
+                      child: const Text('重新开始'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// 计算底部进度值
+  double _getBottomProgressValue(HuangJiInteractiveStep step) {
+    switch (step) {
+      case HuangJiInteractiveStep.initialization:
+        return 0.15;
+      case HuangJiInteractiveStep.secondaryCalculation:
+        return 0.35;
+      case HuangJiInteractiveStep.userSelection:
+        return 0.6;
+      case HuangJiInteractiveStep.finalCalculation:
+        return 0.85;
+      case HuangJiInteractiveStep.completed:
+        return 1.0;
+    }
   }
 
   /// 构建等待内容
@@ -422,7 +568,7 @@ class _HuangJiInteractivePageState extends State<HuangJiInteractivePage> {
         if (provider.canUndo)
           Expanded(
             child: OutlinedButton.icon(
-              onPressed: provider.isLoading ? null : () => _undo(provider),
+              onPressed: provider.isLoading ? null : _undo,
               icon: const Icon(Icons.undo),
               label: const Text('撤销'),
             ),

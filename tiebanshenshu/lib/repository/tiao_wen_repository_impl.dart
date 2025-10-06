@@ -536,4 +536,31 @@ class TiaoWenRepositoryImpl implements TiaoWenRepository {
 
     return result;
   }
+
+  @override
+  Future<Map<int, String>> getTiaoWenContentByNumbers(List<int> numbers) async {
+    await _loadTiaoWenFromAssets();
+
+    if (numbers.isEmpty) {
+      return {};
+    }
+
+    final result = <int, String>{};
+    for (final number in numbers) {
+      final tiaoWen = _cachedTiaoWenMap![number];
+      if (tiaoWen != null) {
+        result[number] = tiaoWen.content1;
+      }
+    }
+
+    return result;
+  }
+
+  @override
+  Future<String?> getTiaoWenContentByNumber(int number) async {
+    await _loadTiaoWenFromAssets();
+
+    final tiaoWen = _cachedTiaoWenMap![number];
+    return tiaoWen?.content1;
+  }
 }

@@ -211,18 +211,12 @@ class HuangJiCalculationStrategy
         Constants.taiXuanGanNumberMapper[fourZhu.month.gan]! +
         Constants.taiXuanZhiNumberMapper[fourZhu.month.zhi]!;
 
-    // 确保都是两位数
-    int tmpYuanNumber = yuanNumber;
-    if (tmpYuanNumber < 10) {
-      tmpYuanNumber = tmpYuanNumber * 10;
-    }
-    int tmpMonthNumber = monthNumber;
-    if (tmpMonthNumber < 10) {
-      tmpMonthNumber = tmpMonthNumber * 10;
-    }
+    // 使用 padLeft 确保是两位数
+    final tmpYuanStr = yuanNumber.toString().padLeft(2, '0');
+    final tmpMonthStr = monthNumber.toString().padLeft(2, '0');
 
     // 左旋合成
-    int yuanHuiNumber = int.parse('$tmpYuanNumber$tmpMonthNumber');
+    int yuanHuiNumber = int.parse('$tmpYuanStr$tmpMonthStr');
     if (yuanHuiNumber > 13000) {
       yuanHuiNumber = yuanHuiNumber - 12000;
     }
@@ -240,7 +234,7 @@ class HuangJiCalculationStrategy
       // 计算次条文数
       int secondaryNumber =
           yunShiNumber +
-          Constants.taiXuanGanNumberMapper[fourZhu.year.gan]! * 1000;
+          Constants.taiXuanGanNumberMapper[fourZhu.day.gan]! * 1000;
       if (secondaryNumber > 13000) {
         secondaryNumber -= 12000;
       }
@@ -269,29 +263,15 @@ class HuangJiCalculationStrategy
         Constants.taiXuanGanNumberMapper[fourZhu.time.gan]! +
         Constants.taiXuanZhiNumberMapper[fourZhu.time.zhi]!;
 
-    // 确保日数是两位数
-    int tmpDayNumber = dayNumber;
-    if (dayNumber < 10) {
-      tmpDayNumber = tmpDayNumber * 10;
-    }
+    // 使用 padLeft 确保是两位数
+    String tmpDayStr = dayNumber.toString().padLeft(2, '0');
+    String tmpTimeStr = timeNumber.toString().padLeft(2, '0');
 
     // 右旋
-    final tmpDayStr = tmpDayNumber.toString();
-    tmpDayNumber = int.parse(
-      '${tmpDayStr[tmpDayStr.length - 1]}${tmpDayStr.substring(0, tmpDayStr.length - 1)}',
-    );
+    tmpDayStr = '${tmpDayStr[tmpDayStr.length - 1]}${tmpDayStr.substring(0, tmpDayStr.length - 1)}';
+    tmpTimeStr = '${tmpTimeStr[tmpTimeStr.length - 1]}${tmpTimeStr.substring(0, tmpTimeStr.length - 1)}';
 
-    // 确保时数是两位数
-    int tmpTimeNumber = timeNumber;
-    if (timeNumber < 10) {
-      tmpTimeNumber = tmpTimeNumber * 10;
-    }
-    final tmpTimeStr = tmpTimeNumber.toString();
-    tmpTimeNumber = int.parse(
-      '${tmpTimeStr[tmpTimeStr.length - 1]}${tmpTimeStr.substring(0, tmpTimeStr.length - 1)}',
-    );
-
-    return int.parse('$tmpDayNumber$tmpTimeNumber');
+    return int.parse('$tmpDayStr$tmpTimeStr');
   }
 
   /// 计算最终条文数列表（规则6-17）

@@ -32,10 +32,7 @@ class HuangJiInteractiveUseCase
   final InteractiveSessionService _sessionService;
 
   /// 构造函数
-  HuangJiInteractiveUseCase(
-    this._strategy,
-    this._sessionService,
-  );
+  HuangJiInteractiveUseCase(this._strategy, this._sessionService);
 
   @override
   String get name => '皇极取数法交互式UseCase';
@@ -68,7 +65,10 @@ class HuangJiInteractiveUseCase
       );
 
       // 委托到策略启动会话
-      final session = await _strategy.startSession(strategyParams, config: config);
+      final session = await _strategy.startSession(
+        strategyParams,
+        config: config,
+      );
 
       if (kDebugMode) {
         print('✅ HuangJiInteractiveUseCase: 会话创建完成');
@@ -145,7 +145,10 @@ class HuangJiInteractiveUseCase
       }
 
       // 委托到策略选择候选项
-      final updatedSession = await _strategy.selectCandidate(session, candidateId);
+      final updatedSession = await _strategy.selectCandidate(
+        session,
+        candidateId,
+      );
 
       if (kDebugMode) {
         print('✅ HuangJiInteractiveUseCase: selectCandidate 完成');
@@ -385,8 +388,6 @@ class HuangJiInteractiveUseCase
     }
   }
 
-
-
   @override
   void validateCandidateId(String candidateId) {
     // TODO: implement validateCandidateId
@@ -406,8 +407,4 @@ class HuangJiInteractiveUseCase
   void validateStepIndex(int stepIndex, int maxStepIndex) {
     // TODO: implement validateStepIndex
   }
-
-
-
-
 }

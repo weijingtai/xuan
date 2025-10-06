@@ -98,9 +98,9 @@ class HuangJiInteractiveStrategy
   );
 
   /// 步骤枚举（内部约定）
-  static const String stepConfirmFourZhu = '确认四柱';
-  static const String stepSelectBaseNumber = '选择基础数';
-  static const String stepPreviewFinalNumbers = '预览最终条文数';
+static const String stepInitialization = 'initialization';
+static const String stepUserSelection = 'user_selection';
+static const String stepFinalCalculation = 'final_calculation';
 
   @override
   Future<InteractiveSession> startSession(
@@ -225,7 +225,7 @@ class HuangJiInteractiveStrategy
 
     // 必须选择基础数才能完成
     final baseStep = session.steps.firstWhere(
-      (s) => s.stepName == stepSelectBaseNumber,
+      (s) => s.stepName == stepUserSelection,
       orElse: () => session.currentStep ?? session.steps.last,
     );
     if (baseStep.selectedCandidateId == null) {
@@ -309,7 +309,7 @@ class HuangJiInteractiveStrategy
   ) async {
     final current = session.currentStep;
     if (current == null) return null;
-    if (current.stepName == stepConfirmFourZhu) {
+    if (current.stepName == stepInitialization) {
       // 下一步：选择基础数（基于次条文数候选，或直接给定基础数范围）
       final eightChars = _extractEightChars(session);
       final secondaryCandidates = await _generateBaseNumberCandidates(
@@ -317,14 +317,14 @@ class HuangJiInteractiveStrategy
       );
       return createStep(
         stepNumber: current.stepNumber + 1,
-        stepName: stepSelectBaseNumber,
+        stepName: stepUserSelection,
         description: '请选择基础数（影响最终条文列表）',
         candidates: secondaryCandidates,
         stepData: {'eightChars': eightChars.toJson()},
       );
     }
 
-    if (current.stepName == stepSelectBaseNumber) {
+    if (current.stepName == stepUserSelection) {
       // 下一步：预览最终条文数，供完成确认
       final eightChars = _extractEightChars(session);
       final baseNumber = _extractSelectedBaseNumber(current);
@@ -345,7 +345,7 @@ class HuangJiInteractiveStrategy
           .toList();
       return createStep(
         stepNumber: current.stepNumber + 1,
-        stepName: stepPreviewFinalNumbers,
+        stepName: stepFinalCalculation,
         description: '预览最终条文数，确认后完成',
         candidates: candidates,
         stepData: {
@@ -378,7 +378,7 @@ class HuangJiInteractiveStrategy
     ];
     return createStep(
       stepNumber: 1,
-      stepName: stepConfirmFourZhu,
+      stepName: stepInitialization,
       description: '请确认当前四柱是否正确',
       candidates: candidates,
       stepData: {'eightChars': eightChars.toJson()},
@@ -388,7 +388,7 @@ class HuangJiInteractiveStrategy
   // 辅助：从会话提取四柱
   EightChars _extractEightChars(InteractiveSession session) {
     final step = session.steps.firstWhere(
-      (s) => s.stepName == stepConfirmFourZhu,
+      (s) => s.stepName == stepInitialization,
     );
     final data = step.stepData ?? {};
     final json = data['eightChars'] as Map<String, dynamic>;
@@ -425,7 +425,7 @@ class HuangJiInteractiveStrategy
     final neighbors = List<int>.generate(
       radius * 2 + 1,
       (i) => secondary - radius + i,
-    ).where((n) => n > 0).toSet().toList()..sort();
+    ).where((n) => n > 0 && n != secondary).toSet().toList()..sort(); // 确保不包含推荐值
     final neighborCandidates = neighbors
         .map(
           (n) => TiaoWenCandidate(

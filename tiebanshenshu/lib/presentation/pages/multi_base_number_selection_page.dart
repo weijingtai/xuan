@@ -3,6 +3,8 @@
 /// 提供同时选择多个基础数的用户界面
 library;
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../domain/models/huang_ji_number.dart';
@@ -471,7 +473,11 @@ class _MultiBaseNumberSelectionPageState
       widget.onCompleted!(completedSelections);
     }
 
-    Navigator.of(context).pop(completedSelections);
+    completedSelections.entries.forEach((element) {
+      print("${element.key}: ${element.value.toJson()}");
+    });
+
+    // Navigator.of(context).pop(completedSelections);
   }
 
   /// 处理取消

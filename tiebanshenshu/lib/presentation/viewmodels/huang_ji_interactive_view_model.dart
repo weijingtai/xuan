@@ -6,19 +6,17 @@ library;
 
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/foundation.dart';
-import 'package:tiebanshenshu/repository/datamodels/tiao_wen_datamodel.dart';
+import 'package:tiebanshenshu/domain/models/multi_base_number_result.dart';
+import 'package:tiebanshenshu/domain/models/multi_base_number_selection.dart';
+import 'package:tiebanshenshu/domain/models/huang_ji_number.dart';
 
 import '../../application/usecases/huang_ji_interactive_use_case.dart';
+import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../../domain/models/huang_ji_calculation_params.dart';
-import '../../domain/models/huang_ji_calculation_result.dart';
 import '../../domain/models/huang_ji_interactive_step.dart';
 import '../../domain/models/interactive_session.dart';
 import '../../domain/models/interactive_strategy_config.dart';
 import '../../domain/models/tiao_wen_candidate.dart';
-import '../../domain/models/multi_base_number_result.dart';
-import '../../domain/exceptions/tiao_wen_calculation_exceptions.dart';
-import '../../domain/four_zhu.dart';
-import '../../domain/models/tiao_wen_list_state.dart';
 
 /// 交互式Provider状态枚举
 enum HuangJiInteractiveProviderState {
@@ -90,11 +88,14 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
   InteractiveSession? get currentSession => _currentSession;
 
   /// 当前候选项列表
-  List<TiaoWenCandidate> get currentCandidates =>
-      List.unmodifiable(_currentCandidates);
+  List<TiaoWenCandidate> get currentCandidates => _currentCandidates;
 
   /// 最终计算结果
   MultiBaseNumberResult? get finalResult => _finalResult;
+
+  MultiBaseNumberSelectionManager? _selectionManager;
+
+  MultiBaseNumberSelectionManager? get selectionManager => _selectionManager;
 
   /// 错误消息
   String? get errorMessage => _errorMessage;
@@ -174,7 +175,9 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     if (kDebugMode) {
       print('🔍 needsUserSelection 检查:');
       print('   - _currentStep: $_currentStep');
-      print('   - HuangJiInteractiveStep.userSelection: ${HuangJiInteractiveStep.userSelection}');
+      print(
+        '   - HuangJiInteractiveStep.userSelection: ${HuangJiInteractiveStep.userSelection}',
+      );
       print('   - 结果: $result');
     }
     return result;
@@ -250,8 +253,12 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
         print('   - currentStep: $_currentStep');
         print('   - state: $_state');
         if (_currentSession?.currentStep != null) {
-          print('   - session.currentStep.stepName: ${_currentSession!.currentStep!.stepName}');
-          print('   - session.currentStep.candidates.length: ${_currentSession!.currentStep!.candidates.length}');
+          print(
+            '   - session.currentStep.stepName: ${_currentSession!.currentStep!.stepName}',
+          );
+          print(
+            '   - session.currentStep.candidates.length: ${_currentSession!.currentStep!.candidates.length}',
+          );
         }
       }
     } catch (e) {
@@ -331,6 +338,25 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       _currentCandidates = candidates;
       _setState(HuangJiInteractiveProviderState.candidatesLoaded);
 
+      if (needsUserSelection) {
+        _selectionManager = MultiBaseNumberSelectionManager.create(
+          requiredTypes: [
+            BaseNumberSelectionType.yuanHui,
+            BaseNumberSelectionType.yunShi,
+          ],
+          optionalTypes: [
+            BaseNumberSelectionType.yuanHuiOne,
+            BaseNumberSelectionType.yunShiOne,
+          ],
+        );
+        print("!!!!!!!!!!!!!!1");
+        print(candidates);
+        print("!!!!!!!!!!!!!!1");
+
+        // Distribute candidates to the selection manager
+        _distributeCandidates(candidates);
+      }
+
       if (kDebugMode) {
         print('✅ HuangJiInteractiveViewModel: 候选项状态更新完成');
         print('🎉 HuangJiInteractiveViewModel: 候选项加载完成');
@@ -345,13 +371,80 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     }
   }
 
-  /// 选择候选项
-  ///
+  void _distributeCandidates(List<TiaoWenCandidate> candidates) {
+    if (_selectionManager == null) return;
+    _updateAndNotifyManager(candidates);
+  }
+
+  void _updateAndNotifyManager(List<TiaoWenCandidate> candidates) {
+    var currentManager = _selectionManager!;
+    for (final type in currentManager.selections.keys) {
+      final selection = currentManager.selections[type]!;
+      List<TiaoWenCandidate> filteredCandidates;
+      final numberSource = _getNumberSourceFromSelectionType(type);
+
+      if (numberSource == NumberSource.yuanHui) {
+        filteredCandidates = candidates
+            .where(
+              (c) =>
+                  c.value is HuangJiBaseNumber &&
+                  (c.value as HuangJiBaseNumber).numberSource ==
+                      NumberSource.yuanHui,
+            )
+            .toList();
+      } else if (numberSource == NumberSource.yunShi) {
+        filteredCandidates = candidates
+            .where(
+              (c) =>
+                  c.value is HuangJiBaseNumber &&
+                  (c.value as HuangJiBaseNumber).numberSource ==
+                      NumberSource.yunShi,
+            )
+            .toList();
+      } else {
+        filteredCandidates = [];
+      }
+
+      final newStatus = filteredCandidates.isNotEmpty
+          ? BaseNumberSelectionStatus.ready
+          : BaseNumberSelectionStatus.pending;
+
+      final newSelection = selection.copyWith(
+        candidates: filteredCandidates,
+        status: newStatus,
+      );
+      currentManager = currentManager.updateSelection(type, newSelection);
+    }
+    _selectionManager = currentManager;
+    print("~~~~~~~~~~~~");
+    print(candidates);
+    print(_selectionManager);
+    print("~~~~~~~~~~~~");
+    notifyListeners();
+  }
+
   /// [candidate] 选择的候选项
   Future<void> selectCandidate(TiaoWenCandidate candidate) async {
     if (!hasSession) {
       _handleError('选择候选项失败', Exception('没有活跃的会话'));
       return;
+    }
+
+    if (_selectionManager != null) {
+      final selectionType = BaseNumberSelectionType.values.firstWhere(
+        (e) => e.value == candidate.type,
+      );
+      final selection = _selectionManager!.selections[selectionType];
+      if (selection != null) {
+        final newSelection = selection.copyWith(
+          selectedNumber: candidate.value as HuangJiBaseNumber,
+          status: BaseNumberSelectionStatus.completed,
+        );
+        _selectionManager = _selectionManager!.updateSelection(
+          selectionType,
+          newSelection,
+        );
+      }
     }
 
     try {
@@ -562,7 +655,7 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       _setState(HuangJiInteractiveProviderState.calculating);
 
       final result = await _useCase.completeCalculation(_currentSession!);
-      _finalResult = result;
+      _finalResult = result as MultiBaseNumberResult?;
       _setState(HuangJiInteractiveProviderState.completed);
     } catch (e) {
       _handleError('完成计算失败', e);
@@ -595,7 +688,8 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
 
     // 如果还没有selectedBaseNumber，尝试从当前步骤的stepData中读取
     if (_selectedBaseNumber == null && session.currentStep?.stepData != null) {
-      _selectedBaseNumber = session.currentStep!.stepData!['selectedBaseNumber'] as int?;
+      _selectedBaseNumber =
+          session.currentStep!.stepData!['selectedBaseNumber'] as int?;
       if (kDebugMode && _selectedBaseNumber != null) {
         print('📊 从当前步骤stepData中读取selectedBaseNumber: $_selectedBaseNumber');
       }
@@ -631,12 +725,17 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
             print('   - 步骤状态: ${currentStep.status}');
             print('   - 候选项数量: ${currentStep.candidates.length}');
           }
-          
+
           // 根据步骤名称推断HuangJiInteractiveStep
           if (currentStep.stepName == 'base_number_selection') {
             _currentStep = HuangJiInteractiveStep.userSelection;
             if (kDebugMode) {
               print('✅ 步骤映射: base_number_selection -> userSelection');
+            }
+          } else if (currentStep.stepName == 'initialization') {
+            _currentStep = HuangJiInteractiveStep.initialization;
+            if (kDebugMode) {
+              print('✅ 步骤映射: initialization -> initialization');
             }
           } else if (currentStep.stepName == 'user_selection') {
             _currentStep = HuangJiInteractiveStep.userSelection;
@@ -680,7 +779,7 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     // 更新候选项数据
     if (session.currentStep != null) {
       _currentCandidates = List.from(session.currentStep!.candidates);
-      
+
       if (kDebugMode) {
         print('📊 候选项数据更新完成');
         print('📊 候选项数量: ${_currentCandidates.length}');
@@ -690,22 +789,24 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
       }
     } else {
       _currentCandidates.clear();
-      
+
       if (kDebugMode) {
         print('⚠️ 没有当前步骤，清空候选项');
       }
     }
 
     // 如果步骤变为final_calculation且有选择的基础数，自动触发最终计算
-    if (_currentStep == HuangJiInteractiveStep.finalCalculation && 
-        _selectedBaseNumber != null && 
+    if (_currentStep == HuangJiInteractiveStep.finalCalculation &&
+        _selectedBaseNumber != null &&
         _state != HuangJiInteractiveProviderState.calculating &&
         _state != HuangJiInteractiveProviderState.completed) {
       if (kDebugMode) {
-        print('🚀 HuangJiInteractiveViewModel: 检测到final_calculation步骤，自动触发最终计算');
+        print(
+          '🚀 HuangJiInteractiveViewModel: 检测到final_calculation步骤，自动触发最终计算',
+        );
         print('📊 选择的基础数: $_selectedBaseNumber');
       }
-      
+
       // 异步触发计算，避免在setState期间调用
       Future.microtask(() => _completeCalculation());
     }
@@ -745,8 +846,21 @@ class HuangJiInteractiveViewModel extends ChangeNotifier {
     }
   }
 
+  NumberSource _getNumberSourceFromSelectionType(BaseNumberSelectionType type) {
+    switch (type) {
+      case BaseNumberSelectionType.yuanHui:
+      case BaseNumberSelectionType.yuanHuiOne:
+      case BaseNumberSelectionType.yuanHuiTwo:
+        return NumberSource.yuanHui;
+      case BaseNumberSelectionType.yunShi:
+      case BaseNumberSelectionType.yunShiOne:
+      case BaseNumberSelectionType.yunShiTwo:
+        return NumberSource.yunShi;
+    }
+  }
+
   /// 处理错误
-  void _handleError(String message, dynamic error) {
+  void _handleError(String message, Object error) {
     _errorMessage = message;
     _lastException = error is Exception ? error : Exception(error.toString());
     _setState(HuangJiInteractiveProviderState.error);
