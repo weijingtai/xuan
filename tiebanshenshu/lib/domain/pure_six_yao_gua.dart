@@ -256,6 +256,51 @@ class PureSixYaoGua {
       .map((e) => e.yinYang == YinYang.YIN ? "0" : "1")
       .join("");
 
+  /// 变爻标签（自下而上索引 0..5 -> 初、二、三、四、五、上）
+  static const List<String> _yaoPositionLabels = ["初", "二", "三", "四", "五", "上"];
+
+  /// 获取爻位标签：0->初、1->二、...、5->上
+  static String getYaoPositionLabel(int indexFromBottomZeroBased) {
+    if (indexFromBottomZeroBased < 0 || indexFromBottomZeroBased > 5) {
+      throw ArgumentError("变爻索引越界，应为 0..5，当前: $indexFromBottomZeroBased");
+    }
+    return _yaoPositionLabels[indexFromBottomZeroBased];
+  }
+
+  /// 单爻变卦：按自下而上索引（0..5）进行阴阳翻转，返回变卦的 Gua64Enum
+  Gua64Enum bianYaoAtIndex(int indexFromBottomZeroBased) {
+    if (indexFromBottomZeroBased < 0 || indexFromBottomZeroBased > 5) {
+      throw ArgumentError("变爻索引越界，应为 0..5，当前: $indexFromBottomZeroBased");
+    }
+    final newBinary = List<int>.from(binaryList);
+    newBinary[indexFromBottomZeroBased] = newBinary[indexFromBottomZeroBased] == 0 ? 1 : 0;
+    return Gua64Enum.fromBinaryList(newBinary);
+  }
+
+  /// 批量变爻：返回 1..6（初..上）爻位对应的变卦映射
+  /// 键为 1..6（人类易于理解的爻序），值为对应的 Gua64Enum
+  Map<int, Gua64Enum> bianYaoAll() {
+    final result = <int, Gua64Enum>{};
+    for (int i = 0; i < 6; i++) {
+      result[i + 1] = bianYaoAtIndex(i);
+    }
+    return result;
+  }
+
+  /// 带来源标签的候选变卦映射：
+  /// - 包含"互卦"
+  /// - 包含六个"变爻"（变初爻、变二爻、...、变上爻）
+  /// 用于 UI/UseCase 标注条文来源（先天/后天 + 变爻位置）
+  Map<String, Gua64Enum> changedVariantsWithLabels() {
+    final variants = <String, Gua64Enum>{};
+    variants["互卦"] = hu;
+    for (int i = 0; i < 6; i++) {
+      final label = getYaoPositionLabel(i);
+      variants["变${label}爻"] = bianYaoAtIndex(i);
+    }
+    return variants;
+  }
+
   PureSixYaoGua({
     required this.gua,
     required this.topGua,

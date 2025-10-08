@@ -93,6 +93,8 @@ enum NumberSource {
   yuanHui,
   @JsonValue("运世")
   yunShi,
+  @JsonValue("六亲考刻")
+  sixQinCorrectKe,
 }
 
 @JsonSerializable()

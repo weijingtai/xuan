@@ -32,6 +32,10 @@ enum BaseNumberSource {
 
   /// 交互式计算
   interactive,
+  // @JsonValue("六亲考刻")
+  sixQinCorrectKe,
+  // @JsonValue("皇极")
+  huangji,
 }
 
 /// 基础数模型类
@@ -78,8 +82,6 @@ class BaseNumberModel {
     );
   }
 
-
-
   /// 获取来源描述
   String get sourceDescription {
     switch (source) {
@@ -101,6 +103,10 @@ class BaseNumberModel {
         return '自定义';
       case BaseNumberSource.interactive:
         return '交互式计算';
+      case BaseNumberSource.sixQinCorrectKe:
+        return "六亲考刻";
+      case BaseNumberSource.huangji:
+        return '皇极取数';
     }
   }
 

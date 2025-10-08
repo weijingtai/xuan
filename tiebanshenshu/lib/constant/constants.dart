@@ -225,6 +225,28 @@ const Map<int, String> houTianNumberGuaMapper = {
   9: "离",
 };
 
+const Map<int, Enum8Gua> numberHouGuaMapper = {
+  1: Enum8Gua.Kan,
+  2: Enum8Gua.Kun,
+  3: Enum8Gua.Zhen,
+  4: Enum8Gua.Xun,
+  6: Enum8Gua.Qian,
+  7: Enum8Gua.Dui,
+  8: Enum8Gua.Gen,
+  9: Enum8Gua.Li,
+};
+
+const Map<int, Enum8Gua> numberXianGuaMapper = {
+  1: Enum8Gua.Qian,
+  2: Enum8Gua.Dui,
+  3: Enum8Gua.Li,
+  4: Enum8Gua.Zhen,
+  5: Enum8Gua.Xun,
+  6: Enum8Gua.Kan,
+  7: Enum8Gua.Gen,
+  8: Enum8Gua.Kun,
+};
+
 const Map<int, String> xianTianNumberGuaMapper = {
   1: "乾",
   2: "兑",
