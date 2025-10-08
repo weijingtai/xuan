@@ -53,6 +53,7 @@ const _$BaseNumberTypeEnumMap = {
 const _$NumberSourceEnumMap = {
   NumberSource.yuanHui: '元会',
   NumberSource.yunShi: '运世',
+  NumberSource.sixQinCorrectKe: '六亲考刻',
 };
 
 HuangJiPlacedNumber _$HuangJiPlacedNumberFromJson(Map<String, dynamic> json) =>

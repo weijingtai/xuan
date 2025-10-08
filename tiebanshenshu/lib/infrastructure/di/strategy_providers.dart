@@ -4,15 +4,16 @@ import 'package:provider/single_child_widget.dart';
 import '../../application/services/candidate_generation_service.dart';
 import '../../application/services/interactive_session_service.dart';
 import '../../application/services/multi_base_number_selection_service.dart';
-import '../../application/usecases/huang_ji_interactive_use_case.dart';
-import '../../presentation/viewmodels/huang_ji_interactive_view_model.dart';
+import '../../features/huang_ji/huang_ji_session_manager.dart';
+import '../../features/huang_ji/huang_ji_v2_calculation_strategy.dart';
+import '../../features/huang_ji/huang_ji_v2_calculation_strategy_impl.dart';
+import '../../features/huang_ji/huang_ji_v2_use_case.dart';
+import '../../features/huang_ji/huang_ji_v2_view_model.dart';
 import '../../presentation/viewmodels/multi_base_number_selection_view_model.dart';
 import '../../repository/repository_factory.dart';
 import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/day_gan_zhi_gua_strategy.dart';
 import '../../service/strategy/four_zhu_tian_gan_strategy.dart';
-import '../../service/strategy/huang_ji_calculation_strategy.dart';
-import '../../service/strategy/huang_ji_interactive_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_interactive_strategy.dart';
 import '../../service/strategy/tiao_wen_list_calculation.dart';
@@ -24,14 +25,9 @@ import '../../presentation/viewmodels/day_gan_zhi_gua_view_model.dart';
 import '../../presentation/viewmodels/four_zhu_tian_gan_view_model.dart';
 import '../../presentation/viewmodels/tai_xuan_four_zhu_view_model.dart';
 import '../../presentation/viewmodels/tai_xuan_four_zhu_interactive_view_model.dart';
-import '../../presentation/viewmodels/huang_ji_v2_view_model.dart';
 // 新的V2架构
-import '../../service/strategy/huang_ji_v2_calculation_strategy.dart';
-import '../../service/strategy/huang_ji_v2_calculation_strategy_impl.dart';
 import '../../repository/session_repository.dart';
 import '../../repository/session_repository_impl.dart';
-import '../../application/managers/huang_ji_session_manager.dart';
-import '../../application/usecases/huang_ji_v2_use_case.dart';
 // 旧的V2架构导入已删除
 // import '../../features/huang_ji_v2_viewmodel.dart';
 // import '../../features/huang_ji_v2_usecase.dart';
@@ -63,24 +59,18 @@ class StrategyProviders {
     Provider<DayGanZhiGuaStrategy>(create: (_) => DayGanZhiGuaStrategy()),
     Provider<FourZhuTianGanStrategy>(create: (_) => FourZhuTianGanStrategy()),
     Provider<TaiXuanFourZhuStrategy>(create: (_) => TaiXuanFourZhuStrategy()),
-    Provider<HuangJiCalculationStrategy>(
-      create: (_) => HuangJiCalculationStrategy(),
-    ),
 
     // Interactive Strategy层
-        Provider<TaiXuanFourZhuInteractiveStrategy>(
-          create: (_) => TaiXuanFourZhuInteractiveStrategy(),
-        ),
-        Provider<HuangJiInteractiveStrategy>(
-          create: (_) => HuangJiInteractiveStrategy(),
-        ),
+    Provider<TaiXuanFourZhuInteractiveStrategy>(
+      create: (_) => TaiXuanFourZhuInteractiveStrategy(),
+    ),
 
-        // HuangJiV2 Strategy层 - 已删除旧架构
-        // Provider<HuangJiV2Strategy>(
-        //   create: (_) => HuangJiV2Strategy(),
-        // ),
+    // HuangJiV2 Strategy层 - 已删除旧架构
+    // Provider<HuangJiV2Strategy>(
+    //   create: (_) => HuangJiV2Strategy(),
+    // ),
 
-        // Service层
+    // Service层
     Provider<InteractiveSessionService>(
       create: (_) => InteractiveSessionServiceImpl(),
     ),
@@ -102,9 +92,7 @@ class StrategyProviders {
     Provider<HuangJiV2CalculationStrategy>(
       create: (_) => HuangJiV2CalculationStrategyImpl(),
     ),
-    Provider<SessionRepository>(
-      create: (_) => InMemorySessionRepository(),
-    ),
+    Provider<SessionRepository>(create: (_) => InMemorySessionRepository()),
     Provider<HuangJiSessionManager>(
       create: (context) => HuangJiSessionManager(
         sessionRepository: context.read<SessionRepository>(),
@@ -149,20 +137,6 @@ class StrategyProviders {
         context.read<TiaoWenListCalculationConfig>(),
       ),
     ),
-    Provider<HuangJiInteractiveUseCase>(
-          create: (context) => HuangJiInteractiveUseCase(
-            context.read<HuangJiInteractiveStrategy>(),
-            context.read<InteractiveSessionService>(),
-          ),
-        ),
-        // HuangJiV2UseCase - 已删除旧架构
-        // Provider<HuangJiV2UseCase>(
-        //   create: (context) => HuangJiV2UseCase(
-        //     context.read<HuangJiV2Strategy>(),
-        //     context.read<HuangJiV2SessionService>(),
-        //   ),
-        // ),
-
     // ViewModel层
     ChangeNotifierProvider<DayGanZhiGuaViewModel>(
       create: (context) =>
@@ -178,11 +152,6 @@ class StrategyProviders {
         context.read<TaiXuanFourZhuTiaoWenListUseCase>(),
       ),
     ),
-    ChangeNotifierProvider<HuangJiInteractiveViewModel>(
-      create: (context) => HuangJiInteractiveViewModel(
-        context.read<HuangJiInteractiveUseCase>(),
-      ),
-    ),
 
     // Interactive Provider层
     ChangeNotifierProvider<TaiXuanFourZhuInteractiveViewModel>(
@@ -192,26 +161,25 @@ class StrategyProviders {
     ),
 
     // Multi Base Number Selection Provider层
-        ChangeNotifierProvider<MultiBaseNumberSelectionViewModel>(
-          create: (context) => MultiBaseNumberSelectionViewModel(
-            context.read<MultiBaseNumberSelectionService>(),
-          ),
-        ),
+    ChangeNotifierProvider<MultiBaseNumberSelectionViewModel>(
+      create: (context) => MultiBaseNumberSelectionViewModel(
+        context.read<MultiBaseNumberSelectionService>(),
+      ),
+    ),
 
-        // HuangJi V2 新架构 ViewModel
-        ChangeNotifierProvider<HuangJiV2ViewModel>(
-          create: (context) => HuangJiV2ViewModel(
-            useCase: context.read<HuangJiV2UseCase>(),
-          ),
-        ),
+    // HuangJi V2 新架构 ViewModel
+    ChangeNotifierProvider<HuangJiV2ViewModel>(
+      create: (context) =>
+          HuangJiV2ViewModel(useCase: context.read<HuangJiV2UseCase>()),
+    ),
 
-        // HuangJiV2 ViewModel层 - 已删除旧架构
-        // ChangeNotifierProvider<HuangJiV2ViewModel>(
-        //   create: (context) => HuangJiV2ViewModel(
-        //     context.read<HuangJiV2UseCase>(),
-        //     context.read<MultiBaseNumberSelectionService>(),
-        //     context.read<TiaoWenRepository>(),
-        //   ),
-        // ),
+    // HuangJiV2 ViewModel层 - 已删除旧架构
+    // ChangeNotifierProvider<HuangJiV2ViewModel>(
+    //   create: (context) => HuangJiV2ViewModel(
+    //     context.read<HuangJiV2UseCase>(),
+    //     context.read<MultiBaseNumberSelectionService>(),
+    //     context.read<TiaoWenRepository>(),
+    //   ),
+    // ),
   ];
 }

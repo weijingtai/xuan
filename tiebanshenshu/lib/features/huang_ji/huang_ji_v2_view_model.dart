@@ -1,9 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:common/models/eight_chars.dart';
-import '../../domain/models/huang_ji_formula_v2.dart';
+import 'huang_ji_formula_v2.dart';
 import '../../domain/models/base_number_selection_batch.dart';
-import '../../features/huang_ji_v2_session_models.dart';
-import '../../application/usecases/huang_ji_v2_use_case.dart';
+import './huang_ji_v2_session_models.dart';
+import './huang_ji_v2_use_case.dart';
 
 /// ViewModel for HuangJi V2 Session Management
 ///
@@ -21,9 +21,7 @@ class HuangJiV2ViewModel extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
 
-  HuangJiV2ViewModel({
-    required HuangJiV2UseCase useCase,
-  }) : _useCase = useCase;
+  HuangJiV2ViewModel({required HuangJiV2UseCase useCase}) : _useCase = useCase;
 
   // Getters
   HuangJiSession? get currentSession => _currentSession;
@@ -79,7 +77,9 @@ class HuangJiV2ViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      final session = await _useCase.prepareBaseNumberSelection(_currentSession!);
+      final session = await _useCase.prepareBaseNumberSelection(
+        _currentSession!,
+      );
       _currentSession = session;
 
       // Get selection batch for UI
@@ -135,7 +135,9 @@ class HuangJiV2ViewModel extends ChangeNotifier {
     _clearError();
 
     try {
-      final session = await _useCase.calculateFinalTiaoWenList(_currentSession!);
+      final session = await _useCase.calculateFinalTiaoWenList(
+        _currentSession!,
+      );
       _currentSession = session;
       notifyListeners();
     } catch (e) {

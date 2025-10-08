@@ -2,9 +2,7 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
 import 'package:tiebanshenshu/domain/models/yuan_hui_yun_shi.dart';
-import 'package:tiebanshenshu/presentation/pages/huang_ji_interactive_page.dart';
-import 'package:tiebanshenshu/presentation/pages/huang_ji_6a_demo_page.dart';
-import 'package:tiebanshenshu/presentation/pages/huang_ji_v2_demo_page.dart';
+import 'package:tiebanshenshu/features/huang_ji/huang_ji_v2_demo_page.dart';
 import 'package:tiebanshenshu/presentation/pages/multi_base_number_selection_page.dart';
 import 'package:tiebanshenshu/presentation/pages/strategy_demo_page.dart';
 import 'package:tiebanshenshu/presentation/pages/tai_xuan_interactive_page.dart';
@@ -21,8 +19,6 @@ class NavigatorGenerator {
   static final routes = {
     "/dev": (ctx, {arguments}) => const DevPage(),
 
-    "/tiebanshenshu/huang_ji": (context, {arguments}) =>
-        const HuangJiInteractivePage(),
     // "/tiebanshenshu/huang_ji_demo": (context, {arguments}) => const HuangJi6aDemoPage(),
     // 新的V2 Demo页面
     "/tiebanshenshu/huang_ji_v2_demo": (context, {arguments}) =>

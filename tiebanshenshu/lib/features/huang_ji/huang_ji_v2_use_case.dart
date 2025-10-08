@@ -1,13 +1,13 @@
 import 'package:common/models/eight_chars.dart';
-import '../../domain/models/huang_ji_formula_v2.dart';
-import '../../domain/models/huang_ji_formula_data_v2.dart';
+import 'huang_ji_formula_v2.dart';
+import 'huang_ji_formula_data_v2.dart';
 import '../../domain/models/yuan_hui_yun_shi.dart';
 import '../../domain/models/base_number_selection_record.dart';
 import '../../domain/models/base_number_selection_batch.dart';
 import '../../domain/models/tiao_wen_result.dart';
-import '../../features/huang_ji_v2_session_models.dart';
-import '../managers/huang_ji_session_manager.dart';
-import '../../service/strategy/huang_ji_v2_calculation_strategy.dart';
+import './huang_ji_v2_session_models.dart';
+import './huang_ji_session_manager.dart';
+import './huang_ji_v2_calculation_strategy.dart';
 import '../../repository/tiao_wen_repository.dart';
 
 /// UseCase - 核心业务逻辑编排
@@ -22,9 +22,9 @@ class HuangJiV2UseCase {
     required HuangJiSessionManager sessionManager,
     required HuangJiV2CalculationStrategy calculationStrategy,
     required TiaoWenRepository tiaoWenRepository,
-  })  : _sessionManager = sessionManager,
-        _calculationStrategy = calculationStrategy,
-        _tiaoWenRepository = tiaoWenRepository;
+  }) : _sessionManager = sessionManager,
+       _calculationStrategy = calculationStrategy,
+       _tiaoWenRepository = tiaoWenRepository;
 
   /// 1. 初始化 Session 并计算元会运世
   ///
@@ -44,12 +44,12 @@ class HuangJiV2UseCase {
     );
 
     // 计算元会运世
-    final yuanHuiYunShi = _calculationStrategy.calculateYuanHuiYunShi(eightChars);
+    final yuanHuiYunShi = _calculationStrategy.calculateYuanHuiYunShi(
+      eightChars,
+    );
 
     // 更新 Session
-    session = session.copyWith(
-      yuanHuiYunShi: yuanHuiYunShi,
-    );
+    session = session.copyWith(yuanHuiYunShi: yuanHuiYunShi);
     await _sessionManager.saveSession(session);
 
     // 推进到下一阶段
@@ -95,7 +95,9 @@ class HuangJiV2UseCase {
         final definitionId = baseNumDef.name;
 
         // 记录该定义被哪些组使用
-        definitionToGroups.putIfAbsent(definitionId, () => []).add(group.groupId);
+        definitionToGroups
+            .putIfAbsent(definitionId, () => [])
+            .add(group.groupId);
 
         // 如果已经处理过该定义，跳过
         if (uniqueDefinitions.containsKey(definitionId)) {
@@ -126,17 +128,15 @@ class HuangJiV2UseCase {
           maxValue: 13000,
         );
 
-        final candidatesWithoutContent =
-            _calculationStrategy.generateCandidates(
-          initialNumber: initialNumber,
-          config: config,
-        );
+        final candidatesWithoutContent = _calculationStrategy
+            .generateCandidates(initialNumber: initialNumber, config: config);
 
         // 批量获取条文内容
-        final candidateNumbers =
-            candidatesWithoutContent.map((c) => c.number).toList();
-        final tiaoWenContentMap =
-            await _tiaoWenRepository.getTiaoWenContentByNumbers(candidateNumbers);
+        final candidateNumbers = candidatesWithoutContent
+            .map((c) => c.number)
+            .toList();
+        final tiaoWenContentMap = await _tiaoWenRepository
+            .getTiaoWenContentByNumbers(candidateNumbers);
 
         // 补充条文内容
         final candidatesWithContent = candidatesWithoutContent.map((candidate) {
@@ -205,7 +205,8 @@ class HuangJiV2UseCase {
   /// 3. 提交用户的基础数选择
   Future<HuangJiSession> submitBaseNumberSelections({
     required HuangJiSession session,
-    required Map<String, int> selections, // definitionId -> selectedCandidateNumber
+    required Map<String, int>
+    selections, // definitionId -> selectedCandidateNumber
   }) async {
     if (session.currentPhase != SessionPhase.baseNumberSelectionReady) {
       throw Exception('Session is not ready for base number selection');
@@ -309,8 +310,8 @@ class HuangJiV2UseCase {
           print('📊       条文: ${tiaoWenFormula.name} → $tiaoWenNumber');
 
           // 获取条文内容
-          final tiaoWenContent =
-              await _tiaoWenRepository.getTiaoWenContentByNumber(tiaoWenNumber);
+          final tiaoWenContent = await _tiaoWenRepository
+              .getTiaoWenContentByNumber(tiaoWenNumber);
 
           // 创建结果
           final result = TiaoWenResult(
@@ -357,7 +358,8 @@ class HuangJiV2UseCase {
     // 查找目标阶段的快照
     final targetSnapshot = session.phaseHistory.lastWhere(
       (snapshot) => snapshot.phase == targetPhase,
-      orElse: () => throw Exception('No snapshot found for phase: $targetPhase'),
+      orElse: () =>
+          throw Exception('No snapshot found for phase: $targetPhase'),
     );
 
     // 使用 SessionManager 回滚
@@ -376,7 +378,9 @@ class HuangJiV2UseCase {
   ///
   /// 所有类型的基础数都需要用户选择，以符合传统铁板神数的使用方式
   bool _requiresUserSelection(BaseNumberDefinition definition) {
-    print('🔍 _requiresUserSelection: ${definition.name}, 类型: ${definition.runtimeType}');
+    print(
+      '🔍 _requiresUserSelection: ${definition.name}, 类型: ${definition.runtimeType}',
+    );
 
     // V2架构: 所有类型都需要用户选择
     // PredefinedBaseNumber 也需要选择(提供以预定义值为中心的候选列表)
@@ -456,7 +460,9 @@ class HuangJiV2UseCase {
     } else if (definition is SelectableBaseNumber) {
       return definition.toData(yhys);
     } else {
-      throw Exception('Unknown BaseNumberDefinition type: ${definition.runtimeType}');
+      throw Exception(
+        'Unknown BaseNumberDefinition type: ${definition.runtimeType}',
+      );
     }
   }
 }

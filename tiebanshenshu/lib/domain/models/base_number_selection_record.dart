@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'huang_ji_formula_data_v2.dart';
+import '../../features/huang_ji/huang_ji_formula_data_v2.dart';
 
 part 'base_number_selection_record.g.dart';
 
@@ -202,7 +202,9 @@ class BaseNumberDerivationChain {
     if (def is DataPredefinedBaseNumber) {
       return def;
     }
-    throw Exception('Expected DataPredefinedBaseNumber but got ${def.runtimeType}');
+    throw Exception(
+      'Expected DataPredefinedBaseNumber but got ${def.runtimeType}',
+    );
   }
 
   static Map<String, dynamic> _sourceToJson(DataPredefinedBaseNumber source) {
@@ -233,17 +235,11 @@ class BaseNumberSelectionRecord {
   final String name;
 
   /// 派生链路
-  @JsonKey(
-    fromJson: _derivationChainFromJson,
-    toJson: _derivationChainToJson,
-  )
+  @JsonKey(fromJson: _derivationChainFromJson, toJson: _derivationChainToJson)
   final BaseNumberDerivationChain derivationChain;
 
   /// 候选项配置
-  @JsonKey(
-    fromJson: _candidateConfigFromJson,
-    toJson: _candidateConfigToJson,
-  )
+  @JsonKey(fromJson: _candidateConfigFromJson, toJson: _candidateConfigToJson)
   final CandidateGenerationConfig candidateConfig;
 
   /// 候选列表

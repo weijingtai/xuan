@@ -1,9 +1,9 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:common/models/eight_chars.dart';
-import '../domain/models/yuan_hui_yun_shi.dart';
-import '../domain/models/huang_ji_formula_v2.dart';
-import '../domain/models/base_number_selection_record.dart';
-import '../domain/models/tiao_wen_result.dart';
+import '../../domain/models/base_number_selection_record.dart';
+import '../../domain/models/yuan_hui_yun_shi.dart';
+import 'huang_ji_formula_v2.dart';
+import '../../domain/models/tiao_wen_result.dart';
 
 part 'huang_ji_v2_session_models.g.dart';
 
@@ -192,7 +192,9 @@ class HuangJiSession {
 
   static List<HuangJiCalculationFormula> _formulasFromJson(List<dynamic> json) {
     return json
-        .map((e) => HuangJiCalculationFormula.fromJson(e as Map<String, dynamic>))
+        .map(
+          (e) => HuangJiCalculationFormula.fromJson(e as Map<String, dynamic>),
+        )
         .toList();
   }
 

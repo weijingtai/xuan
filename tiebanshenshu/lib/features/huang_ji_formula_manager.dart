@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import '../domain/models/huang_ji_formula_v2.dart';
+import 'huang_ji/huang_ji_formula_v2.dart';
 
 /// HuangJi公式管理器
 ///

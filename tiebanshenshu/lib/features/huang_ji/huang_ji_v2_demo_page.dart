@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/enums.dart';
-import '../../domain/models/huang_ji_formula_v2.dart';
+import 'huang_ji_formula_v2.dart';
 import '../../domain/models/base_number_selection_batch.dart';
-import '../../features/huang_ji_v2_session_models.dart';
+import './huang_ji_v2_session_models.dart';
 import '../../features/huang_ji_formula_manager.dart';
-import '../viewmodels/huang_ji_v2_view_model.dart';
+import './huang_ji_v2_view_model.dart';
 
 /// HuangJi V2 Demo Page
 ///
@@ -166,10 +166,12 @@ class _HuangJiV2DemoPageState extends State<HuangJiV2DemoPage> {
                   backgroundColor: isCurrent
                       ? Colors.blue
                       : isCompleted
-                          ? Colors.green
-                          : Colors.grey[300],
+                      ? Colors.green
+                      : Colors.grey[300],
                   labelStyle: TextStyle(
-                    color: isCurrent || isCompleted ? Colors.white : Colors.black,
+                    color: isCurrent || isCompleted
+                        ? Colors.white
+                        : Colors.black,
                   ),
                 );
               }).toList(),
@@ -279,9 +281,7 @@ class _HuangJiV2DemoPageState extends State<HuangJiV2DemoPage> {
           onPressed: _userSelections.length == batch.items.length
               ? () => viewModel.submitSelections(_userSelections)
               : null,
-          child: Text(
-            '提交选择 (${_userSelections.length}/${batch.items.length})',
-          ),
+          child: Text('提交选择 (${_userSelections.length}/${batch.items.length})'),
         ),
       ],
     );
@@ -301,10 +301,7 @@ class _HuangJiV2DemoPageState extends State<HuangJiV2DemoPage> {
               item.name,
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
-            Text(
-              item.description,
-              style: const TextStyle(color: Colors.grey),
-            ),
+            Text(item.description, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 8),
             Text(
               '推导链: ${item.derivationChain.getFullPath()}',
@@ -346,7 +343,9 @@ class _HuangJiV2DemoPageState extends State<HuangJiV2DemoPage> {
                   title: Text(
                     '编号: ${candidate.number}',
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   subtitle: Text(
@@ -414,20 +413,22 @@ class _HuangJiV2DemoPageState extends State<HuangJiV2DemoPage> {
           ),
         ),
         const SizedBox(height: 16),
-        ...results.map((result) => Card(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: ListTile(
-                title: Text(result.formulaName),
-                subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('基础数: ${result.baseNumber}'),
-                    Text('条文数: ${result.tiaoWenNumber}'),
-                    Text('条文内容: ${result.tiaoWenContent}'),
-                  ],
-                ),
+        ...results.map(
+          (result) => Card(
+            margin: const EdgeInsets.only(bottom: 12),
+            child: ListTile(
+              title: Text(result.formulaName),
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('基础数: ${result.baseNumber}'),
+                  Text('条文数: ${result.tiaoWenNumber}'),
+                  Text('条文内容: ${result.tiaoWenContent}'),
+                ],
               ),
-            )),
+            ),
+          ),
+        ),
       ],
     );
   }

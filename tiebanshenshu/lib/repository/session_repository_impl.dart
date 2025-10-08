@@ -1,5 +1,5 @@
+import '../features/huang_ji/huang_ji_v2_session_models.dart';
 import 'session_repository.dart';
-import '../features/huang_ji_v2_session_models.dart';
 
 /// Session 仓库内存实现
 class InMemorySessionRepository implements SessionRepository {

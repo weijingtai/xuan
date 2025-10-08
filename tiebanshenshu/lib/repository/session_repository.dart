@@ -1,4 +1,4 @@
-import '../features/huang_ji_v2_session_models.dart';
+import '../features/huang_ji/huang_ji_v2_session_models.dart';
 
 /// Session 仓库接口
 abstract class SessionRepository {

@@ -1,8 +1,8 @@
 import 'package:common/models/eight_chars.dart';
-import '../../domain/models/huang_ji_formula_v2.dart';
-import '../../features/huang_ji_v2_session_models.dart';
+import 'huang_ji_formula_v2.dart';
+import './huang_ji_v2_session_models.dart';
 import '../../repository/session_repository.dart';
-import '../../service/strategy/huang_ji_v2_calculation_strategy.dart';
+import './huang_ji_v2_calculation_strategy.dart';
 
 /// 异常类
 class InvalidPhaseTransitionException implements Exception {
@@ -24,8 +24,8 @@ class HuangJiSessionManager {
   HuangJiSessionManager({
     required SessionRepository sessionRepository,
     required HuangJiV2CalculationStrategy calculationStrategy,
-  })  : _sessionRepository = sessionRepository,
-        _calculationStrategy = calculationStrategy;
+  }) : _sessionRepository = sessionRepository,
+       _calculationStrategy = calculationStrategy;
 
   /// 创建新 Session
   Future<HuangJiSession> createSession({
@@ -34,7 +34,8 @@ class HuangJiSessionManager {
     String? sessionName,
   }) async {
     final sessionId = _generateSessionId();
-    final name = sessionName ?? 'Session_${DateTime.now().millisecondsSinceEpoch}';
+    final name =
+        sessionName ?? 'Session_${DateTime.now().millisecondsSinceEpoch}';
 
     final session = HuangJiSession.create(
       sessionId: sessionId,
@@ -122,9 +123,7 @@ class HuangJiSessionManager {
   }
 
   /// 回滚到上一阶段
-  Future<HuangJiSession> rollbackToPreviousPhase(
-    HuangJiSession session,
-  ) async {
+  Future<HuangJiSession> rollbackToPreviousPhase(HuangJiSession session) async {
     if (!session.canRollback) {
       throw Exception('No previous phase to rollback to');
     }
@@ -144,9 +143,7 @@ class HuangJiSessionManager {
         SessionPhase.baseNumberSelectionReady,
       ],
       SessionPhase.baseNumberSelectionReady: [SessionPhase.baseNumberSelected],
-      SessionPhase.baseNumberSelected: [
-        SessionPhase.finalCalculationComplete,
-      ],
+      SessionPhase.baseNumberSelected: [SessionPhase.finalCalculationComplete],
     };
 
     final allowed = validTransitions[current];

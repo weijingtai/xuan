@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/models/base_number_selection_record.dart';
-import 'package:tiebanshenshu/features/huang_ji_v2_session_models.dart';
+import 'package:tiebanshenshu/features/huang_ji/huang_ji_v2_session_models.dart';
 
 void main() {
   group('HuangJi V2 Core Models Tests', () {

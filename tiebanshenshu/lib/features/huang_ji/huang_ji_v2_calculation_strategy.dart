@@ -1,5 +1,5 @@
 import '../../domain/models/yuan_hui_yun_shi.dart';
-import '../../domain/models/huang_ji_formula_data_v2.dart';
+import 'huang_ji_formula_data_v2.dart';
 import '../../domain/models/base_number_selection_record.dart';
 import 'package:common/models/eight_chars.dart';
 

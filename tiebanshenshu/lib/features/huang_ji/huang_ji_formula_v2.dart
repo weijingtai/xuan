@@ -3,7 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:tiebanshenshu/domain/models/yuan_hui_yun_shi.dart';
 
 import 'huang_ji_formula_data_v2.dart';
-import 'huang_ji_number.dart';
+import '../../domain/models/huang_ji_number.dart';
 part 'huang_ji_formula_v2.g.dart';
 
 /// CalculationPart 的多态 JSON 转换器

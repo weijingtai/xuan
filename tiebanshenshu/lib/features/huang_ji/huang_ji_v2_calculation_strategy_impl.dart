@@ -1,6 +1,6 @@
-import 'huang_ji_v2_calculation_strategy.dart';
+import './huang_ji_v2_calculation_strategy.dart';
 import '../../domain/models/yuan_hui_yun_shi.dart';
-import '../../domain/models/huang_ji_formula_data_v2.dart';
+import 'huang_ji_formula_data_v2.dart';
 import '../../domain/models/base_number_selection_record.dart';
 import '../../domain/models/huang_ji_number.dart';
 import 'package:common/models/eight_chars.dart';
@@ -28,13 +28,15 @@ class HuangJiV2CalculationStrategyImpl implements HuangJiV2CalculationStrategy {
         continue;
       }
 
-      candidates.add(BaseNumberCandidate(
-        id: 'candidate_$number',
-        number: number,
-        offsetFromInitial: i * config.offset,
-        tiaoWenContent: '', // 后续由 UseCase 填充
-        isInitial: i == 0,
-      ));
+      candidates.add(
+        BaseNumberCandidate(
+          id: 'candidate_$number',
+          number: number,
+          offsetFromInitial: i * config.offset,
+          tiaoWenContent: '', // 后续由 UseCase 填充
+          isInitial: i == 0,
+        ),
+      );
     }
 
     return candidates;
@@ -120,13 +122,15 @@ class HuangJiV2CalculationStrategyImpl implements HuangJiV2CalculationStrategy {
   String _buildOperationDescription(List<DataCalculationPart> parts) {
     if (parts.isEmpty) return '';
 
-    return parts.map((part) {
-      if (part is DataSingleNumberPart) {
-        return '+${part.name}';
-      } else if (part is DataCompositeNumberPart) {
-        return '+${part.name}';
-      }
-      return '+${part.name}';
-    }).join('');
+    return parts
+        .map((part) {
+          if (part is DataSingleNumberPart) {
+            return '+${part.name}';
+          } else if (part is DataCompositeNumberPart) {
+            return '+${part.name}';
+          }
+          return '+${part.name}';
+        })
+        .join('');
   }
 }
