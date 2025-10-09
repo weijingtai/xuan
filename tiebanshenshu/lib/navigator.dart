@@ -9,6 +9,11 @@ import 'package:tiebanshenshu/presentation/pages/tai_xuan_interactive_page.dart'
 import 'package:tiebanshenshu/ui/pages/dev_page.dart';
 
 import 'domain/models/multi_base_number_selection.dart';
+import 'features/liuqinkaoke/pages/liuqinkaoke_selection_page.dart';
+import 'features/liuqinkaoke/viewmodels/liuqinkaoke_view_model.dart';
+import 'domain/four_zhu.dart';
+import 'package:provider/provider.dart';
+import 'package:common/enums.dart';
 // 旧的V2 Demo页面已删除
 // import 'features/huang_ji_v2_demo_page.dart';
 
@@ -45,6 +50,11 @@ class NavigatorGenerator {
         const StrategyDemoPage(),
     "/tiebanshenshu/tai_xuan": (context, {arguments}) =>
         const TaiXuanInteractivePage(),
+
+    // 六亲考刻：取数候选选择页
+    "/tiebanshenshu/liuqinkaoke/selection": (context, {arguments}) {
+      return const LiuQinKaoKeSelectionPage();
+    },
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

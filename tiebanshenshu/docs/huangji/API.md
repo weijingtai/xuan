@@ -143,7 +143,7 @@ await viewModel.calculateFinalTiaoWenList();
 
 ### HuangJiV2UseCase
 
-**路径**: `lib/application/usecases/huang_ji_v2_use_case.dart`
+**路径**: `lib/features/huang_ji/huang_ji_v2_use_case.dart`
 
 **职责**: 核心业务逻辑编排，协调Manager、Strategy和Repository完成完整流程
 
@@ -685,7 +685,7 @@ if (batch != null) {
 
 ### HuangJiSessionManager
 
-**路径**: `lib/application/managers/huang_ji_session_manager.dart`
+**路径**: `lib/features/huang_ji/huang_ji_session_manager.dart`
 
 **职责**: 会话生命周期和状态管理，负责会话的创建、保存、加载、阶段转换和快照管理
 
@@ -893,7 +893,9 @@ Future<HuangJiSession> rollbackToSnapshot({
 
 ### HuangJiV2CalculationStrategy
 
-**路径**: `lib/service/strategy/huang_ji_v2_calculation_strategy.dart`
+**路径**: `lib/features/huang_ji/huang_ji_v2_calculation_strategy.dart`
+
+**实现路径**: `lib/features/huang_ji/huang_ji_v2_calculation_strategy_impl.dart`
 
 **职责**: 纯计算逻辑（无状态），封装所有数学计算
 
@@ -972,7 +974,11 @@ List<BaseNumberCandidate> generateCandidates({
 for i from -count to +count:
   number = initialNumber + (i × offset)
   if minValue ≤ number ≤ maxValue:
-    candidates.add(number, offset=i)
+    candidates.add(BaseNumberCandidate(
+      number: number,
+      offsetFromInitial: i × offset,
+      isInitial: i == 0
+    ))
 ```
 
 **示例**:
@@ -1068,17 +1074,31 @@ print(chain.getFullPath());
 ```dart
 int calculateTiaoWenNumber({
   required int baseNumber,
-  required DataTiaoWenFormula formula,
+  required TiaoWenFormulaData formula,
 })
 ```
 
 **参数**:
 - `baseNumber` **(必需)**: 基础数
-- `formula` **(必需)**: 条文公式
+- `formula` **(必需)**: 条文公式数据
 
 **返回值**:
 - 类型: `int`
 - 条文编号
+
+**计算逻辑**:
+```dart
+// 条文数 = 基础数 + sum(formula.parts)
+final partsSum = formula.parts.fold<int>(
+  0,
+  (sum, part) => sum + part.rawNumber,
+);
+
+final result = baseNumber + partsSum;
+
+// 确保结果在范围内 (≤13000)
+return HuangJiBaseNumber.checkToTiaoWenNumber(result);
+```
 
 ---
 
@@ -1099,7 +1119,7 @@ abstract class SessionRepository {
 
 #### 实现: InMemorySessionRepository
 
-内存存储实现（默认）。
+内存存储实现（默认），当前实际使用的实现。
 
 ```dart
 class InMemorySessionRepository implements SessionRepository {
@@ -1120,6 +1140,9 @@ class InMemorySessionRepository implements SessionRepository {
 **限制**:
 - 应用重启后数据丢失
 - 不支持跨设备同步
+- 仅适用于演示和测试
+
+**注意**: SessionManager内部已经实现了内存存储，因此在当前架构中可能不需要额外的Repository层。
 
 #### 自定义实现示例
 
@@ -1232,13 +1255,14 @@ class HuangJiSession {
   final List<HuangJiCalculationFormula> formulas;
   final YuanHuiYunShi? yuanHuiYunShi;
   final Map<String, BaseNumberSelectionRecord> baseNumberSelections;
-  final List<TiaoWenResult> finalTiaoWenList;
+  final List<TiaoWenResult>? finalTiaoWenList;
   final SessionPhase currentPhase;
   final HuangJiSessionStatus status;
   final List<SessionSnapshot> phaseHistory;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime startTime;
   final DateTime lastActivityAt;
+  final DateTime? endTime;
+  final String? errorMessage;
 }
 ```
 
@@ -1250,10 +1274,14 @@ class HuangJiSession {
 | `formulas` | List | 使用的公式列表（通常3个） |
 | `yuanHuiYunShi` | YuanHuiYunShi? | 元会运世数据 |
 | `baseNumberSelections` | Map | 基础数选择记录（键为name） |
-| `finalTiaoWenList` | List | 最终条文结果（通常29条） |
+| `finalTiaoWenList` | List? | 最终条文结果（通常29条），可能为null |
 | `currentPhase` | SessionPhase | 当前所处阶段 |
 | `status` | HuangJiSessionStatus | 会话状态 |
 | `phaseHistory` | List | 所有阶段快照 |
+| `startTime` | DateTime | 会话创建时间 |
+| `lastActivityAt` | DateTime | 最后活动时间 |
+| `endTime` | DateTime? | 会话结束时间，可能为null |
+| `errorMessage` | String? | 错误信息，可能为null |
 
 **方法**:
 
@@ -1357,11 +1385,20 @@ class BaseNumberSelectionItem {
 
 ```dart
 class BaseNumberCandidate {
-  final int number;            // 候选数值
-  final String tiaoWenContent; // 条文内容
-  final int offset;            // 偏移量
+  final String id;              // 候选ID
+  final int number;             // 候选数值
+  final int offsetFromInitial;  // 相对于初始值的偏移量
+  final String tiaoWenContent;  // 条文内容
+  final bool isInitial;         // 是否为初始候选数（偏移量为0）
 }
 ```
+
+**字段说明**:
+- `id`: 候选项的唯一标识符
+- `number`: 实际的候选数值
+- `offsetFromInitial`: 相对于初始数的偏移（例如：初始数5000，候选数5030，偏移为30）
+- `tiaoWenContent`: 该候选数对应的条文内容
+- `isInitial`: 标记是否为中间的初始候选数（偏移为0的那个）
 
 ---
 
@@ -1504,14 +1541,13 @@ finalCalculationComplete
 
 ```dart
 enum HuangJiSessionStatus {
-  active,      // 活跃
-  inProgress,  // 进行中
-  completed,   // 完成
-  paused,      // 暂停
-  cancelled,   // 取消
-  error,       // 错误
-  archived,    // 归档
-  draft,       // 草稿
+  notStarted,           // 未开始
+  inProgress,           // 进行中
+  waitingForSelection,  // 等待用户选择
+  paused,               // 暂停
+  completed,            // 完成
+  cancelled,            // 取消
+  error                 // 错误
 }
 ```
 

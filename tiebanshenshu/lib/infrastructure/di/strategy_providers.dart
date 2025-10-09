@@ -9,11 +9,14 @@ import '../../features/huang_ji/huang_ji_v2_calculation_strategy.dart';
 import '../../features/huang_ji/huang_ji_v2_calculation_strategy_impl.dart';
 import '../../features/huang_ji/huang_ji_v2_use_case.dart';
 import '../../features/huang_ji/huang_ji_v2_view_model.dart';
+import '../../features/liuqinkaoke/repository/liuqinkaoke_session_repository.dart';
+import '../../features/liuqinkaoke/usecase/liuqinkaoke_session_manager.dart';
 import '../../presentation/viewmodels/multi_base_number_selection_view_model.dart';
 import '../../repository/repository_factory.dart';
 import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/day_gan_zhi_gua_strategy.dart';
 import '../../service/strategy/four_zhu_tian_gan_strategy.dart';
+import '../../service/strategy/middle_palace_five_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_strategy.dart';
 import '../../service/strategy/tai_xuan_four_zhu_interactive_strategy.dart';
 import '../../service/strategy/tiao_wen_list_calculation.dart';
@@ -28,11 +31,11 @@ import '../../presentation/viewmodels/tai_xuan_four_zhu_interactive_view_model.d
 // 新的V2架构
 import '../../repository/session_repository.dart';
 import '../../repository/session_repository_impl.dart';
-// 旧的V2架构导入已删除
-// import '../../features/huang_ji_v2_viewmodel.dart';
-// import '../../features/huang_ji_v2_usecase.dart';
-// import '../../features/huang_ji_v2_strategy.dart';
-// import '../../features/huang_ji_v2_session_service.dart';
+// 六亲考刻
+import '../../features/liuqinkaoke/strategy/liuqinkaoke_calculation_strategy.dart';
+import '../../features/liuqinkaoke/strategy/liuqinkaoke_default_strategy.dart';
+import '../../features/liuqinkaoke/usecase/liuqinkaoke_use_case.dart';
+import '../../features/liuqinkaoke/viewmodels/liuqinkaoke_view_model.dart';
 
 /// Strategy相关的Provider配置
 ///
@@ -181,5 +184,34 @@ class StrategyProviders {
     //     context.read<TiaoWenRepository>(),
     //   ),
     // ),
+
+    // —— 六亲考刻 DI ——
+    Provider<LiuQinKaoKeSessionRepository>(
+      create: (_) => InMemoryLiuQinKaoKeSessionRepository(),
+    ),
+    Provider<MiddlePalaceFiveStrategy>(
+      create: (_) => DefaultMiddlePalaceFiveStrategy(),
+    ),
+    Provider<LiuQinKaoKeCalculationStrategy>(
+      create: (context) => LiuQinKaokeDefaultCalculationStrategy(
+        context.read<MiddlePalaceFiveStrategy>(),
+      ),
+    ),
+    Provider<LiuQinKaoKeSessionManager>(
+      create: (context) => LiuQinKaoKeSessionManager(
+        context.read<LiuQinKaoKeSessionRepository>(),
+        context.read<LiuQinKaoKeCalculationStrategy>(),
+        context.read<TiaoWenRepository>(),
+        context.read<TiaoWenListCalculationConfig>(),
+      ),
+    ),
+    Provider<LiuQinKaoKeUseCase>(
+      create: (context) =>
+          LiuQinKaoKeUseCase(context.read<LiuQinKaoKeSessionManager>()),
+    ),
+    ChangeNotifierProvider<LiuQinKaoKeViewModel>(
+      create: (context) =>
+          LiuQinKaoKeViewModel(context.read<LiuQinKaoKeUseCase>()),
+    ),
   ];
 }

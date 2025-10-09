@@ -267,22 +267,24 @@ class PureSixYaoGua {
     return _yaoPositionLabels[indexFromBottomZeroBased];
   }
 
-  /// 单爻变卦：按自下而上索引（0..5）进行阴阳翻转，返回变卦的 Gua64Enum
-  Gua64Enum bianYaoAtIndex(int indexFromBottomZeroBased) {
-    if (indexFromBottomZeroBased < 0 || indexFromBottomZeroBased > 5) {
-      throw ArgumentError("变爻索引越界，应为 0..5，当前: $indexFromBottomZeroBased");
+  /// 单爻变卦：按自下而上编号（1..6）进行阴阳翻转，返回变卦的 Gua64Enum
+  Gua64Enum bianYaoByOrder(int yaoOrder) {
+    if (yaoOrder < 1 || yaoOrder > 6) {
+      throw ArgumentError("变爻编号越界，应为 1..6，当前: $yaoOrder");
     }
+    final indexFromBottomZeroBased = yaoOrder - 1;
     final newBinary = List<int>.from(binaryList);
-    newBinary[indexFromBottomZeroBased] = newBinary[indexFromBottomZeroBased] == 0 ? 1 : 0;
-    return Gua64Enum.fromBinaryList(newBinary);
+    newBinary[indexFromBottomZeroBased] =
+        newBinary[indexFromBottomZeroBased] == 0 ? 1 : 0;
+    return Gua64Enum.fromBinaryList(newBinary.toList());
   }
 
   /// 批量变爻：返回 1..6（初..上）爻位对应的变卦映射
   /// 键为 1..6（人类易于理解的爻序），值为对应的 Gua64Enum
   Map<int, Gua64Enum> bianYaoAll() {
     final result = <int, Gua64Enum>{};
-    for (int i = 0; i < 6; i++) {
-      result[i + 1] = bianYaoAtIndex(i);
+    for (int i = 1; i <= 6; i++) {
+      result[i] = bianYaoByOrder(i);
     }
     return result;
   }
@@ -296,7 +298,7 @@ class PureSixYaoGua {
     variants["互卦"] = hu;
     for (int i = 0; i < 6; i++) {
       final label = getYaoPositionLabel(i);
-      variants["变${label}爻"] = bianYaoAtIndex(i);
+      variants["变${label}爻"] = bianYaoByOrder(i + 1);
     }
     return variants;
   }
@@ -359,7 +361,7 @@ class PureSixYaoGua {
     // 二、三、四爻为互卦的 初、二、三爻
     final binaryList = this.binaryList;
     final downBinStr = binaryList.sublist(1, 4).join("");
-    // 三/四/五爻为互卦的四、五、上 爻
+    // 四、五、六爻为互卦的四、五、上 爻
     final upBinStr = binaryList.sublist(2, 5).join("");
     final downGua = Enum8Gua.fromBottomTopBinaryStr(downBinStr);
     final upGua = Enum8Gua.fromBottomTopBinaryStr(upBinStr);

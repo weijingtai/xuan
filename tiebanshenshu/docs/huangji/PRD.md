@@ -149,9 +149,11 @@
    ```
 
 2. **判断是否需要用户选择**
-   - `PredefinedBaseNumber`: 需要选择 ✅
-   - `DerivedBaseNumber`: 需要选择 ✅
-   - `SelectableBaseNumber`: 需要选择 ✅
+
+   V2架构中,所有类型的基础数都需要用户选择:
+   - `PredefinedBaseNumber`: 需要选择 ✅ (提供以预定义值为中心的候选列表)
+   - `DerivedBaseNumber`: 需要选择 ✅ (基于派生计算的初始值生成候选列表)
+   - `SelectableBaseNumber`: 需要选择 ✅ (包装其他定义类型)
 
 3. **基于name进行去重**
    ```dart
@@ -275,13 +277,13 @@ enum SessionPhase {
 
 ```dart
 enum HuangJiSessionStatus {
-  active,        // 活跃状态
-  paused,        // 暂停
-  completed,     // 完成
-  cancelled,     // 取消
-  error,         // 错误
-  archived,      // 归档
-  draft          // 草稿
+  notStarted,           // 未开始
+  inProgress,           // 进行中
+  waitingForSelection,  // 等待用户选择
+  paused,               // 暂停
+  completed,            // 完成
+  cancelled,            // 取消
+  error                 // 错误
 }
 ```
 
@@ -310,12 +312,14 @@ class HuangJiSession {
   final List<HuangJiCalculationFormula> formulas;  // 支持多公式
   final YuanHuiYunShi? yuanHuiYunShi;
   final Map<String, BaseNumberSelectionRecord> baseNumberSelections;
-  final List<TiaoWenResult> finalTiaoWenList;
+  final List<TiaoWenResult>? finalTiaoWenList;
   final SessionPhase currentPhase;
   final HuangJiSessionStatus status;
   final List<SessionSnapshot> phaseHistory;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime startTime;
+  final DateTime lastActivityAt;
+  final DateTime? endTime;
+  final String? errorMessage;
 }
 ```
 

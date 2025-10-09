@@ -151,6 +151,22 @@ class _DevPageState extends State<DevPage> {
                 ),
               ),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pushNamed('/tiebanshenshu/liuqinkaoke/selection');
+              },
+              icon: const Icon(Icons.family_restroom),
+              label: const Text('六亲考刻取数法'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.blueAccent,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
