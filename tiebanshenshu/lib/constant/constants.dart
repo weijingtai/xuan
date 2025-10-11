@@ -200,6 +200,20 @@ const Map<String, int> dizhiNumberMapper = {
   "戌": 180,
   "亥": 180,
 };
+Map<DiZhi, int> yaoDiZhiNumberMapper = {
+  DiZhi.getFromValue("子")!: 30,
+  DiZhi.getFromValue("丑")!: 30,
+  DiZhi.getFromValue("寅")!: 60,
+  DiZhi.getFromValue("卯")!: 60,
+  DiZhi.getFromValue("辰")!: 90,
+  DiZhi.getFromValue("巳")!: 90,
+  DiZhi.getFromValue("午")!: 120,
+  DiZhi.getFromValue("未")!: 120,
+  DiZhi.getFromValue("申")!: 150,
+  DiZhi.getFromValue("酉")!: 150,
+  DiZhi.getFromValue("戌")!: 180,
+  DiZhi.getFromValue("亥")!: 180,
+};
 
 const Map<int, String> yuantangHuaTianNumberGuaMapper = {
   1: "坎",

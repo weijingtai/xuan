@@ -2,8 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:tiebanshenshu/domain/models/base_number_model.dart';
-import 'package:tiebanshenshu/domain/models/huang_ji_formula.dart';
-import 'package:tiebanshenshu/domain/models/huang_ji_formula_v2.dart';
+import 'package:tiebanshenshu/features/huang_ji/huang_ji_formula_v2.dart';
 import 'package:tiebanshenshu/domain/models/huang_ji_number.dart';
 
 Future<HuangJiCalculationFormula> generate1() async {

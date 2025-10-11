@@ -1,0 +1,18 @@
+{
+    "name": "乾坤甲流度",
+    "description": "推查父母同一生年的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "辛月丙庚", "chiperNumber": 9024},
+        "丑": {"chiperText": "辛甲庚庚", "chiperNumber": 9144},
+        "寅": {"chiperText": "辛丙乙庚", "chiperNumber": 9264},
+        "卯": {"chiperText": "辛戊己庚", "chiperNumber": 9384},
+        "辰": {"chiperText": "辛壬月庚", "chiperNumber": 9504},
+        "巳": {"chiperText": "辛乙丙庚", "chiperNumber": 9624},
+        "午": {"chiperText": "辛丁庚庚", "chiperNumber": 9744},
+        "未": {"chiperText": "辛己乙庚", "chiperNumber": 9864},
+        "申": {"chiperText": "辛辛己庚", "chiperNumber": 9984},
+        "酉": {"chiperText": "甲月甲月庚", "chiperNumber": 10104},
+        "戌": {"chiperText": "甲月丙丙庚", "chiperNumber": 10224},
+        "亥": {"chiperText": "甲月戊庚庚", "chiperNumber": 10344}
+    }
+}

@@ -23,7 +23,7 @@ class _DevPageState extends State<DevPage> {
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/strategy-demo');
+                Navigator.of(context).pushNamed('/tiebanshenshu/strategy_demo');
               },
               icon: const Icon(Icons.calculate),
               label: const Text('Strategy演示'),
@@ -94,7 +94,9 @@ class _DevPageState extends State<DevPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/tiebanshenshu/huang_ji_v2_demo');
+                Navigator.of(
+                  context,
+                ).pushNamed('/tiebanshenshu/huang_ji_v2_demo');
               },
               icon: const Icon(Icons.new_releases),
               label: const Text('皇极取数法 V2 新架构'),
@@ -154,7 +156,9 @@ class _DevPageState extends State<DevPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).pushNamed('/tiebanshenshu/liuqinkaoke/selection');
+                Navigator.of(
+                  context,
+                ).pushNamed('/tiebanshenshu/liuqinkaoke/selection');
               },
               icon: const Icon(Icons.family_restroom),
               label: const Text('六亲考刻取数法'),

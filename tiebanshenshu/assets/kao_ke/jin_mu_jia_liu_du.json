@@ -1,0 +1,18 @@
+{
+    "name": "金木甲流度",
+    "description": "用来推查夫妻生年的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "甲甲月月戊", "chiperNumber": 11003, "yearGanZhi": "甲子"},
+        "丑": {"chiperText": "甲甲月壬戊", "chiperNumber": 11503, "yearGanZhi": "乙丑"},
+        "寅": {"chiperText": "甲甲甲月戊", "chiperNumber": 11103, "yearGanZhi": "甲寅"},
+        "卯": {"chiperText": "甲甲甲壬戊", "chiperNumber": 11153, "yearGanZhi": "乙卯"},
+        "辰": {"chiperText": "甲甲丙月戊", "chiperNumber": 11203, "yearGanZhi": "甲辰"},
+        "巳": {"chiperText": "甲甲丙壬戊", "chiperNumber": 11253, "yearGanZhi": "乙巳"},
+        "午": {"chiperText": "甲甲戊月戊", "chiperNumber": 11303, "yearGanZhi": "甲午"},
+        "未": {"chiperText": "甲甲戊壬戊", "chiperNumber": 11353, "yearGanZhi": "乙未"},
+        "申": {"chiperText": "甲甲庚月戊", "chiperNumber": 11403, "yearGanZhi": "甲申"},
+        "酉": {"chiperText": "甲甲庚壬戊", "chiperNumber": 11453, "yearGanZhi": "乙酉"},
+        "戌": {"chiperText": "甲甲壬月戊", "chiperNumber": 11503, "yearGanZhi": "甲戌"},
+        "亥": {"chiperText": "甲甲壬壬戊", "chiperNumber": 11553, "yearGanZhi": "乙亥"}
+    }
+}

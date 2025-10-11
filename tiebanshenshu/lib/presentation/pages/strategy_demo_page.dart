@@ -4,13 +4,16 @@ import 'package:common/dev_constant.dart';
 import '../viewmodels/day_gan_zhi_gua_view_model.dart';
 import '../viewmodels/four_zhu_tian_gan_view_model.dart';
 import '../viewmodels/tai_xuan_four_zhu_view_model.dart';
+import '../viewmodels/ba_gua_jia_ze_view_model.dart';
 import '../widgets/strategy_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
+import '../widgets/ba_gua_jia_ze_card.dart';
+import '../models/ba_gua_jia_ze_ui_model.dart';
 
 /// Strategy演示页面
 ///
-/// 展示三个Strategy的计算结果，支持刷新和交互
+/// 展示四个Strategy的计算结果，支持刷新和交互
 class StrategyDemoPage extends StatefulWidget {
   const StrategyDemoPage({super.key});
 
@@ -45,6 +48,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       final dayGanZhiGuaViewModel = context.read<DayGanZhiGuaViewModel>();
       final fourZhuTianGanViewModel = context.read<FourZhuTianGanViewModel>();
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
+      final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
 
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
@@ -54,6 +58,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         dayGanZhiGuaViewModel.setFromEightChars(eightChars),
         fourZhuTianGanViewModel.setEightChars(eightChars),
         taiXuanFourZhuViewModel.setEightChars(eightChars),
+        baGuaJiaZeViewModel.setEightChars(eightChars),
       ]);
 
       setState(() {
@@ -77,11 +82,13 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       final dayGanZhiGuaViewModel = context.read<DayGanZhiGuaViewModel>();
       final fourZhuTianGanViewModel = context.read<FourZhuTianGanViewModel>();
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
+      final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
 
       await Future.wait([
         dayGanZhiGuaViewModel.refresh(),
         fourZhuTianGanViewModel.refresh(),
         taiXuanFourZhuViewModel.refresh(),
+        baGuaJiaZeViewModel.refresh(),
       ]);
 
       if (mounted) {
@@ -188,6 +195,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
             },
           ),
         ),
+
+        // 八卦加则页面
+        _buildStrategyPage(
+          child: Consumer<BaGuaJiaZeViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildBaGuaJiaZeContent(viewModel);
+            },
+          ),
+        ),
       ],
     );
   }
@@ -203,6 +219,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         return 'Strategy演示 - 四柱天干';
       case 3:
         return 'Strategy演示 - 太玄四柱';
+      case 4:
+        return 'Strategy演示 - 八卦加则';
       default:
         return 'Strategy演示';
     }
@@ -220,6 +238,9 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
           break;
         case 3:
           await context.read<TaiXuanFourZhuViewModel>().refresh();
+          break;
+        case 4:
+          await context.read<BaGuaJiaZeViewModel>().refresh();
           break;
         default:
           // 数据源页面不需要刷新
@@ -336,6 +357,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         ),
         BottomNavigationBarItem(icon: Icon(Icons.view_column), label: '四柱天干'),
         BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: '太玄四柱'),
+        BottomNavigationBarItem(icon: Icon(Icons.auto_graph), label: '八卦加则'),
       ],
     );
   }
@@ -418,6 +440,77 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     );
   }
 
+  /// 构建八卦加则内容
+  Widget _buildBaGuaJiaZeContent(BaGuaJiaZeViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult || viewModel.resultCount == 0) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    // 转换为UI模型
+    final uiModels = <BaGuaJiaZeUIModel>[];
+    for (final item in viewModel.allResults) {
+      // allResults returns BaseNumberTiaoWenListModel which has tiaoWenDataList
+      // We need to get the BaGuaJiaZeBaseNumberModel from the domain result
+      // Since we can't access it directly, we'll use the fromDomain factory method
+      uiModels.add(BaGuaJiaZeUIModel.fromDomain(item));
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 标题和摘要
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '八卦加则取数法',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 8.0),
+              Text(
+                '共 ${viewModel.resultCount} 个结果（4柱 × 2方法）',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+              ),
+            ],
+          ),
+        ),
+
+        // 结果列表
+        BaGuaJiaZeResultsList(
+          models: uiModels,
+          groupByPillar: true,
+          expandFirst: true,
+        ),
+      ],
+    );
+  }
+
   /// 显示信息对话框
   void _showInfoDialog(BuildContext context) {
     showDialog(
@@ -429,11 +522,12 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('本页面演示了三种不同的Strategy计算方法：'),
+              Text('本页面演示了四种不同的Strategy计算方法：'),
               SizedBox(height: 12.0),
               Text('• 日干支卦：基于日柱干支计算'),
               Text('• 四柱天干：基于四柱天干计算'),
               Text('• 太玄四柱：基于太玄理论计算'),
+              Text('• 八卦加则：基于八卦装配地支加则法'),
               SizedBox(height: 12.0),
               Text('所有计算都使用DevConstant.dev_usa作为数据源，展示完整的条文列表信息。'),
               SizedBox(height: 12.0),

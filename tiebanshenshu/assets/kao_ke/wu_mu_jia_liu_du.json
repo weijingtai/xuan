@@ -1,0 +1,18 @@
+{
+    "name": "戊木甲流度",
+    "description": "用来推男子结第三次婚，妻子的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "甲月乙丙丙", "chiperNumber": 10622},
+        "丑": {"chiperText": "甲月乙戊丙", "chiperNumber": 10632},
+        "寅": {"chiperText": "甲月乙庚丙", "chiperNumber": 10642},
+        "卯": {"chiperText": "甲月乙壬丙", "chiperNumber": 10652},
+        "辰": {"chiperText": "甲月乙乙丙", "chiperNumber": 10662},
+        "巳": {"chiperText": "甲月乙丁丙", "chiperNumber": 10672},
+        "午": {"chiperText": "甲月乙己丙", "chiperNumber": 10682},
+        "未": {"chiperText": "甲月乙辛丙", "chiperNumber": 10692},
+        "申": {"chiperText": "甲月丁月丙", "chiperNumber": 10702},
+        "酉": {"chiperText": "甲月丁甲丙", "chiperNumber": 10712},
+        "戌": {"chiperText": "甲月丁丙丙", "chiperNumber": 10722},
+        "亥": {"chiperText": "甲月丁戊丙", "chiperNumber": 10732}
+    }
+}

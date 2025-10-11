@@ -1,0 +1,1294 @@
+{
+  "name": "六亲考分",
+  "source": "《图解易经铁板神数》",
+  "description": [
+    "出生时分与夫妻、子女情况的对照表。",
+    "可由出生时刻推知、子女的情况，也可由已知的夫妻、子女的命运考定刻分。"
+  ],
+  "shiChenKeMapper": {
+    "子": [
+      {
+        "shiChen": "子",
+        "fen": 1,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "子",
+        "fen": 2,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 3,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 4,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "丧夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 5,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "子",
+        "fen": 6,
+        "wifeInfo": "贤妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 7,
+        "wifeInfo": "无妾",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 8,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "子",
+        "fen": 9,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 10,
+        "wifeInfo": "佳妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "子",
+        "fen": 11,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "子",
+        "fen": 12,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "子",
+        "fen": 13,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "子",
+        "fen": 14,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "子",
+        "fen": 15,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "夫又丧"
+      }
+    ],
+    "丑": [
+      {
+        "shiChen": "丑",
+        "fen": 1,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 2,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "夫丧"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 3,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 4,
+        "wifeInfo": "贤妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 5,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "夫丧"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 6,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 7,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 8,
+        "wifeInfo": "续妻",
+        "childInfo": "少于",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 9,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 10,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 11,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 12,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 13,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 14,
+        "wifeInfo": "续妻",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "丑",
+        "fen": 15,
+        "wifeInfo": "无妻",
+        "childInfo": "少子",
+        "husbandInfo": "又丧夫"
+      }
+    ],
+    "寅": [
+      {
+        "shiChen": "寅",
+        "fen": 1,
+        "wifeInfo": "贤妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 2,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 3,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 4,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 5,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "丧夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 6,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 7,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 8,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 9,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "强夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 10,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 11,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 12,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 13,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 14,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "寅",
+        "fen": 15,
+        "wifeInfo": "贤妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      }
+    ],
+    "卯": [
+      {
+        "shiChen": "卯",
+        "fen": 1,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 2,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 3,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 4,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 5,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 6,
+        "wifeInfo": "贤妻",
+        "childInfo": "二子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 7,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 8,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 9,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 10,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "丧夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 11,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 12,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 13,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 14,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "卯",
+        "fen": 15,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      }
+    ],
+    "辰": [
+      {
+        "shiChen": "辰",
+        "fen": 1,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 2,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 3,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 4,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "强夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 5,
+        "wifeInfo": "无妾",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 6,
+        "wifeInfo": "克妾",
+        "childInfo": "无子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 7,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 8,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 9,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 10,
+        "wifeInfo": "贤妾",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 11,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 12,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 13,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 14,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "辰",
+        "fen": 15,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "丧夫"
+      }
+    ],
+    "巳": [
+      {
+        "shiChen": "巳",
+        "fen": 1,
+        "wifeInfo": "和妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 2,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 3,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "又克夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 4,
+        "wifeInfo": "偕妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 5,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 6,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 7,
+        "wifeInfo": "贤妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 8,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 9,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 10,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 11,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 12,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "又克夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 13,
+        "wifeInfo": "强妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 14,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "巳",
+        "fen": 15,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      }
+    ],
+    "午": [
+      {
+        "shiChen": "午",
+        "fen": 1,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 2,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "午",
+        "fen": 3,
+        "wifeInfo": "和妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "午",
+        "fen": 4,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 5,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 6,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "午",
+        "fen": 7,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "午",
+        "fen": 8,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "午",
+        "fen": 9,
+        "wifeInfo": "佳妻",
+        "childInfo": "五子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 10,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 11,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "午",
+        "fen": 12,
+        "wifeInfo": "强妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "午",
+        "fen": 13,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "午",
+        "fen": 14,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "午",
+        "fen": 15,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      }
+    ],
+    "未": [
+      {
+        "shiChen": "未",
+        "fen": 1,
+        "wifeInfo": "妻丧",
+        "childInfo": "多子",
+        "husbandInfo": "夫丧"
+      },
+      {
+        "shiChen": "未",
+        "fen": 2,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 3,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "未",
+        "fen": 4,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "未",
+        "fen": 5,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "又丧夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 6,
+        "wifeInfo": "佳妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 7,
+        "wifeInfo": "无妾",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 8,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "未",
+        "fen": 9,
+        "wifeInfo": "强妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 10,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "未",
+        "fen": 11,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "未",
+        "fen": 12,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 13,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "未",
+        "fen": 14,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "未",
+        "fen": 15,
+        "wifeInfo": "和妻",
+        "childInfo": "五子",
+        "husbandInfo": "强夫"
+      }
+    ],
+    "申": [
+      {
+        "shiChen": "申",
+        "fen": 1,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "申",
+        "fen": 2,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "申",
+        "fen": 3,
+        "wifeInfo": "佳妻",
+        "childInfo": "二子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 4,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 5,
+        "wifeInfo": "续妻",
+        "childInfo": "多女",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "申",
+        "fen": 6,
+        "wifeInfo": "强妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 7,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "申",
+        "fen": 8,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "申",
+        "fen": 9,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 10,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 11,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "申",
+        "fen": 12,
+        "wifeInfo": "和妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "申",
+        "fen": 13,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 14,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "申",
+        "fen": 15,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "兴夫"
+      }
+    ],
+    "酉": [
+      {
+        "shiChen": "酉",
+        "fen": 1,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 2,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 3,
+        "wifeInfo": "佳妻",
+        "childInfo": "一子",
+        "husbandInfo": "偕夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 4,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 5,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 6,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳失"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 7,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 8,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 9,
+        "wifeInfo": "和妻",
+        "childInfo": "五子",
+        "husbandInfo": "强夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 10,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 11,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 12,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 13,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 14,
+        "wifeInfo": "佳妻",
+        "childInfo": "二子",
+        "husbandInfo": "夫和"
+      },
+      {
+        "shiChen": "酉",
+        "fen": 15,
+        "wifeInfo": "续妻",
+        "childInfo": "多女",
+        "husbandInfo": "再嫁"
+      }
+    ],
+    "戌": [
+      {
+        "shiChen": "戌",
+        "fen": 1,
+        "wifeInfo": "有妾",
+        "childInfo": "无子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 2,
+        "wifeInfo": "克妾",
+        "childInfo": "少子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 3,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "佳夫"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 4,
+        "wifeInfo": "克妻",
+        "childInfo": "少子",
+        "husbandInfo": "克夫"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 5,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 6,
+        "wifeInfo": "和妻",
+        "childInfo": "五子",
+        "husbandInfo": "夫强"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 7,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "夫丧"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 8,
+        "wifeInfo": "有妻",
+        "childInfo": "无子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 9,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 10,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 11,
+        "wifeInfo": "丧妾",
+        "childInfo": "多子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 12,
+        "wifeInfo": "佳妻",
+        "childInfo": "二女",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 13,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 14,
+        "wifeInfo": "续妻",
+        "childInfo": "多子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "戌",
+        "fen": 15,
+        "wifeInfo": "强妻",
+        "childInfo": "一子",
+        "husbandInfo": "夫偕"
+      }
+    ],
+    "亥": [
+      {
+        "shiChen": "亥",
+        "fen": 1,
+        "wifeInfo": "有妾",
+        "childInfo": "多子",
+        "husbandInfo": "又再嫁"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 2,
+        "wifeInfo": "强夫",
+        "childInfo": "无子",
+        "husbandInfo": "和妻"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 3,
+        "wifeInfo": "亡妻",
+        "childInfo": "少子",
+        "husbandInfo": "亡夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 4,
+        "wifeInfo": "有妻",
+        "childInfo": "少子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 5,
+        "wifeInfo": "贤妻",
+        "childInfo": "三子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 6,
+        "wifeInfo": "亡妻",
+        "childInfo": "多子",
+        "husbandInfo": "亡夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 7,
+        "wifeInfo": "丧妻",
+        "childInfo": "多子",
+        "husbandInfo": "丧失"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 8,
+        "wifeInfo": "有妻",
+        "childInfo": "二子",
+        "husbandInfo": "有夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 9,
+        "wifeInfo": "续妻",
+        "childInfo": "少子",
+        "husbandInfo": "夫兴"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 10,
+        "wifeInfo": "亡妾",
+        "childInfo": "少子",
+        "husbandInfo": "亡犬"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 11,
+        "wifeInfo": "强妾",
+        "childInfo": "一子",
+        "husbandInfo": "夫又丧"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 12,
+        "wifeInfo": "佳妻",
+        "childInfo": "无子",
+        "husbandInfo": "和夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 13,
+        "wifeInfo": "无妻",
+        "childInfo": "多子",
+        "husbandInfo": "无夫"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 14,
+        "wifeInfo": "偕妻",
+        "childInfo": "四子",
+        "husbandInfo": "再嫁"
+      },
+      {
+        "shiChen": "亥",
+        "fen": 15,
+        "wifeInfo": "无妻",
+        "childInfo": "无子",
+        "husbandInfo": "无夫"
+      }
+    ]
+  }
+}

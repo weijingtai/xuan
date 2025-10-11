@@ -1,0 +1,18 @@
+{
+    "name": "升仙年爻密码",
+    "description": "推查死于何年",
+    "zhiMapper": {
+        "子": {"chiperText": "丁甲丁丁", "chiperNumber": 7177},
+        "丑": {"chiperText": "丁甲月丙", "chiperNumber": 7102},
+        "寅": {"chiperText": "壬甲壬甲", "chiperNumber": 5151},
+        "卯": {"chiperText": "壬丙丙丙", "chiperNumber": 5222},
+        "辰": {"chiperText": "壬乙乙壬", "chiperNumber": 5665},
+        "巳": {"chiperText": "己己甲壬", "chiperNumber": 8815},
+        "午": {"chiperText": "己壬己丁", "chiperNumber": 8387},
+        "未": {"chiperText": "己壬甲壬", "chiperNumber": 8515},
+        "申": {"chiperText": "壬己支己", "chiperNumber": 8508},
+        "酉": {"chiperText": "壬壬乙丁", "chiperNumber": 5567},
+        "戌": {"chiperText": "丁庚乙戊", "chiperNumber": 7463},
+        "亥": {"chiperText": "丁丁乙壬", "chiperNumber": 7765}
+    }
+}
