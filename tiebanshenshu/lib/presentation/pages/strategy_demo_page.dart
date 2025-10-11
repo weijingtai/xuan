@@ -9,6 +9,7 @@ import '../widgets/strategy_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/ba_gua_jia_ze_card.dart';
+import '../widgets/tai_xuan_dual_method_card.dart';
 import '../models/ba_gua_jia_ze_ui_model.dart';
 
 /// Strategy演示页面
@@ -187,8 +188,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         _buildStrategyPage(
           child: Consumer<TaiXuanFourZhuViewModel>(
             builder: (context, viewModel, child) {
-              return StrategyCard(
-                title: '太玄四柱',
+              return TaiXuanDualMethodCard(
                 viewModel: viewModel,
                 initiallyExpanded: true,
               );

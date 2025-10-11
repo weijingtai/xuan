@@ -8,6 +8,7 @@ import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
 import '../domain/models/tiao_wen_list_result.dart';
 import '../domain/models/tiao_wen_list_state.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
+import '../domain/models/tai_xuan_base_number_model.dart';
 import '../repository/tiao_wen_repository.dart';
 import '../service/strategy/tai_xuan_four_zhu_strategy.dart';
 import '../service/strategy/base_calculation_strategy.dart';
@@ -15,6 +16,7 @@ import '../service/strategy/base_calculation_strategy.dart';
 /// 太玄四柱条文列表UseCase实现
 ///
 /// 负责处理基于太玄四柱计算条文列表的业务逻辑
+/// 支持两种纳甲方案：年干阴阳纳甲和传统内外卦纳甲
 /// 完整流程：Strategy计算基础数字并处理条文计算 -> Repository获取条文实体
 class TaiXuanFourZhuTiaoWenListUseCase
     extends BaseGetTiaoWenListUseCase<TaiXuanFourZhuUseCaseParams> {
@@ -42,14 +44,19 @@ class TaiXuanFourZhuTiaoWenListUseCase
   Future<MultiBaseNumberResult> execute(
     TaiXuanFourZhuUseCaseParams params, {
     TiaoWenListCalculationConfig? calculationConfig,
+    TaiXuanNaJiaMethod? naJiaMethod,
   }) async {
     try {
       // 1. 验证参数
       validateParams(params);
 
+      // 使用指定的纳甲方法，如未指定则使用默认（年干阴阳）
+      final method = naJiaMethod ?? TaiXuanNaJiaMethod.yearGanYinYang;
+
       // 2. 调用Strategy计算基础数模型
       final strategyParams = TaiXuanFourZhuStrategyParams(
         eightChars: params.eightChars,
+        naJiaMethod: method,
       );
       final strategyResult = _strategy.calculate(strategyParams);
 
@@ -105,10 +112,11 @@ class TaiXuanFourZhuTiaoWenListUseCase
       // 6. 创建并返回MultiBaseNumberResult
       return MultiBaseNumberResult.success(
         algorithmName: strategyResult.algorithmName,
-        algorithmDescription: strategyResult.algorithmDescription,
+        algorithmDescription: '${strategyResult.algorithmDescription}（${method.displayName}）',
         calculationParams: strategyResult.calculationParams,
         sourceData: {
           ...strategyResult.sourceData,
+          'naJiaMethod': method.name,
           'tiaoWenCalculationMethod': effectiveConfig.desc ?? 'N/A',
           'tiaoWenCount': baseNumberTiaoWenList.fold<int>(
             0,
@@ -130,6 +138,37 @@ class TaiXuanFourZhuTiaoWenListUseCase
         },
       );
     }
+  }
+
+  /// 计算两种纳甲方案并返回
+  ///
+  /// 同时计算年干阴阳纳甲和传统内外卦纳甲两种方案的结果
+  ///
+  /// [params] UseCase参数
+  /// [calculationConfig] 条文计算配置（可选）
+  ///
+  /// 返回包含两种方案结果的Map
+  Future<Map<TaiXuanNaJiaMethod, MultiBaseNumberResult>> calculateBothMethods(
+    TaiXuanFourZhuUseCaseParams params, {
+    TiaoWenListCalculationConfig? calculationConfig,
+  }) async {
+    final results = <TaiXuanNaJiaMethod, MultiBaseNumberResult>{};
+
+    // 计算年干阴阳纳甲
+    results[TaiXuanNaJiaMethod.yearGanYinYang] = await execute(
+      params,
+      calculationConfig: calculationConfig,
+      naJiaMethod: TaiXuanNaJiaMethod.yearGanYinYang,
+    );
+
+    // 计算传统内外卦纳甲
+    results[TaiXuanNaJiaMethod.innerOuterGua] = await execute(
+      params,
+      calculationConfig: calculationConfig,
+      naJiaMethod: TaiXuanNaJiaMethod.innerOuterGua,
+    );
+
+    return results;
   }
 
   /// 获取支持的条文计算配置选项
