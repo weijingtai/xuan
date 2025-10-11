@@ -101,7 +101,7 @@ Map<DiZhi, Enum8Gua> diZhiGuaMapper = {
   DiZhi.getFromValue("巳")!: Enum8Gua.fromValue("离")!,
   DiZhi.getFromValue("午")!: Enum8Gua.fromValue("离")!,
   DiZhi.getFromValue("未")!: Enum8Gua.fromValue("艮")!,
-  DiZhi.getFromValue("申")!: Enum8Gua.fromValue("艮")!,
+  DiZhi.getFromValue("申")!: Enum8Gua.fromValue("乾")!,
   DiZhi.getFromValue("酉")!: Enum8Gua.fromValue("乾")!,
   DiZhi.getFromValue("戌")!: Enum8Gua.fromValue("巽")!,
 };
@@ -140,8 +140,7 @@ const Map<String, String> dizhiGuaMapper = {
   "巳": "离",
   "午": "离",
   "未": "艮",
-  // "申":"乾",
-  "申": "艮",
+  "申": "乾",
   "酉": "乾",
   "戌": "巽",
 };
@@ -643,24 +642,24 @@ const Map<String, int> guaBasicNumberUnderMapper = {
 const Map<Enum8Gua, List<DiZhi>> outerGuaYaoDiZhi = {
   Enum8Gua.Qian: [DiZhi.WU, DiZhi.SHEN, DiZhi.XU],
   Enum8Gua.Kun: [DiZhi.CHOU, DiZhi.HAI, DiZhi.YOU],
-  Enum8Gua.Zhen: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
-  Enum8Gua.Xun: [DiZhi.CHOU, DiZhi.HAI, DiZhi.YOU],
-  Enum8Gua.Kan: [DiZhi.YIN, DiZhi.CHEN, DiZhi.WU],
-  Enum8Gua.Li: [DiZhi.MAO, DiZhi.CHOU, DiZhi.HAI],
-  Enum8Gua.Gen: [DiZhi.CHEN, DiZhi.WU, DiZhi.SHEN],
-  Enum8Gua.Dui: [DiZhi.SI, DiZhi.MAO, DiZhi.CHOU],
-};
-
-///  下->上 爻
-const Map<Enum8Gua, List<DiZhi>> innerGuaYaoDiZhi = {
-  Enum8Gua.Qian: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
-  Enum8Gua.Kun: [DiZhi.WEI, DiZhi.SI, DiZhi.MAO],
   Enum8Gua.Zhen: [DiZhi.WU, DiZhi.SHEN, DiZhi.XU],
   Enum8Gua.Xun: [DiZhi.WEI, DiZhi.SI, DiZhi.MAO],
   Enum8Gua.Kan: [DiZhi.SHEN, DiZhi.XU, DiZhi.ZI],
   Enum8Gua.Li: [DiZhi.YOU, DiZhi.WEI, DiZhi.SI],
   Enum8Gua.Gen: [DiZhi.XU, DiZhi.ZI, DiZhi.YIN],
   Enum8Gua.Dui: [DiZhi.HAI, DiZhi.YOU, DiZhi.WEI],
+};
+
+///  下->上 爻
+const Map<Enum8Gua, List<DiZhi>> innerGuaYaoDiZhi = {
+  Enum8Gua.Qian: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
+  Enum8Gua.Kun: [DiZhi.WEI, DiZhi.SI, DiZhi.MAO],
+  Enum8Gua.Zhen: [DiZhi.ZI, DiZhi.YIN, DiZhi.CHEN],
+  Enum8Gua.Xun: [DiZhi.CHOU, DiZhi.HAI, DiZhi.YOU],
+  Enum8Gua.Kan: [DiZhi.YIN, DiZhi.CHEN, DiZhi.WU],
+  Enum8Gua.Li: [DiZhi.MAO, DiZhi.CHOU, DiZhi.HAI],
+  Enum8Gua.Gen: [DiZhi.CHEN, DiZhi.WU, DiZhi.SHEN],
+  Enum8Gua.Dui: [DiZhi.SI, DiZhi.MAO, DiZhi.CHOU],
 };
 
 const Map<Enum8Gua, List<TianGan>> innerGuaYaoTianGan = {
