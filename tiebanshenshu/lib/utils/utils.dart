@@ -84,7 +84,44 @@ String guaToCuoGua(String guaName) {
 // 基础装卦与查询函数 (Basic Installation & Lookup Functions)
 // ===================================================================
 
-/// 根据双经卦名进行纳甲，安装“地支”。
+/// 根据双经卦名使用爻序法进行装卦，安装"地支"。
+///
+/// 爻序法规则：
+/// - 阳爻依次配：子、寅、辰、午、申、戌
+/// - 阴爻依次配：丑、卯、巳、未、酉、亥
+///
+/// 返回一个从上爻到初爻的6元素地支列表。
+List<String> yaoxuZhuangGua(String guaName) {
+  // 阳爻地支序列
+  final yangDiZhi = ['子', '寅', '辰', '午', '申', '戌'];
+
+  // 阴爻地支序列
+  final yinDiZhi = ['丑', '卯', '巳', '未', '酉', '亥'];
+
+  // 将卦转换为二进制列表（从上爻到下爻）
+  final binaryList = guaToBinaryList(guaName);
+
+  int yangIndex = 0;
+  int yinIndex = 0;
+  final result = <String>[];
+
+  // 从上爻到下爻装配地支（索引0是上爻，索引5是初爻）
+  for (int i = 0; i < 6; i++) {
+    if (binaryList[i] == 1) {
+      // 阳爻
+      result.add(yangDiZhi[yangIndex % yangDiZhi.length]);
+      yangIndex++;
+    } else {
+      // 阴爻
+      result.add(yinDiZhi[yinIndex % yinDiZhi.length]);
+      yinIndex++;
+    }
+  }
+
+  return result;
+}
+
+/// 根据双经卦名进行纳甲，安装"地支"。
 /// 返回一个从上爻到初爻的6元素地支列表。
 List<String> najiaZhuangGua(String guaName) {
   // 上卦地支映射表

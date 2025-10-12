@@ -4,10 +4,11 @@ import '../constant/constants.dart' as NumberMaps;
 
 @Deprecated("使用TiaoWenCalculator")
 class TiaowenCalculator {
-  /// 加则法计算条文数字
+  /// 加则法计算条文数字（使用爻序法）
   ///
   /// 1. 加则法，将每爻配上地支，再累加计算地支对应的数字。
   /// 2. 上卦后天数*1000 + 累加基数 - 下卦后天数
+  /// 3. 使用爻序法：阳爻依次配子寅辰午申戌，阴爻依次配丑卯巳未酉亥
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
@@ -15,8 +16,8 @@ class TiaowenCalculator {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
-    // 将地支装到卦上
-    List<String> zhiTopToBottom = GuaUtils.najiaZhuangGua(guaName);
+    // 使用爻序法将地支装到卦上
+    List<String> zhiTopToBottom = GuaUtils.yaoxuZhuangGua(guaName);
 
     // 计算卦的总数
     int guaTotalNumber = 0;
