@@ -112,9 +112,35 @@ class YuanTangStrategy extends StandardCalculationStrategy<
       final (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber) =
           _generateHoutianGua(xiantianGua, yuantangYaoIndex);
 
+      // 步骤4.5：后天卦元堂装卦
+      final (houtianYuantangYaoIndex, houtianYuantangYaoLabel, houtianZhiList) =
+          _houtianYuantangZhuanggua(params, houtianGua);
+
       // 步骤5：计算互卦
       final xiantianGuaHu = gua_utils.guaToHuGua(xiantianGua);
       final houtianGuaHu = gua_utils.guaToHuGua(houtianGua);
+
+      // 步骤6：计算大运
+      // 先天卦大运从1岁开始
+      final xiantianDayunStartAge = 1;
+      final xiantianDayunList = _calculateDayun(
+        xiantianGua,
+        yuantangYaoIndex,
+        zhiList,
+        xiantianDayunStartAge,
+      );
+
+      // 计算先天卦结束年龄
+      final xiantianDayunEndAge = xiantianDayunList.last.endAge;
+
+      // 后天卦大运接着先天卦继续
+      final houtianDayunStartAge = xiantianDayunEndAge + 1;
+      final houtianDayunList = _calculateDayun(
+        houtianGua,
+        houtianYuantangYaoIndex,
+        houtianZhiList,
+        houtianDayunStartAge,
+      );
 
       // 步骤6：计算各种条文编号
       // ignore: deprecated_member_use_from_same_package
@@ -198,8 +224,15 @@ class YuanTangStrategy extends StandardCalculationStrategy<
         houtianGua: houtianGua,
         houtianUpperGuaNumber: houtianUpperGuaNumber,
         houtianLowerGuaNumber: houtianLowerGuaNumber,
+        houtianZhiList: houtianZhiList,
+        houtianYuantangYaoIndex: houtianYuantangYaoIndex,
+        houtianYuantangYaoLabel: houtianYuantangYaoLabel,
         xiantianGuaHu: xiantianGuaHu,
         houtianGuaHu: houtianGuaHu,
+        xiantianDayunStartAge: xiantianDayunStartAge,
+        xiantianDayunList: xiantianDayunList,
+        houtianDayunStartAge: houtianDayunStartAge,
+        houtianDayunList: houtianDayunList,
         tiaowenNumberJiazeXiantiangua: tiaowenNumberJiazeXiantiangua,
         tiaowenNumberJiazeHoutiangua: tiaowenNumberJiazeHoutiangua,
         tiaowenNumberNajiaTaixuanXiantiangua:
@@ -244,11 +277,11 @@ class YuanTangStrategy extends StandardCalculationStrategy<
   /// 获取默认的条文计算配置
   @override
   TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
-    // 元堂卦不扩展条文列表，直接使用基础数作为条文编号
+    // 元堂卦递加96四次配置
     return GenericTiaoWenCalculationConfig.customList(
-      name: "元堂卦无扩展配置",
-      description: "不扩展条文列表，直接使用基础数作为条文编号",
-      customList: [0],
+      name: "元堂卦递加96四次",
+      description: "先天卦/后天卦基础数分别递加96四次，得到5个条文编号",
+      customList: [0, 96, 192, 288, 384], // 基础数 + 这些偏移量
       withSub: false,
     );
   }
@@ -260,7 +293,11 @@ class YuanTangStrategy extends StandardCalculationStrategy<
     YuanTangStrategyParams params,
     TiaoWenCalculationConfig config,
   ) {
-    // 元堂卦不扩展条文列表，直接返回基础数
+    if (config is GenericTiaoWenCalculationConfig) {
+      // 使用calculationList进行递加
+      return config.calculationList.map((offset) => baseNumber + offset).toList();
+    }
+    // 降级处理：直接返回基础数
     return [baseNumber];
   }
 
@@ -781,6 +818,124 @@ class YuanTangStrategy extends StandardCalculationStrategy<
       default:
         return '未知';
     }
+  }
+
+  /// 步骤4.5：后天卦元堂装卦
+  ///
+  /// 返回: (houtianYuantangYaoIndex, houtianYuantangYaoLabel, houtianZhiList)
+  ///
+  /// 规则：与先天卦相同，根据时辰阴阳和后天卦的阴阳爻数装配地支
+  (int, String, List<List<String>>) _houtianYuantangZhuanggua(
+    YuanTangStrategyParams params,
+    String houtianGua,
+  ) {
+    final timeGanzhi = params.fourZhu.timeGanzhi;
+
+    // 判断时辰阴阳（与先天卦相同）
+    const yuantangYangTimeSet = ["子", "丑", "寅", "卯", "辰", "巳"];
+    const yuantangYinTimeSet = ["午", "未", "申", "酉", "戌", "亥"];
+
+    final timeZhi = timeGanzhi.substring(timeGanzhi.length - 1);
+    final timeYinYang = yuantangYangTimeSet.contains(timeZhi) ? "阳" : "阴";
+
+    // 将后天卦转换为二进制列表
+    final upperBinary = constants.guaBinaryMapper[houtianGua[0]]!;
+    final lowerBinary = constants.guaBinaryMapper[houtianGua[1]]!;
+    final allGuaBinary = [...upperBinary, ...lowerBinary];
+
+    // 计算阳爻和阴爻数量
+    final totalYangYao = allGuaBinary.where((x) => x == 1).length;
+    final totalYinYao = allGuaBinary.where((x) => x == 0).length;
+
+    // 根据时辰阴阳和爻数分类处理（复用现有装卦方法）
+    List<List<String>> zhiList;
+    if (timeYinYang == "阳") {
+      // 阳时取阳爻
+      if (totalYangYao > 0 && totalYangYao <= 3) {
+        zhiList = _zhuangguaLowerThan3(
+            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+      } else if (totalYangYao >= 4 && totalYangYao <= 5) {
+        zhiList = _zhuanggua45(
+            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+      } else {
+        zhiList = _zhuanggua6Yang(totalYangYao == 6,
+            List.from(yuantangYangTimeSet), true, params.gender, params.birthAfterZhi);
+      }
+    } else {
+      // 阴时取阴爻
+      if (totalYinYao > 0 && totalYinYao <= 3) {
+        zhiList = _zhuangguaLowerThan3(
+            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+      } else if (totalYinYao >= 4 && totalYinYao <= 5) {
+        zhiList = _zhuanggua45(
+            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+      } else {
+        zhiList = _zhuanggua6Yang(totalYinYao == 0,
+            List.from(yuantangYinTimeSet), false, params.gender, params.birthAfterZhi);
+      }
+    }
+
+    // 获取后天卦元堂爻索引
+    final houtianYuantangYaoIndex = _getYuantangYaoIndex(timeGanzhi, zhiList);
+
+    // 获取后天卦元堂爻位标签
+    final houtianYuantangYaoLabel = _getYaoPositionLabel(houtianYuantangYaoIndex);
+
+    return (houtianYuantangYaoIndex, houtianYuantangYaoLabel, zhiList);
+  }
+
+  /// 计算大运列表
+  ///
+  /// [guaName] 卦名（如"震坤"）
+  /// [yuantangYaoIndex] 元堂爻索引（0-5）
+  /// [zhiList] 六爻地支配置
+  /// [startAge] 起始年龄
+  ///
+  /// 返回: `List<YuanTangDayunPeriod>`
+  ///
+  /// 规则：
+  /// 1. 从元堂爻开始，按照 元堂→下一爻→...→上爻→初爻→... 的顺序循环6个爻位
+  /// 2. 阳爻9年，阴爻6年
+  /// 3. 年龄连续累加
+  List<YuanTangDayunPeriod> _calculateDayun(
+    String guaName,
+    int yuantangYaoIndex,
+    List<List<String>> zhiList,
+    int startAge,
+  ) {
+    final dayunList = <YuanTangDayunPeriod>[];
+    final binaryList = gua_utils.guaToBinaryList(guaName);
+
+    var currentAge = startAge;
+
+    // 从元堂爻开始，循环6个爻位
+    // 顺序：元堂爻 → 下一爻(+1) → ... → 上爻 → 初爻 → ...
+    for (var i = 0; i < 6; i++) {
+      final yaoIndex = (yuantangYaoIndex + i) % 6;
+
+      // 注意：binaryList是从上到下的顺序，需要转换
+      // binaryList[0]=上卦第1爻, binaryList[5]=下卦第3爻
+      // yaoIndex: 0=初爻, 5=上爻
+      // 转换：binaryIndex = 5 - yaoIndex
+      final binaryIndex = 5 - yaoIndex;
+      final yinYang = binaryList[binaryIndex] == 1 ? '阳' : '阴';
+      final years = yinYang == '阳' ? 9 : 6;
+      final endAge = currentAge + years - 1;
+
+      dayunList.add(YuanTangDayunPeriod(
+        yaoPosition: yaoIndex,
+        yaoLabel: _getYaoPositionLabel(yaoIndex),
+        yinYang: yinYang,
+        years: years,
+        startAge: currentAge,
+        endAge: endAge,
+        diZhiList: zhiList[yaoIndex],
+      ));
+
+      currentAge = endAge + 1;
+    }
+
+    return dayunList;
   }
 
   /// 获取基础数来源

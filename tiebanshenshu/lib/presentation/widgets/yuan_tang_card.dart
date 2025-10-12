@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/yuan_tang_ui_model.dart';
+import 'yuan_tang_dayun_widget.dart';
 
 /// 元堂卦结果展示卡片
 ///
@@ -101,10 +102,25 @@ class _YuanTangCardState extends State<YuanTangCard> {
 
                   const SizedBox(height: 16.0),
 
+                  // 大运展示
+                  _buildDayunSection(theme),
+
+                  const SizedBox(height: 16.0),
+
+                  // 条文扩展展示
+                  _buildTiaoWenExpansionSection(theme),
+
+                  const SizedBox(height: 16.0),
+
                   // 条文编号方法
                   _buildTiaoWenMethods(theme),
 
                   if (widget.model.hasTiaoWen) ...[
+                    const SizedBox(height: 16.0),
+
+                    // 条文内容列表
+                    _buildTiaoWenContentList(theme),
+
                     const SizedBox(height: 16.0),
 
                     // 条文数量统计
@@ -257,6 +273,22 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   '后天卦: ${widget.model.houtianGua}',
                 ],
               ),
+
+              const SizedBox(height: 12.0),
+
+              // 步骤4.5：后天卦元堂装卦
+              _buildStepCard(
+                theme,
+                '步骤4.5：后天卦元堂装卦',
+                [
+                  '后天卦元堂爻: ${widget.model.houtianYuantangYaoLabel}爻',
+                  '后天卦六爻地支配置（见下方详情）',
+                ],
+              ),
+
+              // 显示后天卦六爻详情
+              const SizedBox(height: 8.0),
+              _buildHoutianYaoDetails(theme),
 
               const SizedBox(height: 12.0),
 
@@ -495,6 +527,374 @@ class _YuanTangCardState extends State<YuanTangCard> {
           ),
         ],
       ),
+    );
+  }
+
+  /// 构建后天卦六爻详情
+  Widget _buildHoutianYaoDetails(ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.tertiaryContainer.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '后天卦六爻地支详情',
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8.0),
+          ...widget.model.houtianYaoList.reversed.map((yao) {
+            final isYuanTang = yao.isYuanTangYao;
+            return Container(
+              margin: const EdgeInsets.symmetric(vertical: 2.0),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              decoration: BoxDecoration(
+                color: isYuanTang
+                    ? theme.colorScheme.secondaryContainer.withOpacity(0.5)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 40.0,
+                    child: Text(
+                      '${yao.positionLabel}爻',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: isYuanTang ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 30.0,
+                    child: Text(
+                      yao.yinYang,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      yao.diZhiList.isEmpty ? '---' : yao.diZhiList.join(', '),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
+                  if (isYuanTang)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondary,
+                        borderRadius: BorderRadius.circular(4.0),
+                      ),
+                      child: Text(
+                        '元堂',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSecondary,
+                          fontSize: 10.0,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// 构建大运展示区域
+  Widget _buildDayunSection(ThemeData theme) {
+    return ExpansionTile(
+      title: Text(
+        '大运计算（先天卦+后天卦）',
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 先天卦大运
+              YuanTangDayunWidget(
+                title: '先天卦大运（${widget.model.xiantianGua}）',
+                dayunList: widget.model.xiantianDayunList,
+                showTitle: true,
+              ),
+              const SizedBox(height: 16.0),
+              const Divider(),
+              const SizedBox(height: 16.0),
+              // 后天卦大运
+              YuanTangDayunWidget(
+                title: '后天卦大运（${widget.model.houtianGua}）',
+                dayunList: widget.model.houtianDayunList,
+                showTitle: true,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 构建条文扩展展示区域
+  Widget _buildTiaoWenExpansionSection(ThemeData theme) {
+    return ExpansionTile(
+      title: Text(
+        '条文编号扩展（递加96四次）',
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 先天卦条文扩展
+              _buildTiaoWenExpansionCard(
+                theme,
+                '先天卦条文扩展',
+                widget.model.xiantianCalculationFormula,
+                widget.model.xiantianTiaoWenNumbers,
+              ),
+              const SizedBox(height: 12.0),
+              // 后天卦条文扩展
+              _buildTiaoWenExpansionCard(
+                theme,
+                '后天卦条文扩展',
+                widget.model.houtianCalculationFormula,
+                widget.model.houtianTiaoWenNumbers,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 构建条文扩展卡片
+  Widget _buildTiaoWenExpansionCard(
+    ThemeData theme,
+    String title,
+    String formula,
+    List<int> numbers,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12.0),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8.0),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: theme.textTheme.labelMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.primary,
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          Text(
+            '计算公式: $formula',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface.withOpacity(0.7),
+            ),
+          ),
+          const SizedBox(height: 6.0),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: numbers.map((number) {
+              return Chip(
+                label: Text(
+                  number.toString(),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontFamily: 'monospace',
+                  ),
+                ),
+                visualDensity: VisualDensity.compact,
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 构建条文内容列表
+  Widget _buildTiaoWenContentList(ThemeData theme) {
+    if (widget.model.tiaoWenDataList.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16.0),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        child: const Center(
+          child: Text('暂无条文内容'),
+        ),
+      );
+    }
+
+    return ExpansionTile(
+      title: Text(
+        '条文内容列表（共${widget.model.tiaoWenCount}条）',
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: widget.model.tiaoWenDataList.map((tiaowen) {
+              // 获取条文来源信息
+              final sources = widget.model.getTiaoWenSources(tiaowen.id);
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 16.0),
+                padding: const EdgeInsets.all(12.0),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceVariant.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8.0),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // 条文编号和地支标签
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8.0,
+                            vertical: 4.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primary,
+                            borderRadius: BorderRadius.circular(4.0),
+                          ),
+                          child: Text(
+                            '${tiaowen.id}',
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: theme.colorScheme.onPrimary,
+                              fontFamily: 'monospace',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8.0),
+                        Chip(
+                          label: Text(tiaowen.setName.name),
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8.0),
+
+                    // 条文来源标签
+                    Wrap(
+                      spacing: 6.0,
+                      runSpacing: 4.0,
+                      children: sources.map((source) {
+                        // 根据来源类型使用不同颜色
+                        Color sourceColor;
+                        if (source.contains('先天卦扩展')) {
+                          sourceColor = theme.colorScheme.primary;
+                        } else if (source.contains('后天卦扩展')) {
+                          sourceColor = theme.colorScheme.secondary;
+                        } else if (source.contains('先天卦')) {
+                          sourceColor = theme.colorScheme.tertiary;
+                        } else if (source.contains('后天卦')) {
+                          sourceColor = Colors.orange;
+                        } else {
+                          sourceColor = theme.colorScheme.outline;
+                        }
+
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6.0,
+                            vertical: 2.0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: sourceColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(4.0),
+                            border: Border.all(
+                              color: sourceColor.withOpacity(0.5),
+                              width: 1.0,
+                            ),
+                          ),
+                          child: Text(
+                            source,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: sourceColor,
+                              fontSize: 10.0,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+
+                    if (tiaowen.content1.isNotEmpty) ...[
+                      const SizedBox(height: 12.0),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: Text(
+                          tiaowen.content1,
+                          style: theme.textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+                    if (tiaowen.content2 != null &&
+                        tiaowen.content2!.isNotEmpty) ...[
+                      const SizedBox(height: 6.0),
+                      Container(
+                        padding: const EdgeInsets.all(8.0),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: BorderRadius.circular(6.0),
+                        ),
+                        child: Text(
+                          tiaowen.content2!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurface.withOpacity(0.7),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -582,10 +582,23 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       );
     }
 
+    // 从ViewModel获取先天卦和后天卦的条文编号列表
+    final baseNumberList = viewModel.baseNumberTiaoWenList;
+    List<int>? xiantianTiaoWenNumbers;
+    List<int>? houtianTiaoWenNumbers;
+
+    if (baseNumberList.length >= 2) {
+      // 第一个是先天卦，第二个是后天卦
+      xiantianTiaoWenNumbers = baseNumberList[0].tiaoWenNumbers;
+      houtianTiaoWenNumbers = baseNumberList[1].tiaoWenNumbers;
+    }
+
     // 创建UI模型
     final uiModel = YuanTangUIModel.fromYuanTangModel(
       yuanTangModel,
       tiaoWenDataList: viewModel.result!.tiaoWenEntities,
+      xiantianTiaoWenNumbers: xiantianTiaoWenNumbers,
+      houtianTiaoWenNumbers: houtianTiaoWenNumbers,
     );
 
     return YuanTangCard(

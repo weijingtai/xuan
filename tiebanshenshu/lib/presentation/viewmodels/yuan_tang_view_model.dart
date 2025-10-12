@@ -1,4 +1,5 @@
 import '../../domain/four_zhu.dart';
+import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
 import '../../usecases/yuan_tang_tiao_wen_list_use_case.dart';
@@ -127,6 +128,12 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
 
   /// 是否有YuanTangModel
   bool get hasYuanTangModel => yuanTangModel != null;
+
+  /// 获取BaseNumberTiaoWenListModel列表（包含先天和后天条文）
+  List<BaseNumberTiaoWenListModel> get baseNumberTiaoWenList {
+    if (!hasResult || _domainResult == null) return [];
+    return _domainResult!.baseNumberTiaoWenList;
+  }
 
   /// 获取所有条文编号
   List<int> get allTiaoWenNumbers {

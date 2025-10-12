@@ -99,6 +99,118 @@ class YuanTangYaoDetail {
   }
 }
 
+/// 元堂卦大运期间数据结构
+///
+/// 用于保存单个大运期间的详细信息
+class YuanTangDayunPeriod {
+  /// 爻位（0-5，对应初、二、三、四、五、上）
+  final int yaoPosition;
+
+  /// 爻位标签（"初" / "二" / "三" / "四" / "五" / "上"）
+  final String yaoLabel;
+
+  /// 阴阳性（"阳" / "阴"）
+  final String yinYang;
+
+  /// 年数（阳爻9年，阴爻6年）
+  final int years;
+
+  /// 起始年龄
+  final int startAge;
+
+  /// 结束年龄
+  final int endAge;
+
+  /// 该爻配置的地支列表
+  final List<String> diZhiList;
+
+  const YuanTangDayunPeriod({
+    required this.yaoPosition,
+    required this.yaoLabel,
+    required this.yinYang,
+    required this.years,
+    required this.startAge,
+    required this.endAge,
+    required this.diZhiList,
+  });
+
+  /// 年龄区间字符串（如 "1-6"）
+  String get ageRange => '$startAge-$endAge';
+
+  /// 复制并更新
+  YuanTangDayunPeriod copyWith({
+    int? yaoPosition,
+    String? yaoLabel,
+    String? yinYang,
+    int? years,
+    int? startAge,
+    int? endAge,
+    List<String>? diZhiList,
+  }) {
+    return YuanTangDayunPeriod(
+      yaoPosition: yaoPosition ?? this.yaoPosition,
+      yaoLabel: yaoLabel ?? this.yaoLabel,
+      yinYang: yinYang ?? this.yinYang,
+      years: years ?? this.years,
+      startAge: startAge ?? this.startAge,
+      endAge: endAge ?? this.endAge,
+      diZhiList: diZhiList ?? this.diZhiList,
+    );
+  }
+
+  /// 转换为Map
+  Map<String, dynamic> toMap() {
+    return {
+      'yaoPosition': yaoPosition,
+      'yaoLabel': yaoLabel,
+      'yinYang': yinYang,
+      'years': years,
+      'startAge': startAge,
+      'endAge': endAge,
+      'diZhiList': diZhiList,
+    };
+  }
+
+  @override
+  String toString() {
+    final diZhiStr = diZhiList.isEmpty ? '未配' : diZhiList.join('、');
+    return '$yaoLabel爻($yinYang-${years}年): $ageRange岁 [$diZhiStr]';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is YuanTangDayunPeriod &&
+        other.yaoPosition == yaoPosition &&
+        other.yaoLabel == yaoLabel &&
+        other.yinYang == yinYang &&
+        other.years == years &&
+        other.startAge == startAge &&
+        other.endAge == endAge &&
+        _listEquals(other.diZhiList, diZhiList);
+  }
+
+  @override
+  int get hashCode {
+    return yaoPosition.hashCode ^
+        yaoLabel.hashCode ^
+        yinYang.hashCode ^
+        years.hashCode ^
+        startAge.hashCode ^
+        endAge.hashCode ^
+        diZhiList.hashCode;
+  }
+
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+}
+
 /// 元堂卦基础数模型
 ///
 /// 继承自BaseNumberModel，包含元堂卦取数法的完整计算过程信息
@@ -163,7 +275,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
   /// 先天卦后天数（下卦后天数）
   final int xiantianLowerGuaNumber;
 
-  // ========== 步骤3：元堂装卦 ==========
+  // ========== 步骤3：元堂装卦（先天卦） ==========
   /// 时柱干支
   final String timeGanzhi;
 
@@ -195,12 +307,35 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
   /// 后天卦后天数（下卦后天数）
   final int houtianLowerGuaNumber;
 
+  // ========== 步骤4.5：后天卦元堂装卦 ==========
+  /// 后天卦六爻地支列表（从下到上：初、二、三、四、五、上）
+  final List<List<String>> houtianZhiList;
+
+  /// 后天卦元堂爻索引（0-5）
+  final int houtianYuantangYaoIndex;
+
+  /// 后天卦元堂爻位标签
+  final String houtianYuantangYaoLabel;
+
   // ========== 步骤5：互卦 ==========
   /// 先天卦互卦
   final String xiantianGuaHu;
 
   /// 后天卦互卦
   final String houtianGuaHu;
+
+  // ========== 步骤6：大运计算 ==========
+  /// 先天卦大运起始年龄
+  final int xiantianDayunStartAge;
+
+  /// 先天卦大运列表（6个期间）
+  final List<YuanTangDayunPeriod> xiantianDayunList;
+
+  /// 后天卦大运起始年龄
+  final int houtianDayunStartAge;
+
+  /// 后天卦大运列表（6个期间）
+  final List<YuanTangDayunPeriod> houtianDayunList;
 
   // ========== 最终条文编号（不同方法） ==========
   /// 先天卦加则法条文编号
@@ -255,7 +390,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required this.xiantianGua,
     required this.xiantianUpperGuaNumber,
     required this.xiantianLowerGuaNumber,
-    // 步骤3：元堂装卦
+    // 步骤3：元堂装卦（先天卦）
     required this.timeGanzhi,
     required this.timeYinYang,
     required this.totalYangYao,
@@ -267,9 +402,18 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required this.houtianGua,
     required this.houtianUpperGuaNumber,
     required this.houtianLowerGuaNumber,
+    // 步骤4.5：后天卦元堂装卦
+    required this.houtianZhiList,
+    required this.houtianYuantangYaoIndex,
+    required this.houtianYuantangYaoLabel,
     // 步骤5：互卦
     required this.xiantianGuaHu,
     required this.houtianGuaHu,
+    // 步骤6：大运计算
+    required this.xiantianDayunStartAge,
+    required this.xiantianDayunList,
+    required this.houtianDayunStartAge,
+    required this.houtianDayunList,
     // 最终条文编号
     required this.tiaowenNumberJiazeXiantiangua,
     required this.tiaowenNumberJiazeHoutiangua,
@@ -316,8 +460,15 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required String houtianGua,
     required int houtianUpperGuaNumber,
     required int houtianLowerGuaNumber,
+    required List<List<String>> houtianZhiList,
+    required int houtianYuantangYaoIndex,
+    required String houtianYuantangYaoLabel,
     required String xiantianGuaHu,
     required String houtianGuaHu,
+    required int xiantianDayunStartAge,
+    required List<YuanTangDayunPeriod> xiantianDayunList,
+    required int houtianDayunStartAge,
+    required List<YuanTangDayunPeriod> houtianDayunList,
     required int tiaowenNumberJiazeXiantiangua,
     required int tiaowenNumberJiazeHoutiangua,
     required int tiaowenNumberNajiaTaixuanXiantiangua,
@@ -361,8 +512,15 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       houtianGua: houtianGua,
       houtianUpperGuaNumber: houtianUpperGuaNumber,
       houtianLowerGuaNumber: houtianLowerGuaNumber,
+      houtianZhiList: houtianZhiList,
+      houtianYuantangYaoIndex: houtianYuantangYaoIndex,
+      houtianYuantangYaoLabel: houtianYuantangYaoLabel,
       xiantianGuaHu: xiantianGuaHu,
       houtianGuaHu: houtianGuaHu,
+      xiantianDayunStartAge: xiantianDayunStartAge,
+      xiantianDayunList: xiantianDayunList,
+      houtianDayunStartAge: houtianDayunStartAge,
+      houtianDayunList: houtianDayunList,
       tiaowenNumberJiazeXiantiangua: tiaowenNumberJiazeXiantiangua,
       tiaowenNumberJiazeHoutiangua: tiaowenNumberJiazeHoutiangua,
       tiaowenNumberNajiaTaixuanXiantiangua:
@@ -492,8 +650,15 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     String? houtianGua,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
+    List<List<String>>? houtianZhiList,
+    int? houtianYuantangYaoIndex,
+    String? houtianYuantangYaoLabel,
     String? xiantianGuaHu,
     String? houtianGuaHu,
+    int? xiantianDayunStartAge,
+    List<YuanTangDayunPeriod>? xiantianDayunList,
+    int? houtianDayunStartAge,
+    List<YuanTangDayunPeriod>? houtianDayunList,
     int? tiaowenNumberJiazeXiantiangua,
     int? tiaowenNumberJiazeHoutiangua,
     int? tiaowenNumberNajiaTaixuanXiantiangua,
@@ -541,8 +706,19 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
           houtianUpperGuaNumber ?? this.houtianUpperGuaNumber,
       houtianLowerGuaNumber:
           houtianLowerGuaNumber ?? this.houtianLowerGuaNumber,
+      houtianZhiList: houtianZhiList ?? this.houtianZhiList,
+      houtianYuantangYaoIndex:
+          houtianYuantangYaoIndex ?? this.houtianYuantangYaoIndex,
+      houtianYuantangYaoLabel:
+          houtianYuantangYaoLabel ?? this.houtianYuantangYaoLabel,
       xiantianGuaHu: xiantianGuaHu ?? this.xiantianGuaHu,
       houtianGuaHu: houtianGuaHu ?? this.houtianGuaHu,
+      xiantianDayunStartAge:
+          xiantianDayunStartAge ?? this.xiantianDayunStartAge,
+      xiantianDayunList: xiantianDayunList ?? this.xiantianDayunList,
+      houtianDayunStartAge:
+          houtianDayunStartAge ?? this.houtianDayunStartAge,
+      houtianDayunList: houtianDayunList ?? this.houtianDayunList,
       tiaowenNumberJiazeXiantiangua:
           tiaowenNumberJiazeXiantiangua ?? this.tiaowenNumberJiazeXiantiangua,
       tiaowenNumberJiazeHoutiangua:
@@ -597,8 +773,17 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       'houtianGua': houtianGua,
       'houtianUpperGuaNumber': houtianUpperGuaNumber,
       'houtianLowerGuaNumber': houtianLowerGuaNumber,
+      'houtianZhiList': houtianZhiList,
+      'houtianYuantangYaoIndex': houtianYuantangYaoIndex,
+      'houtianYuantangYaoLabel': houtianYuantangYaoLabel,
       'xiantianGuaHu': xiantianGuaHu,
       'houtianGuaHu': houtianGuaHu,
+      'xiantianDayunStartAge': xiantianDayunStartAge,
+      'xiantianDayunList':
+          xiantianDayunList.map((p) => p.toMap()).toList(),
+      'houtianDayunStartAge': houtianDayunStartAge,
+      'houtianDayunList':
+          houtianDayunList.map((p) => p.toMap()).toList(),
       'tiaowenNumberJiazeXiantiangua': tiaowenNumberJiazeXiantiangua,
       'tiaowenNumberJiazeHoutiangua': tiaowenNumberJiazeHoutiangua,
       'tiaowenNumberNajiaTaixuanXiantiangua':

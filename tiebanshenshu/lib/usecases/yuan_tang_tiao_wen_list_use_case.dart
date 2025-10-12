@@ -59,51 +59,75 @@ class YuanTangTiaoWenListUseCase
         throw Exception("元堂卦计算失败: ${strategyResult.errorMessage}");
       }
 
-      // 3. 获取YuanTangBaseNumberModel（只有一个结果）
+      // 3. 获取YuanTangBaseNumberModel
       final yuanTangModel =
           strategyResult.baseNumbers.first as YuanTangBaseNumberModel;
 
-      // 4. 收集所有8种条文编号
-      final tiaoWenNumbers = <int>[
-        yuanTangModel.tiaowenNumberJiazeXiantiangua,
-        yuanTangModel.tiaowenNumberJiazeHoutiangua,
-        yuanTangModel.tiaowenNumberNajiaTaixuanXiantiangua,
-        yuanTangModel.tiaowenNumberNajiaTaixuanHoutiangua,
-        yuanTangModel.tiaowenNumberXiantianBenhu,
-        yuanTangModel.tiaowenNumberHoutianBenhu,
-        ...yuanTangModel.tiaowenNumberListXiantianGuahu,
-        ...yuanTangModel.tiaowenNumberListHoutianGuahu,
+      // 4. 扩展先天卦条文编号（使用加则法基础数）
+      final xiantianBaseNumber = yuanTangModel.tiaowenNumberJiazeXiantiangua;
+      final xiantianTiaoWenList = _strategy.calculateTiaoWenListWithConfig(
+        xiantianBaseNumber,
+        strategyParams,
+        _strategy.defaultTiaoWenCalculationConfig,
+      );
+
+      // 5. 扩展后天卦条文编号（使用加则法基础数）
+      final houtianBaseNumber = yuanTangModel.tiaowenNumberJiazeHoutiangua;
+      final houtianTiaoWenList = _strategy.calculateTiaoWenListWithConfig(
+        houtianBaseNumber,
+        strategyParams,
+        _strategy.defaultTiaoWenCalculationConfig,
+      );
+
+      // 6. 合并所有条文编号
+      final allTiaoWenNumbers = <int>[
+        ...xiantianTiaoWenList,
+        ...houtianTiaoWenList,
       ].toSet().toList(); // 去重
 
-      // 5. 批量查询条文数据
+      // 7. 批量查询条文
       final tiaoWenDataList =
-          await _repository.getByIdList(queryList: tiaoWenNumbers);
+          await _repository.getByIdList(queryList: allTiaoWenNumbers);
 
-      // 6. 构建BaseNumberTiaoWenListModel
+      // 8. 构建两个BaseNumberTiaoWenListModel（先天和后天分开）
       final baseNumberTiaoWenList = [
         BaseNumberTiaoWenListModel(
-          baseNumber: yuanTangModel.baseNumber,
-          tiaoWenDataList: tiaoWenDataList,
-          name: yuanTangModel.name,
-          description: yuanTangModel.description,
+          baseNumber: xiantianBaseNumber,
+          tiaoWenDataList: tiaoWenDataList
+              .where((t) => xiantianTiaoWenList.contains(t.id))
+              .toList(),
+          name: "${yuanTangModel.name} - 先天卦",
+          description: "先天卦${yuanTangModel.xiantianGua}条文（基础数$xiantianBaseNumber + [0, 96, 192, 288, 384]）",
           source: yuanTangModel.source,
-          tiaoWenNumbers: tiaoWenNumbers,
+          tiaoWenNumbers: xiantianTiaoWenList,
+        ),
+        BaseNumberTiaoWenListModel(
+          baseNumber: houtianBaseNumber,
+          tiaoWenDataList: tiaoWenDataList
+              .where((t) => houtianTiaoWenList.contains(t.id))
+              .toList(),
+          name: "${yuanTangModel.name} - 后天卦",
+          description: "后天卦${yuanTangModel.houtianGua}条文（基础数$houtianBaseNumber + [0, 96, 192, 288, 384]）",
+          source: yuanTangModel.source,
+          tiaoWenNumbers: houtianTiaoWenList,
         ),
       ];
 
-      // 7. 返回结果
+      // 9. 返回结果
       return MultiBaseNumberResult.success(
-        algorithmName: strategyResult.algorithmName,
-        algorithmDescription: strategyResult.algorithmDescription,
-        calculationParams: strategyResult.calculationParams,
+        algorithmName: '元堂卦取数法',
+        algorithmDescription: '元堂卦取数法（性别:${params.gender}, 三元:${params.threeYuan}）',
+        calculationParams: params.toString(),
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          ...strategyResult.sourceData,
-          'tiaoWenCount': tiaoWenDataList.length,
-          'totalBaseNumbers': 1,
-          'tiaoWenMethodsCount': 8,
-          'uniqueTiaoWenNumbers': tiaoWenNumbers.length,
+          'fourZhu': params.fourZhu.toString(),
+          'gender': params.gender,
+          'threeYuan': params.threeYuan,
+          'birthAfterZhi': params.birthAfterZhi,
+          'xiantianTiaoWenCount': xiantianTiaoWenList.length,
+          'houtianTiaoWenCount': houtianTiaoWenList.length,
+          'totalTiaoWenNumbers': allTiaoWenNumbers.length,
           // 保存YuanTangBaseNumberModel以便UI层访问完整的中间结果
           'yuanTangBaseNumberModel': yuanTangModel,
         },
