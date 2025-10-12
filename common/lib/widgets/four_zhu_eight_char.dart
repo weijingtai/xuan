@@ -63,9 +63,6 @@ class FourZhuEightChar extends StatelessWidget {
       required JiaZi month,
       required JiaZi day,
       required JiaZi chen}) {
-    // double height = 32;
-    // double width = 42;
-    // 16 + 42 * 5;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -151,7 +148,14 @@ class FourZhuEightChar extends StatelessWidget {
             // color: Colors.green.withOpacity(.1),
             child:
                 each_zhu("时", chen.getXunHeader(), chen, chen.getKongWang())),
-        // SizedBox(width: 24,)
+        const SizedBox(
+          width: 4,
+        ),
+        Container(
+          // color: Colors.green.withOpacity(.1),
+            child:
+            each_zhu("时", chen.getXunHeader(), chen, chen.getKongWang())),
+
       ],
     );
   }

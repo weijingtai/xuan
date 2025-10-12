@@ -5,12 +5,14 @@ import 'package:common/widgets/city_picker_global_widget.dart';
 import 'package:flutter/material.dart';
 
 import './divinatioin_history_record/divination_history_record_page.dart';
+import 'package:common/pages/dev_test_lunar_info_card_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
   static final routes = {
     "/common/dev": (context, {arguments}) => const DevEnterPage(),
+    "/common/dev/lunar_info_card": (context, {arguments}) => const DevTestLunarInfoCardPage(),
     "/common/maps": (context, {arguments}) => FlutterMapScreen(
         seerLocation: arguments["seerLocation"],
         seekerLocation: arguments["seekerLocation"]),

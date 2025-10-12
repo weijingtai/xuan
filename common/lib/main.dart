@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as db;
+import 'package:common/themes/app_themes.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -84,15 +85,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Common Widgets Dev',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: false,
-      ),
+      // theme: ThemeData(
+      //   primarySwatch: Colors.blue,
+      //   useMaterial3: false,
+      // ),
       // home: const MyHomePage(title: 'Common Widgets Dev'),
       // home:ChineseStyleTheme1HomePage(),
       // home:WidgetExamplePage(),
       // initialRoute: '/common/history',
-      initialRoute: '/common/dev',
+      theme: AppThemes.lightTheme, // 默认使用亮色主题
+      darkTheme:  AppThemes.darkTheme, // 设置深色主题
+      themeMode: ThemeMode.system, // 跟随系统设置切换
+      initialRoute: '/common/dev/lunar_info_card',
       onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }

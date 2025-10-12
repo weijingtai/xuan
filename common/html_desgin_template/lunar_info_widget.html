@@ -90,9 +90,6 @@
               },
               boxShadow: {
                 'custom': '0px 8px 24px rgba(0, 0, 0, 0.05)',
-              },
-              fontSize: {
-                '2xs': '0.625rem',
               }
             },
           },
@@ -113,7 +110,7 @@
 <div class="w-full max-w-sm">
     <div class="bg-background-light dark:bg-background-dark rounded-xl border border-card-border-light dark:border-card-border-dark shadow-custom p-5 space-y-5">
         <div>
-            <div class="flex justify-between items-baseline mb-2">
+            <div class="flex justify-between items-center mb-2">
                 <p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark tracking-wide">2025年10月03日</p>
                 <div class="flex items-center space-x-1.5">
                     <span class="material-symbols-outlined text-text-tertiary-light dark:text-text-tertiary-dark text-lg"> schedule </span>
@@ -124,25 +121,26 @@
         </div>
         <hr class="border-t border-divider-light dark:border-divider-dark"/>
         <div class="space-y-4">
-            <div class="flex justify-between items-center text-sm">
-                <span class="text-text-tertiary-light dark:text-text-tertiary-dark">月令：<span class="text-text-secondary-light dark:text-text-secondary-dark">酉</span></span>
-                <span class="text-primary dark:text-hou-text-primary-dark">仲秋</span>
-            </div>
-            <div class="w-full pt-4">
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark">所属节气：秋分</p>
+            <div class="w-full">
                 <div class="relative h-2 w-full rounded-full bg-track-light dark:bg-track-dark">
-                    <div class="absolute h-2 rounded-full bg-primary" style="width: 80%;"></div>
-                    <div class="absolute top-[-20px] flex w-full justify-between text-xs text-text-quaternary-light dark:text-text-quaternary-dark">
-                        <span class="font-medium text-primary dark:text-hou-text-primary-dark">秋分 09/23</span>
-                        <span class="font-medium">寒露 10/08</span>
-                    </div>
+                    <div class="absolute h-2 rounded-full bg-primary" style="width: 65%;"></div>
+                </div>
+                <div class="flex justify-between mt-2.5 text-xs text-text-quaternary-light dark:text-text-quaternary-dark">
+                    <span class="font-medium">秋分 09/23</span>
+                    <span class="font-medium">寒露 10/08</span>
                 </div>
             </div>
-            <div class="flex justify-center items-center text-xs text-text-tertiary-light dark:text-text-tertiary-dark space-x-2">
-                <span>雷始收声</span>
-                <span>·</span>
-                <span class="text-primary dark:text-hou-text-primary-dark font-medium border-b-2 border-primary dark:border-hou-text-primary-dark pb-0.5">蛰虫坯户</span>
+        </div>
+        <hr class="border-t border-divider-light dark:border-divider-dark"/>
+        <div>
+            <p class="text-sm text-text-secondary-light dark:text-text-secondary-dark mb-2.5">七十二物候</p>
+            <div class="flex items-center space-x-2 text-sm text-text-tertiary-light dark:text-text-tertiary-dark">
+                <span class="font-medium text-primary dark:text-hou-text-primary-dark">蛰虫坯户</span>
                 <span>·</span>
                 <span>水始涸</span>
+                <span>·</span>
+                <span>雷始收声</span>
             </div>
         </div>
     </div>

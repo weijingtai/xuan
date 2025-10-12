@@ -302,11 +302,6 @@ class Phenology {
         order: 50),
     // 处暑
     Phenology(
-        name: "天地始肃",
-        description: "天地开始变得肃穆",
-        jieqi: TwentyFourJieQi.CHU_SHU,
-        order: 50),
-    Phenology(
         name: "禾乃登",
         description: "稻谷开始成熟",
         jieqi: TwentyFourJieQi.CHU_SHU,

@@ -611,6 +611,20 @@ class SolarLunarDateTimeHelper {
     11: '十一',
     12: '腊',
   };
+  static const intMonthTo4SeasonsMap = {
+    1: '孟春',
+    2: '仲春',
+    3: '季春',
+    4: '孟夏',
+    5: '仲夏',
+    6: '季夏',
+    7: '孟秋',
+    8: '仲秋',
+    9: '季秋',
+    10: '孟冬',
+    11: '仲冬',
+    12: '季冬',
+  };
   static const intDay2ChineseMap = {
     1: '初一',
     2: '初二',
