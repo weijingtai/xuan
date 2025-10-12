@@ -6,12 +6,18 @@ import '../viewmodels/four_zhu_tian_gan_view_model.dart';
 import '../viewmodels/tai_xuan_four_zhu_view_model.dart';
 import '../viewmodels/ba_gua_jia_ze_view_model.dart';
 import '../viewmodels/yuan_tang_view_model.dart';
+import '../viewmodels/xian_houtian_jia_ze_view_model.dart';
+import '../viewmodels/liu_yao_gan_zhi_he_view_model.dart';
+import '../viewmodels/xian_houtian_qu_shu_view_model.dart';
 import '../widgets/strategy_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 import '../widgets/ba_gua_jia_ze_card.dart';
 import '../widgets/tai_xuan_dual_method_card.dart';
 import '../widgets/yuan_tang_card.dart';
+import '../widgets/xian_houtian_jia_ze_card.dart';
+import '../widgets/liu_yao_gan_zhi_he_card.dart';
+import '../widgets/xian_houtian_qu_shu_card.dart';
 import '../models/ba_gua_jia_ze_ui_model.dart';
 import '../models/yuan_tang_ui_model.dart';
 import '../../domain/four_zhu.dart';
@@ -26,14 +32,30 @@ class StrategyDemoPage extends StatefulWidget {
   State<StrategyDemoPage> createState() => _StrategyDemoPageState();
 }
 
-class _StrategyDemoPageState extends State<StrategyDemoPage> {
+class _StrategyDemoPageState extends State<StrategyDemoPage>
+    with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
+  late TabController _tabController;
   bool _isInitialized = false;
-  int _currentPageIndex = 0;
+
+  // Tab配置列表
+  final List<_TabConfig> _tabs = [
+    _TabConfig(label: '数据源', icon: Icons.data_object),
+    _TabConfig(label: '日干支卦', icon: Icons.calendar_today),
+    _TabConfig(label: '四柱天干', icon: Icons.view_column),
+    _TabConfig(label: '太玄四柱', icon: Icons.auto_awesome),
+    _TabConfig(label: '八卦加则', icon: Icons.auto_graph),
+    _TabConfig(label: '元堂卦', icon: Icons.account_balance),
+    _TabConfig(label: '先后天', icon: Icons.shuffle),
+    _TabConfig(label: '六爻干支', icon: Icons.hexagon_outlined),
+    _TabConfig(label: '先后天取数', icon: Icons.calculate_outlined),
+  ];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController.addListener(_handleTabChange);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeViewModels();
     });
@@ -41,8 +63,21 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
 
   @override
   void dispose() {
+    _tabController.removeListener(_handleTabChange);
+    _tabController.dispose();
     _pageController.dispose();
     super.dispose();
+  }
+
+  /// 处理Tab切换
+  void _handleTabChange() {
+    if (_tabController.indexIsChanging) {
+      _pageController.animateToPage(
+        _tabController.index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 
   /// 初始化所有ViewModel
@@ -55,6 +90,9 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
       final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
       final yuanTangViewModel = context.read<YuanTangViewModel>();
+      final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
+      final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
+      final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
 
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
@@ -74,6 +112,24 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         taiXuanFourZhuViewModel.setEightChars(eightChars),
         baGuaJiaZeViewModel.setEightChars(eightChars),
         yuanTangViewModel.setYuanTangParams(
+          fourZhu: fourZhu,
+          gender: "男",
+          threeYuan: "上",
+          birthAfterZhi: "夏至",
+        ),
+        xianHoutianJiaZeViewModel.setParams(
+          fourZhu: fourZhu,
+          gender: "男",
+          threeYuan: "上",
+          birthAfterZhi: "夏至",
+        ),
+        liuYaoGanZhiHeViewModel.setParams(
+          fourZhu: fourZhu,
+          gender: "男",
+          threeYuan: "上",
+          birthAfterZhi: "夏至",
+        ),
+        xianHoutianQuShuViewModel.setParams(
           fourZhu: fourZhu,
           gender: "男",
           threeYuan: "上",
@@ -104,6 +160,9 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
       final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
       final yuanTangViewModel = context.read<YuanTangViewModel>();
+      final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
+      final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
+      final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
 
       await Future.wait([
         dayGanZhiGuaViewModel.refresh(),
@@ -111,6 +170,9 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         taiXuanFourZhuViewModel.refresh(),
         baGuaJiaZeViewModel.refresh(),
         yuanTangViewModel.refresh(),
+        xianHoutianJiaZeViewModel.refresh(),
+        liuYaoGanZhiHeViewModel.refresh(),
+        xianHoutianQuShuViewModel.refresh(),
       ]);
 
       if (mounted) {
@@ -153,9 +215,20 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
             tooltip: '信息',
           ),
         ],
+        bottom: _isInitialized
+            ? TabBar(
+                controller: _tabController,
+                isScrollable: true,
+                tabs: _tabs
+                    .map((config) => Tab(
+                          icon: Icon(config.icon),
+                          text: config.label,
+                        ))
+                    .toList(),
+              )
+            : null,
       ),
       body: _isInitialized ? _buildContent() : _buildLoadingState(),
-      bottomNavigationBar: _isInitialized ? _buildBottomNavigationBar() : null,
     );
   }
 
@@ -171,9 +244,10 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     return PageView(
       controller: _pageController,
       onPageChanged: (index) {
-        setState(() {
-          _currentPageIndex = index;
-        });
+        // 同步TabController的索引，但不触发动画
+        if (_tabController.index != index) {
+          _tabController.animateTo(index);
+        }
       },
       children: [
         // 数据源信息页面
@@ -234,13 +308,42 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
             },
           ),
         ),
+
+        // 先后天八卦加则法页面
+        _buildStrategyPage(
+          child: Consumer<XianHoutianJiaZeViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildXianHoutianJiaZeContent(viewModel);
+            },
+          ),
+        ),
+
+        // 先后天卦六爻干支和数法页面
+        _buildStrategyPage(
+          child: Consumer<LiuYaoGanZhiHeViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildLiuYaoGanZhiHeContent(viewModel);
+            },
+          ),
+        ),
+
+        // 先后天卦取数页面
+        _buildStrategyPage(
+          child: Consumer<XianHoutianQuShuViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildXianHoutianQuShuContent(viewModel);
+            },
+          ),
+        ),
       ],
     );
   }
 
   /// 获取当前页面标题
   String _getPageTitle() {
-    switch (_currentPageIndex) {
+    if (!_isInitialized) return 'Strategy演示';
+
+    switch (_tabController.index) {
       case 0:
         return 'Strategy演示 - 数据源';
       case 1:
@@ -253,6 +356,12 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
         return 'Strategy演示 - 八卦加则';
       case 5:
         return 'Strategy演示 - 元堂卦';
+      case 6:
+        return 'Strategy演示 - 先后天八卦加则法';
+      case 7:
+        return 'Strategy演示 - 先后天卦六爻干支和数法';
+      case 8:
+        return 'Strategy演示 - 先后天卦取数';
       default:
         return 'Strategy演示';
     }
@@ -261,7 +370,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
   /// 刷新当前页面
   Future<void> _refreshCurrent() async {
     try {
-      switch (_currentPageIndex) {
+      switch (_tabController.index) {
         case 1:
           await context.read<DayGanZhiGuaViewModel>().refresh();
           break;
@@ -276,6 +385,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
           break;
         case 5:
           await context.read<YuanTangViewModel>().refresh();
+          break;
+        case 6:
+          await context.read<XianHoutianJiaZeViewModel>().refresh();
+          break;
+        case 7:
+          await context.read<LiuYaoGanZhiHeViewModel>().refresh();
+          break;
+        case 8:
+          await context.read<XianHoutianQuShuViewModel>().refresh();
           break;
         default:
           // 数据源页面不需要刷新
@@ -362,39 +480,13 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
           const SizedBox(height: 12.0),
           Text(
             '• 左右滑动切换不同的策略页面\n'
-            '• 使用底部导航栏快速跳转\n'
+            '• 点击顶部标签栏快速跳转\n'
             '• 下拉刷新当前页面数据\n'
             '• 点击右上角按钮刷新所有数据',
             style: theme.textTheme.bodyMedium,
           ),
         ],
       ),
-    );
-  }
-
-  /// 构建底部导航栏
-  Widget _buildBottomNavigationBar() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: _currentPageIndex,
-      onTap: (index) {
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
-      },
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.data_object), label: '数据源'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_today),
-          label: '日干支卦',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.view_column), label: '四柱天干'),
-        BottomNavigationBarItem(icon: Icon(Icons.auto_awesome), label: '太玄四柱'),
-        BottomNavigationBarItem(icon: Icon(Icons.auto_graph), label: '八卦加则'),
-        BottomNavigationBarItem(icon: Icon(Icons.account_balance), label: '元堂卦'),
-      ],
     );
   }
 
@@ -607,6 +699,102 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
     );
   }
 
+  /// 构建先后天八卦加则法内容
+  Widget _buildXianHoutianJiaZeContent(XianHoutianJiaZeViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    return XianHoutianJiaZeCard(
+      viewModel: viewModel,
+      initiallyExpanded: true,
+    );
+  }
+
+  /// 构建先后天卦六爻干支和数法内容
+  Widget _buildLiuYaoGanZhiHeContent(LiuYaoGanZhiHeViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    return LiuYaoGanZhiHeCard(
+      viewModel: viewModel,
+      initiallyExpanded: true,
+    );
+  }
+
+  /// 构建先后天卦取数内容
+  Widget _buildXianHoutianQuShuContent(XianHoutianQuShuViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    return XianHoutianQuShuCard(
+      viewModel: viewModel,
+      initiallyExpanded: true,
+    );
+  }
+
   /// 显示信息对话框
   void _showInfoDialog(BuildContext context) {
     showDialog(
@@ -618,13 +806,16 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('本页面演示了五种不同的Strategy计算方法：'),
+              Text('本页面演示了八种不同的Strategy计算方法：'),
               SizedBox(height: 12.0),
               Text('• 日干支卦：基于日柱干支计算'),
               Text('• 四柱天干：基于四柱天干计算'),
               Text('• 太玄四柱：基于太玄理论计算'),
               Text('• 八卦加则：基于八卦装配地支加则法'),
               Text('• 元堂卦：基于元堂卦取数法，包含8种条文计算方法'),
+              Text('• 先后天八卦加则法：基于先后天八卦加则法，先天卦递增96四次，后天卦递减96四次'),
+              Text('• 先后天卦六爻干支和数法：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各递增减96四次'),
+              Text('• 先后天卦取数：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各使用±48×倍数[2,4,8,16]扩展'),
               SizedBox(height: 12.0),
               Text('所有计算都使用DevConstant.dev_usa作为数据源，展示完整的条文列表信息。'),
               SizedBox(height: 12.0),
@@ -641,4 +832,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage> {
       ),
     );
   }
+}
+
+/// Tab配置类
+class _TabConfig {
+  final String label;
+  final IconData icon;
+
+  const _TabConfig({
+    required this.label,
+    required this.icon,
+  });
 }

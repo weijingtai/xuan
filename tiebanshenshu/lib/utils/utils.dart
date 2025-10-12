@@ -1,7 +1,6 @@
 // utils.dart
 // 导入包含所有静态数据映射的常量文件
 import '../../constant/constants.dart' as constants;
-import '../constant/constants.dart' as Constants;
 
 // ===================================================================
 // 核心卦象变换函数 (Core Hexagram Transformation Functions)
@@ -291,36 +290,36 @@ int calculateGuaNum(int total, int threshold, int defaultValue) {
 ///   [yaoGanzhiList] 干支列表 共6个，从上爻到下爻
 ///
 /// 返回:
-///   List<String> 如：["官鬼","子孙".....] 从上爻到下爻
+///   `List<String>` 如：["官鬼","子孙".....] 从上爻到下爻
 List<String> liuqinZhuanggua(
   String doubleEightGuaName,
   List<String> yaoGanzhiList,
 ) {
   // 1.1. 根据 guaName 获取 卦的object名
   final String uponGuaObjectName =
-      Constants.guaName2ObjectName[doubleEightGuaName[0]]!;
-  final String underGuaObjectName = Constants
+      constants.guaName2ObjectName[doubleEightGuaName[0]]!;
+  final String underGuaObjectName = constants
       .guaName2ObjectName[doubleEightGuaName[doubleEightGuaName.length - 1]]!;
 
   // 1.2. 根据 object名获取卦本名 如："遁"，"履" 等
-  final String guaBenMing = Constants
+  final String guaBenMing = constants
       .objectName2GuaNameMapper[uponGuaObjectName + underGuaObjectName]!;
 
   // 1.3. 根据卦的本命 找到其所在卦宫
   final String gongGua = getGuagongByBenname(guaBenMing);
 
   // 1.4. 确定 "己身"五行
-  final String fivexingSelf = Constants.guaFivexingMapper[gongGua]!;
+  final String fivexingSelf = constants.guaFivexingMapper[gongGua]!;
 
   // 2. 根据 每一爻地支 与 "己身" 五行排六亲
   final List<String> resultSixqingList = [];
   final Map<String, String> mapper4Self =
-      Constants.fivexingLiuqingMapper[fivexingSelf]!;
+      constants.fivexingLiuqingMapper[fivexingSelf]!;
 
   for (int i = 0; i < yaoGanzhiList.length; i++) {
     final String gz = yaoGanzhiList[i];
     final String z = gz[gz.length - 1]; // dizhi
-    final String otherFivexing = Constants.dizhiFivexingMapper[z]!; // 地支五行
+    final String otherFivexing = constants.dizhiFivexingMapper[z]!; // 地支五行
     resultSixqingList.add(mapper4Self[otherFivexing]!);
   }
 
@@ -336,14 +335,14 @@ List<String> liuqinZhuanggua(
 ///   String 八宫信息
 String getEightOrderByGuaname(String singleGuaName) {
   // 遍历所有宫
-  for (final String gong in Constants.guaNameEightGongMapper.keys) {
+  for (final String gong in constants.guaNameEightGongMapper.keys) {
     try {
       // 查找卦名在当前宫中的位置
-      final List<String> guaList = Constants.guaNameEightGongMapper[gong]!;
+      final List<String> guaList = constants.guaNameEightGongMapper[gong]!;
       final int index = guaList.indexOf(singleGuaName);
 
       if (index != -1) {
-        return Constants.gongGuaName[index];
+        return constants.gongGuaName[index];
       }
     } catch (e) {
       // 继续下一个宫的查找
@@ -357,7 +356,7 @@ String getEightOrderByGuaname(String singleGuaName) {
 
 String getPureGuaNameByObject(String gua1, String gua2) {
   final String combinedKey = gua1 + gua2;
-  return Constants.objectName2GuaNameMapper[combinedKey]!;
+  return constants.objectName2GuaNameMapper[combinedKey]!;
 }
 
 /// 将number转换为卦，千百位为上卦，十个位为下卦，两数分别相加，取"8"的余数，
@@ -382,8 +381,8 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
     second = 8;
   }
 
-  String firstGua = Constants.houTianNumberGuaMapper[first]!;
-  String secondGua = Constants.houTianNumberGuaMapper[second]!;
+  String firstGua = constants.houTianNumberGuaMapper[first]!;
+  String secondGua = constants.houTianNumberGuaMapper[second]!;
 
   if (shouldReverse) {
     final String temp = firstGua;
@@ -392,4 +391,214 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   }
 
   return firstGua + secondGua;
+}
+
+// ===================================================================
+// 先后天卦生成函数 (XianHoutian Gua Generation Functions)
+// ===================================================================
+
+/// 生成天地卦（从元堂卦逻辑提取）
+///
+/// 根据四柱天干地支计算天地卦，支持三元五宫映射
+///
+/// 参数：
+/// - [yearGan]: 年柱天干
+/// - [monthGan]: 月柱天干
+/// - [dayGan]: 日柱天干
+/// - [timeGan]: 时柱天干
+/// - [yearZhi]: 年柱地支
+/// - [monthZhi]: 月柱地支
+/// - [dayZhi]: 日柱地支
+/// - [timeZhi]: 时柱地支
+/// - [yearYinYang]: 年份阴阳（"阳" / "阴"）
+/// - [gender]: 性别（"男" / "女"）
+/// - [threeYuan]: 三元（"上" / "中" / "下"）
+///
+/// 返回：(tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
+///        tianGuaNum, diGuaNum, usedThreeYuanWuGong)
+///
+/// 算法步骤：
+/// 1. 提取四柱天干数列表和地支数列表
+/// 2. 计算奇数总和（天干奇数 + 地支奇数）
+/// 3. 计算偶数总和（天干偶数 + 地支偶数）
+/// 4. 天数 = 奇数总和 模25，特殊处理=25时为5
+/// 5. 地数 = 偶数总和 模30，特殊处理=30时为3
+/// 6. 当天数或地数为5时，查询三元五宫映射表
+/// 7. 否则使用常规数配卦
+(
+  String, // tianGua
+  String, // diGua
+  List<int>, // ganNumList
+  List<List<int>>, // zhiNumList
+  int, // oddNumTotal
+  int, // evenNumTotal
+  int, // tianGuaNum
+  int, // diGuaNum
+  bool // usedThreeYuanWuGong
+) generateTianDiGua({
+  required String yearGan,
+  required String monthGan,
+  required String dayGan,
+  required String timeGan,
+  required String yearZhi,
+  required String monthZhi,
+  required String dayZhi,
+  required String timeZhi,
+  required String yearYinYang,
+  required String gender,
+  required String threeYuan,
+}) {
+  // 三元五宫映射表（当天数或地数为5时使用）
+  const threeYuan5GongMapper = {
+    "上": {
+      "男": {"阳": "艮", "阴": "艮"},
+      "女": {"阳": "坤", "阴": "坤"}
+    },
+    "中": {
+      "男": {"阳": "艮", "阴": "坤"},
+      "女": {"阳": "坤", "阴": "艮"}
+    },
+    "下": {
+      "男": {"阳": "离", "阴": "离"},
+      "女": {"阳": "兑", "阴": "兑"}
+    },
+  };
+
+  // 提取四柱天干数列表
+  final ganNumList = [
+    constants.tianGanNumberMapper[yearGan]!,
+    constants.tianGanNumberMapper[monthGan]!,
+    constants.tianGanNumberMapper[dayGan]!,
+    constants.tianGanNumberMapper[timeGan]!,
+  ];
+
+  // 提取四柱地支数列表（每个地支两个数）
+  final zhiNumList = [
+    constants.diZhiNumberMapper[yearZhi]!,
+    constants.diZhiNumberMapper[monthZhi]!,
+    constants.diZhiNumberMapper[dayZhi]!,
+    constants.diZhiNumberMapper[timeZhi]!,
+  ];
+
+  // 展开地支数列表用于计算奇偶和
+  final zhiNumTotalList = [
+    ...constants.diZhiNumberMapper[yearZhi]!,
+    ...constants.diZhiNumberMapper[monthZhi]!,
+    ...constants.diZhiNumberMapper[dayZhi]!,
+    ...constants.diZhiNumberMapper[timeZhi]!,
+  ];
+
+  // 计算奇数和、偶数和
+  final oddNumTotal = (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
+      zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
+
+  final evenNumTotal = (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+      zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
+
+  // 计算天数（奇数和 模25）
+  final tianGuaNum = calculateGuaNum(oddNumTotal, 25, 5);
+
+  // 计算地数（偶数和 模30）
+  final diGuaNum = calculateGuaNum(evenNumTotal, 30, 3);
+
+  // 数配卦
+  String tianGua;
+  String diGua;
+  bool usedThreeYuanWuGong = false;
+
+  // 天卦配卦（天数为5时查询三元五宫）
+  if (tianGuaNum == 5) {
+    tianGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
+    usedThreeYuanWuGong = true;
+  } else {
+    tianGua = constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
+  }
+
+  // 地卦配卦（地数为5时查询三元五宫）
+  if (diGuaNum == 5) {
+    diGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
+    usedThreeYuanWuGong = true;
+  } else {
+    diGua = constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
+  }
+
+  return (
+    tianGua,
+    diGua,
+    ganNumList,
+    zhiNumList,
+    oddNumTotal,
+    evenNumTotal,
+    tianGuaNum,
+    diGuaNum,
+    usedThreeYuanWuGong
+  );
+}
+
+/// 生成先后天卦（从元堂卦逻辑提取）
+///
+/// 根据天地卦、年份阴阳和性别，生成先天卦和后天卦（不包含元堂爻变）
+///
+/// 参数：
+/// - [tianGua]: 天卦名称
+/// - [diGua]: 地卦名称
+/// - [yearYinYang]: 年份阴阳（"阳" / "阴"）
+/// - [gender]: 性别（"男" / "女"）
+///
+/// 返回：(xiantianGua, upperGua, lowerGua, xiantianUpperGuaNumber, xiantianLowerGuaNumber)
+///
+/// 算法规则：
+/// - 阳年男性：天卦在上，地卦在下
+/// - 阳年女性：地卦在上，天卦在下
+/// - 阴年女性：天卦在上，地卦在下
+/// - 阴年男性：地卦在上，天卦在下
+///
+/// 注意：此方法只生成先天卦，不包含后天卦的元堂爻变和互换逻辑
+(
+  String, // xiantianGua
+  String, // upperGua
+  String, // lowerGua
+  int, // xiantianUpperGuaNumber
+  int, // xiantianLowerGuaNumber
+) generateXiantianGua({
+  required String tianGua,
+  required String diGua,
+  required String yearYinYang,
+  required String gender,
+}) {
+  String upperGua;
+  String lowerGua;
+
+  // 根据年份阴阳和性别决定上下卦位置
+  if (yearYinYang == "阳") {
+    if (gender == "男") {
+      upperGua = tianGua;
+      lowerGua = diGua;
+    } else {
+      upperGua = diGua;
+      lowerGua = tianGua;
+    }
+  } else {
+    if (gender == "女") {
+      upperGua = tianGua;
+      lowerGua = diGua;
+    } else {
+      upperGua = diGua;
+      lowerGua = tianGua;
+    }
+  }
+
+  final xiantianGua = upperGua + lowerGua;
+
+  // 查询后天数
+  final xiantianUpperGuaNumber = constants.houTianGuaNumberMapper[upperGua]!;
+  final xiantianLowerGuaNumber = constants.houTianGuaNumberMapper[lowerGua]!;
+
+  return (
+    xiantianGua,
+    upperGua,
+    lowerGua,
+    xiantianUpperGuaNumber,
+    xiantianLowerGuaNumber,
+  );
 }

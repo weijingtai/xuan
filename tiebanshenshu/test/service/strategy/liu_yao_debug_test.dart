@@ -1,0 +1,58 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:common/dev_constant.dart';
+import 'package:tiebanshenshu/domain/four_zhu.dart';
+import 'package:tiebanshenshu/service/strategy/liu_yao_gan_zhi_he_strategy.dart';
+
+void main() {
+  setUpAll(() {
+    tz.initializeTimeZones();
+  });
+
+  group('Debug LiuYaoGanZhiHeStrategy null error', () {
+    test('打印中间结果定位null来源', () {
+      // 使用DevConstant.dev_usa的八字数据
+      final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
+
+      // 创建FourZhu对象
+      final fourZhu = FourZhu(
+        yearGanzhi: eightChars.year.name,
+        monthGanzhi: eightChars.month.name,
+        dayGanzhi: eightChars.day.name,
+        timeGanzhi: eightChars.time.name,
+      );
+
+      print('\n========== DEBUG INFO ==========');
+      print('FourZhu: $fourZhu');
+      print('yearGan: ${fourZhu.yearGan}, yearZhi: ${fourZhu.yearZhi}');
+      print('monthGan: ${fourZhu.monthGan}, monthZhi: ${fourZhu.monthZhi}');
+      print('dayGan: ${fourZhu.dayGan}, dayZhi: ${fourZhu.dayZhi}');
+      print('timeGan: ${fourZhu.timeGan}, timeZhi: ${fourZhu.timeZhi}');
+
+      final strategy = LiuYaoGanZhiHeStrategy();
+      final params = LiuYaoGanZhiHeStrategyParams(
+        fourZhu: fourZhu,
+        gender: "男",
+        threeYuan: "上",
+        birthAfterZhi: "夏至",
+      );
+
+      print('\nCalculating...');
+      print('About to call strategy.calculate()...');
+
+      final result = strategy.calculate(params);
+
+      print('\nResult hasError: ${result.hasError}');
+      if (result.hasError) {
+        print('Error Message: ${result.errorMessage}');
+        print('Source Data: ${result.sourceData}');
+      } else {
+        print('Success!');
+        print('BaseNumbers count: ${result.baseNumbers.length}');
+      }
+      print('========== END DEBUG ==========\n');
+
+      expect(result.hasError, false, reason: 'Should not have error');
+    });
+  });
+}

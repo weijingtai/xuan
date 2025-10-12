@@ -76,6 +76,57 @@ class GenericTiaoWenCalculationConfig implements TiaoWenCalculationConfig {
     );
   }
 
+  /// 工厂方法：递增96四次
+  ///
+  /// 基础数递增96四次，生成5个条文编号
+  /// 示例：base=3387 → [3387, 3483, 3579, 3675, 3771]
+  factory GenericTiaoWenCalculationConfig.increment96x4() {
+    return const GenericTiaoWenCalculationConfig(
+      name: "递增96四次",
+      description: "基础数递增96四次：base + [0, 96, 192, 288, 384]",
+      calculationList: [0, 96, 192, 288, 384],
+      withSub: false,
+    );
+  }
+
+  /// 工厂方法：递减96四次
+  ///
+  /// 基础数递减96四次，生成5个条文编号
+  /// 示例：base=2477 → [2477, 2381, 2285, 2189, 2093]
+  factory GenericTiaoWenCalculationConfig.decrement96x4() {
+    return const GenericTiaoWenCalculationConfig(
+      name: "递减96四次",
+      description: "基础数递减96四次：base + [0, -96, -192, -288, -384]",
+      calculationList: [0, -96, -192, -288, -384],
+      withSub: false,
+    );
+  }
+
+  /// 工厂方法：加减48倍数
+  ///
+  /// 基础数加减48的倍数，生成9个条文编号
+  /// 默认倍数为 [2, 4, 8, 16]，加上base本身共9个
+  /// 示例：base=3198 → [3102, 3006, 2814, 2430, 3198, 3294, 3390, 3582, 3966]
+  factory GenericTiaoWenCalculationConfig.addSub48x({
+    List<int> multiples = const [2, 4, 8, 16],
+    bool includeBase = true,
+  }) {
+    final calculationList = <int>[];
+    if (includeBase) {
+      calculationList.add(0);
+    }
+    for (final multiple in multiples) {
+      calculationList.add(48 * multiple);
+    }
+
+    return GenericTiaoWenCalculationConfig(
+      name: "加减48倍数",
+      description: "基础数±48×倍数：base ± [48×2, 48×4, 48×8, 48×16]",
+      calculationList: calculationList,
+      withSub: true,
+    );
+  }
+
   /// 转换为TiaoWenListCalculationConfig以兼容旧的模型系统
   TiaoWenListCalculationConfig toTiaoWenListCalculationConfig() {
     return TiaoWenListCalculationConfig.listAdd(

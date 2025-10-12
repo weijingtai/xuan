@@ -1,0 +1,849 @@
+# 四个新算法开发任务清单
+
+## 项目概述
+
+**任务**: 实现4个新的铁板神数条文计算算法
+**开始日期**: 2025-10-11
+**预计工期**: 20-25小时
+**当前状态**: 进行中 (Phase 2 已完成)
+
+---
+
+## Phase 1: 基础设施准备 (Infrastructure Preparation)
+
+**预计时间**: 3-4小时
+**依赖**: 无
+**目标**: 提取公共逻辑到工具类,扩展配置系统,创建共享数据模型
+
+### Task 1.1: 扩展 GuaUtils 工具类
+**文件**: `lib/utils/gua_utils.dart`
+**预计时间**: 1.5小时
+
+- [ ] 1.1.1 从 YuanTangStrategy 提取天地卦生成逻辑
+  - 实现 `generateTianDiGua()` 静态方法
+  - 参数: FourZhu, gender, threeYuan, yearYinYang
+  - 返回: (tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal, tianGuaNum, diGuaNum, usedThreeYuanWuGong)
+
+- [ ] 1.1.2 从 YuanTangStrategy 提取先后天卦生成逻辑
+  - 实现 `generateXianHoutianGua()` 静态方法
+  - 参数: tianGua, diGua, yearYinYang, gender
+  - 返回: (xiantianGua, houtianGua, upperGua, lowerGua, 4个卦数)
+
+- [ ] 1.1.3 编写单元测试
+  - 测试 generateTianDiGua() 的4种组合
+  - 测试 generateXianHoutianGua() 的阴阳年+性别组合
+  - 验证三元五宫映射逻辑
+
+- [ ] 1.1.4 运行 dart analyze 确保无错误
+  - 执行: `dart analyze lib/utils/gua_utils.dart --fatal-infos`
+
+**验收标准**:
+- ✅ GuaUtils 包含 2个新的静态方法
+- ✅ 单元测试覆盖所有分支
+- ✅ 代码分析无错误和警告
+
+---
+
+### Task 1.2: 扩展条文计算配置
+**文件**: `lib/domain/models/tiao_wen_calculation_config.dart`
+**预计时间**: 1小时
+
+- [ ] 1.2.1 扩展 GenericTiaoWenCalculationConfig 类
+  - 添加字段: `bool withIncrement` (是否递增)
+  - 添加字段: `bool withDecrement` (是否递减)
+  - 添加字段: `int? multiplier` (倍数,如48)
+
+- [ ] 1.2.2 添加工厂方法: increment96x4()
+  - 功能: 基础数递增96四次 [0, 96, 192, 288, 384]
+  - 返回: GenericTiaoWenCalculationConfig实例
+
+- [ ] 1.2.3 添加工厂方法: decrement96x4()
+  - 功能: 基础数递减96四次 [0, -96, -192, -288, -384]
+  - 返回: GenericTiaoWenCalculationConfig实例
+
+- [ ] 1.2.4 添加工厂方法: addSub48x()
+  - 功能: 加减48倍数 [±48×2, ±48×4, ±48×8, ±48×16]
+  - 参数: multipliers (默认 [2, 4, 8, 16])
+  - 返回: GenericTiaoWenCalculationConfig实例
+
+- [ ] 1.2.5 编写单元测试
+  - 测试 3个新工厂方法
+  - 验证生成的条文列表正确性
+
+- [ ] 1.2.6 运行 dart analyze 确保无错误
+
+**验收标准**:
+- ✅ GenericTiaoWenCalculationConfig 支持递增/递减/倍数配置
+- ✅ 3个工厂方法实现正确
+- ✅ 单元测试覆盖所有配置场景
+
+---
+
+### Task 1.3: 创建共享基础数据模型
+**文件**: `lib/domain/models/xian_houtian_gua_base_number_model.dart`
+**预计时间**: 1.5小时
+
+- [ ] 1.3.1 定义 XianHoutianGuaBaseNumberModel 类
+  - 继承 BaseNumberModel
+  - 包含输入参数 (4个字段): fourZhu, gender, threeYuan, birthAfterZhi
+
+- [ ] 1.3.2 定义步骤1字段 - 天地卦 (9个字段)
+  - ganNumList, zhiNumList, oddNumTotal, evenNumTotal
+  - tianGuaNum, diGuaNum, tianGua, diGua, usedThreeYuanWuGong
+
+- [ ] 1.3.3 定义步骤2字段 - 先后天卦 (9个字段)
+  - yearYinYang, upperGua, lowerGua
+  - xiantianGua, houtianGua
+  - xiantianUpperGuaNumber, xiantianLowerGuaNumber
+  - houtianUpperGuaNumber, houtianLowerGuaNumber
+
+- [ ] 1.3.4 定义步骤3字段 - 互卦 (2个字段)
+  - xiantianGuaHu, houtianGuaHu
+
+- [ ] 1.3.5 定义步骤4字段 - 基础数 (2个字段)
+  - xiantianBaseNumber, houtianBaseNumber
+
+- [ ] 1.3.6 定义步骤5字段 - 条文扩展 (4个字段)
+  - xiantianTiaoWenNumbers, houtianTiaoWenNumbers
+  - xiantianCalculationFormula, houtianCalculationFormula
+
+- [ ] 1.3.7 实现便捷getter方法
+  - upperGuaDisplayText: "乾(6)"
+  - lowerGuaDisplayText: "坤(2)"
+  - tianDiGuaFormula: 详细公式字符串
+
+- [ ] 1.3.8 实现 copyWith(), toMap(), toString() 方法
+
+- [ ] 1.3.9 添加文档注释
+  - 类级别文档 (包含算法说明)
+  - 字段级别文档 (每个字段的含义)
+
+- [ ] 1.3.10 运行 dart analyze 确保无错误
+
+**验收标准**:
+- ✅ XianHoutianGuaBaseNumberModel 包含 30+ 个字段
+- ✅ 所有字段都有文档注释
+- ✅ 便捷方法实现完整
+
+---
+
+## Phase 2: 算法1 - 先后天八卦加则法 (XianHoutianJiaZe)
+
+**预计时间**: 4-5小时
+**依赖**: Phase 1 完成
+**代码复用率**: 90%
+
+### Task 2.1: 实现 Strategy 层
+**文件**: `lib/service/strategy/xian_houtian_jia_ze_strategy.dart`
+**预计时间**: 2小时
+
+- [ ] 2.1.1 创建 XianHoutianJiaZeStrategyParams 参数类
+  - 字段: fourZhu, gender, threeYuan, birthAfterZhi
+  - 继承 StrategyParams
+
+- [ ] 2.1.2 创建 XianHoutianJiaZeStrategy 类
+  - 继承 StandardCalculationStrategy
+  - 实现 name getter: "先后天八卦加则法"
+  - 实现 description getter: 算法描述
+  - 实现 detailSteps getter: 5个步骤说明
+
+- [ ] 2.1.3 实现核心计算方法 calculate()
+  - 步骤1: 调用 GuaUtils.generateTianDiGua()
+  - 步骤2: 调用 GuaUtils.generateXianHoutianGua()
+  - 步骤3: 计算先天卦互卦 (GuaUtils.guaToHuGua)
+  - 步骤4: 计算后天卦互卦
+  - 步骤5: 先天卦加则法 (TiaowenCalculator.getTiaowenNumberByJiaZe)
+  - 步骤6: 后天卦加则法
+  - 返回: BaseNumberModelResult
+
+- [ ] 2.1.4 实现条文扩展配置
+  - defaultTiaoWenCalculationConfig: 使用 customList
+  - 先天卦: 递增96四次
+  - 后天卦: 递减96四次
+
+- [ ] 2.1.5 实现 calculateTiaoWenListWithConfig()
+  - 处理先天卦条文扩展 (递增)
+  - 处理后天卦条文扩展 (递减)
+  - 返回: List<int>
+
+- [ ] 2.1.6 添加完整文档注释
+  - 算法原理说明
+  - 计算步骤说明
+  - 参数和返回值说明
+
+- [ ] 2.1.7 运行 dart analyze 确保无错误
+
+**验收标准**:
+- ✅ XianHoutianJiaZeStrategy 实现完整
+- ✅ 所有方法都有文档注释
+- ✅ 代码分析无错误
+
+---
+
+### Task 2.2: 实现 UseCase 层
+**文件**: `lib/usecases/xian_houtian_jia_ze_tiao_wen_list_use_case.dart`
+**预计时间**: 1.5小时
+
+- [ ] 2.2.1 创建 XianHoutianJiaZeUseCaseParams 类
+  - 字段: fourZhu, gender, threeYuan, birthAfterZhi
+  - 继承 BaseUseCaseParams
+
+- [ ] 2.2.2 创建 XianHoutianJiaZeTiaoWenListUseCase 类
+  - 依赖: XianHoutianJiaZeStrategy, TiaoWenRepository
+  - 继承 BaseUseCase
+
+- [ ] 2.2.3 实现 execute() 方法
+  - 步骤1: 参数验证
+  - 步骤2: 调用 Strategy.calculate()
+  - 步骤3: 处理先天卦条文扩展
+  - 步骤4: 处理后天卦条文扩展
+  - 步骤5: 批量查询条文数据
+  - 步骤6: 构建 2个 BaseNumberTiaoWenListModel (先天/后天)
+  - 步骤7: 返回 MultiBaseNumberResult
+
+- [ ] 2.2.4 实现错误处理
+  - 参数验证异常
+  - Strategy计算异常
+  - 条文查询异常
+
+- [ ] 2.2.5 添加文档注释
+
+- [ ] 2.2.6 编写单元测试
+  - 测试完整计算流程
+  - 测试先天卦递增扩展
+  - 测试后天卦递减扩展
+  - 测试条文数据查询
+
+- [ ] 2.2.7 运行测试: `flutter test test/usecases/xian_houtian_jia_ze_use_case_test.dart`
+
+**验收标准**:
+- ✅ UseCase 实现完整
+- ✅ 单元测试覆盖核心逻辑
+- ✅ 所有测试通过
+
+---
+
+### Task 2.3: 实现 ViewModel 层
+**文件**: `lib/presentation/viewmodels/xian_houtian_jia_ze_view_model.dart`
+**预计时间**: 1小时
+
+- [ ] 2.3.1 创建 XianHoutianJiaZeViewModel 类
+  - 继承 BaseTiaoWenListViewModel
+  - 依赖: XianHoutianJiaZeTiaoWenListUseCase
+
+- [ ] 2.3.2 定义私有字段
+  - _currentFourZhu, _currentGender
+  - _currentThreeYuan, _currentBirthAfterZhi
+  - _domainResult (MultiBaseNumberResult)
+
+- [ ] 2.3.3 实现 setParams() 方法
+  - 保存参数到私有字段
+  - 调用 calculateTiaoWenList()
+
+- [ ] 2.3.4 实现 calculateTiaoWenList() 方法
+  - 使用 safeExecute() 包装
+  - 调用 UseCase.execute()
+  - 保存 _domainResult
+
+- [ ] 2.3.5 实现便捷getter方法
+  - xianHoutianModel: 获取 XianHoutianGuaBaseNumberModel
+  - baseNumberTiaoWenList: 获取条文列表
+  - paramsDisplayText: 参数显示文本
+
+- [ ] 2.3.6 实现 refresh() 和 clearSelection() 方法
+
+- [ ] 2.3.7 添加文档注释
+
+- [ ] 2.3.8 运行 dart analyze 确保无错误
+
+**验收标准**:
+- ✅ ViewModel 实现完整
+- ✅ 状态管理正确
+- ✅ 代码分析无错误
+
+---
+
+### Task 2.4: 实现 UI 层
+**文件**: `lib/presentation/widgets/xian_houtian_jia_ze_card.dart`
+**预计时间**: 1.5小时
+
+- [ ] 2.4.1 创建 XianHoutianJiaZeCard Widget
+  - StatefulWidget 支持展开/收起
+  - 接收 XianHoutianGuaBaseNumberModel 参数
+
+- [ ] 2.4.2 实现卡片头部
+  - 算法名称和图标
+  - 参数信息 (性别、三元、节气)
+  - 展开/收起按钮
+
+- [ ] 2.4.3 实现卦象概览区域
+  - 先天卦显示 (卦名 + 卦数)
+  - 后天卦显示 (卦名 + 卦数)
+  - 箭头分隔
+
+- [ ] 2.4.4 实现计算步骤详情 (ExpansionTile)
+  - 步骤1: 天地卦生成
+  - 步骤2: 先后天卦生成
+  - 步骤3: 先天卦加则法
+  - 步骤4: 后天卦加则法
+  - 步骤5: 条文扩展
+
+- [ ] 2.4.5 实现条文扩展展示 (ExpansionTile)
+  - 先天卦扩展 (Chip列表, 显示递增公式)
+  - 后天卦扩展 (Chip列表, 显示递减公式)
+
+- [ ] 2.4.6 实现条文内容列表 (ExpansionTile)
+  - 条文编号 + 地支标签
+  - 条文来源标签 (彩色标识)
+  - 条文内容展示
+
+- [ ] 2.4.7 实现条文统计区域
+  - 条文编号数量
+  - 条文内容数量
+
+- [ ] 2.4.8 运行 dart analyze 确保无错误
+
+**验收标准**:
+- ✅ UI卡片实现完整
+- ✅ 支持多层展开/收起
+- ✅ 信息展示清晰美观
+
+---
+
+### Task 2.5: 集成和测试
+**预计时间**: 1小时
+
+- [ ] 2.5.1 更新依赖注入配置
+  - 文件: `lib/infrastructure/di/strategy_providers.dart`
+  - 注册 XianHoutianJiaZeStrategy
+  - 注册 XianHoutianJiaZeTiaoWenListUseCase
+  - 注册 XianHoutianJiaZeViewModel
+
+- [ ] 2.5.2 更新 StrategyDemoPage
+  - 文件: `lib/presentation/pages/strategy_demo_page.dart`
+  - 添加新页面到 PageView
+  - 添加底部导航图标
+  - 更新页面标题
+
+- [ ] 2.5.3 编写集成测试
+  - 测试完整计算流程
+  - 测试UI展示
+  - 测试刷新功能
+
+- [ ] 2.5.4 运行所有测试
+  - 执行: `flutter test test/service/strategy/xian_houtian_jia_ze_strategy_test.dart`
+  - 执行: `flutter test test/usecases/`
+
+- [ ] 2.5.5 手动测试UI
+  - 验证先天卦/后天卦显示正确
+  - 验证条文扩展公式正确
+  - 验证刷新功能正常
+
+**验收标准**:
+- ✅ 依赖注入配置正确
+- ✅ 页面集成完成
+- ✅ 所有测试通过
+- ✅ UI功能正常
+
+---
+
+## Phase 3: 算法2 - 先后天卦取数 (XianHoutianQuShu)
+
+**预计时间**: 5-6小时
+**依赖**: Phase 1 完成
+**代码复用率**: 80%
+
+### Task 3.1: 实现 Strategy 层
+**文件**: `lib/service/strategy/xian_houtian_qu_shu_strategy.dart`
+**预计时间**: 2.5小时
+
+- [ ] 3.1.1 创建 XianHoutianQuShuStrategyParams 参数类
+  - 字段: fourZhu, gender, threeYuan, birthAfterZhi
+
+- [ ] 3.1.2 创建 XianHoutianQuShuStrategy 类
+  - 实现 name: "先后天卦取数"
+  - 实现 description: 算法描述
+  - 实现 detailSteps: 6个步骤
+
+- [ ] 3.1.3 实现六爻纳甲配置方法
+  - _najiaTianGan(): 配置天干 (使用 innerGuaYaoTianGan/outerGuaYaoTianGan)
+  - _najiaDiZhi(): 配置地支 (使用 innerGuaYaoDiZhi/outerGuaYaoDiZhi)
+
+- [ ] 3.1.4 实现干支和数计算方法
+  - _calculateGanZhiSum(): 计算六爻干支太玄数之和
+  - 规则: 天干太玄数 + 地支太玄数 (和为10则不计)
+
+- [ ] 3.1.5 实现核心计算方法 calculate()
+  - 步骤1-2: 复用 GuaUtils (天地卦、先后天卦)
+  - 步骤3: 先天卦六爻纳甲配置
+  - 步骤4: 先天卦干支和数计算
+  - 步骤5: 后天卦六爻纳甲配置
+  - 步骤6: 后天卦干支和数计算
+
+- [ ] 3.1.6 实现条文扩展配置
+  - 使用 GenericTiaoWenCalculationConfig.addSub48x()
+  - 倍数: [2, 4, 8, 16]
+  - 先天卦和后天卦都使用相同规则
+
+- [ ] 3.1.7 添加文档注释和单元测试
+
+- [ ] 3.1.8 运行 dart analyze 和 flutter test
+
+**验收标准**:
+- ✅ 六爻纳甲配置正确
+- ✅ 干支和数计算正确
+- ✅ 条文扩展规则正确
+- ✅ 测试覆盖核心逻辑
+
+---
+
+### Task 3.2: 实现 UseCase 层
+**文件**: `lib/usecases/liu_yao_gan_zhi_he_tiao_wen_list_use_case.dart`
+**预计时间**: 1.5小时
+
+- [ ] 3.2.1 创建 LiuYaoGanZhiHeUseCaseParams 类
+
+- [ ] 3.2.2 创建 LiuYaoGanZhiHeTiaoWenListUseCase 类
+  - 依赖注入 Strategy 和 Repository
+
+- [ ] 3.2.3 实现 execute() 方法
+  - 调用 Strategy 计算
+  - 处理先天卦条文扩展 (±48×倍数)
+  - 处理后天卦条文扩展 (±48×倍数)
+  - 批量查询条文数据
+  - 返回 MultiBaseNumberResult
+
+- [ ] 3.2.4 编写单元测试
+  - 测试完整流程
+  - 测试 ±48×倍数扩展规则
+
+- [ ] 3.2.5 运行测试确保通过
+
+**验收标准**:
+- ✅ UseCase 实现完整
+- ✅ 条文扩展规则正确
+- ✅ 单元测试通过
+
+---
+
+### Task 3.3: 实现 ViewModel 和 UI 层
+**文件**: `lib/presentation/viewmodels/liu_yao_gan_zhi_he_view_model.dart`
+**文件**: `lib/presentation/widgets/liu_yao_gan_zhi_he_card.dart`
+**预计时间**: 2小时
+
+- [ ] 3.3.1 创建 LiuYaoGanZhiHeViewModel
+  - 参考 XianHoutianJiaZeViewModel 结构
+  - 实现状态管理方法
+
+- [ ] 3.3.2 创建 LiuYaoGanZhiHeCard Widget
+  - 实现卡片头部
+  - 实现卦象概览
+  - 实现计算步骤详情
+  - 添加六爻纳甲详情展示
+  - 添加干支和数计算过程展示
+  - 实现条文扩展展示 (±48×倍数)
+
+- [ ] 3.3.3 集成到 StrategyDemoPage
+  - 更新依赖注入
+  - 添加到 PageView
+  - 添加底部导航
+
+- [ ] 3.3.4 运行 dart analyze 和手动测试
+
+**验收标准**:
+- ✅ ViewModel 实现完整
+- ✅ UI 展示六爻纳甲详情
+- ✅ 条文扩展公式正确显示
+- ✅ 集成测试通过
+
+---
+
+## Phase 4: 算法3 - 前后卦取数法 (QianHouGua)
+
+**预计时间**: 4-5小时
+**依赖**: Phase 1 完成
+**代码复用率**: 60%
+
+### Task 4.1: 创建独立数据模型
+**文件**: `lib/domain/models/qian_hou_gua_base_number_model.dart`
+**预计时间**: 1.5小时
+
+- [ ] 4.1.1 定义 QianHouGuaBaseNumberModel 类
+  - 继承 BaseNumberModel
+  - 输入参数 (4个字段)
+
+- [ ] 4.1.2 定义步骤1-2字段 (天地卦、先后天卦)
+  - 复用 XianHoutianGuaBaseNumberModel 的字段定义
+
+- [ ] 4.1.3 定义步骤3字段 - 前卦取数
+  - qianGuaName: 前卦名称
+  - qianGuaUpperNumber: 前卦上卦数
+  - qianGuaLowerNumber: 前卦下卦数
+  - qianGuaBaseNumber: 前卦基础数 (千位+百位)
+
+- [ ] 4.1.4 定义步骤4字段 - 后卦取数
+  - houGuaName: 后卦名称
+  - houGuaUpperNumber: 后卦上卦数
+  - houGuaLowerNumber: 后卦下卦数
+  - houGuaBaseNumber: 后卦基础数 (十位+个位)
+
+- [ ] 4.1.5 定义步骤5字段 - 条文扩展
+  - qianGuaTiaoWenNumbers: 前卦条文列表
+  - houGuaTiaoWenNumbers: 后卦条文列表
+  - qianGuaCalculationFormula: 前卦公式
+  - houGuaCalculationFormula: 后卦公式
+
+- [ ] 4.1.6 实现便捷方法和文档注释
+
+- [ ] 4.1.7 运行 dart analyze
+
+**验收标准**:
+- ✅ QianHouGuaBaseNumberModel 包含 25+ 字段
+- ✅ 前后卦字段定义清晰
+- ✅ 文档注释完整
+
+---
+
+### Task 4.2: 实现 Strategy 层
+**文件**: `lib/service/strategy/qian_hou_gua_strategy.dart`
+**预计时间**: 2小时
+
+- [ ] 4.2.1 创建 QianHouGuaStrategyParams 参数类
+
+- [ ] 4.2.2 创建 QianHouGuaStrategy 类
+  - 实现 name: "前后卦取数法"
+  - 实现 description
+  - 实现 detailSteps: 5个步骤
+
+- [ ] 4.2.3 实现前卦取数方法
+  - _calculateQianGua(): 使用先天卦
+  - 千位: 上卦后天数
+  - 百位: 下卦后天数
+
+- [ ] 4.2.4 实现后卦取数方法
+  - _calculateHouGua(): 使用后天卦
+  - 十位: 上卦后天数
+  - 个位: 下卦后天数
+
+- [ ] 4.2.5 实现核心计算方法 calculate()
+  - 步骤1-2: 复用 GuaUtils
+  - 步骤3: 前卦取数
+  - 步骤4: 后卦取数
+  - 步骤5: 组合基础数
+
+- [ ] 4.2.6 实现条文扩展配置
+  - 前卦: 递增96四次
+  - 后卦: 递减96四次
+
+- [ ] 4.2.7 添加文档注释和单元测试
+
+- [ ] 4.2.8 运行 dart analyze 和 flutter test
+
+**验收标准**:
+- ✅ 前卦取数逻辑正确
+- ✅ 后卦取数逻辑正确
+- ✅ 基础数组合正确
+- ✅ 测试覆盖核心逻辑
+
+---
+
+### Task 4.3: 实现 UseCase、ViewModel 和 UI 层
+**预计时间**: 1.5小时
+
+- [ ] 4.3.1 创建 QianHouGuaTiaoWenListUseCase
+  - 实现 execute() 方法
+  - 处理前后卦条文扩展
+
+- [ ] 4.3.2 创建 QianHouGuaViewModel
+  - 实现状态管理
+
+- [ ] 4.3.3 创建 QianHouGuaCard Widget
+  - 展示前后卦取数过程
+  - 展示条文扩展
+
+- [ ] 4.3.4 集成到 StrategyDemoPage
+  - 更新依赖注入
+  - 添加页面和导航
+
+- [ ] 4.3.5 运行测试和手动验证
+
+**验收标准**:
+- ✅ UseCase/ViewModel/UI 实现完整
+- ✅ 前后卦展示清晰
+- ✅ 集成测试通过
+
+---
+
+## Phase 5: 算法4 - 卦中取数法 (GuaZhong)
+
+**预计时间**: 3-4小时
+**依赖**: Phase 1 完成
+**代码复用率**: 40%
+
+### Task 5.1: 创建独立数据模型
+**文件**: `lib/domain/models/gua_zhong_base_number_model.dart`
+**预计时间**: 1小时
+
+- [ ] 5.1.1 定义 GuaZhongBaseNumberModel 类
+  - 继承 BaseNumberModel
+  - 输入参数 (4个字段)
+
+- [ ] 5.1.2 定义步骤1-2字段 (天地卦、先后天卦)
+
+- [ ] 5.1.3 定义步骤3字段 - 卦中取数
+  - guazhongMethod: 取数方法描述
+  - guazhongBaseNumber: 卦中基础数
+  - guazhongCalculationDetail: 计算详情
+
+- [ ] 5.1.4 定义步骤4字段 - 条文列表
+  - tiaoWenNumber: 唯一条文编号 (无扩展)
+
+- [ ] 5.1.5 实现便捷方法和文档注释
+
+- [ ] 5.1.6 运行 dart analyze
+
+**验收标准**:
+- ✅ GuaZhongBaseNumberModel 包含 20+ 字段
+- ✅ 卦中取数字段定义清晰
+- ✅ 文档注释完整
+
+---
+
+### Task 5.2: 实现 Strategy 层
+**文件**: `lib/service/strategy/gua_zhong_strategy.dart`
+**预计时间**: 1.5小时
+
+- [ ] 5.2.1 创建 GuaZhongStrategyParams 参数类
+
+- [ ] 5.2.2 创建 GuaZhongStrategy 类
+  - 实现 name: "卦中取数法"
+  - 实现 description
+  - 实现 detailSteps: 4个步骤
+
+- [ ] 5.2.3 实现卦中取数方法
+  - _calculateGuaZhong(): 使用先后天卦
+  - 具体规则: 根据用户提供的算法补充
+
+- [ ] 5.2.4 实现核心计算方法 calculate()
+  - 步骤1-2: 复用 GuaUtils
+  - 步骤3: 卦中取数
+  - 步骤4: 无条文扩展
+
+- [ ] 5.2.5 实现条文扩展配置
+  - 返回单一条文编号 (无扩展)
+
+- [ ] 5.2.6 添加文档注释和单元测试
+
+- [ ] 5.2.7 运行 dart analyze 和 flutter test
+
+**验收标准**:
+- ✅ 卦中取数逻辑正确
+- ✅ 无条文扩展 (单一编号)
+- ✅ 测试覆盖核心逻辑
+
+---
+
+### Task 5.3: 实现 UseCase、ViewModel 和 UI 层
+**预计时间**: 1.5小时
+
+- [ ] 5.3.1 创建 GuaZhongTiaoWenListUseCase
+  - 实现 execute() 方法
+  - 处理单一条文编号
+
+- [ ] 5.3.2 创建 GuaZhongViewModel
+  - 实现状态管理
+
+- [ ] 5.3.3 创建 GuaZhongCard Widget
+  - 展示卦中取数过程
+  - 展示唯一条文编号
+  - 不展示条文扩展区域
+
+- [ ] 5.3.4 集成到 StrategyDemoPage
+  - 更新依赖注入
+  - 添加页面和导航
+
+- [ ] 5.3.5 运行测试和手动验证
+
+**验收标准**:
+- ✅ UseCase/ViewModel/UI 实现完整
+- ✅ 单一条文编号展示清晰
+- ✅ 集成测试通过
+
+---
+
+## Phase 6: 集成、测试和文档
+
+**预计时间**: 3-4小时
+**依赖**: Phase 2-5 全部完成
+
+### Task 6.1: 完整集成测试
+**预计时间**: 1.5小时
+
+- [ ] 6.1.1 编写端到端测试
+  - 文件: `test/integration/four_algorithms_integration_test.dart`
+  - 测试4个算法完整流程
+  - 测试页面切换
+  - 测试刷新功能
+
+- [ ] 6.1.2 运行所有单元测试
+  - 执行: `flutter test test/service/strategy/`
+  - 执行: `flutter test test/usecases/`
+  - 确保所有测试通过
+
+- [ ] 6.1.3 运行代码分析
+  - 执行: `dart analyze lib/ --fatal-infos`
+  - 修复所有警告和错误
+
+- [ ] 6.1.4 性能测试
+  - 测试单次计算耗时 < 100ms
+  - 测试UI渲染流畅度
+  - 测试内存使用情况
+
+**验收标准**:
+- ✅ 所有单元测试通过
+- ✅ 代码分析无错误
+- ✅ 性能符合要求
+
+---
+
+### Task 6.2: 更新文档
+**预计时间**: 1.5小时
+
+- [ ] 6.2.1 更新 PRD.md
+  - 文件: `docs/normal_alg/PRD.md`
+  - 添加4个新算法的详细说明
+  - 更新产品概述 (10种算法)
+  - 更新架构图
+  - 添加用户故事
+
+- [ ] 6.2.2 创建 FOUR_ALGORITHMS_CODE_REVIEW.md
+  - 文件: `docs/normal_alg/FOUR_ALGORITHMS_CODE_REVIEW.md`
+  - 对4个新算法进行代码审查
+  - 评估代码质量
+  - 提出改进建议
+
+- [ ] 6.2.3 更新 README.md (如果存在)
+  - 更新算法列表
+  - 添加使用说明
+
+- [ ] 6.2.4 更新 CHANGELOG.md (如果存在)
+  - 记录新增的4个算法
+  - 记录API变更
+
+**验收标准**:
+- ✅ PRD.md 包含4个新算法
+- ✅ 代码审查报告完成
+- ✅ 相关文档更新完整
+
+---
+
+### Task 6.3: 最终验收
+**预计时间**: 1小时
+
+- [ ] 6.3.1 功能验收清单
+  - ✅ 算法1: 先后天八卦加则法 正常运行
+  - ✅ 算法2: 先后天卦六爻干支和数法 正常运行
+  - ✅ 算法3: 前后卦取数法 正常运行
+  - ✅ 算法4: 卦中取数法 正常运行
+  - ✅ 所有算法都可以通过UI访问
+  - ✅ 页面切换流畅
+  - ✅ 刷新功能正常
+
+- [ ] 6.3.2 代码质量验收清单
+  - ✅ 所有代码都有文档注释
+  - ✅ 遵循 Dart 编码规范
+  - ✅ Clean Architecture 层次清晰
+  - ✅ 无代码重复 (DRY原则)
+  - ✅ 错误处理完善
+
+- [ ] 6.3.3 测试验收清单
+  - ✅ 单元测试覆盖率 > 80%
+  - ✅ 所有测试通过
+  - ✅ 集成测试覆盖主要流程
+  - ✅ 性能测试符合要求
+
+- [ ] 6.3.4 文档验收清单
+  - ✅ PRD.md 更新完整
+  - ✅ 代码审查报告完成
+  - ✅ API文档清晰
+  - ✅ 用户故事完整
+
+**验收标准**:
+- ✅ 所有验收清单项目通过
+- ✅ 可以正式发布
+
+---
+
+## 进度追踪
+
+### Phase 1: 基础设施准备
+- [ ] Task 1.1: 扩展 GuaUtils (0/4 完成)
+- [ ] Task 1.2: 扩展条文计算配置 (0/6 完成)
+- [ ] Task 1.3: 创建共享数据模型 (0/10 完成)
+
+### Phase 2: 算法1 - 先后天八卦加则法
+- [ ] Task 2.1: Strategy 层 (0/7 完成)
+- [ ] Task 2.2: UseCase 层 (0/7 完成)
+- [ ] Task 2.3: ViewModel 层 (0/8 完成)
+- [ ] Task 2.4: UI 层 (0/8 完成)
+- [ ] Task 2.5: 集成和测试 (0/5 完成)
+
+### Phase 3: 算法2 - 先后天卦六爻干支和数法
+- [ ] Task 3.1: Strategy 层 (0/8 完成)
+- [ ] Task 3.2: UseCase 层 (0/5 完成)
+- [ ] Task 3.3: ViewModel 和 UI 层 (0/4 完成)
+
+### Phase 4: 算法3 - 前后卦取数法
+- [ ] Task 4.1: 独立数据模型 (0/7 完成)
+- [ ] Task 4.2: Strategy 层 (0/8 完成)
+- [ ] Task 4.3: UseCase、ViewModel 和 UI 层 (0/5 完成)
+
+### Phase 5: 算法4 - 卦中取数法
+- [ ] Task 5.1: 独立数据模型 (0/6 完成)
+- [ ] Task 5.2: Strategy 层 (0/7 完成)
+- [ ] Task 5.3: UseCase、ViewModel 和 UI 层 (0/5 完成)
+
+### Phase 6: 集成、测试和文档
+- [ ] Task 6.1: 完整集成测试 (0/4 完成)
+- [ ] Task 6.2: 更新文档 (0/4 完成)
+- [ ] Task 6.3: 最终验收 (0/4 完成)
+
+---
+
+## 总体进度
+
+**总任务数**: 120+ 个原子任务
+**已完成**: 0
+**进行中**: 0
+**待开始**: 120+
+**完成百分比**: 0%
+
+---
+
+## 备注
+
+1. **任务依赖关系**:
+   - Phase 2-5 都依赖 Phase 1 完成
+   - Phase 6 依赖 Phase 2-5 全部完成
+   - 建议按顺序执行 Phase 1 → Phase 2 → Phase 3 → Phase 4 → Phase 5 → Phase 6
+
+2. **风险和注意事项**:
+   - GuaUtils 方法提取需要仔细测试,避免破坏元堂卦逻辑
+   - 条文扩展配置需要支持多种模式 (递增/递减/倍数)
+   - 算法4的具体取数规则需要用户确认补充
+
+3. **代码审查检查点**:
+   - Phase 1 完成后进行代码审查
+   - 每个算法完成后进行代码审查
+   - Phase 6 进行最终代码审查
+
+4. **性能优化建议**:
+   - GuaUtils 方法可以考虑添加缓存
+   - 条文批量查询优化
+   - UI 使用 const 构造器优化渲染
+
+---
+
+**最后更新**: 2025-10-11
+**负责人**: 开发团队
+**审核人**: 待定
