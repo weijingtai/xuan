@@ -1,7 +1,7 @@
 
 import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/widgets/interactive_four_zhu_card.dart';
+import 'package:common/widgets/eight_chars_card_v3.dart';
 import 'package:flutter/material.dart';
 
 import '../enums/enum_jia_zi.dart';
@@ -24,7 +24,7 @@ class PillarOptionsCard extends StatelessWidget {
     JiaZi keZhu = eightChars.time;
 
     return Center(
-      child: InteractiveFourZhuCard(
+      child: EightCharsCardV3(
         eightChars: eightChars,
         taiYuan: taiYuan,
         keZhu: keZhu,
