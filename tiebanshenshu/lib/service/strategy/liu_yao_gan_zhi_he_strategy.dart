@@ -577,14 +577,26 @@ class LiuYaoGanZhiHeStrategy extends StandardCalculationStrategy<
   /// 计算卦数（处理模运算的特殊情况）
   ///
   /// [total] 总和
-  /// [divisor] 除数
-  /// [defaultValue] 当余数为0时的默认值
-  /// 返回: 卦数
+  /// [divisor] 除数（25或30）
+  /// [defaultValue] 当余数为0时的默认值（5或3）
+  /// 返回: 卦数（1-9范围内，其中5需要特殊处理三元五宫）
+  ///
+  /// 算法逻辑：
+  /// 1. 如果 total == divisor，返回 defaultValue
+  /// 2. 如果 total > divisor，先模 divisor 得到余数
+  /// 3. 最后再模10取个位，确保结果在0-9范围内
   int _calculateGuaNum(int total, int divisor, int defaultValue) {
-    final remainder = total % divisor;
-    if (remainder == 0) {
+    if (total == divisor) {
       return defaultValue;
     }
-    return remainder;
+
+    int remainder = total;
+    if (total > divisor) {
+      remainder = total % divisor;
+    }
+
+    // 最后模10取个位，确保结果在0-9范围内
+    // 这样可以将任意余数映射到1-9（0会被特殊处理为defaultValue）
+    return remainder % 10;
   }
 }

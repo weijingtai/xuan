@@ -780,34 +780,34 @@
 **文件**: `lib/domain/models/qian_hou_gua_base_number_model.dart`
 **预计时间**: 1.5小时
 
-- [ ] 5.1.1 定义 QianHouGuaBaseNumberModel 类
+- [x] 5.1.1 定义 QianHouGuaBaseNumberModel 类
   - 继承 BaseNumberModel
   - 输入参数 (4个字段)
 
-- [ ] 5.1.2 定义步骤1-2字段 (天地卦、先后天卦)
+- [x] 5.1.2 定义步骤1-2字段 (天地卦、先后天卦)
   - 复用 XianHoutianGuaBaseNumberModel 的字段定义
 
-- [ ] 5.1.3 定义步骤3字段 - 前卦取数
+- [x] 5.1.3 定义步骤3字段 - 前卦取数
   - qianGuaName: 前卦名称
   - qianGuaUpperNumber: 前卦上卦数
   - qianGuaLowerNumber: 前卦下卦数
   - qianGuaBaseNumber: 前卦基础数 (千位+百位)
 
-- [ ] 5.1.4 定义步骤4字段 - 后卦取数
+- [x] 5.1.4 定义步骤4字段 - 后卦取数
   - houGuaName: 后卦名称
   - houGuaUpperNumber: 后卦上卦数
   - houGuaLowerNumber: 后卦下卦数
   - houGuaBaseNumber: 后卦基础数 (十位+个位)
 
-- [ ] 5.1.5 定义步骤5字段 - 条文扩展
+- [x] 5.1.5 定义步骤5字段 - 条文扩展
   - qianGuaTiaoWenNumbers: 前卦条文列表
   - houGuaTiaoWenNumbers: 后卦条文列表
   - qianGuaCalculationFormula: 前卦公式
   - houGuaCalculationFormula: 后卦公式
 
-- [ ] 5.1.6 实现便捷方法和文档注释
+- [x] 5.1.6 实现便捷方法和文档注释
 
-- [ ] 5.1.7 运行 dart analyze
+- [x] 5.1.7 运行 dart analyze
 
 **验收标准**:
 - ✅ QianHouGuaBaseNumberModel 包含 25+ 字段
@@ -820,36 +820,36 @@
 **文件**: `lib/service/strategy/qian_hou_gua_strategy.dart`
 **预计时间**: 2小时
 
-- [ ] 5.2.1 创建 QianHouGuaStrategyParams 参数类
+- [x] 5.2.1 创建 QianHouGuaStrategyParams 参数类
 
-- [ ] 5.2.2 创建 QianHouGuaStrategy 类
+- [x] 5.2.2 创建 QianHouGuaStrategy 类
   - 实现 name: "前后卦取数法"
   - 实现 description
   - 实现 detailSteps: 5个步骤
 
-- [ ] 5.2.3 实现前卦取数方法
+- [x] 5.2.3 实现前卦取数方法
   - _calculateQianGua(): 使用先天卦
   - 千位: 上卦后天数
   - 百位: 下卦后天数
 
-- [ ] 5.2.4 实现后卦取数方法
+- [x] 5.2.4 实现后卦取数方法
   - _calculateHouGua(): 使用后天卦
   - 十位: 上卦后天数
   - 个位: 下卦后天数
 
-- [ ] 5.2.5 实现核心计算方法 calculate()
+- [x] 5.2.5 实现核心计算方法 calculate()
   - 步骤1-2: 复用 GuaUtils
   - 步骤3: 前卦取数
   - 步骤4: 后卦取数
   - 步骤5: 组合基础数
 
-- [ ] 5.2.6 实现条文扩展配置
+- [x] 5.2.6 实现条文扩展配置
   - 前卦: 递增96四次
   - 后卦: 递减96四次
 
-- [ ] 5.2.7 添加文档注释和单元测试
+- [x] 5.2.7 添加文档注释和单元测试
 
-- [ ] 5.2.8 运行 dart analyze 和 flutter test
+- [x] 5.2.8 运行 dart analyze 和 flutter test
 
 **验收标准**:
 - ✅ 前卦取数逻辑正确
@@ -862,22 +862,22 @@
 ### Task 5.3: 实现 UseCase、ViewModel 和 UI 层
 **预计时间**: 1.5小时
 
-- [ ] 5.3.1 创建 QianHouGuaTiaoWenListUseCase
+- [x] 5.3.1 创建 QianHouGuaTiaoWenListUseCase
   - 实现 execute() 方法
   - 处理前后卦条文扩展
 
-- [ ] 5.3.2 创建 QianHouGuaViewModel
+- [x] 5.3.2 创建 QianHouGuaViewModel
   - 实现状态管理
 
-- [ ] 5.3.3 创建 QianHouGuaCard Widget
+- [x] 5.3.3 创建 QianHouGuaCard Widget
   - 展示前后卦取数过程
   - 展示条文扩展
 
-- [ ] 5.3.4 集成到 StrategyDemoPage
+- [x] 5.3.4 集成到 StrategyDemoPage
   - 更新依赖注入
   - 添加页面和导航
 
-- [ ] 5.3.5 运行测试和手动验证
+- [x] 5.3.5 运行测试和手动验证
 
 **验收标准**:
 - ✅ UseCase/ViewModel/UI 实现完整
@@ -896,23 +896,23 @@
 **文件**: `lib/domain/models/gua_zhong_base_number_model.dart`
 **预计时间**: 1小时
 
-- [ ] 6.1.1 定义 GuaZhongBaseNumberModel 类
+- [x] 6.1.1 定义 GuaZhongBaseNumberModel 类
   - 继承 BaseNumberModel
   - 输入参数 (4个字段)
 
-- [ ] 6.1.2 定义步骤1-2字段 (天地卦、先后天卦)
+- [x] 6.1.2 定义步骤1-2字段 (天地卦、先后天卦)
 
-- [ ] 6.1.3 定义步骤3字段 - 卦中取数
+- [x] 6.1.3 定义步骤3字段 - 卦中取数
   - guazhongMethod: 取数方法描述
   - guazhongBaseNumber: 卦中基础数
   - guazhongCalculationDetail: 计算详情
 
-- [ ] 6.1.4 定义步骤4字段 - 条文列表
+- [x] 6.1.4 定义步骤4字段 - 条文列表
   - tiaoWenNumber: 唯一条文编号 (无扩展)
 
-- [ ] 6.1.5 实现便捷方法和文档注释
+- [x] 6.1.5 实现便捷方法和文档注释
 
-- [ ] 6.1.6 运行 dart analyze
+- [x] 6.1.6 运行 dart analyze
 
 **验收标准**:
 - ✅ GuaZhongBaseNumberModel 包含 20+ 字段
@@ -925,28 +925,28 @@
 **文件**: `lib/service/strategy/gua_zhong_strategy.dart`
 **预计时间**: 1.5小时
 
-- [ ] 6.2.1 创建 GuaZhongStrategyParams 参数类
+- [x] 6.2.1 创建 GuaZhongStrategyParams 参数类
 
-- [ ] 6.2.2 创建 GuaZhongStrategy 类
+- [x] 6.2.2 创建 GuaZhongStrategy 类
   - 实现 name: "卦中取数法"
   - 实现 description
   - 实现 detailSteps: 4个步骤
 
-- [ ] 6.2.3 实现卦中取数方法
+- [x] 6.2.3 实现卦中取数方法
   - _calculateGuaZhong(): 使用先后天卦
   - 具体规则: 根据用户提供的算法补充
 
-- [ ] 6.2.4 实现核心计算方法 calculate()
+- [x] 6.2.4 实现核心计算方法 calculate()
   - 步骤1-2: 复用 GuaUtils
   - 步骤3: 卦中取数
   - 步骤4: 无条文扩展
 
-- [ ] 6.2.5 实现条文扩展配置
+- [x] 6.2.5 实现条文扩展配置
   - 返回单一条文编号 (无扩展)
 
-- [ ] 6.2.6 添加文档注释和单元测试
+- [x] 6.2.6 添加文档注释和单元测试
 
-- [ ] 6.2.7 运行 dart analyze 和 flutter test
+- [x] 6.2.7 运行 dart analyze 和 flutter test
 
 **验收标准**:
 - ✅ 卦中取数逻辑正确
@@ -958,23 +958,23 @@
 ### Task 6.3: 实现 UseCase、ViewModel 和 UI 层
 **预计时间**: 1.5小时
 
-- [ ] 6.3.1 创建 GuaZhongTiaoWenListUseCase
+- [x] 6.3.1 创建 GuaZhongTiaoWenListUseCase
   - 实现 execute() 方法
   - 处理单一条文编号
 
-- [ ] 6.3.2 创建 GuaZhongViewModel
+- [x] 6.3.2 创建 GuaZhongViewModel
   - 实现状态管理
 
-- [ ] 6.3.3 创建 GuaZhongCard Widget
+- [x] 6.3.3 创建 GuaZhongCard Widget
   - 展示卦中取数过程
   - 展示唯一条文编号
   - 不展示条文扩展区域
 
-- [ ] 6.3.4 集成到 StrategyDemoPage
+- [x] 6.3.4 集成到 StrategyDemoPage
   - 更新依赖注入
   - 添加页面和导航
 
-- [ ] 6.3.5 运行测试和手动验证
+- [x] 6.3.5 运行测试和手动验证
 
 **验收标准**:
 - ✅ UseCase/ViewModel/UI 实现完整

@@ -24,6 +24,8 @@ import '../../service/strategy/yuan_tang_strategy.dart';
 import '../../service/strategy/xian_houtian_jia_ze_strategy.dart';
 import '../../service/strategy/liu_yao_gan_zhi_he_strategy.dart';
 import '../../service/strategy/xian_houtian_qu_shu_strategy.dart';
+import '../../service/strategy/qian_hou_gua_strategy.dart';
+import '../../service/strategy/gua_zhong_strategy.dart';
 import '../../service/strategy/tiao_wen_list_calculation.dart';
 import '../../usecases/day_gan_zhi_gua_tiao_wen_list_use_case.dart';
 import '../../usecases/four_zhu_tian_gan_tiao_wen_list_use_case.dart';
@@ -34,6 +36,8 @@ import '../../usecases/yuan_tang_tiao_wen_list_use_case.dart';
 import '../../usecases/xian_houtian_jia_ze_tiao_wen_list_use_case.dart';
 import '../../usecases/liu_yao_gan_zhi_he_tiao_wen_list_use_case.dart';
 import '../../usecases/xian_houtian_qu_shu_tiao_wen_list_use_case.dart';
+import '../../usecases/qian_hou_gua_tiao_wen_list_use_case.dart';
+import '../../usecases/gua_zhong_tiao_wen_list_use_case.dart';
 import '../../presentation/viewmodels/day_gan_zhi_gua_view_model.dart';
 import '../../presentation/viewmodels/four_zhu_tian_gan_view_model.dart';
 import '../../presentation/viewmodels/tai_xuan_four_zhu_view_model.dart';
@@ -43,6 +47,8 @@ import '../../presentation/viewmodels/yuan_tang_view_model.dart';
 import '../../presentation/viewmodels/xian_houtian_jia_ze_view_model.dart';
 import '../../presentation/viewmodels/liu_yao_gan_zhi_he_view_model.dart';
 import '../../presentation/viewmodels/xian_houtian_qu_shu_view_model.dart';
+import '../../presentation/viewmodels/qian_hou_gua_view_model.dart';
+import '../../presentation/viewmodels/gua_zhong_view_model.dart';
 // 新的V2架构
 import '../../repository/session_repository.dart';
 import '../../repository/session_repository_impl.dart';
@@ -82,6 +88,8 @@ class StrategyProviders {
     Provider<XianHoutianJiaZeStrategy>(create: (_) => XianHoutianJiaZeStrategy()),
     Provider<LiuYaoGanZhiHeStrategy>(create: (_) => LiuYaoGanZhiHeStrategy()),
     Provider<XianHoutianQuShuStrategy>(create: (_) => XianHoutianQuShuStrategy()),
+    Provider<QianHouGuaStrategy>(create: (_) => QianHouGuaStrategy()),
+    Provider<GuaZhongStrategy>(create: (_) => GuaZhongStrategy()),
 
     // Interactive Strategy层
     Provider<TaiXuanFourZhuInteractiveStrategy>(
@@ -181,6 +189,18 @@ class StrategyProviders {
         context.read<TiaoWenRepository>(),
       ),
     ),
+    Provider<QianHouGuaTiaoWenListUseCase>(
+      create: (context) => QianHouGuaTiaoWenListUseCase(
+        context.read<QianHouGuaStrategy>(),
+        context.read<TiaoWenRepository>(),
+      ),
+    ),
+    Provider<GuaZhongTiaoWenListUseCase>(
+      create: (context) => GuaZhongTiaoWenListUseCase(
+        context.read<GuaZhongStrategy>(),
+        context.read<TiaoWenRepository>(),
+      ),
+    ),
 
     // Interactive UseCase层
     Provider<TaiXuanFourZhuInteractiveUseCase>(
@@ -228,6 +248,16 @@ class StrategyProviders {
     ChangeNotifierProvider<XianHoutianQuShuViewModel>(
       create: (context) => XianHoutianQuShuViewModel(
         context.read<XianHoutianQuShuTiaoWenListUseCase>(),
+      ),
+    ),
+    ChangeNotifierProvider<QianHouGuaViewModel>(
+      create: (context) => QianHouGuaViewModel(
+        context.read<QianHouGuaTiaoWenListUseCase>(),
+      ),
+    ),
+    ChangeNotifierProvider<GuaZhongViewModel>(
+      create: (context) => GuaZhongViewModel(
+        context.read<GuaZhongTiaoWenListUseCase>(),
       ),
     ),
 

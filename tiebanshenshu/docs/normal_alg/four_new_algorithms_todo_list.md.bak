@@ -576,97 +576,222 @@
 
 ## Phase 5: 算法4 - 卦中取数法 (GuaZhong)
 
-**预计时间**: 3-4小时
+**预计时间**: 5-6小时
 **依赖**: Phase 1 完成
 **代码复用率**: 40%
+**特殊说明**: 千位计算存在歧义，需实现三种方案
 
-### Task 5.1: 创建独立数据模型
+### ⚠️ 重要发现：千位计算方案
+
+**问题描述**:
+当 `(上卦先天数 + 6) = 10` 时，按照 `%10` 运算结果为 `0`，导致条文编号变为三位数（如 484），不符合铁板神数四位数规范。
+
+**解决方案（需同时支持三种）**:
+
+**方案1（推荐）**: 取 `1` 代替 `0`
+- 逻辑: `qianWei = (xiantianNumber + 6) == 10 ? 1 : (xiantianNumber + 6) % 10`
+- 示例: 震卦(4) → (4+6)=10 → 千位=1 → 条文=1484
+- 优点: 保持四位数格式，符合铁板神数规范
+- 场景: 当上卦为震(4)时触发
+
+**方案2**: 取卦本身先天数代替
+- 逻辑: `qianWei = (xiantianNumber + 6) == 10 ? xiantianNumber : (xiantianNumber + 6) % 10`
+- 示例: 震卦(4) → (4+6)=10 → 千位=4 → 条文=4484
+- 优点: 保留卦象数字特征
+- 场景: 强调卦象本身的数字含义
+
+**方案3**: 保留 `10` 让结果为五位数
+- 逻辑: `qianWei = xiantianNumber + 6` (不取模)
+- 示例: 震卦(4) → (4+6)=10 → 千位=10 → 条文=10484 (五位数)
+- 优点: 完全按照原始算法，无修改
+- 缺点: 打破四位数规范，数据库可能不支持
+
+**实现要求**:
+1. 年月卦和日时卦各自独立选择方案（4个条文 × 3种方案 = 最多12个条文编号）
+2. UI提供多选按钮，用户可勾选显示哪些方案（默认全部显示）
+3. 每个条文编号明确标注使用的方案（如"方案1"、"方案2"、"方案3"）
+4. 代码注释中详细说明三种方案的逻辑和触发条件
+
+### Task 5.1: 创建独立数据模型（支持三种方案）
 **文件**: `lib/domain/models/gua_zhong_base_number_model.dart`
-**预计时间**: 1小时
+**预计时间**: 2小时
 
 - [ ] 5.1.1 定义 GuaZhongBaseNumberModel 类
   - 继承 BaseNumberModel
-  - 输入参数 (4个字段)
+  - 输入参数 (1个字段): fourZhu
 
-- [ ] 5.1.2 定义步骤1-2字段 (天地卦、先后天卦)
+- [ ] 5.1.2 定义步骤1字段 - 四柱太玄数 (8个字段)
+  - yearGanTaixuan, yearZhiTaixuan
+  - monthGanTaixuan, monthZhiTaixuan
+  - dayGanTaixuan, dayZhiTaixuan
+  - timeGanTaixuan, timeZhiTaixuan
 
-- [ ] 5.1.3 定义步骤3字段 - 卦中取数
-  - guazhongMethod: 取数方法描述
-  - guazhongBaseNumber: 卦中基础数
-  - guazhongCalculationDetail: 计算详情
+- [ ] 5.1.3 定义步骤2字段 - 年月卦 (10个字段)
+  - yearSum, monthSum
+  - nianYueUpperGuaXiantianNumber, nianYueLowerGuaXiantianNumber
+  - nianYueUpperGuaName, nianYueLowerGuaName
+  - nianYueZhuGuaName, nianYueHuGuaName
+  - nianYueHuGuaUpperXiantianNumber, nianYueHuGuaLowerXiantianNumber
 
-- [ ] 5.1.4 定义步骤4字段 - 条文列表
-  - tiaoWenNumber: 唯一条文编号 (无扩展)
+- [ ] 5.1.4 定义步骤3字段 - 年月卦三种方案条文 (6个字段)
+  - nianYueZhuGuaTiaoWenNumber_Plan1 (方案1: 取1)
+  - nianYueZhuGuaTiaoWenNumber_Plan2 (方案2: 取先天数)
+  - nianYueZhuGuaTiaoWenNumber_Plan3 (方案3: 保留10)
+  - nianYueHuGuaTiaoWenNumber_Plan1
+  - nianYueHuGuaTiaoWenNumber_Plan2
+  - nianYueHuGuaTiaoWenNumber_Plan3
 
-- [ ] 5.1.5 实现便捷方法和文档注释
+- [ ] 5.1.5 定义步骤4字段 - 日时卦 (10个字段)
+  - daySum, timeSum
+  - riShiUpperGuaXiantianNumber, riShiLowerGuaXiantianNumber
+  - riShiUpperGuaName, riShiLowerGuaName
+  - riShiZhuGuaName, riShiHuGuaName
+  - riShiHuGuaUpperXiantianNumber, riShiHuGuaLowerXiantianNumber
 
-- [ ] 5.1.6 运行 dart analyze
+- [ ] 5.1.6 定义步骤5字段 - 日时卦三种方案条文 (6个字段)
+  - riShiZhuGuaTiaoWenNumber_Plan1
+  - riShiZhuGuaTiaoWenNumber_Plan2
+  - riShiZhuGuaTiaoWenNumber_Plan3
+  - riShiHuGuaTiaoWenNumber_Plan1
+  - riShiHuGuaTiaoWenNumber_Plan2
+  - riShiHuGuaTiaoWenNumber_Plan3
+
+- [ ] 5.1.7 实现便捷getter方法
+  - getAllTiaoWenNumbersByPlan(int planNumber): 根据方案获取所有条文
+  - getAllTiaoWenNumbers(): 获取所有方案的所有条文（去重）
+  - getTiaoWenNumbersWithPlanLabel(): 获取带方案标签的条文列表
+
+- [ ] 5.1.8 实现文档注释（详细说明三种方案）
+
+- [ ] 5.1.9 运行 dart analyze
 
 **验收标准**:
-- ✅ GuaZhongBaseNumberModel 包含 20+ 字段
-- ✅ 卦中取数字段定义清晰
-- ✅ 文档注释完整
+- ✅ GuaZhongBaseNumberModel 包含 40+ 字段
+- ✅ 支持三种千位计算方案
+- ✅ 文档注释详细说明三种方案逻辑
 
 ---
 
-### Task 5.2: 实现 Strategy 层
+### Task 5.2: 实现 Strategy 层（支持三种方案）
 **文件**: `lib/service/strategy/gua_zhong_strategy.dart`
-**预计时间**: 1.5小时
+**预计时间**: 2.5小时
 
 - [ ] 5.2.1 创建 GuaZhongStrategyParams 参数类
+  - 字段: fourZhu
 
 - [ ] 5.2.2 创建 GuaZhongStrategy 类
-  - 实现 name: "卦中取数法"
-  - 实现 description
-  - 实现 detailSteps: 4个步骤
+  - 实现 name: "卦中取数法（三种千位计算方案）"
+  - 实现 description: 详细说明三种方案
+  - 实现 detailSteps: 6个步骤
 
-- [ ] 5.2.3 实现卦中取数方法
-  - _calculateGuaZhong(): 使用先后天卦
-  - 具体规则: 根据用户提供的算法补充
+- [ ] 5.2.3 实现千位计算辅助方法
+  - _calculateQianWei_Plan1(int xiantianNumber): 方案1 - 取1代替0
+  - _calculateQianWei_Plan2(int xiantianNumber): 方案2 - 取先天数
+  - _calculateQianWei_Plan3(int xiantianNumber): 方案3 - 保留10
+  - 每个方法包含详细注释说明逻辑
 
-- [ ] 5.2.4 实现核心计算方法 calculate()
-  - 步骤1-2: 复用 GuaUtils
-  - 步骤3: 卦中取数
-  - 步骤4: 无条文扩展
+- [ ] 5.2.4 实现年月卦计算方法
+  - _calculateNianYueGua(): 计算年月卦
+    - 年柱 mod 8 得上卦
+    - 月柱 mod 8 得下卦
+    - 返回三种方案的主卦和互卦条文编号（6个）
 
-- [ ] 5.2.5 实现条文扩展配置
-  - 返回单一条文编号 (无扩展)
+- [ ] 5.2.5 实现日时卦计算方法
+  - _calculateRiShiGua(): 计算日时卦
+    - 日柱 > 8 则减8 得上卦
+    - 时柱 > 8 则减8 得下卦
+    - 返回三种方案的主卦和互卦条文编号（6个）
 
-- [ ] 5.2.6 添加文档注释和单元测试
+- [ ] 5.2.6 实现核心计算方法 calculate()
+  - 步骤1: 获取四柱太玄数
+  - 步骤2: 计算年月卦（三种方案）
+  - 步骤3: 计算日时卦（三种方案）
+  - 步骤4: 创建 GuaZhongBaseNumberModel
+  - 返回包含12个条文编号的结果
 
-- [ ] 5.2.7 运行 dart analyze 和 flutter test
+- [ ] 5.2.7 实现条文扩展配置
+  - defaultTiaoWenCalculationConfig: 使用 customList([0])
+  - 不进行条文扩展
+
+- [ ] 5.2.8 添加详细文档注释
+  - 类级别: 说明算法原理和三种方案
+  - 方法级别: 每个千位计算方法的详细逻辑
+  - 包含触发场景说明（震卦4导致千位=10）
+
+- [ ] 5.2.9 编写单元测试
+  - 测试方案1逻辑（震卦场景）
+  - 测试方案2逻辑
+  - 测试方案3逻辑
+  - 测试其他卦象（千位≠10的情况）
+
+- [ ] 5.2.10 运行 dart analyze 和 flutter test
 
 **验收标准**:
-- ✅ 卦中取数逻辑正确
-- ✅ 无条文扩展 (单一编号)
-- ✅ 测试覆盖核心逻辑
+- ✅ 三种千位计算方案实现正确
+- ✅ 每个方案有详细注释
+- ✅ 生成12个条文编号（4个位置 × 3种方案）
+- ✅ 单元测试覆盖所有方案
 
 ---
 
-### Task 5.3: 实现 UseCase、ViewModel 和 UI 层
-**预计时间**: 1.5小时
+### Task 5.3: 实现 UseCase、ViewModel 和 UI 层（支持方案选择）
+**预计时间**: 2.5小时
 
 - [ ] 5.3.1 创建 GuaZhongTiaoWenListUseCase
   - 实现 execute() 方法
-  - 处理单一条文编号
+  - 处理12个条文编号（3种方案 × 4个位置）
+  - 按方案分组查询条文数据
 
 - [ ] 5.3.2 创建 GuaZhongViewModel
   - 实现状态管理
+  - 添加方案过滤状态: Set<int> selectedPlans (默认 {1, 2, 3})
+  - 实现 togglePlan(int planNumber) 方法
+  - 实现 getFilteredTiaoWenNumbers() 方法
 
 - [ ] 5.3.3 创建 GuaZhongCard Widget
-  - 展示卦中取数过程
-  - 展示唯一条文编号
-  - 不展示条文扩展区域
+  - 实现卡片头部（带方案选择按钮）
+  - 添加方案多选按钮组
+    - CheckboxListTile × 3
+    - 方案1: "取1代替0（推荐）"
+    - 方案2: "取卦先天数"
+    - 方案3: "保留10（五位数）"
+    - 默认全部勾选
 
-- [ ] 5.3.4 集成到 StrategyDemoPage
+- [ ] 5.3.4 实现年月卦展示区域
+  - 按方案分组显示
+  - 每个条文编号带方案标签
+  - 使用不同颜色区分方案
+    - 方案1: 蓝色 (Colors.blue)
+    - 方案2: 绿色 (Colors.green)
+    - 方案3: 橙色 (Colors.orange)
+
+- [ ] 5.3.5 实现日时卦展示区域
+  - 按方案分组显示
+  - 与年月卦使用相同的颜色标识
+
+- [ ] 5.3.6 实现条文内容列表
+  - 根据用户勾选的方案过滤显示
+  - 每个条文带方案标签和颜色
+  - 按方案排序显示
+
+- [ ] 5.3.7 添加方案说明区域（ExpansionTile）
+  - 详细说明三种方案的逻辑
+  - 说明触发场景（震卦4）
+  - 推荐使用方案1的原因
+
+- [ ] 5.3.8 集成到 StrategyDemoPage
   - 更新依赖注入
   - 添加页面和导航
+  - 更新页面标题
 
-- [ ] 5.3.5 运行测试和手动验证
+- [ ] 5.3.9 运行 dart analyze 和手动测试
 
 **验收标准**:
 - ✅ UseCase/ViewModel/UI 实现完整
-- ✅ 单一条文编号展示清晰
+- ✅ 多选按钮功能正常
+- ✅ 方案过滤显示正确
+- ✅ 每个条文明确标注方案和颜色
+- ✅ 默认全部方案显示
 - ✅ 集成测试通过
 
 ---

@@ -9,6 +9,8 @@ import '../viewmodels/yuan_tang_view_model.dart';
 import '../viewmodels/xian_houtian_jia_ze_view_model.dart';
 import '../viewmodels/liu_yao_gan_zhi_he_view_model.dart';
 import '../viewmodels/xian_houtian_qu_shu_view_model.dart';
+import '../viewmodels/qian_hou_gua_view_model.dart';
+import '../viewmodels/gua_zhong_view_model.dart';
 import '../widgets/strategy_card.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
@@ -18,6 +20,8 @@ import '../widgets/yuan_tang_card.dart';
 import '../widgets/xian_houtian_jia_ze_card.dart';
 import '../widgets/liu_yao_gan_zhi_he_card.dart';
 import '../widgets/xian_houtian_qu_shu_card.dart';
+import '../widgets/qian_hou_gua_card.dart';
+import '../widgets/gua_zhong_card.dart';
 import '../models/ba_gua_jia_ze_ui_model.dart';
 import '../models/yuan_tang_ui_model.dart';
 import '../../domain/four_zhu.dart';
@@ -49,6 +53,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
     _TabConfig(label: '先后天', icon: Icons.shuffle),
     _TabConfig(label: '六爻干支', icon: Icons.hexagon_outlined),
     _TabConfig(label: '先后天取数', icon: Icons.calculate_outlined),
+    _TabConfig(label: '前后卦', icon: Icons.switch_left_outlined),
+    _TabConfig(label: '卦中取数', icon: Icons.apps),
   ];
 
   @override
@@ -93,6 +99,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
       final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
+      final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
+      final guaZhongViewModel = context.read<GuaZhongViewModel>();
 
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
@@ -135,6 +143,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
+        qianHouGuaViewModel.setParams(
+          fourZhu: fourZhu,
+          gender: "男",
+          threeYuan: "上",
+          birthAfterZhi: "夏至",
+        ),
+        guaZhongViewModel.setParams(
+          fourZhu: fourZhu,
+        ),
       ]);
 
       setState(() {
@@ -163,6 +180,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
       final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
+      final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
+      final guaZhongViewModel = context.read<GuaZhongViewModel>();
 
       await Future.wait([
         dayGanZhiGuaViewModel.refresh(),
@@ -173,6 +192,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
         xianHoutianJiaZeViewModel.refresh(),
         liuYaoGanZhiHeViewModel.refresh(),
         xianHoutianQuShuViewModel.refresh(),
+        qianHouGuaViewModel.refresh(),
+        guaZhongViewModel.refresh(),
       ]);
 
       if (mounted) {
@@ -335,6 +356,24 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
             },
           ),
         ),
+
+        // 前后卦取数法页面
+        _buildStrategyPage(
+          child: Consumer<QianHouGuaViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildQianHouGuaContent(viewModel);
+            },
+          ),
+        ),
+
+        // 卦中取数法页面
+        _buildStrategyPage(
+          child: Consumer<GuaZhongViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildGuaZhongContent(viewModel);
+            },
+          ),
+        ),
       ],
     );
   }
@@ -362,6 +401,10 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
         return 'Strategy演示 - 先后天卦六爻干支和数法';
       case 8:
         return 'Strategy演示 - 先后天卦取数';
+      case 9:
+        return 'Strategy演示 - 前后卦取数法';
+      case 10:
+        return 'Strategy演示 - 卦中取数法';
       default:
         return 'Strategy演示';
     }
@@ -394,6 +437,12 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
           break;
         case 8:
           await context.read<XianHoutianQuShuViewModel>().refresh();
+          break;
+        case 9:
+          await context.read<QianHouGuaViewModel>().refresh();
+          break;
+        case 10:
+          await context.read<GuaZhongViewModel>().refresh();
           break;
         default:
           // 数据源页面不需要刷新
@@ -795,6 +844,77 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
     );
   }
 
+  /// 构建前后卦取数法内容
+  Widget _buildQianHouGuaContent(QianHouGuaViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    return QianHouGuaCard(
+      viewModel: viewModel,
+      initiallyExpanded: true,
+    );
+  }
+
+  /// 构建卦中取数法内容
+  Widget _buildGuaZhongContent(GuaZhongViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    // GuaZhongCard需要FourZhu参数
+    if (viewModel.currentFourZhu == null) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('参数错误')),
+      );
+    }
+
+    return GuaZhongCard(
+      fourZhu: viewModel.currentFourZhu!,
+    );
+  }
+
   /// 显示信息对话框
   void _showInfoDialog(BuildContext context) {
     showDialog(
@@ -806,7 +926,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('本页面演示了八种不同的Strategy计算方法：'),
+              Text('本页面演示了十种不同的Strategy计算方法：'),
               SizedBox(height: 12.0),
               Text('• 日干支卦：基于日柱干支计算'),
               Text('• 四柱天干：基于四柱天干计算'),
@@ -816,6 +936,8 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
               Text('• 先后天八卦加则法：基于先后天八卦加则法，先天卦递增96四次，后天卦递减96四次'),
               Text('• 先后天卦六爻干支和数法：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各递增减96四次'),
               Text('• 先后天卦取数：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各使用±48×倍数[2,4,8,16]扩展'),
+              Text('• 前后卦取数法：基于元堂卦法取先天卦和后天卦，前卦递增96四次，后卦递减96四次'),
+              Text('• 卦中取数法：基于四柱干支太玄数，年月卦和日时卦各产生主卦和互卦条文编号，总计4个条文'),
               SizedBox(height: 12.0),
               Text('所有计算都使用DevConstant.dev_usa作为数据源，展示完整的条文列表信息。'),
               SizedBox(height: 12.0),

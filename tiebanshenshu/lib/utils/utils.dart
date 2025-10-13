@@ -535,6 +535,122 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   );
 }
 
+/// 生成天地卦（使用太玄数映射，专用于前后卦取数法）
+///
+/// 与generateTianDiGua的唯一区别是使用太玄数映射（taixuanGanNumberMapper和taixuanZhiNumberMapper）
+/// 而不是传统的天干地支数映射（tianGanNumberMapper和diZhiNumberMapper）
+///
+/// 参数：与generateTianDiGua相同
+///
+/// 返回：(tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
+///        tianGuaNum, diGuaNum, usedThreeYuanWuGong)
+///
+/// 算法步骤：与generateTianDiGua相同，但使用太玄数配数体系
+(
+  String, // tianGua
+  String, // diGua
+  List<int>, // ganNumList
+  List<int>, // zhiNumList (太玄数为单个数字，不是[奇,偶]对)
+  int, // oddNumTotal
+  int, // evenNumTotal
+  int, // tianGuaNum
+  int, // diGuaNum
+  bool // usedThreeYuanWuGong
+) generateTianDiGuaWithTaixuan({
+  required String yearGan,
+  required String monthGan,
+  required String dayGan,
+  required String timeGan,
+  required String yearZhi,
+  required String monthZhi,
+  required String dayZhi,
+  required String timeZhi,
+  required String yearYinYang,
+  required String gender,
+  required String threeYuan,
+}) {
+  // 三元五宫映射表（当天数或地数为5时使用）
+  const threeYuan5GongMapper = {
+    "上": {
+      "男": {"阳": "艮", "阴": "艮"},
+      "女": {"阳": "坤", "阴": "坤"}
+    },
+    "中": {
+      "男": {"阳": "艮", "阴": "坤"},
+      "女": {"阳": "坤", "阴": "艮"}
+    },
+    "下": {
+      "男": {"阳": "离", "阴": "离"},
+      "女": {"阳": "兑", "阴": "兑"}
+    },
+  };
+
+  // 使用太玄数映射提取四柱天干数列表
+  final ganNumList = [
+    constants.taixuanGanNumberMapper[yearGan]!,
+    constants.taixuanGanNumberMapper[monthGan]!,
+    constants.taixuanGanNumberMapper[dayGan]!,
+    constants.taixuanGanNumberMapper[timeGan]!,
+  ];
+
+  // 使用太玄数映射提取四柱地支数列表（太玄数为单个数字）
+  final zhiNumList = [
+    constants.taixuanZhiNumberMapper[yearZhi]!,
+    constants.taixuanZhiNumberMapper[monthZhi]!,
+    constants.taixuanZhiNumberMapper[dayZhi]!,
+    constants.taixuanZhiNumberMapper[timeZhi]!,
+  ];
+
+  // 展开地支数列表用于计算奇偶和
+  final zhiNumTotalList = zhiNumList; // 太玄数为单个数字，直接使用
+
+  // 计算奇数和、偶数和
+  final oddNumTotal = (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
+      zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
+
+  final evenNumTotal = (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+      zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
+
+  // 计算天数（奇数和 模25）
+  final tianGuaNum = calculateGuaNum(oddNumTotal, 25, 5);
+
+  // 计算地数（偶数和 模30）
+  final diGuaNum = calculateGuaNum(evenNumTotal, 30, 3);
+
+  // 数配卦
+  String tianGua;
+  String diGua;
+  bool usedThreeYuanWuGong = false;
+
+  // 天卦配卦（天数为5时查询三元五宫）
+  if (tianGuaNum == 5) {
+    tianGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
+    usedThreeYuanWuGong = true;
+  } else {
+    tianGua = constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
+  }
+
+  // 地卦配卦（地数为5时查询三元五宫）
+  if (diGuaNum == 5) {
+    diGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
+    usedThreeYuanWuGong = true;
+  } else {
+    diGua = constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
+  }
+
+  return (
+    tianGua,
+    diGua,
+    ganNumList,
+    zhiNumList,
+    oddNumTotal,
+    evenNumTotal,
+    tianGuaNum,
+    diGuaNum,
+    usedThreeYuanWuGong
+  );
+}
+
 /// 生成先后天卦（从元堂卦逻辑提取）
 ///
 /// 根据天地卦、年份阴阳和性别，生成先天卦和后天卦（不包含元堂爻变）

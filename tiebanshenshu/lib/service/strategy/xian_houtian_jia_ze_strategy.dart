@@ -9,6 +9,7 @@ import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/xian_houtian_gua_base_number_model.dart';
 import '../../utils/utils.dart' as gua_utils;
 import '../../utils/tiao_wen_calculator.dart';
+import '../../utils/yuan_tang_gua_helper.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 
@@ -45,37 +46,44 @@ class XianHoutianJiaZeStrategyParams extends BaseCalculationParams {
 /// 实现先后天八卦加则法的标准计算策略
 ///
 /// 计算步骤：
-/// 1. 生成天地卦（使用GuaUtils.generateTianDiGua）
-/// 2. 生成先后天卦（使用GuaUtils.generateXiantianGua）
-/// 3. 计算先天卦互卦
-/// 4. 计算后天卦互卦
-/// 5. 先天卦加则法计算基础数
-/// 6. 后天卦加则法计算基础数
-/// 7. 条文扩展：先天卦递增96四次，后天卦递减96四次
+/// 1. 生成天地卦（使用 YuanTangGuaHelper.generateTianDiGua）
+/// 2. 生成先天卦（使用 YuanTangGuaHelper.generateXiantianGua）
+/// 3. 元堂装卦（使用 YuanTangGuaHelper.yuantangZhuanggua）得到元堂爻
+/// 4. 生成后天卦（使用 YuanTangGuaHelper.generateHoutianGua，依据元堂爻变）
+/// 5. 计算先天卦互卦
+/// 6. 计算后天卦互卦
+/// 7. 先天卦加则法计算基础数
+/// 8. 后天卦加则法计算基础数
+/// 9. 条文扩展：先天卦递增96四次，后天卦递减96四次
 ///
 /// 算法特点：
 /// - 复用GuaUtils工具类进行天地卦和先后天卦生成
 /// - 先天卦和后天卦分别计算基础数
 /// - 先天卦使用递增扩展，后天卦使用递减扩展
-class XianHoutianJiaZeStrategy extends StandardCalculationStrategy<
-    XianHoutianJiaZeStrategyParams, BaseNumberModelResult> {
+class XianHoutianJiaZeStrategy
+    extends
+        StandardCalculationStrategy<
+          XianHoutianJiaZeStrategyParams,
+          BaseNumberModelResult
+        > {
   @override
   String get name => "先后天八卦加则法";
 
   @override
-  String get description =>
-      "基于天地卦生成先后天卦，使用加则法计算先后天卦基础数，先天卦递增96四次，后天卦递减96四次";
+  String get description => "基于天地卦生成先后天卦，使用加则法计算先后天卦基础数，先天卦递增96四次，后天卦递减96四次";
 
   @override
   List<String> get detailSteps => [
-        "1. 生成天地卦：四柱天干数列表、四柱地支数列表，计算奇数和、偶数和，模运算得天数、地数，配天卦、地卦",
-        "2. 生成先后天卦：根据年份阴阳和性别决定上下卦位置，形成先天卦和后天卦",
-        "3. 计算先天卦互卦：由先天卦2,3,4爻（上互）和3,4,5爻（下互）组成",
-        "4. 计算后天卦互卦：由后天卦2,3,4爻（上互）和3,4,5爻（下互）组成",
-        "5. 先天卦加则法：使用加则法计算先天卦基础数",
-        "6. 后天卦加则法：使用加则法计算后天卦基础数",
-        "7. 条文扩展：先天卦递增96四次[0,96,192,288,384]，后天卦递减96四次[0,-96,-192,-288,-384]",
-      ];
+    "1. 生成天地卦（YuanTang）：四柱天干/地支数列表，计算奇偶和并配天卦、地卦",
+    "2. 生成先天卦（YuanTang）：根据年份阴阳与性别确定上下卦位置",
+    "3. 元堂装卦：确定元堂爻位置",
+    "4. 生成后天卦（YuanTang）：按元堂爻变并处理上下卦",
+    "5. 计算先天卦互卦（2-3-4、3-4-5组成互卦）",
+    "6. 计算后天卦互卦（同法）",
+    "7. 先天卦加则法：使用加则法计算基础数",
+    "8. 后天卦加则法：使用加则法计算基础数",
+    "9. 条文扩展：先天卦递增96四次[0,96,192,288,384]，后天卦递减96四次[0,-96,-192,-288,-384]",
+  ];
 
   @override
   String get school => "先后天八卦加则法流派";
@@ -83,41 +91,63 @@ class XianHoutianJiaZeStrategy extends StandardCalculationStrategy<
   @override
   BaseNumberModelResult calculate(XianHoutianJiaZeStrategyParams params) {
     try {
-      // 步骤1：生成天地卦（使用GuaUtils工具方法）
-      final yearYinYang = params.fourZhu.isYangGanYear ? "阳" : "阴";
-
-      final (tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
-              tianGuaNum, diGuaNum, usedThreeYuanWuGong) =
-          gua_utils.generateTianDiGua(
-        yearGan: params.fourZhu.yearGan,
-        monthGan: params.fourZhu.monthGan,
-        dayGan: params.fourZhu.dayGan,
-        timeGan: params.fourZhu.timeGan,
-        yearZhi: params.fourZhu.yearZhi,
-        monthZhi: params.fourZhu.monthZhi,
-        dayZhi: params.fourZhu.dayZhi,
-        timeZhi: params.fourZhu.timeZhi,
-        yearYinYang: yearYinYang,
+      // 步骤1：生成天地卦（使用 YuanTangGuaHelper）
+      final (
+        tianGua,
+        diGua,
+        ganNumList,
+        zhiNumList,
+        oddNumTotal,
+        evenNumTotal,
+        tianGuaNum,
+        diGuaNum,
+        usedThreeYuanWuGong,
+      ) = YuanTangGuaHelper.generateTianDiGua(
+        fourZhu: params.fourZhu,
         gender: params.gender,
         threeYuan: params.threeYuan,
       );
 
-      // 步骤2：生成先后天卦（使用GuaUtils工具方法）
-      // 注意：在先后天八卦加则法中，先天卦和后天卦是同一个卦
-      // 这里的"后天卦"仅用于数据模型的完整性，实际上与先天卦相同
-      final (xiantianGua, upperGua, lowerGua, xiantianUpperGuaNumber,
-              xiantianLowerGuaNumber) =
-          gua_utils.generateXiantianGua(
+      // 步骤2：生成先天卦（使用 YuanTangGuaHelper）
+      final (
+        yearYinYang,
+        upperGua,
+        lowerGua,
+        xiantianGua,
+        xiantianUpperGuaNumber,
+        xiantianLowerGuaNumber,
+      ) = YuanTangGuaHelper.generateXiantianGua(
+        fourZhu: params.fourZhu,
+        gender: params.gender,
         tianGua: tianGua,
         diGua: diGua,
-        yearYinYang: yearYinYang,
-        gender: params.gender,
       );
 
-      // 在先后天八卦加则法中，后天卦等于先天卦（不涉及爻变）
-      final houtianGua = xiantianGua;
-      final houtianUpperGuaNumber = xiantianUpperGuaNumber;
-      final houtianLowerGuaNumber = xiantianLowerGuaNumber;
+      // 步骤3：元堂装卦（获取元堂爻）
+      final (
+        yuantangYaoIndex,
+        yuantangYaoLabel,
+        _zhiList,
+        _timeGanzhi,
+        _timeYinYang,
+        _totalYangYao,
+        _totalYinYao,
+      ) = YuanTangGuaHelper.yuantangZhuanggua(
+        fourZhu: params.fourZhu,
+        xiantianGua: xiantianGua,
+        gender: params.gender,
+        birthAfterZhi: params.birthAfterZhi,
+      );
+
+      // 步骤4：生成后天卦（使用 YuanTangGuaHelper，依据元堂爻变）
+      final (
+        houtianGua,
+        houtianUpperGuaNumber,
+        houtianLowerGuaNumber,
+      ) = YuanTangGuaHelper.generateHoutianGua(
+        xiantianGua: xiantianGua,
+        yuantangYaoIndex: yuantangYaoIndex,
+      );
 
       // 步骤3：计算先天卦互卦
       final xiantianGuaHu = gua_utils.guaToHuGua(xiantianGua);
@@ -127,26 +157,32 @@ class XianHoutianJiaZeStrategy extends StandardCalculationStrategy<
 
       // 步骤5：先天卦加则法计算基础数
       // ignore: deprecated_member_use_from_same_package
-      final xiantianBaseNumber =
-          TiaowenCalculator.getTiaowenNumberByJiaZe(xiantianGua);
+      final xiantianBaseNumber = TiaowenCalculator.getTiaowenNumberByJiaZe(
+        xiantianGua,
+      );
 
       // 步骤6：后天卦加则法计算基础数（实际上与先天卦基础数相同）
       // ignore: deprecated_member_use_from_same_package
-      final houtianBaseNumber =
-          TiaowenCalculator.getTiaowenNumberByJiaZe(houtianGua);
+      final houtianBaseNumber = TiaowenCalculator.getTiaowenNumberByJiaZe(
+        houtianGua,
+      );
 
       // 步骤7：条文扩展
       // 先天卦：递增96四次
       final xiantianConfig = GenericTiaoWenCalculationConfig.increment96x4();
-      final xiantianTiaoWenNumbers =
-          xiantianConfig.calculateTiaoWenList(xiantianBaseNumber, {});
+      final xiantianTiaoWenNumbers = xiantianConfig.calculateTiaoWenList(
+        xiantianBaseNumber,
+        {},
+      );
       final xiantianCalculationFormula =
           "先天卦基础数$xiantianBaseNumber + [0, 96, 192, 288, 384] = $xiantianTiaoWenNumbers";
 
       // 后天卦：递减96四次
       final houtianConfig = GenericTiaoWenCalculationConfig.decrement96x4();
-      final houtianTiaoWenNumbers =
-          houtianConfig.calculateTiaoWenList(houtianBaseNumber, {});
+      final houtianTiaoWenNumbers = houtianConfig.calculateTiaoWenList(
+        houtianBaseNumber,
+        {},
+      );
       final houtianCalculationFormula =
           "后天卦基础数$houtianBaseNumber + [0, -96, -192, -288, -384] = $houtianTiaoWenNumbers";
 
@@ -224,7 +260,7 @@ class XianHoutianJiaZeStrategy extends StandardCalculationStrategy<
         sourceData: {
           'error': e.toString(),
           'stackTrace': stackTrace.toString(),
-          'params': params.description
+          'params': params.description,
         },
       );
     }
@@ -270,6 +306,5 @@ class XianHoutianJiaZeStrategy extends StandardCalculationStrategy<
   }
 
   @override
-  String get tiaoWenCalculationDescription =>
-      "先天卦递增96四次，后天卦递减96四次，分别生成5个条文编号";
+  String get tiaoWenCalculationDescription => "先天卦递增96四次，后天卦递减96四次，分别生成5个条文编号";
 }

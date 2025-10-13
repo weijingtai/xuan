@@ -10,6 +10,7 @@ import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
 import '../../utils/utils.dart' as gua_utils;
 import '../../utils/tiao_wen_calculator.dart';
+import '../../utils/yuan_tang_gua_helper.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 
@@ -53,23 +54,6 @@ class YuanTangStrategyParams extends BaseCalculationParams {
 /// 5. 计算各种条文编号
 class YuanTangStrategy extends StandardCalculationStrategy<
     YuanTangStrategyParams, BaseNumberModelResult> {
-  /// 三元五宫映射表（当天数或地数为5时使用）
-  static const Map<String, Map<String, Map<String, String>>>
-      _threeYuan5GongMapper = {
-    "上": {
-      "男": {"阳": "艮", "阴": "艮"},
-      "女": {"阳": "坤", "阴": "坤"}
-    },
-    "中": {
-      "男": {"阳": "艮", "阴": "坤"},
-      "女": {"阳": "坤", "阴": "艮"}
-    },
-    "下": {
-      "男": {"阳": "离", "阴": "离"},
-      "女": {"阳": "兑", "阴": "兑"}
-    },
-  };
-
   @override
   String get name => "元堂卦取数法";
 
@@ -93,28 +77,50 @@ class YuanTangStrategy extends StandardCalculationStrategy<
   @override
   BaseNumberModelResult calculate(YuanTangStrategyParams params) {
     try {
-      // 步骤1：生成天地卦
+      // 步骤1：生成天地卦（使用YuanTangGuaHelper）
       final (tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
               tianGuaNum, diGuaNum, usedThreeYuanWuGong) =
-          _generateTianDiGua(params);
+          YuanTangGuaHelper.generateTianDiGua(
+        fourZhu: params.fourZhu,
+        gender: params.gender,
+        threeYuan: params.threeYuan,
+      );
 
-      // 步骤2：生成上下卦（先天卦）
+      // 步骤2：生成上下卦（先天卦）（使用YuanTangGuaHelper）
       final (yearYinYang, upperGua, lowerGua, xiantianGua,
               xiantianUpperGuaNumber, xiantianLowerGuaNumber) =
-          _generateUpperLowerGua(params, tianGua, diGua);
+          YuanTangGuaHelper.generateXiantianGua(
+        fourZhu: params.fourZhu,
+        gender: params.gender,
+        tianGua: tianGua,
+        diGua: diGua,
+      );
 
-      // 步骤3：元堂装卦
+      // 步骤3：元堂装卦（使用YuanTangGuaHelper）
       final (yuantangYaoIndex, yuantangYaoLabel, zhiList, timeGanzhi,
               timeYinYang, totalYangYao, totalYinYao) =
-          _yuantangZhuanggua(params, xiantianGua);
+          YuanTangGuaHelper.yuantangZhuanggua(
+        fourZhu: params.fourZhu,
+        xiantianGua: xiantianGua,
+        gender: params.gender,
+        birthAfterZhi: params.birthAfterZhi,
+      );
 
-      // 步骤4：生成后天卦
+      // 步骤4：生成后天卦（使用YuanTangGuaHelper）
       final (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber) =
-          _generateHoutianGua(xiantianGua, yuantangYaoIndex);
+          YuanTangGuaHelper.generateHoutianGua(
+        xiantianGua: xiantianGua,
+        yuantangYaoIndex: yuantangYaoIndex,
+      );
 
-      // 步骤4.5：后天卦元堂装卦
+      // 步骤4.5：后天卦元堂装卦（使用YuanTangGuaHelper）
       final (houtianYuantangYaoIndex, houtianYuantangYaoLabel, houtianZhiList) =
-          _houtianYuantangZhuanggua(params, houtianGua);
+          YuanTangGuaHelper.houtianYuantangZhuanggua(
+        fourZhu: params.fourZhu,
+        houtianGua: houtianGua,
+        gender: params.gender,
+        birthAfterZhi: params.birthAfterZhi,
+      );
 
       // 步骤5：计算互卦
       final xiantianGuaHu = gua_utils.guaToHuGua(xiantianGua);
@@ -375,8 +381,8 @@ class YuanTangStrategy extends StandardCalculationStrategy<
 
     // 天卦配卦（天数为5时查询三元五宫）
     if (tianGuaNum == 5) {
-      tianGua =
-          _threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
+      tianGua = YuanTangGuaHelper
+          .threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
       tianGua = constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
@@ -384,8 +390,8 @@ class YuanTangStrategy extends StandardCalculationStrategy<
 
     // 地卦配卦（地数为5时查询三元五宫）
     if (diGuaNum == 5) {
-      diGua =
-          _threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
+      diGua = YuanTangGuaHelper
+          .threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
       diGua = constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
