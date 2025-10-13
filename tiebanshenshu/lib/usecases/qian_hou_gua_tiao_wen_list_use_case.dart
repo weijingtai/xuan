@@ -61,23 +61,17 @@ class QianHouGuaTiaoWenListUseCase
 
       // 4. 获取前卦条文编号（已在Strategy中递增96四次），并过滤掉无效的编号
       final qianGuaBaseNumber = qianHouModel.qianGuaBaseNumber;
-      print("qianGuaBaseNumber: ${qianHouModel.qianGuaTiaoWenNumbers}");
-      final qianGuaTiaoWenList = qianHouModel.qianGuaTiaoWenNumbers
-          .where((n) => n > 0 && n <= 960)
-          .toList();
+      final qianGuaTiaoWenList = qianHouModel.qianGuaTiaoWenNumbers.toList();
 
       // 5. 获取后卦条文编号（已在Strategy中递减96四次），并过滤掉无效的编号（负数或超出范围）
       final houGuaBaseNumber = qianHouModel.houGuaBaseNumber;
-      print("qianGuaBaseNumber: ${qianHouModel.houGuaTiaoWenNumbers}");
-      final houGuaTiaoWenList = qianHouModel.houGuaTiaoWenNumbers
-          .where((n) => n > 0 && n <= 960)
-          .toList();
+      final houGuaTiaoWenList = qianHouModel.houGuaTiaoWenNumbers.toList();
 
       // 6. 合并所有条文编号
       final allTiaoWenNumbers = {
         ...qianGuaTiaoWenList,
         ...houGuaTiaoWenList,
-      }.toList(); // 去重（已经过滤过，所有编号都在1-960范围内）
+      }.toList(); // 去重
 
       // 7. 转换为数据库ID（tiao_wen_number + 1000）
       // final dbIds = allTiaoWenNumbers.map((n) => n + 1000).toList();
