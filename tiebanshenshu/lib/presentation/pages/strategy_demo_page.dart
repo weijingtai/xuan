@@ -28,6 +28,7 @@ import '../widgets/gua_zhong_card.dart';
 import '../models/ba_gua_jia_ze_ui_model.dart';
 import '../models/yuan_tang_ui_model.dart';
 import '../../domain/four_zhu.dart';
+import '../../service/strategy/yuan_tang_strategy.dart';
 
 /// Strategy演示页面
 ///
@@ -739,7 +740,17 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       houtianTiaoWenNumbers: houtianTiaoWenNumbers,
     );
 
-    return YuanTangCard(model: uiModel, initiallyExpanded: true);
+    // 为流运系统准备参数：基础模型、出生年份、策略实例
+    final birthYear = DevConstant.dev_usa.standeredDatetime.year;
+    final strategy = YuanTangStrategy();
+
+    return YuanTangCard(
+      model: uiModel,
+      initiallyExpanded: true,
+      baseNumberModel: yuanTangModel,
+      birthYear: birthYear,
+      strategy: strategy,
+    );
   }
 
   /// 构建先后天八卦加则法内容

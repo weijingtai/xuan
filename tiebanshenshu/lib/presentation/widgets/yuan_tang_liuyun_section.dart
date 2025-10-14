@@ -54,6 +54,25 @@ class _YuanTangLiuyunSectionState extends State<YuanTangLiuyunSection> {
       widget.model,
       widget.birthYear,
     );
+
+    // 默认展开一个流年的流月（优先选择先天卦的第一个流年）
+    if (_allLiunianList.isNotEmpty) {
+      final defaultLiunian = _allLiunianList.firstWhere(
+        (g) => g.guaSource == '先天卦',
+        orElse: () => _allLiunianList.first,
+      );
+      final defaultAge = defaultLiunian.age;
+      final yuantangIndex = defaultLiunian.guaSource == '先天卦'
+          ? widget.model.yuantangYaoIndex
+          : widget.model.houtianYuantangYaoIndex;
+      final defaultLiuyueList = widget.strategy.calculateLiuyueForAge(
+        defaultAge,
+        defaultLiunian.gua,
+        yuantangIndex,
+      );
+      _expandedLiuyueMap[defaultAge] = defaultLiuyueList;
+      _selectedLiunianAge = defaultAge;
+    }
   }
 
   @override
