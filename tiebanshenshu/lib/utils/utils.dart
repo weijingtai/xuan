@@ -434,8 +434,9 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   int, // evenNumTotal
   int, // tianGuaNum
   int, // diGuaNum
-  bool // usedThreeYuanWuGong
-) generateTianDiGua({
+  bool, // usedThreeYuanWuGong
+)
+generateTianDiGua({
   required String yearGan,
   required String monthGan,
   required String dayGan,
@@ -452,15 +453,15 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   const threeYuan5GongMapper = {
     "上": {
       "男": {"阳": "艮", "阴": "艮"},
-      "女": {"阳": "坤", "阴": "坤"}
+      "女": {"阳": "坤", "阴": "坤"},
     },
     "中": {
       "男": {"阳": "艮", "阴": "坤"},
-      "女": {"阳": "坤", "阴": "艮"}
+      "女": {"阳": "坤", "阴": "艮"},
     },
     "下": {
       "男": {"阳": "离", "阴": "离"},
-      "女": {"阳": "兑", "阴": "兑"}
+      "女": {"阳": "兑", "阴": "兑"},
     },
   };
 
@@ -489,10 +490,12 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   ];
 
   // 计算奇数和、偶数和
-  final oddNumTotal = (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
+  final oddNumTotal =
+      (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
       zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
 
-  final evenNumTotal = (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+  final evenNumTotal =
+      (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
       zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
 
   // 计算天数（奇数和 模25）
@@ -505,6 +508,8 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   String tianGua;
   String diGua;
   bool usedThreeYuanWuGong = false;
+
+  print("~~~~~~~ $tianGuaNum");
 
   // 天卦配卦（天数为5时查询三元五宫）
   if (tianGuaNum == 5) {
@@ -531,7 +536,7 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
     evenNumTotal,
     tianGuaNum,
     diGuaNum,
-    usedThreeYuanWuGong
+    usedThreeYuanWuGong,
   );
 }
 
@@ -555,8 +560,9 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   int, // evenNumTotal
   int, // tianGuaNum
   int, // diGuaNum
-  bool // usedThreeYuanWuGong
-) generateTianDiGuaWithTaixuan({
+  bool, // usedThreeYuanWuGong
+)
+generateTianDiGuaWithTaixuan({
   required String yearGan,
   required String monthGan,
   required String dayGan,
@@ -573,15 +579,15 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   const threeYuan5GongMapper = {
     "上": {
       "男": {"阳": "艮", "阴": "艮"},
-      "女": {"阳": "坤", "阴": "坤"}
+      "女": {"阳": "坤", "阴": "坤"},
     },
     "中": {
       "男": {"阳": "艮", "阴": "坤"},
-      "女": {"阳": "坤", "阴": "艮"}
+      "女": {"阳": "坤", "阴": "艮"},
     },
     "下": {
       "男": {"阳": "离", "阴": "离"},
-      "女": {"阳": "兑", "阴": "兑"}
+      "女": {"阳": "兑", "阴": "兑"},
     },
   };
 
@@ -605,10 +611,12 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   final zhiNumTotalList = zhiNumList; // 太玄数为单个数字，直接使用
 
   // 计算奇数和、偶数和
-  final oddNumTotal = (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
+  final oddNumTotal =
+      (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
       zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
 
-  final evenNumTotal = (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+  final evenNumTotal =
+      (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
       zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
 
   // 计算天数（奇数和 模25）
@@ -647,7 +655,7 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
     evenNumTotal,
     tianGuaNum,
     diGuaNum,
-    usedThreeYuanWuGong
+    usedThreeYuanWuGong,
   );
 }
 
@@ -676,7 +684,8 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
   String, // lowerGua
   int, // xiantianUpperGuaNumber
   int, // xiantianLowerGuaNumber
-) generateXiantianGua({
+)
+generateXiantianGua({
   required String tianGua,
   required String diGua,
   required String yearYinYang,

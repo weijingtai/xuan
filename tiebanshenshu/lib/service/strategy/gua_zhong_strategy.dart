@@ -4,7 +4,8 @@
 library;
 
 import '../../constant/constants.dart' as constants;
-import '../../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:common/enums.dart';
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/gua_zhong_base_number_model.dart';
@@ -15,19 +16,19 @@ import 'standard_calculation_strategy.dart';
 /// 卦中取数法 Strategy参数类
 class GuaZhongStrategyParams extends BaseCalculationParams {
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   GuaZhongStrategyParams({
-    required this.fourZhu,
+    required this.eightChars,
   });
 
   @override
   String get description =>
-      "卦中取数法计算参数：四柱(${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi})";
+      "卦中取数法计算参数：四柱(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})";
 
   @override
   String toString() {
-    return 'GuaZhongStrategyParams(fourZhu: ${fourZhu.toString()})';
+    return 'GuaZhongStrategyParams(eightChars: ${eightChars.toString()})';
   }
 }
 
@@ -106,7 +107,7 @@ class GuaZhongStrategy
         dayZhiTaixuanNumber,
         timeGanTaixuanNumber,
         timeZhiTaixuanNumber
-      ) = _getFourZhuTaixuanNumbers(params.fourZhu);
+      ) = _getEightCharsTaixuanNumbers(params.eightChars);
 
       // 步骤2：年月卦计算（返回16个值）
       final (
@@ -168,7 +169,7 @@ class GuaZhongStrategy
         description: description,
         source: BaseNumberSource.combined,
         // 输入参数
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         // 四柱干支太玄数
         yearGanTaixuanNumber: yearGanTaixuanNumber,
         yearZhiTaixuanNumber: yearZhiTaixuanNumber,
@@ -222,7 +223,7 @@ class GuaZhongStrategy
         calculationParams: params.description,
         baseNumbers: [model],
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'nianYueZhuGuaName': nianYueZhuGuaName,
           'riShiZhuGuaName': riShiZhuGuaName,
           'allTiaoWenNumbers': model.allTiaoWenNumbers,
@@ -237,60 +238,57 @@ class GuaZhongStrategy
         calculationParams: params.description,
         errorMessage: "$name 计算失败: $e",
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'error': e.toString(),
         },
       );
     }
   }
 
-  /// 获取四柱干支太玄数
+  /// 获取八字干支太玄数
   ///
   /// 返回: (年干, 年支, 月干, 月支, 日干, 日支, 时干, 时支)
-  (int, int, int, int, int, int, int, int) _getFourZhuTaixuanNumbers(
-      FourZhu fourZhu) {
-    // 解析年柱
-    final yearGan = fourZhu.yearGanzhi[0];
-    final yearZhi = fourZhu.yearGanzhi[1];
+  (int, int, int, int, int, int, int, int) _getEightCharsTaixuanNumbers(
+      EightChars eightChars) {
+    final yearGan = eightChars.yearTianGan;
+    final yearZhi = eightChars.yearDiZhi;
 
-    // 解析月柱
-    final monthGan = fourZhu.monthGanzhi[0];
-    final monthZhi = fourZhu.monthGanzhi[1];
+    final monthGan = eightChars.monthTianGan;
+    final monthZhi = eightChars.monthDiZhi;
 
-    // 解析日柱
-    final dayGan = fourZhu.dayGanzhi[0];
-    final dayZhi = fourZhu.dayGanzhi[1];
+    final dayGan = eightChars.dayTianGan;
+    final dayZhi = eightChars.dayDiZhi;
 
-    // 解析时柱
-    final timeGan = fourZhu.timeGanzhi[0];
-    final timeZhi = fourZhu.timeGanzhi[1];
+    final timeGan = eightChars.hourTianGan;
+    final timeZhi = eightChars.hourDiZhi;
 
     return (
-      _getTaixuanNumber(yearGan),
-      _getTaixuanNumber(yearZhi),
-      _getTaixuanNumber(monthGan),
-      _getTaixuanNumber(monthZhi),
-      _getTaixuanNumber(dayGan),
-      _getTaixuanNumber(dayZhi),
-      _getTaixuanNumber(timeGan),
-      _getTaixuanNumber(timeZhi),
+      _getTaixuanNumberFromEnums(yearGan),
+      _getTaixuanNumberFromEnums(yearZhi),
+      _getTaixuanNumberFromEnums(monthGan),
+      _getTaixuanNumberFromEnums(monthZhi),
+      _getTaixuanNumberFromEnums(dayGan),
+      _getTaixuanNumberFromEnums(dayZhi),
+      _getTaixuanNumberFromEnums(timeGan),
+      _getTaixuanNumberFromEnums(timeZhi),
     );
   }
 
-  /// 获取天干或地支的太玄数
-  int _getTaixuanNumber(String ganOrZhi) {
-    // 优先尝试天干映射
-    if (constants.taixuanGanNumberMapper.containsKey(ganOrZhi)) {
-      return constants.taixuanGanNumberMapper[ganOrZhi]!;
+  /// 获取天干或地支的太玄数（枚举版）
+  int _getTaixuanNumberFromEnums(dynamic ganOrZhiEnum) {
+    if (ganOrZhiEnum is TianGan) {
+      final mapper = constants.taiXuanGanNumberMapper;
+      if (mapper.containsKey(ganOrZhiEnum)) {
+        return mapper[ganOrZhiEnum]!;
+      }
     }
-
-    // 尝试地支映射
-    if (constants.taixuanZhiNumberMapper.containsKey(ganOrZhi)) {
-      return constants.taixuanZhiNumberMapper[ganOrZhi]!;
+    if (ganOrZhiEnum is DiZhi) {
+      final mapper = constants.taiXuanZhiNumberMapper;
+      if (mapper.containsKey(ganOrZhiEnum)) {
+        return mapper[ganOrZhiEnum]!;
+      }
     }
-
-    // 如果都不存在，抛出异常
-    throw ArgumentError('无法找到 $ganOrZhi 对应的太玄数');
+    throw ArgumentError('无法找到 $ganOrZhiEnum 对应的太玄数');
   }
 
   /// 根据先天数获取卦名

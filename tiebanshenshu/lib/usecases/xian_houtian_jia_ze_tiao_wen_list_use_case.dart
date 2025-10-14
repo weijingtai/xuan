@@ -1,3 +1,4 @@
+import 'package:common/models/eight_chars.dart';
 import '../domain/four_zhu.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
@@ -17,15 +18,11 @@ class XianHoutianJiaZeTiaoWenListUseCase
   final XianHoutianJiaZeStrategy _strategy;
   final TiaoWenRepository _repository;
 
-  XianHoutianJiaZeTiaoWenListUseCase(
-    this._strategy,
-    this._repository,
-  );
+  XianHoutianJiaZeTiaoWenListUseCase(this._strategy, this._repository);
 
   @override
   TiaoWenListCalculationConfig get defaultCalculationConfig =>
-      _strategy.defaultTiaoWenCalculationConfig
-          as TiaoWenListCalculationConfig;
+      _strategy.defaultTiaoWenCalculationConfig as TiaoWenListCalculationConfig;
 
   @override
   TiaoWenRepository get repository => _repository;
@@ -47,7 +44,7 @@ class XianHoutianJiaZeTiaoWenListUseCase
 
       // 2. 调用Strategy计算
       final strategyParams = XianHoutianJiaZeStrategyParams(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
@@ -78,8 +75,9 @@ class XianHoutianJiaZeTiaoWenListUseCase
       }.toList(); // 去重
 
       // 7. 批量查询条文
-      final tiaoWenDataList =
-          await _repository.getByIdList(queryList: allTiaoWenNumbers);
+      final tiaoWenDataList = await _repository.getByIdList(
+        queryList: allTiaoWenNumbers,
+      );
 
       // 8. 构建两个BaseNumberTiaoWenListModel（先天和后天分开）
       final baseNumberTiaoWenList = [
@@ -116,7 +114,14 @@ class XianHoutianJiaZeTiaoWenListUseCase
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          // 同步返回八字及转换后的四柱字符串，便于UI层显示
+          'eightChars': params.eightChars.toString(),
+          'fourZhu': FourZhu(
+            yearGanzhi: params.eightChars.year.name,
+            monthGanzhi: params.eightChars.month.name,
+            dayGanzhi: params.eightChars.day.name,
+            timeGanzhi: params.eightChars.time.name,
+          ).toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -137,7 +142,7 @@ class XianHoutianJiaZeTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -187,8 +192,8 @@ class XianHoutianJiaZeTiaoWenListUseCase
 ///
 /// 包含先后天八卦加则法计算所需的所有参数
 class XianHoutianJiaZeUseCaseParams {
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 八字信息
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -200,7 +205,7 @@ class XianHoutianJiaZeUseCaseParams {
   final String birthAfterZhi;
 
   const XianHoutianJiaZeUseCaseParams({
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -208,14 +213,14 @@ class XianHoutianJiaZeUseCaseParams {
 
   @override
   String toString() {
-    return 'XianHoutianJiaZeUseCaseParams(fourZhu: ${fourZhu.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
+    return 'XianHoutianJiaZeUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is XianHoutianJiaZeUseCaseParams &&
-        other.fourZhu == fourZhu &&
+        other.eightChars == eightChars &&
         other.gender == gender &&
         other.threeYuan == threeYuan &&
         other.birthAfterZhi == birthAfterZhi;
@@ -223,7 +228,7 @@ class XianHoutianJiaZeUseCaseParams {
 
   @override
   int get hashCode =>
-      fourZhu.hashCode ^
+      eightChars.hashCode ^
       gender.hashCode ^
       threeYuan.hashCode ^
       birthAfterZhi.hashCode;

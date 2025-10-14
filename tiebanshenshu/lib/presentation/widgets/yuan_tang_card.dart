@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../domain/models/yuan_tang_base_number_model.dart';
+import '../../service/strategy/yuan_tang_strategy.dart';
 import '../models/yuan_tang_ui_model.dart';
 import 'yuan_tang_dayun_widget.dart';
+import 'yuan_tang_liuyun_section.dart';
 
 /// 元堂卦结果展示卡片
 ///
@@ -9,10 +12,22 @@ class YuanTangCard extends StatefulWidget {
   final YuanTangUIModel model;
   final bool initiallyExpanded;
 
+  /// 元堂卦基础数模型（可选，用于流运系统）
+  final YuanTangBaseNumberModel? baseNumberModel;
+
+  /// 出生年份（可选，用于流运系统）
+  final int? birthYear;
+
+  /// 元堂卦策略实例（可选，用于流运系统）
+  final YuanTangStrategy? strategy;
+
   const YuanTangCard({
     super.key,
     required this.model,
     this.initiallyExpanded = true,
+    this.baseNumberModel,
+    this.birthYear,
+    this.strategy,
   });
 
   @override
@@ -106,6 +121,12 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   _buildDayunSection(theme),
 
                   const SizedBox(height: 16.0),
+
+                  // 流运系统展示（如果数据可用）
+                  if (_canShowLiuyunSystem()) ...[
+                    _buildLiuyunSystemSection(theme),
+                    const SizedBox(height: 16.0),
+                  ],
 
                   // 条文扩展展示
                   _buildTiaoWenExpansionSection(theme),
@@ -892,6 +913,57 @@ class _YuanTangCardState extends State<YuanTangCard> {
                 ),
               );
             }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// 检查是否可以显示流运系统
+  bool _canShowLiuyunSystem() {
+    return widget.baseNumberModel != null &&
+        widget.birthYear != null &&
+        widget.strategy != null;
+  }
+
+  /// 构建流运系统展示区域
+  Widget _buildLiuyunSystemSection(ThemeData theme) {
+    // 确保所有必需数据都可用
+    if (!_canShowLiuyunSystem()) {
+      return const SizedBox.shrink();
+    }
+
+    return ExpansionTile(
+      title: Row(
+        children: [
+          Icon(
+            Icons.insights,
+            color: theme.colorScheme.primary,
+            size: 20.0,
+          ),
+          const SizedBox(width: 8.0),
+          Text(
+            '流运系统（大运→流年→流月）',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+      subtitle: Text(
+        '点击展开查看完整流运系统：先天卦流运 + 后天卦流运',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+        ),
+      ),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: YuanTangLiuyunSection(
+            model: widget.baseNumberModel!,
+            birthYear: widget.birthYear!,
+            strategy: widget.strategy!,
           ),
         ),
       ],

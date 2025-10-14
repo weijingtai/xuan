@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/xian_houtian_qu_shu_strategy.dart';
@@ -15,25 +17,25 @@ import 'package:tiebanshenshu/domain/models/xian_houtian_qu_shu_base_number_mode
 /// 4. 后天基本数：9719
 void main() {
   late XianHoutianQuShuStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late XianHoutianQuShuStrategyParams testParams;
   late XianHoutianQuShuBaseNumberModel model;
 
   setUp(() {
     strategy = XianHoutianQuShuStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "甲戌",
-      monthGanzhi: "己巳",
-      dayGanzhi: "辛丑",
-      timeGanzhi: "丁酉",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("甲戌")!,
+      month: JiaZi.getFromGanZhiValue("己巳")!,
+      day: JiaZi.getFromGanZhiValue("辛丑")!,
+      time: JiaZi.getFromGanZhiValue("丁酉")!,
     );
 
     testParams = XianHoutianQuShuStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
-      threeYuan: "上",  // 假设上元
-      birthAfterZhi: "夏至",  // 假设夏至后
+      threeYuan: "上", // 假设上元
+      birthAfterZhi: "夏至", // 假设夏至后
     );
 
     final result = strategy.calculate(testParams);
@@ -47,14 +49,12 @@ void main() {
       print('先天卦上卦: ${model.upperGua}');
       print('先天卦下卦: ${model.lowerGua}');
 
-      expect(model.xiantianGua, equals('兑乾'),
-          reason: '先天卦应该是兑乾（泽天夬）');
+      expect(model.xiantianGua, equals('兑乾'), reason: '先天卦应该是兑乾（泽天夬）');
     });
 
     test('先天基本数应该=2111', () {
       print('实际先天基本数: ${model.xiantianBaseNumber}');
-      expect(model.xiantianBaseNumber, equals(2111),
-          reason: '先天基本数应该是2111');
+      expect(model.xiantianBaseNumber, equals(2111), reason: '先天基本数应该是2111');
     });
   });
 
@@ -64,14 +64,12 @@ void main() {
       // 注意：upperGua/lowerGua是先天卦的上下卦，后天卦没有单独的字段
       // 只能通过houtianGua字符串来判断
 
-      expect(model.houtianGua, equals('离兑'),
-          reason: '后天卦应该是离兑（火泽睽）');
+      expect(model.houtianGua, equals('离兑'), reason: '后天卦应该是离兑（火泽睽）');
     });
 
     test('后天基本数应该=9719', () {
       print('实际后天基本数: ${model.houtianBaseNumber}');
-      expect(model.houtianBaseNumber, equals(9719),
-          reason: '后天基本数应该是9719');
+      expect(model.houtianBaseNumber, equals(9719), reason: '后天基本数应该是9719');
     });
   });
 
@@ -79,13 +77,13 @@ void main() {
     test('应该成功计算并返回结果', () {
       final result = strategy.calculate(testParams);
       expect(result.hasError, false, reason: '计算应该成功');
-      expect(result.baseNumbers.length, equals(1),
-          reason: '应该返回1个基础数结果');
+      expect(result.baseNumbers.length, equals(1), reason: '应该返回1个基础数结果');
     });
 
     test('所有关键字段应该符合人工规格', () {
       final summary = {
-        '四柱': '${testFourZhu.yearGanzhi} ${testFourZhu.monthGanzhi} ${testFourZhu.dayGanzhi} ${testFourZhu.timeGanzhi}',
+        '四柱':
+            '${testEightChars.year} ${testEightChars.month} ${testEightChars.day} ${testEightChars.time}',
         '先天卦': model.xiantianGua,
         '先天基本数': model.xiantianBaseNumber,
         '后天卦': model.houtianGua,

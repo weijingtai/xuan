@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/gua_zhong_strategy.dart';
@@ -21,6 +23,7 @@ import 'package:tiebanshenshu/domain/models/gua_zhong_base_number_model.dart';
 void main() {
   late GuaZhongStrategy strategy;
   late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late GuaZhongStrategyParams testParams;
   late GuaZhongBaseNumberModel model;
 
@@ -33,8 +36,14 @@ void main() {
       dayGanzhi: "癸卯",
       timeGanzhi: "乙卯",
     );
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue(testFourZhu.yearGanzhi)!,
+      month: JiaZi.getFromGanZhiValue(testFourZhu.monthGanzhi)!,
+      day: JiaZi.getFromGanZhiValue(testFourZhu.dayGanzhi)!,
+      time: JiaZi.getFromGanZhiValue(testFourZhu.timeGanzhi)!,
+    );
 
-    testParams = GuaZhongStrategyParams(fourZhu: testFourZhu);
+    testParams = GuaZhongStrategyParams(eightChars: testEightChars);
 
     final result = strategy.calculate(testParams);
     expect(result.hasError, false, reason: '计算不应该出错');

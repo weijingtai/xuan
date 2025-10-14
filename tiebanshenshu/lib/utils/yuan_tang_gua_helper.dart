@@ -3,6 +3,8 @@
 /// 提供元堂卦相关的静态方法，供各种策略复用
 library;
 
+import 'package:common/models/eight_chars.dart';
+
 import '../domain/four_zhu.dart';
 import '../constant/constants.dart' as constants;
 import 'utils.dart' as gua_utils;
@@ -18,25 +20,25 @@ import 'utils.dart' as gua_utils;
 class YuanTangGuaHelper {
   /// 三元五宫映射表（当天数或地数为5时使用）
   static const Map<String, Map<String, Map<String, String>>>
-      threeYuan5GongMapper = {
+  threeYuan5GongMapper = {
     "上": {
       "男": {"阳": "艮", "阴": "艮"},
-      "女": {"阳": "坤", "阴": "坤"}
+      "女": {"阳": "坤", "阴": "坤"},
     },
     "中": {
       "男": {"阳": "艮", "阴": "坤"},
-      "女": {"阳": "坤", "阴": "艮"}
+      "女": {"阳": "坤", "阴": "艮"},
     },
     "下": {
       "男": {"阳": "离", "阴": "离"},
-      "女": {"阳": "兑", "阴": "兑"}
+      "女": {"阳": "兑", "阴": "兑"},
     },
   };
 
   /// 生成天地卦
   ///
   /// 参数：
-  /// - [fourZhu]: 四柱信息
+  /// - [eightChars]: 四柱信息
   /// - [gender]: 性别（"男" / "女"）
   /// - [threeYuan]: 三元（"上" / "中" / "下"）
   ///
@@ -51,57 +53,53 @@ class YuanTangGuaHelper {
     int, // evenNumTotal
     int, // tianGuaNum
     int, // diGuaNum
-    bool // usedThreeYuanWuGong
-  ) generateTianDiGua({
-    required FourZhu fourZhu,
+    bool, // usedThreeYuanWuGong
+  )
+  generateTianDiGua({
+    required EightChars eightChars,
     required String gender,
     required String threeYuan,
   }) {
     // 提取四柱天干数列表
     final ganNumList = [
-      constants.tianGanNumberMapper[fourZhu.yearGan]!,
-      constants.tianGanNumberMapper[fourZhu.monthGan]!,
-      constants.tianGanNumberMapper[fourZhu.dayGan]!,
-      constants.tianGanNumberMapper[fourZhu.timeGan]!,
+      constants.tianGanNumberMapper[eightChars.year.gan.name]!,
+      constants.tianGanNumberMapper[eightChars.month.gan.name]!,
+      constants.tianGanNumberMapper[eightChars.day.gan.name]!,
+      constants.tianGanNumberMapper[eightChars.time.gan.name]!,
     ];
 
     // 提取四柱地支数列表（每个地支两个数）
     final zhiNumList = [
-      constants.diZhiNumberMapper[fourZhu.yearZhi]!,
-      constants.diZhiNumberMapper[fourZhu.monthZhi]!,
-      constants.diZhiNumberMapper[fourZhu.dayZhi]!,
-      constants.diZhiNumberMapper[fourZhu.timeZhi]!,
+      constants.diZhiNumberMapper[eightChars.year.zhi.name]!,
+      constants.diZhiNumberMapper[eightChars.month.zhi.name]!,
+      constants.diZhiNumberMapper[eightChars.day.zhi.name]!,
+      constants.diZhiNumberMapper[eightChars.time.zhi.name]!,
     ];
 
     // 展开地支数列表用于计算奇偶和
     final zhiNumTotalList = [
-      ...constants.diZhiNumberMapper[fourZhu.yearZhi]!,
-      ...constants.diZhiNumberMapper[fourZhu.monthZhi]!,
-      ...constants.diZhiNumberMapper[fourZhu.dayZhi]!,
-      ...constants.diZhiNumberMapper[fourZhu.timeZhi]!,
+      ...constants.diZhiNumberMapper[eightChars.year.zhi.name]!,
+      ...constants.diZhiNumberMapper[eightChars.month.zhi.name]!,
+      ...constants.diZhiNumberMapper[eightChars.day.zhi.name]!,
+      ...constants.diZhiNumberMapper[eightChars.time.zhi.name]!,
     ];
 
     // 计算奇数和、偶数和
-    final oddNumTotal = (ganNumList
-            .where((i) => i % 2 == 1)
-            .fold<int>(0, (a, b) => a + b) +
+    final oddNumTotal =
+        (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
         zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
 
-    final evenNumTotal = (ganNumList
-            .where((i) => i % 2 == 0)
-            .fold<int>(0, (a, b) => a + b) +
-        zhiNumTotalList
-            .where((i) => i % 2 == 0)
-            .fold<int>(0, (a, b) => a + b));
+    final evenNumTotal =
+        (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+        zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
 
     // 计算天数（奇数和 模25）
     final tianGuaNum = gua_utils.calculateGuaNum(oddNumTotal, 25, 5);
 
     // 计算地数（偶数和 模30）
     final diGuaNum = gua_utils.calculateGuaNum(evenNumTotal, 30, 3);
-
     // 数配卦
-    final yearYinYang = fourZhu.isYangGanYear ? "阳" : "阴";
+    final yearYinYang = eightChars.yearTianGan.isYang ? "阳" : "阴";
     String tianGua;
     String diGua;
     bool usedThreeYuanWuGong = false;
@@ -111,6 +109,9 @@ class YuanTangGuaHelper {
       tianGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
+      if (!constants.yuantangHuaTianNumberGuaMapper.containsKey(tianGuaNum)) {
+        throw ArgumentError('无效的天数: $tianGuaNum，映射表中不存在该键');
+      }
       tianGua = constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
     }
 
@@ -119,6 +120,9 @@ class YuanTangGuaHelper {
       diGua = threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
+      if (!constants.yuantangHuaTianNumberGuaMapper.containsKey(diGuaNum)) {
+        throw ArgumentError('无效的地数: $diGuaNum，映射表中不存在该键');
+      }
       diGua = constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
     }
 
@@ -131,14 +135,14 @@ class YuanTangGuaHelper {
       evenNumTotal,
       tianGuaNum,
       diGuaNum,
-      usedThreeYuanWuGong
+      usedThreeYuanWuGong,
     );
   }
 
   /// 生成先天卦（上下卦）
   ///
   /// 参数：
-  /// - [fourZhu]: 四柱信息
+  /// - [eightChars]: 四柱信息
   /// - [gender]: 性别（"男" / "女"）
   /// - [tianGua]: 天卦
   /// - [diGua]: 地卦
@@ -152,13 +156,14 @@ class YuanTangGuaHelper {
     String, // xiantianGua
     int, // xiantianUpperGuaNumber
     int, // xiantianLowerGuaNumber
-  ) generateXiantianGua({
-    required FourZhu fourZhu,
+  )
+  generateXiantianGua({
+    required EightChars eightChars,
     required String gender,
     required String tianGua,
     required String diGua,
   }) {
-    final yearYinYang = fourZhu.isYangGanYear ? "阳" : "阴";
+    final yearYinYang = eightChars.yearTianGan.isYang ? "阳" : "阴";
     String upperGua;
     String lowerGua;
 
@@ -193,14 +198,14 @@ class YuanTangGuaHelper {
       lowerGua,
       xiantianGua,
       xiantianUpperGuaNumber,
-      xiantianLowerGuaNumber
+      xiantianLowerGuaNumber,
     );
   }
 
   /// 元堂装卦
   ///
   /// 参数：
-  /// - [fourZhu]: 四柱信息
+  /// - [eightChars]: 四柱信息
   /// - [xiantianGua]: 先天卦
   /// - [gender]: 性别（"男" / "女"）
   /// - [birthAfterZhi]: 出生节气后（"夏至" / "冬至"）
@@ -215,13 +220,14 @@ class YuanTangGuaHelper {
     String, // timeYinYang
     int, // totalYangYao
     int, // totalYinYao
-  ) yuantangZhuanggua({
-    required FourZhu fourZhu,
+  )
+  yuantangZhuanggua({
+    required EightChars eightChars,
     required String xiantianGua,
     required String gender,
     required String birthAfterZhi,
   }) {
-    final timeGanzhi = fourZhu.timeGanzhi;
+    final timeGanzhi = eightChars.time.name;
 
     // 判断时辰阴阳
     const yuantangYangTimeSet = ["子", "丑", "寅", "卯", "辰", "巳"];
@@ -245,25 +251,51 @@ class YuanTangGuaHelper {
       // 阳时取阳爻
       if (totalYangYao > 0 && totalYangYao <= 3) {
         zhiList = _zhuangguaLowerThan3(
-            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+          allGuaBinary,
+          List.from(yuantangYangTimeSet),
+          totalYangYao,
+          true,
+        );
       } else if (totalYangYao >= 4 && totalYangYao <= 5) {
         zhiList = _zhuanggua45(
-            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+          allGuaBinary,
+          List.from(yuantangYangTimeSet),
+          totalYangYao,
+          true,
+        );
       } else {
-        zhiList = _zhuanggua6Yang(totalYangYao == 6,
-            List.from(yuantangYangTimeSet), true, gender, birthAfterZhi);
+        zhiList = _zhuanggua6Yang(
+          totalYangYao == 6,
+          List.from(yuantangYangTimeSet),
+          true,
+          gender,
+          birthAfterZhi,
+        );
       }
     } else {
       // 阴时取阴爻
       if (totalYinYao > 0 && totalYinYao <= 3) {
         zhiList = _zhuangguaLowerThan3(
-            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+          allGuaBinary,
+          List.from(yuantangYinTimeSet),
+          totalYinYao,
+          false,
+        );
       } else if (totalYinYao >= 4 && totalYinYao <= 5) {
         zhiList = _zhuanggua45(
-            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+          allGuaBinary,
+          List.from(yuantangYinTimeSet),
+          totalYinYao,
+          false,
+        );
       } else {
-        zhiList = _zhuanggua6Yang(totalYinYao == 0,
-            List.from(yuantangYinTimeSet), false, gender, birthAfterZhi);
+        zhiList = _zhuanggua6Yang(
+          totalYinYao == 0,
+          List.from(yuantangYinTimeSet),
+          false,
+          gender,
+          birthAfterZhi,
+        );
       }
     }
 
@@ -280,7 +312,7 @@ class YuanTangGuaHelper {
       timeGanzhi,
       timeYinYang,
       totalYangYao,
-      totalYinYao
+      totalYinYao,
     );
   }
 
@@ -289,21 +321,37 @@ class YuanTangGuaHelper {
   /// 参数：
   /// - [xiantianGua]: 先天卦
   /// - [yuantangYaoIndex]: 元堂爻索引（0-5）
+  /// - [birthMonth]: 出生月份(1-12,从monthZhi提取)
   ///
   /// 返回: (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber)
   ///
   /// 算法：
-  /// 1. 将先天卦转换为二进制列表
-  /// 2. 对元堂爻进行爻变（阴转阳，阳转阴）
-  /// 3. 上下卦互换
+  /// 1. 判断是否为至尊卦(坎坎、坎震、坎艮)且元堂爻在九五(4)或上六(5)
+  /// 2. 如果是至尊卦特殊情况，根据月份阴阳决定是否互换上下卦
+  /// 3. 否则，将先天卦转换为二进制列表，对元堂爻进行爻变（阴转阳，阳转阴），上下卦互换
   static (
     String, // houtianGua
     int, // houtianUpperGuaNumber
     int, // houtianLowerGuaNumber
-  ) generateHoutianGua({
+  )
+  generateHoutianGua({
     required String xiantianGua,
     required int yuantangYaoIndex,
+    required int birthMonth,
   }) {
+    // 判断是否为至尊卦且在特殊爻位
+    final isZhiZunGua = ['坎坎', '坎震', '坎艮'].contains(xiantianGua);
+    final isSpecialYao = (yuantangYaoIndex == 4 || yuantangYaoIndex == 5);
+
+    if (isZhiZunGua && isSpecialYao) {
+      return _generateHoutianGuaForZhiZunGua(
+        xiantianGua,
+        yuantangYaoIndex,
+        birthMonth,
+      );
+    }
+
+    // 原有通用逻辑: 爻变 + 上下卦互换
     // 将卦转换为二进制列表
     final binaryList = gua_utils.guaToBinaryList(xiantianGua);
 
@@ -335,10 +383,69 @@ class YuanTangGuaHelper {
     return (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber);
   }
 
+  /// 至尊卦专用后天卦生成
+  ///
+  /// 参数：
+  /// - [xiantianGua]: 先天卦（坎坎/坎震/坎艮）
+  /// - [yuantangYaoIndex]: 元堂爻索引（4=九五，5=上六）
+  /// - [birthMonth]: 出生月份(1-12)
+  ///
+  /// 返回: (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber)
+  ///
+  /// 规则：
+  /// - 九五爻(4): 阴月不换，阳月互换
+  /// - 上六爻(5): 阴月互换，阳月不换
+  /// - 阳月: 1,3,5,7,9,11
+  /// - 阴月: 2,4,6,8,10,12
+  static (String, int, int) _generateHoutianGuaForZhiZunGua(
+    String xiantianGua,
+    int yuantangYaoIndex,
+    int birthMonth,
+  ) {
+    // 判断月份阴阳
+    final isYangMonth = [1, 3, 5, 7, 9, 11].contains(birthMonth);
+
+    // 爻变
+    final binaryList = gua_utils.guaToBinaryList(xiantianGua);
+    final binaryIndex = 5 - yuantangYaoIndex;
+    binaryList[binaryIndex] = binaryList[binaryIndex] == 0 ? 1 : 0;
+
+    final oldUpon = binaryList.sublist(0, 3).join();
+    final oldUnder = binaryList.sublist(3).join();
+    final oldUponGua = constants.binaryStrGuaMapper[oldUpon]!;
+    final oldUnderGua = constants.binaryStrGuaMapper[oldUnder]!;
+
+    // 根据爻位和月份决定是否互换
+    String houtianGua;
+
+    if (yuantangYaoIndex == 4) {
+      // 九五爻: 阴月不换, 阳月互换
+      if (isYangMonth) {
+        houtianGua = oldUnderGua + oldUponGua; // 互换
+      } else {
+        houtianGua = oldUponGua + oldUnderGua; // 不互换
+      }
+    } else {
+      // 上六爻: 阴月互换, 阳月不换
+      if (isYangMonth) {
+        houtianGua = oldUponGua + oldUnderGua; // 不互换
+      } else {
+        houtianGua = oldUnderGua + oldUponGua; // 互换
+      }
+    }
+
+    final houtianUpperGuaNumber =
+        constants.houTianGuaNumberMapper[houtianGua[0]]!;
+    final houtianLowerGuaNumber =
+        constants.houTianGuaNumberMapper[houtianGua[1]]!;
+
+    return (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber);
+  }
+
   /// 后天卦元堂装卦
   ///
   /// 参数：
-  /// - [fourZhu]: 四柱信息
+  /// - [eightChars]: 四柱信息
   /// - [houtianGua]: 后天卦
   /// - [gender]: 性别（"男" / "女"）
   /// - [birthAfterZhi]: 出生节气后（"夏至" / "冬至"）
@@ -350,13 +457,14 @@ class YuanTangGuaHelper {
     int, // houtianYuantangYaoIndex
     String, // houtianYuantangYaoLabel
     List<List<String>>, // houtianZhiList
-  ) houtianYuantangZhuanggua({
-    required FourZhu fourZhu,
+  )
+  houtianYuantangZhuanggua({
+    required EightChars eightChars,
     required String houtianGua,
     required String gender,
     required String birthAfterZhi,
   }) {
-    final timeGanzhi = fourZhu.timeGanzhi;
+    final timeGanzhi = eightChars.time.name;
 
     // 判断时辰阴阳（与先天卦相同）
     const yuantangYangTimeSet = ["子", "丑", "寅", "卯", "辰", "巳"];
@@ -380,25 +488,51 @@ class YuanTangGuaHelper {
       // 阳时取阳爻
       if (totalYangYao > 0 && totalYangYao <= 3) {
         zhiList = _zhuangguaLowerThan3(
-            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+          allGuaBinary,
+          List.from(yuantangYangTimeSet),
+          totalYangYao,
+          true,
+        );
       } else if (totalYangYao >= 4 && totalYangYao <= 5) {
         zhiList = _zhuanggua45(
-            allGuaBinary, List.from(yuantangYangTimeSet), totalYangYao, true);
+          allGuaBinary,
+          List.from(yuantangYangTimeSet),
+          totalYangYao,
+          true,
+        );
       } else {
-        zhiList = _zhuanggua6Yang(totalYangYao == 6,
-            List.from(yuantangYangTimeSet), true, gender, birthAfterZhi);
+        zhiList = _zhuanggua6Yang(
+          totalYangYao == 6,
+          List.from(yuantangYangTimeSet),
+          true,
+          gender,
+          birthAfterZhi,
+        );
       }
     } else {
       // 阴时取阴爻
       if (totalYinYao > 0 && totalYinYao <= 3) {
         zhiList = _zhuangguaLowerThan3(
-            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+          allGuaBinary,
+          List.from(yuantangYinTimeSet),
+          totalYinYao,
+          false,
+        );
       } else if (totalYinYao >= 4 && totalYinYao <= 5) {
         zhiList = _zhuanggua45(
-            allGuaBinary, List.from(yuantangYinTimeSet), totalYinYao, false);
+          allGuaBinary,
+          List.from(yuantangYinTimeSet),
+          totalYinYao,
+          false,
+        );
       } else {
-        zhiList = _zhuanggua6Yang(totalYinYao == 0,
-            List.from(yuantangYinTimeSet), false, gender, birthAfterZhi);
+        zhiList = _zhuanggua6Yang(
+          totalYinYao == 0,
+          List.from(yuantangYinTimeSet),
+          false,
+          gender,
+          birthAfterZhi,
+        );
       }
     }
 
@@ -406,7 +540,9 @@ class YuanTangGuaHelper {
     final houtianYuantangYaoIndex = _getYuantangYaoIndex(timeGanzhi, zhiList);
 
     // 获取后天卦元堂爻位标签
-    final houtianYuantangYaoLabel = _getYaoPositionLabel(houtianYuantangYaoIndex);
+    final houtianYuantangYaoLabel = _getYaoPositionLabel(
+      houtianYuantangYaoIndex,
+    );
 
     return (houtianYuantangYaoIndex, houtianYuantangYaoLabel, zhiList);
   }
@@ -553,19 +689,39 @@ class YuanTangGuaHelper {
           // 阳时生
           if (birthAfterZhi == "夏至") {
             // 夏至后出生 下卦自下而上
-            return [<String>[], <String>[], <String>[], ...threeYaoZhuang(timeZhiList, false)];
+            return [
+              <String>[],
+              <String>[],
+              <String>[],
+              ...threeYaoZhuang(timeZhiList, false),
+            ];
           } else {
             // 冬至后出生 上卦自上而下
-            return [...threeYaoZhuang(timeZhiList, true), <String>[], <String>[], <String>[]];
+            return [
+              ...threeYaoZhuang(timeZhiList, true),
+              <String>[],
+              <String>[],
+              <String>[],
+            ];
           }
         } else {
           // 阴时生
           if (birthAfterZhi == "夏至") {
             // 夏至后出生 上卦自下而上
-            return [...threeYaoZhuang(timeZhiList, false), <String>[], <String>[], <String>[]];
+            return [
+              ...threeYaoZhuang(timeZhiList, false),
+              <String>[],
+              <String>[],
+              <String>[],
+            ];
           } else {
             // 冬至后出生 下卦自上而下
-            return [<String>[], <String>[], <String>[], ...threeYaoZhuang(timeZhiList, true)];
+            return [
+              <String>[],
+              <String>[],
+              <String>[],
+              ...threeYaoZhuang(timeZhiList, true),
+            ];
           }
         }
       }
@@ -585,19 +741,39 @@ class YuanTangGuaHelper {
           // 阳时生
           if (birthAfterZhi == "夏至") {
             // 夏至后出生 下卦自下而上
-            return [<String>[], <String>[], <String>[], ...threeYaoZhuang(timeZhiList, false)];
+            return [
+              <String>[],
+              <String>[],
+              <String>[],
+              ...threeYaoZhuang(timeZhiList, false),
+            ];
           } else {
             // 冬至后出生 上卦自上而下
-            return [...threeYaoZhuang(timeZhiList, true), <String>[], <String>[], <String>[]];
+            return [
+              ...threeYaoZhuang(timeZhiList, true),
+              <String>[],
+              <String>[],
+              <String>[],
+            ];
           }
         } else {
           // 阴时生
           if (birthAfterZhi == "夏至") {
             // 夏至后出生 上卦自下而上
-            return [...threeYaoZhuang(timeZhiList, false), <String>[], <String>[], <String>[]];
+            return [
+              ...threeYaoZhuang(timeZhiList, false),
+              <String>[],
+              <String>[],
+              <String>[],
+            ];
           } else {
             // 冬至后出生 下卦自上而下
-            return [<String>[], <String>[], <String>[], ...threeYaoZhuang(timeZhiList, true)];
+            return [
+              <String>[],
+              <String>[],
+              <String>[],
+              ...threeYaoZhuang(timeZhiList, true),
+            ];
           }
         }
       }

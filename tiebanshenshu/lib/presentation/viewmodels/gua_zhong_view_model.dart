@@ -1,4 +1,4 @@
-import '../../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/gua_zhong_base_number_model.dart';
@@ -19,8 +19,8 @@ import 'base_tiao_wen_list_view_model.dart';
 class GuaZhongViewModel extends BaseTiaoWenListViewModel {
   final GuaZhongTiaoWenListUseCase _useCase;
 
-  /// 当前选择的四柱
-  FourZhu? _currentFourZhu;
+  /// 当前选择的八字
+  EightChars? _currentEightChars;
 
   /// Domain层结果（包含GuaZhongBaseNumberModel）
   MultiBaseNumberResult? _domainResult;
@@ -37,8 +37,8 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
   @override
   String get description => '基于卦中取数法计算条文列表的ViewModel，支持三种千位计算方案';
 
-  /// 当前选择的四柱
-  FourZhu? get currentFourZhu => _currentFourZhu;
+  /// 当前选择的八字
+  EightChars? get currentEightChars => _currentEightChars;
 
   /// 当前选中的方案集合
   Set<int> get selectedPlans => Set.unmodifiable(_selectedPlans);
@@ -87,11 +87,9 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
 
   /// 设置卦中取数法参数并计算条文列表
   ///
-  /// [fourZhu] 四柱信息
-  Future<void> setParams({
-    required FourZhu fourZhu,
-  }) async {
-    _currentFourZhu = fourZhu;
+  /// [eightChars] 八字信息
+  Future<void> setParams({required EightChars eightChars}) async {
+    _currentEightChars = eightChars;
     await calculateTiaoWenList();
   }
 
@@ -99,14 +97,12 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
   ///
   /// 使用当前选择的参数计算条文列表
   Future<void> calculateTiaoWenList() async {
-    if (_currentFourZhu == null) {
+    if (_currentEightChars == null) {
       return;
     }
 
     await safeExecute(() async {
-      final params = GuaZhongUseCaseParams(
-        fourZhu: _currentFourZhu!,
-      );
+      final params = GuaZhongUseCaseParams(eightChars: _currentEightChars!);
       final domainResult = await _useCase.execute(params);
       // 保存domain结果以便访问GuaZhongBaseNumberModel
       _domainResult = domainResult;
@@ -121,13 +117,13 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
 
   /// 清除选择
   void clearSelection() {
-    _currentFourZhu = null;
+    _currentEightChars = null;
     _domainResult = null;
     reset();
   }
 
   /// 是否已选择参数
-  bool get hasSelection => _currentFourZhu != null;
+  bool get hasSelection => _currentEightChars != null;
 
   /// 获取GuaZhongBaseNumberModel（完整的中间结果）
   GuaZhongBaseNumberModel? get guaZhongModel {
@@ -136,8 +132,7 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
     // 从sourceData中获取GuaZhongBaseNumberModel
     final sourceData = _domainResult!.sourceData;
     if (sourceData.containsKey('guaZhongBaseNumberModel')) {
-      return sourceData['guaZhongBaseNumberModel']
-          as GuaZhongBaseNumberModel?;
+      return sourceData['guaZhongBaseNumberModel'] as GuaZhongBaseNumberModel?;
     }
 
     return null;
@@ -177,7 +172,8 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
   }
 
   /// 获取带方案标签的条文编号列表（根据选中方案过滤）
-  List<(int tiaoWenNumber, int planNumber, String position)> get filteredTiaoWenNumbersWithLabel {
+  List<(int tiaoWenNumber, int planNumber, String position)>
+  get filteredTiaoWenNumbersWithLabel {
     final model = guaZhongModel;
     if (model == null) return [];
 
@@ -212,10 +208,10 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
     return numbers;
   }
 
-  /// 获取四柱显示文本
+  /// 获取八字显示文本
   String get fourZhuDisplayText {
-    if (_currentFourZhu == null) return '未选择';
-    return _currentFourZhu!.toString();
+    if (_currentEightChars == null) return '未选择';
+    return _currentEightChars!.toString();
   }
 
   /// 获取年月卦显示文本（显示所有选中方案）
@@ -296,7 +292,7 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
 
   @override
   void dispose() {
-    _currentFourZhu = null;
+    _currentEightChars = null;
     _domainResult = null;
     _selectedPlans.clear();
     super.dispose();
@@ -305,7 +301,7 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
   @override
   String toString() {
     return 'GuaZhongViewModel('
-        'fourZhu: $_currentFourZhu, '
+        'eightChars: $_currentEightChars, '
         'hasSelection: $hasSelection, '
         'selectedPlans: $_selectedPlans, '
         '${super.toString()}'

@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -16,22 +18,22 @@ import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 /// - 后天卦: 坎震 (水雷屯，上坎下震)
 void main() {
   late YuanTangStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late YuanTangStrategyParams testParams;
   late YuanTangBaseNumberModel model;
 
   setUp(() {
     strategy = YuanTangStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "癸巳",
-      monthGanzhi: "甲子",
-      dayGanzhi: "丁酉",
-      timeGanzhi: "癸卯",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸巳")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("丁酉")!,
+      time: JiaZi.getFromGanZhiValue("癸卯")!,
     );
 
     testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -43,8 +45,11 @@ void main() {
 
   group('步骤1：生成天地卦 - 癸巳甲子丁酉癸卯', () {
     test('应该正确提取天干配数: 癸=2, 甲=6, 丁=7, 癸=2', () {
-      expect(model.ganNumList, equals([2, 6, 7, 2]),
-          reason: '天干配数应该按照 癸=2, 甲=6, 丁=7, 癸=2');
+      expect(
+        model.ganNumList,
+        equals([2, 6, 7, 2]),
+        reason: '天干配数应该按照 癸=2, 甲=6, 丁=7, 癸=2',
+      );
     });
 
     test('应该正确提取地支配数: 巳=[2,7], 子=[1,6], 酉=[4,9], 卯=[3,8]', () {
@@ -97,8 +102,7 @@ void main() {
     });
 
     test('应该未使用三元五宫', () {
-      expect(model.usedThreeYuanWuGong, isFalse,
-          reason: '天数和地数都不是5，不需要使用三元五宫');
+      expect(model.usedThreeYuanWuGong, isFalse, reason: '天数和地数都不是5，不需要使用三元五宫');
     });
   });
 
@@ -117,26 +121,22 @@ void main() {
     test('先天卦应该是震坤（雷地豫）', () {
       // 天数2对应坤卦，地数3对应震卦
       // 阴年男性：地卦在上，天卦在下 -> 震坤
-      expect(model.xiantianGua, equals('震坤'),
-          reason: '先天卦应该是震坤（雷地豫）');
+      expect(model.xiantianGua, equals('震坤'), reason: '先天卦应该是震坤（雷地豫）');
       expect(model.upperGua, equals('震'), reason: '上卦应该是震');
       expect(model.lowerGua, equals('坤'), reason: '下卦应该是坤');
     });
 
     test('上下卦后天数应该正确', () {
       // 震卦后天数为3, 坤卦后天数为2
-      expect(model.xiantianUpperGuaNumber, equals(3),
-          reason: '震卦的后天数是3');
-      expect(model.xiantianLowerGuaNumber, equals(2),
-          reason: '坤卦的后天数是2');
+      expect(model.xiantianUpperGuaNumber, equals(3), reason: '震卦的后天数是3');
+      expect(model.xiantianLowerGuaNumber, equals(2), reason: '坤卦的后天数是2');
     });
   });
 
   group('步骤3：元堂装卦 - 癸巳甲子丁酉癸卯', () {
     test('应该判断卯时为阳时', () {
       expect(model.timeGanzhi, equals('癸卯'), reason: '时柱应该是癸卯');
-      expect(model.timeYinYang, equals('阳'),
-          reason: '卯时属于阳时（子丑寅卯辰巳）');
+      expect(model.timeYinYang, equals('阳'), reason: '卯时属于阳时（子丑寅卯辰巳）');
     });
 
     test('震坤卦应该有1个阳爻，5个阴爻', () {
@@ -146,20 +146,17 @@ void main() {
     });
 
     test('元堂爻应该在二爻（索引1）', () {
-      expect(model.yuantangYaoIndex, equals(1),
-          reason: '阳时取阳爻，元堂爻应该在二爻');
+      expect(model.yuantangYaoIndex, equals(1), reason: '阳时取阳爻，元堂爻应该在二爻');
       expect(model.yuantangYaoLabel, equals('二'), reason: '索引1对应二爻');
     });
 
     test('二爻应该配置卯，且标记为元堂爻', () {
-      expect(model.zhiList[1], contains('卯'),
-          reason: '二爻应该装配卯地支');
+      expect(model.zhiList[1], contains('卯'), reason: '二爻应该装配卯地支');
 
       final erYao = model.yaoDetails[1];
       expect(erYao.isYuanTangYao, isTrue, reason: '二爻应该是元堂爻');
       expect(erYao.positionLabel, equals('二'), reason: '位置标签应该是"二"');
-      expect(erYao.diZhiList, contains('卯'),
-          reason: '二爻yaoDetails中应该包含卯');
+      expect(erYao.diZhiList, contains('卯'), reason: '二爻yaoDetails中应该包含卯');
     });
 
     test('六爻地支配置应该完整正确', () {
@@ -173,12 +170,15 @@ void main() {
     });
 
     test('只有一个元堂爻，且位置正确', () {
-      final yuanTangYaoCount =
-          model.yaoDetails.where((yao) => yao.isYuanTangYao).length;
+      final yuanTangYaoCount = model.yaoDetails
+          .where((yao) => yao.isYuanTangYao)
+          .length;
 
       expect(yuanTangYaoCount, equals(1), reason: '只应该有一个元堂爻');
 
-      final yuanTangYao = model.yaoDetails.firstWhere((yao) => yao.isYuanTangYao);
+      final yuanTangYao = model.yaoDetails.firstWhere(
+        (yao) => yao.isYuanTangYao,
+      );
       expect(yuanTangYao.position, equals(1), reason: '元堂爻应该在二爻位置');
       expect(yuanTangYao.positionLabel, equals('二'), reason: '元堂爻标签应该是"二"');
     });
@@ -187,41 +187,37 @@ void main() {
   group('步骤4：生成后天卦 - 癸巳甲子丁酉癸卯', () {
     test('后天卦应该是坎震（水雷屯）', () {
       // 二爻（索引1）阳爻爻变：震坤 -> 变后卦，上下卦互换
-      expect(model.houtianGua, equals('坎震'),
-          reason: '二爻爻变且上下卦互换后应该得到坎震（水雷屯）');
+      expect(model.houtianGua, equals('坎震'), reason: '二爻爻变且上下卦互换后应该得到坎震（水雷屯）');
     });
 
     test('后天卦上卦应该是坎', () {
       expect(model.houtianGua[0], equals('坎'), reason: '后天卦上卦应该是坎');
-      expect(model.houtianUpperGuaNumber, equals(1),
-          reason: '坎卦的后天数是1');
+      expect(model.houtianUpperGuaNumber, equals(1), reason: '坎卦的后天数是1');
     });
 
     test('后天卦下卦应该是震', () {
       expect(model.houtianGua[1], equals('震'), reason: '后天卦下卦应该是震');
-      expect(model.houtianLowerGuaNumber, equals(3),
-          reason: '震卦的后天数是3');
+      expect(model.houtianLowerGuaNumber, equals(3), reason: '震卦的后天数是3');
     });
 
     test('后天卦应该与先天卦不同', () {
-      expect(model.houtianGua, isNot(equals(model.xiantianGua)),
-          reason: '元堂爻爻变且上下卦互换后，后天卦应该与先天卦不同');
+      expect(
+        model.houtianGua,
+        isNot(equals(model.xiantianGua)),
+        reason: '元堂爻爻变且上下卦互换后，后天卦应该与先天卦不同',
+      );
     });
   });
 
   group('步骤5：互卦计算 - 癸巳甲子丁酉癸卯', () {
     test('先天卦互卦应该已计算', () {
-      expect(model.xiantianGuaHu, isNotEmpty,
-          reason: '先天卦互卦应该已计算');
-      expect(model.xiantianGuaHu.length, equals(2),
-          reason: '互卦应该是两个卦的组合');
+      expect(model.xiantianGuaHu, isNotEmpty, reason: '先天卦互卦应该已计算');
+      expect(model.xiantianGuaHu.length, equals(2), reason: '互卦应该是两个卦的组合');
     });
 
     test('后天卦互卦应该已计算', () {
-      expect(model.houtianGuaHu, isNotEmpty,
-          reason: '后天卦互卦应该已计算');
-      expect(model.houtianGuaHu.length, equals(2),
-          reason: '互卦应该是两个卦的组合');
+      expect(model.houtianGuaHu, isNotEmpty, reason: '后天卦互卦应该已计算');
+      expect(model.houtianGuaHu.length, equals(2), reason: '互卦应该是两个卦的组合');
     });
   });
 
@@ -229,8 +225,7 @@ void main() {
     test('应该返回成功结果', () {
       final result = strategy.calculate(testParams);
       expect(result.hasError, isFalse, reason: '计算应该成功，无错误');
-      expect(result.baseNumbers.length, equals(1),
-          reason: '应该返回1个基础数结果');
+      expect(result.baseNumbers.length, equals(1), reason: '应该返回1个基础数结果');
     });
 
     test('所有关键字段应该已填充', () {
@@ -238,10 +233,8 @@ void main() {
       expect(model.diGua, equals('震'), reason: '地卦应该是震');
       expect(model.xiantianGua, equals('震坤'), reason: '先天卦应该是震坤');
       expect(model.houtianGua, equals('坎震'), reason: '后天卦应该是坎震');
-      expect(model.xiantianGuaHu, isNotEmpty,
-          reason: '先天卦互卦应该已计算');
-      expect(model.houtianGuaHu, isNotEmpty,
-          reason: '后天卦互卦应该已计算');
+      expect(model.xiantianGuaHu, isNotEmpty, reason: '先天卦互卦应该已计算');
+      expect(model.houtianGuaHu, isNotEmpty, reason: '后天卦互卦应该已计算');
     });
 
     test('与预期算法输出完全匹配', () {
@@ -250,10 +243,18 @@ void main() {
       // 验证地支配数（忽略顺序）
       bool checkZhiNumList() {
         if (model.zhiNumList.length != 4) return false;
-        if (!model.zhiNumList[0].toSet().containsAll([2, 7]) || model.zhiNumList[0].length != 2) return false;
-        if (!model.zhiNumList[1].toSet().containsAll([1, 6]) || model.zhiNumList[1].length != 2) return false;
-        if (!model.zhiNumList[2].toSet().containsAll([4, 9]) || model.zhiNumList[2].length != 2) return false;
-        if (!model.zhiNumList[3].toSet().containsAll([3, 8]) || model.zhiNumList[3].length != 2) return false;
+        if (!model.zhiNumList[0].toSet().containsAll([2, 7]) ||
+            model.zhiNumList[0].length != 2)
+          return false;
+        if (!model.zhiNumList[1].toSet().containsAll([1, 6]) ||
+            model.zhiNumList[1].length != 2)
+          return false;
+        if (!model.zhiNumList[2].toSet().containsAll([4, 9]) ||
+            model.zhiNumList[2].length != 2)
+          return false;
+        if (!model.zhiNumList[3].toSet().containsAll([3, 8]) ||
+            model.zhiNumList[3].length != 2)
+          return false;
         return true;
       }
 
@@ -279,8 +280,7 @@ void main() {
         }
       });
 
-      expect(failed, isEmpty,
-          reason: '所有验证点都应该通过，失败项: ${failed.join(", ")}');
+      expect(failed, isEmpty, reason: '所有验证点都应该通过，失败项: ${failed.join(", ")}');
     });
   });
 }

@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -8,15 +10,15 @@ void main() {
   test('大运计算调试 - 癸巳甲子丁酉癸卯', () {
     final strategy = YuanTangStrategy();
 
-    final testFourZhu = FourZhu(
-      yearGanzhi: "癸巳",
-      monthGanzhi: "甲子",
-      dayGanzhi: "丁酉",
-      timeGanzhi: "癸卯",
+    final testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸巳")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("丁酉")!,
+      time: JiaZi.getFromGanZhiValue("癸卯")!,
     );
 
     final testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -33,18 +35,22 @@ void main() {
     print('先天卦大运列表:');
     for (final period in model.xiantianDayunList) {
       print(
-          '  ${period.yaoLabel}爻(${period.yinYang}): ${period.years}年, ${period.ageRange}岁, 地支=${period.diZhiList.join("、")}');
+        '  ${period.yaoLabel}爻(${period.yinYang}): ${period.years}年, ${period.ageRange}岁, 地支=${period.diZhiList.join("、")}',
+      );
     }
 
     print('');
     print('后天卦: ${model.houtianGua}');
-    print('后天卦元堂爻: ${model.houtianYuantangYaoLabel}（索引${model.houtianYuantangYaoIndex}）');
+    print(
+      '后天卦元堂爻: ${model.houtianYuantangYaoLabel}（索引${model.houtianYuantangYaoIndex}）',
+    );
     print('');
 
     print('后天卦大运列表:');
     for (final period in model.houtianDayunList) {
       print(
-          '  ${period.yaoLabel}爻(${period.yinYang}): ${period.years}年, ${period.ageRange}岁, 地支=${period.diZhiList.join("、")}');
+        '  ${period.yaoLabel}爻(${period.yinYang}): ${period.years}年, ${period.ageRange}岁, 地支=${period.diZhiList.join("、")}',
+      );
     }
 
     print('');

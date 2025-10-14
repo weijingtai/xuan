@@ -1,4 +1,4 @@
-import '../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/models/gua_zhong_base_number_model.dart';
@@ -46,7 +46,7 @@ class GuaZhongTiaoWenListUseCase
       validateParams(params);
 
       // 2. 调用Strategy计算
-      final strategyParams = GuaZhongStrategyParams(fourZhu: params.fourZhu);
+      final strategyParams = GuaZhongStrategyParams(eightChars: params.eightChars);
       final strategyResult = _strategy.calculate(strategyParams);
 
       // 检查计算是否成功
@@ -118,12 +118,12 @@ class GuaZhongTiaoWenListUseCase
       // 8. 返回结果
       return MultiBaseNumberResult.success(
         algorithmName: '卦中取数法（三种方案）',
-        algorithmDescription: '卦中取数法（四柱:${params.fourZhu}，支持三种千位计算方案）',
+        algorithmDescription: '卦中取数法（八字:${params.eightChars}，支持三种千位计算方案）',
         calculationParams: params.toString(),
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'nianYueTiaoWenCount': nianYueTiaoWenNumbers.toSet().length,
           'riShiTiaoWenCount': riShiTiaoWenNumbers.toSet().length,
           'totalTiaoWenNumbers': allTiaoWenNumbers.length,
@@ -145,7 +145,7 @@ class GuaZhongTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'error': e.toString(),
         },
       );
@@ -154,8 +154,8 @@ class GuaZhongTiaoWenListUseCase
 
   @override
   void validateParams(GuaZhongUseCaseParams params) {
-    // 卦中取数法只需要四柱，无需额外验证
-    // 四柱的验证已经在FourZhu类的构造函数中完成
+    // 卦中取数法只需要八字，无需额外验证
+    // EightChars 的基本校验通过类型系统保证
   }
 }
 
@@ -163,22 +163,22 @@ class GuaZhongTiaoWenListUseCase
 ///
 /// 包含卦中取数法计算所需的所有参数
 class GuaZhongUseCaseParams {
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 八字信息
+  final EightChars eightChars;
 
-  const GuaZhongUseCaseParams({required this.fourZhu});
+  const GuaZhongUseCaseParams({required this.eightChars});
 
   @override
   String toString() {
-    return 'GuaZhongUseCaseParams(fourZhu: ${fourZhu.toString()})';
+    return 'GuaZhongUseCaseParams(eightChars: ${eightChars.toString()})';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is GuaZhongUseCaseParams && other.fourZhu == fourZhu;
+    return other is GuaZhongUseCaseParams && other.eightChars == eightChars;
   }
 
   @override
-  int get hashCode => fourZhu.hashCode;
+  int get hashCode => eightChars.hashCode;
 }

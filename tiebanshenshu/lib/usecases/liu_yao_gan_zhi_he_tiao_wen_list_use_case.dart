@@ -1,4 +1,5 @@
 import '../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/models/liu_yao_gan_zhi_he_base_number_model.dart';
@@ -17,15 +18,11 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
   final LiuYaoGanZhiHeStrategy _strategy;
   final TiaoWenRepository _repository;
 
-  LiuYaoGanZhiHeTiaoWenListUseCase(
-    this._strategy,
-    this._repository,
-  );
+  LiuYaoGanZhiHeTiaoWenListUseCase(this._strategy, this._repository);
 
   @override
   TiaoWenListCalculationConfig get defaultCalculationConfig =>
-      _strategy.defaultTiaoWenCalculationConfig
-          as TiaoWenListCalculationConfig;
+      _strategy.defaultTiaoWenCalculationConfig as TiaoWenListCalculationConfig;
 
   @override
   TiaoWenRepository get repository => _repository;
@@ -47,7 +44,7 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
 
       // 2. 调用Strategy计算
       final strategyParams = LiuYaoGanZhiHeStrategyParams(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
@@ -66,8 +63,7 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
       // 4. 生成先天卦条文编号列表（递增减96四次：8个数）
       final xiantianBaseNumber = liuYaoModel.xiantianBaseNumber;
       final config = _strategy.defaultTiaoWenCalculationConfig;
-      final xiantianTiaoWenList =
-          _strategy.calculateTiaoWenListWithConfig(
+      final xiantianTiaoWenList = _strategy.calculateTiaoWenListWithConfig(
         xiantianBaseNumber,
         strategyParams,
         config,
@@ -75,8 +71,7 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
 
       // 5. 生成后天卦条文编号列表（递增减96四次：8个数）
       final houtianBaseNumber = liuYaoModel.houtianBaseNumber;
-      final houtianTiaoWenList =
-          _strategy.calculateTiaoWenListWithConfig(
+      final houtianTiaoWenList = _strategy.calculateTiaoWenListWithConfig(
         houtianBaseNumber,
         strategyParams,
         config,
@@ -89,8 +84,9 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
       }.toList();
 
       // 7. 批量查询条文数据
-      final tiaoWenDataList =
-          await _repository.getByIdList(queryList: allTiaoWenNumbers);
+      final tiaoWenDataList = await _repository.getByIdList(
+        queryList: allTiaoWenNumbers,
+      );
 
       // 8. 构建两个BaseNumberTiaoWenListModel（先天和后天分开）
       final baseNumberTiaoWenList = [
@@ -127,7 +123,8 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': strategyParams.eightChars.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -150,7 +147,7 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -200,8 +197,8 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
 ///
 /// 包含先后天卦六爻干支和数法计算所需的所有参数
 class LiuYaoGanZhiHeUseCaseParams {
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 八字信息
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -213,7 +210,7 @@ class LiuYaoGanZhiHeUseCaseParams {
   final String birthAfterZhi;
 
   const LiuYaoGanZhiHeUseCaseParams({
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -221,14 +218,14 @@ class LiuYaoGanZhiHeUseCaseParams {
 
   @override
   String toString() {
-    return 'LiuYaoGanZhiHeUseCaseParams(fourZhu: ${fourZhu.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
+    return 'LiuYaoGanZhiHeUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is LiuYaoGanZhiHeUseCaseParams &&
-        other.fourZhu == fourZhu &&
+        other.eightChars == eightChars &&
         other.gender == gender &&
         other.threeYuan == threeYuan &&
         other.birthAfterZhi == birthAfterZhi;
@@ -236,7 +233,7 @@ class LiuYaoGanZhiHeUseCaseParams {
 
   @override
   int get hashCode =>
-      fourZhu.hashCode ^
+      eightChars.hashCode ^
       gender.hashCode ^
       threeYuan.hashCode ^
       birthAfterZhi.hashCode;

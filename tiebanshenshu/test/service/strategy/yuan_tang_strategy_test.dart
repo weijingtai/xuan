@@ -11,14 +11,14 @@ import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 /// 节气：夏至
 void main() {
   late YuanTangStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late YuanTangStrategyParams testParams;
 
   setUp(() {
     strategy = YuanTangStrategy();
 
     // 构造测试四柱：甲戌 己巳 辛丑 丁酉
-    testFourZhu = FourZhu(
+    testEightChars = EightChars(
       yearGanzhi: "甲戌",
       monthGanzhi: "己巳",
       dayGanzhi: "辛丑",
@@ -26,7 +26,7 @@ void main() {
     );
 
     testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -126,7 +126,7 @@ void main() {
 
     test('阳年女性应该地卦在上、天卦在下', () {
       final femaleParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -341,8 +341,9 @@ void main() {
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       final yaoDetails = model.yaoDetails;
-      final yuanTangYaoCount =
-          yaoDetails.where((yao) => yao.isYuanTangYao).length;
+      final yuanTangYaoCount = yaoDetails
+          .where((yao) => yao.isYuanTangYao)
+          .length;
 
       // 只应该有一个元堂爻
       expect(yuanTangYaoCount, equals(1));
@@ -356,14 +357,14 @@ void main() {
   group('YuanTangStrategy - 边界情况测试', () {
     test('不同性别应该产生不同的结果', () {
       final maleParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final femaleParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -382,14 +383,14 @@ void main() {
 
     test('不同三元应该可能产生不同结果（当天数或地数为5时）', () {
       final shangYuanParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final zhongYuanParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "中",
         birthAfterZhi: "夏至",
@@ -405,14 +406,14 @@ void main() {
 
     test('不同节气应该可能产生不同结果（6爻全阳/全阴时）', () {
       final xiazhiParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final dongzhiParams = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "上",
         birthAfterZhi: "冬至",
@@ -428,14 +429,14 @@ void main() {
 
     test('相同参数应该产生相同结果', () {
       final params1 = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final params2 = YuanTangStrategyParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -458,16 +459,20 @@ void main() {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      expect(model.upperGuaDisplayText,
-          contains(model.xiantianUpperGuaNumber.toString()));
+      expect(
+        model.upperGuaDisplayText,
+        contains(model.xiantianUpperGuaNumber.toString()),
+      );
     });
 
     test('lowerGuaDisplayText应该包含后天数', () {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      expect(model.lowerGuaDisplayText,
-          contains(model.xiantianLowerGuaNumber.toString()));
+      expect(
+        model.lowerGuaDisplayText,
+        contains(model.xiantianLowerGuaNumber.toString()),
+      );
     });
 
     test('tianDiGuaFormula应该包含完整的天地卦生成说明', () {
@@ -485,7 +490,7 @@ void main() {
     test('sourceData应该包含完整信息', () {
       final result = strategy.calculate(testParams);
 
-      expect(result.sourceData['fourZhu'], contains('甲戌'));
+      expect(result.sourceData['eightChars'], contains('甲戌'));
       expect(result.sourceData['gender'], equals('男'));
       expect(result.sourceData['threeYuan'], equals('上'));
       expect(result.sourceData['birthAfterZhi'], equals('夏至'));
@@ -506,13 +511,13 @@ void main() {
   });
 
   group('YuanTangStrategy - 具体测试数据验证（己酉丙子辛巳戊子）', () {
-    late FourZhu specificFourZhu;
+    late EightChars specificEightChars;
     late YuanTangStrategyParams specificParams;
 
     setUp(() {
       // 测试数据：男 己酉年 丙子月 辛巳日 戊子时
       // 注：此测试验证算法实际输出，而非外部提供的预期值
-      specificFourZhu = FourZhu(
+      specificEightChars = EightChars(
         yearGanzhi: "己酉",
         monthGanzhi: "丙子",
         dayGanzhi: "辛巳",
@@ -520,7 +525,7 @@ void main() {
       );
 
       specificParams = YuanTangStrategyParams(
-        fourZhu: specificFourZhu,
+        eightChars: specificEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -539,12 +544,15 @@ void main() {
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 按照Constants.diZhiNumberMapper的定义
-      expect(model.zhiNumList, equals([
-        [9, 4], // 酉
-        [1, 6], // 子
-        [7, 2], // 巳
-        [1, 6]  // 子
-      ]));
+      expect(
+        model.zhiNumList,
+        equals([
+          [9, 4], // 酉
+          [1, 6], // 子
+          [7, 2], // 巳
+          [1, 6], // 子
+        ]),
+      );
     });
 
     test('应该计算奇数总和=28，偶数总和=30', () {

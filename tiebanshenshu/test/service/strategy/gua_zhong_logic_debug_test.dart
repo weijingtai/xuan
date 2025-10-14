@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
@@ -15,16 +17,10 @@ void main() {
     test('验证年月卦计算 - mod 8逻辑', () {
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,    // 癸卯
-        monthGanzhi: eightChars.month.name,  // 癸亥
-        dayGanzhi: eightChars.day.name,      // 甲申
-        timeGanzhi: eightChars.time.name,    // 甲子
-      );
 
       print('\n========== 年月卦计算验证 ==========');
-      print('年柱: ${fourZhu.yearGanzhi}');
-      print('月柱: ${fourZhu.monthGanzhi}');
+      print('年柱: ${eightChars.year.name}');
+      print('月柱: ${eightChars.month.name}');
 
       // 手动计算太玄数
       // 癸=10, 卯=9 → yearSum=19
@@ -40,7 +36,7 @@ void main() {
       print('预期年月卦: 离巽');
 
       final strategy = GuaZhongStrategy();
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       expect(result.hasError, false);
@@ -57,16 +53,10 @@ void main() {
     test('验证日时卦计算 - 大于8减8逻辑', () {
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,    // 甲申
-        timeGanzhi: eightChars.time.name,  // 甲子
-      );
 
       print('\n========== 日时卦计算验证 ==========');
-      print('日柱: ${fourZhu.dayGanzhi}');
-      print('时柱: ${fourZhu.timeGanzhi}');
+      print('日柱: ${eightChars.day.name}');
+      print('时柱: ${eightChars.time.name}');
 
       // 手动计算太玄数
       // 甲=1, 申=2 → daySum=3
@@ -82,7 +72,7 @@ void main() {
       print('预期日时卦: 离艮');
 
       final strategy = GuaZhongStrategy();
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       expect(result.hasError, false);
@@ -98,12 +88,6 @@ void main() {
 
     test('验证条文编号计算 - 年月卦主卦', () {
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
       print('\n========== 年月卦主卦条文编号验证（三种方案） ==========');
 
@@ -123,7 +107,7 @@ void main() {
       print('  方案3 = 10 * 1000 + 4 * 100 + 10 * 10 + 9 = 10549');
 
       final strategy = GuaZhongStrategy();
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       final model = result.baseNumbers.first as dynamic;
@@ -146,18 +130,18 @@ void main() {
 
       // 构造一个干支和=8的情况
       // 比如：丁(4) + 辰(4) = 8
-      final fourZhu = FourZhu(
-        yearGanzhi: '丁辰',
-        monthGanzhi: '癸亥',
-        dayGanzhi: '甲申',
-        timeGanzhi: '甲子',
+      final eightChars = EightChars(
+        year: JiaZi.getFromGanZhiValue('丁辰')!,
+        month: JiaZi.getFromGanZhiValue('癸亥')!,
+        day: JiaZi.getFromGanZhiValue('甲申')!,
+        time: JiaZi.getFromGanZhiValue('甲子')!,
       );
 
       print('年柱: 丁辰 → 丁(4) + 辰(4) = 8');
       print('8 % 8 = 0, 应该取8 (坤卦)');
 
       final strategy = GuaZhongStrategy();
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       // Check if there is an error
@@ -183,11 +167,11 @@ void main() {
 
       // 构造一个干支和>8的情况
       // 比如：癸(10) + 亥(3) = 13, 应该减8得5
-      final fourZhu = FourZhu(
-        yearGanzhi: '癸卯',
-        monthGanzhi: '癸亥',
-        dayGanzhi: '癸亥',  // 癸(10) + 亥(3) = 13
-        timeGanzhi: '癸卯',  // 癸(10) + 卯(9) = 19
+      final eightChars = EightChars(
+        year: JiaZi.getFromGanZhiValue('癸卯')!,
+        month: JiaZi.getFromGanZhiValue('癸亥')!,
+        day: JiaZi.getFromGanZhiValue('癸亥')!,  // 癸(10) + 亥(3) = 13
+        time: JiaZi.getFromGanZhiValue('癸卯')!,  // 癸(10) + 卯(9) = 19
       );
 
       print('日柱: 癸亥 → 癸(10) + 亥(3) = 13');
@@ -198,7 +182,7 @@ void main() {
       print('⚠️  问题：算法只说"如果大于8则减去8"，是只减一次还是循环减？');
 
       final strategy = GuaZhongStrategy();
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       final model = result.baseNumbers.first;

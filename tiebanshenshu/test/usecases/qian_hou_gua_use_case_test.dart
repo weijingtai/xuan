@@ -22,16 +22,10 @@ void main() {
 
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
       // 创建参数
       final params = QianHouGuaUseCaseParams(
-        fourZhu: fourZhu,
+        eightChars: eightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -49,7 +43,9 @@ void main() {
       } else {
         print('Success!');
         print('Algorithm Name: ${result.algorithmName}');
-        print('BaseNumberTiaoWenList count: ${result.baseNumberTiaoWenList.length}');
+        print(
+          'BaseNumberTiaoWenList count: ${result.baseNumberTiaoWenList.length}',
+        );
         print('TiaoWenEntities count: ${result.tiaoWenEntities?.length ?? 0}');
 
         // 打印前卦条文
@@ -75,16 +71,32 @@ void main() {
       print('========== END DEBUG ==========\n');
 
       expect(result.hasError, false, reason: 'Should not have error');
-      expect(result.baseNumberTiaoWenList.length, 2, reason: 'Should have 2 base number models (前卦 + 后卦)');
-      expect(result.tiaoWenEntities?.isNotEmpty ?? false, true, reason: 'Should have tiao wen entities');
+      expect(
+        result.baseNumberTiaoWenList.length,
+        2,
+        reason: 'Should have 2 base number models (前卦 + 后卦)',
+      );
+      expect(
+        result.tiaoWenEntities?.isNotEmpty ?? false,
+        true,
+        reason: 'Should have tiao wen entities',
+      );
 
       // 验证前卦条文
       final qianGuaModel = result.baseNumberTiaoWenList[0];
-      expect(qianGuaModel.tiaoWenDataList.isNotEmpty, true, reason: 'QianGua should have tiao wen data');
+      expect(
+        qianGuaModel.tiaoWenDataList.isNotEmpty,
+        true,
+        reason: 'QianGua should have tiao wen data',
+      );
 
       // 验证后卦条文
       final houGuaModel = result.baseNumberTiaoWenList[1];
-      expect(houGuaModel.tiaoWenDataList.isNotEmpty, true, reason: 'HouGua should have tiao wen data');
+      expect(
+        houGuaModel.tiaoWenDataList.isNotEmpty,
+        true,
+        reason: 'HouGua should have tiao wen data',
+      );
     });
   });
 }

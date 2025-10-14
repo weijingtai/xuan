@@ -96,22 +96,16 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
       final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
       final yuanTangViewModel = context.read<YuanTangViewModel>();
-      final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
+      final xianHoutianJiaZeViewModel = context
+          .read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
-      final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
+      final xianHoutianQuShuViewModel = context
+          .read<XianHoutianQuShuViewModel>();
       final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
       final guaZhongViewModel = context.read<GuaZhongViewModel>();
 
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-
-      // 创建FourZhu对象供元堂卦使用
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
       // 并行初始化所有ViewModel
       await Future.wait([
@@ -120,38 +114,36 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
         taiXuanFourZhuViewModel.setEightChars(eightChars),
         baGuaJiaZeViewModel.setEightChars(eightChars),
         yuanTangViewModel.setYuanTangParams(
-          fourZhu: fourZhu,
+          eightChars: eightChars,
           gender: "男",
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
-        xianHoutianJiaZeViewModel.setParams(
-          fourZhu: fourZhu,
+        xianHoutianJiaZeViewModel.setEightChars(
+          eightChars: eightChars,
           gender: "男",
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
         liuYaoGanZhiHeViewModel.setParams(
-          fourZhu: fourZhu,
+          eightChars: eightChars,
           gender: "男",
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
         xianHoutianQuShuViewModel.setParams(
-          fourZhu: fourZhu,
+          eightChars: eightChars,
           gender: "男",
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
         qianHouGuaViewModel.setParams(
-          fourZhu: fourZhu,
+          eightChars: eightChars,
           gender: "男",
           threeYuan: "上",
           birthAfterZhi: "夏至",
         ),
-        guaZhongViewModel.setParams(
-          fourZhu: fourZhu,
-        ),
+        guaZhongViewModel.setParams(eightChars: eightChars),
       ]);
 
       setState(() {
@@ -177,9 +169,11 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final taiXuanFourZhuViewModel = context.read<TaiXuanFourZhuViewModel>();
       final baGuaJiaZeViewModel = context.read<BaGuaJiaZeViewModel>();
       final yuanTangViewModel = context.read<YuanTangViewModel>();
-      final xianHoutianJiaZeViewModel = context.read<XianHoutianJiaZeViewModel>();
+      final xianHoutianJiaZeViewModel = context
+          .read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
-      final xianHoutianQuShuViewModel = context.read<XianHoutianQuShuViewModel>();
+      final xianHoutianQuShuViewModel = context
+          .read<XianHoutianQuShuViewModel>();
       final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
       final guaZhongViewModel = context.read<GuaZhongViewModel>();
 
@@ -241,10 +235,10 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
                 controller: _tabController,
                 isScrollable: true,
                 tabs: _tabs
-                    .map((config) => Tab(
-                          icon: Icon(config.icon),
-                          text: config.label,
-                        ))
+                    .map(
+                      (config) =>
+                          Tab(icon: Icon(config.icon), text: config.label),
+                    )
                     .toList(),
               )
             : null,
@@ -664,15 +658,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
               Text(
                 '八卦加则取数法',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8.0),
               Text(
                 '共 ${viewModel.resultCount} 个结果（4柱 × 2方法）',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.secondary,
-                    ),
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
               ),
             ],
           ),
@@ -742,10 +736,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       houtianTiaoWenNumbers: houtianTiaoWenNumbers,
     );
 
-    return YuanTangCard(
-      model: uiModel,
-      initiallyExpanded: true,
-    );
+    return YuanTangCard(model: uiModel, initiallyExpanded: true);
   }
 
   /// 构建先后天八卦加则法内容
@@ -774,10 +765,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       );
     }
 
-    return XianHoutianJiaZeCard(
-      viewModel: viewModel,
-      initiallyExpanded: true,
-    );
+    return XianHoutianJiaZeCard(viewModel: viewModel, initiallyExpanded: true);
   }
 
   /// 构建先后天卦六爻干支和数法内容
@@ -806,10 +794,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       );
     }
 
-    return LiuYaoGanZhiHeCard(
-      viewModel: viewModel,
-      initiallyExpanded: true,
-    );
+    return LiuYaoGanZhiHeCard(viewModel: viewModel, initiallyExpanded: true);
   }
 
   /// 构建先后天卦取数内容
@@ -838,10 +823,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       );
     }
 
-    return XianHoutianQuShuCard(
-      viewModel: viewModel,
-      initiallyExpanded: true,
-    );
+    return XianHoutianQuShuCard(viewModel: viewModel, initiallyExpanded: true);
   }
 
   /// 构建前后卦取数法内容
@@ -870,10 +852,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       );
     }
 
-    return QianHouGuaCard(
-      viewModel: viewModel,
-      initiallyExpanded: true,
-    );
+    return QianHouGuaCard(viewModel: viewModel, initiallyExpanded: true);
   }
 
   /// 构建卦中取数法内容
@@ -902,17 +881,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       );
     }
 
-    // GuaZhongCard需要FourZhu参数
-    if (viewModel.currentFourZhu == null) {
+    // GuaZhongCard需要EightChars参数
+    if (viewModel.currentEightChars == null) {
       return const Padding(
         padding: EdgeInsets.all(16.0),
         child: Center(child: Text('参数错误')),
       );
     }
 
-    return GuaZhongCard(
-      fourZhu: viewModel.currentFourZhu!,
-    );
+    return GuaZhongCard(eightChars: viewModel.currentEightChars!);
   }
 
   /// 显示信息对话框
@@ -961,8 +938,5 @@ class _TabConfig {
   final String label;
   final IconData icon;
 
-  const _TabConfig({
-    required this.label,
-    required this.icon,
-  });
+  const _TabConfig({required this.label, required this.icon});
 }

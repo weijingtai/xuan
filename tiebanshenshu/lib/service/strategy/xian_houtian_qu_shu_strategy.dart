@@ -4,6 +4,7 @@
 library;
 
 import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 
 import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
@@ -12,6 +13,7 @@ import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/xian_houtian_qu_shu_base_number_model.dart';
 import '../../utils/utils.dart' as gua_utils;
 import '../../utils/yuan_tang_gua_helper.dart';
+import 'yuan_tang_strategy.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 
@@ -20,7 +22,7 @@ import 'standard_calculation_strategy.dart';
 /// 包含执行先后天卦取数所需的所有参数
 class XianHoutianQuShuStrategyParams extends BaseCalculationParams {
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -32,7 +34,7 @@ class XianHoutianQuShuStrategyParams extends BaseCalculationParams {
   final String birthAfterZhi;
 
   XianHoutianQuShuStrategyParams({
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -40,7 +42,7 @@ class XianHoutianQuShuStrategyParams extends BaseCalculationParams {
 
   @override
   String get description =>
-      "先后天卦取数计算参数：四柱(${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi})，性别($gender)，三元($threeYuan)，节气($birthAfterZhi)";
+      "先后天卦取数计算参数：四柱(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})，性别($gender)，三元($threeYuan)，节气($birthAfterZhi)";
 }
 
 /// 先后天卦取数计算策略
@@ -95,7 +97,7 @@ class XianHoutianQuShuStrategy
         diGuaNum,
         usedThreeYuanWuGong,
       ) = YuanTangGuaHelper.generateTianDiGua(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         threeYuan: params.threeYuan,
       );
@@ -108,7 +110,7 @@ class XianHoutianQuShuStrategy
         xiantianUpperGuaNumber,
         xiantianLowerGuaNumber,
       ) = YuanTangGuaHelper.generateXiantianGua(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         tianGua: tianGua,
         diGua: diGua,
@@ -124,13 +126,16 @@ class XianHoutianQuShuStrategy
         totalYangYao,
         totalYinYao,
       ) = YuanTangGuaHelper.yuantangZhuanggua(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         xiantianGua: xiantianGua,
         gender: params.gender,
         birthAfterZhi: params.birthAfterZhi,
       );
 
       // 步骤4：生成后天卦（元堂爻变 + 上下卦互换）
+      final birthMonth = YuanTangStrategyParams.getMonthNumberFromZhi(
+        params.eightChars.month.zhi.name,
+      );
       final (
         houtianGua,
         houtianUpperGuaNumber,
@@ -138,6 +143,7 @@ class XianHoutianQuShuStrategy
       ) = YuanTangGuaHelper.generateHoutianGua(
         xiantianGua: xiantianGua,
         yuantangYaoIndex: yuantangYaoIndex,
+        birthMonth: birthMonth,
       );
 
       // 步骤3-4：先天卦六爻纳甲和干支和数计算
@@ -177,7 +183,7 @@ class XianHoutianQuShuStrategy
         description:
             "先后天卦取数计算（性别:${params.gender}，三元:${params.threeYuan}，节气:${params.birthAfterZhi}）",
         source: BaseNumberSource.yearZhu, // 使用yearZhu作为来源标识
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
@@ -223,7 +229,7 @@ class XianHoutianQuShuStrategy
         calculationParams: params.description,
         baseNumbers: [model],
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,

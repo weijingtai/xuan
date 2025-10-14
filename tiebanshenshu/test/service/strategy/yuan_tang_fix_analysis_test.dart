@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -8,22 +10,22 @@ import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 /// 对比当前实现与外部预期的差异，验证修正方案
 void main() {
   late YuanTangStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late YuanTangStrategyParams testParams;
 
   setUp(() {
     strategy = YuanTangStrategy();
 
     // 测试数据：男 己酉 丙子 辛巳 戊子
-    testFourZhu = FourZhu(
-      yearGanzhi: "己酉",
-      monthGanzhi: "丙子",
-      dayGanzhi: "辛巳",
-      timeGanzhi: "戊子",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("己酉")!,
+      month: JiaZi.getFromGanZhiValue("丙子")!,
+      day: JiaZi.getFromGanZhiValue("辛巳")!,
+      time: JiaZi.getFromGanZhiValue("戊子")!,
     );
 
     testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -44,7 +46,9 @@ void main() {
       print('\n六爻配置:');
       for (int i = 0; i < 6; i++) {
         final yao = model.yaoDetails[i];
-        final zhiStr = model.zhiList[i].isEmpty ? '空' : model.zhiList[i].join(',');
+        final zhiStr = model.zhiList[i].isEmpty
+            ? '空'
+            : model.zhiList[i].join(',');
         final mark = yao.isYuanTangYao ? ' [元堂]' : '';
         print('  ${yao.positionLabel}爻(索引$i): $zhiStr$mark');
       }
@@ -74,11 +78,11 @@ void main() {
       // 外部预期的六爻配置（从下到上：初、二、三、四、五、上）
       final expectedZhiList = [
         ['子', '寅'], // 初爻 - 元堂爻
-        ['辰'],        // 二爻
-        ['巳'],        // 三爻
-        ['丑', '卯'],  // 四爻
-        [],            // 五爻 - 空
-        [],            // 上爻 - 空
+        ['辰'], // 二爻
+        ['巳'], // 三爻
+        ['丑', '卯'], // 四爻
+        [], // 五爻 - 空
+        [], // 上爻 - 空
       ];
 
       final expectedYuantangYaoIndex = 0; // 初爻
@@ -99,7 +103,9 @@ void main() {
 
       print('\n预期装配结果:');
       for (int i = 0; i < expectedZhiList.length; i++) {
-        final zhiStr = expectedZhiList[i].isEmpty ? '空' : expectedZhiList[i].join(',');
+        final zhiStr = expectedZhiList[i].isEmpty
+            ? '空'
+            : expectedZhiList[i].join(',');
         final mark = i == expectedYuantangYaoIndex ? ' [元堂]' : '';
         print('  索引$i: $zhiStr$mark');
       }
@@ -174,7 +180,9 @@ void main() {
       print('  导致装卦结果与预期完全相反');
 
       print('\n修正步骤:');
-      print('  1. 移除 _zhuangguaLowerThan3 的 line 592: return resultList.reversed.toList()');
+      print(
+        '  1. 移除 _zhuangguaLowerThan3 的 line 592: return resultList.reversed.toList()',
+      );
       print('  2. 改为: return resultList;');
       print('  3. 同时检查 _zhuanggua45 的 line 211，可能也需要移除反转');
       print('  4. 检查 _zhuanggua6Yang，确保逻辑一致');

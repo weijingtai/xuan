@@ -30,9 +30,7 @@ void main() {
       );
 
       // 创建参数
-      final params = GuaZhongUseCaseParams(
-        fourZhu: fourZhu,
-      );
+      final params = GuaZhongUseCaseParams(eightChars: eightChars);
 
       // 执行UseCase
       final result = await useCase.execute(params);
@@ -46,7 +44,9 @@ void main() {
       } else {
         print('Success!');
         print('Algorithm Name: ${result.algorithmName}');
-        print('BaseNumberTiaoWenList count: ${result.baseNumberTiaoWenList.length}');
+        print(
+          'BaseNumberTiaoWenList count: ${result.baseNumberTiaoWenList.length}',
+        );
         print('TiaoWenEntities count: ${result.tiaoWenEntities?.length ?? 0}');
 
         // 打印年月卦条文
@@ -72,30 +72,64 @@ void main() {
       print('========== END DEBUG ==========\n');
 
       expect(result.hasError, false, reason: 'Should not have error');
-      expect(result.baseNumberTiaoWenList.length, 2, reason: 'Should have 2 base number models (年月卦 + 日时卦)');
-      expect(result.tiaoWenEntities?.isNotEmpty ?? false, true, reason: 'Should have tiao wen entities');
+      expect(
+        result.baseNumberTiaoWenList.length,
+        2,
+        reason: 'Should have 2 base number models (年月卦 + 日时卦)',
+      );
+      expect(
+        result.tiaoWenEntities?.isNotEmpty ?? false,
+        true,
+        reason: 'Should have tiao wen entities',
+      );
 
       // 验证年月卦条文（三种方案可能产生2-6个条文编号）
       final nianYueModel = result.baseNumberTiaoWenList[0];
-      expect(nianYueModel.tiaoWenDataList.isNotEmpty, true, reason: 'NianYue should have tiao wen data');
-      expect(nianYueModel.tiaoWenNumbers.length, greaterThanOrEqualTo(2),
-          reason: 'NianYue should have at least 2 tiao wen numbers (主卦+互卦)');
-      expect(nianYueModel.tiaoWenNumbers.length, lessThanOrEqualTo(6),
-          reason: 'NianYue should have at most 6 tiao wen numbers (主卦+互卦 × 3种方案)');
+      expect(
+        nianYueModel.tiaoWenDataList.isNotEmpty,
+        true,
+        reason: 'NianYue should have tiao wen data',
+      );
+      expect(
+        nianYueModel.tiaoWenNumbers.length,
+        greaterThanOrEqualTo(2),
+        reason: 'NianYue should have at least 2 tiao wen numbers (主卦+互卦)',
+      );
+      expect(
+        nianYueModel.tiaoWenNumbers.length,
+        lessThanOrEqualTo(6),
+        reason: 'NianYue should have at most 6 tiao wen numbers (主卦+互卦 × 3种方案)',
+      );
 
       // 验证日时卦条文（三种方案可能产生2-6个条文编号）
       final riShiModel = result.baseNumberTiaoWenList[1];
-      expect(riShiModel.tiaoWenDataList.isNotEmpty, true, reason: 'RiShi should have tiao wen data');
-      expect(riShiModel.tiaoWenNumbers.length, greaterThanOrEqualTo(2),
-          reason: 'RiShi should have at least 2 tiao wen numbers (主卦+互卦)');
-      expect(riShiModel.tiaoWenNumbers.length, lessThanOrEqualTo(6),
-          reason: 'RiShi should have at most 6 tiao wen numbers (主卦+互卦 × 3种方案)');
+      expect(
+        riShiModel.tiaoWenDataList.isNotEmpty,
+        true,
+        reason: 'RiShi should have tiao wen data',
+      );
+      expect(
+        riShiModel.tiaoWenNumbers.length,
+        greaterThanOrEqualTo(2),
+        reason: 'RiShi should have at least 2 tiao wen numbers (主卦+互卦)',
+      );
+      expect(
+        riShiModel.tiaoWenNumbers.length,
+        lessThanOrEqualTo(6),
+        reason: 'RiShi should have at most 6 tiao wen numbers (主卦+互卦 × 3种方案)',
+      );
 
       // 验证sourceData包含三种方案信息
-      expect(result.sourceData['supportedPlans'], [1, 2, 3],
-          reason: 'Should support 3 plans');
-      expect(result.sourceData['guaZhongBaseNumberModel'], isNotNull,
-          reason: 'Should save GuaZhongBaseNumberModel in sourceData');
+      expect(result.sourceData['supportedPlans'], [
+        1,
+        2,
+        3,
+      ], reason: 'Should support 3 plans');
+      expect(
+        result.sourceData['guaZhongBaseNumberModel'],
+        isNotNull,
+        reason: 'Should save GuaZhongBaseNumberModel in sourceData',
+      );
     });
   });
 }

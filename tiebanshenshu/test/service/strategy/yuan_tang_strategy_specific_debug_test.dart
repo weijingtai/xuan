@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -23,22 +25,22 @@ import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 /// - 后天卦加则法（爻序法）: 2477
 void main() {
   late YuanTangStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late YuanTangStrategyParams testParams;
   late YuanTangBaseNumberModel model;
 
   setUp(() {
     strategy = YuanTangStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "己酉",
-      monthGanzhi: "丙子",
-      dayGanzhi: "辛巳",
-      timeGanzhi: "戊子",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("己酉")!,
+      month: JiaZi.getFromGanZhiValue("丙子")!,
+      day: JiaZi.getFromGanZhiValue("辛巳")!,
+      time: JiaZi.getFromGanZhiValue("戊子")!,
     );
 
     testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",

@@ -32,15 +32,15 @@
 /// - **总计产生12个条文编号**（4个位置 × 3种方案）
 library;
 
-import 'package:tiebanshenshu/domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import 'base_number_model.dart';
 
 /// 卦中取数法基础数模型
 class GuaZhongBaseNumberModel extends BaseNumberModel {
   // ========== 输入参数 (1个字段) ==========
 
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 四柱信息（八字）
+  final EightChars eightChars;
 
   // ========== 步骤1: 四柱干支太玄数 (8个字段) ==========
 
@@ -182,7 +182,7 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     required super.description,
     required super.source,
     // 输入参数
-    required this.fourZhu,
+    required this.eightChars,
     // 步骤1: 四柱干支太玄数
     required this.yearGanTaixuanNumber,
     required this.yearZhiTaixuanNumber,
@@ -233,19 +233,19 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   // ========== 便捷getter方法 ==========
 
   /// 获取四柱显示文本
-  String get fourZhuDisplayText => fourZhu.toString();
+  String get fourZhuDisplayText => eightChars.toString();
 
   /// 获取年柱显示文本
-  String get yearZhuDisplayText => fourZhu.yearGanzhi;
+  String get yearZhuDisplayText => eightChars.year.name;
 
   /// 获取月柱显示文本
-  String get monthZhuDisplayText => fourZhu.monthGanzhi;
+  String get monthZhuDisplayText => eightChars.month.name;
 
   /// 获取日柱显示文本
-  String get dayZhuDisplayText => fourZhu.dayGanzhi;
+  String get dayZhuDisplayText => eightChars.day.name;
 
   /// 获取时柱显示文本
-  String get timeZhuDisplayText => fourZhu.timeGanzhi;
+  String get timeZhuDisplayText => eightChars.time.name;
 
   /// 获取年月卦上卦显示文本（带先天数）
   String get nianYueUpperGuaDisplayText =>
@@ -270,9 +270,12 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
 
   /// 获取日时卦计算说明
   String get riShiGuaDescription {
-    final dayCalc = daySum > 8 ? '$daySum - 8 = $riShiUpperGuaXiantianNumber' : '$daySum';
-    final timeCalc =
-        timeSum > 8 ? '$timeSum - 8 = $riShiLowerGuaXiantianNumber' : '$timeSum';
+    final dayCalc = daySum > 8
+        ? '$daySum - 8 = $riShiUpperGuaXiantianNumber'
+        : '$daySum';
+    final timeCalc = timeSum > 8
+        ? '$timeSum - 8 = $riShiLowerGuaXiantianNumber'
+        : '$timeSum';
     return '日柱($dayGanTaixuanNumber+$dayZhiTaixuanNumber=$dayCalc) → $riShiUpperGuaName, '
         '时柱($timeGanTaixuanNumber+$timeZhiTaixuanNumber=$timeCalc) → $riShiLowerGuaName';
   }
@@ -363,7 +366,8 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   /// 获取带方案标签的条文编号列表
   ///
   /// 返回: List<(条文编号, 方案编号, 位置描述)>
-  List<(int tiaoWenNumber, int planNumber, String position)> get tiaoWenNumbersWithPlanLabel {
+  List<(int tiaoWenNumber, int planNumber, String position)>
+  get tiaoWenNumbersWithPlanLabel {
     return [
       // 年月卦主卦 - 三种方案
       (nianYueZhuGuaTiaoWenNumber_Plan1, 1, '年月卦主卦'),
@@ -393,7 +397,7 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     String? name,
     String? description,
     BaseNumberSource? source,
-    FourZhu? fourZhu,
+    EightChars? eightChars,
     int? yearGanTaixuanNumber,
     int? yearZhiTaixuanNumber,
     int? monthGanTaixuanNumber,
@@ -440,7 +444,7 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
       name: name ?? this.name,
       description: description ?? this.description,
       source: source ?? this.source,
-      fourZhu: fourZhu ?? this.fourZhu,
+      eightChars: eightChars ?? this.eightChars,
       yearGanTaixuanNumber: yearGanTaixuanNumber ?? this.yearGanTaixuanNumber,
       yearZhiTaixuanNumber: yearZhiTaixuanNumber ?? this.yearZhiTaixuanNumber,
       monthGanTaixuanNumber:
@@ -461,21 +465,29 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
       nianYueLowerGuaName: nianYueLowerGuaName ?? this.nianYueLowerGuaName,
       nianYueZhuGuaName: nianYueZhuGuaName ?? this.nianYueZhuGuaName,
       nianYueHuGuaName: nianYueHuGuaName ?? this.nianYueHuGuaName,
-      nianYueHuGuaUpperXiantianNumber: nianYueHuGuaUpperXiantianNumber ??
+      nianYueHuGuaUpperXiantianNumber:
+          nianYueHuGuaUpperXiantianNumber ??
           this.nianYueHuGuaUpperXiantianNumber,
-      nianYueHuGuaLowerXiantianNumber: nianYueHuGuaLowerXiantianNumber ??
+      nianYueHuGuaLowerXiantianNumber:
+          nianYueHuGuaLowerXiantianNumber ??
           this.nianYueHuGuaLowerXiantianNumber,
-      nianYueZhuGuaTiaoWenNumber_Plan1: nianYueZhuGuaTiaoWenNumber_Plan1 ??
+      nianYueZhuGuaTiaoWenNumber_Plan1:
+          nianYueZhuGuaTiaoWenNumber_Plan1 ??
           this.nianYueZhuGuaTiaoWenNumber_Plan1,
-      nianYueZhuGuaTiaoWenNumber_Plan2: nianYueZhuGuaTiaoWenNumber_Plan2 ??
+      nianYueZhuGuaTiaoWenNumber_Plan2:
+          nianYueZhuGuaTiaoWenNumber_Plan2 ??
           this.nianYueZhuGuaTiaoWenNumber_Plan2,
-      nianYueZhuGuaTiaoWenNumber_Plan3: nianYueZhuGuaTiaoWenNumber_Plan3 ??
+      nianYueZhuGuaTiaoWenNumber_Plan3:
+          nianYueZhuGuaTiaoWenNumber_Plan3 ??
           this.nianYueZhuGuaTiaoWenNumber_Plan3,
-      nianYueHuGuaTiaoWenNumber_Plan1: nianYueHuGuaTiaoWenNumber_Plan1 ??
+      nianYueHuGuaTiaoWenNumber_Plan1:
+          nianYueHuGuaTiaoWenNumber_Plan1 ??
           this.nianYueHuGuaTiaoWenNumber_Plan1,
-      nianYueHuGuaTiaoWenNumber_Plan2: nianYueHuGuaTiaoWenNumber_Plan2 ??
+      nianYueHuGuaTiaoWenNumber_Plan2:
+          nianYueHuGuaTiaoWenNumber_Plan2 ??
           this.nianYueHuGuaTiaoWenNumber_Plan2,
-      nianYueHuGuaTiaoWenNumber_Plan3: nianYueHuGuaTiaoWenNumber_Plan3 ??
+      nianYueHuGuaTiaoWenNumber_Plan3:
+          nianYueHuGuaTiaoWenNumber_Plan3 ??
           this.nianYueHuGuaTiaoWenNumber_Plan3,
       daySum: daySum ?? this.daySum,
       timeSum: timeSum ?? this.timeSum,
@@ -487,22 +499,22 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
       riShiLowerGuaName: riShiLowerGuaName ?? this.riShiLowerGuaName,
       riShiZhuGuaName: riShiZhuGuaName ?? this.riShiZhuGuaName,
       riShiHuGuaName: riShiHuGuaName ?? this.riShiHuGuaName,
-      riShiHuGuaUpperXiantianNumber: riShiHuGuaUpperXiantianNumber ??
-          this.riShiHuGuaUpperXiantianNumber,
-      riShiHuGuaLowerXiantianNumber: riShiHuGuaLowerXiantianNumber ??
-          this.riShiHuGuaLowerXiantianNumber,
-      riShiZhuGuaTiaoWenNumber_Plan1: riShiZhuGuaTiaoWenNumber_Plan1 ??
-          this.riShiZhuGuaTiaoWenNumber_Plan1,
-      riShiZhuGuaTiaoWenNumber_Plan2: riShiZhuGuaTiaoWenNumber_Plan2 ??
-          this.riShiZhuGuaTiaoWenNumber_Plan2,
-      riShiZhuGuaTiaoWenNumber_Plan3: riShiZhuGuaTiaoWenNumber_Plan3 ??
-          this.riShiZhuGuaTiaoWenNumber_Plan3,
-      riShiHuGuaTiaoWenNumber_Plan1: riShiHuGuaTiaoWenNumber_Plan1 ??
-          this.riShiHuGuaTiaoWenNumber_Plan1,
-      riShiHuGuaTiaoWenNumber_Plan2: riShiHuGuaTiaoWenNumber_Plan2 ??
-          this.riShiHuGuaTiaoWenNumber_Plan2,
-      riShiHuGuaTiaoWenNumber_Plan3: riShiHuGuaTiaoWenNumber_Plan3 ??
-          this.riShiHuGuaTiaoWenNumber_Plan3,
+      riShiHuGuaUpperXiantianNumber:
+          riShiHuGuaUpperXiantianNumber ?? this.riShiHuGuaUpperXiantianNumber,
+      riShiHuGuaLowerXiantianNumber:
+          riShiHuGuaLowerXiantianNumber ?? this.riShiHuGuaLowerXiantianNumber,
+      riShiZhuGuaTiaoWenNumber_Plan1:
+          riShiZhuGuaTiaoWenNumber_Plan1 ?? this.riShiZhuGuaTiaoWenNumber_Plan1,
+      riShiZhuGuaTiaoWenNumber_Plan2:
+          riShiZhuGuaTiaoWenNumber_Plan2 ?? this.riShiZhuGuaTiaoWenNumber_Plan2,
+      riShiZhuGuaTiaoWenNumber_Plan3:
+          riShiZhuGuaTiaoWenNumber_Plan3 ?? this.riShiZhuGuaTiaoWenNumber_Plan3,
+      riShiHuGuaTiaoWenNumber_Plan1:
+          riShiHuGuaTiaoWenNumber_Plan1 ?? this.riShiHuGuaTiaoWenNumber_Plan1,
+      riShiHuGuaTiaoWenNumber_Plan2:
+          riShiHuGuaTiaoWenNumber_Plan2 ?? this.riShiHuGuaTiaoWenNumber_Plan2,
+      riShiHuGuaTiaoWenNumber_Plan3:
+          riShiHuGuaTiaoWenNumber_Plan3 ?? this.riShiHuGuaTiaoWenNumber_Plan3,
     );
   }
 
@@ -514,7 +526,7 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     return {
       ...super.toMap(),
       // 输入参数
-      'fourZhu': fourZhu.toString(),
+      'eightChars': eightChars.toString(),
       // 四柱干支太玄数
       'yearGanTaixuanNumber': yearGanTaixuanNumber,
       'yearZhiTaixuanNumber': yearZhiTaixuanNumber,

@@ -1,3 +1,4 @@
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model_result.dart';
@@ -55,8 +56,7 @@ class MockTiaoWenRepository implements TiaoWenRepository {
     required List<int> ids,
     required List<int> pageRange,
     int steps = 1,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<List<TiaoWenDataModel>> listAll() => throw UnimplementedError();
@@ -65,8 +65,7 @@ class MockTiaoWenRepository implements TiaoWenRepository {
   Future<List<TiaoWenDataModel>> search({
     String? setName,
     String? contentKeyword,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<int> getCount() => throw UnimplementedError();
@@ -77,8 +76,7 @@ class MockTiaoWenRepository implements TiaoWenRepository {
     required int beforeCount,
     required int afterCount,
     bool includeCenterItem = true,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<List<TiaoWenDataModel>> getByIntervalAroundId({
@@ -87,15 +85,13 @@ class MockTiaoWenRepository implements TiaoWenRepository {
     required int minCount,
     int? maxRange,
     bool includeCenterItem = true,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<List<TiaoWenDataModel>> getByIdRange({
     required int startId,
     required int endId,
-  }) =>
-      throw UnimplementedError();
+  }) => throw UnimplementedError();
 
   @override
   Future<String?> getTiaoWenContentByNumber(int number) =>
@@ -113,7 +109,7 @@ void main() {
   late LiuYaoGanZhiHeTiaoWenListUseCase useCase;
   late MockLiuYaoGanZhiHeStrategy mockStrategy;
   late MockTiaoWenRepository mockRepository;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late LiuYaoGanZhiHeUseCaseParams testParams;
 
   setUp(() {
@@ -121,15 +117,15 @@ void main() {
     mockRepository = MockTiaoWenRepository();
     useCase = LiuYaoGanZhiHeTiaoWenListUseCase(mockStrategy, mockRepository);
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "癸巳",
-      monthGanzhi: "甲子",
-      dayGanzhi: "丁酉",
-      timeGanzhi: "癸卯",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸巳")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("丁酉")!,
+      time: JiaZi.getFromGanZhiValue("癸卯")!,
     );
 
     testParams = LiuYaoGanZhiHeUseCaseParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -138,66 +134,51 @@ void main() {
 
   group('LiuYaoGanZhiHeTiaoWenListUseCase - 参数验证', () {
     test('应该接受有效的男性参数', () {
-      expect(
-        () => useCase.validateParams(testParams),
-        returnsNormally,
-      );
+      expect(() => useCase.validateParams(testParams), returnsNormally);
     });
 
     test('应该接受有效的女性参数', () {
       final femaleParams = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "中",
         birthAfterZhi: "冬至",
       );
 
-      expect(
-        () => useCase.validateParams(femaleParams),
-        returnsNormally,
-      );
+      expect(() => useCase.validateParams(femaleParams), returnsNormally);
     });
 
     test('应该拒绝无效的性别参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "其他",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
-      expect(
-        () => useCase.validateParams(invalidParams),
-        throwsException,
-      );
+      expect(() => useCase.validateParams(invalidParams), throwsException);
     });
 
     test('应该拒绝无效的三元参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "无效",
         birthAfterZhi: "夏至",
       );
 
-      expect(
-        () => useCase.validateParams(invalidParams),
-        throwsException,
-      );
+      expect(() => useCase.validateParams(invalidParams), throwsException);
     });
 
     test('应该拒绝无效的节气参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "春分",
       );
 
-      expect(
-        () => useCase.validateParams(invalidParams),
-        throwsException,
-      );
+      expect(() => useCase.validateParams(invalidParams), throwsException);
     });
   });
 
@@ -220,7 +201,7 @@ void main() {
 
       // 验证传递给Strategy的参数
       final capturedParams = mockStrategy.lastParams!;
-      expect(capturedParams.fourZhu.yearGanzhi, equals("癸巳"));
+      expect(capturedParams.eightChars.year.ganZhiStr, equals("癸巳"));
       expect(capturedParams.gender, equals("男"));
       expect(capturedParams.threeYuan, equals("上"));
       expect(capturedParams.birthAfterZhi, equals("夏至"));
@@ -240,10 +221,12 @@ void main() {
       // 先天卦8个 + 后天卦8个，如果基础数相同会完全重复，去重后是8个
       // 如果基础数不同，去重后最多16个，最少8个（完全重复）
       final queryList = mockRepository.lastQueryList!;
-      expect(queryList.length, greaterThanOrEqualTo(8),
-          reason: '应该有至少8个唯一条文编号（先天卦8个 + 后天卦8个，可能会重复去重）');
-      expect(queryList.length, lessThanOrEqualTo(16),
-          reason: '最多有16个唯一条文编号');
+      expect(
+        queryList.length,
+        greaterThanOrEqualTo(8),
+        reason: '应该有至少8个唯一条文编号（先天卦8个 + 后天卦8个，可能会重复去重）',
+      );
+      expect(queryList.length, lessThanOrEqualTo(16), reason: '最多有16个唯一条文编号');
     });
 
     test('应该对条文编号去重', () async {
@@ -256,8 +239,11 @@ void main() {
       // 条文编号应该已去重
       final queryList = mockRepository.lastQueryList!;
       final uniqueNumbers = queryList.toSet();
-      expect(queryList.length, equals(uniqueNumbers.length),
-          reason: '条文编号应该已去重');
+      expect(
+        queryList.length,
+        equals(uniqueNumbers.length),
+        reason: '条文编号应该已去重',
+      );
     });
 
     test('应该正确批量查询条文数据', () async {
@@ -277,8 +263,11 @@ void main() {
       final result = await useCase.execute(testParams);
 
       expect(result.hasError, isFalse);
-      expect(result.baseNumberTiaoWenList.length, equals(2),
-          reason: '应该返回2个BaseNumberTiaoWenListModel（先天卦和后天卦）');
+      expect(
+        result.baseNumberTiaoWenList.length,
+        equals(2),
+        reason: '应该返回2个BaseNumberTiaoWenListModel（先天卦和后天卦）',
+      );
     });
 
     test('应该返回包含完整信息的成功结果', () async {
@@ -300,8 +289,9 @@ void main() {
         isA<LiuYaoGanZhiHeBaseNumberModel>(),
       );
 
-      final savedModel = result.sourceData['liuYaoGanZhiHeBaseNumberModel']
-          as LiuYaoGanZhiHeBaseNumberModel;
+      final savedModel =
+          result.sourceData['liuYaoGanZhiHeBaseNumberModel']
+              as LiuYaoGanZhiHeBaseNumberModel;
       expect(savedModel.xiantianBaseNumber, greaterThan(0));
       expect(savedModel.houtianBaseNumber, greaterThan(0));
       expect(savedModel.xiantianGua, isNotEmpty);
@@ -322,8 +312,11 @@ void main() {
       // 第一个是先天卦
       final xiantianModel = result.baseNumberTiaoWenList[0];
       expect(xiantianModel.name, contains("先天卦"));
-      expect(xiantianModel.tiaoWenNumbers.length, equals(8),
-          reason: '先天卦应该有8个条文编号（递增减96四次）');
+      expect(
+        xiantianModel.tiaoWenNumbers.length,
+        equals(8),
+        reason: '先天卦应该有8个条文编号（递增减96四次）',
+      );
     });
 
     test('后天卦BaseNumberTiaoWenListModel应该包含8个条文编号', () async {
@@ -334,24 +327,34 @@ void main() {
       // 第二个是后天卦
       final houtianModel = result.baseNumberTiaoWenList[1];
       expect(houtianModel.name, contains("后天卦"));
-      expect(houtianModel.tiaoWenNumbers.length, equals(8),
-          reason: '后天卦应该有8个条文编号（递增减96四次）');
+      expect(
+        houtianModel.tiaoWenNumbers.length,
+        equals(8),
+        reason: '后天卦应该有8个条文编号（递增减96四次）',
+      );
     });
 
     test('先天卦和后天卦条文编号应该包含基础数', () async {
       final result = await useCase.execute(testParams);
 
-      final savedModel = result.sourceData['liuYaoGanZhiHeBaseNumberModel']
-          as LiuYaoGanZhiHeBaseNumberModel;
+      final savedModel =
+          result.sourceData['liuYaoGanZhiHeBaseNumberModel']
+              as LiuYaoGanZhiHeBaseNumberModel;
 
       final xiantianNumbers = result.baseNumberTiaoWenList[0].tiaoWenNumbers;
       final houtianNumbers = result.baseNumberTiaoWenList[1].tiaoWenNumbers;
 
       // 基础数应该在条文编号列表中（即+0的那个）
-      expect(xiantianNumbers, contains(savedModel.xiantianBaseNumber),
-          reason: '先天卦条文编号应该包含基础数');
-      expect(houtianNumbers, contains(savedModel.houtianBaseNumber),
-          reason: '后天卦条文编号应该包含基础数');
+      expect(
+        xiantianNumbers,
+        contains(savedModel.xiantianBaseNumber),
+        reason: '先天卦条文编号应该包含基础数',
+      );
+      expect(
+        houtianNumbers,
+        contains(savedModel.houtianBaseNumber),
+        reason: '后天卦条文编号应该包含基础数',
+      );
     });
   });
 
@@ -374,17 +377,14 @@ void main() {
 
     test('应该处理参数验证异常', () async {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "无效",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       // execute() 会rethrow InputValidationException, 所以应该抛出异常
-      expect(
-        () async => await useCase.execute(invalidParams),
-        throwsException,
-      );
+      expect(() async => await useCase.execute(invalidParams), throwsException);
     });
   });
 
@@ -400,14 +400,14 @@ void main() {
 
     test('相同参数应该相等', () {
       final params1 = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final params2 = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -419,14 +419,14 @@ void main() {
 
     test('不同参数应该不相等', () {
       final params1 = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
       );
 
       final params2 = LiuYaoGanZhiHeUseCaseParams(
-        fourZhu: testFourZhu,
+        eightChars: testEightChars,
         gender: "女",
         threeYuan: "上",
         birthAfterZhi: "夏至",
@@ -474,9 +474,18 @@ void main() {
       expect(liuYaoModel.houtianGua, isNotEmpty); // 步骤2: 后天卦
 
       // 验证六爻纳甲配置
-      expect(liuYaoModel.xiantianYaoTianGanList.length, equals(6)); // 步骤3: 先天卦六爻天干
-      expect(liuYaoModel.xiantianYaoDiZhiList.length, equals(6)); // 步骤3: 先天卦六爻地支
-      expect(liuYaoModel.houtianYaoTianGanList.length, equals(6)); // 步骤5: 后天卦六爻天干
+      expect(
+        liuYaoModel.xiantianYaoTianGanList.length,
+        equals(6),
+      ); // 步骤3: 先天卦六爻天干
+      expect(
+        liuYaoModel.xiantianYaoDiZhiList.length,
+        equals(6),
+      ); // 步骤3: 先天卦六爻地支
+      expect(
+        liuYaoModel.houtianYaoTianGanList.length,
+        equals(6),
+      ); // 步骤5: 后天卦六爻天干
       expect(liuYaoModel.houtianYaoDiZhiList.length, equals(6)); // 步骤5: 后天卦六爻地支
 
       // 验证基础数和条文扩展

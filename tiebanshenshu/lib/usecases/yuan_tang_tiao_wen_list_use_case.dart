@@ -1,3 +1,4 @@
+import 'package:common/models/eight_chars.dart';
 import '../domain/four_zhu.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
@@ -17,15 +18,11 @@ class YuanTangTiaoWenListUseCase
   final YuanTangStrategy _strategy;
   final TiaoWenRepository _repository;
 
-  YuanTangTiaoWenListUseCase(
-    this._strategy,
-    this._repository,
-  );
+  YuanTangTiaoWenListUseCase(this._strategy, this._repository);
 
   @override
   TiaoWenListCalculationConfig get defaultCalculationConfig =>
-      _strategy.defaultTiaoWenCalculationConfig
-          as TiaoWenListCalculationConfig;
+      _strategy.defaultTiaoWenCalculationConfig as TiaoWenListCalculationConfig;
 
   @override
   TiaoWenRepository get repository => _repository;
@@ -46,11 +43,18 @@ class YuanTangTiaoWenListUseCase
       validateParams(params);
 
       // 2. 调用Strategy计算
+      // 从 EightChars 转为 EightChars
+
+      // 从八字的月支计算出生月份数字
+      final birthMonth = YuanTangStrategyParams.getMonthNumberFromZhi(
+        params.eightChars.month.zhi.name,
+      );
       final strategyParams = YuanTangStrategyParams(
-        fourZhu: params.fourZhu,
+        eightChars: params.eightChars,
         gender: params.gender,
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
+        birthMonth: birthMonth,
       );
       final strategyResult = _strategy.calculate(strategyParams);
 
@@ -86,8 +90,9 @@ class YuanTangTiaoWenListUseCase
       ].toSet().toList(); // 去重
 
       // 7. 批量查询条文
-      final tiaoWenDataList =
-          await _repository.getByIdList(queryList: allTiaoWenNumbers);
+      final tiaoWenDataList = await _repository.getByIdList(
+        queryList: allTiaoWenNumbers,
+      );
 
       // 8. 构建两个BaseNumberTiaoWenListModel（先天和后天分开）
       final baseNumberTiaoWenList = [
@@ -97,7 +102,8 @@ class YuanTangTiaoWenListUseCase
               .where((t) => xiantianTiaoWenList.contains(t.id))
               .toList(),
           name: "${yuanTangModel.name} - 先天卦",
-          description: "先天卦${yuanTangModel.xiantianGua}条文（基础数$xiantianBaseNumber + [0, 96, 192, 288, 384]）",
+          description:
+              "先天卦${yuanTangModel.xiantianGua}条文（基础数$xiantianBaseNumber + [0, 96, 192, 288, 384]）",
           source: yuanTangModel.source,
           tiaoWenNumbers: xiantianTiaoWenList,
         ),
@@ -107,7 +113,8 @@ class YuanTangTiaoWenListUseCase
               .where((t) => houtianTiaoWenList.contains(t.id))
               .toList(),
           name: "${yuanTangModel.name} - 后天卦",
-          description: "后天卦${yuanTangModel.houtianGua}条文（基础数$houtianBaseNumber + [0, 96, 192, 288, 384]）",
+          description:
+              "后天卦${yuanTangModel.houtianGua}条文（基础数$houtianBaseNumber + [0, 96, 192, 288, 384]）",
           source: yuanTangModel.source,
           tiaoWenNumbers: houtianTiaoWenList,
         ),
@@ -116,12 +123,13 @@ class YuanTangTiaoWenListUseCase
       // 9. 返回结果
       return MultiBaseNumberResult.success(
         algorithmName: '元堂卦取数法',
-        algorithmDescription: '元堂卦取数法（性别:${params.gender}, 三元:${params.threeYuan}）',
+        algorithmDescription:
+            '元堂卦取数法（性别:${params.gender}, 三元:${params.threeYuan}）',
         calculationParams: params.toString(),
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -142,7 +150,7 @@ class YuanTangTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -192,8 +200,8 @@ class YuanTangTiaoWenListUseCase
 ///
 /// 包含元堂卦计算所需的所有参数
 class YuanTangUseCaseParams {
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 八字信息
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -205,7 +213,7 @@ class YuanTangUseCaseParams {
   final String birthAfterZhi;
 
   const YuanTangUseCaseParams({
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -213,14 +221,14 @@ class YuanTangUseCaseParams {
 
   @override
   String toString() {
-    return 'YuanTangUseCaseParams(fourZhu: ${fourZhu.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
+    return 'YuanTangUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is YuanTangUseCaseParams &&
-        other.fourZhu == fourZhu &&
+        other.eightChars == eightChars &&
         other.gender == gender &&
         other.threeYuan == threeYuan &&
         other.birthAfterZhi == birthAfterZhi;
@@ -228,7 +236,7 @@ class YuanTangUseCaseParams {
 
   @override
   int get hashCode =>
-      fourZhu.hashCode ^
+      eightChars.hashCode ^
       gender.hashCode ^
       threeYuan.hashCode ^
       birthAfterZhi.hashCode;

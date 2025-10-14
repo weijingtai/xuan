@@ -1,3 +1,4 @@
+import 'package:common/models/eight_chars.dart';
 import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
@@ -12,8 +13,8 @@ import 'base_tiao_wen_list_view_model.dart';
 class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
   final XianHoutianJiaZeTiaoWenListUseCase _useCase;
 
-  /// 当前选择的四柱
-  FourZhu? _currentFourZhu;
+  /// 当前选择的八字
+  EightChars? _selectedEightChars;
 
   /// 当前选择的性别
   String? _currentGender;
@@ -35,8 +36,8 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
   @override
   String get description => '基于先后天八卦加则法计算条文列表的ViewModel';
 
-  /// 当前选择的四柱
-  FourZhu? get currentFourZhu => _currentFourZhu;
+  /// 当前选择的八字
+  EightChars? get selectedEightChars => _selectedEightChars;
 
   /// 当前选择的性别
   String? get currentGender => _currentGender;
@@ -49,17 +50,17 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
   /// 设置先后天八卦加则法参数并计算条文列表
   ///
-  /// [fourZhu] 四柱信息
+  /// [eightChars] 八字信息
   /// [gender] 性别（"男" / "女"）
   /// [threeYuan] 三元（"上" / "中" / "下"）
   /// [birthAfterZhi] 出生节气后（"夏至" / "冬至"）
-  Future<void> setParams({
-    required FourZhu fourZhu,
+  Future<void> setEightChars({
+    required EightChars eightChars,
     required String gender,
     required String threeYuan,
     required String birthAfterZhi,
   }) async {
-    _currentFourZhu = fourZhu;
+    _selectedEightChars = eightChars;
     _currentGender = gender;
     _currentThreeYuan = threeYuan;
     _currentBirthAfterZhi = birthAfterZhi;
@@ -70,7 +71,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
   ///
   /// 使用当前选择的参数计算条文列表
   Future<void> calculateTiaoWenList() async {
-    if (_currentFourZhu == null ||
+    if (_selectedEightChars == null ||
         _currentGender == null ||
         _currentThreeYuan == null ||
         _currentBirthAfterZhi == null) {
@@ -79,7 +80,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
     await safeExecute(() async {
       final params = XianHoutianJiaZeUseCaseParams(
-        fourZhu: _currentFourZhu!,
+        eightChars: _selectedEightChars!,
         gender: _currentGender!,
         threeYuan: _currentThreeYuan!,
         birthAfterZhi: _currentBirthAfterZhi!,
@@ -98,7 +99,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
   /// 清除选择
   void clearSelection() {
-    _currentFourZhu = null;
+    _selectedEightChars = null;
     _currentGender = null;
     _currentThreeYuan = null;
     _currentBirthAfterZhi = null;
@@ -108,7 +109,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
   /// 是否已选择参数
   bool get hasSelection =>
-      _currentFourZhu != null &&
+      _selectedEightChars != null &&
       _currentGender != null &&
       _currentThreeYuan != null &&
       _currentBirthAfterZhi != null;
@@ -179,8 +180,14 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
   /// 获取四柱显示文本
   String get fourZhuDisplayText {
-    if (_currentFourZhu == null) return '未选择';
-    return _currentFourZhu!.toString();
+    if (_selectedEightChars == null) return '未选择';
+    final fz = FourZhu(
+      yearGanzhi: _selectedEightChars!.year.name,
+      monthGanzhi: _selectedEightChars!.month.name,
+      dayGanzhi: _selectedEightChars!.day.name,
+      timeGanzhi: _selectedEightChars!.time.name,
+    );
+    return fz.toString();
   }
 
   /// 获取先天卦显示文本
@@ -206,7 +213,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
 
   @override
   void dispose() {
-    _currentFourZhu = null;
+    _selectedEightChars = null;
     _currentGender = null;
     _currentThreeYuan = null;
     _currentBirthAfterZhi = null;
@@ -217,7 +224,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
   @override
   String toString() {
     return 'XianHoutianJiaZeViewModel('
-        'fourZhu: $_currentFourZhu, '
+        'eightChars: $_selectedEightChars, '
         'gender: $_currentGender, '
         'threeYuan: $_currentThreeYuan, '
         'birthAfterZhi: $_currentBirthAfterZhi, '

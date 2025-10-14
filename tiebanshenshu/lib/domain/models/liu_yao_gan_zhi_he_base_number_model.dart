@@ -11,6 +11,7 @@
 /// - 步骤7：条文扩展
 library;
 
+import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'base_number_model.dart';
 
@@ -22,7 +23,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
   // ========== 输入参数 (4个字段) ==========
 
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   /// 性别："男" / "女"
   final String gender;
@@ -159,7 +160,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
     required super.description,
     required super.source,
     // 输入参数
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -205,7 +206,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
     required String name,
     required String description,
     required BaseNumberSource source,
-    required FourZhu fourZhu,
+    required EightChars eightChars,
     required String gender,
     required String threeYuan,
     required String birthAfterZhi,
@@ -245,7 +246,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
       name: name,
       description: description,
       source: source,
-      fourZhu: fourZhu,
+      eightChars: eightChars,
       gender: gender,
       threeYuan: threeYuan,
       birthAfterZhi: birthAfterZhi,
@@ -285,19 +286,19 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
   // ========== 便捷getter方法 ==========
 
   /// 获取四柱显示文本
-  String get fourZhuDisplayText => fourZhu.toString();
+  String get eightCharsDisplayText => eightChars.toString();
 
   /// 获取年柱显示文本
-  String get yearZhuDisplayText => fourZhu.yearGanzhi;
+  String get yearZhuDisplayText => eightChars.year.name;
 
   /// 获取月柱显示文本
-  String get monthZhuDisplayText => fourZhu.monthGanzhi;
+  String get monthZhuDisplayText => eightChars.month.name;
 
   /// 获取日柱显示文本
-  String get dayZhuDisplayText => fourZhu.dayGanzhi;
+  String get dayZhuDisplayText => eightChars.day.name;
 
   /// 获取时柱显示文本
-  String get timeZhuDisplayText => fourZhu.timeGanzhi;
+  String get timeZhuDisplayText => eightChars.time.name;
 
   /// 获取上卦显示文本（带后天数）
   String get upperGuaDisplayText => '$upperGua($xiantianUpperGuaNumber)';
@@ -332,7 +333,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
 
   /// 获取参数摘要
   String get paramsSummary =>
-      '$fourZhuDisplayText, $gender, $threeYuanDisplayText, $birthAfterZhi';
+      '$eightCharsDisplayText, $gender, $threeYuanDisplayText, $birthAfterZhi';
 
   /// 获取先天卦六爻纳甲摘要
   String get xiantianNajiaSummary =>
@@ -351,7 +352,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
     String? name,
     String? description,
     BaseNumberSource? source,
-    FourZhu? fourZhu,
+    EightChars? eightChars,
     String? gender,
     String? threeYuan,
     String? birthAfterZhi,
@@ -391,7 +392,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
       name: name ?? this.name,
       description: description ?? this.description,
       source: source ?? this.source,
-      fourZhu: fourZhu ?? this.fourZhu,
+      eightChars: eightChars ?? this.eightChars,
       gender: gender ?? this.gender,
       threeYuan: threeYuan ?? this.threeYuan,
       birthAfterZhi: birthAfterZhi ?? this.birthAfterZhi,
@@ -442,7 +443,7 @@ class LiuYaoGanZhiHeBaseNumberModel extends BaseNumberModel {
     return {
       ...super.toMap(),
       // 输入参数
-      'fourZhu': fourZhu.toString(),
+      'eightChars': eightChars.toString(),
       'gender': gender,
       'threeYuan': threeYuan,
       'birthAfterZhi': birthAfterZhi,

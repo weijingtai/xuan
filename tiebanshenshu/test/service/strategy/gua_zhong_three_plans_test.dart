@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
@@ -30,16 +32,10 @@ void main() {
 
       // 使用DevConstant.dev_usa的数据（年月卦上卦为震卦）
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
-      print('四柱: ${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi}');
+      print('四柱: ${eightChars.year} ${eightChars.month} ${eightChars.day} ${eightChars.time}');
 
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       expect(result.hasError, false, reason: '计算不应该出错');
@@ -120,16 +116,16 @@ void main() {
       // 构造一个不会触发千位=10的四柱
       // 年柱: 甲子(1+6=7), 7 % 8 = 7 → 艮卦
       // 月柱: 乙丑(2+7=9), 9 % 8 = 1 → 乾卦
-      final fourZhu = FourZhu(
-        yearGanzhi: '甲子',
-        monthGanzhi: '乙丑',
-        dayGanzhi: '丙寅',
-        timeGanzhi: '丁卯',
+      final eightChars = EightChars(
+        year: JiaZi.getFromGanZhiValue('甲子')!,
+        month: JiaZi.getFromGanZhiValue('乙丑')!,
+        day: JiaZi.getFromGanZhiValue('丙寅')!,
+        time: JiaZi.getFromGanZhiValue('丁卯')!,
       );
 
-      print('四柱: ${fourZhu.yearGanzhi} ${fourZhu.monthGanzhi} ${fourZhu.dayGanzhi} ${fourZhu.timeGanzhi}');
+      print('四柱: ${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name}');
 
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
 
       expect(result.hasError, false, reason: '计算不应该出错');
@@ -173,14 +169,8 @@ void main() {
       print('\n========== 带标签条文列表测试 ==========');
 
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
       final model = result.baseNumbers.first as GuaZhongBaseNumberModel;
 
@@ -223,14 +213,8 @@ void main() {
       print('\n========== 按方案获取条文编号方法测试 ==========');
 
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
       final model = result.baseNumbers.first as GuaZhongBaseNumberModel;
 
@@ -282,14 +266,8 @@ void main() {
       print('\n========== 震卦千位=10精确计算测试 ==========');
 
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
-      final params = GuaZhongStrategyParams(fourZhu: fourZhu);
+      final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
       final model = result.baseNumbers.first as GuaZhongBaseNumberModel;
 

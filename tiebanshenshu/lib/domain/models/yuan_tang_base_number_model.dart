@@ -3,6 +3,8 @@
 /// 保存元堂卦取数法的完整计算过程和中间结果
 library;
 
+import 'package:common/models/eight_chars.dart';
+
 import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
 import 'base_number_model.dart';
@@ -211,13 +213,279 @@ class YuanTangDayunPeriod {
   }
 }
 
+/// 元堂卦流年卦数据结构
+///
+/// 用于保存单个流年的详细信息
+class YuanTangLiunianGua {
+  /// 虚岁年龄
+  final int age;
+
+  /// 在大运中的年份索引(0-8或0-5)
+  final int yearIndex;
+
+  /// 流年卦象(如"震坤")
+  final String gua;
+
+  /// 卦象来源("先天卦"/"后天卦")
+  final String guaSource;
+
+  /// 所属大运期
+  final YuanTangDayunPeriod dayunPeriod;
+
+  /// 本年变换的爻位(-1表示未变换,如阳爻大运阳年起算的第1年)
+  final int changedYaoIndex;
+
+  /// 上一年的卦象(第1年为null)
+  final String? previousGua;
+
+  const YuanTangLiunianGua({
+    required this.age,
+    required this.yearIndex,
+    required this.gua,
+    required this.guaSource,
+    required this.dayunPeriod,
+    required this.changedYaoIndex,
+    this.previousGua,
+  });
+
+  /// 获取爻位标签
+  String get yaoLabel {
+    if (changedYaoIndex == -1) return '未变换';
+    return _getYaoPositionLabel(changedYaoIndex);
+  }
+
+  /// 是否为大运首年
+  bool get isFirstYearOfDayun => yearIndex == 0;
+
+  /// 获取爻位标签(辅助方法)
+  static String _getYaoPositionLabel(int index) {
+    switch (index) {
+      case 0:
+        return '初';
+      case 1:
+        return '二';
+      case 2:
+        return '三';
+      case 3:
+        return '四';
+      case 4:
+        return '五';
+      case 5:
+        return '上';
+      default:
+        return '未知';
+    }
+  }
+
+  /// 复制并更新
+  YuanTangLiunianGua copyWith({
+    int? age,
+    int? yearIndex,
+    String? gua,
+    String? guaSource,
+    YuanTangDayunPeriod? dayunPeriod,
+    int? changedYaoIndex,
+    String? previousGua,
+  }) {
+    return YuanTangLiunianGua(
+      age: age ?? this.age,
+      yearIndex: yearIndex ?? this.yearIndex,
+      gua: gua ?? this.gua,
+      guaSource: guaSource ?? this.guaSource,
+      dayunPeriod: dayunPeriod ?? this.dayunPeriod,
+      changedYaoIndex: changedYaoIndex ?? this.changedYaoIndex,
+      previousGua: previousGua ?? this.previousGua,
+    );
+  }
+
+  /// 转换为Map
+  Map<String, dynamic> toMap() {
+    return {
+      'age': age,
+      'yearIndex': yearIndex,
+      'gua': gua,
+      'guaSource': guaSource,
+      'dayunPeriod': dayunPeriod.toMap(),
+      'changedYaoIndex': changedYaoIndex,
+      'previousGua': previousGua,
+    };
+  }
+
+  @override
+  String toString() {
+    if (changedYaoIndex == -1) {
+      return '$age岁: $gua ($guaSource, 未变换)';
+    }
+    return '$age岁: $gua ($guaSource, 变${yaoLabel}爻)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is YuanTangLiunianGua &&
+        other.age == age &&
+        other.yearIndex == yearIndex &&
+        other.gua == gua &&
+        other.guaSource == guaSource &&
+        other.changedYaoIndex == changedYaoIndex &&
+        other.previousGua == previousGua;
+  }
+
+  @override
+  int get hashCode {
+    return age.hashCode ^
+        yearIndex.hashCode ^
+        gua.hashCode ^
+        guaSource.hashCode ^
+        changedYaoIndex.hashCode ^
+        (previousGua?.hashCode ?? 0);
+  }
+}
+
+/// 元堂卦流月卦数据结构
+///
+/// 用于保存单个流月的详细信息
+class YuanTangLiuyueGua {
+  /// 月份(1-12)
+  final int month;
+
+  /// 月份阴阳
+  final bool isYangMonth;
+
+  /// 流月卦象
+  final String gua;
+
+  /// 所属年龄
+  final int age;
+
+  /// 本月变换的爻位
+  final int changedYaoIndex;
+
+  /// 源卦(阴月取自对应阳月卦, 阳月取自上一个阳月卦或流年卦)
+  final String? sourceGua;
+
+  /// 应爻位置(仅阴月有效)
+  final int? yingYaoIndex;
+
+  const YuanTangLiuyueGua({
+    required this.month,
+    required this.isYangMonth,
+    required this.gua,
+    required this.age,
+    required this.changedYaoIndex,
+    this.sourceGua,
+    this.yingYaoIndex,
+  });
+
+  /// 获取爻位标签
+  String get yaoLabel => _getYaoPositionLabel(changedYaoIndex);
+
+  /// 获取月份类型标签
+  String get monthTypeLabel => isYangMonth ? '阳月' : '阴月';
+
+  /// 获取变化描述
+  String get changeDescription {
+    if (isYangMonth) {
+      return '变${yaoLabel}爻';
+    } else {
+      final yingYaoLabel = _getYaoPositionLabel(yingYaoIndex!);
+      return '由${month - 1}月卦应爻变换(变${yingYaoLabel}爻)';
+    }
+  }
+
+  /// 获取爻位标签(辅助方法)
+  static String _getYaoPositionLabel(int index) {
+    switch (index) {
+      case 0:
+        return '初';
+      case 1:
+        return '二';
+      case 2:
+        return '三';
+      case 3:
+        return '四';
+      case 4:
+        return '五';
+      case 5:
+        return '上';
+      default:
+        return '未知';
+    }
+  }
+
+  /// 复制并更新
+  YuanTangLiuyueGua copyWith({
+    int? month,
+    bool? isYangMonth,
+    String? gua,
+    int? age,
+    int? changedYaoIndex,
+    String? sourceGua,
+    int? yingYaoIndex,
+  }) {
+    return YuanTangLiuyueGua(
+      month: month ?? this.month,
+      isYangMonth: isYangMonth ?? this.isYangMonth,
+      gua: gua ?? this.gua,
+      age: age ?? this.age,
+      changedYaoIndex: changedYaoIndex ?? this.changedYaoIndex,
+      sourceGua: sourceGua ?? this.sourceGua,
+      yingYaoIndex: yingYaoIndex ?? this.yingYaoIndex,
+    );
+  }
+
+  /// 转换为Map
+  Map<String, dynamic> toMap() {
+    return {
+      'month': month,
+      'isYangMonth': isYangMonth,
+      'gua': gua,
+      'age': age,
+      'changedYaoIndex': changedYaoIndex,
+      'sourceGua': sourceGua,
+      'yingYaoIndex': yingYaoIndex,
+    };
+  }
+
+  @override
+  String toString() {
+    return '$month月($monthTypeLabel): $gua - $changeDescription';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+
+    return other is YuanTangLiuyueGua &&
+        other.month == month &&
+        other.isYangMonth == isYangMonth &&
+        other.gua == gua &&
+        other.age == age &&
+        other.changedYaoIndex == changedYaoIndex &&
+        other.sourceGua == sourceGua &&
+        other.yingYaoIndex == yingYaoIndex;
+  }
+
+  @override
+  int get hashCode {
+    return month.hashCode ^
+        isYangMonth.hashCode ^
+        gua.hashCode ^
+        age.hashCode ^
+        changedYaoIndex.hashCode ^
+        (sourceGua?.hashCode ?? 0) ^
+        (yingYaoIndex?.hashCode ?? 0);
+  }
+}
+
 /// 元堂卦基础数模型
 ///
 /// 继承自BaseNumberModel，包含元堂卦取数法的完整计算过程信息
 class YuanTangBaseNumberModel extends BaseNumberModel {
   // ========== 输入参数 ==========
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -227,6 +495,9 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
 
   /// 出生节气（"夏至" / "冬至"）
   final String birthAfterZhi;
+
+  /// 出生月份(1-12,从monthZhi提取)
+  final int birthMonth;
 
   // ========== 步骤1：生成天地卦 ==========
   /// 四柱天干数列表 [年干数, 月干数, 日干数, 时干数]
@@ -369,10 +640,11 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required super.description,
     required super.source,
     // 输入参数
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
+    required this.birthMonth,
     // 步骤1：生成天地卦
     required this.ganNumList,
     required this.zhiNumList,
@@ -431,10 +703,11 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required String name,
     required String description,
     required BaseNumberSource source,
-    required FourZhu fourZhu,
+    required EightChars eightChars,
     required String gender,
     required String threeYuan,
     required String birthAfterZhi,
+    required int birthMonth,
     required List<int> ganNumList,
     required List<List<int>> zhiNumList,
     required int oddNumTotal,
@@ -483,10 +756,11 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       name: name,
       description: description,
       source: source,
-      fourZhu: fourZhu,
+      eightChars: eightChars,
       gender: gender,
       threeYuan: threeYuan,
       birthAfterZhi: birthAfterZhi,
+      birthMonth: birthMonth,
       ganNumList: ganNumList,
       zhiNumList: zhiNumList,
       oddNumTotal: oddNumTotal,
@@ -525,8 +799,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       tiaowenNumberJiazeHoutiangua: tiaowenNumberJiazeHoutiangua,
       tiaowenNumberNajiaTaixuanXiantiangua:
           tiaowenNumberNajiaTaixuanXiantiangua,
-      tiaowenNumberNajiaTaixuanHoutiangua:
-          tiaowenNumberNajiaTaixuanHoutiangua,
+      tiaowenNumberNajiaTaixuanHoutiangua: tiaowenNumberNajiaTaixuanHoutiangua,
       tiaowenNumberXiantianBenhu: tiaowenNumberXiantianBenhu,
       tiaowenNumberHoutianBenhu: tiaowenNumberHoutianBenhu,
       tiaowenNumberListXiantianGuahu: tiaowenNumberListXiantianGuahu,
@@ -545,13 +818,15 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       final diZhiList = zhiList[i];
       final isYuanTangYao = (i == yuantangYaoIndex);
 
-      details.add(YuanTangYaoDetail(
-        position: i,
-        positionLabel: positionLabel,
-        yinYang: yinYang,
-        diZhiList: diZhiList,
-        isYuanTangYao: isYuanTangYao,
-      ));
+      details.add(
+        YuanTangYaoDetail(
+          position: i,
+          positionLabel: positionLabel,
+          yinYang: yinYang,
+          diZhiList: diZhiList,
+          isYuanTangYao: isYuanTangYao,
+        ),
+      );
     }
 
     return details;
@@ -621,10 +896,11 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     String? name,
     String? description,
     BaseNumberSource? source,
-    FourZhu? fourZhu,
+    EightChars? eightChars,
     String? gender,
     String? threeYuan,
     String? birthAfterZhi,
+    int? birthMonth,
     List<int>? ganNumList,
     List<List<int>>? zhiNumList,
     int? oddNumTotal,
@@ -673,10 +949,11 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       name: name ?? this.name,
       description: description ?? this.description,
       source: source ?? this.source,
-      fourZhu: fourZhu ?? this.fourZhu,
+      eightChars: eightChars ?? this.eightChars,
       gender: gender ?? this.gender,
       threeYuan: threeYuan ?? this.threeYuan,
       birthAfterZhi: birthAfterZhi ?? this.birthAfterZhi,
+      birthMonth: birthMonth ?? this.birthMonth,
       ganNumList: ganNumList ?? this.ganNumList,
       zhiNumList: zhiNumList ?? this.zhiNumList,
       oddNumTotal: oddNumTotal ?? this.oddNumTotal,
@@ -716,8 +993,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       xiantianDayunStartAge:
           xiantianDayunStartAge ?? this.xiantianDayunStartAge,
       xiantianDayunList: xiantianDayunList ?? this.xiantianDayunList,
-      houtianDayunStartAge:
-          houtianDayunStartAge ?? this.houtianDayunStartAge,
+      houtianDayunStartAge: houtianDayunStartAge ?? this.houtianDayunStartAge,
       houtianDayunList: houtianDayunList ?? this.houtianDayunList,
       tiaowenNumberJiazeXiantiangua:
           tiaowenNumberJiazeXiantiangua ?? this.tiaowenNumberJiazeXiantiangua,
@@ -725,16 +1001,16 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
           tiaowenNumberJiazeHoutiangua ?? this.tiaowenNumberJiazeHoutiangua,
       tiaowenNumberNajiaTaixuanXiantiangua:
           tiaowenNumberNajiaTaixuanXiantiangua ??
-              this.tiaowenNumberNajiaTaixuanXiantiangua,
+          this.tiaowenNumberNajiaTaixuanXiantiangua,
       tiaowenNumberNajiaTaixuanHoutiangua:
           tiaowenNumberNajiaTaixuanHoutiangua ??
-              this.tiaowenNumberNajiaTaixuanHoutiangua,
+          this.tiaowenNumberNajiaTaixuanHoutiangua,
       tiaowenNumberXiantianBenhu:
           tiaowenNumberXiantianBenhu ?? this.tiaowenNumberXiantianBenhu,
       tiaowenNumberHoutianBenhu:
           tiaowenNumberHoutianBenhu ?? this.tiaowenNumberHoutianBenhu,
-      tiaowenNumberListXiantianGuahu: tiaowenNumberListXiantianGuahu ??
-          this.tiaowenNumberListXiantianGuahu,
+      tiaowenNumberListXiantianGuahu:
+          tiaowenNumberListXiantianGuahu ?? this.tiaowenNumberListXiantianGuahu,
       tiaowenNumberListHoutianGuahu:
           tiaowenNumberListHoutianGuahu ?? this.tiaowenNumberListHoutianGuahu,
     );
@@ -748,6 +1024,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       'gender': gender,
       'threeYuan': threeYuan,
       'birthAfterZhi': birthAfterZhi,
+      'birthMonth': birthMonth,
       'ganNumList': ganNumList,
       'zhiNumList': zhiNumList,
       'oddNumTotal': oddNumTotal,
@@ -779,11 +1056,9 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
       'xiantianGuaHu': xiantianGuaHu,
       'houtianGuaHu': houtianGuaHu,
       'xiantianDayunStartAge': xiantianDayunStartAge,
-      'xiantianDayunList':
-          xiantianDayunList.map((p) => p.toMap()).toList(),
+      'xiantianDayunList': xiantianDayunList.map((p) => p.toMap()).toList(),
       'houtianDayunStartAge': houtianDayunStartAge,
-      'houtianDayunList':
-          houtianDayunList.map((p) => p.toMap()).toList(),
+      'houtianDayunList': houtianDayunList.map((p) => p.toMap()).toList(),
       'tiaowenNumberJiazeXiantiangua': tiaowenNumberJiazeXiantiangua,
       'tiaowenNumberJiazeHoutiangua': tiaowenNumberJiazeHoutiangua,
       'tiaowenNumberNajiaTaixuanXiantiangua':

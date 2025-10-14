@@ -1,4 +1,4 @@
-import '../../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/xian_houtian_qu_shu_base_number_model.dart';
@@ -12,8 +12,8 @@ import 'base_tiao_wen_list_view_model.dart';
 class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
   final XianHoutianQuShuTiaoWenListUseCase _useCase;
 
-  /// 当前选择的四柱
-  FourZhu? _currentFourZhu;
+  /// 当前选择的八字
+  EightChars? _currentEightChars;
 
   /// 当前选择的性别
   String? _currentGender;
@@ -35,8 +35,8 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
   @override
   String get description => '基于先后天卦取数法计算条文列表的ViewModel';
 
-  /// 当前选择的四柱
-  FourZhu? get currentFourZhu => _currentFourZhu;
+  /// 当前选择的四柱（返回 EightChars）
+  EightChars? get currentFourZhu => _currentEightChars;
 
   /// 当前选择的性别
   String? get currentGender => _currentGender;
@@ -49,17 +49,17 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
   /// 设置先后天卦取数参数并计算条文列表
   ///
-  /// [fourZhu] 四柱信息
+  /// [eightChars] 八字信息
   /// [gender] 性别（"男" / "女"）
   /// [threeYuan] 三元（"上" / "中" / "下"）
   /// [birthAfterZhi] 出生节气后（"夏至" / "冬至"）
   Future<void> setParams({
-    required FourZhu fourZhu,
+    required EightChars eightChars,
     required String gender,
     required String threeYuan,
     required String birthAfterZhi,
   }) async {
-    _currentFourZhu = fourZhu;
+    _currentEightChars = eightChars;
     _currentGender = gender;
     _currentThreeYuan = threeYuan;
     _currentBirthAfterZhi = birthAfterZhi;
@@ -70,7 +70,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
   ///
   /// 使用当前选择的参数计算条文列表
   Future<void> calculateTiaoWenList() async {
-    if (_currentFourZhu == null ||
+    if (_currentEightChars == null ||
         _currentGender == null ||
         _currentThreeYuan == null ||
         _currentBirthAfterZhi == null) {
@@ -79,7 +79,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
     await safeExecute(() async {
       final params = XianHoutianQuShuUseCaseParams(
-        fourZhu: _currentFourZhu!,
+        eightChars: _currentEightChars!,
         gender: _currentGender!,
         threeYuan: _currentThreeYuan!,
         birthAfterZhi: _currentBirthAfterZhi!,
@@ -98,7 +98,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
   /// 清除选择
   void clearSelection() {
-    _currentFourZhu = null;
+    _currentEightChars = null;
     _currentGender = null;
     _currentThreeYuan = null;
     _currentBirthAfterZhi = null;
@@ -108,7 +108,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
   /// 是否已选择参数
   bool get hasSelection =>
-      _currentFourZhu != null &&
+      _currentEightChars != null &&
       _currentGender != null &&
       _currentThreeYuan != null &&
       _currentBirthAfterZhi != null;
@@ -165,10 +165,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
   /// 获取所有条文编号（先天卦 + 后天卦，去重）
   List<int> get allTiaoWenNumbers {
     if (!hasResult || _domainResult == null) return [];
-    return {
-      ...xiantianTiaoWenNumbers,
-      ...houtianTiaoWenNumbers,
-    }.toList();
+    return {...xiantianTiaoWenNumbers, ...houtianTiaoWenNumbers}.toList();
   }
 
   /// 获取参数显示文本
@@ -179,8 +176,8 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
   /// 获取四柱显示文本
   String get fourZhuDisplayText {
-    if (_currentFourZhu == null) return '未选择';
-    return _currentFourZhu!.toString();
+    if (_currentEightChars == null) return '未选择';
+    return _currentEightChars!.toString();
   }
 
   /// 获取先天卦显示文本
@@ -262,7 +259,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
 
   @override
   void dispose() {
-    _currentFourZhu = null;
+    _currentEightChars = null;
     _currentGender = null;
     _currentThreeYuan = null;
     _currentBirthAfterZhi = null;
@@ -273,7 +270,7 @@ class XianHoutianQuShuViewModel extends BaseTiaoWenListViewModel {
   @override
   String toString() {
     return 'XianHoutianQuShuViewModel('
-        'fourZhu: $_currentFourZhu, '
+        'eightChars: $_currentEightChars, '
         'gender: $_currentGender, '
         'threeYuan: $_currentThreeYuan, '
         'birthAfterZhi: $_currentBirthAfterZhi, '

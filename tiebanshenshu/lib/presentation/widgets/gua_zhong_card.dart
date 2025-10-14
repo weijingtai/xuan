@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:common/models/eight_chars.dart';
 import '../viewmodels/gua_zhong_view_model.dart';
-import '../../domain/four_zhu.dart';
 
 /// 卦中取数法展示卡片
 ///
 /// 显示卦中取数法的计算结果和条文内容
 class GuaZhongCard extends StatelessWidget {
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   const GuaZhongCard({
     super.key,
-    required this.fourZhu,
+    required this.eightChars,
   });
 
   @override
@@ -19,7 +19,7 @@ class GuaZhongCard extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) {
         final viewModel = context.read<GuaZhongViewModel>();
-        viewModel.setParams(fourZhu: fourZhu);
+        viewModel.setParams(eightChars: eightChars);
         return viewModel;
       },
       child: Consumer<GuaZhongViewModel>(

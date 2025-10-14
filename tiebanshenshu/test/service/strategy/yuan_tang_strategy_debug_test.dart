@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -10,7 +12,7 @@ void main() {
   group('YuanTangStrategy Debug - 完整计算过程展示', () {
     test('测试案例1: 甲戌 己巳 辛丑 丁酉 (男/上/夏至)', () {
       // 构造测试数据
-      final fourZhu = FourZhu(
+      final fourZhu = EightChars(
         yearGanzhi: "甲戌",
         monthGanzhi: "己巳",
         dayGanzhi: "辛丑",
@@ -38,7 +40,7 @@ void main() {
     });
 
     test('测试案例2: 甲戌 己巳 辛丑 丁酉 (女/上/夏至)', () {
-      final fourZhu = FourZhu(
+      final fourZhu = EightChars(
         yearGanzhi: "甲戌",
         monthGanzhi: "己巳",
         dayGanzhi: "辛丑",
@@ -63,15 +65,15 @@ void main() {
     });
 
     test('测试案例3: 甲戌 己巳 辛丑 丁酉 (男/中/冬至)', () {
-      final fourZhu = FourZhu(
-        yearGanzhi: "甲戌",
-        monthGanzhi: "己巳",
-        dayGanzhi: "辛丑",
-        timeGanzhi: "丁酉",
+      final fourZhu = EightChars(
+        year: JiaZi.getFromGanZhiValue("甲戌")!,
+        month: JiaZi.getFromGanZhiValue("己巳")!,
+        day: JiaZi.getFromGanZhiValue("辛丑")!,
+        time: JiaZi.getFromGanZhiValue("丁酉")!,
       );
 
       final params = YuanTangStrategyParams(
-        fourZhu: fourZhu,
+        eightChars: fourZhu,
         gender: "男",
         threeYuan: "中",
         birthAfterZhi: "冬至",
@@ -100,8 +102,10 @@ void _printCalculationDetails(
 
   // 输入参数
   print('\n【输入参数】');
-  print('四柱: ${params.fourZhu.yearGanzhi} ${params.fourZhu.monthGanzhi} '
-      '${params.fourZhu.dayGanzhi} ${params.fourZhu.timeGanzhi}');
+  print(
+    '四柱: ${params.fourZhu.yearGanzhi} ${params.fourZhu.monthGanzhi} '
+    '${params.fourZhu.dayGanzhi} ${params.fourZhu.timeGanzhi}',
+  );
   print('性别: ${params.gender}');
   print('三元: ${params.threeYuan}');
   print('出生节气后: ${params.birthAfterZhi}');
@@ -115,13 +119,23 @@ void _printCalculationDetails(
   final flatZhiNum = model.zhiNumList.expand((x) => x).toList();
   print('展开地支数: $flatZhiNum');
 
-  print('奇数总和: ${model.oddNumTotal} (${_formatOddNumbers(model.ganNumList, flatZhiNum)})');
-  print('偶数总和: ${model.evenNumTotal} (${_formatEvenNumbers(model.ganNumList, flatZhiNum)})');
+  print(
+    '奇数总和: ${model.oddNumTotal} (${_formatOddNumbers(model.ganNumList, flatZhiNum)})',
+  );
+  print(
+    '偶数总和: ${model.evenNumTotal} (${_formatEvenNumbers(model.ganNumList, flatZhiNum)})',
+  );
 
-  print('天数: ${model.oddNumTotal} % 25 ${model.oddNumTotal % 25 == 0 ? '(25)' : ''}= ${model.tianGuaNum}');
-  print('地数: ${model.evenNumTotal} % 30 ${model.evenNumTotal % 30 == 0 ? '(30)' : ''}= ${model.diGuaNum}');
+  print(
+    '天数: ${model.oddNumTotal} % 25 ${model.oddNumTotal % 25 == 0 ? '(25)' : ''}= ${model.tianGuaNum}',
+  );
+  print(
+    '地数: ${model.evenNumTotal} % 30 ${model.evenNumTotal % 30 == 0 ? '(30)' : ''}= ${model.diGuaNum}',
+  );
 
-  print('天卦: ${model.tianGua} (天数${model.tianGuaNum}配卦${model.usedThreeYuanWuGong ? ',使用三元五宫' : ''})');
+  print(
+    '天卦: ${model.tianGua} (天数${model.tianGuaNum}配卦${model.usedThreeYuanWuGong ? ',使用三元五宫' : ''})',
+  );
   print('地卦: ${model.diGua} (地数${model.diGuaNum}配卦)');
 
   // 步骤2: 生成上下卦(先天卦)
@@ -139,21 +153,29 @@ void _printCalculationDetails(
   print('时辰阴阳: ${model.timeYinYang}');
   print('卦中阳爻数: ${model.totalYangYao}');
   print('卦中阴爻数: ${model.totalYinYao}');
-  print('装卦方法: ${_getZhuangguaMethod(model.timeYinYang, model.totalYangYao, model.totalYinYao)}');
+  print(
+    '装卦方法: ${_getZhuangguaMethod(model.timeYinYang, model.totalYangYao, model.totalYinYao)}',
+  );
 
   print('\n六爻地支配置(从下到上):');
   for (int i = 0; i < model.zhiList.length; i++) {
     final yaoDetail = model.yaoDetails[i];
-    final zhiStr = model.zhiList[i].isEmpty ? '---' : model.zhiList[i].join(',');
+    final zhiStr = model.zhiList[i].isEmpty
+        ? '---'
+        : model.zhiList[i].join(',');
     final marker = yaoDetail.isYuanTangYao ? ' ← 元堂爻' : '';
-    print('  ${yaoDetail.positionLabel}爻(${yaoDetail.yinYang}): $zhiStr$marker');
+    print(
+      '  ${yaoDetail.positionLabel}爻(${yaoDetail.yinYang}): $zhiStr$marker',
+    );
   }
 
   print('\n元堂爻: ${model.yuantangYaoLabel}爻 (索引${model.yuantangYaoIndex})');
 
   // 步骤4: 生成后天卦
   print('\n【步骤4: 生成后天卦】');
-  print('元堂爻爻变: ${model.yuantangYaoLabel}爻 ${_getYaoYinYang(model.xiantianGua, model.yuantangYaoIndex)} → ${_getYaoYinYangAfterChange(model.xiantianGua, model.yuantangYaoIndex)}');
+  print(
+    '元堂爻爻变: ${model.yuantangYaoLabel}爻 ${_getYaoYinYang(model.xiantianGua, model.yuantangYaoIndex)} → ${_getYaoYinYangAfterChange(model.xiantianGua, model.yuantangYaoIndex)}',
+  );
   print('上下卦互换: ${model.xiantianGua[0]} ↔ ${model.xiantianGua[1]}');
   print('后天卦: ${model.houtianGua}');
   print('后天卦上卦: ${model.houtianGua[0]} (后天数: ${model.houtianUpperGuaNumber})');
@@ -206,8 +228,7 @@ void _printCalculationDetails(
     model.tiaowenNumberHoutianBenhu,
     ...model.tiaowenNumberListXiantianGuahu,
     ...model.tiaowenNumberListHoutianGuahu,
-  }.toList()
-    ..sort();
+  }.toList()..sort();
 
   print('条文编号方法总数: 8种');
   print('生成条文编号总数: ${allNumbers.length}个(去重后)');

@@ -1,3 +1,5 @@
+import 'package:common/models/eight_chars.dart';
+import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
@@ -7,22 +9,22 @@ import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
 /// 测试递加96四次的条文扩展规则
 void main() {
   late YuanTangStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late YuanTangStrategyParams testParams;
 
   setUp(() {
     strategy = YuanTangStrategy();
 
     // 使用测试数据：癸巳甲子丁酉癸卯
-    testFourZhu = FourZhu(
-      yearGanzhi: "癸巳",
-      monthGanzhi: "甲子",
-      dayGanzhi: "丁酉",
-      timeGanzhi: "癸卯",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸巳")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("丁酉")!,
+      time: JiaZi.getFromGanZhiValue("癸卯")!,
     );
 
     testParams = YuanTangStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",
@@ -120,14 +122,12 @@ void main() {
 
       // 验证所有条文编号都是正数
       for (final tiaowen in xiantianTiaoWenList) {
-        expect(tiaowen, greaterThan(0),
-            reason: '条文编号应该是正数');
+        expect(tiaowen, greaterThan(0), reason: '条文编号应该是正数');
       }
 
       // 验证最大条文编号不会溢出（假设最大条文编号是81*81=6561）
       for (final tiaowen in xiantianTiaoWenList) {
-        expect(tiaowen, lessThanOrEqualTo(10000),
-            reason: '条文编号应该在合理范围内');
+        expect(tiaowen, lessThanOrEqualTo(10000), reason: '条文编号应该在合理范围内');
       }
     });
 
@@ -144,8 +144,11 @@ void main() {
 
       // 验证先天卦条文列表内部没有重复
       final xiantianSet = xiantianTiaoWenList.toSet();
-      expect(xiantianSet.length, equals(xiantianTiaoWenList.length),
-          reason: '先天卦条文列表不应该有重复');
+      expect(
+        xiantianSet.length,
+        equals(xiantianTiaoWenList.length),
+        reason: '先天卦条文列表不应该有重复',
+      );
     });
   });
 }

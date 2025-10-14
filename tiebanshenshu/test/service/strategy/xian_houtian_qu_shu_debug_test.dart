@@ -15,23 +15,25 @@ void main() {
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
 
       // 创建FourZhu对象
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
+      // final fourZhu = FourZhu(
+      //   yearGanzhi: eightChars.year.name,
+      //   monthGanzhi: eightChars.month.name,
+      //   dayGanzhi: eightChars.day.name,
+      //   timeGanzhi: eightChars.time.name,
+      // );
 
       print('\n========== DEBUG INFO ==========');
-      print('FourZhu: $fourZhu');
-      print('yearGan: ${fourZhu.yearGan}, yearZhi: ${fourZhu.yearZhi}');
-      print('monthGan: ${fourZhu.monthGan}, monthZhi: ${fourZhu.monthZhi}');
-      print('dayGan: ${fourZhu.dayGan}, dayZhi: ${fourZhu.dayZhi}');
-      print('timeGan: ${fourZhu.timeGan}, timeZhi: ${fourZhu.timeZhi}');
+      print('EightChars: $eightChars');
+      print('yearGan: ${eightChars.year.gan}, yearZhi: ${eightChars.year.zhi}');
+      print(
+        'monthGan: ${eightChars.month.gan}, monthZhi: ${eightChars.month.zhi}',
+      );
+      print('dayGan: ${eightChars.day.gan}, dayZhi: ${eightChars.day.zhi}');
+      print('timeGan: ${eightChars.time.gan}, timeZhi: ${eightChars.time.zhi}');
 
       final strategy = XianHoutianQuShuStrategy();
       final params = XianHoutianQuShuStrategyParams(
-        fourZhu: fourZhu,
+        eightChars: eightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",

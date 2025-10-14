@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/xian_houtian_jia_ze_strategy.dart';
@@ -16,22 +18,22 @@ import 'package:tiebanshenshu/domain/models/xian_houtian_gua_base_number_model.d
 /// - 条文扩展: 先天卦递增96四次，后天卦递减96四次
 void main() {
   late XianHoutianJiaZeStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testEightChars;
   late XianHoutianJiaZeStrategyParams testParams;
   late XianHoutianGuaBaseNumberModel model;
 
   setUp(() {
     strategy = XianHoutianJiaZeStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "癸巳",
-      monthGanzhi: "甲子",
-      dayGanzhi: "丁酉",
-      timeGanzhi: "癸卯",
+    testEightChars = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸巳")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("丁酉")!,
+      time: JiaZi.getFromGanZhiValue("癸卯")!,
     );
 
     testParams = XianHoutianJiaZeStrategyParams(
-      fourZhu: testFourZhu,
+      eightChars: testEightChars,
       gender: "男",
       threeYuan: "上",
       birthAfterZhi: "夏至",

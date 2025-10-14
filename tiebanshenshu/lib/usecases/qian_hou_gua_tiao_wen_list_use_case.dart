@@ -1,4 +1,5 @@
 import '../domain/four_zhu.dart';
+import 'package:common/models/eight_chars.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/models/qian_hou_gua_base_number_model.dart';
@@ -43,7 +44,12 @@ class QianHouGuaTiaoWenListUseCase
 
       // 2. 调用Strategy计算
       final strategyParams = QianHouGuaStrategyParams(
-        fourZhu: params.fourZhu,
+        fourZhu: FourZhu(
+          yearGanzhi: params.eightChars.year.name,
+          monthGanzhi: params.eightChars.month.name,
+          dayGanzhi: params.eightChars.day.name,
+          timeGanzhi: params.eightChars.time.name,
+        ),
         gender: params.gender,
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
@@ -115,7 +121,8 @@ class QianHouGuaTiaoWenListUseCase
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'fourZhu': strategyParams.fourZhu.toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -136,7 +143,13 @@ class QianHouGuaTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'fourZhu': params.fourZhu.toString(),
+          'fourZhu': FourZhu(
+            yearGanzhi: params.eightChars.year.name,
+            monthGanzhi: params.eightChars.month.name,
+            dayGanzhi: params.eightChars.day.name,
+            timeGanzhi: params.eightChars.time.name,
+          ).toString(),
+          'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'birthAfterZhi': params.birthAfterZhi,
@@ -186,8 +199,8 @@ class QianHouGuaTiaoWenListUseCase
 ///
 /// 包含前后卦取数法计算所需的所有参数
 class QianHouGuaUseCaseParams {
-  /// 四柱信息
-  final FourZhu fourZhu;
+  /// 八字信息
+  final EightChars eightChars;
 
   /// 性别（"男" / "女"）
   final String gender;
@@ -199,7 +212,7 @@ class QianHouGuaUseCaseParams {
   final String birthAfterZhi;
 
   const QianHouGuaUseCaseParams({
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -207,14 +220,14 @@ class QianHouGuaUseCaseParams {
 
   @override
   String toString() {
-    return 'QianHouGuaUseCaseParams(fourZhu: ${fourZhu.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
+    return 'QianHouGuaUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     return other is QianHouGuaUseCaseParams &&
-        other.fourZhu == fourZhu &&
+        other.eightChars == eightChars &&
         other.gender == gender &&
         other.threeYuan == threeYuan &&
         other.birthAfterZhi == birthAfterZhi;
@@ -222,7 +235,7 @@ class QianHouGuaUseCaseParams {
 
   @override
   int get hashCode =>
-      fourZhu.hashCode ^
+      eightChars.hashCode ^
       gender.hashCode ^
       threeYuan.hashCode ^
       birthAfterZhi.hashCode;

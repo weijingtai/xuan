@@ -31,7 +31,7 @@ void main() {
 
       final strategy = LiuYaoGanZhiHeStrategy();
       final params = LiuYaoGanZhiHeStrategyParams(
-        fourZhu: fourZhu,
+        eightChars: eightChars,
         gender: "男",
         threeYuan: "上",
         birthAfterZhi: "夏至",
