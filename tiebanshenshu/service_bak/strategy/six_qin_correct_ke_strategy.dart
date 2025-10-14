@@ -56,8 +56,12 @@ class CorrectionSixQinKe {
 /// 六亲考刻法计算策略
 ///
 /// 实现六亲考刻法的标准计算策略
-class SixQinCorrectKeStrategy extends StandardCalculationStrategy<
-    SixQinCorrectKeStrategyParams, BaseNumberModelResult> {
+class SixQinCorrectKeStrategy
+    extends
+        StandardCalculationStrategy<
+          SixQinCorrectKeStrategyParams,
+          BaseNumberModelResult
+        > {
   @override
   String get name => "六亲考刻法";
 
@@ -66,17 +70,17 @@ class SixQinCorrectKeStrategy extends StandardCalculationStrategy<
 
   @override
   List<String> get detailSteps => [
-        "1. 排四柱：获取年月日时的干支信息",
-        "2. 四柱取太玄数：将干支转换为太玄数值",
-        "3. 计算先天基本卦：年月干支太玄数相加取模8得先天卦，根据性别和年干阴阳确定上下卦顺序",
-        "4. 计算后天基本卦：日时干支太玄数减10后取后天卦，组合成基本卦",
-        "5. 求取互卦：分别计算先天和后天基本卦的互卦",
-        "6. 计算卦气深度（先天）：基本卦上卦为千位，下卦为百位，互卦上卦为十位，下卦为个位，组成四位数",
-        "7. 先天变爻匹配：如四位数条文不符合命主，依次变化初爻、二爻等，直到找到符合的条文作为先天基本数",
-        "8. 计算卦气深度（后天）：同样方式计算后天基本卦的四位数",
-        "9. 后天变爻匹配：如四位数条文不符合命主，依次变化初爻等，直到找到符合的条文作为后天基本数",
-        "10. 生成条文列表：基本数±(48×n)，其中n为[2,4,8,16]，得出8个条文编号",
-      ];
+    "1. 排四柱：获取年月日时的干支信息",
+    "2. 四柱取太玄数：将干支转换为太玄数值",
+    "3. 计算先天基本卦：年月干支太玄数相加取模8得先天卦，根据性别和年干阴阳确定上下卦顺序",
+    "4. 计算后天基本卦：日时干支太玄数减10后取后天卦，组合成基本卦",
+    "5. 求取互卦：分别计算先天和后天基本卦的互卦",
+    "6. 计算卦气深度（先天）：基本卦上卦为千位，下卦为百位，互卦上卦为十位，下卦为个位，组成四位数",
+    "7. 先天变爻匹配：如四位数条文不符合命主，依次变化初爻、二爻等，直到找到符合的条文作为先天基本数",
+    "8. 计算卦气深度（后天）：同样方式计算后天基本卦的四位数",
+    "9. 后天变爻匹配：如四位数条文不符合命主，依次变化初爻等，直到找到符合的条文作为后天基本数",
+    "10. 生成条文列表：基本数±(48×n)，其中n为[2,4,8,16]，得出8个条文编号",
+  ];
 
   @override
   String get school => "六亲考刻流派";
@@ -93,9 +97,7 @@ class SixQinCorrectKeStrategy extends StandardCalculationStrategy<
 
   @override
   List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs {
-    return [
-      defaultTiaoWenCalculationConfig,
-    ];
+    return [defaultTiaoWenCalculationConfig];
   }
 
   @override
@@ -221,7 +223,7 @@ class SixQinCorrectKeStrategy extends StandardCalculationStrategy<
     if (bianYaoIndexList.isEmpty) {
       bianGua = baseGua;
     } else {
-      List<int> guaBinList = guaToBinaryList(baseGua.name);
+      List<int> guaBinList = guaToBinaryList(baseGua);
       guaBinList = guaBinList.reversed.toList();
 
       for (int index in bianYaoIndexList) {

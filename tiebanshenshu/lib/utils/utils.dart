@@ -1,5 +1,8 @@
 // utils.dart
 // 导入包含所有静态数据映射的常量文件
+import 'package:common/enums.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+
 import '../../constant/constants.dart' as constants;
 
 // ===================================================================
@@ -7,22 +10,12 @@ import '../../constant/constants.dart' as constants;
 // ===================================================================
 
 /// 将双经卦名（如 "乾坤"）转换为6个元素的二进制列表（从上爻到下爻）。
-List<int> guaToBinaryList(String guaName) {
-  if (guaName.length != 2) {
-    throw ArgumentError("卦名必须是两个字符，例如 '乾坤'");
-  }
-  final uponGua = guaName.substring(0, 1);
-  final underGua = guaName.substring(1, 2);
-
-  final uponBinary = constants.guaBinaryMapper[uponGua];
-  final underBinary = constants.guaBinaryMapper[underGua];
-
-  if (uponBinary == null || underBinary == null) {
-    throw ArgumentError("无效的卦名: $guaName");
-  }
-
+List<int> guaToBinaryList(Gua64Enum guaName) {
   // 合并上卦和下卦的二进制列表
-  return [...uponBinary, ...underBinary];
+  return PureSixYaoGua.by8Gua(
+    guaName.top,
+    guaName.bottom,
+  ).topBotYaoBinStr.split("").map((e) => int.parse(e)).toList();
 }
 
 /// 将6个元素的二进制列表转换为双经卦名（如 "离兑"）。
@@ -62,21 +55,13 @@ List<int> yaoBianGua(List<int> originalBinaryList, List<int> bianYaoIndices) {
 }
 
 /// 计算给定卦的“互卦”。
-String guaToHuGua(String guaName) {
-  final binaryList = guaToBinaryList(guaName);
-
-  // 互卦由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final huUponBinary = binaryList.sublist(1, 4);
-  final huUnderBinary = binaryList.sublist(2, 5);
-
-  return binaryListToGua([...huUponBinary, ...huUnderBinary]);
+Gua64Enum guaToHuGua(Gua64Enum guaName) {
+  return PureSixYaoGua.by8Gua(guaName.top, guaName.bottom).hu;
 }
 
 /// 计算给定卦的“错卦”（所有爻阴阳相反）。
-String guaToCuoGua(String guaName) {
-  final binaryList = guaToBinaryList(guaName);
-  final cuoBinaryList = binaryList.map((yao) => 1 - yao).toList();
-  return binaryListToGua(cuoBinaryList);
+Gua64Enum guaToCuoGua(Gua64Enum guaName) {
+  return PureSixYaoGua.by8Gua(guaName.top, guaName.bottom).cuo;
 }
 
 // ===================================================================
@@ -90,7 +75,7 @@ String guaToCuoGua(String guaName) {
 /// - 阴爻依次配：丑、卯、巳、未、酉、亥
 ///
 /// 返回一个从上爻到初爻的6元素地支列表。
-List<String> yaoxuZhuangGua(String guaName) {
+List<String> yaoxuZhuangGua(Gua64Enum guaName) {
   // 阳爻地支序列
   final yangDiZhi = ['子', '寅', '辰', '午', '申', '戌'];
 
@@ -122,7 +107,7 @@ List<String> yaoxuZhuangGua(String guaName) {
 
 /// 根据双经卦名进行纳甲，安装"地支"。
 /// 返回一个从上爻到初爻的6元素地支列表。
-List<String> najiaZhuangGua(String guaName) {
+List<String> najiaZhuangGua(Gua64Enum guaName) {
   // 上卦地支映射表
   final Map<String, String> uponGuaMapper = {
     "乾": "戌申午",
@@ -147,8 +132,8 @@ List<String> najiaZhuangGua(String guaName) {
     "坤": "卯巳未",
   };
 
-  final uponGua = guaName.substring(0, 1);
-  final underGua = guaName.substring(1, 2);
+  final uponGua = guaName.top.name;
+  final underGua = guaName.bottom.name;
 
   // 将上卦和下卦的地支字符串合并成一个数组，从上爻到下爻
   final uponZhi = uponGuaMapper[uponGua]!.split('');
@@ -159,7 +144,7 @@ List<String> najiaZhuangGua(String guaName) {
 
 /// 根据双经卦名进行纳甲，安装“天干”。
 /// 返回一个从上爻到初爻的6元素天干列表。
-List<String> najiaGanZhuangGua(String guaName) {
+List<String> najiaGanZhuangGua(Gua64Enum guaName) {
   // 上卦天干映射表
   final Map<String, List<String>> uponGuaMapper = {
     "乾": ["壬", "壬", "壬"],
@@ -184,8 +169,8 @@ List<String> najiaGanZhuangGua(String guaName) {
     "坤": ["乙", "乙", "乙"],
   };
 
-  final uponGua = guaName.substring(0, 1);
-  final underGua = guaName.substring(1, 2);
+  final uponGua = guaName.top.name;
+  final underGua = guaName.bottom.name;
 
   // 将上卦和下卦的天干合并成一个数组，从上爻到下爻
   final uponGan = uponGuaMapper[uponGua]!;
@@ -508,8 +493,6 @@ generateTianDiGua({
   String tianGua;
   String diGua;
   bool usedThreeYuanWuGong = false;
-
-  print("~~~~~~~ $tianGuaNum");
 
   // 天卦配卦（天数为5时查询三元五宫）
   if (tianGuaNum == 5) {

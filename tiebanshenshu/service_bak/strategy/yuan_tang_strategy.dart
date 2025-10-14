@@ -32,7 +32,7 @@ class YuanTangStrategyParams extends BaseCalculationParams {
   /// 三元（"上" / "中" / "下"）
   final YuanYunOrder threeYuan;
 
-  /// 出生节气后（TwentyFourJieQi.XIA_ZHI / "冬至"）
+  /// 出生节气后（"夏至" / "冬至"）
   final TwentyFourJieQi birthAfterZhi;
 
   /// 出生月份(1-12,从monthZhi提取)
@@ -182,6 +182,7 @@ class YuanTangStrategy
         gender: params.gender,
         birthAfterZhi: params.birthAfterZhi,
       );
+
       // 步骤5：计算互卦
       final xiantianGuaHu = gua_utils.guaToHuGua(xiantianGua);
       final houtianGuaHu = gua_utils.guaToHuGua(houtianGua);
@@ -467,8 +468,8 @@ class YuanTangStrategy
     final huUnder = hu.bottom;
 
     final numberMapper = isXiantian
-        ? constants.xianGuaNumberMapper
-        : constants.houGuaNumberMapper;
+        ? constants.xianTianGuaNumberMapper
+        : constants.houTianGuaNumberMapper;
 
     final benUponNum = numberMapper[benUpon]!;
     final benUnderNum = numberMapper[benUnder]!;
@@ -607,7 +608,7 @@ class YuanTangStrategy
 
     if (isSixYang) {
       // 六阳爻
-      if (gender == Gender.male) {
+      if (gender == "男") {
         final tmpResultList = threeYaoZhuang(timeZhiList, false);
         if (isYang) {
           // 阳时出生 - 下卦自下而上
@@ -620,7 +621,7 @@ class YuanTangStrategy
         // gender == "女"
         if (isYang) {
           // 阳时生
-          if (birthAfterZhi == TwentyFourJieQi.XIA_ZHI) {
+          if (birthAfterZhi == "夏至") {
             // 夏至后出生 下卦自下而上
             return [
               <String>[],
@@ -639,7 +640,7 @@ class YuanTangStrategy
           }
         } else {
           // 阴时生
-          if (birthAfterZhi == TwentyFourJieQi.XIA_ZHI) {
+          if (birthAfterZhi == "夏至") {
             // 夏至后出生 上卦自下而上
             return [
               ...threeYaoZhuang(timeZhiList, false),
@@ -660,7 +661,7 @@ class YuanTangStrategy
       }
     } else {
       // 六阴爻
-      if (gender == Gender.female) {
+      if (gender == "女") {
         final tmpResultList = threeYaoZhuang(timeZhiList, false);
         if (isYang) {
           // 阳时出生 - 下卦自下而上
@@ -672,7 +673,7 @@ class YuanTangStrategy
       } else {
         if (isYang) {
           // 阳时生
-          if (birthAfterZhi == TwentyFourJieQi.XIA_ZHI) {
+          if (birthAfterZhi == "夏至") {
             // 夏至后出生 下卦自下而上
             return [
               <String>[],
@@ -691,7 +692,7 @@ class YuanTangStrategy
           }
         } else {
           // 阴时生
-          if (birthAfterZhi == TwentyFourJieQi.XIA_ZHI) {
+          if (birthAfterZhi == "夏至") {
             // 夏至后出生 上卦自下而上
             return [
               ...threeYaoZhuang(timeZhiList, false),

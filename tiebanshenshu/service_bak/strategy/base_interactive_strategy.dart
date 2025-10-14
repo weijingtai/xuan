@@ -11,11 +11,9 @@ import 'base_calculation_strategy.dart';
 /// 交互式策略基类
 ///
 /// 所有交互式策略都应该继承此抽象类
-abstract class BaseInteractiveStrategy<
-  P extends BaseCalculationParams,
-  R extends BaseCalculationResult
->
+abstract class BaseInteractiveStrategy<P extends BaseCalculationParams, R extends BaseCalculationResult>
     extends BaseCalculationStrategy<P, R> {
+  
   @override
   StrategyCategory get category => StrategyCategory.interactive;
 
@@ -63,7 +61,10 @@ abstract class BaseInteractiveStrategy<
   /// [session] 当前会话
   /// [stepIndex] 目标步骤索引
   /// 返回更新后的会话
-  Future<InteractiveSession> jumpTo(InteractiveSession session, int stepIndex);
+  Future<InteractiveSession> jumpTo(
+    InteractiveSession session,
+    int stepIndex,
+  );
 
   /// 撤销到上一步
   ///
@@ -100,10 +101,7 @@ abstract class BaseInteractiveStrategy<
   /// [session] 当前会话
   /// [candidateId] 候选项ID
   /// 如果验证失败，抛出异常
-  void validateCandidateSelection(
-    InteractiveSession session,
-    String candidateId,
-  );
+  void validateCandidateSelection(InteractiveSession session, String candidateId);
 
   /// 生成会话ID
   ///
@@ -159,10 +157,9 @@ abstract class BaseInteractiveStrategy<
   /// [session] 当前会话
   /// 返回是否可以继续
   bool canContinueSession(InteractiveSession session) {
-    return session.isInProgress &&
-        session.currentStep != null &&
-        session.currentStep!.status ==
-            InteractiveSessionStatus.waitingForSelection;
+    return session.isInProgress && 
+           session.currentStep != null &&
+           session.currentStep!.status == InteractiveSessionStatus.waitingForSelection;
   }
 
   /// 检查是否为最后一步

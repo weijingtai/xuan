@@ -85,9 +85,13 @@ class StrategyProviders {
     Provider<TaiXuanFourZhuStrategy>(create: (_) => TaiXuanFourZhuStrategy()),
     Provider<BaGuaJiaZeStrategy>(create: (_) => BaGuaJiaZeStrategy()),
     Provider<YuanTangStrategy>(create: (_) => YuanTangStrategy()),
-    Provider<XianHoutianJiaZeStrategy>(create: (_) => XianHoutianJiaZeStrategy()),
+    Provider<XianHoutianJiaZeStrategy>(
+      create: (_) => XianHoutianJiaZeStrategy(),
+    ),
     Provider<LiuYaoGanZhiHeStrategy>(create: (_) => LiuYaoGanZhiHeStrategy()),
-    Provider<XianHoutianQuShuStrategy>(create: (_) => XianHoutianQuShuStrategy()),
+    Provider<XianHoutianQuShuStrategy>(
+      create: (_) => XianHoutianQuShuStrategy(),
+    ),
     Provider<QianHouGuaStrategy>(create: (_) => QianHouGuaStrategy()),
     Provider<GuaZhongStrategy>(create: (_) => GuaZhongStrategy()),
 
@@ -226,14 +230,12 @@ class StrategyProviders {
       ),
     ),
     ChangeNotifierProvider<BaGuaJiaZeViewModel>(
-      create: (context) => BaGuaJiaZeViewModel(
-        context.read<BaGuaJiaZeTiaoWenListUseCase>(),
-      ),
+      create: (context) =>
+          BaGuaJiaZeViewModel(context.read<BaGuaJiaZeTiaoWenListUseCase>()),
     ),
     ChangeNotifierProvider<YuanTangViewModel>(
-      create: (context) => YuanTangViewModel(
-        context.read<YuanTangTiaoWenListUseCase>(),
-      ),
+      create: (context) =>
+          YuanTangViewModel(context.read<YuanTangTiaoWenListUseCase>()),
     ),
     ChangeNotifierProvider<XianHoutianJiaZeViewModel>(
       create: (context) => XianHoutianJiaZeViewModel(
@@ -251,14 +253,12 @@ class StrategyProviders {
       ),
     ),
     ChangeNotifierProvider<QianHouGuaViewModel>(
-      create: (context) => QianHouGuaViewModel(
-        context.read<QianHouGuaTiaoWenListUseCase>(),
-      ),
+      create: (context) =>
+          QianHouGuaViewModel(context.read<QianHouGuaTiaoWenListUseCase>()),
     ),
     ChangeNotifierProvider<GuaZhongViewModel>(
-      create: (context) => GuaZhongViewModel(
-        context.read<GuaZhongTiaoWenListUseCase>(),
-      ),
+      create: (context) =>
+          GuaZhongViewModel(context.read<GuaZhongTiaoWenListUseCase>()),
     ),
 
     // Interactive Provider层

@@ -220,7 +220,7 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
     if (model == null) return '未计算';
 
     final parts = <String>[];
-    parts.add(model.nianYueZhuGuaName);
+    parts.add(model.nianYueZhuGuaName.name);
 
     for (final plan in _selectedPlans.toList()..sort()) {
       final zhuNumber = model.getNianYueZhuGuaTiaoWenNumber(plan);
@@ -237,7 +237,7 @@ class GuaZhongViewModel extends BaseTiaoWenListViewModel {
     if (model == null) return '未计算';
 
     final parts = <String>[];
-    parts.add(model.riShiZhuGuaName);
+    parts.add(model.riShiZhuGuaName.name);
 
     for (final plan in _selectedPlans.toList()..sort()) {
       final zhuNumber = model.getRiShiZhuGuaTiaoWenNumber(plan);

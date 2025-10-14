@@ -135,9 +135,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('未计算'),
-        ),
+        child: const Center(child: Text('未计算')),
       );
     }
 
@@ -165,7 +163,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.tianGua,
+                      model.tianGua.name,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.primary,
@@ -186,7 +184,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.diGua,
+                      model.diGua.name,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.secondary,
@@ -217,7 +215,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.xiantianGua,
+                      model.xiantianGua.fullname,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.tertiary,
@@ -242,7 +240,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.houtianGua,
+                      model.houtianGua.fullname,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.secondary,
@@ -282,35 +280,27 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 步骤1：天地卦
-              _buildStepCard(
-                theme,
-                '步骤1：生成天地卦',
-                [
-                  '天干数: ${model.ganNumList.join(", ")}',
-                  '地支数: ${model.zhiNumList.map((list) => "[${list.join(",")}]").join(", ")}',
-                  '奇数和: ${model.oddNumTotal}',
-                  '偶数和: ${model.evenNumTotal}',
-                  '天数: ${model.tianGuaNum} → 天卦: ${model.tianGua}',
-                  '地数: ${model.diGuaNum} → 地卦: ${model.diGua}',
-                  if (model.usedThreeYuanWuGong) '使用三元五宫',
-                ],
-              ),
+              _buildStepCard(theme, '步骤1：生成天地卦', [
+                '天干数: ${model.ganNumList.join(", ")}',
+                '地支数: ${model.zhiNumList.map((list) => "[${list.join(",")}]").join(", ")}',
+                '奇数和: ${model.oddNumTotal}',
+                '偶数和: ${model.evenNumTotal}',
+                '天数: ${model.tianGuaNum} → 天卦: ${model.tianGua}',
+                '地数: ${model.diGuaNum} → 地卦: ${model.diGua}',
+                if (model.usedThreeYuanWuGong) '使用三元五宫',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤2：先后天卦
-              _buildStepCard(
-                theme,
-                '步骤2：生成先后天卦',
-                [
-                  '年份阴阳: ${model.yearYinYang}年',
-                  '性别: ${widget.viewModel.currentGender}',
-                  '上卦: ${model.upperGua}',
-                  '下卦: ${model.lowerGua}',
-                  '先天卦: ${model.xiantianGua}',
-                  '后天卦: ${model.houtianGua}',
-                ],
-              ),
+              _buildStepCard(theme, '步骤2：生成先后天卦', [
+                '年份阴阳: ${model.yearYinYang}年',
+                '性别: ${widget.viewModel.currentGender}',
+                '上卦: ${model.upperGua}',
+                '下卦: ${model.lowerGua}',
+                '先天卦: ${model.xiantianGua}',
+                '后天卦: ${model.houtianGua}',
+              ]),
 
               const SizedBox(height: 12.0),
 
@@ -318,7 +308,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
               _buildLiuYaoNajiaCard(
                 theme,
                 '步骤3-4：先天卦六爻纳甲和干支和数计算',
-                model.xiantianGua,
+                model.xiantianGua.fullname,
                 widget.viewModel.xiantianYaoTianGanList,
                 widget.viewModel.xiantianYaoDiZhiList,
                 widget.viewModel.xiantianYaoSumList,
@@ -334,7 +324,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
               _buildLiuYaoNajiaCard(
                 theme,
                 '步骤5-6：后天卦六爻纳甲和干支和数计算',
-                model.houtianGua,
+                model.houtianGua.fullname,
                 widget.viewModel.houtianYaoTianGanList,
                 widget.viewModel.houtianYaoDiZhiList,
                 widget.viewModel.houtianYaoSumList,
@@ -357,9 +347,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -372,13 +360,12 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
             ),
           ),
           const SizedBox(height: 8.0),
-          ...content.map((line) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Text(
-                  line,
-                  style: theme.textTheme.bodySmall,
-                ),
-              )),
+          ...content.map(
+            (line) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: Text(line, style: theme.textTheme.bodySmall),
+            ),
+          ),
         ],
       ),
     );
@@ -404,9 +391,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -455,9 +440,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                         : theme.colorScheme.secondaryContainer.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(4.0),
                     border: isUpperYao
-                        ? Border.all(
-                            color: accentColor.withOpacity(0.3),
-                          )
+                        ? Border.all(color: accentColor.withOpacity(0.3))
                         : null,
                   ),
                   child: Row(
@@ -519,9 +502,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
             decoration: BoxDecoration(
               color: accentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6.0),
-              border: Border.all(
-                color: accentColor.withOpacity(0.3),
-              ),
+              border: Border.all(color: accentColor.withOpacity(0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -529,10 +510,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '上三爻和数（千百位）:',
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    Text('上三爻和数（千百位）:', style: theme.textTheme.bodySmall),
                     Text(
                       '$upperSum',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -546,10 +524,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      '下三爻和数（十位个位）:',
-                      style: theme.textTheme.bodySmall,
-                    ),
+                    Text('下三爻和数（十位个位）:', style: theme.textTheme.bodySmall),
                     Text(
                       '$lowerSum',
                       style: theme.textTheme.bodySmall?.copyWith(
@@ -643,9 +618,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -705,10 +678,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                   color: theme.colorScheme.primary,
                 ),
               ),
-              Text(
-                '唯一条文编号',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('唯一条文编号', style: theme.textTheme.bodySmall),
             ],
           ),
           Container(
@@ -725,10 +695,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                   color: theme.colorScheme.secondary,
                 ),
               ),
-              Text(
-                '先天卦条文',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('先天卦条文', style: theme.textTheme.bodySmall),
             ],
           ),
           Container(
@@ -745,10 +712,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
                   color: theme.colorScheme.tertiary,
                 ),
               ),
-              Text(
-                '后天卦条文',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('后天卦条文', style: theme.textTheme.bodySmall),
             ],
           ),
         ],
@@ -768,9 +732,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('暂无条文内容'),
-        ),
+        child: const Center(child: Text('暂无条文内容')),
       );
     }
 
@@ -786,9 +748,7 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('暂无条文内容'),
-        ),
+        child: const Center(child: Text('暂无条文内容')),
       );
     }
 
@@ -807,10 +767,10 @@ class _XianHoutianQuShuCardState extends State<XianHoutianQuShuCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: allTiaoWen.map((tiaowen) {
               // 判断条文来源
-              final isInXiantian =
-                  widget.viewModel.xiantianTiaoWenNumbers.contains(tiaowen.id);
-              final isInHoutian =
-                  widget.viewModel.houtianTiaoWenNumbers.contains(tiaowen.id);
+              final isInXiantian = widget.viewModel.xiantianTiaoWenNumbers
+                  .contains(tiaowen.id);
+              final isInHoutian = widget.viewModel.houtianTiaoWenNumbers
+                  .contains(tiaowen.id);
 
               final sources = <String>[];
               if (isInXiantian) sources.add('先天卦');

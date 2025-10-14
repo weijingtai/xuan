@@ -4,11 +4,11 @@
 /// 每个基础数都可以生成对应的条文列表
 library;
 
+import '../../service/strategy/base_calculation_strategy.dart';
 import 'base_number_model.dart';
 import 'base_number_tiao_wen_list_model.dart';
 import 'tiao_wen_list_state.dart';
 import '../../repository/datamodels/tiao_wen_datamodel.dart';
-import '../../service/strategy/base_calculation_strategy.dart';
 
 /// 多基础数算法结果
 ///

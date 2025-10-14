@@ -1,3 +1,6 @@
+import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
+import 'package:common/models/jie_qi_info.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:common/dev_constant.dart';
@@ -115,33 +118,33 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
         baGuaJiaZeViewModel.setEightChars(eightChars),
         yuanTangViewModel.setYuanTangParams(
           eightChars: eightChars,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
         xianHoutianJiaZeViewModel.setEightChars(
           eightChars: eightChars,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
         liuYaoGanZhiHeViewModel.setParams(
           eightChars: eightChars,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
         xianHoutianQuShuViewModel.setParams(
           eightChars: eightChars,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
         qianHouGuaViewModel.setParams(
           eightChars: eightChars,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
         guaZhongViewModel.setParams(eightChars: eightChars),
       ]);

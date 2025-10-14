@@ -34,27 +34,25 @@ class BaGuaJiaZeStrategyParams extends BaseCalculationParams {
 /// 实现八卦加则取数法的标准计算策略
 /// 四柱分别计算，每柱使用两种装卦方法（爻序法、纳甲法），产生8个基础数
 class BaGuaJiaZeStrategy
-    extends
-        StandardCalculationStrategy<
-          BaGuaJiaZeStrategyParams,
-          BaseNumberModelResult
-        > {
+    extends StandardCalculationStrategy<BaGuaJiaZeStrategyParams,
+        BaseNumberModelResult> {
   @override
   String get name => "八卦加则取数法";
 
   @override
-  String get description => "排四柱天干地支分别配卦，装配六爻地支，上卦数作千位加总数减下卦数得条文数";
+  String get description =>
+      "排四柱天干地支分别配卦，装配六爻地支，上卦数作千位加总数减下卦数得条文数";
 
   @override
   List<String> get detailSteps => [
-    "1. 取四柱：获取年月日时的干支信息",
-    "2. 干支配卦：天干为上卦，地支为下卦",
-    "3. 装卦方法A-爻序法：阳爻依次配子寅辰午申戌，阴爻依次配丑卯巳未酉亥",
-    "4. 装卦方法B-纳甲法：使用传统六爻纳甲规则（不区分年干阴阳）",
-    "5. 六爻配数：每爻地支对应数字相加得总数",
-    "6. 计算条文数：上卦后天数×1000 + 总数 - 下卦后天数",
-    "7. 四柱各产生2个条文（爻序法1个+纳甲法1个），共8个条文",
-  ];
+        "1. 取四柱：获取年月日时的干支信息",
+        "2. 干支配卦：天干为上卦，地支为下卦",
+        "3. 装卦方法A-爻序法：阳爻依次配子寅辰午申戌，阴爻依次配丑卯巳未酉亥",
+        "4. 装卦方法B-纳甲法：使用传统六爻纳甲规则（不区分年干阴阳）",
+        "5. 六爻配数：每爻地支对应数字相加得总数",
+        "6. 计算条文数：上卦后天数×1000 + 总数 - 下卦后天数",
+        "7. 四柱各产生2个条文（爻序法1个+纳甲法1个），共8个条文",
+      ];
 
   @override
   String get school => "八卦加则流派";

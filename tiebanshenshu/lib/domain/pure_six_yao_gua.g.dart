@@ -121,7 +121,7 @@ const _$Gua64EnumEnumMap = {
   Gua64Enum.shan_feng_gu: '蛊',
   Gua64Enum.kan_wei_shui: '坎',
   Gua64Enum.shui_ze_jie: '节',
-  Gua64Enum.shui_lei_chun: '屯',
+  Gua64Enum.shui_lei_tun: '屯',
   Gua64Enum.shui_huo_ji_ji: '既济',
   Gua64Enum.ze_huo_ge: '革',
   Gua64Enum.lei_huo_feng: '丰',

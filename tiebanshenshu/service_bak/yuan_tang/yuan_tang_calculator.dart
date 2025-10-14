@@ -1,35 +1,27 @@
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+
 import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';
 import '../../utils/tiao_wen_calculator.dart';
 import '../../utils/utils.dart' as GuaUtils;
+import '../../utils/yuan_tang_gua_helper.dart';
 
 // 元堂卦类
 class YuanTangGua {
   /// 三元五宫映射表
   /// 上元：男艮女坤，中元：阳(年)男艮阴坤，阳(年)女坤阴艮；下元：男离女兑
-  static const Map<String, Map<String, Map<String, String>>>
-  _threeYuan5GongMapper = {
-    "上": {
-      "男": {"阳": "艮", "阴": "艮"},
-      "女": {"阳": "坤", "阴": "坤"},
-    },
-    "中": {
-      "男": {"阳": "艮", "阴": "坤"},
-      "女": {"阳": "坤", "阴": "艮"},
-    },
-    "下": {
-      "男": {"阳": "离", "阴": "离"},
-      "女": {"阳": "兑", "阴": "兑"},
-    },
-  };
+  static final Map<YuanYunOrder, Map<Gender, Map<YinYang, Enum8Gua>>>
+  _threeYuan5GongMapper = YuanTangGuaHelper.threeYuan5GongMapper;
 
-  final FourZhu fourZhu;
-  final String gender;
-  final String threeYuan;
-  final String birthAfterZhi;
+  final EightChars fourZhu;
+  final Gender gender;
+  final YuanYunOrder threeYuan;
+  final TwentyFourJieQi birthAfterZhi;
   final int yuantanYaoIndex;
-  final String xiantianGua;
-  final String houtianGua;
+  final Gua64Enum xiantianGua;
+  final Gua64Enum houtianGua;
   final List<List<String>> zhiList;
 
   YuanTangGua({
@@ -44,17 +36,17 @@ class YuanTangGua {
   });
 
   /// 生成上下卦
-  static (String, String) generateUponUnderGua(
-    String tianGua,
-    String diGua,
-    String yearYinYang,
-    String gender,
+  static (Enum8Gua, Enum8Gua) generateUponUnderGua(
+    Enum8Gua tianGua,
+    Enum8Gua diGua,
+    YinYang yearYinYang,
+    Gender gender,
   ) {
-    String uponGua;
-    String underGua;
+    Enum8Gua uponGua;
+    Enum8Gua underGua;
 
-    if (yearYinYang == "阳") {
-      if (gender == "男") {
+    if (yearYinYang == YinYang.YANG) {
+      if (gender == Gender.male) {
         uponGua = tianGua;
         underGua = diGua;
       } else {
@@ -62,7 +54,7 @@ class YuanTangGua {
         underGua = tianGua;
       }
     } else {
-      if (gender == "女") {
+      if (gender == Gender.female) {
         uponGua = tianGua;
         underGua = diGua;
       } else {
@@ -74,10 +66,10 @@ class YuanTangGua {
   }
 
   /// 生成天地卦
-  static (String, String) generateTianDiGua(
-    String gender,
+  static (Enum8Gua, Enum8Gua) generateTianDiGua(
+    Gender gender,
     bool isYangYear,
-    String threeYuan,
+    YuanYunOrder threeYuan,
     List<int> ganNumTotalList,
     List<int> zhiNumTotalList,
   ) {
@@ -95,20 +87,20 @@ class YuanTangGua {
     int diGuaNum = GuaUtils.calculateGuaNum(evenNumTotal, 30, 3);
 
     // 数配卦 -- 后天卦
-    String yearYinYang = isYangYear ? "阳" : "阴";
-    String tianGua;
-    String diGua;
+    YinYang yearYinYang = isYangYear ? YinYang.YANG : YinYang.YIN;
+    Enum8Gua tianGua;
+    Enum8Gua diGua;
 
     if (tianGuaNum == 5) {
       tianGua = _threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
     } else {
-      tianGua = Constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
+      tianGua = Constants.yuanTangHuaTianNumberGuaMapper[tianGuaNum]!;
     }
 
     if (diGuaNum == 5) {
       diGua = _threeYuan5GongMapper[threeYuan]![gender]![yearYinYang]!;
     } else {
-      diGua = Constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
+      diGua = Constants.yuanTangHuaTianNumberGuaMapper[diGuaNum]!;
     }
 
     return (tianGua, diGua);
@@ -135,12 +127,12 @@ class YuanTangGua {
   }
 
   /// 先天卦互卦
-  String get xiantianGuaHu {
+  Gua64Enum get xiantianGuaHu {
     return GuaUtils.guaToHuGua(xiantianGua);
   }
 
   /// 后天卦互卦
-  String get houtianGuaHu {
+  Gua64Enum get houtianGuaHu {
     return GuaUtils.guaToHuGua(houtianGua);
   }
 
@@ -149,17 +141,17 @@ class YuanTangGua {
   /// 先天卦互卦：上卦为十位，下卦为个位
   /// 数取卦的先天数
   int get tiaowenNumberXiantianBenhu {
-    String ben = xiantianGua;
-    String benUpon = ben[0];
-    String benUnder = ben[1];
-    String hu = xiantianGuaHu;
-    String huUpon = hu[0];
-    String huUnder = hu[1];
+    Gua64Enum ben = xiantianGua;
+    Enum8Gua benUpon = ben.top;
+    Enum8Gua benUnder = ben.bottom;
+    Gua64Enum hu = xiantianGuaHu;
+    Enum8Gua huUpon = hu.top;
+    Enum8Gua huUnder = hu.bottom;
 
-    int benUponNum = Constants.xianTianGuaNumberMapper[benUpon]!;
-    int benUnderNum = Constants.xianTianGuaNumberMapper[benUnder]!;
-    int huUponNum = Constants.xianTianGuaNumberMapper[huUpon]!;
-    int huUnderNum = Constants.xianTianGuaNumberMapper[huUnder]!;
+    int benUponNum = Constants.xianGuaNumberMapper[benUpon]!;
+    int benUnderNum = Constants.xianGuaNumberMapper[benUnder]!;
+    int huUponNum = Constants.xianGuaNumberMapper[huUpon]!;
+    int huUnderNum = Constants.xianGuaNumberMapper[huUnder]!;
 
     return int.parse('$benUponNum$benUnderNum$huUponNum$huUnderNum');
   }
@@ -169,17 +161,17 @@ class YuanTangGua {
   /// 后天卦互卦：上卦为十位，下卦为个位
   /// 数取卦的后天数
   int get tiaowenNumberHoutianBenhu {
-    String ben = houtianGua;
-    String benUpon = ben[0];
-    String benUnder = ben[1];
-    String hu = houtianGuaHu;
-    String huUpon = hu[0];
-    String huUnder = hu[1];
+    Gua64Enum ben = houtianGua;
+    Enum8Gua benUpon = ben.top;
+    Enum8Gua benUnder = ben.bottom;
+    Gua64Enum hu = houtianGuaHu;
+    Enum8Gua huUpon = hu.top;
+    Enum8Gua huUnder = hu.bottom;
 
-    int benUponNum = Constants.houTianGuaNumberMapper[benUpon]!;
-    int benUnderNum = Constants.houTianGuaNumberMapper[benUnder]!;
-    int huUponNum = Constants.houTianGuaNumberMapper[huUpon]!;
-    int huUnderNum = Constants.houTianGuaNumberMapper[huUnder]!;
+    int benUponNum = Constants.houGuaNumberMapper[benUpon]!;
+    int benUnderNum = Constants.houGuaNumberMapper[benUnder]!;
+    int huUponNum = Constants.houGuaNumberMapper[huUpon]!;
+    int huUnderNum = Constants.houGuaNumberMapper[huUnder]!;
 
     return int.parse('$benUponNum$benUnderNum$huUponNum$huUnderNum');
   }
@@ -212,23 +204,23 @@ class YuanTangGua {
 
   /// 生成元堂卦
   static YuanTangGua generateYuantanGua({
-    required FourZhu fourZhu,
-    required String gender,
-    required String threeYuan,
-    required String birthAfterZhi,
+    required EightChars fourZhu,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
   }) {
-    bool isYangYear = fourZhu.isYangGanYear;
+    bool isYangYear = fourZhu.year.gan.isYang;
     List<int> ganNumTotalList = [
-      Constants.tianGanNumberMapper[fourZhu.yearGan]!,
-      Constants.tianGanNumberMapper[fourZhu.monthGan]!,
-      Constants.tianGanNumberMapper[fourZhu.dayGan]!,
-      Constants.tianGanNumberMapper[fourZhu.timeGan]!,
+      Constants.ganNumberMapper[fourZhu.year.gan]!,
+      Constants.ganNumberMapper[fourZhu.month.gan]!,
+      Constants.ganNumberMapper[fourZhu.day.gan]!,
+      Constants.ganNumberMapper[fourZhu.time.gan]!,
     ];
     List<int> zhiNumTotalList = [
-      ...Constants.diZhiNumberMapper[fourZhu.yearZhi]!,
-      ...Constants.diZhiNumberMapper[fourZhu.monthZhi]!,
-      ...Constants.diZhiNumberMapper[fourZhu.dayZhi]!,
-      ...Constants.diZhiNumberMapper[fourZhu.timeZhi]!,
+      ...Constants.zhiNumberMapper[fourZhu.year.zhi]!,
+      ...Constants.zhiNumberMapper[fourZhu.month.zhi]!,
+      ...Constants.zhiNumberMapper[fourZhu.day.zhi]!,
+      ...Constants.zhiNumberMapper[fourZhu.time.zhi]!,
     ];
 
     final tuple = generateTianDiGua(
@@ -238,29 +230,34 @@ class YuanTangGua {
       ganNumTotalList,
       zhiNumTotalList,
     );
-    String tianGua = tuple.$1;
-    String diGua = tuple.$2;
+    Enum8Gua tianGua = tuple.$1;
+    Enum8Gua diGua = tuple.$2;
 
-    String yearYinYangStr = isYangYear ? "阳" : "阴";
+    YinYang yearYinYang = isYangYear ? YinYang.YANG : YinYang.YIN;
     final (uponGua, underGua) = generateUponUnderGua(
       tianGua,
       diGua,
-      yearYinYangStr,
+      yearYinYang,
       gender,
     );
 
-    final yuantanBenGua = uponGua + underGua;
+    final yuantanBenGua = Gua64Enum.getBy8Gua(uponGua, underGua);
 
     final (yuantangYaoIndex, dizhiList) = yuantangZhuanggua(
       yuantanBenGua,
-      fourZhu.timeGanzhi,
+      fourZhu.time,
       gender,
       birthAfterZhi,
     );
+
+    PureSixYaoGua.by8Gua(
+      yuantanBenGua.top,
+      yuantanBenGua.bottom,
+    ).bianYaoByOrder(yuantangYaoIndex + 1);
     List<int> benBinaryGua = GuaUtils.guaToBinaryList(yuantanBenGua);
 
     // 5. 计算全部条文
-    String houtianGua = yuantangHoutianGuaFromXiantianGua(
+    Gua64Enum houtianGua = yuantangHoutianGuaFromXiantianGua(
       benBinaryGua,
       yuantangYaoIndex,
     );
@@ -278,31 +275,28 @@ class YuanTangGua {
 
   /// 元堂装卦
   static (int, List<List<String>>) yuantangZhuanggua(
-    String guaName,
-    String timeGanzhi,
-    String gender,
-    String birthAfterZhi,
+    Gua64Enum guaName,
+    JiaZi timeGanzhi,
+    Gender gender,
+    TwentyFourJieQi birthAfterZhi,
   ) {
     // 1. 阳时生人取阳爻为元堂爻，阴时生人取阴爻为元堂爻
     List<String> yuantangYangTimeSet = ["子", "丑", "寅", "卯", "辰", "巳"];
     List<String> yuantangYinTimeSet = ["午", "未", "申", "酉", "戌", "亥"];
-    String timeYinyang = "阳";
-    if (!yuantangYangTimeSet.contains(
-      timeGanzhi.substring(timeGanzhi.length - 1),
-    )) {
-      timeYinyang = "阴";
+    YinYang timeYinyang = YinYang.YANG;
+    if (!yuantangYangTimeSet.contains(timeGanzhi.zhi.name)) {
+      timeYinyang = YinYang.YIN;
     }
 
     // 2. 卦中不同阴阳爻数量装卦不同
-    List<int> uponBinary = Constants.guaBinaryMapper[guaName[0]]!;
-    List<int> underBinary =
-        Constants.guaBinaryMapper[guaName[guaName.length - 1]]!;
+    List<int> uponBinary = Constants.guaBinaryMapper[guaName.top.name]!;
+    List<int> underBinary = Constants.guaBinaryMapper[guaName.bottom.name]!;
     List<int> allGuaBinary = [...uponBinary, ...underBinary];
     int totalYangYao = allGuaBinary.where((x) => x == 1).length;
     int totalYinYao = allGuaBinary.where((x) => x == 0).length;
 
     List<List<String>> resultList = [];
-    if (timeYinyang == "阳") {
+    if (timeYinyang == YinYang.YANG) {
       // 2.1. 阳爻
       if (totalYangYao > 0 && totalYangYao <= 3) {
         resultList = yuantanZhuangguaLowerThan3(
@@ -358,14 +352,12 @@ class YuanTangGua {
 
   /// 获取元堂爻索引
   static int getYuantanYaoIndex(
-    String timeZhi,
+    JiaZi timeGanzhi,
     List<List<String>> yangTangYaoZhiList,
   ) {
     int resultYuantanYaoIndex = -1;
     for (int i = 0; i < yangTangYaoZhiList.length; i++) {
-      if (yangTangYaoZhiList[i].contains(
-        timeZhi.substring(timeZhi.length - 1),
-      )) {
+      if (yangTangYaoZhiList[i].contains(timeGanzhi.zhi.name)) {
         resultYuantanYaoIndex = i;
         break;
       }
@@ -378,8 +370,8 @@ class YuanTangGua {
     bool isSixYang,
     List<String> timeZhiList,
     bool isYang,
-    String gender,
-    String birthAfterZhi,
+    Gender gender,
+    TwentyFourJieQi birthAfterZhi,
   ) {
     List<List<String>> threeYaoZhuang(List<String> dizhiList, bool isUp2Down) {
       List<String> tmpDizhiList = List.from(dizhiList);
@@ -567,7 +559,7 @@ class YuanTangGua {
 }
 
 /// 根据基本卦和元堂爻，计算出后天卦
-String yuantangHoutianGuaFromXiantianGua(
+Gua64Enum yuantangHoutianGuaFromXiantianGua(
   List<int> benBinaryList,
   int yuantangYaoIndex,
 ) {
@@ -586,7 +578,10 @@ String yuantangHoutianGuaFromXiantianGua(
   String oldUponGua = Constants.binaryStrGuaMapper[oldUpon]!;
   String oldUnderGua = Constants.binaryStrGuaMapper[oldUnder]!;
   // 3. 互换 并返回
-  return oldUnderGua + oldUponGua;
+  return Gua64Enum.getBy8Gua(
+    Enum8Gua.fromValue(oldUnderGua),
+    Enum8Gua.fromValue(oldUponGua),
+  );
 }
 
 /// 元堂取数（已弃用的函数）
@@ -612,19 +607,19 @@ String yuantangHoutianGuaFromXiantianGua(
 /// 测试函数示例
 void testYuantangGua() {
   // 创建测试用的四柱
-  FourZhu fourZhu = FourZhu(
-    yearGanzhi: "甲戌",
-    monthGanzhi: "己巳",
-    dayGanzhi: "辛丑",
-    timeGanzhi: "丁酉",
+  EightChars fourZhu = EightChars(
+    year: JiaZi.getFromGanZhiValue("甲戌")!,
+    month: JiaZi.getFromGanZhiValue("己巳")!,
+    day: JiaZi.getFromGanZhiValue("辛丑")!,
+    time: JiaZi.getFromGanZhiValue("丁酉")!,
   );
 
   // 生成元堂卦
   YuanTangGua yuanTangGua = YuanTangGua.generateYuantanGua(
     fourZhu: fourZhu,
-    gender: "男",
-    threeYuan: "上",
-    birthAfterZhi: "夏至",
+    gender: Gender.male,
+    threeYuan: YuanYunOrder.upper,
+    birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
   );
 
   print('先天卦: ${yuanTangGua.xiantianGua}');

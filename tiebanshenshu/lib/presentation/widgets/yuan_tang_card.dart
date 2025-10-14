@@ -178,7 +178,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  widget.model.xiantianGua,
+                  widget.model.xiantianGua.fullname,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.primary,
@@ -208,7 +208,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
                 ),
                 const SizedBox(height: 4.0),
                 Text(
-                  widget.model.houtianGua,
+                  widget.model.houtianGua.fullname,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: theme.colorScheme.secondary,
@@ -243,40 +243,28 @@ class _YuanTangCardState extends State<YuanTangCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 步骤1：天地卦
-              _buildStepCard(
-                theme,
-                '步骤1：生成天地卦',
-                [
-                  '天卦: ${widget.model.tianGua}',
-                  '地卦: ${widget.model.diGua}',
-                  widget.model.tianDiGuaFormula,
-                ],
-              ),
+              _buildStepCard(theme, '步骤1：生成天地卦', [
+                '天卦: ${widget.model.tianGua}',
+                '地卦: ${widget.model.diGua}',
+                widget.model.tianDiGuaFormula,
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤2：上下卦
-              _buildStepCard(
-                theme,
-                '步骤2：生成先天卦',
-                [
-                  '上卦: ${widget.model.upperGuaDisplay}',
-                  '下卦: ${widget.model.lowerGuaDisplay}',
-                  '先天卦: ${widget.model.xiantianGua}',
-                ],
-              ),
+              _buildStepCard(theme, '步骤2：生成先天卦', [
+                '上卦: ${widget.model.upperGuaDisplay}',
+                '下卦: ${widget.model.lowerGuaDisplay}',
+                '先天卦: ${widget.model.xiantianGua}',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤3：元堂装卦
-              _buildStepCard(
-                theme,
-                '步骤3：元堂装卦',
-                [
-                  '元堂爻: ${widget.model.yuantangYaoLabel}爻',
-                  '六爻地支配置（见下方详情）',
-                ],
-              ),
+              _buildStepCard(theme, '步骤3：元堂装卦', [
+                '元堂爻: ${widget.model.yuantangYaoLabel}爻',
+                '六爻地支配置（见下方详情）',
+              ]),
 
               // 显示六爻详情
               const SizedBox(height: 8.0),
@@ -285,27 +273,19 @@ class _YuanTangCardState extends State<YuanTangCard> {
               const SizedBox(height: 12.0),
 
               // 步骤4：后天卦
-              _buildStepCard(
-                theme,
-                '步骤4：生成后天卦',
-                [
-                  '元堂爻爻变',
-                  '上下卦互换',
-                  '后天卦: ${widget.model.houtianGua}',
-                ],
-              ),
+              _buildStepCard(theme, '步骤4：生成后天卦', [
+                '元堂爻爻变',
+                '上下卦互换',
+                '后天卦: ${widget.model.houtianGua}',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤4.5：后天卦元堂装卦
-              _buildStepCard(
-                theme,
-                '步骤4.5：后天卦元堂装卦',
-                [
-                  '后天卦元堂爻: ${widget.model.houtianYuantangYaoLabel}爻',
-                  '后天卦六爻地支配置（见下方详情）',
-                ],
-              ),
+              _buildStepCard(theme, '步骤4.5：后天卦元堂装卦', [
+                '后天卦元堂爻: ${widget.model.houtianYuantangYaoLabel}爻',
+                '后天卦六爻地支配置（见下方详情）',
+              ]),
 
               // 显示后天卦六爻详情
               const SizedBox(height: 8.0),
@@ -314,14 +294,10 @@ class _YuanTangCardState extends State<YuanTangCard> {
               const SizedBox(height: 12.0),
 
               // 步骤5：互卦
-              _buildStepCard(
-                theme,
-                '步骤5：计算互卦',
-                [
-                  '先天卦互卦: ${widget.model.xiantianGuaHu}',
-                  '后天卦互卦: ${widget.model.houtianGuaHu}',
-                ],
-              ),
+              _buildStepCard(theme, '步骤5：计算互卦', [
+                '先天卦互卦: ${widget.model.xiantianGuaHu}',
+                '后天卦互卦: ${widget.model.houtianGuaHu}',
+              ]),
             ],
           ),
         ),
@@ -336,9 +312,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -351,13 +325,12 @@ class _YuanTangCardState extends State<YuanTangCard> {
             ),
           ),
           const SizedBox(height: 8.0),
-          ...content.map((line) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Text(
-                  line,
-                  style: theme.textTheme.bodySmall,
-                ),
-              )),
+          ...content.map(
+            (line) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: Text(line, style: theme.textTheme.bodySmall),
+            ),
+          ),
         ],
       ),
     );
@@ -385,7 +358,10 @@ class _YuanTangCardState extends State<YuanTangCard> {
             final isYuanTang = yao.isYuanTangYao;
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 2.0),
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
               decoration: BoxDecoration(
                 color: isYuanTang
                     ? theme.colorScheme.primaryContainer.withOpacity(0.5)
@@ -399,7 +375,9 @@ class _YuanTangCardState extends State<YuanTangCard> {
                     child: Text(
                       '${yao.positionLabel}爻',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: isYuanTang ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isYuanTang
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -420,7 +398,10 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   ),
                   if (isYuanTang)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0,
+                        vertical: 2.0,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.primary,
                         borderRadius: BorderRadius.circular(4.0),
@@ -520,10 +501,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   color: theme.colorScheme.primary,
                 ),
               ),
-              Text(
-                '条文编号',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('条文编号', style: theme.textTheme.bodySmall),
             ],
           ),
           Container(
@@ -540,10 +518,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   color: theme.colorScheme.secondary,
                 ),
               ),
-              Text(
-                '条文内容',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('条文内容', style: theme.textTheme.bodySmall),
             ],
           ),
         ],
@@ -573,7 +548,10 @@ class _YuanTangCardState extends State<YuanTangCard> {
             final isYuanTang = yao.isYuanTangYao;
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 2.0),
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 8.0,
+                vertical: 4.0,
+              ),
               decoration: BoxDecoration(
                 color: isYuanTang
                     ? theme.colorScheme.secondaryContainer.withOpacity(0.5)
@@ -587,7 +565,9 @@ class _YuanTangCardState extends State<YuanTangCard> {
                     child: Text(
                       '${yao.positionLabel}爻',
                       style: theme.textTheme.bodySmall?.copyWith(
-                        fontWeight: isYuanTang ? FontWeight.bold : FontWeight.normal,
+                        fontWeight: isYuanTang
+                            ? FontWeight.bold
+                            : FontWeight.normal,
                       ),
                     ),
                   ),
@@ -608,7 +588,10 @@ class _YuanTangCardState extends State<YuanTangCard> {
                   ),
                   if (isYuanTang)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6.0,
+                        vertical: 2.0,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.colorScheme.secondary,
                         borderRadius: BorderRadius.circular(4.0),
@@ -718,9 +701,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -769,9 +750,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('暂无条文内容'),
-        ),
+        child: const Center(child: Text('暂无条文内容')),
       );
     }
 
@@ -936,11 +915,7 @@ class _YuanTangCardState extends State<YuanTangCard> {
     return ExpansionTile(
       title: Row(
         children: [
-          Icon(
-            Icons.insights,
-            color: theme.colorScheme.primary,
-            size: 20.0,
-          ),
+          Icon(Icons.insights, color: theme.colorScheme.primary, size: 20.0),
           const SizedBox(width: 8.0),
           Text(
             '流运系统（大运→流年→流月）',

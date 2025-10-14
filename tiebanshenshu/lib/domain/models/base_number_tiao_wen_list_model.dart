@@ -4,8 +4,8 @@
 /// 用于表示包含条文列表的完整基础数模型
 library;
 
-import '../../service/strategy/tiao_wen_list_calculation.dart';
 import '../../repository/datamodels/tiao_wen_datamodel.dart';
+import '../../service/strategy/tiao_wen_list_calculation.dart';
 import 'base_number_model.dart';
 
 /// 基础数条文列表模型类
@@ -174,7 +174,9 @@ class BaseNumberTiaoWenListModel extends BaseNumberModel {
   }
 
   /// 复制并更新基础条文
-  BaseNumberTiaoWenListModel copyWithBaseTiaoWen(TiaoWenDataModel? newBaseTiaoWen) {
+  BaseNumberTiaoWenListModel copyWithBaseTiaoWen(
+    TiaoWenDataModel? newBaseTiaoWen,
+  ) {
     return BaseNumberTiaoWenListModel(
       baseNumber: baseNumber,
       name: name,
@@ -251,9 +253,9 @@ class BaseNumberTiaoWenListModel extends BaseNumberModel {
 
   @override
   int get hashCode {
-    return baseNumber.hashCode ^ 
-           name.hashCode ^ 
-           source.hashCode ^ 
-           tiaoWenNumbers.length.hashCode;
+    return baseNumber.hashCode ^
+        name.hashCode ^
+        source.hashCode ^
+        tiaoWenNumbers.length.hashCode;
   }
 }

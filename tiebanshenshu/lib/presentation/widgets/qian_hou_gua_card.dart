@@ -134,9 +134,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('未计算'),
-        ),
+        child: const Center(child: Text('未计算')),
       );
     }
 
@@ -216,7 +214,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.qianGuaName,
+                      model.qianGuaName.fullname,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.tertiary,
@@ -241,7 +239,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
                     ),
                     const SizedBox(height: 4.0),
                     Text(
-                      model.houGuaName,
+                      model.houGuaName.fullname,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: theme.colorScheme.tertiary,
@@ -311,60 +309,44 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 步骤1：天地卦
-              _buildStepCard(
-                theme,
-                '步骤1：生成天地卦',
-                [
-                  '天干数: ${model.ganNumList.join(", ")}',
-                  '地支数: ${model.zhiNumList.map((list) => "[${list.join(",")}]").join(", ")}',
-                  '奇数和: ${model.oddNumTotal}',
-                  '偶数和: ${model.evenNumTotal}',
-                  '天数: ${model.tianGuaNum} → 天卦: ${model.tianGua}',
-                  '地数: ${model.diGuaNum} → 地卦: ${model.diGua}',
-                  if (model.usedThreeYuanWuGong) '使用三元五宫',
-                ],
-              ),
+              _buildStepCard(theme, '步骤1：生成天地卦', [
+                '天干数: ${model.ganNumList.join(", ")}',
+                '地支数: ${model.zhiNumList.map((list) => "[${list.join(",")}]").join(", ")}',
+                '奇数和: ${model.oddNumTotal}',
+                '偶数和: ${model.evenNumTotal}',
+                '天数: ${model.tianGuaNum} → 天卦: ${model.tianGua}',
+                '地数: ${model.diGuaNum} → 地卦: ${model.diGua}',
+                if (model.usedThreeYuanWuGong) '使用三元五宫',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤2：先后天卦
-              _buildStepCard(
-                theme,
-                '步骤2：生成先后天卦',
-                [
-                  '年份阴阳: ${model.yearYinYang}年',
-                  '性别: ${model.gender}',
-                  '上卦: ${model.upperGua}',
-                  '下卦: ${model.lowerGua}',
-                  '先天卦: ${model.xiantianGua}',
-                  '后天卦: ${model.houtianGua} (与先天卦相同)',
-                ],
-              ),
+              _buildStepCard(theme, '步骤2：生成先后天卦', [
+                '年份阴阳: ${model.yearYinYang}年',
+                '性别: ${model.gender}',
+                '上卦: ${model.upperGua}',
+                '下卦: ${model.lowerGua}',
+                '先天卦: ${model.xiantianGua}',
+                '后天卦: ${model.houtianGua} (与先天卦相同)',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤3：互卦
-              _buildStepCard(
-                theme,
-                '步骤3：计算互卦',
-                [
-                  '先天卦互卦: ${model.xiantianGuaHu}',
-                  '后天卦互卦: ${model.houtianGuaHu}',
-                ],
-              ),
+              _buildStepCard(theme, '步骤3：计算互卦', [
+                '先天卦互卦: ${model.xiantianGuaHu}',
+                '后天卦互卦: ${model.houtianGuaHu}',
+              ]),
 
               const SizedBox(height: 12.0),
 
               // 步骤4-5：前后卦取数
-              _buildStepCard(
-                theme,
-                '步骤4-5：前后卦取数',
-                [
-                  '前卦取数: ${model.qianGuaDescription}',
-                  '后卦取数: ${model.houGuaDescription}',
-                  '完整基础数: ${model.fullBaseNumber} (${model.qianGuaBaseNumber}${model.houGuaBaseNumber})',
-                ],
-              ),
+              _buildStepCard(theme, '步骤4-5：前后卦取数', [
+                '前卦取数: ${model.qianGuaDescription}',
+                '后卦取数: ${model.houGuaDescription}',
+                '完整基础数: ${model.fullBaseNumber} (${model.qianGuaBaseNumber}${model.houGuaBaseNumber})',
+              ]),
             ],
           ),
         ),
@@ -379,9 +361,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,13 +374,12 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
             ),
           ),
           const SizedBox(height: 8.0),
-          ...content.map((line) => Padding(
-                padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Text(
-                  line,
-                  style: theme.textTheme.bodySmall,
-                ),
-              )),
+          ...content.map(
+            (line) => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2.0),
+              child: Text(line, style: theme.textTheme.bodySmall),
+            ),
+          ),
         ],
       ),
     );
@@ -462,9 +441,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: theme.colorScheme.outline.withOpacity(0.2),
-        ),
+        border: Border.all(color: theme.colorScheme.outline.withOpacity(0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -524,10 +501,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
                   color: theme.colorScheme.primary,
                 ),
               ),
-              Text(
-                '唯一条文编号',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('唯一条文编号', style: theme.textTheme.bodySmall),
             ],
           ),
           Container(
@@ -544,10 +518,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
                   color: theme.colorScheme.secondary,
                 ),
               ),
-              Text(
-                '前卦条文',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('前卦条文', style: theme.textTheme.bodySmall),
             ],
           ),
           Container(
@@ -564,10 +535,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
                   color: theme.colorScheme.tertiary,
                 ),
               ),
-              Text(
-                '后卦条文',
-                style: theme.textTheme.bodySmall,
-              ),
+              Text('后卦条文', style: theme.textTheme.bodySmall),
             ],
           ),
         ],
@@ -587,9 +555,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('暂无条文内容'),
-        ),
+        child: const Center(child: Text('暂无条文内容')),
       );
     }
 
@@ -605,9 +571,7 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
           color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
           borderRadius: BorderRadius.circular(8.0),
         ),
-        child: const Center(
-          child: Text('暂无条文内容'),
-        ),
+        child: const Center(child: Text('暂无条文内容')),
       );
     }
 
@@ -626,10 +590,11 @@ class _QianHouGuaCardState extends State<QianHouGuaCard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: allTiaoWen.map((tiaowen) {
               // 判断条文来源
-              final isInQianGua =
-                  widget.viewModel.qianGuaTiaoWenNumbers.contains(tiaowen.id);
-              final isInHouGua =
-                  widget.viewModel.houGuaTiaoWenNumbers.contains(tiaowen.id);
+              final isInQianGua = widget.viewModel.qianGuaTiaoWenNumbers
+                  .contains(tiaowen.id);
+              final isInHouGua = widget.viewModel.houGuaTiaoWenNumbers.contains(
+                tiaowen.id,
+              );
 
               final sources = <String>[];
               if (isInQianGua) sources.add('前卦');

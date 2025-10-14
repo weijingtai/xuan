@@ -32,7 +32,9 @@
 /// - **总计产生12个条文编号**（4个位置 × 3种方案）
 library;
 
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 卦中取数法基础数模型
@@ -83,16 +85,16 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   final int nianYueLowerGuaXiantianNumber;
 
   /// 年月卦上卦名称
-  final String nianYueUpperGuaName;
+  final Enum8Gua nianYueUpperGuaName;
 
   /// 年月卦下卦名称
-  final String nianYueLowerGuaName;
+  final Enum8Gua nianYueLowerGuaName;
 
   /// 年月卦主卦名称（双经卦，如"震坤"）
-  final String nianYueZhuGuaName;
+  final Gua64Enum nianYueZhuGuaName;
 
   /// 年月卦互卦名称（双经卦）
-  final String nianYueHuGuaName;
+  final Gua64Enum nianYueHuGuaName;
 
   /// 年月卦互卦上卦先天数
   final int nianYueHuGuaUpperXiantianNumber;
@@ -138,16 +140,16 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   final int riShiLowerGuaXiantianNumber;
 
   /// 日时卦上卦名称
-  final String riShiUpperGuaName;
+  final Enum8Gua riShiUpperGuaName;
 
   /// 日时卦下卦名称
-  final String riShiLowerGuaName;
+  final Enum8Gua riShiLowerGuaName;
 
   /// 日时卦主卦名称（双经卦，如"震艮"）
-  final String riShiZhuGuaName;
+  final Gua64Enum riShiZhuGuaName;
 
   /// 日时卦互卦名称（双经卦）
-  final String riShiHuGuaName;
+  final Gua64Enum riShiHuGuaName;
 
   /// 日时卦互卦上卦先天数
   final int riShiHuGuaUpperXiantianNumber;
@@ -410,10 +412,10 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     int? monthSum,
     int? nianYueUpperGuaXiantianNumber,
     int? nianYueLowerGuaXiantianNumber,
-    String? nianYueUpperGuaName,
-    String? nianYueLowerGuaName,
-    String? nianYueZhuGuaName,
-    String? nianYueHuGuaName,
+    Enum8Gua? nianYueUpperGuaName,
+    Enum8Gua? nianYueLowerGuaName,
+    Gua64Enum? nianYueZhuGuaName,
+    Gua64Enum? nianYueHuGuaName,
     int? nianYueHuGuaUpperXiantianNumber,
     int? nianYueHuGuaLowerXiantianNumber,
     int? nianYueZhuGuaTiaoWenNumber_Plan1,
@@ -426,10 +428,10 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     int? timeSum,
     int? riShiUpperGuaXiantianNumber,
     int? riShiLowerGuaXiantianNumber,
-    String? riShiUpperGuaName,
-    String? riShiLowerGuaName,
-    String? riShiZhuGuaName,
-    String? riShiHuGuaName,
+    Enum8Gua? riShiUpperGuaName,
+    Enum8Gua? riShiLowerGuaName,
+    Gua64Enum? riShiZhuGuaName,
+    Gua64Enum? riShiHuGuaName,
     int? riShiHuGuaUpperXiantianNumber,
     int? riShiHuGuaLowerXiantianNumber,
     int? riShiZhuGuaTiaoWenNumber_Plan1,

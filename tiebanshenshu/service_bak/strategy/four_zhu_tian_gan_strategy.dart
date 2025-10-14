@@ -8,6 +8,7 @@ import 'package:common/shared/enums/enum_tian_gan.dart';
 import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';
 import '../../utils/tiao_wen_calculator.dart';
+import '../classic/four_zhu_tian_gan_calculatioin.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 import '../../domain/models/base_number_model_result.dart';
@@ -71,8 +72,8 @@ class FourZhuTianGanStrategy
   /// 计算条文列表（使用指定配置）
   @override
   List<int> calculateTiaoWenListWithConfig(
-    int baseNumber,
-    FourZhuTianGanStrategyParams params,
+    int baseNumber, 
+    FourZhuTianGanStrategyParams params, 
     TiaoWenCalculationConfig config,
   ) {
     // 构建计算上下文
@@ -80,7 +81,7 @@ class FourZhuTianGanStrategy
       'eightChars': params.eightChars,
       'baseNumber': baseNumber,
     };
-
+    
     return config.calculateTiaoWenList(baseNumber, context);
   }
 
@@ -110,8 +111,7 @@ class FourZhuTianGanStrategy
   }
 
   @override
-  String get tiaoWenCalculationDescription =>
-      defaultTiaoWenCalculationConfig.description;
+  String get tiaoWenCalculationDescription => defaultTiaoWenCalculationConfig.description;
 
   @override
   BaseNumberModelResult calculate(FourZhuTianGanStrategyParams params) {

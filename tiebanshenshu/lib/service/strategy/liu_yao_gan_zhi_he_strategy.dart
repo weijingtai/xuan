@@ -5,12 +5,14 @@ library;
 
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/utils/yuan_tang_gua_helper.dart';
 
 import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/liu_yao_gan_zhi_he_base_number_model.dart';
+import '../../domain/pure_six_yao_gua.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 
@@ -22,13 +24,13 @@ class LiuYaoGanZhiHeStrategyParams extends BaseCalculationParams {
   final EightChars eightChars;
 
   /// 性别（"男" / "女"）
-  final String gender;
+  final Gender gender;
 
   /// 三元（"上" / "中" / "下"）
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后（"夏至" / "冬至"）
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   LiuYaoGanZhiHeStrategyParams({
     required this.eightChars,
@@ -226,14 +228,11 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个天干，从初爻到上爻)
-  List<String> _najiaTianGan(String guaName) {
+  List<String> _najiaTianGan(Gua64Enum guaName) {
     // 拆分成上下卦
-    final upperGuaName = guaName[0];
-    final lowerGuaName = guaName[1];
-
     // 转换为Enum8Gua
-    final Enum8Gua upperGua = _stringToEnum8Gua(upperGuaName);
-    final Enum8Gua lowerGua = _stringToEnum8Gua(lowerGuaName);
+    final Enum8Gua upperGua = guaName.top;
+    final Enum8Gua lowerGua = guaName.bottom;
 
     // 获取纳甲天干配置
     final List<TianGan> lowerTianGanList =
@@ -262,14 +261,11 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个地支，从初爻到上爻)
-  List<String> _najiaDiZhi(String guaName) {
+  List<String> _najiaDiZhi(Gua64Enum guaName) {
     // 拆分成上下卦
-    final upperGuaName = guaName[0];
-    final lowerGuaName = guaName[1];
-
     // 转换为Enum8Gua
-    final Enum8Gua upperGua = _stringToEnum8Gua(upperGuaName);
-    final Enum8Gua lowerGua = _stringToEnum8Gua(lowerGuaName);
+    final Enum8Gua upperGua = guaName.top;
+    final Enum8Gua lowerGua = guaName.bottom;
 
     // 获取纳甲地支配置
     final List<DiZhi> lowerDiZhiList =
@@ -341,7 +337,7 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   /// 返回: (baseNumber, tianGanList, diZhiList, yaoSumList, upperSum, lowerSum)
   (int, List<String>, List<String>, List<int>, int, int) _calculateLiuYaoSum(
-    String guaName,
+    Gua64Enum guaName,
   ) {
     // 步骤1-2：获取六爻纳甲配置
     final tianGanList = _najiaTianGan(guaName);
@@ -438,7 +434,7 @@ class LiuYaoGanZhiHeStrategy
   ///
   /// 返回: (tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
   ///        tianGuaNum, diGuaNum, usedThreeYuanWuGong)
-  (String, String, List<int>, List<List<int>>, int, int, int, int, bool)
+  (Enum8Gua, Enum8Gua, List<int>, List<List<int>>, int, int, int, int, bool)
   _generateTianDiGua(LiuYaoGanZhiHeStrategyParams params) {
     // 提取四柱天干数列表
     final ganNumList = [
@@ -480,49 +476,36 @@ class LiuYaoGanZhiHeStrategy
     final diGuaNum = _calculateGuaNum(evenNumTotal, 30, 3);
 
     // 数配卦
-    final yearYinYang = params.eightChars.year.gan.isYang ? "阳" : "阴";
-    String tianGua;
-    String diGua;
+    final yearYinYang = params.eightChars.year.gan.yinYang;
+    Enum8Gua tianGua;
+    Enum8Gua diGua;
     bool usedThreeYuanWuGong = false;
 
     // 三元五宫映射表（当天数或地数为5时使用）
-    const threeYuan5GongMapper = {
-      "上": {
-        "男": {"阳": "艮", "阴": "艮"},
-        "女": {"阳": "坤", "阴": "坤"},
-      },
-      "中": {
-        "男": {"阳": "艮", "阴": "坤"},
-        "女": {"阳": "坤", "阴": "艮"},
-      },
-      "下": {
-        "男": {"阳": "离", "阴": "离"},
-        "女": {"阳": "兑", "阴": "兑"},
-      },
-    };
-
     // 天卦配卦（天数为5时查询三元五宫）
     if (tianGuaNum == 5) {
       tianGua =
-          threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
+          YuanTangGuaHelper.threeYuan5GongMapper[params.threeYuan]![params
+              .gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
-      if (!constants.yuantangHuaTianNumberGuaMapper.containsKey(tianGuaNum)) {
+      if (!constants.yuanTangHuaTianNumberGuaMapper.containsKey(tianGuaNum)) {
         throw ArgumentError('无效的天数: $tianGuaNum，映射表中不存在该键');
       }
-      tianGua = constants.yuantangHuaTianNumberGuaMapper[tianGuaNum]!;
+      tianGua = constants.yuanTangHuaTianNumberGuaMapper[tianGuaNum]!;
     }
 
     // 地卦配卦（地数为5时查询三元五宫）
     if (diGuaNum == 5) {
       diGua =
-          threeYuan5GongMapper[params.threeYuan]![params.gender]![yearYinYang]!;
+          YuanTangGuaHelper.threeYuan5GongMapper[params.threeYuan]![params
+              .gender]![yearYinYang]!;
       usedThreeYuanWuGong = true;
     } else {
-      if (!constants.yuantangHuaTianNumberGuaMapper.containsKey(diGuaNum)) {
+      if (!constants.yuanTangHuaTianNumberGuaMapper.containsKey(diGuaNum)) {
         throw ArgumentError('无效的地数: $diGuaNum，映射表中不存在该键');
       }
-      diGua = constants.yuantangHuaTianNumberGuaMapper[diGuaNum]!;
+      diGua = constants.yuanTangHuaTianNumberGuaMapper[diGuaNum]!;
     }
 
     return (
@@ -542,18 +525,18 @@ class LiuYaoGanZhiHeStrategy
   ///
   /// 返回: (yearYinYang, upperGua, lowerGua, xiantianGua,
   ///        xiantianUpperGuaNumber, xiantianLowerGuaNumber)
-  (String, String, String, String, int, int) _generateXiantianGua(
+  (YinYang, Enum8Gua, Enum8Gua, Gua64Enum, int, int) _generateXiantianGua(
     LiuYaoGanZhiHeStrategyParams params,
-    String tianGua,
-    String diGua,
+    Enum8Gua tianGua,
+    Enum8Gua diGua,
   ) {
-    final yearYinYang = params.eightChars.year.gan.isYang ? "阳" : "阴";
-    String upperGua;
-    String lowerGua;
+    final yearYinYang = params.eightChars.year.gan.yinYang;
+    Enum8Gua upperGua;
+    Enum8Gua lowerGua;
 
     // 根据年份阴阳和性别决定上下卦位置
-    if (yearYinYang == "阳") {
-      if (params.gender == "男") {
+    if (yearYinYang.isYang) {
+      if (params.gender == Gender.male) {
         upperGua = tianGua;
         lowerGua = diGua;
       } else {
@@ -561,7 +544,7 @@ class LiuYaoGanZhiHeStrategy
         lowerGua = tianGua;
       }
     } else {
-      if (params.gender == "女") {
+      if (params.gender == Gender.female) {
         upperGua = tianGua;
         lowerGua = diGua;
       } else {
@@ -570,11 +553,11 @@ class LiuYaoGanZhiHeStrategy
       }
     }
 
-    final xiantianGua = upperGua + lowerGua;
+    final xiantianGua = Gua64Enum.getBy8Gua(upperGua, lowerGua);
 
     // 查询后天数
-    final xiantianUpperGuaNumber = constants.houTianGuaNumberMapper[upperGua]!;
-    final xiantianLowerGuaNumber = constants.houTianGuaNumberMapper[lowerGua]!;
+    final xiantianUpperGuaNumber = constants.houGuaNumberMapper[upperGua]!;
+    final xiantianLowerGuaNumber = constants.houGuaNumberMapper[lowerGua]!;
 
     return (
       yearYinYang,
@@ -592,12 +575,12 @@ class LiuYaoGanZhiHeStrategy
   /// 目前简化处理：后天卦与先天卦相同
   ///
   /// 返回: (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber)
-  (String, int, int) _generateHoutianGuaPlaceholder(String xiantianGua) {
-    final upperGua = xiantianGua[0];
-    final lowerGua = xiantianGua[1];
+  (Gua64Enum, int, int) _generateHoutianGuaPlaceholder(Gua64Enum xiantianGua) {
+    final upperGua = xiantianGua.top;
+    final lowerGua = xiantianGua.bottom;
 
-    final houtianUpperGuaNumber = constants.houTianGuaNumberMapper[upperGua]!;
-    final houtianLowerGuaNumber = constants.houTianGuaNumberMapper[lowerGua]!;
+    final houtianUpperGuaNumber = constants.houGuaNumberMapper[upperGua]!;
+    final houtianLowerGuaNumber = constants.houGuaNumberMapper[lowerGua]!;
 
     // 简化处理：后天卦与先天卦相同
     return (xiantianGua, houtianUpperGuaNumber, houtianLowerGuaNumber);

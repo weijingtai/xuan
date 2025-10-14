@@ -205,7 +205,10 @@ class _YuanTangLiuyunSectionState extends State<YuanTangLiuyunSection> {
           // 按大运期展示流年卦
           ...dayunList.map((dayun) {
             final dayunLiunianList = liunianList
-                .where((liunian) => liunian.dayunPeriod.yaoPosition == dayun.yaoPosition)
+                .where(
+                  (liunian) =>
+                      liunian.dayunPeriod.yaoPosition == dayun.yaoPosition,
+                )
                 .toList();
 
             if (dayunLiunianList.isEmpty) return const SizedBox.shrink();
@@ -218,7 +221,8 @@ class _YuanTangLiuyunSectionState extends State<YuanTangLiuyunSection> {
                   guaSource: guaSource,
                   accentColor: accentColor,
                   showDayunTitle: true,
-                  onLiunianTap: (age) => _onLiunianTap(age, yuantangYaoIndex, accentColor),
+                  onLiunianTap: (age) =>
+                      _onLiunianTap(age, yuantangYaoIndex, accentColor),
                 ),
 
                 // 显示流月详情（如果已展开）
@@ -434,10 +438,7 @@ class YuanTangLiuyunCompactSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 4.0),
-          Text(
-            '共${liunianList.length}个流年卦',
-            style: theme.textTheme.bodySmall,
-          ),
+          Text('共${liunianList.length}个流年卦', style: theme.textTheme.bodySmall),
         ],
       ),
     );

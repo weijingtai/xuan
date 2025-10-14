@@ -4,8 +4,8 @@
 /// 这是Strategy计算的直接输出，不包含条文列表等后续计算结果
 library;
 
-import 'base_number_model.dart';
 import '../../service/strategy/base_calculation_strategy.dart';
+import 'base_number_model.dart';
 
 /// 基础数模型结果
 ///

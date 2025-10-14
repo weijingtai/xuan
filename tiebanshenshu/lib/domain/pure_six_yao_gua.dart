@@ -94,7 +94,7 @@ enum Gua64Enum {
   @JsonValue("节")
   shui_ze_jie("水泽节", "节", Enum8Gua.Kan, Enum8Gua.Dui),
   @JsonValue("屯")
-  shui_lei_chun("水雷屯", "屯", Enum8Gua.Kan, Enum8Gua.Zhen),
+  shui_lei_tun("水雷屯", "屯", Enum8Gua.Kan, Enum8Gua.Zhen),
   @JsonValue("既济")
   shui_huo_ji_ji("水火既济", "既济", Enum8Gua.Kan, Enum8Gua.Li),
   @JsonValue("革")

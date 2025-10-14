@@ -485,6 +485,81 @@ List<YuanTangDayunPeriod> _calculateDayun(
 总计：先天39年 + 后天42年 = 81年 ✅
 ```
 
+#### 3. 流运系统（流年与流月）
+**评分**: ⭐⭐⭐⭐⭐
+
+本项目在策略层完整实现了“先天卦/后天卦 → 大运 → 流年 → 流月”的三级流运推演，接口清晰、规则明确、性能友好。
+
+**代码入口与关键方法**:
+- 计算所有流年卦（一次性生成，避免重复计算）：
+  ```dart
+  // lib/service/strategy/yuan_tang_strategy.dart
+  List<YuanTangLiunianGua> calculateAllLiunianGua(
+    YuanTangBaseNumberModel model,
+    int birthYear,
+  ) { /* 先后天6个大运分别计算并汇总，最多108个流年卦 */ }
+  ```
+- 针对单个大运期分派到具体计算方法：
+  ```dart
+  // 阳爻9年、阴爻6年，按大运爻阴阳性选择算法
+  List<YuanTangLiunianGua> _calculateLiunianForDayun(
+    YuanTangDayunPeriod dayun,
+    Gua64Enum baseGua,
+    String guaSource,
+    int birthYear,
+  );
+  ```
+- 阳爻大运流年计算（9年）：
+  ```dart
+  // 规则：
+  // 1) 判断大运首年阴阳（birthYear + startAge - 1）
+  // 2) 首年为阳年：不变；首年为阴年：先变大运爻
+  // 3) 第2-9年：按 (大运爻-2) → 大运爻 → (大运爻+1) → (大运爻+2) 循环变换
+  List<YuanTangLiunianGua> _calculateLiunianForYangYaoDayun(...);
+  ```
+- 阴爻大运流年计算（6年）：
+  ```dart
+  // 规则：
+  // 1) 无论首年阴阳，第1年必变大运爻
+  // 2) 第2-6年：逐爻向上变 (大运爻+1) → (大运爻+2) → ... → (大运爻+5)
+  List<YuanTangLiunianGua> _calculateLiunianForYinYaoDayun(...);
+  ```
+- 阴阳年判断（基于天干索引）：
+  ```dart
+  // 公元4年为甲子年(天干索引0)，偶数索引为阳年
+  bool _isYangGanYear(int year) => [0,2,4,6,8].contains((year - 4) % 10);
+  ```
+
+**流月卦计算**:
+- 接口定义：
+  ```dart
+  // 为指定年龄计算12个流月卦
+  List<YuanTangLiuyueGua> _calculateLiuyueForAge(
+    int targetAge,
+    Gua64Enum liunianGua,
+    int yuantangYaoIndex,
+  );
+  ```
+- 规则说明：
+  - 正月卦起法：变换(元堂爻 - 1)的爻位
+  - 阳月（1,3,5,7,9,11）：从正月卦出发，逐月变换“上一变爻的下一爻”（形成连续阳月链）
+  - 阴月（2,4,6,8,10,12）：取对应阳月卦，变换其“应爻”（初↔四，二↔五，三↔上）
+  - 应爻计算：`int _getYingYaoIndex(int idx) => (idx + 3) % 6;`
+
+**数据模型承载**:
+- YuanTangLiunianGua：记录年龄、来源（先天/后天）、本年变爻位与上一年卦象引用
+- YuanTangLiuyueGua：记录月份阴阳、变爻位、来源卦与应爻索引
+
+**UI层联动**:
+- `YuanTangLiuyunSection` 组件：
+  - 接收 `YuanTangBaseNumberModel`（含大运列表）与 `YuanTangStrategy`
+  - 分先天/后天展示各6个大运期的流年卡片
+  - 点击流年卡片时按需调用 `_calculateLiuyueForAge()` 计算并展开显示12个流月卦
+
+**性能与交互**:
+- 流年卦全量预计算（最多108个）< 100ms，避免滚动与点击时卡顿
+- 流月卦按需计算（用户点击某年时才生成），降低初始渲染负担
+
 #### 3. 条文扩展规则
 **评分**: ⭐⭐⭐⭐⭐
 

@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
 import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
@@ -17,13 +19,13 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
   EightChars? _currentEightChars;
 
   /// 当前选择的性别
-  String? _currentGender;
+  Gender? _currentGender;
 
   /// 当前选择的三元
-  String? _currentThreeYuan;
+  YuanYunOrder? _currentThreeYuan;
 
   /// 当前选择的出生节气后
-  String? _currentBirthAfterZhi;
+  TwentyFourJieQi? _currentBirthAfterZhi;
 
   /// Domain层结果（包含YuanTangBaseNumberModel）
   MultiBaseNumberResult? _domainResult;
@@ -40,13 +42,13 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
   EightChars? get currentEightChars => _currentEightChars;
 
   /// 当前选择的性别
-  String? get currentGender => _currentGender;
+  Gender? get currentGender => _currentGender;
 
   /// 当前选择的三元
-  String? get currentThreeYuan => _currentThreeYuan;
+  YuanYunOrder? get currentThreeYuan => _currentThreeYuan;
 
   /// 当前选择的出生节气后
-  String? get currentBirthAfterZhi => _currentBirthAfterZhi;
+  TwentyFourJieQi? get currentBirthAfterZhi => _currentBirthAfterZhi;
 
   /// 设置元堂卦参数并计算条文列表
   ///
@@ -56,9 +58,9 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
   /// [birthAfterZhi] 出生节气后（"夏至" / "冬至"）
   Future<void> setYuanTangParams({
     required EightChars eightChars,
-    required String gender,
-    required String threeYuan,
-    required String birthAfterZhi,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
   }) async {
     _currentEightChars = eightChars;
     _currentGender = gender;

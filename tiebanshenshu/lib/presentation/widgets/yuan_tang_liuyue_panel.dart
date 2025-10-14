@@ -49,7 +49,10 @@ class YuanTangLiuyuePanel extends StatelessWidget {
         // 标题
         if (showTitle && title != null) ...[
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12.0,
+              vertical: 8.0,
+            ),
             decoration: BoxDecoration(
               color: accentColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8.0),
@@ -57,11 +60,7 @@ class YuanTangLiuyuePanel extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.calendar_month,
-                  size: 18.0,
-                  color: accentColor,
-                ),
+                Icon(Icons.calendar_month, size: 18.0, color: accentColor),
                 const SizedBox(width: 8.0),
                 Text(
                   title!,
@@ -145,10 +144,7 @@ class YuanTangLiuyuePanel extends StatelessWidget {
       elevation: 2.0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8.0),
-        side: BorderSide(
-          color: monthColor.withOpacity(0.3),
-          width: 1.0,
-        ),
+        side: BorderSide(color: monthColor.withOpacity(0.3), width: 1.0),
       ),
       child: Padding(
         padding: EdgeInsets.all(isCompact ? 6.0 : 8.0),
@@ -162,13 +158,14 @@ class YuanTangLiuyuePanel extends StatelessWidget {
               children: [
                 Text(
                   '${liuyueGua.month}月',
-                  style: (isCompact
-                          ? theme.textTheme.labelMedium
-                          : theme.textTheme.titleSmall)
-                      ?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: monthColor,
-                  ),
+                  style:
+                      (isCompact
+                              ? theme.textTheme.labelMedium
+                              : theme.textTheme.titleSmall)
+                          ?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: monthColor,
+                          ),
                 ),
                 const SizedBox(width: 4.0),
                 Container(
@@ -182,13 +179,14 @@ class YuanTangLiuyuePanel extends StatelessWidget {
                   ),
                   child: Text(
                     liuyueGua.monthTypeLabel,
-                    style: (isCompact
-                            ? theme.textTheme.labelSmall
-                            : theme.textTheme.labelSmall)
-                        ?.copyWith(
-                      color: monthColor,
-                      fontSize: isCompact ? 9.0 : 10.0,
-                    ),
+                    style:
+                        (isCompact
+                                ? theme.textTheme.labelSmall
+                                : theme.textTheme.labelSmall)
+                            ?.copyWith(
+                              color: monthColor,
+                              fontSize: isCompact ? 9.0 : 10.0,
+                            ),
                   ),
                 ),
               ],
@@ -202,7 +200,7 @@ class YuanTangLiuyuePanel extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: GuaChangeVisualization(
-                    gua: liuyueGua.gua,
+                    gua: liuyueGua.gua.name,
                     changedYaoIndex: liuyueGua.changedYaoIndex,
                     showGuaName: true,
                     sourceLabel: null,
@@ -225,14 +223,15 @@ class YuanTangLiuyuePanel extends StatelessWidget {
               ),
               child: Text(
                 '变${liuyueGua.yaoLabel}爻',
-                style: (isCompact
-                        ? theme.textTheme.labelSmall
-                        : theme.textTheme.labelSmall)
-                    ?.copyWith(
-                  color: accentColor,
-                  fontWeight: FontWeight.bold,
-                  fontSize: isCompact ? 9.0 : 10.0,
-                ),
+                style:
+                    (isCompact
+                            ? theme.textTheme.labelSmall
+                            : theme.textTheme.labelSmall)
+                        ?.copyWith(
+                          color: accentColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isCompact ? 9.0 : 10.0,
+                        ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -244,15 +243,10 @@ class YuanTangLiuyuePanel extends StatelessWidget {
   }
 
   /// 构建紧凑型卦象显示（仅显示卦名）
-  Widget _buildCompactGuaDisplay(
-    YuanTangLiuyueGua liuyueGua,
-    ThemeData theme,
-  ) {
+  Widget _buildCompactGuaDisplay(YuanTangLiuyueGua liuyueGua, ThemeData theme) {
     return Text(
-      liuyueGua.gua,
-      style: theme.textTheme.bodyMedium?.copyWith(
-        fontWeight: FontWeight.bold,
-      ),
+      liuyueGua.gua.fullname,
+      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold),
     );
   }
 }
@@ -347,22 +341,16 @@ class YuanTangLiuyueListWidget extends StatelessWidget {
         ),
       ),
       title: Text(
-        liuyueGua.gua,
+        liuyueGua.gua.fullname,
         style: theme.textTheme.bodyMedium?.copyWith(
           fontWeight: FontWeight.bold,
         ),
       ),
       subtitle: Text(
         '变${liuyueGua.yaoLabel}爻',
-        style: theme.textTheme.labelSmall?.copyWith(
-          color: accentColor,
-        ),
+        style: theme.textTheme.labelSmall?.copyWith(color: accentColor),
       ),
-      trailing: Icon(
-        Icons.change_circle,
-        size: 16.0,
-        color: accentColor,
-      ),
+      trailing: Icon(Icons.change_circle, size: 16.0, color: accentColor),
     );
   }
 }

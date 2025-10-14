@@ -12,10 +12,10 @@ import 'tiao_wen_list_calculation.dart';
 abstract class TiaoWenCalculationConfig {
   /// 配置名称
   String get name;
-
+  
   /// 配置描述
   String get description;
-
+  
   /// 计算条文列表
   /// [baseNumber] 基础数字
   /// [context] 计算上下文（可能包含四柱信息等）
@@ -34,8 +34,7 @@ class GenericTiaoWenCalculationConfig implements TiaoWenCalculationConfig {
     required String description,
     required this.calculationList,
     this.withSub = false,
-  }) : _name = name,
-       _description = description;
+  }) : _name = name, _description = description;
 
   @override
   String get name => _name;
@@ -152,7 +151,7 @@ class HuangJiTiaoWenCalculationConfig implements TiaoWenCalculationConfig {
     if (eightChars == null) {
       throw ArgumentError('皇极取数法需要四柱信息(eightChars)');
     }
-
+    
     // 这里应该调用皇极取数法的具体计算逻辑
     // 为了示例，这里返回一个简化的实现
     return _calculateHuangJiFinalNumbers(baseNumber, eightChars);
@@ -162,8 +161,8 @@ class HuangJiTiaoWenCalculationConfig implements TiaoWenCalculationConfig {
     // 这里应该是皇极取数法的12种计算规则的实现
     // 暂时返回一个示例
     return [
-      baseNumber + 100, // 示例：基础数 + 月干(百位数)
-      baseNumber + 200, // 示例：基础数 + 月支(百位数)
+      baseNumber + 100,  // 示例：基础数 + 月干(百位数)
+      baseNumber + 200,  // 示例：基础数 + 月支(百位数)
       // ... 其他10种规则
     ];
   }
@@ -215,11 +214,7 @@ abstract class BaseCalculationStrategy<P, R> {
   /// [params] 原始计算参数
   /// 返回条文数字列表
   List<int> calculateTiaoWenList(int baseNumber, P params) {
-    return calculateTiaoWenListWithConfig(
-      baseNumber,
-      params,
-      defaultTiaoWenCalculationConfig,
-    );
+    return calculateTiaoWenListWithConfig(baseNumber, params, defaultTiaoWenCalculationConfig);
   }
 
   /// 计算条文列表（使用指定配置）
@@ -229,8 +224,8 @@ abstract class BaseCalculationStrategy<P, R> {
   /// [config] 条文计算配置（可以是默认配置或用户自定义配置）
   /// 返回条文数字列表
   List<int> calculateTiaoWenListWithConfig(
-    int baseNumber,
-    P params,
+    int baseNumber, 
+    P params, 
     TiaoWenCalculationConfig config,
   );
 

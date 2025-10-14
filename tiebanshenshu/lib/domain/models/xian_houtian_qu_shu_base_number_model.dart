@@ -11,8 +11,10 @@
 /// - 步骤7：条文扩展（±48×倍数）
 library;
 
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
+import '../pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 先后天卦取数基础数模型
@@ -27,13 +29,13 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
   final EightChars eightChars;
 
   /// 性别："男" / "女"
-  final String gender;
+  final Gender gender;
 
   /// 三元："上" / "中" / "下"
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后："夏至" / "冬至"
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   // ========== 步骤1: 天地卦生成 (9个字段) ==========
 
@@ -63,11 +65,11 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
 
   /// 天卦名称
   /// 由天数配卦得到
-  final String tianGua;
+  final Enum8Gua tianGua;
 
   /// 地卦名称
   /// 由地数配卦得到
-  final String diGua;
+  final Enum8Gua diGua;
 
   /// 是否使用了三元五宫映射
   /// 当天数或地数为5时，需要查询三元五宫映射表
@@ -77,22 +79,22 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
 
   /// 年份阴阳："阳" / "阴"
   /// 根据年干判断
-  final String yearYinYang;
+  final YinYang yearYinYang;
 
   /// 上卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String upperGua;
+  final Enum8Gua upperGua;
 
   /// 下卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String lowerGua;
+  final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final String xiantianGua;
+  final Gua64Enum xiantianGua;
 
   /// 后天卦名称（双经卦，如"坎震"）
   /// 在本算法中，后天卦与先天卦可能相同或不同，取决于算法实现
-  final String houtianGua;
+  final Gua64Enum houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -208,23 +210,23 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
     required String description,
     required BaseNumberSource source,
     required EightChars eightChars,
-    required String gender,
-    required String threeYuan,
-    required String birthAfterZhi,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
     required List<int> ganNumList,
     required List<List<int>> zhiNumList,
     required int oddNumTotal,
     required int evenNumTotal,
     required int tianGuaNum,
     required int diGuaNum,
-    required String tianGua,
-    required String diGua,
+    required Enum8Gua tianGua,
+    required Enum8Gua diGua,
     required bool usedThreeYuanWuGong,
-    required String yearYinYang,
-    required String upperGua,
-    required String lowerGua,
-    required String xiantianGua,
-    required String houtianGua,
+    required YinYang yearYinYang,
+    required Enum8Gua upperGua,
+    required Enum8Gua lowerGua,
+    required Gua64Enum xiantianGua,
+    required Gua64Enum houtianGua,
     required int xiantianUpperGuaNumber,
     required int xiantianLowerGuaNumber,
     required int houtianUpperGuaNumber,
@@ -354,23 +356,23 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
     String? description,
     BaseNumberSource? source,
     EightChars? eightChars,
-    String? gender,
-    String? threeYuan,
-    String? birthAfterZhi,
+    Gender? gender,
+    YuanYunOrder? threeYuan,
+    TwentyFourJieQi? birthAfterZhi,
     List<int>? ganNumList,
     List<List<int>>? zhiNumList,
     int? oddNumTotal,
     int? evenNumTotal,
     int? tianGuaNum,
     int? diGuaNum,
-    String? tianGua,
-    String? diGua,
+    Enum8Gua? tianGua,
+    Enum8Gua? diGua,
     bool? usedThreeYuanWuGong,
-    String? yearYinYang,
-    String? upperGua,
-    String? lowerGua,
-    String? xiantianGua,
-    String? houtianGua,
+    YinYang? yearYinYang,
+    Enum8Gua? upperGua,
+    Enum8Gua? lowerGua,
+    Gua64Enum? xiantianGua,
+    Gua64Enum? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,

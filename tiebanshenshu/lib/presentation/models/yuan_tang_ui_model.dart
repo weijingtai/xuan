@@ -3,8 +3,11 @@
 /// 用于UI层展示元堂卦计算结果的数据结构
 library;
 
+import 'package:common/enums.dart';
+
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
+import '../../domain/pure_six_yao_gua.dart';
 import '../../repository/datamodels/tiao_wen_datamodel.dart';
 
 /// 元堂卦UI模型
@@ -13,20 +16,20 @@ import '../../repository/datamodels/tiao_wen_datamodel.dart';
 class YuanTangUIModel {
   // ========== 输入参数 ==========
   /// 性别："男" / "女"
-  final String gender;
+  final Gender gender;
 
   /// 三元："上" / "中" / "下"
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后："夏至" / "冬至"
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   // ========== 步骤1：天地卦 ==========
   /// 天卦名称
-  final String tianGua;
+  final Enum8Gua tianGua;
 
   /// 地卦名称
-  final String diGua;
+  final Enum8Gua diGua;
 
   /// 天地卦生成公式
   final String tianDiGuaFormula;
@@ -36,7 +39,7 @@ class YuanTangUIModel {
 
   // ========== 步骤2：上下卦（先天卦） ==========
   /// 先天卦名称（上卦+下卦）
-  final String xiantianGua;
+  final Gua64Enum xiantianGua;
 
   /// 上卦显示文本，如"乾(6)"
   final String upperGuaDisplay;
@@ -45,7 +48,7 @@ class YuanTangUIModel {
   final String lowerGuaDisplay;
 
   /// 年份阴阳
-  final String yearYinYang;
+  final YinYang yearYinYang;
 
   // ========== 步骤3：元堂装卦 ==========
   /// 元堂爻标签："初" / "二" / "三" / "四" / "五" / "上"
@@ -62,7 +65,7 @@ class YuanTangUIModel {
 
   // ========== 步骤4：后天卦 ==========
   /// 后天卦名称（元堂爻爻变后，上下卦互换）
-  final String houtianGua;
+  final Gua64Enum houtianGua;
 
   /// 后天卦上卦显示文本
   final String houtianUpperGuaDisplay;
@@ -82,10 +85,10 @@ class YuanTangUIModel {
 
   // ========== 步骤5：互卦 ==========
   /// 先天卦互卦
-  final String xiantianGuaHu;
+  final Gua64Enum xiantianGuaHu;
 
   /// 后天卦互卦
-  final String houtianGuaHu;
+  final Gua64Enum houtianGuaHu;
 
   // ========== 步骤6：大运计算 ==========
   /// 先天卦大运列表
@@ -156,61 +159,61 @@ class YuanTangUIModel {
   ///
   /// 注意：由于BaseNumberTiaoWenListModel不包含完整的YuanTangBaseNumberModel信息，
   /// 此工厂方法只能提取有限的信息。建议使用fromYuanTangModel()直接创建。
-  factory YuanTangUIModel.fromDomain(
-    BaseNumberTiaoWenListModel baseNumberModel,
-  ) {
-    // 从description中提取信息
-    // 格式示例："元堂卦取数法计算（性别:男，三元:上，节气:夏至）"
-    final description = baseNumberModel.description;
+  // factory YuanTangUIModel.fromDomain(
+  //   BaseNumberTiaoWenListModel baseNumberModel,
+  // ) {
+  //   // 从description中提取信息
+  //   // 格式示例："元堂卦取数法计算（性别:男，三元:上，节气:夏至）"
+  //   final description = baseNumberModel.description;
 
-    // 提取性别
-    final genderMatch = RegExp(r'性别:(\S+)').firstMatch(description);
-    final gender = genderMatch?.group(1) ?? '未知';
+  //   // 提取性别
+  //   final genderMatch = RegExp(r'性别:(\S+)').firstMatch(description);
+  //   final gender = genderMatch?.group(1) ?? '未知';
 
-    // 提取三元
-    final threeYuanMatch = RegExp(r'三元:(\S+)').firstMatch(description);
-    final threeYuan = threeYuanMatch?.group(1) ?? '未知';
+  //   // 提取三元
+  //   final threeYuanMatch = RegExp(r'三元:(\S+)').firstMatch(description);
+  //   final threeYuan = threeYuanMatch?.group(1) ?? '未知';
 
-    // 提取节气
-    final birthAfterZhiMatch = RegExp(r'节气:(\S+)').firstMatch(description);
-    final birthAfterZhi = birthAfterZhiMatch?.group(1) ?? '未知';
+  //   // 提取节气
+  //   final birthAfterZhiMatch = RegExp(r'节气:(\S+)').firstMatch(description);
+  //   final birthAfterZhi = birthAfterZhiMatch?.group(1) ?? '未知';
 
-    // 由于没有完整的中间结果，这里提供占位符
-    return YuanTangUIModel(
-      gender: gender,
-      threeYuan: threeYuan,
-      birthAfterZhi: birthAfterZhi,
-      tianGua: '未知',
-      diGua: '未知',
-      tianDiGuaFormula: '无法从BaseNumberTiaoWenListModel提取',
-      usedThreeYuanWuGong: false,
-      xiantianGua: '未知',
-      upperGuaDisplay: '未知',
-      lowerGuaDisplay: '未知',
-      yearYinYang: '未知',
-      yuantangYaoLabel: '未知',
-      yuantangYaoIndex: -1,
-      timeYinYang: '未知',
-      yaoList: [],
-      houtianGua: '未知',
-      houtianUpperGuaDisplay: '未知',
-      houtianLowerGuaDisplay: '未知',
-      houtianYuantangYaoLabel: '未知',
-      houtianYuantangYaoIndex: -1,
-      houtianYaoList: [],
-      xiantianGuaHu: '未知',
-      houtianGuaHu: '未知',
-      xiantianDayunList: [],
-      houtianDayunList: [],
-      xiantianTiaoWenNumbers: [],
-      houtianTiaoWenNumbers: [],
-      xiantianCalculationFormula: '未知',
-      houtianCalculationFormula: '未知',
-      tiaoWenByMethod: {},
-      allTiaoWenNumbers: baseNumberModel.tiaoWenNumbers,
-      tiaoWenDataList: baseNumberModel.tiaoWenDataList,
-    );
-  }
+  //   // 由于没有完整的中间结果，这里提供占位符
+  //   return YuanTangUIModel(
+  //     gender: gender,
+  //     threeYuan: threeYuan,
+  //     birthAfterZhi: birthAfterZhi,
+  //     tianGua: '未知',
+  //     diGua: '未知',
+  //     tianDiGuaFormula: '无法从BaseNumberTiaoWenListModel提取',
+  //     usedThreeYuanWuGong: false,
+  //     xiantianGua: '未知',
+  //     upperGuaDisplay: '未知',
+  //     lowerGuaDisplay: '未知',
+  //     yearYinYang: '未知',
+  //     yuantangYaoLabel: '未知',
+  //     yuantangYaoIndex: -1,
+  //     timeYinYang: '未知',
+  //     yaoList: [],
+  //     houtianGua: '未知',
+  //     houtianUpperGuaDisplay: '未知',
+  //     houtianLowerGuaDisplay: '未知',
+  //     houtianYuantangYaoLabel: '未知',
+  //     houtianYuantangYaoIndex: -1,
+  //     houtianYaoList: [],
+  //     xiantianGuaHu: '未知',
+  //     houtianGuaHu: '未知',
+  //     xiantianDayunList: [],
+  //     houtianDayunList: [],
+  //     xiantianTiaoWenNumbers: [],
+  //     houtianTiaoWenNumbers: [],
+  //     xiantianCalculationFormula: '未知',
+  //     houtianCalculationFormula: '未知',
+  //     tiaoWenByMethod: {},
+  //     allTiaoWenNumbers: baseNumberModel.tiaoWenNumbers,
+  //     tiaoWenDataList: baseNumberModel.tiaoWenDataList,
+  //   );
+  // }
 
   /// 从YuanTangBaseNumberModel直接创建UI模型（包含完整计算过程）
   ///
@@ -226,17 +229,20 @@ class YuanTangUIModel {
   }) {
     // 转换先天卦六爻详情
     final yaoList = baseNumberModel.yaoDetails
-        .map((yaoDetail) => YuanTangYaoUIModel(
-              position: yaoDetail.position,
-              positionLabel: yaoDetail.positionLabel,
-              yinYang: yaoDetail.yinYang,
-              diZhiList: yaoDetail.diZhiList,
-              isYuanTangYao: yaoDetail.isYuanTangYao,
-            ))
+        .map(
+          (yaoDetail) => YuanTangYaoUIModel(
+            position: yaoDetail.position,
+            positionLabel: yaoDetail.positionLabel,
+            yinYang: yaoDetail.yinYang,
+            diZhiList: yaoDetail.diZhiList,
+            isYuanTangYao: yaoDetail.isYuanTangYao,
+          ),
+        )
         .toList();
 
     // 转换后天卦六爻详情
     final houtianYaoList = <YuanTangYaoUIModel>[];
+
     final houtianBinaryList = _guaToBinaryList(baseNumberModel.houtianGua);
     for (int i = 0; i < 6; i++) {
       final positionLabel = _getYaoPositionLabel(i);
@@ -244,13 +250,15 @@ class YuanTangUIModel {
       final diZhiList = baseNumberModel.houtianZhiList[i];
       final isYuanTangYao = (i == baseNumberModel.houtianYuantangYaoIndex);
 
-      houtianYaoList.add(YuanTangYaoUIModel(
-        position: i,
-        positionLabel: positionLabel,
-        yinYang: yinYang,
-        diZhiList: diZhiList,
-        isYuanTangYao: isYuanTangYao,
-      ));
+      houtianYaoList.add(
+        YuanTangYaoUIModel(
+          position: i,
+          positionLabel: positionLabel,
+          yinYang: yinYang,
+          diZhiList: diZhiList,
+          isYuanTangYao: isYuanTangYao,
+        ),
+      );
     }
 
     // 转换先天卦大运列表
@@ -288,10 +296,11 @@ class YuanTangUIModel {
     ].toSet().toList();
 
     // 如果没有提供条文编号列表，使用基础数构建默认列表
-    final finalXiantianTiaoWenNumbers = xiantianTiaoWenNumbers ??
+    final finalXiantianTiaoWenNumbers =
+        xiantianTiaoWenNumbers ??
         [baseNumberModel.tiaowenNumberJiazeXiantiangua];
-    final finalHoutianTiaoWenNumbers = houtianTiaoWenNumbers ??
-        [baseNumberModel.tiaowenNumberJiazeHoutiangua];
+    final finalHoutianTiaoWenNumbers =
+        houtianTiaoWenNumbers ?? [baseNumberModel.tiaowenNumberJiazeHoutiangua];
 
     // 构建计算公式
     final xiantianBaseNumber = baseNumberModel.tiaowenNumberJiazeXiantiangua;
@@ -338,17 +347,21 @@ class YuanTangUIModel {
   }
 
   /// 将卦名转换为二进制列表（辅助方法）
-  static List<int> _guaToBinaryList(String gua) {
-    if (gua.length != 2) return [0, 0, 0, 0, 0, 0];
-
+  static List<int> _guaToBinaryList(Gua64Enum gua) {
     // 这里需要从constants获取，简化实现
     final guaBinaryMapper = {
-      '乾': [1, 1, 1], '兑': [0, 1, 1], '离': [1, 0, 1], '震': [0, 0, 1],
-      '巽': [1, 1, 0], '坎': [0, 1, 0], '艮': [1, 0, 0], '坤': [0, 0, 0],
+      '乾': [1, 1, 1],
+      '兑': [0, 1, 1],
+      '离': [1, 0, 1],
+      '震': [0, 0, 1],
+      '巽': [1, 1, 0],
+      '坎': [0, 1, 0],
+      '艮': [1, 0, 0],
+      '坤': [0, 0, 0],
     };
 
-    final upper = gua[0];
-    final lower = gua[1];
+    final upper = gua.top;
+    final lower = gua.bottom;
 
     final upperBinary = guaBinaryMapper[upper] ?? [0, 0, 0];
     final lowerBinary = guaBinaryMapper[lower] ?? [0, 0, 0];
@@ -386,11 +399,11 @@ class YuanTangUIModel {
   int get uniqueTiaoWenCount => allTiaoWenNumbers.length;
 
   /// 获取完整描述
-  String get fullDescription =>
-      '性别:$gender, 三元:$threeYuan, 节气:$birthAfterZhi';
+  String get fullDescription => '性别:$gender, 三元:$threeYuan, 节气:$birthAfterZhi';
 
   /// 获取先天卦显示文本
-  String get xiantianGuaDisplayText => '$xiantianGua ($upperGuaDisplay / $lowerGuaDisplay)';
+  String get xiantianGuaDisplayText =>
+      '$xiantianGua ($upperGuaDisplay / $lowerGuaDisplay)';
 
   /// 获取后天卦显示文本
   String get houtianGuaDisplayText =>
@@ -489,8 +502,7 @@ class YuanTangYaoUIModel {
   });
 
   /// 地支显示文本
-  String get diZhiDisplayText =>
-      diZhiList.isEmpty ? '未配' : diZhiList.join('、');
+  String get diZhiDisplayText => diZhiList.isEmpty ? '未配' : diZhiList.join('、');
 
   /// 获取完整显示文本
   String get displayText {
@@ -561,11 +573,11 @@ class YuanTangDayunPeriodUI {
   }
 
   /// 地支显示文本
-  String get diZhiDisplayText =>
-      diZhiList.isEmpty ? '未配' : diZhiList.join('、');
+  String get diZhiDisplayText => diZhiList.isEmpty ? '未配' : diZhiList.join('、');
 
   /// 获取完整显示文本
-  String get displayText => '$yaoLabel爻($yinYang-${years}年): $ageRange岁 [$diZhiDisplayText]';
+  String get displayText =>
+      '$yaoLabel爻($yinYang-${years}年): $ageRange岁 [$diZhiDisplayText]';
 
   @override
   String toString() => displayText;

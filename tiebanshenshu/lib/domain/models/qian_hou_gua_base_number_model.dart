@@ -11,7 +11,10 @@
 /// - 步骤6：条文扩展
 library;
 
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 前后卦取数法基础数模型
@@ -32,16 +35,16 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
   // ========== 输入参数 (4个字段) ==========
 
   /// 四柱信息
-  final FourZhu fourZhu;
+  final EightChars eightChars;
 
   /// 性别："男" / "女"
-  final String gender;
+  final Gender gender;
 
   /// 三元："上" / "中" / "下"
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后："夏至" / "冬至"
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   // ========== 步骤1: 天地卦生成 (9个字段) ==========
 
@@ -85,22 +88,22 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
 
   /// 年份阴阳："阳" / "阴"
   /// 根据年干判断
-  final String yearYinYang;
+  final YinYang yearYinYang;
 
   /// 上卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String upperGua;
+  final Enum8Gua upperGua;
 
   /// 下卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String lowerGua;
+  final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final String xiantianGua;
+  final Gua64Enum xiantianGua;
 
   /// 后天卦名称（双经卦，如"震坤"）
   /// 注意：在前后卦取数法中，后天卦与先天卦相同（不涉及爻变）
-  final String houtianGua;
+  final Gua64Enum houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -118,16 +121,16 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
 
   /// 先天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final String xiantianGuaHu;
+  final Gua64Enum? xiantianGuaHu;
 
   /// 后天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final String houtianGuaHu;
+  final Gua64Enum? houtianGuaHu;
 
   // ========== 步骤4: 前卦取数 (4个字段) ==========
 
   /// 前卦名称（等于先天卦）
-  final String qianGuaName;
+  final Gua64Enum qianGuaName;
 
   /// 前卦上卦后天数（用作千位）
   final int qianGuaUpperNumber;
@@ -143,7 +146,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
   // ========== 步骤5: 后卦取数 (4个字段) ==========
 
   /// 后卦名称（等于先天卦，不涉及爻变）
-  final String houGuaName;
+  final Gua64Enum houGuaName;
 
   /// 后卦上卦后天数（用作十位）
   final int houGuaUpperNumber;
@@ -181,7 +184,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
     required super.description,
     required super.source,
     // 输入参数
-    required this.fourZhu,
+    required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
@@ -228,19 +231,19 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
   // ========== 便捷getter方法 ==========
 
   /// 获取四柱显示文本
-  String get fourZhuDisplayText => fourZhu.toString();
+  String get eightCharsDisplayText => eightChars.toString();
 
   /// 获取年柱显示文本
-  String get yearZhuDisplayText => fourZhu.yearGanzhi;
+  String get yearZhuDisplayText => eightChars.year.ganZhiStr;
 
   /// 获取月柱显示文本
-  String get monthZhuDisplayText => fourZhu.monthGanzhi;
+  String get monthZhuDisplayText => eightChars.month.ganZhiStr;
 
   /// 获取日柱显示文本
-  String get dayZhuDisplayText => fourZhu.dayGanzhi;
+  String get dayZhuDisplayText => eightChars.day.ganZhiStr;
 
   /// 获取时柱显示文本
-  String get timeZhuDisplayText => fourZhu.timeGanzhi;
+  String get timeZhuDisplayText => eightChars.time.ganZhiStr;
 
   /// 获取上卦显示文本（带后天数）
   String get upperGuaDisplayText => '$upperGua($xiantianUpperGuaNumber)';
@@ -275,7 +278,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
 
   /// 获取参数摘要
   String get paramsSummary =>
-      '$fourZhuDisplayText, $gender, $threeYuanDisplayText, $birthAfterZhi';
+      '$eightCharsDisplayText, $gender, $threeYuanDisplayText, $birthAfterZhi';
 
   /// 获取前卦取数说明
   String get qianGuaDescription =>
@@ -297,10 +300,10 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
     String? name,
     String? description,
     BaseNumberSource? source,
-    FourZhu? fourZhu,
-    String? gender,
-    String? threeYuan,
-    String? birthAfterZhi,
+    EightChars? eightChars,
+    Gender? gender,
+    YuanYunOrder? threeYuan,
+    TwentyFourJieQi? birthAfterZhi,
     List<int>? ganNumList,
     List<List<int>>? zhiNumList,
     int? oddNumTotal,
@@ -310,22 +313,22 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
     String? tianGua,
     String? diGua,
     bool? usedThreeYuanWuGong,
-    String? yearYinYang,
-    String? upperGua,
-    String? lowerGua,
-    String? xiantianGua,
-    String? houtianGua,
+    YinYang? yearYinYang,
+    Enum8Gua? upperGua,
+    Enum8Gua? lowerGua,
+    Gua64Enum? xiantianGua,
+    Gua64Enum? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
-    String? xiantianGuaHu,
-    String? houtianGuaHu,
-    String? qianGuaName,
+    Gua64Enum? xiantianGuaHu,
+    Gua64Enum? houtianGuaHu,
+    Gua64Enum? qianGuaName,
     int? qianGuaUpperNumber,
     int? qianGuaLowerNumber,
     int? qianGuaBaseNumber,
-    String? houGuaName,
+    Gua64Enum? houGuaName,
     int? houGuaUpperNumber,
     int? houGuaLowerNumber,
     int? houGuaBaseNumber,
@@ -339,7 +342,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
       name: name ?? this.name,
       description: description ?? this.description,
       source: source ?? this.source,
-      fourZhu: fourZhu ?? this.fourZhu,
+      eightChars: eightChars ?? this.eightChars,
       gender: gender ?? this.gender,
       threeYuan: threeYuan ?? this.threeYuan,
       birthAfterZhi: birthAfterZhi ?? this.birthAfterZhi,
@@ -393,7 +396,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
     return {
       ...super.toMap(),
       // 输入参数
-      'fourZhu': fourZhu.toString(),
+      'eightChars': eightChars.toString(),
       'gender': gender,
       'threeYuan': threeYuan,
       'birthAfterZhi': birthAfterZhi,

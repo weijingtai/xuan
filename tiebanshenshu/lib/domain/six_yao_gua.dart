@@ -1,6 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:common/shared/enums/enum_di_zhi.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
 
 import '../constant/constants.dart' as Constants;
 import '../utils/tiao_wen_calculator.dart';
@@ -148,8 +149,8 @@ class SixYaoGua {
   int getTiaowenNumberByJiaze() {
     // 4. 计算条文
     final int tiaowenBaseNumber = TiaowenCalculator.calculateTiaowen(
-      guaName[0],
-      guaName[guaName.length - 1],
+      Enum8Gua.fromValue(guaName[0]),
+      Enum8Gua.fromValue(guaName[1]),
       allZhiSum,
     );
     return tiaowenBaseNumber;
@@ -190,11 +191,15 @@ class SixYaoGua {
     );
 
     // 2. 拆分成二进制表示（从上而下，阳爻为1，阴爻为0）
-    final List<int> binaryGua = Utils.guaToBinaryList(guaName);
+    final Gua64Enum gua = Gua64Enum.getBy8Gua(
+      Enum8Gua.fromValue(guaName[0]),
+      Enum8Gua.fromValue(guaName[1]),
+    );
+    final List<int> binaryGua = Utils.guaToBinaryList(gua);
 
     // 3. 纳甲装卦 - 获取天干和地支
-    final List<String> ganTop2BottomList = Utils.najiaGanZhuangGua(guaName);
-    final List<String> zhiTop2BottomList = Utils.najiaZhuangGua(guaName);
+    final List<String> ganTop2BottomList = Utils.najiaGanZhuangGua(gua);
+    final List<String> zhiTop2BottomList = Utils.najiaZhuangGua(gua);
 
     // 4. 构建每一爻的干支组合
     final List<String> yaoGanzhiList = [];
@@ -274,7 +279,11 @@ class SixYaoGua {
     );
 
     // 2. 拆分成二进制表示（从上而下，阳爻为1，阴爻为0）
-    final List<int> binaryGua = Utils.guaToBinaryList(guaName);
+    Gua64Enum gua = Gua64Enum.getBy8Gua(
+      Enum8Gua.fromValue(guaName[0]),
+      Enum8Gua.fromValue(guaName[1]),
+    );
+    final List<int> binaryGua = Utils.guaToBinaryList(gua);
 
     // 3. 纳甲装卦 - 获取天干和地支
     final List<TianGan> ganTop2BottomList = specialGanFunc(

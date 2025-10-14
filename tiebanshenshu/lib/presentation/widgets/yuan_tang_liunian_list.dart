@@ -82,19 +82,12 @@ class YuanTangLiunianList extends StatelessWidget {
       decoration: BoxDecoration(
         color: accentColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(8.0),
-        border: Border.all(
-          color: accentColor.withOpacity(0.3),
-          width: 1.5,
-        ),
+        border: Border.all(color: accentColor.withOpacity(0.3), width: 1.5),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.timeline,
-            size: 20.0,
-            color: accentColor,
-          ),
+          Icon(Icons.timeline, size: 20.0, color: accentColor),
           const SizedBox(width: 8.0),
           Text(
             '${dayunPeriod.yaoLabel}爻大运',
@@ -178,11 +171,7 @@ class YuanTangLiunianList extends StatelessWidget {
                   ),
                   if (isFirstYear) ...[
                     const SizedBox(width: 4.0),
-                    Icon(
-                      Icons.star,
-                      size: 16.0,
-                      color: accentColor,
-                    ),
+                    Icon(Icons.star, size: 16.0, color: accentColor),
                   ],
                 ],
               ),
@@ -192,8 +181,10 @@ class YuanTangLiunianList extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: GuaChangeVisualization(
-                    gua: liunianGua.gua,
-                    changedYaoIndex: hasChange ? liunianGua.changedYaoIndex : null,
+                    gua: liunianGua.gua.name,
+                    changedYaoIndex: hasChange
+                        ? liunianGua.changedYaoIndex
+                        : null,
                     showGuaName: true,
                     sourceLabel: null, // 不显示来源标签（已在大运标题显示）
                     accentColor: accentColor,
@@ -299,7 +290,7 @@ class YuanTangLiunianCompactCard extends StatelessWidget {
               ),
               const SizedBox(height: 4.0),
               Text(
-                liunianGua.gua,
+                liunianGua.gua.fullname,
                 style: theme.textTheme.bodyMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),

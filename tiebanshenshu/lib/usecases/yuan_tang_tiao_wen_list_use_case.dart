@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
 import '../domain/four_zhu.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
@@ -163,7 +165,7 @@ class YuanTangTiaoWenListUseCase
   @override
   void validateParams(YuanTangUseCaseParams params) {
     // 验证性别
-    if (params.gender != "男" && params.gender != "女") {
+    if (params.gender != Gender.male && params.gender != Gender.female) {
       throw InputValidationException(
         '性别验证',
         parameterName: 'gender',
@@ -173,9 +175,9 @@ class YuanTangTiaoWenListUseCase
     }
 
     // 验证三元
-    if (params.threeYuan != "上" &&
-        params.threeYuan != "中" &&
-        params.threeYuan != "下") {
+    if (params.threeYuan != YuanYunOrder.upper &&
+        params.threeYuan != YuanYunOrder.middle &&
+        params.threeYuan != YuanYunOrder.lower) {
       throw InputValidationException(
         '三元验证',
         parameterName: 'threeYuan',
@@ -185,7 +187,8 @@ class YuanTangTiaoWenListUseCase
     }
 
     // 验证节气
-    if (params.birthAfterZhi != "夏至" && params.birthAfterZhi != "冬至") {
+    if (params.birthAfterZhi != TwentyFourJieQi.XIA_ZHI &&
+        params.birthAfterZhi != TwentyFourJieQi.DONG_ZHI) {
       throw InputValidationException(
         '节气验证',
         parameterName: 'birthAfterZhi',
@@ -204,13 +207,13 @@ class YuanTangUseCaseParams {
   final EightChars eightChars;
 
   /// 性别（"男" / "女"）
-  final String gender;
+  final Gender gender;
 
   /// 三元（"上" / "中" / "下"）
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后（"夏至" / "冬至"）
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   const YuanTangUseCaseParams({
     required this.eightChars,

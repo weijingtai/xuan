@@ -9,8 +9,11 @@
 /// - 步骤5：条文扩展
 library;
 
+import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 先后天八卦基础数模型
@@ -28,13 +31,13 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
   final EightChars eightChars;
 
   /// 性别："男" / "女"
-  final String gender;
+  final Gender gender;
 
   /// 三元："上" / "中" / "下"
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气后："夏至" / "冬至"
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   // ========== 步骤1: 天地卦生成 (9个字段) ==========
 
@@ -64,11 +67,11 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
 
   /// 天卦名称
   /// 由天数配卦得到
-  final String tianGua;
+  final Enum8Gua tianGua;
 
   /// 地卦名称
   /// 由地数配卦得到
-  final String diGua;
+  final Enum8Gua diGua;
 
   /// 是否使用了三元五宫映射
   /// 当天数或地数为5时，需要查询三元五宫映射表
@@ -78,25 +81,25 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
 
   /// 年份阴阳："阳" / "阴"
   /// 根据年干判断
-  final String yearYinYang;
+  final YinYang yearYinYang;
 
   /// 上卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String upperGua;
+  final Enum8Gua upperGua;
 
   /// 下卦名称
   /// 根据年份阴阳和性别决定是天卦还是地卦
-  final String lowerGua;
+  final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final String xiantianGua;
+  final Gua64Enum xiantianGua;
 
   /// 后天卦名称（双经卦，如"坎震"）
   /// 注意：不同算法对"后天卦"的定义不同
   /// - 在先后天八卦加则法中，后天卦通常指先天卦本身（不涉及爻变）
   /// - 在元堂卦算法中，后天卦指元堂爻爻变后上下卦互换的结果
   /// 此处的houtianGua字段留给具体算法自行定义和使用
-  final String houtianGua;
+  final Gua64Enum houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -114,11 +117,11 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
 
   /// 先天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final String xiantianGuaHu;
+  final Gua64Enum xiantianGuaHu;
 
   /// 后天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final String houtianGuaHu;
+  final Gua64Enum houtianGuaHu;
 
   // ========== 步骤4: 基础数 (2个字段) ==========
 
@@ -256,29 +259,29 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
     String? description,
     BaseNumberSource? source,
     EightChars? eightChars,
-    String? gender,
-    String? threeYuan,
-    String? birthAfterZhi,
+    Gender? gender,
+    YuanYunOrder? threeYuan,
+    TwentyFourJieQi? birthAfterZhi,
     List<int>? ganNumList,
     List<List<int>>? zhiNumList,
     int? oddNumTotal,
     int? evenNumTotal,
     int? tianGuaNum,
     int? diGuaNum,
-    String? tianGua,
-    String? diGua,
+    Enum8Gua? tianGua,
+    Enum8Gua? diGua,
     bool? usedThreeYuanWuGong,
-    String? yearYinYang,
-    String? upperGua,
-    String? lowerGua,
-    String? xiantianGua,
-    String? houtianGua,
+    YinYang? yearYinYang,
+    Enum8Gua? upperGua,
+    Enum8Gua? lowerGua,
+    Gua64Enum? xiantianGua,
+    Gua64Enum? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
-    String? xiantianGuaHu,
-    String? houtianGuaHu,
+    Gua64Enum? xiantianGuaHu,
+    Gua64Enum? houtianGuaHu,
     int? xiantianBaseNumber,
     int? houtianBaseNumber,
     List<int>? xiantianTiaoWenNumbers,

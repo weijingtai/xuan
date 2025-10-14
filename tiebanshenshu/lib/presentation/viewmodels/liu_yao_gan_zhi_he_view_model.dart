@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
@@ -16,13 +17,13 @@ class LiuYaoGanZhiHeViewModel extends BaseTiaoWenListViewModel {
   EightChars? _currentEightChars;
 
   /// 当前选择的性别
-  String? _currentGender;
+  Gender? _currentGender;
 
   /// 当前选择的三元
-  String? _currentThreeYuan;
+  YuanYunOrder? _currentThreeYuan;
 
   /// 当前选择的出生节气后
-  String? _currentBirthAfterZhi;
+  TwentyFourJieQi? _currentBirthAfterZhi;
 
   /// Domain层结果（包含LiuYaoGanZhiHeBaseNumberModel）
   MultiBaseNumberResult? _domainResult;
@@ -39,13 +40,13 @@ class LiuYaoGanZhiHeViewModel extends BaseTiaoWenListViewModel {
   EightChars? get currentFourZhu => _currentEightChars;
 
   /// 当前选择的性别
-  String? get currentGender => _currentGender;
+  Gender? get currentGender => _currentGender;
 
   /// 当前选择的三元
-  String? get currentThreeYuan => _currentThreeYuan;
+  YuanYunOrder? get currentThreeYuan => _currentThreeYuan;
 
   /// 当前选择的出生节气后
-  String? get currentBirthAfterZhi => _currentBirthAfterZhi;
+  TwentyFourJieQi? get currentBirthAfterZhi => _currentBirthAfterZhi;
 
   /// 设置先后天卦六爻干支和数法参数并计算条文列表
   ///
@@ -55,9 +56,9 @@ class LiuYaoGanZhiHeViewModel extends BaseTiaoWenListViewModel {
   /// [birthAfterZhi] 出生节气后（"夏至" / "冬至"）
   Future<void> setParams({
     required EightChars eightChars,
-    required String gender,
-    required String threeYuan,
-    required String birthAfterZhi,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
   }) async {
     _currentEightChars = eightChars;
     _currentGender = gender;
@@ -165,10 +166,7 @@ class LiuYaoGanZhiHeViewModel extends BaseTiaoWenListViewModel {
   /// 获取所有条文编号（先天卦 + 后天卦，去重）
   List<int> get allTiaoWenNumbers {
     if (!hasResult || _domainResult == null) return [];
-    return {
-      ...xiantianTiaoWenNumbers,
-      ...houtianTiaoWenNumbers,
-    }.toList();
+    return {...xiantianTiaoWenNumbers, ...houtianTiaoWenNumbers}.toList();
   }
 
   /// 获取参数显示文本
@@ -194,7 +192,7 @@ class LiuYaoGanZhiHeViewModel extends BaseTiaoWenListViewModel {
   String get houtianGuaDisplayText {
     final model = liuYaoGanZhiHeModel;
     if (model == null) return '未计算';
-    return model.houtianGua;
+    return model.houtianGua.fullname;
   }
 
   /// 获取天地卦显示文本

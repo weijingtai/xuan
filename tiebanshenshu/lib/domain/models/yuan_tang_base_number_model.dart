@@ -3,10 +3,13 @@
 /// 保存元堂卦取数法的完整计算过程和中间结果
 library;
 
+import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
 
 import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
+import '../pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 元堂爻详情模型
@@ -224,7 +227,7 @@ class YuanTangLiunianGua {
   final int yearIndex;
 
   /// 流年卦象(如"震坤")
-  final String gua;
+  final Gua64Enum gua;
 
   /// 卦象来源("先天卦"/"后天卦")
   final String guaSource;
@@ -236,7 +239,7 @@ class YuanTangLiunianGua {
   final int changedYaoIndex;
 
   /// 上一年的卦象(第1年为null)
-  final String? previousGua;
+  final Gua64Enum? previousGua;
 
   const YuanTangLiunianGua({
     required this.age,
@@ -281,11 +284,11 @@ class YuanTangLiunianGua {
   YuanTangLiunianGua copyWith({
     int? age,
     int? yearIndex,
-    String? gua,
+    Gua64Enum? gua,
     String? guaSource,
     YuanTangDayunPeriod? dayunPeriod,
     int? changedYaoIndex,
-    String? previousGua,
+    Gua64Enum? previousGua,
   }) {
     return YuanTangLiunianGua(
       age: age ?? this.age,
@@ -354,7 +357,7 @@ class YuanTangLiuyueGua {
   final bool isYangMonth;
 
   /// 流月卦象
-  final String gua;
+  final Gua64Enum gua;
 
   /// 所属年龄
   final int age;
@@ -363,7 +366,7 @@ class YuanTangLiuyueGua {
   final int changedYaoIndex;
 
   /// 源卦(阴月取自对应阳月卦, 阳月取自上一个阳月卦或流年卦)
-  final String? sourceGua;
+  final Gua64Enum? sourceGua;
 
   /// 应爻位置(仅阴月有效)
   final int? yingYaoIndex;
@@ -418,10 +421,10 @@ class YuanTangLiuyueGua {
   YuanTangLiuyueGua copyWith({
     int? month,
     bool? isYangMonth,
-    String? gua,
+    Gua64Enum? gua,
     int? age,
     int? changedYaoIndex,
-    String? sourceGua,
+    Gua64Enum? sourceGua,
     int? yingYaoIndex,
   }) {
     return YuanTangLiuyueGua(
@@ -488,13 +491,13 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
   final EightChars eightChars;
 
   /// 性别（"男" / "女"）
-  final String gender;
+  final Gender gender;
 
   /// 三元（"上" / "中" / "下"）
-  final String threeYuan;
+  final YuanYunOrder threeYuan;
 
   /// 出生节气（"夏至" / "冬至"）
-  final String birthAfterZhi;
+  final TwentyFourJieQi birthAfterZhi;
 
   /// 出生月份(1-12,从monthZhi提取)
   final int birthMonth;
@@ -519,26 +522,26 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
   final int diGuaNum;
 
   /// 天卦名称
-  final String tianGua;
+  final Enum8Gua tianGua;
 
   /// 地卦名称
-  final String diGua;
+  final Enum8Gua diGua;
 
   /// 是否使用三元五宫（天数或地数为5时）
   final bool usedThreeYuanWuGong;
 
   // ========== 步骤2：生成上下卦（先天卦） ==========
   /// 年份阴阳（"阳" / "阴"）
-  final String yearYinYang;
+  final YinYang yearYinYang;
 
   /// 上卦（先天卦上部）
-  final String upperGua;
+  final Enum8Gua upperGua;
 
   /// 下卦（先天卦下部）
-  final String lowerGua;
+  final Enum8Gua lowerGua;
 
   /// 先天卦（上卦+下卦）
-  final String xiantianGua;
+  final Gua64Enum xiantianGua;
 
   /// 先天卦后天数（上卦后天数）
   final int xiantianUpperGuaNumber;
@@ -570,7 +573,7 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
 
   // ========== 步骤4：生成后天卦 ==========
   /// 后天卦（元堂爻爻变后，上下卦互换）
-  final String houtianGua;
+  final Gua64Enum houtianGua;
 
   /// 后天卦后天数（上卦后天数）
   final int houtianUpperGuaNumber;
@@ -590,10 +593,10 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
 
   // ========== 步骤5：互卦 ==========
   /// 先天卦互卦
-  final String xiantianGuaHu;
+  final Gua64Enum xiantianGuaHu;
 
   /// 后天卦互卦
-  final String houtianGuaHu;
+  final Gua64Enum houtianGuaHu;
 
   // ========== 步骤6：大运计算 ==========
   /// 先天卦大运起始年龄
@@ -704,9 +707,9 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required String description,
     required BaseNumberSource source,
     required EightChars eightChars,
-    required String gender,
-    required String threeYuan,
-    required String birthAfterZhi,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
     required int birthMonth,
     required List<int> ganNumList,
     required List<List<int>> zhiNumList,
@@ -714,13 +717,13 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required int evenNumTotal,
     required int tianGuaNum,
     required int diGuaNum,
-    required String tianGua,
-    required String diGua,
+    required Enum8Gua tianGua,
+    required Enum8Gua diGua,
     required bool usedThreeYuanWuGong,
-    required String yearYinYang,
-    required String upperGua,
-    required String lowerGua,
-    required String xiantianGua,
+    required YinYang yearYinYang,
+    required Enum8Gua upperGua,
+    required Enum8Gua lowerGua,
+    required Gua64Enum xiantianGua,
     required int xiantianUpperGuaNumber,
     required int xiantianLowerGuaNumber,
     required String timeGanzhi,
@@ -730,14 +733,14 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     required List<List<String>> zhiList,
     required int yuantangYaoIndex,
     required String yuantangYaoLabel,
-    required String houtianGua,
+    required Gua64Enum houtianGua,
     required int houtianUpperGuaNumber,
     required int houtianLowerGuaNumber,
     required List<List<String>> houtianZhiList,
     required int houtianYuantangYaoIndex,
     required String houtianYuantangYaoLabel,
-    required String xiantianGuaHu,
-    required String houtianGuaHu,
+    required Gua64Enum xiantianGuaHu,
+    required Gua64Enum houtianGuaHu,
     required int xiantianDayunStartAge,
     required List<YuanTangDayunPeriod> xiantianDayunList,
     required int houtianDayunStartAge,
@@ -853,14 +856,12 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
   }
 
   /// 将卦名转换为二进制列表
-  List<int> _guaToBinaryList(String gua) {
-    if (gua.length != 2) return [0, 0, 0, 0, 0, 0];
+  List<int> _guaToBinaryList(Gua64Enum gua) {
+    final upper = gua.top;
+    final lower = gua.bottom;
 
-    final upper = gua[0];
-    final lower = gua[1];
-
-    final upperBinary = constants.guaBinaryMapper[upper] ?? [0, 0, 0];
-    final lowerBinary = constants.guaBinaryMapper[lower] ?? [0, 0, 0];
+    final upperBinary = constants.guaBinaryMapper[upper.name] ?? [0, 0, 0];
+    final lowerBinary = constants.guaBinaryMapper[lower.name] ?? [0, 0, 0];
 
     return [...upperBinary, ...lowerBinary];
   }
@@ -873,13 +874,13 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
 
   /// 后天卦上卦显示文本
   String get houtianUpperGuaDisplayText {
-    final houtianUpperGua = houtianGua.isNotEmpty ? houtianGua[0] : '';
+    final houtianUpperGua = houtianGua.top.name;
     return '$houtianUpperGua($houtianUpperGuaNumber)';
   }
 
   /// 后天卦下卦显示文本
   String get houtianLowerGuaDisplayText {
-    final houtianLowerGua = houtianGua.length > 1 ? houtianGua[1] : '';
+    final houtianLowerGua = houtianGua.bottom.name;
     return '$houtianLowerGua($houtianLowerGuaNumber)';
   }
 
@@ -897,9 +898,9 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     String? description,
     BaseNumberSource? source,
     EightChars? eightChars,
-    String? gender,
-    String? threeYuan,
-    String? birthAfterZhi,
+    Gender? gender,
+    YuanYunOrder? threeYuan,
+    TwentyFourJieQi? birthAfterZhi,
     int? birthMonth,
     List<int>? ganNumList,
     List<List<int>>? zhiNumList,
@@ -907,13 +908,13 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     int? evenNumTotal,
     int? tianGuaNum,
     int? diGuaNum,
-    String? tianGua,
-    String? diGua,
+    Enum8Gua? tianGua,
+    Enum8Gua? diGua,
     bool? usedThreeYuanWuGong,
-    String? yearYinYang,
-    String? upperGua,
-    String? lowerGua,
-    String? xiantianGua,
+    YinYang? yearYinYang,
+    Enum8Gua? upperGua,
+    Enum8Gua? lowerGua,
+    Gua64Enum? xiantianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     String? timeGanzhi,
@@ -923,14 +924,14 @@ class YuanTangBaseNumberModel extends BaseNumberModel {
     List<List<String>>? zhiList,
     int? yuantangYaoIndex,
     String? yuantangYaoLabel,
-    String? houtianGua,
+    Gua64Enum? houtianGua,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
     List<List<String>>? houtianZhiList,
     int? houtianYuantangYaoIndex,
     String? houtianYuantangYaoLabel,
-    String? xiantianGuaHu,
-    String? houtianGuaHu,
+    Gua64Enum? xiantianGuaHu,
+    Gua64Enum? houtianGuaHu,
     int? xiantianDayunStartAge,
     List<YuanTangDayunPeriod>? xiantianDayunList,
     int? houtianDayunStartAge,

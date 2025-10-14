@@ -1,3 +1,6 @@
+import 'package:common/shared/shared.dart';
+
+import '../domain/pure_six_yao_gua.dart';
 import 'utils.dart' as GuaUtils;
 
 import '../constant/constants.dart' as NumberMaps;
@@ -12,7 +15,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByJiaZe(String guaName) {
+  static int getTiaowenNumberByJiaZe(Gua64Enum guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
@@ -27,8 +30,8 @@ class TiaowenCalculator {
 
     // 计算条文
     int tiaowenBaseNumber = calculateTiaowen(
-      guaName[0],
-      guaName[1],
+      guaName.top,
+      guaName.bottom,
       guaTotalNumber,
     );
 
@@ -42,7 +45,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaoWenNumberByNaJia(String guaName) {
+  static int getTiaoWenNumberByNaJia(Gua64Enum guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
@@ -57,8 +60,8 @@ class TiaowenCalculator {
 
     // 计算条文
     int tiaowenBaseNumber = calculateTiaowen(
-      guaName[0],
-      guaName[1],
+      guaName.top,
+      guaName.bottom,
       guaTotalNumber,
     );
 
@@ -72,7 +75,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByTaixuan(String guaName) {
+  static int getTiaowenNumberByTaixuan(Gua64Enum guaName) {
     // 将地支装到卦上（纳甲方式）
     List<String> zhiTopToBottom = GuaUtils.najiaZhuangGua(guaName);
     List<String> ganTopToBottom = GuaUtils.najiaGanZhuangGua(guaName);
@@ -110,13 +113,13 @@ class TiaowenCalculator {
   /// [totalNumber] 总数
   /// 返回条文基础数字
   static int calculateTiaowen(
-    String upperGua,
-    String lowerGua,
+    Enum8Gua upperGua,
+    Enum8Gua lowerGua,
     int totalNumber,
   ) {
     // 获取上卦和下卦的后天数
-    int upperHoutianNumber = NumberMaps.houTianGuaNumberMapper[upperGua]!;
-    int lowerHoutianNumber = NumberMaps.houTianGuaNumberMapper[lowerGua]!;
+    int upperHoutianNumber = NumberMaps.houGuaNumberMapper[upperGua]!;
+    int lowerHoutianNumber = NumberMaps.houGuaNumberMapper[lowerGua]!;
 
     // 计算：上卦后天数*1000 + 累加基数 - 下卦后天数
     return upperHoutianNumber * 1000 + totalNumber - lowerHoutianNumber;

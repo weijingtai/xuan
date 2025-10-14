@@ -214,6 +214,16 @@ Map<DiZhi, int> yaoDiZhiNumberMapper = {
   DiZhi.getFromValue("亥")!: 180,
 };
 
+Map<int, Enum8Gua> yuanTangHuaTianNumberGuaMapper = {
+  1: Enum8Gua.fromValue("坎")!,
+  2: Enum8Gua.fromValue("坤")!,
+  3: Enum8Gua.fromValue("震")!,
+  4: Enum8Gua.fromValue("巽")!,
+  6: Enum8Gua.fromValue("乾")!,
+  7: Enum8Gua.fromValue("兑")!,
+  8: Enum8Gua.fromValue("艮")!,
+  9: Enum8Gua.fromValue("离")!,
+};
 const Map<int, String> yuantangHuaTianNumberGuaMapper = {
   1: "坎",
   2: "坤",
@@ -224,7 +234,6 @@ const Map<int, String> yuantangHuaTianNumberGuaMapper = {
   8: "艮",
   9: "离",
 };
-
 const Map<int, String> houTianNumberGuaMapper = {
   0: "坤",
   1: "坎",
@@ -316,6 +325,7 @@ const Map<String, int> houTianGuaNumberMapper = {
   "艮": 8,
   "离": 9,
 };
+
 Map<Enum8Gua, int> xianGuaNumberMapper = {
   Enum8Gua.Qian: 1,
   Enum8Gua.Dui: 2,
@@ -504,6 +514,32 @@ const Map<String, int> kunGongJiaLiuDuMapper = {
   "戌": 10105,
   "巳": 9855,
   "亥": 10155,
+};
+const Map<TianGan, int> ganNumberMapper = {
+  TianGan.JIA: 6,
+  TianGan.YI: 2,
+  TianGan.BING: 8,
+  TianGan.DING: 7,
+  TianGan.WU: 1,
+  TianGan.JI: 9,
+  TianGan.GENG: 3,
+  TianGan.XIN: 4,
+  TianGan.REN: 6,
+  TianGan.GUI: 2,
+};
+const Map<DiZhi, List<int>> zhiNumberMapper = {
+  DiZhi.ZI: [1, 6],
+  DiZhi.CHOU: [5, 10],
+  DiZhi.YIN: [3, 8],
+  DiZhi.MAO: [3, 8],
+  DiZhi.CHEN: [5, 10],
+  DiZhi.SI: [7, 2],
+  DiZhi.WU: [7, 2],
+  DiZhi.WEI: [5, 10],
+  DiZhi.SHEN: [9, 4],
+  DiZhi.YOU: [9, 4],
+  DiZhi.XU: [5, 10],
+  DiZhi.HAI: [1, 6],
 };
 
 const Map<String, int> tianGanNumberMapper = {
