@@ -241,7 +241,7 @@ class EightCharsCardViewBuilder {
       padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
       width: 60, // Fixed width for a column
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // Header
           Text(pillarKey,

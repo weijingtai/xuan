@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_di_zhi.dart';
 import '../enums/enum_jia_zi.dart';
+import '../enums/enum_ten_gods.dart';
 import '../enums/enum_tian_gan.dart';
 
 part 'eight_chars.g.dart';
@@ -65,4 +66,52 @@ class EightChars extends Equatable {
 
   @override
   List<Object?> get props => [year, month, day, time];
+
+  // --- Ten Gods Calculation ---
+
+  EnumTenGods getYearGanTenGods(TianGan dayMaster) {
+    return yearTianGan.getTenGods(dayMaster);
+  }
+
+  List<EnumTenGods> getYearZhiTenGods(TianGan dayMaster) {
+    return yearDiZhi.getTenGods(dayMaster);
+  }
+
+  EnumTenGods getMonthGanTenGods(TianGan dayMaster) {
+    return monthTianGan.getTenGods(dayMaster);
+  }
+
+  List<EnumTenGods> getMonthZhiTenGods(TianGan dayMaster) {
+    return monthDiZhi.getTenGods(dayMaster);
+  }
+
+  EnumTenGods getDayGanTenGods(TianGan dayMaster) {
+    return dayTianGan.getTenGods(dayMaster);
+  }
+
+  List<EnumTenGods> getDayZhiTenGods(TianGan dayMaster) {
+    return dayDiZhi.getTenGods(dayMaster);
+  }
+
+  EnumTenGods getTimeGanTenGods(TianGan dayMaster) {
+    return hourTianGan.getTenGods(dayMaster);
+  }
+
+  List<EnumTenGods> getTimeZhiTenGods(TianGan dayMaster) {
+    return hourDiZhi.getTenGods(dayMaster);
+  }
+
+  // --- Ten Gods Getters ---
+
+  EnumTenGods get yearGanTenGods => getYearGanTenGods(dayTianGan);
+  List<EnumTenGods> get yearZhiTenGods => getYearZhiTenGods(dayTianGan);
+
+  EnumTenGods get monthGanTenGods => getMonthGanTenGods(dayTianGan);
+  List<EnumTenGods> get monthZhiTenGods => getMonthZhiTenGods(dayTianGan);
+
+  EnumTenGods get dayGanTenGods => getDayGanTenGods(dayTianGan);
+  List<EnumTenGods> get dayZhiTenGods => getDayZhiTenGods(dayTianGan);
+
+  EnumTenGods get timeGanTenGods => getTimeGanTenGods(dayTianGan);
+  List<EnumTenGods> get timeZhiTenGods => getTimeZhiTenGods(dayTianGan);
 }
