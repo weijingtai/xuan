@@ -114,8 +114,8 @@ class SixQinCorrectKeStrategy
       final xianTianBaseGuaName = _calculateXianTianBaseGua(fourZhu, gender);
       final houTianBaseGuaName = _calculateHouTianBaseGua(fourZhu);
 
-      final xianTianBaseGua = Gua64Enum.fromFullName(xianTianBaseGuaName);
-      final houTianBaseGua = Gua64Enum.fromFullName(houTianBaseGuaName);
+      final xianTianBaseGua = Enum64Gua.fromFullName(xianTianBaseGuaName);
+      final houTianBaseGua = Enum64Gua.fromFullName(houTianBaseGuaName);
 
       // 计算先天基本数（第三爻变爻时为基准）
       final xianTianResult = _getBasenumberByYaobianlist(
@@ -215,10 +215,10 @@ class SixQinCorrectKeStrategy
 
   CorrectionSixQinKe _getBasenumberByYaobianlist(
     List<int> bianYaoIndexList,
-    Gua64Enum baseGua,
+    Enum64Gua baseGua,
     bool isXianTian,
   ) {
-    Gua64Enum bianGua;
+    Enum64Gua bianGua;
 
     if (bianYaoIndexList.isEmpty) {
       bianGua = baseGua;
@@ -235,7 +235,7 @@ class SixQinCorrectKeStrategy
       }
       guaBinList = guaBinList.reversed.toList();
       String bianGuaName = binaryListToGua(guaBinList);
-      bianGua = Gua64Enum.fromFullName(bianGuaName);
+      bianGua = Enum64Gua.fromFullName(bianGuaName);
     }
 
     final huGua = PureSixYaoGua.by8Gua(bianGua.top, bianGua.bottom).hu;

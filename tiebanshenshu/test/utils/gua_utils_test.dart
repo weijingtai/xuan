@@ -169,20 +169,20 @@ void main() {
       expect(xiantianGua, '坎离', reason: '先天卦应该是坎离');
     });
 
-    test('阴年女性 - 天地卦顺序', () {
+    test('阳年女性 - 天地卦顺序（更正）', () {
       final result = gua_utils.generateXiantianGua(
         tianGua: '艮',
         diGua: '兑',
-        yearYinYang: '阴',
+        yearYinYang: '阳',
         gender: '女',
       );
 
       final (xiantianGua, upperGua, lowerGua, _, _) = result;
 
-      // 阴年女性：天卦在上，地卦在下
-      expect(upperGua, '艮', reason: '阴年女性：上卦应该是天卦艮');
-      expect(lowerGua, '兑', reason: '阴年女性：下卦应该是地卦兑');
-      expect(xiantianGua, '艮兑', reason: '先天卦应该是艮兑');
+      // 阳年女性：地卦在上，天卦在下
+      expect(upperGua, '兑', reason: '阳年女性：上卦应该是地卦兑');
+      expect(lowerGua, '艮', reason: '阳年女性：下卦应该是天卦艮');
+      expect(xiantianGua, '兑艮', reason: '先天卦应该是兑艮');
     });
   });
 

@@ -99,11 +99,11 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
   final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final Gua64Enum xiantianGua;
+  final Enum64Gua xiantianGua;
 
   /// 后天卦名称（双经卦，如"震坤"）
   /// 注意：在前后卦取数法中，后天卦与先天卦相同（不涉及爻变）
-  final Gua64Enum houtianGua;
+  final Enum64Gua houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -121,16 +121,16 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
 
   /// 先天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final Gua64Enum? xiantianGuaHu;
+  final Enum64Gua? xiantianGuaHu;
 
   /// 后天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final Gua64Enum? houtianGuaHu;
+  final Enum64Gua? houtianGuaHu;
 
   // ========== 步骤4: 前卦取数 (4个字段) ==========
 
   /// 前卦名称（等于先天卦）
-  final Gua64Enum qianGuaName;
+  final Enum64Gua qianGuaName;
 
   /// 前卦上卦后天数（用作千位）
   final int qianGuaUpperNumber;
@@ -146,7 +146,7 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
   // ========== 步骤5: 后卦取数 (4个字段) ==========
 
   /// 后卦名称（等于先天卦，不涉及爻变）
-  final Gua64Enum houGuaName;
+  final Enum64Gua houGuaName;
 
   /// 后卦上卦后天数（用作十位）
   final int houGuaUpperNumber;
@@ -316,19 +316,19 @@ class QianHouGuaBaseNumberModel extends BaseNumberModel {
     YinYang? yearYinYang,
     Enum8Gua? upperGua,
     Enum8Gua? lowerGua,
-    Gua64Enum? xiantianGua,
-    Gua64Enum? houtianGua,
+    Enum64Gua? xiantianGua,
+    Enum64Gua? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
-    Gua64Enum? xiantianGuaHu,
-    Gua64Enum? houtianGuaHu,
-    Gua64Enum? qianGuaName,
+    Enum64Gua? xiantianGuaHu,
+    Enum64Gua? houtianGuaHu,
+    Enum64Gua? qianGuaName,
     int? qianGuaUpperNumber,
     int? qianGuaLowerNumber,
     int? qianGuaBaseNumber,
-    Gua64Enum? houGuaName,
+    Enum64Gua? houGuaName,
     int? houGuaUpperNumber,
     int? houGuaLowerNumber,
     int? houGuaBaseNumber,

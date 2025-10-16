@@ -24,13 +24,13 @@ class LiuQinKaoKeCandidate {
   final int changeLineIndex;
 
   /// 基本卦（由天干地支计算得出）
-  final Gua64Enum baseGua;
+  final Enum64Gua baseGua;
 
   /// 互卦（由基本卦衍生）
-  final Gua64Enum huGua;
+  final Enum64Gua huGua;
 
   /// 用于生成此候选的最终卦象（可能是基本卦自身或其变卦）
-  final Gua64Enum derivedGua;
+  final Enum64Gua derivedGua;
 
   LiuQinKaoKeCandidate({
     required this.rawNumber,

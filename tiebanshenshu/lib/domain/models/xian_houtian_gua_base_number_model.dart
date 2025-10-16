@@ -92,14 +92,14 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
   final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final Gua64Enum xiantianGua;
+  final Enum64Gua xiantianGua;
 
   /// 后天卦名称（双经卦，如"坎震"）
   /// 注意：不同算法对"后天卦"的定义不同
   /// - 在先后天八卦加则法中，后天卦通常指先天卦本身（不涉及爻变）
   /// - 在元堂卦算法中，后天卦指元堂爻爻变后上下卦互换的结果
   /// 此处的houtianGua字段留给具体算法自行定义和使用
-  final Gua64Enum houtianGua;
+  final Enum64Gua houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -117,11 +117,11 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
 
   /// 先天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final Gua64Enum xiantianGuaHu;
+  final Enum64Gua xiantianGuaHu;
 
   /// 后天卦的互卦
   /// 由2,3,4爻（上互）和3,4,5爻（下互）组成
-  final Gua64Enum houtianGuaHu;
+  final Enum64Gua houtianGuaHu;
 
   // ========== 步骤4: 基础数 (2个字段) ==========
 
@@ -274,14 +274,14 @@ class XianHoutianGuaBaseNumberModel extends BaseNumberModel {
     YinYang? yearYinYang,
     Enum8Gua? upperGua,
     Enum8Gua? lowerGua,
-    Gua64Enum? xiantianGua,
-    Gua64Enum? houtianGua,
+    Enum64Gua? xiantianGua,
+    Enum64Gua? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,
     int? houtianLowerGuaNumber,
-    Gua64Enum? xiantianGuaHu,
-    Gua64Enum? houtianGuaHu,
+    Enum64Gua? xiantianGuaHu,
+    Enum64Gua? houtianGuaHu,
     int? xiantianBaseNumber,
     int? houtianBaseNumber,
     List<int>? xiantianTiaoWenNumbers,

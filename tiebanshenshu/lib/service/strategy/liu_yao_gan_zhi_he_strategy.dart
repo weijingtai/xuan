@@ -228,7 +228,7 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个天干，从初爻到上爻)
-  List<String> _najiaTianGan(Gua64Enum guaName) {
+  List<String> _najiaTianGan(Enum64Gua guaName) {
     // 拆分成上下卦
     // 转换为Enum8Gua
     final Enum8Gua upperGua = guaName.top;
@@ -261,7 +261,7 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个地支，从初爻到上爻)
-  List<String> _najiaDiZhi(Gua64Enum guaName) {
+  List<String> _najiaDiZhi(Enum64Gua guaName) {
     // 拆分成上下卦
     // 转换为Enum8Gua
     final Enum8Gua upperGua = guaName.top;
@@ -337,7 +337,7 @@ class LiuYaoGanZhiHeStrategy
   /// [guaName] 卦名（如"震坤"）
   /// 返回: (baseNumber, tianGanList, diZhiList, yaoSumList, upperSum, lowerSum)
   (int, List<String>, List<String>, List<int>, int, int) _calculateLiuYaoSum(
-    Gua64Enum guaName,
+    Enum64Gua guaName,
   ) {
     // 步骤1-2：获取六爻纳甲配置
     final tianGanList = _najiaTianGan(guaName);
@@ -525,7 +525,7 @@ class LiuYaoGanZhiHeStrategy
   ///
   /// 返回: (yearYinYang, upperGua, lowerGua, xiantianGua,
   ///        xiantianUpperGuaNumber, xiantianLowerGuaNumber)
-  (YinYang, Enum8Gua, Enum8Gua, Gua64Enum, int, int) _generateXiantianGua(
+  (YinYang, Enum8Gua, Enum8Gua, Enum64Gua, int, int) _generateXiantianGua(
     LiuYaoGanZhiHeStrategyParams params,
     Enum8Gua tianGua,
     Enum8Gua diGua,
@@ -553,7 +553,7 @@ class LiuYaoGanZhiHeStrategy
       }
     }
 
-    final xiantianGua = Gua64Enum.getBy8Gua(upperGua, lowerGua);
+    final xiantianGua = Enum64Gua.getBy8Gua(upperGua, lowerGua);
 
     // 查询后天数
     final xiantianUpperGuaNumber = constants.houGuaNumberMapper[upperGua]!;
@@ -575,7 +575,7 @@ class LiuYaoGanZhiHeStrategy
   /// 目前简化处理：后天卦与先天卦相同
   ///
   /// 返回: (houtianGua, houtianUpperGuaNumber, houtianLowerGuaNumber)
-  (Gua64Enum, int, int) _generateHoutianGuaPlaceholder(Gua64Enum xiantianGua) {
+  (Enum64Gua, int, int) _generateHoutianGuaPlaceholder(Enum64Gua xiantianGua) {
     final upperGua = xiantianGua.top;
     final lowerGua = xiantianGua.bottom;
 

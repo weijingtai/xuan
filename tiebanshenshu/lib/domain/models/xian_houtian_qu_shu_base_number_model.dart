@@ -90,11 +90,11 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
   final Enum8Gua lowerGua;
 
   /// 先天卦名称（双经卦，如"震坤"）
-  final Gua64Enum xiantianGua;
+  final Enum64Gua xiantianGua;
 
   /// 后天卦名称（双经卦，如"坎震"）
   /// 在本算法中，后天卦与先天卦可能相同或不同，取决于算法实现
-  final Gua64Enum houtianGua;
+  final Enum64Gua houtianGua;
 
   /// 先天卦上卦后天数
   final int xiantianUpperGuaNumber;
@@ -225,8 +225,8 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
     required YinYang yearYinYang,
     required Enum8Gua upperGua,
     required Enum8Gua lowerGua,
-    required Gua64Enum xiantianGua,
-    required Gua64Enum houtianGua,
+    required Enum64Gua xiantianGua,
+    required Enum64Gua houtianGua,
     required int xiantianUpperGuaNumber,
     required int xiantianLowerGuaNumber,
     required int houtianUpperGuaNumber,
@@ -371,8 +371,8 @@ class XianHoutianQuShuBaseNumberModel extends BaseNumberModel {
     YinYang? yearYinYang,
     Enum8Gua? upperGua,
     Enum8Gua? lowerGua,
-    Gua64Enum? xiantianGua,
-    Gua64Enum? houtianGua,
+    Enum64Gua? xiantianGua,
+    Enum64Gua? houtianGua,
     int? xiantianUpperGuaNumber,
     int? xiantianLowerGuaNumber,
     int? houtianUpperGuaNumber,

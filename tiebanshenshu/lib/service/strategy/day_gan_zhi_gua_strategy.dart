@@ -165,7 +165,7 @@ class DayGanZhiGuaStrategy
 
       // 第二卦
       // 计算互卦：第一卦的互卦为第二卦
-      final Gua64Enum huGua = pure.hu;
+      final Enum64Gua huGua = pure.hu;
 
       // 计算基本数：组合四位数
       final baseNumber = _calculateBaseNumber(pure.gua, huGua);
@@ -215,11 +215,11 @@ class DayGanZhiGuaStrategy
   /// 计算基本卦
   ///
   /// 日支为上卦，日干为下卦
-  static Gua64Enum _calculateBaseGua(JiaZi dayGanzhi) {
+  static Enum64Gua _calculateBaseGua(JiaZi dayGanzhi) {
     UnimplementedError("未完成");
     final Enum8Gua dayDownGu = Constants.tianGanGuaMapper[dayGanzhi.gan]!;
     final Enum8Gua dayUpGu = Constants.diZhiGuaMapper[dayGanzhi.zhi]!;
-    final Gua64Enum baseGua = Gua64Enum.getBy8Gua(dayUpGu, dayDownGu);
+    final Enum64Gua baseGua = Enum64Gua.getBy8Gua(dayUpGu, dayDownGu);
 
     return baseGua;
   }
@@ -228,7 +228,7 @@ class DayGanZhiGuaStrategy
   ///
   /// 第一卦上卦【后天】数为千位，下卦【后天】数为百位；
   /// 第二卦上【先天】数为十位，下卦【先天】数为个位
-  static int _calculateBaseNumber(Gua64Enum baseGua, Gua64Enum huGua) {
+  static int _calculateBaseNumber(Enum64Gua baseGua, Enum64Gua huGua) {
     final int firstUp = Constants.houGuaNumberMapper[baseGua.top]!;
     final int firstDown = Constants.houGuaNumberMapper[baseGua.bottom]!;
 

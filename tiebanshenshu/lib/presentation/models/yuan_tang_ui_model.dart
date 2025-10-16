@@ -39,7 +39,7 @@ class YuanTangUIModel {
 
   // ========== 步骤2：上下卦（先天卦） ==========
   /// 先天卦名称（上卦+下卦）
-  final Gua64Enum xiantianGua;
+  final Enum64Gua xiantianGua;
 
   /// 上卦显示文本，如"乾(6)"
   final String upperGuaDisplay;
@@ -65,7 +65,7 @@ class YuanTangUIModel {
 
   // ========== 步骤4：后天卦 ==========
   /// 后天卦名称（元堂爻爻变后，上下卦互换）
-  final Gua64Enum houtianGua;
+  final Enum64Gua houtianGua;
 
   /// 后天卦上卦显示文本
   final String houtianUpperGuaDisplay;
@@ -85,10 +85,10 @@ class YuanTangUIModel {
 
   // ========== 步骤5：互卦 ==========
   /// 先天卦互卦
-  final Gua64Enum xiantianGuaHu;
+  final Enum64Gua xiantianGuaHu;
 
   /// 后天卦互卦
-  final Gua64Enum houtianGuaHu;
+  final Enum64Gua houtianGuaHu;
 
   // ========== 步骤6：大运计算 ==========
   /// 先天卦大运列表
@@ -347,7 +347,7 @@ class YuanTangUIModel {
   }
 
   /// 将卦名转换为二进制列表（辅助方法）
-  static List<int> _guaToBinaryList(Gua64Enum gua) {
+  static List<int> _guaToBinaryList(Enum64Gua gua) {
     // 这里需要从constants获取，简化实现
     final guaBinaryMapper = {
       '乾': [1, 1, 1],

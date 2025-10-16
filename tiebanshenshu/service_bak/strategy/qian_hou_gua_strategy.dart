@@ -125,7 +125,7 @@ class QianHouGuaStrategy
       // 根据后天数查卦名
       final qianGuaUpperGua = constants.numberHouGuaMapper[yearHouTianNum]!;
       final qianGuaLowerGua = constants.numberHouGuaMapper[monthHouTianNum]!;
-      final qianGuaName = Gua64Enum.getBy8Gua(qianGuaUpperGua, qianGuaLowerGua);
+      final qianGuaName = Enum64Gua.getBy8Gua(qianGuaUpperGua, qianGuaLowerGua);
 
       // 步骤4：日时柱化后卦
       // 日柱：干支太玄数相加 mod 8，得后天卦数
@@ -141,7 +141,7 @@ class QianHouGuaStrategy
       // 根据后天数查卦名
       final houGuaUpperGua = constants.numberHouGuaMapper[dayHouTianNum]!;
       final houGuaLowerGua = constants.numberHouGuaMapper[timeHouTianNum]!;
-      final houGuaName = Gua64Enum.getBy8Gua(houGuaUpperGua, houGuaLowerGua);
+      final houGuaName = Enum64Gua.getBy8Gua(houGuaUpperGua, houGuaLowerGua);
 
       // 步骤5：前卦加则法计算基础数
       // ignore: deprecated_member_use_from_same_package

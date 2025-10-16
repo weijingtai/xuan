@@ -90,9 +90,9 @@ class MockCalculationStrategy implements LiuQinKaoKeCalculationStrategy {
         rawNumber: 1000 + index,
         originKind: origin,
         changeLineIndex: changeLine,
-        baseGua: Gua64Enum.qian_wei_tian,
-        huGua: Gua64Enum.tian_feng_gou,
-        derivedGua: Gua64Enum.qian_wei_tian,
+        baseGua: Enum64Gua.qian_wei_tian,
+        huGua: Enum64Gua.tian_feng_gou,
+        derivedGua: Enum64Gua.qian_wei_tian,
       );
     });
   }

@@ -1,9 +1,49 @@
 import 'package:common/enums.dart';
+import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'pure_six_yao_gua.g.dart';
 
-enum Gua64Enum {
+enum EnumYaoOrder {
+  @JsonValue("初")
+  init(order: 1, name: '初', indexAtYaoList: 0),
+  @JsonValue("二")
+  second(order: 2, name: '二', indexAtYaoList: 1),
+  @JsonValue("三")
+  third(order: 3, name: '三', indexAtYaoList: 2),
+  @JsonValue("四")
+  fourth(order: 4, name: '四', indexAtYaoList: 3),
+  @JsonValue("五")
+  fifth(order: 5, name: '五', indexAtYaoList: 4),
+  @JsonValue("上")
+  top(order: 6, name: '上', indexAtYaoList: 5),
+  @JsonValue("无")
+  none(order: -1, name: '无', indexAtYaoList: 6);
+
+  final String name;
+  final int indexAtYaoList;
+  final int order;
+  const EnumYaoOrder({
+    required this.order,
+    required this.name,
+    required this.indexAtYaoList,
+  });
+  static EnumYaoOrder fromOrder(int order) {
+    return EnumYaoOrder.values.firstWhere((element) => element.order == order);
+  }
+
+  static EnumYaoOrder fromIndex(int index) {
+    return EnumYaoOrder.values.firstWhere(
+      (element) => element.indexAtYaoList == index,
+    );
+  }
+
+  static EnumYaoOrder fromName(String name) {
+    return EnumYaoOrder.values.firstWhere((element) => element.name == name);
+  }
+}
+
+enum Enum64Gua {
   @JsonValue("乾")
   qian_wei_tian("乾为天", "乾", Enum8Gua.Qian, Enum8Gua.Qian),
   @JsonValue("姤")
@@ -109,7 +149,7 @@ enum Gua64Enum {
   @JsonValue("艮")
   gen_wei_shan("艮为山", "山", Enum8Gua.Gen, Enum8Gua.Gen),
   @JsonValue("贲")
-  shan_huo_ben("山火贲", "贲", Enum8Gua.Gen, Enum8Gua.Li),
+  shan_huo_bi("山火贲", "贲", Enum8Gua.Gen, Enum8Gua.Li),
   @JsonValue("大畜")
   shan_tian_da_xu("山天大畜", "大畜", Enum8Gua.Gen, Enum8Gua.Qian),
   @JsonValue("损")
@@ -145,84 +185,135 @@ enum Gua64Enum {
   final Enum8Gua top;
   final Enum8Gua bottom;
 
-  const Gua64Enum(this.fullname, this.name, this.top, this.bottom);
-  static Gua64Enum fromName(String name) {
-    return Gua64Enum.values.firstWhere((element) => element.name == name);
+  const Enum64Gua(this.fullname, this.name, this.top, this.bottom);
+  static Enum64Gua fromName(String name) {
+    return Enum64Gua.values.firstWhere((element) => element.name == name);
   }
 
-  static Gua64Enum fromFullName(String fullname) {
-    return Gua64Enum.values.firstWhere(
+  static Enum64Gua fromFullName(String fullname) {
+    return Enum64Gua.values.firstWhere(
       (element) => element.fullname == fullname,
     );
   }
 
-  static Gua64Enum getBy8Gua(Enum8Gua topGua, Enum8Gua bottomGua) {
+  static Enum64Gua getBy8Gua(Enum8Gua topGua, Enum8Gua bottomGua) {
     if (topGua == bottomGua) {
       switch (topGua) {
         case Enum8Gua.Qian:
-          return Gua64Enum.qian_wei_tian;
+          return Enum64Gua.qian_wei_tian;
         case Enum8Gua.Dui:
-          return Gua64Enum.dui_wei_ze;
+          return Enum64Gua.dui_wei_ze;
         case Enum8Gua.Li:
-          return Gua64Enum.li_wei_huo;
+          return Enum64Gua.li_wei_huo;
 
         case Enum8Gua.Zhen:
-          return Gua64Enum.zhen_wei_lei;
+          return Enum64Gua.zhen_wei_lei;
 
         case Enum8Gua.Xun:
-          return Gua64Enum.xun_wei_feng;
+          return Enum64Gua.xun_wei_feng;
         case Enum8Gua.Kan:
-          return Gua64Enum.kan_wei_shui;
+          return Enum64Gua.kan_wei_shui;
         case Enum8Gua.Gen:
-          return Gua64Enum.gen_wei_shan;
+          return Enum64Gua.gen_wei_shan;
         case Enum8Gua.Kun:
-          return Gua64Enum.kun_wei_di;
+          return Enum64Gua.kun_wei_di;
       }
     }
-    return Gua64Enum.values.firstWhere(
+    return Enum64Gua.values.firstWhere(
       (e) => e.fullname.startsWith(topGua.nickname + bottomGua.nickname),
     );
   }
 
-  static Gua64Enum fromBinaryStr(String binaryStr) {
+  static Enum64Gua fromBinaryStr(String binaryStr) {
     return fromBinaryList(
       binaryStr.split("").map((e) => int.parse(e)).toList(),
     );
   }
 
-  static Gua64Enum fromBinaryList(List<int> binaryList) {
+  static Enum64Gua fromBinaryList(List<int> binaryList) {
     final topGua = Enum8Gua.fromBottomTopBinaryStr(
       binaryList.sublist(0, 3).join(""),
     );
     final bottomGua = Enum8Gua.fromBottomTopBinaryStr(
       binaryList.sublist(3).join(""),
     );
-    return Gua64Enum.getBy8Gua(bottomGua, topGua);
+    return Enum64Gua.getBy8Gua(bottomGua, topGua);
   }
+
+  List<int> get bottomTopBinaryList => [
+    bottom.bottomTopBinaryStr,
+    top.bottomTopBinaryStr,
+  ].join("").split("").map((e) => int.parse(e)).toList();
+
+  String get bottomTopBinaryStr =>
+      "${bottom.bottomTopBinaryStr}${top.bottomTopBinaryStr}";
 }
 
 @JsonSerializable()
-class GuaYao {
+class GuaYao extends Equatable {
+  final EnumYaoOrder order; // 爻位的顺序，初->上
   final YinYang yinYang; // 爻位的阴阳
   TianGan? naJia; // 爻纳甲
   DiZhi? naZhi; // 爻纳支
   LiuQin? liuQin; // 六亲
+  bool isShiYao; // 是否为世爻
+  bool isYingYao; // 是否为应爻
+
   JiaZi? get ganZhi => naJia != null && naZhi != null
       ? JiaZi.getFromGanZhiEnum(naJia!, naZhi!)
       : null;
 
-  GuaYao({required this.yinYang, this.naJia, this.naZhi, this.liuQin});
+  GuaYao({
+    required this.order,
+    required this.yinYang,
+    this.naJia,
+    this.naZhi,
+    this.liuQin,
+    this.isShiYao = false,
+    this.isYingYao = false,
+  });
 
   factory GuaYao.fromJson(Map<String, dynamic> json) => _$GuaYaoFromJson(json);
 
   Map<String, dynamic> toJson() => _$GuaYaoToJson(this);
+
+  GuaYao copyWith({
+    EnumYaoOrder? order,
+    YinYang? yinYang,
+    TianGan? naJia,
+    DiZhi? naZhi,
+    LiuQin? liuQin,
+    bool? isShiYao,
+    bool? isYingYao,
+  }) {
+    return GuaYao(
+      order: order ?? this.order,
+      yinYang: yinYang ?? this.yinYang,
+      naJia: naJia ?? this.naJia,
+      naZhi: naZhi ?? this.naZhi,
+      liuQin: liuQin ?? this.liuQin,
+      isShiYao: isShiYao ?? this.isShiYao,
+      isYingYao: isYingYao ?? this.isYingYao,
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    order,
+    yinYang,
+    naJia,
+    naZhi,
+    liuQin,
+    isShiYao,
+    isYingYao,
+  ];
 }
 
 @JsonSerializable()
-class PureSixYaoGua {
-  final Gua64Enum gua;
-  final Enum8Gua topGua;
-  final Enum8Gua bottomGua;
+class PureSixYaoGua extends Equatable {
+  final Enum64Gua gua;
+  Enum8Gua get topGua => gua.top;
+  Enum8Gua get bottomGua => gua.bottom;
 
   final List<GuaYao> yaoList; // 下爻->上爻
 
@@ -268,7 +359,7 @@ class PureSixYaoGua {
   }
 
   /// 单爻变卦：按自下而上编号（1..6）进行阴阳翻转，返回变卦的 Gua64Enum
-  Gua64Enum bianYaoByOrder(int yaoOrder) {
+  Enum64Gua bianYaoByOrder(int yaoOrder) {
     if (yaoOrder < 1 || yaoOrder > 6) {
       throw ArgumentError("变爻编号越界，应为 1..6，当前: $yaoOrder");
     }
@@ -276,13 +367,13 @@ class PureSixYaoGua {
     final newBinary = List<int>.from(binaryList);
     newBinary[indexFromBottomZeroBased] =
         newBinary[indexFromBottomZeroBased] == 0 ? 1 : 0;
-    return Gua64Enum.fromBinaryList(newBinary.toList());
+    return Enum64Gua.fromBinaryList(newBinary.toList());
   }
 
   /// 批量变爻：返回 1..6（初..上）爻位对应的变卦映射
   /// 键为 1..6（人类易于理解的爻序），值为对应的 Gua64Enum
-  Map<int, Gua64Enum> bianYaoAll() {
-    final result = <int, Gua64Enum>{};
+  Map<int, Enum64Gua> bianYaoAll() {
+    final result = <int, Enum64Gua>{};
     for (int i = 1; i <= 6; i++) {
       result[i] = bianYaoByOrder(i);
     }
@@ -293,8 +384,8 @@ class PureSixYaoGua {
   /// - 包含"互卦"
   /// - 包含六个"变爻"（变初爻、变二爻、...、变上爻）
   /// 用于 UI/UseCase 标注条文来源（先天/后天 + 变爻位置）
-  Map<String, Gua64Enum> changedVariantsWithLabels() {
-    final variants = <String, Gua64Enum>{};
+  Map<String, Enum64Gua> changedVariantsWithLabels() {
+    final variants = <String, Enum64Gua>{};
     variants["互卦"] = hu;
     for (int i = 0; i < 6; i++) {
       final label = getYaoPositionLabel(i);
@@ -303,23 +394,21 @@ class PureSixYaoGua {
     return variants;
   }
 
-  PureSixYaoGua({
-    required this.gua,
-    required this.topGua,
-    required this.bottomGua,
-    required this.yaoList,
-  });
+  PureSixYaoGua({required this.gua, required this.yaoList});
   factory PureSixYaoGua.by8Gua(Enum8Gua topGua, Enum8Gua bottomGua) {
     final bottomTopBinaryStr =
         "${bottomGua.bottomTopBinaryStr}${topGua.bottomTopBinaryStr}";
     final botTopBinStrList = bottomTopBinaryStr.split("");
 
     return PureSixYaoGua(
-      gua: Gua64Enum.getBy8Gua(topGua, bottomGua),
-      topGua: topGua,
-      bottomGua: bottomGua,
+      gua: Enum64Gua.getBy8Gua(topGua, bottomGua),
       yaoList: botTopBinStrList
-          .map((b) => GuaYao(yinYang: YinYang.getByBinaryStr(b)))
+          .map(
+            (b) => GuaYao(
+              order: EnumYaoOrder.fromIndex(botTopBinStrList.indexOf(b)),
+              yinYang: YinYang.getByBinaryStr(b),
+            ),
+          )
           .toList(),
     );
   }
@@ -329,35 +418,25 @@ class PureSixYaoGua {
 
   Map<String, dynamic> toJson() => _$PureSixYaoGuaToJson(this);
 
-  copyWith({
-    Gua64Enum? gua,
-    Enum8Gua? topGua,
-    Enum8Gua? bottomGua,
-    List<GuaYao>? yaoList,
-  }) {
+  copyWith({Enum64Gua? gua, List<GuaYao>? yaoList}) {
     return PureSixYaoGua(
       gua: gua ?? this.gua,
-      topGua: topGua ?? this.topGua,
-      bottomGua: bottomGua ?? this.bottomGua,
       yaoList: yaoList ?? this.yaoList,
     );
   }
 
-  Gua64Enum get zong {
-    // print(binaryList);
+  Enum64Gua get zong {
     final newBinaryList = binaryList.reversed.toList();
-    // print(newBinaryList);
-    // print(Gua64Enum.fromBinaryList(newBinaryList));
-    return Gua64Enum.fromBinaryList(newBinaryList);
+    return Enum64Gua.fromBinaryList(newBinaryList);
   }
 
-  Gua64Enum get cuo {
+  Enum64Gua get cuo {
     // 所有的爻，进行 阴变阳、阳变阴的转换
     final newBinaryList = binaryList.map((e) => e == 0 ? 1 : 0).toList();
-    return Gua64Enum.fromBinaryList(newBinaryList);
+    return Enum64Gua.fromBinaryList(newBinaryList);
   }
 
-  Gua64Enum get hu {
+  Enum64Gua get hu {
     // 二、三、四爻为互卦的 初、二、三爻
     final binaryList = this.binaryList;
     final downBinStr = binaryList.sublist(1, 4).join("");
@@ -365,6 +444,9 @@ class PureSixYaoGua {
     final upBinStr = binaryList.sublist(2, 5).join("");
     final downGua = Enum8Gua.fromBottomTopBinaryStr(downBinStr);
     final upGua = Enum8Gua.fromBottomTopBinaryStr(upBinStr);
-    return Gua64Enum.getBy8Gua(upGua, downGua);
+    return Enum64Gua.getBy8Gua(upGua, downGua);
   }
+
+  @override
+  List<Object?> get props => [gua, yaoList];
 }

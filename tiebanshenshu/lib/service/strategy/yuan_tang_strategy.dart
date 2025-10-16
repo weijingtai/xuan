@@ -445,7 +445,7 @@ class YuanTangStrategy
   /// - 计算时间 < 50ms
   List<YuanTangLiuyueGua> calculateLiuyueForAge(
     int targetAge,
-    Gua64Enum liunianGua,
+    Enum64Gua liunianGua,
     int yuantangYaoIndex,
   ) {
     return _calculateLiuyueForAge(targetAge, liunianGua, yuantangYaoIndex);
@@ -457,8 +457,8 @@ class YuanTangStrategy
   /// [hu] 互卦
   /// [isXiantian] 是否为先天卦（true使用先天数，false使用后天数）
   int _calculateBenhuNumber(
-    Gua64Enum ben,
-    Gua64Enum hu, {
+    Enum64Gua ben,
+    Enum64Gua hu, {
     required bool isXiantian,
   }) {
     final benUpon = ben.top;
@@ -856,7 +856,7 @@ class YuanTangStrategy
   /// 2. 阳爻9年，阴爻6年
   /// 3. 年龄连续累加
   List<YuanTangDayunPeriod> _calculateDayun(
-    Gua64Enum guaName,
+    Enum64Gua guaName,
     int yuantangYaoIndex,
     List<List<String>> zhiList,
     int startAge,
@@ -907,7 +907,7 @@ class YuanTangStrategy
   /// - [yaoIndex]: 爻位索引（0-5，0=初爻，5=上爻）
   ///
   /// 返回: 变换后的新卦象
-  Gua64Enum _changeYao(Gua64Enum gua, int yaoIndex) {
+  Enum64Gua _changeYao(Enum64Gua gua, int yaoIndex) {
     // 将卦转换为二进制列表
     final binaryList = gua_utils.guaToBinaryList(gua);
 
@@ -924,7 +924,7 @@ class YuanTangStrategy
     final lower = binaryList.sublist(3).join();
     final upperGua = constants.binaryStrGuaMapper[upper]!;
     final lowerGua = constants.binaryStrGuaMapper[lower]!;
-    return Gua64Enum.getBy8Gua(
+    return Enum64Gua.getBy8Gua(
       Enum8Gua.fromValue(upperGua),
       Enum8Gua.fromValue(lowerGua),
     );
@@ -966,7 +966,7 @@ class YuanTangStrategy
   /// 返回: 该大运期的所有流年卦列表（阳爻9个，阴爻6个）
   List<YuanTangLiunianGua> _calculateLiunianForDayun(
     YuanTangDayunPeriod dayun,
-    Gua64Enum baseGua,
+    Enum64Gua baseGua,
     String guaSource,
     int birthYear,
   ) {
@@ -1004,7 +1004,7 @@ class YuanTangStrategy
   /// 返回: 9个流年卦
   List<YuanTangLiunianGua> _calculateLiunianForYangYaoDayun(
     YuanTangDayunPeriod dayun,
-    Gua64Enum baseGua,
+    Enum64Gua baseGua,
     String guaSource,
     int birthYear,
   ) {
@@ -1014,7 +1014,7 @@ class YuanTangStrategy
     final dayunStartYear = birthYear + dayun.startAge - 1;
     final isYangStartYear = _isYangGanYear(dayunStartYear);
 
-    Gua64Enum currentGua = baseGua;
+    Enum64Gua currentGua = baseGua;
     int? firstChangedYaoIndex;
 
     // 第1年
@@ -1082,14 +1082,14 @@ class YuanTangStrategy
   /// 返回: 6个流年卦
   List<YuanTangLiunianGua> _calculateLiunianForYinYaoDayun(
     YuanTangDayunPeriod dayun,
-    Gua64Enum baseGua,
+    Enum64Gua baseGua,
     String guaSource,
     int birthYear,
   ) {
     final liunianList = <YuanTangLiunianGua>[];
 
     // 第1年: 先变换大运爻(不论初年阴阳)
-    Gua64Enum currentGua = _changeYao(baseGua, dayun.yaoPosition);
+    Enum64Gua currentGua = _changeYao(baseGua, dayun.yaoPosition);
 
     liunianList.add(
       YuanTangLiunianGua(
@@ -1155,14 +1155,14 @@ class YuanTangStrategy
   /// 返回: 12个流月卦列表（已按月份排序）
   List<YuanTangLiuyueGua> _calculateLiuyueForAge(
     int targetAge,
-    Gua64Enum liunianGua,
+    Enum64Gua liunianGua,
     int yuantangYaoIndex,
   ) {
     final liuyueList = <YuanTangLiuyueGua>[];
 
     // 步骤1: 计算正月卦(变换元堂爻前一爻)
     final zhengYueYaoIndex = (yuantangYaoIndex - 1 + 6) % 6;
-    Gua64Enum zhengYueGua = _changeYao(liunianGua, zhengYueYaoIndex);
+    Enum64Gua zhengYueGua = _changeYao(liunianGua, zhengYueYaoIndex);
 
     liuyueList.add(
       YuanTangLiuyueGua(
@@ -1177,7 +1177,7 @@ class YuanTangStrategy
     );
 
     // 步骤2: 计算其他阳月卦(3,5,7,9,11月)
-    Gua64Enum currentYangGua = zhengYueGua;
+    Enum64Gua currentYangGua = zhengYueGua;
     int lastChangedYaoIndex = zhengYueYaoIndex;
 
     for (int month in [3, 5, 7, 9, 11]) {

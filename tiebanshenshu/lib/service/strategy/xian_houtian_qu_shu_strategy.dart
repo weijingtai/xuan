@@ -264,7 +264,7 @@ class XianHoutianQuShuStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个天干，从初爻到上爻)
-  List<String> _najiaTianGan(Gua64Enum guaName) {
+  List<String> _najiaTianGan(Enum64Gua guaName) {
     // 拆分成上下卦
     final upperGuaName = guaName.top.name;
     final lowerGuaName = guaName.bottom.name;
@@ -300,7 +300,7 @@ class XianHoutianQuShuStrategy
   /// [guaName] 卦名（如"震坤"）
   ///
   /// 返回: `List<String>` (6个地支，从初爻到上爻)
-  List<String> _najiaDiZhi(Gua64Enum guaName) {
+  List<String> _najiaDiZhi(Enum64Gua guaName) {
     // 拆分成上下卦
     final upperGuaName = guaName.top.name;
     final lowerGuaName = guaName.bottom.name;
@@ -379,7 +379,7 @@ class XianHoutianQuShuStrategy
   /// [guaName] 卦名（如"震坤"）
   /// 返回: (baseNumber, tianGanList, diZhiList, yaoSumList, upperSum, lowerSum)
   (int, List<String>, List<String>, List<int>, int, int) _calculateLiuYaoSum(
-    Gua64Enum guaName,
+    Enum64Gua guaName,
   ) {
     // 步骤1-2：获取六爻纳甲配置
     final tianGanList = _najiaTianGan(guaName);
@@ -407,7 +407,7 @@ class XianHoutianQuShuStrategy
 
   /// 先天基础数拼接：
   /// 千位=上卦先天数，百位=下卦先天数，十位=互卦上卦先天数，个位=互卦下卦先天数
-  int _calculateXiantianBaseNumberByGua(Gua64Enum guaName) {
+  int _calculateXiantianBaseNumberByGua(Enum64Gua guaName) {
     final upper = guaName.top.name;
     final lower = guaName.bottom.name;
     final huGua = gua_utils.guaToHuGua(guaName);
@@ -424,7 +424,7 @@ class XianHoutianQuShuStrategy
 
   /// 后天基础数拼接：
   /// 千位=上卦后天数，百位=下卦后天数，十位=互卦上卦后天数，个位=互卦下卦后天数
-  int _calculateHoutianBaseNumberByGua(Gua64Enum guaName) {
+  int _calculateHoutianBaseNumberByGua(Enum64Gua guaName) {
     final upper = guaName.top.name;
     final lower = guaName.bottom.name;
     final huGua = gua_utils.guaToHuGua(guaName);

@@ -20,8 +20,8 @@ class YuanTangGua {
   final YuanYunOrder threeYuan;
   final TwentyFourJieQi birthAfterZhi;
   final int yuantanYaoIndex;
-  final Gua64Enum xiantianGua;
-  final Gua64Enum houtianGua;
+  final Enum64Gua xiantianGua;
+  final Enum64Gua houtianGua;
   final List<List<String>> zhiList;
 
   YuanTangGua({
@@ -127,12 +127,12 @@ class YuanTangGua {
   }
 
   /// 先天卦互卦
-  Gua64Enum get xiantianGuaHu {
+  Enum64Gua get xiantianGuaHu {
     return GuaUtils.guaToHuGua(xiantianGua);
   }
 
   /// 后天卦互卦
-  Gua64Enum get houtianGuaHu {
+  Enum64Gua get houtianGuaHu {
     return GuaUtils.guaToHuGua(houtianGua);
   }
 
@@ -141,10 +141,10 @@ class YuanTangGua {
   /// 先天卦互卦：上卦为十位，下卦为个位
   /// 数取卦的先天数
   int get tiaowenNumberXiantianBenhu {
-    Gua64Enum ben = xiantianGua;
+    Enum64Gua ben = xiantianGua;
     Enum8Gua benUpon = ben.top;
     Enum8Gua benUnder = ben.bottom;
-    Gua64Enum hu = xiantianGuaHu;
+    Enum64Gua hu = xiantianGuaHu;
     Enum8Gua huUpon = hu.top;
     Enum8Gua huUnder = hu.bottom;
 
@@ -161,10 +161,10 @@ class YuanTangGua {
   /// 后天卦互卦：上卦为十位，下卦为个位
   /// 数取卦的后天数
   int get tiaowenNumberHoutianBenhu {
-    Gua64Enum ben = houtianGua;
+    Enum64Gua ben = houtianGua;
     Enum8Gua benUpon = ben.top;
     Enum8Gua benUnder = ben.bottom;
-    Gua64Enum hu = houtianGuaHu;
+    Enum64Gua hu = houtianGuaHu;
     Enum8Gua huUpon = hu.top;
     Enum8Gua huUnder = hu.bottom;
 
@@ -241,7 +241,7 @@ class YuanTangGua {
       gender,
     );
 
-    final yuantanBenGua = Gua64Enum.getBy8Gua(uponGua, underGua);
+    final yuantanBenGua = Enum64Gua.getBy8Gua(uponGua, underGua);
 
     final (yuantangYaoIndex, dizhiList) = yuantangZhuanggua(
       yuantanBenGua,
@@ -257,7 +257,7 @@ class YuanTangGua {
     List<int> benBinaryGua = GuaUtils.guaToBinaryList(yuantanBenGua);
 
     // 5. 计算全部条文
-    Gua64Enum houtianGua = yuantangHoutianGuaFromXiantianGua(
+    Enum64Gua houtianGua = yuantangHoutianGuaFromXiantianGua(
       benBinaryGua,
       yuantangYaoIndex,
     );
@@ -275,7 +275,7 @@ class YuanTangGua {
 
   /// 元堂装卦
   static (int, List<List<String>>) yuantangZhuanggua(
-    Gua64Enum guaName,
+    Enum64Gua guaName,
     JiaZi timeGanzhi,
     Gender gender,
     TwentyFourJieQi birthAfterZhi,
@@ -559,7 +559,7 @@ class YuanTangGua {
 }
 
 /// 根据基本卦和元堂爻，计算出后天卦
-Gua64Enum yuantangHoutianGuaFromXiantianGua(
+Enum64Gua yuantangHoutianGuaFromXiantianGua(
   List<int> benBinaryList,
   int yuantangYaoIndex,
 ) {
@@ -578,7 +578,7 @@ Gua64Enum yuantangHoutianGuaFromXiantianGua(
   String oldUponGua = Constants.binaryStrGuaMapper[oldUpon]!;
   String oldUnderGua = Constants.binaryStrGuaMapper[oldUnder]!;
   // 3. 互换 并返回
-  return Gua64Enum.getBy8Gua(
+  return Enum64Gua.getBy8Gua(
     Enum8Gua.fromValue(oldUnderGua),
     Enum8Gua.fromValue(oldUponGua),
   );

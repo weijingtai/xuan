@@ -1,37 +1,40 @@
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
-import 'package:tiebanshenshu/service/yuan_tang/yuan_tang_calculator.dart';
+
+import '../service_bak/yuan_tang/yuan_tang_calculator.dart';
 
 void main() {
   group('YuanTangGua Tests', () {
-    late FourZhu testFourZhu;
+    late EightChars eightChars;
 
     setUp(() {
       // 创建测试用的四柱
-      testFourZhu = FourZhu(
-        yearGanzhi: "甲戌",
-        monthGanzhi: "己巳",
-        dayGanzhi: "辛丑",
-        timeGanzhi: "丁酉",
+      eightChars = EightChars(
+        year: JiaZi.BING_XU, // "甲戌",
+        month: JiaZi.getFromGanZhiValue("己巳")!, // "己巳",
+        day: JiaZi.getFromGanZhiValue("辛丑")!, // "辛丑",
+        time: JiaZi.getFromGanZhiValue("丁酉")!, // "丁酉",
       );
     });
 
     test('should generate YuanTangGua correctly for male in upper yuan', () {
       // Arrange
-      const String gender = "男";
-      const String threeYuan = "上";
-      const String birthAfterZhi = "夏至";
+      const Gender gender = Gender.male;
+      const YuanYunOrder threeYuan = YuanYunOrder.upper;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.XIA_ZHI;
 
       // Act
       YuanTangGua yuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
       );
 
       // Assert
-      expect(yuanTangGua.fourZhu, equals(testFourZhu));
+      expect(yuanTangGua.fourZhu, equals(eightChars));
       expect(yuanTangGua.gender, equals(gender));
       expect(yuanTangGua.threeYuan, equals(threeYuan));
       expect(yuanTangGua.birthAfterZhi, equals(birthAfterZhi));
@@ -44,20 +47,20 @@ void main() {
 
     test('should generate YuanTangGua correctly for female in middle yuan', () {
       // Arrange
-      const String gender = "女";
-      const String threeYuan = "中";
-      const String birthAfterZhi = "冬至";
+      const Gender gender = Gender.female;
+      const YuanYunOrder threeYuan = YuanYunOrder.middle;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.DONG_ZHI;
 
       // Act
       YuanTangGua yuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
       );
 
       // Assert
-      expect(yuanTangGua.fourZhu, equals(testFourZhu));
+      expect(yuanTangGua.fourZhu, equals(eightChars));
       expect(yuanTangGua.gender, equals(gender));
       expect(yuanTangGua.threeYuan, equals(threeYuan));
       expect(yuanTangGua.birthAfterZhi, equals(birthAfterZhi));
@@ -70,20 +73,20 @@ void main() {
 
     test('should generate YuanTangGua correctly for male in lower yuan', () {
       // Arrange
-      const String gender = "男";
-      const String threeYuan = "下";
-      const String birthAfterZhi = "春分";
+      const Gender gender = Gender.male;
+      const YuanYunOrder threeYuan = YuanYunOrder.lower;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.DONG_ZHI;
 
       // Act
       YuanTangGua yuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
       );
 
       // Assert
-      expect(yuanTangGua.fourZhu, equals(testFourZhu));
+      expect(yuanTangGua.fourZhu, equals(eightChars));
       expect(yuanTangGua.gender, equals(gender));
       expect(yuanTangGua.threeYuan, equals(threeYuan));
       expect(yuanTangGua.birthAfterZhi, equals(birthAfterZhi));
@@ -96,13 +99,13 @@ void main() {
 
     test('should calculate tiaowen numbers correctly', () {
       // Arrange
-      const String gender = "男";
-      const String threeYuan = "上";
-      const String birthAfterZhi = "夏至";
+      const Gender gender = Gender.male;
+      const YuanYunOrder threeYuan = YuanYunOrder.upper;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.DONG_ZHI;
 
       // Act
       YuanTangGua yuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
@@ -123,20 +126,20 @@ void main() {
 
     test('should generate different results for different genders', () {
       // Arrange
-      const String threeYuan = "上";
-      const String birthAfterZhi = "夏至";
+      const YuanYunOrder threeYuan = YuanYunOrder.upper;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.DONG_ZHI;
 
       // Act
       YuanTangGua maleYuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
-        gender: "男",
+        fourZhu: eightChars,
+        gender: Gender.male,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
       );
 
       YuanTangGua femaleYuanTangGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
-        gender: "女",
+        fourZhu: eightChars,
+        gender: Gender.female,
         threeYuan: threeYuan,
         birthAfterZhi: birthAfterZhi,
       );
@@ -149,28 +152,28 @@ void main() {
 
     test('should generate different results for different three yuan', () {
       // Arrange
-      const String gender = "男";
-      const String birthAfterZhi = "夏至";
+      const Gender gender = Gender.male;
+      const TwentyFourJieQi birthAfterZhi = TwentyFourJieQi.DONG_ZHI;
 
       // Act
       YuanTangGua upperYuanGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
-        threeYuan: "上",
+        threeYuan: YuanYunOrder.upper,
         birthAfterZhi: birthAfterZhi,
       );
 
       YuanTangGua middleYuanGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
-        threeYuan: "中",
+        threeYuan: YuanYunOrder.middle,
         birthAfterZhi: birthAfterZhi,
       );
 
       YuanTangGua lowerYuanGua = YuanTangGua.generateYuantanGua(
-        fourZhu: testFourZhu,
+        fourZhu: eightChars,
         gender: gender,
-        threeYuan: "下",
+        threeYuan: YuanYunOrder.lower,
         birthAfterZhi: birthAfterZhi,
       );
 
@@ -182,20 +185,20 @@ void main() {
 
     test('should handle edge cases with different FourZhu combinations', () {
       // Arrange
-      FourZhu edgeCaseFourZhu = FourZhu(
-        yearGanzhi: "癸亥",
-        monthGanzhi: "甲子",
-        dayGanzhi: "乙丑",
-        timeGanzhi: "丙寅",
+      EightChars edgeCaseFourZhu = EightChars(
+        year: JiaZi.getFromGanZhiValue("癸亥")!,
+        month: JiaZi.getFromGanZhiValue("甲子")!,
+        day: JiaZi.getFromGanZhiValue("乙丑")!,
+        time: JiaZi.getFromGanZhiValue("丙寅")!,
       );
 
       // Act & Assert
       expect(() {
         YuanTangGua.generateYuantanGua(
           fourZhu: edgeCaseFourZhu,
-          gender: "男",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
         );
       }, returnsNormally);
     });
@@ -204,20 +207,20 @@ void main() {
       // Test with invalid gender
       expect(() {
         YuanTangGua.generateYuantanGua(
-          fourZhu: testFourZhu,
-          gender: "无效性别",
-          threeYuan: "上",
-          birthAfterZhi: "夏至",
+          fourZhu: eightChars,
+          gender: Gender.unknown,
+          threeYuan: YuanYunOrder.upper,
+          birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
         );
       }, returnsNormally); // 根据实际实现可能需要调整
 
       // Test with invalid threeYuan
       expect(() {
         YuanTangGua.generateYuantanGua(
-          fourZhu: testFourZhu,
-          gender: "男",
-          threeYuan: "无效元",
-          birthAfterZhi: "夏至",
+          fourZhu: eightChars,
+          gender: Gender.male,
+          threeYuan: YuanYunOrder.lower,
+          birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
         );
       }, returnsNormally); // 根据实际实现可能需要调整
     });
@@ -227,10 +230,10 @@ void main() {
     test('generateUponUnderGua should work correctly', () {
       // Act
       var (uponGua, underGua) = YuanTangGua.generateUponUnderGua(
-        "乾",
-        "坤",
-        "阳",
-        "男",
+        Enum8Gua.Qian,
+        Enum8Gua.Kun,
+        YinYang.YANG,
+        Gender.male,
       );
 
       // Assert
@@ -245,9 +248,9 @@ void main() {
 
       // Act
       var (tianGua, diGua) = YuanTangGua.generateTianDiGua(
-        "男",
+        Gender.male,
         true,
-        "上",
+        YuanYunOrder.upper,
         ganNumList,
         zhiNumList,
       );

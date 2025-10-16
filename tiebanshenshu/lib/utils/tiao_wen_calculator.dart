@@ -15,7 +15,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByJiaZe(Gua64Enum guaName) {
+  static int getTiaowenNumberByJiaZe(Enum64Gua guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
@@ -45,7 +45,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaoWenNumberByNaJia(Gua64Enum guaName) {
+  static int getTiaoWenNumberByNaJia(Enum64Gua guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
@@ -75,7 +75,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByTaixuan(Gua64Enum guaName) {
+  static int getTiaowenNumberByTaixuan(Enum64Gua guaName) {
     // 将地支装到卦上（纳甲方式）
     List<String> zhiTopToBottom = GuaUtils.najiaZhuangGua(guaName);
     List<String> ganTopToBottom = GuaUtils.najiaGanZhuangGua(guaName);

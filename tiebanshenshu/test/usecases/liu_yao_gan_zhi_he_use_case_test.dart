@@ -126,9 +126,9 @@ void main() {
 
     testParams = LiuYaoGanZhiHeUseCaseParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
     );
   });
 
@@ -140,9 +140,9 @@ void main() {
     test('应该接受有效的女性参数', () {
       final femaleParams = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "中",
-        birthAfterZhi: "冬至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.middle,
+        birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
       );
 
       expect(() => useCase.validateParams(femaleParams), returnsNormally);
@@ -151,9 +151,9 @@ void main() {
     test('应该拒绝无效的性别参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "其他",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.unknown,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       expect(() => useCase.validateParams(invalidParams), throwsException);
@@ -162,9 +162,9 @@ void main() {
     test('应该拒绝无效的三元参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "无效",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       expect(() => useCase.validateParams(invalidParams), throwsException);
@@ -173,9 +173,9 @@ void main() {
     test('应该拒绝无效的节气参数', () {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "春分",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
       );
 
       expect(() => useCase.validateParams(invalidParams), throwsException);
@@ -202,8 +202,8 @@ void main() {
       // 验证传递给Strategy的参数
       final capturedParams = mockStrategy.lastParams!;
       expect(capturedParams.eightChars.year.ganZhiStr, equals("癸巳"));
-      expect(capturedParams.gender, equals("男"));
-      expect(capturedParams.threeYuan, equals("上"));
+      expect(capturedParams.gender, equals(Gender.male));
+      expect(capturedParams.threeYuan, equals(YuanYunOrder.upper));
       expect(capturedParams.birthAfterZhi, equals("夏至"));
     });
   });
@@ -378,9 +378,9 @@ void main() {
     test('应该处理参数验证异常', () async {
       final invalidParams = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "无效",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       // execute() 会rethrow InputValidationException, 所以应该抛出异常
@@ -393,24 +393,24 @@ void main() {
       final str = testParams.toString();
 
       expect(str, contains("LiuYaoGanZhiHeUseCaseParams"));
-      expect(str, contains("男"));
-      expect(str, contains("上"));
+      expect(str, contains(Gender.male));
+      expect(str, contains(YuanYunOrder.upper));
       expect(str, contains("夏至"));
     });
 
     test('相同参数应该相等', () {
       final params1 = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       final params2 = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       expect(params1, equals(params2));
@@ -420,16 +420,16 @@ void main() {
     test('不同参数应该不相等', () {
       final params1 = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       final params2 = LiuYaoGanZhiHeUseCaseParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       expect(params1, isNot(equals(params2)));

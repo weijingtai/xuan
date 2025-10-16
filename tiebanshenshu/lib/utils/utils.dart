@@ -1,7 +1,9 @@
 // utils.dart
 // 导入包含所有静态数据映射的常量文件
 import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/domain/pure_yuan_tang_gua.dart';
 
 import '../../constant/constants.dart' as constants;
 
@@ -10,7 +12,7 @@ import '../../constant/constants.dart' as constants;
 // ===================================================================
 
 /// 将双经卦名（如 "乾坤"）转换为6个元素的二进制列表（从上爻到下爻）。
-List<int> guaToBinaryList(Gua64Enum guaName) {
+List<int> guaToBinaryList(Enum64Gua guaName) {
   // 合并上卦和下卦的二进制列表
   return PureSixYaoGua.by8Gua(
     guaName.top,
@@ -55,12 +57,12 @@ List<int> yaoBianGua(List<int> originalBinaryList, List<int> bianYaoIndices) {
 }
 
 /// 计算给定卦的“互卦”。
-Gua64Enum guaToHuGua(Gua64Enum guaName) {
+Enum64Gua guaToHuGua(Enum64Gua guaName) {
   return PureSixYaoGua.by8Gua(guaName.top, guaName.bottom).hu;
 }
 
 /// 计算给定卦的“错卦”（所有爻阴阳相反）。
-Gua64Enum guaToCuoGua(Gua64Enum guaName) {
+Enum64Gua guaToCuoGua(Enum64Gua guaName) {
   return PureSixYaoGua.by8Gua(guaName.top, guaName.bottom).cuo;
 }
 
@@ -75,7 +77,7 @@ Gua64Enum guaToCuoGua(Gua64Enum guaName) {
 /// - 阴爻依次配：丑、卯、巳、未、酉、亥
 ///
 /// 返回一个从上爻到初爻的6元素地支列表。
-List<String> yaoxuZhuangGua(Gua64Enum guaName) {
+List<String> yaoxuZhuangGua(Enum64Gua guaName) {
   // 阳爻地支序列
   final yangDiZhi = ['子', '寅', '辰', '午', '申', '戌'];
 
@@ -107,7 +109,7 @@ List<String> yaoxuZhuangGua(Gua64Enum guaName) {
 
 /// 根据双经卦名进行纳甲，安装"地支"。
 /// 返回一个从上爻到初爻的6元素地支列表。
-List<String> najiaZhuangGua(Gua64Enum guaName) {
+List<String> najiaZhuangGua(Enum64Gua guaName) {
   // 上卦地支映射表
   final Map<String, String> uponGuaMapper = {
     "乾": "戌申午",
@@ -144,7 +146,7 @@ List<String> najiaZhuangGua(Gua64Enum guaName) {
 
 /// 根据双经卦名进行纳甲，安装“天干”。
 /// 返回一个从上爻到初爻的6元素天干列表。
-List<String> najiaGanZhuangGua(Gua64Enum guaName) {
+List<String> najiaGanZhuangGua(Enum64Gua guaName) {
   // 上卦天干映射表
   final Map<String, List<String>> uponGuaMapper = {
     "乾": ["壬", "壬", "壬"],
@@ -247,6 +249,17 @@ List<int> calculateTaoWenListByMultiples({
   return result;
 }
 
+///实现细则
+// - 天数规则
+//   - >25 ：减去25取个位（例 39 → 14 → 4 ）
+//   - ==25 ：取默认值 5
+//   - <25 ：舍去十位取个位（例 24 → 4 ）
+//   - >25 且 -25=10/20 ：取十位数 1/2 （例 35 → 1 、 45 → 2 ）
+// - 地数规则
+//   - ==30 ：取默认值 3
+//   - <30 ：舍去十位取个位（例 26 → 6 ）
+//   - >30 且 -30=10/20 ：取十位数 1/2 （例 40 → 1 、 50 → 2 ）
+
 /// 一个通用的计算卦数的方法。
 /// [total]: 输入的总和。
 /// [threshold]: 阈值 (例如 25 或 30)。
@@ -261,7 +274,13 @@ int calculateGuaNum(int total, int threshold, int defaultValue) {
     remainder = total % threshold;
   }
 
-  // <25或<30时，以及>25或>30的余数，不用十位 (即取个位)
+  // 规则：
+  // - 当 total > threshold 且 (total - threshold) 为 10 或 20 时，取十位数（1 或 2）。
+  // - 其它情况：舍去十位取个位。
+  if (total > threshold && (remainder == 10 || remainder == 20)) {
+    return remainder ~/ 10;
+  }
+  // <25或<30时，以及>25或>30的其它余数，不用十位 (即取个位)
   return remainder % 10;
 }
 
@@ -410,6 +429,7 @@ String digit4NumberToHouGua(int number, {bool shouldReverse = false}) {
 /// 5. 地数 = 偶数总和 模30，特殊处理=30时为3
 /// 6. 当天数或地数为5时，查询三元五宫映射表
 /// 7. 否则使用常规数配卦
+@Deprecated("using calculateXianTianGua instead")
 (
   String, // tianGua
   String, // diGua

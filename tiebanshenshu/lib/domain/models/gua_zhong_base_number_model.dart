@@ -91,10 +91,10 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   final Enum8Gua nianYueLowerGuaName;
 
   /// 年月卦主卦名称（双经卦，如"震坤"）
-  final Gua64Enum nianYueZhuGuaName;
+  final Enum64Gua nianYueZhuGuaName;
 
   /// 年月卦互卦名称（双经卦）
-  final Gua64Enum nianYueHuGuaName;
+  final Enum64Gua nianYueHuGuaName;
 
   /// 年月卦互卦上卦先天数
   final int nianYueHuGuaUpperXiantianNumber;
@@ -146,10 +146,10 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
   final Enum8Gua riShiLowerGuaName;
 
   /// 日时卦主卦名称（双经卦，如"震艮"）
-  final Gua64Enum riShiZhuGuaName;
+  final Enum64Gua riShiZhuGuaName;
 
   /// 日时卦互卦名称（双经卦）
-  final Gua64Enum riShiHuGuaName;
+  final Enum64Gua riShiHuGuaName;
 
   /// 日时卦互卦上卦先天数
   final int riShiHuGuaUpperXiantianNumber;
@@ -414,8 +414,8 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     int? nianYueLowerGuaXiantianNumber,
     Enum8Gua? nianYueUpperGuaName,
     Enum8Gua? nianYueLowerGuaName,
-    Gua64Enum? nianYueZhuGuaName,
-    Gua64Enum? nianYueHuGuaName,
+    Enum64Gua? nianYueZhuGuaName,
+    Enum64Gua? nianYueHuGuaName,
     int? nianYueHuGuaUpperXiantianNumber,
     int? nianYueHuGuaLowerXiantianNumber,
     int? nianYueZhuGuaTiaoWenNumber_Plan1,
@@ -430,8 +430,8 @@ class GuaZhongBaseNumberModel extends BaseNumberModel {
     int? riShiLowerGuaXiantianNumber,
     Enum8Gua? riShiUpperGuaName,
     Enum8Gua? riShiLowerGuaName,
-    Gua64Enum? riShiZhuGuaName,
-    Gua64Enum? riShiHuGuaName,
+    Enum64Gua? riShiZhuGuaName,
+    Enum64Gua? riShiHuGuaName,
     int? riShiHuGuaUpperXiantianNumber,
     int? riShiHuGuaLowerXiantianNumber,
     int? riShiZhuGuaTiaoWenNumber_Plan1,

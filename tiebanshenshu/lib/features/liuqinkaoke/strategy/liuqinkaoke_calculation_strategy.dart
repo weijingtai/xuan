@@ -131,9 +131,9 @@ class LiuQinKaoKeCalculationStrategy {
   LiuQinKaoKeCandidate _createCandidate({
     required OriginKind originKind,
     required int changeLineIndex,
-    required Gua64Enum baseGua,
-    required Gua64Enum huGua,
-    required Gua64Enum derivedGua,
+    required Enum64Gua baseGua,
+    required Enum64Gua huGua,
+    required Enum64Gua derivedGua,
   }) {
     final mapper = (originKind == OriginKind.innate)
         ? xianGuaNumberMapper

@@ -91,29 +91,29 @@ void main() {
         (c) => c.originKind == OriginKind.innate && c.changeLineIndex == 3,
       );
 
-      expect(innateBase.baseGua, Gua64Enum.ze_tian_guai, reason: "先天基本卦应为泽天夬");
+      expect(innateBase.baseGua, Enum64Gua.ze_tian_guai, reason: "先天基本卦应为泽天夬");
       expect(
         PureSixYaoGua.by8Gua(
           innateBase.baseGua.top,
           innateBase.baseGua.bottom,
         ).hu,
-        Gua64Enum.qian_wei_tian,
+        Enum64Gua.qian_wei_tian,
         reason: "互卦 乾为天",
       );
-      expect(innateBase.huGua, Gua64Enum.qian_wei_tian, reason: "先天互卦应为乾为天");
+      expect(innateBase.huGua, Enum64Gua.qian_wei_tian, reason: "先天互卦应为乾为天");
       expect(innateBase.rawNumber, 2111, reason: "先天基础数应为2111");
       expect(
         PureSixYaoGua.by8Gua(
           innateBase.baseGua.top,
           innateBase.baseGua.bottom,
         ).bianYaoByOrder(3),
-        Gua64Enum.dui_wei_ze,
+        Enum64Gua.dui_wei_ze,
         reason: "应该为 兑为泽",
       );
-      expect(innateChange3.derivedGua, Gua64Enum.dui_wei_ze, reason: "应该变 兑为泽");
+      expect(innateChange3.derivedGua, Enum64Gua.dui_wei_ze, reason: "应该变 兑为泽");
       expect(
         innateChange3.huGua,
-        Gua64Enum.feng_huo_jia_ren,
+        Enum64Gua.feng_huo_jia_ren,
         reason: "应该为 风火家人",
       );
       expect(innateChange3.rawNumber, 2253, reason: "先天三爻变后数应为2253");
@@ -126,8 +126,8 @@ void main() {
         (c) => c.originKind == OriginKind.acquired && c.changeLineIndex == 1,
       );
 
-      expect(acquiredBase.baseGua, Gua64Enum.di_shui_shi, reason: "后天基本卦应为地水师");
-      expect(acquiredBase.huGua, Gua64Enum.di_lei_fu, reason: "后天互卦应为地雷复");
+      expect(acquiredBase.baseGua, Enum64Gua.di_shui_shi, reason: "后天基本卦应为地水师");
+      expect(acquiredBase.huGua, Enum64Gua.di_lei_fu, reason: "后天互卦应为地雷复");
       expect(acquiredBase.rawNumber, 2123, reason: "后天基础数应为2123");
       expect(acquiredChange1.rawNumber, 2723, reason: "后天初爻变后数应为2723");
     });

@@ -376,8 +376,8 @@ class GuaZhongStrategy
     int, // lowerGuaXiantianNumber
     Enum8Gua, // upperGuaName
     Enum8Gua, // lowerGuaName
-    Gua64Enum, // zhuGuaName
-    Gua64Enum, // huGuaName
+    Enum64Gua, // zhuGuaName
+    Enum64Gua, // huGuaName
     int, // huGuaUpperXiantianNumber
     int, // huGuaLowerXiantianNumber
     int, // zhuGuaTiaoWenNumber_Plan1
@@ -407,7 +407,7 @@ class GuaZhongStrategy
     final lowerGuaName = _getGuaNameByXiantianNumber(lowerGuaXiantianNumber);
 
     // 组合主卦名
-    final zhuGuaName = Gua64Enum.getBy8Gua(upperGuaName, lowerGuaName);
+    final zhuGuaName = Enum64Gua.getBy8Gua(upperGuaName, lowerGuaName);
 
     // 计算互卦
     final huGuaName = gua_utils.guaToHuGua(zhuGuaName);
@@ -499,8 +499,8 @@ class GuaZhongStrategy
     int, // lowerGuaXiantianNumber
     Enum8Gua, // upperGuaName
     Enum8Gua, // lowerGuaName
-    Gua64Enum, // zhuGuaName
-    Gua64Enum, // huGuaName
+    Enum64Gua, // zhuGuaName
+    Enum64Gua, // huGuaName
     int, // huGuaUpperXiantianNumber
     int, // huGuaLowerXiantianNumber
     int, // zhuGuaTiaoWenNumber_Plan1
@@ -529,7 +529,7 @@ class GuaZhongStrategy
     final lowerGuaName = _getGuaNameByXiantianNumber(lowerGuaXiantianNumber);
 
     // 组合主卦名
-    final zhuGuaName = Gua64Enum.getBy8Gua(upperGuaName, lowerGuaName);
+    final zhuGuaName = Enum64Gua.getBy8Gua(upperGuaName, lowerGuaName);
 
     // 计算互卦
     final huGuaName = gua_utils.guaToHuGua(zhuGuaName);

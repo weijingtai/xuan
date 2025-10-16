@@ -27,6 +27,7 @@ import 'package:qizhengsiyu/usecases/save_calculated_panel_usecase.dart'
     as app74usecase;
 
 import 'NavigatorGenerator.dart';
+import 'package:tiebanshenshu/infrastructure/di/strategy_providers.dart';
 
 Future<void> initServices() async {
   // 在这里可以进行其他异步初始化操作
@@ -103,6 +104,7 @@ void main() async {
               create: (ctx) =>
                   DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
                     ..initState()),
+          ...StrategyProviders.providers,
         ],
         child: const MyApp(),
       ),
@@ -132,7 +134,7 @@ class MyApp extends StatelessWidget {
       // initialRoute: '/common/dev', // 占测记录
       // initialRoute: '/qizhengsiyu/panel', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
-      initialRoute: '/daliuren/dev', // 大六壬
+      initialRoute: '/tiebanshenshu/liuqinkaoke/selection',
       // initialRoute: '/qimendunjia', // 奇门遁甲
       // initialRoute: '/', // main
       // initialRoute: '/widget_dev', // 奇门遁甲

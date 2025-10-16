@@ -191,7 +191,7 @@ class SixYaoGua {
     );
 
     // 2. 拆分成二进制表示（从上而下，阳爻为1，阴爻为0）
-    final Gua64Enum gua = Gua64Enum.getBy8Gua(
+    final Enum64Gua gua = Enum64Gua.getBy8Gua(
       Enum8Gua.fromValue(guaName[0]),
       Enum8Gua.fromValue(guaName[1]),
     );
@@ -279,7 +279,7 @@ class SixYaoGua {
     );
 
     // 2. 拆分成二进制表示（从上而下，阳爻为1，阴爻为0）
-    Gua64Enum gua = Gua64Enum.getBy8Gua(
+    Enum64Gua gua = Enum64Gua.getBy8Gua(
       Enum8Gua.fromValue(guaName[0]),
       Enum8Gua.fromValue(guaName[1]),
     );
