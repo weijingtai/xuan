@@ -2,11 +2,10 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../domain/pure_yuan_tang_gua.dart';
 import '../../enums.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
 import '../../service/strategy/yuan_tang_strategy.dart';
-import '../../utils/yuan_tang_gua_helper.dart' as yt_helper;
+import 'pure_yuan_tang_gua.dart';
 part 'yuan_tang_info.g.dart';
 
 @JsonSerializable()

@@ -1,9 +1,11 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import '../utils/yuan_tang_calculator.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import 'pure_six_yao_gua.dart';
+import '../../domain/pure_six_yao_gua.dart';
+import '../six_yao_gua/enum_6_shou.dart';
+import 'yuan_tang_calculator.dart';
+
 part 'pure_yuan_tang_gua.g.dart';
 
 /// 元堂卦的“纯数据”模型，结构对齐 PureSixYaoGua：
@@ -30,6 +32,7 @@ class YuanTangYao extends GuaYao {
     TianGan? naJia,
     DiZhi? naZhi,
     LiuQin? liuQin,
+    Enum6Shou? sixShou,
     bool? isShiYao,
     bool? isYingYao,
   }) {
@@ -42,6 +45,7 @@ class YuanTangYao extends GuaYao {
     // 继承字段拷贝（保持与父类一致的行为）
     next.naJia = naJia ?? this.naJia;
     next.naZhi = naZhi ?? this.naZhi;
+    next.sixShou = sixShou ?? this.sixShou;
     next.liuQin = liuQin ?? this.liuQin;
     next.isShiYao = isShiYao ?? this.isShiYao;
     next.isYingYao = isYingYao ?? this.isYingYao;

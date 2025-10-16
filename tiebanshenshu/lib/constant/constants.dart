@@ -2,7 +2,94 @@ import 'dart:core';
 
 import 'package:common/enums.dart';
 import 'package:common/shared/enums/enum_hou_tian_gua.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/enum_6_shou.dart';
 
+import '../features/six_yao_gua/enum_8_gong_gua.dart';
+
+Map<TianGan, Map<EnumYaoOrder, Enum6Shou>> ganSixShouMapper = {
+  TianGan.JIA: {
+    EnumYaoOrder.init: Enum6Shou.qingLong,
+    EnumYaoOrder.second: Enum6Shou.zhuQue,
+    EnumYaoOrder.third: Enum6Shou.gouChen,
+    EnumYaoOrder.fourth: Enum6Shou.tengShe,
+    EnumYaoOrder.fifth: Enum6Shou.baiHu,
+    EnumYaoOrder.top: Enum6Shou.xuanWu,
+  },
+  TianGan.YI: {
+    EnumYaoOrder.init: Enum6Shou.qingLong,
+    EnumYaoOrder.second: Enum6Shou.zhuQue,
+    EnumYaoOrder.third: Enum6Shou.gouChen,
+    EnumYaoOrder.fourth: Enum6Shou.tengShe,
+    EnumYaoOrder.fifth: Enum6Shou.baiHu,
+    EnumYaoOrder.top: Enum6Shou.xuanWu,
+  },
+  TianGan.BING: {
+    EnumYaoOrder.init: Enum6Shou.zhuQue,
+    EnumYaoOrder.second: Enum6Shou.gouChen,
+    EnumYaoOrder.third: Enum6Shou.tengShe,
+    EnumYaoOrder.fourth: Enum6Shou.baiHu,
+    EnumYaoOrder.fifth: Enum6Shou.xuanWu,
+    EnumYaoOrder.top: Enum6Shou.qingLong,
+  },
+  TianGan.DING: {
+    EnumYaoOrder.init: Enum6Shou.zhuQue,
+    EnumYaoOrder.second: Enum6Shou.gouChen,
+    EnumYaoOrder.third: Enum6Shou.tengShe,
+    EnumYaoOrder.fourth: Enum6Shou.baiHu,
+    EnumYaoOrder.fifth: Enum6Shou.xuanWu,
+    EnumYaoOrder.top: Enum6Shou.qingLong,
+  },
+  TianGan.WU: {
+    EnumYaoOrder.init: Enum6Shou.gouChen,
+    EnumYaoOrder.second: Enum6Shou.tengShe,
+    EnumYaoOrder.third: Enum6Shou.baiHu,
+    EnumYaoOrder.fourth: Enum6Shou.xuanWu,
+    EnumYaoOrder.fifth: Enum6Shou.qingLong,
+    EnumYaoOrder.top: Enum6Shou.zhuQue,
+  },
+  TianGan.JI: {
+    EnumYaoOrder.init: Enum6Shou.tengShe,
+    EnumYaoOrder.second: Enum6Shou.baiHu,
+    EnumYaoOrder.third: Enum6Shou.xuanWu,
+    EnumYaoOrder.fourth: Enum6Shou.qingLong,
+    EnumYaoOrder.fifth: Enum6Shou.zhuQue,
+    EnumYaoOrder.top: Enum6Shou.gouChen,
+  },
+  TianGan.GENG: {
+    EnumYaoOrder.init: Enum6Shou.baiHu,
+    EnumYaoOrder.second: Enum6Shou.xuanWu,
+    EnumYaoOrder.third: Enum6Shou.qingLong,
+    EnumYaoOrder.fourth: Enum6Shou.zhuQue,
+    EnumYaoOrder.fifth: Enum6Shou.gouChen,
+    EnumYaoOrder.top: Enum6Shou.tengShe,
+  },
+
+  TianGan.XIN: {
+    EnumYaoOrder.init: Enum6Shou.baiHu,
+    EnumYaoOrder.second: Enum6Shou.xuanWu,
+    EnumYaoOrder.third: Enum6Shou.qingLong,
+    EnumYaoOrder.fourth: Enum6Shou.zhuQue,
+    EnumYaoOrder.fifth: Enum6Shou.gouChen,
+    EnumYaoOrder.top: Enum6Shou.tengShe,
+  },
+  TianGan.REN: {
+    EnumYaoOrder.init: Enum6Shou.xuanWu,
+    EnumYaoOrder.second: Enum6Shou.qingLong,
+    EnumYaoOrder.third: Enum6Shou.zhuQue,
+    EnumYaoOrder.fourth: Enum6Shou.gouChen,
+    EnumYaoOrder.fifth: Enum6Shou.tengShe,
+    EnumYaoOrder.top: Enum6Shou.baiHu,
+  },
+  TianGan.GUI: {
+    EnumYaoOrder.init: Enum6Shou.xuanWu,
+    EnumYaoOrder.second: Enum6Shou.qingLong,
+    EnumYaoOrder.third: Enum6Shou.zhuQue,
+    EnumYaoOrder.fourth: Enum6Shou.gouChen,
+    EnumYaoOrder.fifth: Enum6Shou.tengShe,
+    EnumYaoOrder.top: Enum6Shou.baiHu,
+  },
+};
 // 二进制str转八经卦
 const Map<String, String> binaryStrGuaMapper = {
   "111": "乾",
@@ -32,6 +119,136 @@ const List<String> gongGuaName = [
   "游魂",
   "归魂",
 ];
+const List<Enum8GongGuaName> gongGuaNameList = [
+  Enum8GongGuaName.BenGua,
+  Enum8GongGuaName.YiShi,
+  Enum8GongGuaName.ErShi,
+  Enum8GongGuaName.SanShi,
+  Enum8GongGuaName.WuShi,
+  Enum8GongGuaName.YouHun,
+  Enum8GongGuaName.GuiHun,
+];
+
+const Map<Enum8Gua, List<Enum64Gua>> eightGongGuaListMapper = {
+  Enum8Gua.Qian: [
+    Enum64Gua.qian_wei_tian,
+    Enum64Gua.tian_feng_gou,
+    Enum64Gua.tian_shan_dun,
+    Enum64Gua.tian_di_pi,
+    Enum64Gua.feng_di_guan,
+    Enum64Gua.shan_di_bo,
+    Enum64Gua.huo_di_jin,
+    Enum64Gua.huo_tian_da_you,
+  ],
+  Enum8Gua.Zhen: [
+    Enum64Gua.zhen_wei_lei,
+    Enum64Gua.lei_di_yu,
+    Enum64Gua.lei_shui_jie,
+    Enum64Gua.lei_feng_heng,
+    Enum64Gua.di_feng_sheng,
+    Enum64Gua.shui_feng_jing,
+    Enum64Gua.ze_feng_da_guo,
+    Enum64Gua.ze_lei_sui,
+  ],
+  Enum8Gua.Kan: [
+    Enum64Gua.kan_wei_shui,
+    Enum64Gua.shui_ze_jie,
+    Enum64Gua.shui_lei_tun,
+    Enum64Gua.shui_huo_ji_ji,
+    Enum64Gua.ze_huo_ge,
+    Enum64Gua.lei_huo_feng,
+    Enum64Gua.di_huo_ming_yi,
+    Enum64Gua.di_shui_shi,
+  ],
+  Enum8Gua.Gen: [
+    Enum64Gua.gen_wei_shan,
+    Enum64Gua.shan_huo_bi,
+    Enum64Gua.shan_tian_da_xu,
+    Enum64Gua.shan_ze_sun,
+    Enum64Gua.huo_ze_kui,
+    Enum64Gua.tian_ze_lv,
+    Enum64Gua.feng_ze_zhong_fu,
+    Enum64Gua.feng_shan_jian,
+  ],
+  Enum8Gua.Kun: [
+    Enum64Gua.kun_wei_di,
+    Enum64Gua.di_lei_fu,
+    Enum64Gua.di_ze_lin,
+    Enum64Gua.di_tian_tai,
+    Enum64Gua.lei_tian_da_zhuang,
+    Enum64Gua.ze_tian_guai,
+    Enum64Gua.shui_tian_xu,
+    Enum64Gua.shui_di_bi,
+  ],
+  Enum8Gua.Xun: [
+    Enum64Gua.xun_wei_feng,
+    Enum64Gua.feng_tian_xiao_xu,
+    Enum64Gua.feng_huo_jia_ren,
+    Enum64Gua.feng_lei_yi,
+    Enum64Gua.tian_lei_wu_wang,
+    Enum64Gua.huo_lei_shi_he,
+    Enum64Gua.shan_lei_yi,
+    Enum64Gua.shan_feng_gu,
+  ],
+  Enum8Gua.Li: [
+    Enum64Gua.li_wei_huo,
+    Enum64Gua.huo_shan_lv,
+    Enum64Gua.huo_feng_ding,
+    Enum64Gua.huo_shui_wei_ji,
+    Enum64Gua.shan_shui_meng,
+    Enum64Gua.feng_shui_huan,
+    Enum64Gua.tian_shui_song,
+    Enum64Gua.tian_huo_tong_ren,
+  ],
+  Enum8Gua.Dui: [
+    Enum64Gua.dui_wei_ze,
+    Enum64Gua.ze_shui_kun,
+    Enum64Gua.ze_di_cui,
+    Enum64Gua.ze_shan_xian,
+    Enum64Gua.shui_shan_jian,
+    Enum64Gua.di_shan_qian,
+    Enum64Gua.lei_shan_xiao_gu,
+    Enum64Gua.lei_ze_gui_mei,
+  ],
+};
+
+const Map<FiveXing, Map<FiveXing, LiuQin>> fiveXingSixQingMapper = {
+  FiveXing.JIN: {
+    FiveXing.JIN: LiuQin.XIONG_DI,
+    FiveXing.MU: LiuQin.QI_CAI,
+    FiveXing.SHUI: LiuQin.ZI_SUN,
+    FiveXing.HUO: LiuQin.GUAN_GUI,
+    FiveXing.TU: LiuQin.FU_MU,
+  },
+  FiveXing.MU: {
+    FiveXing.MU: LiuQin.XIONG_DI,
+    FiveXing.TU: LiuQin.QI_CAI,
+    FiveXing.HUO: LiuQin.ZI_SUN,
+    FiveXing.JIN: LiuQin.GUAN_GUI,
+    FiveXing.SHUI: LiuQin.FU_MU,
+  },
+  FiveXing.SHUI: {
+    FiveXing.SHUI: LiuQin.XIONG_DI,
+    FiveXing.HUO: LiuQin.QI_CAI,
+    FiveXing.MU: LiuQin.ZI_SUN,
+    FiveXing.TU: LiuQin.GUAN_GUI,
+    FiveXing.JIN: LiuQin.FU_MU,
+  },
+  FiveXing.HUO: {
+    FiveXing.HUO: LiuQin.XIONG_DI,
+    FiveXing.JIN: LiuQin.QI_CAI,
+    FiveXing.TU: LiuQin.ZI_SUN,
+    FiveXing.SHUI: LiuQin.GUAN_GUI,
+    FiveXing.MU: LiuQin.FU_MU,
+  },
+  FiveXing.TU: {
+    FiveXing.TU: LiuQin.XIONG_DI,
+    FiveXing.SHUI: LiuQin.QI_CAI,
+    FiveXing.JIN: LiuQin.ZI_SUN,
+    FiveXing.MU: LiuQin.GUAN_GUI,
+    FiveXing.HUO: LiuQin.FU_MU,
+  },
+};
 
 const Map<String, List<String>> guaNameEightGongMapper = {
   "乾": ["乾", "姤", "遁", "否", "观", "剥", "晋", "大有"],

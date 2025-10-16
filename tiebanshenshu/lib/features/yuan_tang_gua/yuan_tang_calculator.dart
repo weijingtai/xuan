@@ -1,13 +1,13 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/utils/collections_utils.dart';
+import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/enums.dart';
 import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_info.dart';
 import 'package:tiebanshenshu/utils/utils.dart' as gua_utils;
 
-import '../constant/constants.dart' as constants;
-import '../domain/pure_six_yao_gua.dart';
-import '../domain/pure_yuan_tang_gua.dart';
+import '../../constant/constants.dart' as constants;
+import 'pure_yuan_tang_gua.dart';
 
 enum YuanTangMonthType {
   monthYinYan("月阴阳", "1/3/5/7/9/11为【阳月】，2/4/6/8/10/12为【阴月】"),
@@ -222,7 +222,7 @@ class YuanTangCalculator {
           } else if (xianTianGua.gua == Enum64Gua.shui_lei_tun) {
             gua = Enum64Gua.di_lei_fu;
           } else if (xianTianGua.gua == Enum64Gua.shui_shan_jian) {
-            gua = Enum64Gua.di_shan_qi;
+            gua = Enum64Gua.di_shan_qian;
           }
         }
       }

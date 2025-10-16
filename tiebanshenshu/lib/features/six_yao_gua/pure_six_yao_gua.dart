@@ -2,6 +2,8 @@ import 'package:common/enums.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'enum_6_shou.dart';
+
 part 'pure_six_yao_gua.g.dart';
 
 enum EnumYaoOrder {
@@ -72,7 +74,7 @@ enum Enum64Gua {
   @JsonValue("蹇")
   shui_shan_jian("水山蹇", "蹇", Enum8Gua.Kun, Enum8Gua.Gen),
   @JsonValue("谦")
-  di_shan_qi("地山谦", "谦", Enum8Gua.Kun, Enum8Gua.Gen),
+  di_shan_qian("地山谦", "谦", Enum8Gua.Kun, Enum8Gua.Gen),
   @JsonValue("小过")
   lei_shan_xiao_gu("雷山小过", "小过", Enum8Gua.Zhen, Enum8Gua.Gen),
   @JsonValue("归妹")
@@ -104,7 +106,7 @@ enum Enum64Gua {
   @JsonValue("恒")
   lei_feng_heng("雷风恒", "恒", Enum8Gua.Zhen, Enum8Gua.Xun),
   @JsonValue("升")
-  di_feng_shen("地风升", "升", Enum8Gua.Kun, Enum8Gua.Xun),
+  di_feng_sheng("地风升", "升", Enum8Gua.Kun, Enum8Gua.Xun),
   @JsonValue("井")
   shui_feng_jing("水风井", "井", Enum8Gua.Kan, Enum8Gua.Xun),
   @JsonValue("大过")
@@ -256,6 +258,7 @@ class GuaYao extends Equatable {
   TianGan? naJia; // 爻纳甲
   DiZhi? naZhi; // 爻纳支
   LiuQin? liuQin; // 六亲
+  Enum6Shou? sixShou; // 六兽
   bool isShiYao; // 是否为世爻
   bool isYingYao; // 是否为应爻
 
@@ -269,6 +272,7 @@ class GuaYao extends Equatable {
     this.naJia,
     this.naZhi,
     this.liuQin,
+    this.sixShou,
     this.isShiYao = false,
     this.isYingYao = false,
   });
@@ -283,6 +287,7 @@ class GuaYao extends Equatable {
     TianGan? naJia,
     DiZhi? naZhi,
     LiuQin? liuQin,
+    Enum6Shou? sixShou,
     bool? isShiYao,
     bool? isYingYao,
   }) {
@@ -292,6 +297,7 @@ class GuaYao extends Equatable {
       naJia: naJia ?? this.naJia,
       naZhi: naZhi ?? this.naZhi,
       liuQin: liuQin ?? this.liuQin,
+      sixShou: sixShou ?? this.sixShou,
       isShiYao: isShiYao ?? this.isShiYao,
       isYingYao: isYingYao ?? this.isYingYao,
     );
@@ -304,6 +310,7 @@ class GuaYao extends Equatable {
     naJia,
     naZhi,
     liuQin,
+    sixShou,
     isShiYao,
     isYingYao,
   ];

@@ -12,6 +12,7 @@ GuaYao _$GuaYaoFromJson(Map<String, dynamic> json) => GuaYao(
   naJia: $enumDecodeNullable(_$TianGanEnumMap, json['naJia']),
   naZhi: $enumDecodeNullable(_$DiZhiEnumMap, json['naZhi']),
   liuQin: $enumDecodeNullable(_$LiuQinEnumMap, json['liuQin']),
+  sixShou: $enumDecodeNullable(_$Enum6ShouEnumMap, json['sixShou']),
   isShiYao: json['isShiYao'] as bool? ?? false,
   isYingYao: json['isYingYao'] as bool? ?? false,
 );
@@ -22,6 +23,7 @@ Map<String, dynamic> _$GuaYaoToJson(GuaYao instance) => <String, dynamic>{
   'naJia': _$TianGanEnumMap[instance.naJia],
   'naZhi': _$DiZhiEnumMap[instance.naZhi],
   'liuQin': _$LiuQinEnumMap[instance.liuQin],
+  'sixShou': _$Enum6ShouEnumMap[instance.sixShou],
   'isShiYao': instance.isShiYao,
   'isYingYao': instance.isYingYao,
 };
@@ -76,6 +78,15 @@ const _$LiuQinEnumMap = {
   LiuQin.ZI_SUN: '子孙',
 };
 
+const _$Enum6ShouEnumMap = {
+  Enum6Shou.qingLong: '青龙',
+  Enum6Shou.zhuQue: '朱雀',
+  Enum6Shou.gouChen: '勾陈',
+  Enum6Shou.tengShe: '腾蛇',
+  Enum6Shou.baiHu: '白虎',
+  Enum6Shou.xuanWu: '玄武',
+};
+
 PureSixYaoGua _$PureSixYaoGuaFromJson(Map<String, dynamic> json) =>
     PureSixYaoGua(
       gua: $enumDecode(_$Enum64GuaEnumMap, json['gua']),
@@ -104,7 +115,7 @@ const _$Enum64GuaEnumMap = {
   Enum64Gua.ze_di_cui: '萃',
   Enum64Gua.ze_shan_xian: '咸',
   Enum64Gua.shui_shan_jian: '蹇',
-  Enum64Gua.di_shan_qi: '谦',
+  Enum64Gua.di_shan_qian: '谦',
   Enum64Gua.lei_shan_xiao_gu: '小过',
   Enum64Gua.lei_ze_gui_mei: '归妹',
   Enum64Gua.li_wei_huo: '离',
@@ -119,7 +130,7 @@ const _$Enum64GuaEnumMap = {
   Enum64Gua.lei_di_yu: '豫',
   Enum64Gua.lei_shui_jie: '解',
   Enum64Gua.lei_feng_heng: '恒',
-  Enum64Gua.di_feng_shen: '升',
+  Enum64Gua.di_feng_sheng: '升',
   Enum64Gua.shui_feng_jing: '井',
   Enum64Gua.ze_feng_da_guo: '大过',
   Enum64Gua.ze_lei_sui: '随',
