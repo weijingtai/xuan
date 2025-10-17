@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/constant/constants.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/features/liuqinkaoke/models/liuqinkaoke_models.dart';
 
 import 'package:tiebanshenshu/service/strategy/middle_palace_five_strategy.dart';

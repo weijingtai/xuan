@@ -1,6 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 
 import '../../constant/constants.dart' as Constants;
 import '../../domain/four_zhu.dart';

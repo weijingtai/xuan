@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,9 +20,10 @@ void main() {
 
     final testParams = YuanTangStrategyParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+      birthMonth: 6,
     );
 
     final result = strategy.calculate(testParams);

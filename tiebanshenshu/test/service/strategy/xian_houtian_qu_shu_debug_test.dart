@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
@@ -34,9 +35,9 @@ void main() {
       final strategy = XianHoutianQuShuStrategy();
       final params = XianHoutianQuShuStrategyParams(
         eightChars: eightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
       );
 
       print('\nCalculating...');

@@ -1,13 +1,14 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/utils/collections_utils.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/enums.dart';
 import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_info.dart';
 import 'package:tiebanshenshu/utils/utils.dart' as gua_utils;
 
 import '../../constant/constants.dart' as constants;
 import 'pure_yuan_tang_gua.dart';
+import 'yuan_tang_info_ext.dart';
 
 enum YuanTangMonthType {
   monthYinYan("月阴阳", "1/3/5/7/9/11为【阳月】，2/4/6/8/10/12为【阴月】"),
@@ -66,7 +67,9 @@ class YuanTangCalculator {
     TwentyFourJieQi birthAfterJieQi = birthJieQi.yinYangDun.isYang
         ? TwentyFourJieQi.DONG_ZHI
         : TwentyFourJieQi.XIAO_HAN;
-    PureYuanTangGua xiantianGua = calculateXianTianGua(
+
+    // 计算先天卦并获取天地卦数据
+    final (xiantianGua, tianDiGuaData) = calculateXianTianGuaWithTianDiData(
       eightChars: eightChars,
       yearYinYang: yearYinYang,
       gender: gender,
@@ -102,6 +105,7 @@ class YuanTangCalculator {
       houTianGua: houtianGua,
       calanderType: calanderType,
       birthMonth: birthMonth,
+      tianDiGuaData: tianDiGuaData,
     );
   }
 
@@ -179,8 +183,110 @@ class YuanTangCalculator {
     );
   }
 
-  /// 计算先天卦（从元堂卦逻辑提取）
+  /// 计算先天卦并返回天地卦数据
   ///
+  /// 返回: (PureYuanTangGua, TianDiGuaData)
+  ///
+  /// 参数：
+  /// - [eightChars]: 八字对象
+  /// - [yearYinYang]: 年份阴阳（"阳" / "阴"）
+  /// - [gender]: 性别（"男" / "女"）
+  /// - [threeYuan]: 三元（"上" / "中" / "下"）
+  /// - [birthAfterJieQi]: 出生节气后（"夏至" / "冬至"）
+  (PureYuanTangGua, TianDiGuaData) calculateXianTianGuaWithTianDiData({
+    required EightChars eightChars,
+    required YinYang yearYinYang,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterJieQi,
+  }) {
+    // 1. 四柱八字取数
+    // 提取天干数列表
+    final List<int> ganNumList = eightChars.allTianGan
+        .map((t) => constants.ganNumberMapper[t]!)
+        .toList();
+
+    // 提取地支数列表（每个地支对应多个数字）
+    final List<List<int>> zhiNumList = eightChars.allDiZhi
+        .map((t) => constants.zhiNumberMapper[t]!)
+        .toList();
+
+    // 合并天干数列表与地支数列表
+    final List<int> combined = [
+      ...ganNumList,
+      ...zhiNumList.expand((x) => x),
+    ];
+
+    // 2.1. 分成奇数与偶数两组
+    /// 奇数组
+    final List<int> oddList = combined.where((n) => n % 2 == 1).toList();
+
+    /// 偶数组
+    final List<int> evenList = combined.where((n) => n % 2 == 0).toList();
+
+    // 2.2. 奇数组相加为天数，偶数数组相加为地数
+    // 2.2.1. 奇数组总和为天数
+    final int oddNumTotal = oddList.fold(0, (a, b) => a + b);
+
+    /// 2.2.2. 偶数组总和为地数
+    final int evenNumTotal = evenList.fold(0, (a, b) => a + b);
+
+    // 3. 天地数化后天卦
+    // 3.1.1. 处理天数
+    final int tianGuaNum = calculateGuaNum(oddNumTotal, 25, 5);
+    // 3.1.2. 处理地数
+    final int diGuaNum = calculateGuaNum(evenNumTotal, 30, 3);
+
+    // 判断是否使用三元五宫
+    final bool usedThreeYuanWuGong = tianGuaNum == 5 || diGuaNum == 5;
+
+    // 3.2. 天地数化卦
+    // 3.2.1. 天数化卦
+    final Enum8Gua tianGua = numberToHouTianGua(
+      number: tianGuaNum,
+      gender: gender,
+      threeYuan: threeYuan,
+      yearYinYang: yearYinYang,
+    );
+    // 3.2.2. 地数化卦
+    final Enum8Gua diGua = numberToHouTianGua(
+      number: diGuaNum,
+      gender: gender,
+      threeYuan: threeYuan,
+      yearYinYang: yearYinYang,
+    );
+
+    // 4. 得到先天卦
+    Enum64Gua xiantianGua = tianDiGuaToGua64(
+      gender: gender,
+      yearYinYang: yearYinYang,
+      tianGua: tianGua,
+      diGua: diGua,
+    );
+
+    // 5. 元堂装卦
+    final PureYuanTangGua pureYuanTangGua = yuanTangZhuangGua(
+      eightChars: eightChars,
+      gua: xiantianGua,
+      gender: gender,
+      birthAfterZhi: birthAfterJieQi,
+    );
+
+    // 6. 构建天地卦数据
+    final tianDiGuaData = TianDiGuaData(
+      ganNumList: ganNumList,
+      zhiNumList: zhiNumList,
+      oddNumTotal: oddNumTotal,
+      evenNumTotal: evenNumTotal,
+      tianGuaNum: tianGuaNum,
+      diGuaNum: diGuaNum,
+      tianGua: tianGua,
+      diGua: diGua,
+      usedThreeYuanWuGong: usedThreeYuanWuGong,
+    );
+
+    return (pureYuanTangGua, tianDiGuaData);
+  }
 
   /// 先天卦转换为后天卦
   /// 基础处理：将元堂爻 阴阳转换后，上下卦呼唤

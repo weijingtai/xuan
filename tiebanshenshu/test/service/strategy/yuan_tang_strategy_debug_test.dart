@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,17 +14,18 @@ void main() {
     test('测试案例1: 甲戌 己巳 辛丑 丁酉 (男/上/夏至)', () {
       // 构造测试数据
       final fourZhu = EightChars(
-        yearGanzhi: "甲戌",
-        monthGanzhi: "己巳",
-        dayGanzhi: "辛丑",
-        timeGanzhi: "丁酉",
+        year: JiaZi.getFromGanZhiValue("甲戌")!,
+        month: JiaZi.getFromGanZhiValue("己巳")!,
+        day: JiaZi.getFromGanZhiValue("辛丑")!,
+        time: JiaZi.getFromGanZhiValue("丁酉")!,
       );
 
       final params = YuanTangStrategyParams(
-        fourZhu: fourZhu,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        eightChars: fourZhu,
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       // 执行计算
@@ -41,17 +43,18 @@ void main() {
 
     test('测试案例2: 甲戌 己巳 辛丑 丁酉 (女/上/夏至)', () {
       final fourZhu = EightChars(
-        yearGanzhi: "甲戌",
-        monthGanzhi: "己巳",
-        dayGanzhi: "辛丑",
-        timeGanzhi: "丁酉",
+        year: JiaZi.getFromGanZhiValue("甲戌")!,
+        month: JiaZi.getFromGanZhiValue("己巳")!,
+        day: JiaZi.getFromGanZhiValue("辛丑")!,
+        time: JiaZi.getFromGanZhiValue("丁酉")!,
       );
 
       final params = YuanTangStrategyParams(
-        fourZhu: fourZhu,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        eightChars: fourZhu,
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final strategy = YuanTangStrategy();
@@ -74,9 +77,10 @@ void main() {
 
       final params = YuanTangStrategyParams(
         eightChars: fourZhu,
-        gender: "男",
-        threeYuan: "中",
-        birthAfterZhi: "冬至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.middle,
+        birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
+        birthMonth: 5,
       );
 
       final strategy = YuanTangStrategy();
@@ -103,8 +107,8 @@ void _printCalculationDetails(
   // 输入参数
   print('\n【输入参数】');
   print(
-    '四柱: ${params.fourZhu.yearGanzhi} ${params.fourZhu.monthGanzhi} '
-    '${params.fourZhu.dayGanzhi} ${params.fourZhu.timeGanzhi}',
+    '四柱: ${params.eightChars.year.ganZhiStr} ${params.eightChars.month.ganZhiStr} '
+    '${params.eightChars.day.ganZhiStr} ${params.eightChars.time.ganZhiStr}',
   );
   print('性别: ${params.gender}');
   print('三元: ${params.threeYuan}');
@@ -142,7 +146,9 @@ void _printCalculationDetails(
   print('\n【步骤2: 生成上下卦(先天卦)】');
   print('年份阴阳: ${model.yearYinYang}');
   print('性别: ${params.gender}');
-  print('配卦规则: ${_getUpperLowerGuaRule(model.yearYinYang, params.gender)}');
+  print(
+    '配卦规则: ${_getUpperLowerGuaRule(model.yearYinYang.name, params.gender.name)}',
+  );
   print('上卦: ${model.upperGua} (后天数: ${model.xiantianUpperGuaNumber})');
   print('下卦: ${model.lowerGua} (后天数: ${model.xiantianLowerGuaNumber})');
   print('先天卦: ${model.xiantianGua}');
@@ -173,13 +179,15 @@ void _printCalculationDetails(
 
   // 步骤4: 生成后天卦
   print('\n【步骤4: 生成后天卦】');
-  print(
-    '元堂爻爻变: ${model.yuantangYaoLabel}爻 ${_getYaoYinYang(model.xiantianGua, model.yuantangYaoIndex)} → ${_getYaoYinYangAfterChange(model.xiantianGua, model.yuantangYaoIndex)}',
-  );
-  print('上下卦互换: ${model.xiantianGua[0]} ↔ ${model.xiantianGua[1]}');
+  // print(
+  //   '元堂爻爻变: ${model.yuantangYaoLabel}爻 ${_getYaoYinYang(model.xiantianGua, model.yuantangYaoIndex)} → ${_getYaoYinYangAfterChange(model.xiantianGua, model.yuantangYaoIndex)}',
+  // );
+  print('上下卦互换: ${model.xiantianGua.top} ↔ ${model.xiantianGua.bottom}');
   print('后天卦: ${model.houtianGua}');
-  print('后天卦上卦: ${model.houtianGua[0]} (后天数: ${model.houtianUpperGuaNumber})');
-  print('后天卦下卦: ${model.houtianGua[1]} (后天数: ${model.houtianLowerGuaNumber})');
+  print('后天卦上卦: ${model.houtianGua.top} (后天数: ${model.houtianUpperGuaNumber})');
+  print(
+    '后天卦下卦: ${model.houtianGua.bottom} (后天数: ${model.houtianLowerGuaNumber})',
+  );
 
   // 步骤5: 互卦
   print('\n【步骤5: 互卦计算】');

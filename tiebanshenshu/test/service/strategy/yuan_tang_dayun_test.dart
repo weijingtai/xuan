@@ -36,9 +36,10 @@ void main() {
 
     testParams = YuanTangStrategyParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+      birthMonth: 5,
     );
 
     final result = strategy.calculate(testParams);

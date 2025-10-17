@@ -5,7 +5,7 @@ library;
 
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import '../../domain/pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 
 import '../../constant/constants.dart' as Constants;
 import 'base_calculation_strategy.dart';
@@ -86,7 +86,12 @@ class TaiXuanFourZhuStrategy
         switch (params.naJiaMethod) {
           case TaiXuanNaJiaMethod.yearGanYinYang:
             final isYangYear = params.eightChars.year.gan.isYang;
-            result = _calculateByYearGanYinYang(pillar, pillarName, source, isYangYear);
+            result = _calculateByYearGanYinYang(
+              pillar,
+              pillarName,
+              source,
+              isYangYear,
+            );
             break;
 
           case TaiXuanNaJiaMethod.innerOuterGua:
@@ -117,7 +122,7 @@ class TaiXuanFourZhuStrategy
         sourceData: {
           'error': e.toString(),
           'stackTrace': stackTrace.toString(),
-          'params': params.description
+          'params': params.description,
         },
       );
     }
@@ -175,17 +180,19 @@ class TaiXuanFourZhuStrategy
         lowerSum += sum;
       }
 
-      yaoDetails.add(TaiXuanYaoDetail(
-        position: i,
-        positionLabel: ['初', '二', '三'][i],
-        tianGan: tianGan,
-        diZhi: diZhi,
-        taiXuanGanNumber: ganNum,
-        taiXuanZhiNumber: zhiNum,
-        taiXuanNumber: sum,
-        yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
-        isFiltered: sum == 10,
-      ));
+      yaoDetails.add(
+        TaiXuanYaoDetail(
+          position: i,
+          positionLabel: ['初', '二', '三'][i],
+          tianGan: tianGan,
+          diZhi: diZhi,
+          taiXuanGanNumber: ganNum,
+          taiXuanZhiNumber: zhiNum,
+          taiXuanNumber: sum,
+          yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
+          isFiltered: sum == 10,
+        ),
+      );
     }
 
     // 上卦纳甲纳支（四、五、上爻）
@@ -207,17 +214,19 @@ class TaiXuanFourZhuStrategy
         upperSum += sum;
       }
 
-      yaoDetails.add(TaiXuanYaoDetail(
-        position: i,
-        positionLabel: ['四', '五', '上'][i - 3],
-        tianGan: tianGan,
-        diZhi: diZhi,
-        taiXuanGanNumber: ganNum,
-        taiXuanZhiNumber: zhiNum,
-        taiXuanNumber: sum,
-        yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
-        isFiltered: sum == 10,
-      ));
+      yaoDetails.add(
+        TaiXuanYaoDetail(
+          position: i,
+          positionLabel: ['四', '五', '上'][i - 3],
+          tianGan: tianGan,
+          diZhi: diZhi,
+          taiXuanGanNumber: ganNum,
+          taiXuanZhiNumber: zhiNum,
+          taiXuanNumber: sum,
+          yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
+          isFiltered: sum == 10,
+        ),
+      );
     }
 
     // 计算基础数
@@ -271,10 +280,12 @@ class TaiXuanFourZhuStrategy
 
     // 步骤2: 使用传统内外卦纳甲规则（关键区别）
     // 内卦（下卦）使用 innerGuaYaoTianGan
-    final Map<Enum8Gua, List<TianGan>> lowerGanMapper = Constants.innerGuaYaoTianGan;
+    final Map<Enum8Gua, List<TianGan>> lowerGanMapper =
+        Constants.innerGuaYaoTianGan;
 
     // 外卦（上卦）使用 outerGuaYaoTianGan
-    final Map<Enum8Gua, List<TianGan>> upperGanMapper = Constants.outerGuaYaoTianGan;
+    final Map<Enum8Gua, List<TianGan>> upperGanMapper =
+        Constants.outerGuaYaoTianGan;
 
     // 步骤3: 分别计算下卦和上卦
     final List<TaiXuanYaoDetail> yaoDetails = [];
@@ -297,17 +308,19 @@ class TaiXuanFourZhuStrategy
         lowerSum += sum;
       }
 
-      yaoDetails.add(TaiXuanYaoDetail(
-        position: i,
-        positionLabel: ['初', '二', '三'][i],
-        tianGan: tianGan,
-        diZhi: diZhi,
-        taiXuanGanNumber: ganNum,
-        taiXuanZhiNumber: zhiNum,
-        taiXuanNumber: sum,
-        yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
-        isFiltered: sum == 10,
-      ));
+      yaoDetails.add(
+        TaiXuanYaoDetail(
+          position: i,
+          positionLabel: ['初', '二', '三'][i],
+          tianGan: tianGan,
+          diZhi: diZhi,
+          taiXuanGanNumber: ganNum,
+          taiXuanZhiNumber: zhiNum,
+          taiXuanNumber: sum,
+          yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
+          isFiltered: sum == 10,
+        ),
+      );
     }
 
     // 上卦纳甲纳支（四、五、上爻）
@@ -329,17 +342,19 @@ class TaiXuanFourZhuStrategy
         upperSum += sum;
       }
 
-      yaoDetails.add(TaiXuanYaoDetail(
-        position: i,
-        positionLabel: ['四', '五', '上'][i - 3],
-        tianGan: tianGan,
-        diZhi: diZhi,
-        taiXuanGanNumber: ganNum,
-        taiXuanZhiNumber: zhiNum,
-        taiXuanNumber: sum,
-        yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
-        isFiltered: sum == 10,
-      ));
+      yaoDetails.add(
+        TaiXuanYaoDetail(
+          position: i,
+          positionLabel: ['四', '五', '上'][i - 3],
+          tianGan: tianGan,
+          diZhi: diZhi,
+          taiXuanGanNumber: ganNum,
+          taiXuanZhiNumber: zhiNum,
+          taiXuanNumber: sum,
+          yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
+          isFiltered: sum == 10,
+        ),
+      );
     }
 
     // 计算基础数
@@ -371,7 +386,6 @@ class TaiXuanFourZhuStrategy
     );
   }
 
-
   /// 获取默认的条文计算配置
   @override
   TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
@@ -381,15 +395,13 @@ class TaiXuanFourZhuStrategy
   /// 计算条文列表（使用指定配置）
   @override
   List<int> calculateTiaoWenListWithConfig(
-    int baseNumber, 
-    TaiXuanFourZhuStrategyParams params, 
+    int baseNumber,
+    TaiXuanFourZhuStrategyParams params,
     TiaoWenCalculationConfig config,
   ) {
     // 构建计算上下文
-    final context = <String, dynamic>{
-      'eightChars': params.eightChars,
-    };
-    
+    final context = <String, dynamic>{'eightChars': params.eightChars};
+
     return config.calculateTiaoWenList(baseNumber, context);
   }
 
@@ -414,5 +426,6 @@ class TaiXuanFourZhuStrategy
   }
 
   @override
-  String get tiaoWenCalculationDescription => defaultTiaoWenCalculationConfig.description;
+  String get tiaoWenCalculationDescription =>
+      defaultTiaoWenCalculationConfig.description;
 }

@@ -7,7 +7,7 @@ import 'package:common/enums.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model_result.dart';
 
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/utils/utils.dart';
 
 import '../../constant/constants.dart' as Constants;

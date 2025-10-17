@@ -6,6 +6,7 @@ import '../../enums.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
 import '../../service/strategy/yuan_tang_strategy.dart';
 import 'pure_yuan_tang_gua.dart';
+import 'yuan_tang_info_ext.dart';
 part 'yuan_tang_info.g.dart';
 
 @JsonSerializable()
@@ -47,6 +48,9 @@ class YuanTangInfo {
   final PureYuanTangGua xianTanGua;
   final PureYuanTangGua houTianGua;
 
+  /// 天地卦生成数据（可选，用于需要详细计算过程的场景）
+  final TianDiGuaData? tianDiGuaData;
+
   /// 构造函数：初始化所有最终字段
   const YuanTangInfo({
     required this.eightChars,
@@ -57,6 +61,7 @@ class YuanTangInfo {
     required this.birthAfterJieQi,
     required this.xianTanGua,
     required this.houTianGua,
+    this.tianDiGuaData,
   });
 
   factory YuanTangInfo.fromJson(Map<String, dynamic> json) =>

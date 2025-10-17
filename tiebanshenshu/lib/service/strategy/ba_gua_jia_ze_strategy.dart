@@ -8,7 +8,7 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 
 import '../../constant/constants.dart' as constants;
-import '../../domain/pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/ba_gua_jia_ze_base_number_model.dart';

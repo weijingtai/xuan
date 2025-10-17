@@ -6,7 +6,7 @@ library;
 import 'package:common/enums.dart';
 
 import '../../constant/constants.dart' as Constants;
-import '../../domain/pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 import '../../domain/models/base_number_model_result.dart';

@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model.dart';
 import 'package:tiebanshenshu/repository/datamodels/tiao_wen_datamodel.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/utils/utils.dart';
 
 import '../../service/strategy/base_calculation_strategy.dart';
@@ -30,8 +30,9 @@ class SixQinCorrectKeStrategy
       GenericTiaoWenCalculationConfig.taiXuanStandard();
 
   @override
-  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs =>
-      [GenericTiaoWenCalculationConfig.taiXuanStandard()];
+  List<TiaoWenCalculationConfig> get supportedTiaoWenCalculationConfigs => [
+    GenericTiaoWenCalculationConfig.taiXuanStandard(),
+  ];
 
   @override
   String get tiaoWenCalculationDescription => "基础数分别各±96四次：±96、±192、±384、±768";
@@ -42,7 +43,10 @@ class SixQinCorrectKeStrategy
   @override
   List<int> calculateTiaoWenList(int baseNumber, SixQinCorrectKeParams params) {
     return calculateTiaoWenListWithConfig(
-        baseNumber, params, defaultTiaoWenCalculationConfig);
+      baseNumber,
+      params,
+      defaultTiaoWenCalculationConfig,
+    );
   }
 
   SixQinCorrectKeResult execute(SixQinCorrectKeParams params) {
@@ -53,7 +57,10 @@ class SixQinCorrectKeStrategy
     final huGua = gua.hu;
 
     final baseNumber = calculateGuaNum(
-        params.originalGuaNum, params.totalGuaNum, params.ke);
+      params.originalGuaNum,
+      params.totalGuaNum,
+      params.ke,
+    );
 
     final tiaoWenList = _generateTiaoWenList(baseNumber);
 
@@ -111,12 +118,14 @@ class SixQinCorrectKeStrategy
     combinedList.sort();
 
     return combinedList
-        .map((number) => TiaoWenDataModel(
-              id: number,
-              setName: DiZhi.ZI,
-              content1: '',
-              ageSet1: [],
-            ))
+        .map(
+          (number) => TiaoWenDataModel(
+            id: number,
+            setName: DiZhi.ZI,
+            content1: '',
+            ageSet1: [],
+          ),
+        )
         .toList();
   }
 }

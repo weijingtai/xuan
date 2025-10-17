@@ -3,7 +3,7 @@
 /// 负责实现卦中取数法的核心算法逻辑
 library;
 
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 
 import '../../constant/constants.dart' as constants;
 import 'package:common/models/eight_chars.dart';

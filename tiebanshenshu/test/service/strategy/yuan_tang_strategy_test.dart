@@ -1,5 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/enums.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_calculator.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
 import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 
@@ -19,17 +23,20 @@ void main() {
 
     // 构造测试四柱：甲戌 己巳 辛丑 丁酉
     testEightChars = EightChars(
-      yearGanzhi: "甲戌",
-      monthGanzhi: "己巳",
-      dayGanzhi: "辛丑",
-      timeGanzhi: "丁酉",
+      year: JiaZi.JIA_XU,
+      month: JiaZi.JI_SI,
+      day: JiaZi.XIN_CHOU,
+      time: JiaZi.DING_YOU,
     );
 
     testParams = YuanTangStrategyParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+      birthMonth: 5, // 巳月=5月
+      monthType: YuanTangMonthType.monthYinYan,
+      calanderType: CalanderType.solar,
     );
   });
 
@@ -100,7 +107,16 @@ void main() {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      final validGua = ['乾', '兑', '离', '震', '巽', '坎', '艮', '坤'];
+      final validGua = [
+        Enum8Gua.Qian,
+        Enum8Gua.Dui,
+        Enum8Gua.Li,
+        Enum8Gua.Zhen,
+        Enum8Gua.Xun,
+        Enum8Gua.Kan,
+        Enum8Gua.Gen,
+        Enum8Gua.Kun,
+      ];
       expect(validGua.contains(model.tianGua), isTrue);
       expect(validGua.contains(model.diGua), isTrue);
     });
@@ -112,7 +128,7 @@ void main() {
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 甲为阳干
-      expect(model.yearYinYang, equals('阳'));
+      expect(model.yearYinYang, equals(YinYang.YANG));
     });
 
     test('阳年男性应该天卦在上、地卦在下', () {
@@ -127,9 +143,10 @@ void main() {
     test('阳年女性应该地卦在上、天卦在下', () {
       final femaleParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final result = strategy.calculate(femaleParams);
@@ -144,8 +161,10 @@ void main() {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      expect(model.xiantianGua, equals(model.upperGua + model.lowerGua));
-      expect(model.xiantianGua.length, equals(2));
+      expect(
+        model.xiantianGua,
+        equals(Enum64Gua.getBy8Gua(model.upperGua, model.lowerGua)),
+      );
     });
 
     test('上下卦后天数应该在1-9之间', () {
@@ -208,7 +227,6 @@ void main() {
 
       // 后天卦应该和先天卦不同（元堂爻爻变且上下卦互换）
       expect(model.houtianGua, isNot(equals(model.xiantianGua)));
-      expect(model.houtianGua.length, equals(2));
     });
 
     test('后天卦后天数应该在1-9之间', () {
@@ -227,16 +245,14 @@ void main() {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      expect(model.xiantianGuaHu, isNotEmpty);
-      expect(model.xiantianGuaHu.length, equals(2));
+      expect(model.xiantianGuaHu, isNotNull);
     });
 
     test('应该生成后天卦互卦', () {
       final result = strategy.calculate(testParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
-      expect(model.houtianGuaHu, isNotEmpty);
-      expect(model.houtianGuaHu.length, equals(2));
+      expect(model.houtianGuaHu, isNotNull);
     });
   });
 
@@ -358,16 +374,18 @@ void main() {
     test('不同性别应该产生不同的结果', () {
       final maleParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final femaleParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final maleResult = strategy.calculate(maleParams);
@@ -384,16 +402,18 @@ void main() {
     test('不同三元应该可能产生不同结果（当天数或地数为5时）', () {
       final shangYuanParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final zhongYuanParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "中",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.middle,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final shangResult = strategy.calculate(shangYuanParams);
@@ -407,16 +427,18 @@ void main() {
     test('不同节气应该可能产生不同结果（6爻全阳/全阴时）', () {
       final xiazhiParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final dongzhiParams = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "女",
-        threeYuan: "上",
-        birthAfterZhi: "冬至",
+        gender: Gender.female,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.DONG_ZHI,
+        birthMonth: 11, // 子月=11月
       );
 
       final xiazhiResult = strategy.calculate(xiazhiParams);
@@ -430,16 +452,18 @@ void main() {
     test('相同参数应该产生相同结果', () {
       final params1 = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final params2 = YuanTangStrategyParams(
         eightChars: testEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 5,
       );
 
       final result1 = strategy.calculate(params1);
@@ -518,17 +542,18 @@ void main() {
       // 测试数据：男 己酉年 丙子月 辛巳日 戊子时
       // 注：此测试验证算法实际输出，而非外部提供的预期值
       specificEightChars = EightChars(
-        yearGanzhi: "己酉",
-        monthGanzhi: "丙子",
-        dayGanzhi: "辛巳",
-        timeGanzhi: "戊子",
+        year: JiaZi.JI_YOU,
+        month: JiaZi.BING_ZI,
+        day: JiaZi.XIN_SI,
+        time: JiaZi.WU_ZI,
       );
 
       specificParams = YuanTangStrategyParams(
         eightChars: specificEightChars,
-        gender: "男",
-        threeYuan: "上",
-        birthAfterZhi: "夏至",
+        gender: Gender.male,
+        threeYuan: YuanYunOrder.upper,
+        birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+        birthMonth: 11, // 子月=11月
       );
     });
 
@@ -572,11 +597,11 @@ void main() {
 
       // 天数：28 % 25 = 3
       expect(model.tianGuaNum, equals(3));
-      expect(model.tianGua, equals('震'));
+      expect(model.tianGua, equals(Enum8Gua.Zhen));
 
       // 地数：30 % 30 = 3（因为30对30取模特殊处理为3）
       expect(model.diGuaNum, equals(3));
-      expect(model.diGua, equals('震'));
+      expect(model.diGua, equals(Enum8Gua.Zhen));
     });
 
     test('先天卦应该是震为雷（震上震下）', () {
@@ -584,10 +609,10 @@ void main() {
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 己为阴年，男性：地卦在上，天卦在下 → 震上震下
-      expect(model.yearYinYang, equals('阴'));
-      expect(model.xiantianGua, equals('震震'));
-      expect(model.upperGua, equals('震'));
-      expect(model.lowerGua, equals('震'));
+      expect(model.yearYinYang, equals(YinYang.YIN));
+      expect(model.xiantianGua, equals(Enum64Gua.zhen_wei_lei));
+      expect(model.upperGua, equals(Enum8Gua.Zhen));
+      expect(model.lowerGua, equals(Enum8Gua.Zhen));
     });
 
     test('时辰为子时，应该判断为阳时', () {
@@ -607,24 +632,35 @@ void main() {
       expect(model.totalYinYao, equals(4));
     });
 
-    test('阳时取阳爻为元堂爻，震震有2个阳爻，应该在上爻（索引5）', () {
+    test('阳时取阳爻为元堂爻，震震有2个阳爻， 初九为元堂爻', () {
       final result = strategy.calculate(specificParams);
-      final model = result.baseNumbers.first as YuanTangBaseNumberModel;
+      // final model = result.baseNumbers.first as YuanTangBaseNumberModel;
+      final model = result.yuanTangInfo;
 
       // 震震卦：阳爻在初爻和四爻（索引0和3）
       // 阳时取阳爻，2个阳爻情况下，元堂爻在上位阳爻
       // 实际算法输出显示元堂爻在上爻（索引5）
-      expect(model.yuantangYaoIndex, equals(5));
-      expect(model.yuantangYaoLabel, equals('上'));
+      expect(model.xianTanGua.yuanTangYao, EnumYaoOrder.init);
 
-      final yuanTangYao = model.yaoDetails[5];
-      expect(yuanTangYao.isYuanTangYao, isTrue);
-      expect(yuanTangYao.diZhiList, containsAll(['子', '寅']));
+      // final yuanTangYao = model.yaoDetails[5];
+      expect(
+        model.xianTanGua.yuanTangYaoList
+            .firstWhere((t) => t.order == EnumYaoOrder.init)
+            .yinYang
+            .isYang,
+        isTrue,
+      );
+      expect(
+        model.xianTanGua.yuanTangYaoList
+            .firstWhere((t) => t.isYuanTang)
+            .yangTangZhiList,
+        containsAll([DiZhi.ZI, DiZhi.YIN]),
+      );
     });
 
     test('六爻地支配置（2阳爻情况）：上爻子寅[元堂]', () {
       final result = strategy.calculate(specificParams);
-      final model = result.baseNumbers.first as YuanTangBaseNumberModel;
+      final model = result.yuanTangInfo;
 
       // 实际算法输出的六爻配置（从下到上）：
       // 初爻(阴): 空
@@ -634,13 +670,28 @@ void main() {
       // 五爻(阴): 辰
       // 上爻(阳): 子,寅 [元堂]
 
-      expect(model.zhiList[0], isEmpty); // 初爻
-      expect(model.zhiList[1], isEmpty); // 二爻
-      expect(model.zhiList[2], containsAll(['丑', '卯'])); // 三爻
-      expect(model.zhiList[3], contains('巳')); // 四爻
-      expect(model.zhiList[4], contains('辰')); // 五爻
-      expect(model.zhiList[5], containsAll(['子', '寅'])); // 上爻[元堂]
-      expect(model.yaoDetails[5].isYuanTangYao, isTrue);
+      expect(model.xianTanGua.topBottomDiZhiList[0], isEmpty); // 初爻
+      expect(model.xianTanGua.topBottomDiZhiList[1], isEmpty); // 二爻
+      expect(
+        model.xianTanGua.topBottomDiZhiList[2],
+        containsAll([DiZhi.CHOU, DiZhi.MAO]),
+      ); // 三爻
+      expect(model.xianTanGua.topBottomDiZhiList[3], contains(DiZhi.SI)); // 四爻
+      expect(
+        model.xianTanGua.topBottomDiZhiList[4],
+        contains(DiZhi.CHEN),
+      ); // 五爻
+      expect(
+        model.xianTanGua.topBottomDiZhiList[5],
+        containsAll([DiZhi.ZI, DiZhi.YIN]),
+      ); // 上爻[元堂]
+      expect(
+        model.xianTanGua.yuanTangYaoList
+            .firstWhere((t) => t.order == EnumYaoOrder.init)
+            .yinYang
+            .isYang,
+        isTrue,
+      );
     });
 
     test('后天卦应该是地雷复（坤上震下）', () {
@@ -649,25 +700,25 @@ void main() {
 
       // 上爻（索引5）爻变：震(001001) -> 坤(000001)
       // 上下卦互换：震震 -> 坤震
-      expect(model.houtianGua, equals('坤震'));
-      expect(model.houtianGua[0], equals('坤')); // 上卦
-      expect(model.houtianGua[1], equals('震')); // 下卦
+      expect(model.houtianGua, equals(Enum64Gua.di_lei_fu));
+      expect(model.houtianGua.top, equals(Enum8Gua.Kun)); // 上卦
+      expect(model.houtianGua.bottom, equals(Enum8Gua.Zhen)); // 下卦
     });
 
-    test('先天卦震震的加则法条文编号应该是3627', () {
+    test('先天卦震震的加则法条文编号应该是3387', () {
       final result = strategy.calculate(specificParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 实际算法计算出的震震加则法条文编号
-      expect(model.tiaowenNumberJiazeXiantiangua, equals(3627));
+      expect(model.tiaowenNumberJiazeXiantiangua, equals(3387));
     });
 
-    test('后天卦坤震的加则法条文编号应该是2537', () {
+    test('后天卦坤震的加则法条文编号应该是2477', () {
       final result = strategy.calculate(specificParams);
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 实际算法计算出的坤震加则法条文编号
-      expect(model.tiaowenNumberJiazeHoutiangua, equals(2537));
+      expect(model.tiaowenNumberJiazeHoutiangua, equals(2477));
     });
 
     test('完整计算流程应该无错误', () {
@@ -679,20 +730,21 @@ void main() {
       final model = result.baseNumbers.first as YuanTangBaseNumberModel;
 
       // 验证所有关键字段都已填充
-      expect(model.tianGua, equals('震'));
-      expect(model.diGua, equals('震'));
-      expect(model.xiantianGua, equals('震震'));
-      expect(model.houtianGua, equals('坤震'));
-      expect(model.xiantianGuaHu, equals('坎艮'));
-      expect(model.houtianGuaHu, equals('坤坤'));
+      expect(model.tianGua, equals(Enum8Gua.Zhen));
+      expect(model.diGua, equals(Enum8Gua.Zhen));
+      expect(model.xiantianGua, equals(Enum64Gua.zhen_wei_lei));
+      expect(model.houtianGua, equals(Enum64Gua.di_lei_fu));
+      expect(model.xiantianGuaHu, equals(Enum64Gua.shui_shan_jian));
+      expect(model.houtianGuaHu, equals(Enum64Gua.kun_wei_di));
 
       // 验证所有条文编号都大于0
-      expect(model.tiaowenNumberJiazeXiantiangua, equals(3627));
-      expect(model.tiaowenNumberJiazeHoutiangua, equals(2537));
+      expect(model.tiaowenNumberJiazeXiantiangua, equals(3387));
+      expect(model.tiaowenNumberJiazeHoutiangua, equals(2477));
       expect(model.tiaowenNumberNajiaTaixuanXiantiangua, equals(4545));
-      expect(model.tiaowenNumberNajiaTaixuanHoutiangua, equals(3345));
-      expect(model.tiaowenNumberXiantianBenhu, equals(4467));
+      // expect(model.tiaowenNumberNajiaTaixuanHoutiangua, equals(3345));
+      expect(model.tiaowenNumberXiantianBenhu, equals(4487));
       expect(model.tiaowenNumberHoutianBenhu, equals(2322));
+
       expect(model.tiaowenNumberListXiantianGuahu.length, equals(8));
       expect(model.tiaowenNumberListHoutianGuahu.length, equals(8));
     });

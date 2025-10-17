@@ -3,7 +3,7 @@ import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model_result.dart';
 import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/repository/datamodels/tiao_wen_datamodel.dart';
 import 'package:tiebanshenshu/repository/tiao_wen_repository.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';

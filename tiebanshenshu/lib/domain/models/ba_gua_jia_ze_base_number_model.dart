@@ -4,7 +4,7 @@
 library;
 
 import 'package:common/enums.dart';
-import '../pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 八卦加则基础数模型
@@ -132,13 +132,15 @@ class BaGuaJiaZeBaseNumberModel extends BaseNumberModel {
       final yao = guaData.yaoList[i];
       final positionLabel = PureSixYaoGua.getYaoPositionLabel(i);
 
-      details.add(YaoDetailModel(
-        position: i,
-        positionLabel: positionLabel,
-        yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
-        diZhi: yao.naZhi?.name ?? '未配',
-        number: yao.naZhi != null ? _getYaoDiZhiNumber(yao.naZhi!) : 0,
-      ));
+      details.add(
+        YaoDetailModel(
+          position: i,
+          positionLabel: positionLabel,
+          yinYang: yao.yinYang == YinYang.YANG ? '阳' : '阴',
+          diZhi: yao.naZhi?.name ?? '未配',
+          number: yao.naZhi != null ? _getYaoDiZhiNumber(yao.naZhi!) : 0,
+        ),
+      );
     }
 
     return details;

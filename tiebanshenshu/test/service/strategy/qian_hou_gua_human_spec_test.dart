@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/qian_hou_gua_strategy.dart';
@@ -15,25 +17,25 @@ import 'package:tiebanshenshu/domain/models/qian_hou_gua_base_number_model.dart'
 /// 4. 后卦基础数：1387，后卦条文：1387 1291 1195 1099 1003
 void main() {
   late QianHouGuaStrategy strategy;
-  late FourZhu testFourZhu;
+  late EightChars testFourZhu;
   late QianHouGuaStrategyParams testParams;
   late QianHouGuaBaseNumberModel model;
 
   setUp(() {
     strategy = QianHouGuaStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "癸亥",
-      monthGanzhi: "甲子",
-      dayGanzhi: "己丑",
-      timeGanzhi: "癸酉",
+    testFourZhu = EightChars(
+      year: JiaZi.getFromGanZhiValue("癸亥")!,
+      month: JiaZi.getFromGanZhiValue("甲子")!,
+      day: JiaZi.getFromGanZhiValue("己丑")!,
+      time: JiaZi.getFromGanZhiValue("癸酉")!,
     );
 
     testParams = QianHouGuaStrategyParams(
-      fourZhu: testFourZhu,
-      gender: "男",
-      threeYuan: "上", // 按人规假设上元
-      birthAfterZhi: "夏至", // 按人规假设夏至后
+      eightChars: testFourZhu,
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
     );
 
     final result = strategy.calculate(testParams);
@@ -119,7 +121,7 @@ void main() {
     test('汇总并打印关键结果以便人工核对', () {
       final summary = {
         '四柱':
-            '${testFourZhu.yearGanzhi} ${testFourZhu.monthGanzhi} ${testFourZhu.dayGanzhi} ${testFourZhu.timeGanzhi}',
+            '${testFourZhu.year.ganZhiStr} ${testFourZhu.month.ganZhiStr} ${testFourZhu.day.ganZhiStr} ${testFourZhu.time.ganZhiStr}',
         '干太玄数': model.ganNumList,
         '支太玄数': model.zhiNumList,
         '前卦名称': model.qianGuaName,

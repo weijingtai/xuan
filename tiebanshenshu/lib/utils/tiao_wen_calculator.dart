@@ -1,6 +1,6 @@
 import 'package:common/shared/shared.dart';
 
-import '../domain/pure_six_yao_gua.dart';
+import '../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'utils.dart' as GuaUtils;
 
 import '../constant/constants.dart' as NumberMaps;

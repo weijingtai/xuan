@@ -9,7 +9,7 @@ import 'package:common/models/eight_chars.dart';
 
 import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
-import '../pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 元堂爻详情模型

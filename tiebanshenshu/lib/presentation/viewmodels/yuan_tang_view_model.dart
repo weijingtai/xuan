@@ -1,10 +1,12 @@
 import 'package:common/enums.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/enums.dart';
 import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
+import '../../features/yuan_tang_gua/yuan_tang_calculator.dart';
 import '../../usecases/yuan_tang_tiao_wen_list_use_case.dart';
 import 'base_tiao_wen_list_view_model.dart';
 
@@ -26,6 +28,12 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
 
   /// 当前选择的出生节气后
   TwentyFourJieQi? _currentBirthAfterZhi;
+
+  /// 当前选择的月份类型
+  YuanTangMonthType _currentMonthType = YuanTangMonthType.monthYinYan;
+
+  /// 当前选择的历法类型
+  CalanderType _currentCalanderType = CalanderType.solar;
 
   /// Domain层结果（包含YuanTangBaseNumberModel）
   MultiBaseNumberResult? _domainResult;
@@ -50,22 +58,34 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
   /// 当前选择的出生节气后
   TwentyFourJieQi? get currentBirthAfterZhi => _currentBirthAfterZhi;
 
+  /// 当前选择的月份类型
+  YuanTangMonthType get currentMonthType => _currentMonthType;
+
+  /// 当前选择的历法类型
+  CalanderType get currentCalanderType => _currentCalanderType;
+
   /// 设置元堂卦参数并计算条文列表
   ///
   /// [eightChars] 八字信息
   /// [gender] 性别（"男" / "女"）
   /// [threeYuan] 三元（"上" / "中" / "下"）
   /// [birthAfterZhi] 出生节气后（"夏至" / "冬至"）
+  /// [monthType] 月份类型（可选，默认为monthYinYan）
+  /// [calanderType] 历法类型（可选，默认为solar）
   Future<void> setYuanTangParams({
     required EightChars eightChars,
     required Gender gender,
     required YuanYunOrder threeYuan,
     required TwentyFourJieQi birthAfterZhi,
+    YuanTangMonthType? monthType,
+    CalanderType? calanderType,
   }) async {
     _currentEightChars = eightChars;
     _currentGender = gender;
     _currentThreeYuan = threeYuan;
     _currentBirthAfterZhi = birthAfterZhi;
+    if (monthType != null) _currentMonthType = monthType;
+    if (calanderType != null) _currentCalanderType = calanderType;
     await calculateTiaoWenList();
   }
 
@@ -86,6 +106,8 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
         gender: _currentGender!,
         threeYuan: _currentThreeYuan!,
         birthAfterZhi: _currentBirthAfterZhi!,
+        monthType: _currentMonthType,
+        calanderType: _currentCalanderType,
       );
       final domainResult = await _useCase.execute(params);
       // 保存domain结果以便访问YuanTangBaseNumberModel

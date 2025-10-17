@@ -1,11 +1,13 @@
 import 'package:common/enums.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
+import 'package:tiebanshenshu/enums.dart';
 import '../domain/four_zhu.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/models/yuan_tang_base_number_model.dart';
 import '../domain/exceptions/tiao_wen_calculation_exceptions.dart';
+import '../features/yuan_tang_gua/yuan_tang_calculator.dart';
 import '../repository/tiao_wen_repository.dart';
 import '../service/strategy/yuan_tang_strategy.dart';
 import '../service/strategy/tiao_wen_list_calculation.dart';
@@ -57,6 +59,8 @@ class YuanTangTiaoWenListUseCase
         threeYuan: params.threeYuan,
         birthAfterZhi: params.birthAfterZhi,
         birthMonth: birthMonth,
+        monthType: params.monthType,
+        calanderType: params.calanderType,
       );
       final strategyResult = _strategy.calculate(strategyParams);
 
@@ -215,16 +219,24 @@ class YuanTangUseCaseParams {
   /// 出生节气后（"夏至" / "冬至"）
   final TwentyFourJieQi birthAfterZhi;
 
+  /// 月份类型（阴阳月判断规则）
+  final YuanTangMonthType monthType;
+
+  /// 历法类型（阳历/农历）
+  final CalanderType calanderType;
+
   const YuanTangUseCaseParams({
     required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
+    this.monthType = YuanTangMonthType.monthYinYan,
+    this.calanderType = CalanderType.solar,
   });
 
   @override
   String toString() {
-    return 'YuanTangUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi)';
+    return 'YuanTangUseCaseParams(eightChars: ${eightChars.toString()}, gender: $gender, threeYuan: $threeYuan, birthAfterZhi: $birthAfterZhi, monthType: $monthType, calanderType: $calanderType)';
   }
 
   @override
@@ -234,7 +246,9 @@ class YuanTangUseCaseParams {
         other.eightChars == eightChars &&
         other.gender == gender &&
         other.threeYuan == threeYuan &&
-        other.birthAfterZhi == birthAfterZhi;
+        other.birthAfterZhi == birthAfterZhi &&
+        other.monthType == monthType &&
+        other.calanderType == calanderType;
   }
 
   @override
@@ -242,5 +256,7 @@ class YuanTangUseCaseParams {
       eightChars.hashCode ^
       gender.hashCode ^
       threeYuan.hashCode ^
-      birthAfterZhi.hashCode;
+      birthAfterZhi.hashCode ^
+      monthType.hashCode ^
+      calanderType.hashCode;
 }

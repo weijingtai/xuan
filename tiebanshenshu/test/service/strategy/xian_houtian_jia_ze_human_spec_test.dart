@@ -37,9 +37,9 @@ void main() {
 
     testParams = XianHoutianJiaZeStrategyParams(
       eightChars: testFourZhu,
-      gender: "男",
-      threeYuan: "上", // 假设上元
-      birthAfterZhi: "夏至", // 假设夏至后
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
     );
 
     final result = strategy.calculate(testParams);

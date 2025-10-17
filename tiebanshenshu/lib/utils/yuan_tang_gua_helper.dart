@@ -6,12 +6,12 @@ library;
 import 'package:common/enums.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 import 'package:tiebanshenshu/enums.dart';
 
 import '../domain/four_zhu.dart';
 import '../constant/constants.dart' as constants;
-import '../domain/pure_yuan_tang_gua.dart';
+import '../features/yuan_tang_gua/pure_yuan_tang_gua.dart';
 import 'utils.dart' as gua_utils;
 
 /// 元堂卦辅助类

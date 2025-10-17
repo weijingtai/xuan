@@ -14,7 +14,7 @@ library;
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
-import '../pure_six_yao_gua.dart';
+import '../../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'base_number_model.dart';
 
 /// 先后天卦取数基础数模型

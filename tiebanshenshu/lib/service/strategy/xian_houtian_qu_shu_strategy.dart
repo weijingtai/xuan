@@ -1,68 +1,98 @@
-/// 先后天卦取数Strategy实现
+/// 先后天卦取数Strategy实现(重构版)
 ///
-/// 将先后天卦取数算法封装为标准计算策略
+/// 继承自 YuanTangBasedStrategy，复用元堂卦计算逻辑
 library;
 
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/enums.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_calculator.dart';
+import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_info.dart';
+import 'package:tiebanshenshu/features/yuan_tang_gua/yuan_tang_info_ext.dart';
 
-import '../../domain/four_zhu.dart';
 import '../../constant/constants.dart' as constants;
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/xian_houtian_qu_shu_base_number_model.dart';
 import '../../utils/utils.dart' as gua_utils;
-import '../../utils/yuan_tang_gua_helper.dart';
-import 'yuan_tang_strategy.dart';
+import 'base/yuan_tang_based_strategy.dart';
+import 'base/yuan_tang_derived_params.dart';
 import 'base_calculation_strategy.dart';
-import 'standard_calculation_strategy.dart';
 
 /// 先后天卦取数计算参数
 ///
-/// 包含执行先后天卦取数所需的所有参数
-class XianHoutianQuShuStrategyParams extends BaseCalculationParams {
-  /// 四柱信息
+/// 继承自 YuanTangDerivedParams，支持两种计算模式：
+/// 1. 从头计算：提供 EightChars + Gender + YuanYunOrder + TwentyFourJieQi
+/// 2. 复用计算：提供已计算好的 YuanTangInfo
+class XianHoutianQuShuStrategyParams extends YuanTangDerivedParams {
+  @override
   final EightChars eightChars;
 
-  /// 性别（"男" / "女"）
+  @override
   final Gender gender;
 
-  /// 三元（"上" / "中" / "下"）
+  @override
   final YuanYunOrder threeYuan;
 
-  /// 出生节气后（"夏至" / "冬至"）
+  @override
   final TwentyFourJieQi birthAfterZhi;
+
+  @override
+  final YuanTangMonthType monthType;
+
+  @override
+  final CalanderType calanderType;
+
+  @override
+  YuanTangInfo? yuanTangInfo;
 
   XianHoutianQuShuStrategyParams({
     required this.eightChars,
     required this.gender,
     required this.threeYuan,
     required this.birthAfterZhi,
+    this.monthType = YuanTangMonthType.monthYinYan,
+    this.calanderType = CalanderType.solar,
+    this.yuanTangInfo,
   });
 
-  @override
-  String get description =>
-      "先后天卦取数计算参数：四柱(${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name})，性别($gender)，三元($threeYuan)，节气($birthAfterZhi)";
+  /// 从 YuanTangInfo 直接创建参数（复用模式）
+  factory XianHoutianQuShuStrategyParams.fromYuanTangInfo(
+    YuanTangInfo yuanTangInfo, {
+    required EightChars eightChars,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+    required TwentyFourJieQi birthAfterZhi,
+  }) {
+    return XianHoutianQuShuStrategyParams(
+      eightChars: eightChars,
+      gender: gender,
+      threeYuan: threeYuan,
+      birthAfterZhi: birthAfterZhi,
+      yuanTangInfo: yuanTangInfo,
+    );
+  }
 }
 
-/// 先后天卦取数计算策略
+/// 先后天卦取数计算策略(重构版)
 ///
-/// 实现先后天卦取数的标准计算策略
+/// 继承自 YuanTangBasedStrategy，消除了重复的元堂卦计算代码
 ///
 /// 算法原理：
-/// 1. 排四柱
-/// 2. 根据元堂卦法取先天卦和后天卦
+/// 1. 获取 YuanTangInfo（懒加载或复用）
+/// 2. 从 YuanTangInfo 提取先天卦和后天卦
 /// 3. 计算先天基础数（四位拼接）：上卦先天数为千位、下卦先天数为百位、互卦上卦先天数为十位、互卦下卦先天数为个位
 /// 4. 计算后天基础数（四位拼接）：上卦后天数为千位、下卦后天数为百位、互卦上卦后天数为十位、互卦下卦后天数为个位
 /// 5. 条文扩展：基础数使用±48×倍数扩展：±96, ±192, ±384, ±768（倍数为2,4,8,16），得到8个数
 /// 6. （可选）对先天卦与后天卦进行六爻纳甲与干支和数计算，作为参考
-class XianHoutianQuShuStrategy
-    extends
-        StandardCalculationStrategy<
-          XianHoutianQuShuStrategyParams,
-          BaseNumberModelResult
-        > {
+///
+/// 算法特点：
+/// - 复用 YuanTangInfo 计算结果，避免重复计算
+/// - 先天卦和后天卦分别计算基础数
+/// - 使用四位拼接法（上卦、下卦、互卦上卦、互卦下卦）
+class XianHoutianQuShuStrategy extends YuanTangBasedStrategy<
+    XianHoutianQuShuStrategyParams, BaseNumberModelResult> {
   @override
   String get name => "先后天卦取数";
 
@@ -72,187 +102,154 @@ class XianHoutianQuShuStrategy
 
   @override
   List<String> get detailSteps => [
-    "1. 排四柱：获取年月日时的干支信息",
-    "2. 元堂卦法：生成天地卦并取先天卦与后天卦",
-    "3. 计算先天基础数：四位拼接（上卦先天数→千位、下卦先天数→百位、互卦上卦先天数→十位、互卦下卦先天数→个位）",
-    "4. 计算后天基础数：四位拼接（上卦后天数→千位、下卦后天数→百位、互卦上卦后天数→十位、互卦下卦后天数→个位）",
-    "5. （可选）六爻纳甲：为两卦配置天干地支并计算每爻干支太玄数之和，提供参考",
-    "6. 条文扩展：先天与后天基础数分别使用±48×倍数扩展（2,4,8,16），各得到8个条文编号",
-  ];
+        "1. 获取元堂卦信息（包含天地卦、先天卦、后天卦、元堂爻等）",
+        "2. 计算先天基础数：四位拼接（上卦先天数→千位、下卦先天数→百位、互卦上卦先天数→十位、互卦下卦先天数→个位）",
+        "3. 计算后天基础数：四位拼接（上卦后天数→千位、下卦后天数→百位、互卦上卦后天数→十位、互卦下卦后天数→个位）",
+        "4. （可选）六爻纳甲：为两卦配置天干地支并计算每爻干支太玄数之和，提供参考",
+        "5. 条文扩展：先天与后天基础数分别使用±48×倍数扩展（2,4,8,16），各得到8个条文编号",
+      ];
 
   @override
   String get school => "先后天卦取数流派";
 
   @override
-  BaseNumberModelResult calculate(XianHoutianQuShuStrategyParams params) {
-    try {
-      // 步骤1-2：生成天地卦和先天卦（使用YuanTangGuaHelper）
-      final (
-        tianGua,
-        diGua,
-        ganNumList,
-        zhiNumList,
-        oddNumTotal,
-        evenNumTotal,
-        tianGuaNum,
-        diGuaNum,
-        usedThreeYuanWuGong,
-      ) = YuanTangGuaHelper.generateTianDiGua(
-        eightChars: params.eightChars,
-        gender: params.gender,
-        threeYuan: params.threeYuan,
-      );
-
-      final (
-        yearYinYang,
-        upperGua,
-        lowerGua,
-        xiantianGua,
-        xiantianUpperGuaNumber,
-        xiantianLowerGuaNumber,
-      ) = YuanTangGuaHelper.generateXiantianGua(
-        eightChars: params.eightChars,
-        gender: params.gender,
-        tianGua: tianGua,
-        diGua: diGua,
-      );
-
-      // 步骤3：元堂装卦（获取元堂爻）
-      final (
-        yuantangYaoIndex,
-        yuantangYaoLabel,
-        zhiList,
-        timeGanzhi,
-        timeYinYang,
-        totalYangYao,
-        totalYinYao,
-      ) = YuanTangGuaHelper.yuantangZhuanggua(
-        eightChars: params.eightChars,
-        xiantianGua: xiantianGua,
-        gender: params.gender,
-        birthAfterZhi: params.birthAfterZhi,
-      );
-
-      // 步骤4：生成后天卦（元堂爻变 + 上下卦互换）
-      final birthMonth = YuanTangStrategyParams.getMonthNumberFromZhi(
-        params.eightChars.month.zhi.name,
-      );
-      final (
-        houtianGua,
-        houtianUpperGuaNumber,
-        houtianLowerGuaNumber,
-      ) = YuanTangGuaHelper.generateHoutianGua(
-        xiantianGua: xiantianGua,
-        yuantangYaoIndex: yuantangYaoIndex,
-        birthMonth: birthMonth,
-      );
-
-      // 步骤3-4：先天卦六爻纳甲和干支和数计算
-      final (
-        xiantianBaseNumberByLiuYao,
-        xiantianYaoTianGanList,
-        xiantianYaoDiZhiList,
-        xiantianYaoSumList,
-        xiantianUpperSum,
-        xiantianLowerSum,
-      ) = _calculateLiuYaoSum(
-        xiantianGua,
-      );
-
-      // 使用"取先天卦，上卦先天数为千位，下卦先天数为百位，互卦上卦先天数为十位，互卦下卦先天数为个位"公式重算先天基础数
-      final xiantianBaseNumber = _calculateXiantianBaseNumberByGua(xiantianGua);
-
-      // 步骤5-6：后天卦六爻纳甲和干支和数计算
-      final (
-        houtianBaseNumberByLiuYao,
-        houtianYaoTianGanList,
-        houtianYaoDiZhiList,
-        houtianYaoSumList,
-        houtianUpperSum,
-        houtianLowerSum,
-      ) = _calculateLiuYaoSum(
-        houtianGua,
-      );
-
-      // 使用“取后天卦，上卦后天数为千位，下卦后天数为百位，互卦上卦后天数为十位，互卦下卦后天数为个位”公式重算后天基础数
-      final houtianBaseNumber = _calculateHoutianBaseNumberByGua(houtianGua);
-
-      // 创建数据模型
-      final model = XianHoutianQuShuBaseNumberModel.create(
-        baseNumber: xiantianBaseNumber, // 使用先天卦基础数作为主基础数（也可以选择后天卦）
-        name: "先后天卦取数",
-        description:
-            "先后天卦取数计算（性别:${params.gender}，三元:${params.threeYuan}，节气:${params.birthAfterZhi}）",
-        source: BaseNumberSource.yearZhu, // 使用yearZhu作为来源标识
-        eightChars: params.eightChars,
-        gender: params.gender,
-        threeYuan: params.threeYuan,
-        birthAfterZhi: params.birthAfterZhi,
-        // 天地卦字段
-        ganNumList: ganNumList,
-        zhiNumList: zhiNumList,
-        oddNumTotal: oddNumTotal,
-        evenNumTotal: evenNumTotal,
-        tianGuaNum: tianGuaNum,
-        diGuaNum: diGuaNum,
-        tianGua: tianGua,
-        diGua: diGua,
-        usedThreeYuanWuGong: usedThreeYuanWuGong,
-        // 先后天卦字段
-        yearYinYang: yearYinYang,
-        upperGua: upperGua,
-        lowerGua: lowerGua,
-        xiantianGua: xiantianGua,
-        houtianGua: houtianGua,
-        xiantianUpperGuaNumber: xiantianUpperGuaNumber,
-        xiantianLowerGuaNumber: xiantianLowerGuaNumber,
-        houtianUpperGuaNumber: houtianUpperGuaNumber,
-        houtianLowerGuaNumber: houtianLowerGuaNumber,
-        // 先天卦六爻纳甲字段
-        xiantianYaoTianGanList: xiantianYaoTianGanList,
-        xiantianYaoDiZhiList: xiantianYaoDiZhiList,
-        xiantianYaoSumList: xiantianYaoSumList,
-        xiantianUpperSum: xiantianUpperSum,
-        xiantianLowerSum: xiantianLowerSum,
-        xiantianBaseNumber: xiantianBaseNumber,
-        // 后天卦六爻纳甲字段
-        houtianYaoTianGanList: houtianYaoTianGanList,
-        houtianYaoDiZhiList: houtianYaoDiZhiList,
-        houtianYaoSumList: houtianYaoSumList,
-        houtianUpperSum: houtianUpperSum,
-        houtianLowerSum: houtianLowerSum,
-        houtianBaseNumber: houtianBaseNumber,
-      );
-
-      return BaseNumberModelResult.success(
-        algorithmName: name,
-        algorithmDescription: description,
-        calculationParams: params.description,
-        baseNumbers: [model],
-        sourceData: {
-          'eightChars': params.eightChars.toString(),
-          'gender': params.gender,
-          'threeYuan': params.threeYuan,
-          'birthAfterZhi': params.birthAfterZhi,
-          'xiantianGua': xiantianGua,
-          'houtianGua': houtianGua,
-          'xiantianBaseNumber': xiantianBaseNumber,
-          'houtianBaseNumber': houtianBaseNumber,
-        },
-      );
-    } catch (e, stackTrace) {
-      return BaseNumberModelResult.error(
-        algorithmName: name,
-        algorithmDescription: description,
-        calculationParams: params.description,
-        errorMessage: "先后天卦取数计算失败: $e",
-        sourceData: {
-          'error': e.toString(),
-          'stackTrace': stackTrace.toString(),
-          'params': params.description,
-        },
+  BaseNumberModelResult calculateWithYuanTangInfo(
+    XianHoutianQuShuStrategyParams params,
+    YuanTangInfo yuanTangInfo,
+  ) {
+    // 步骤1：从 YuanTangInfo 中提取天地卦数据
+    if (yuanTangInfo.tianDiGuaData == null) {
+      throw StateError(
+        '天地卦数据不存在，请确保 YuanTangCalculator.calculate() 正确返回了 tianDiGuaData',
       );
     }
+
+    final tianDiGuaDataSource = yuanTangInfo.tianDiGuaData!;
+
+    // 步骤2：从 YuanTangInfo 提取先天卦和后天卦
+    final xiantianGua = getXiantianGua(yuanTangInfo);
+    final houtianGua = getHoutianGua(yuanTangInfo);
+
+    // 步骤3-4：先天卦六爻纳甲和干支和数计算
+    final (
+      xiantianBaseNumberByLiuYao,
+      xiantianYaoTianGanList,
+      xiantianYaoDiZhiList,
+      xiantianYaoSumList,
+      xiantianUpperSum,
+      xiantianLowerSum,
+    ) = _calculateLiuYaoSum(
+      xiantianGua,
+    );
+
+    // 使用"取先天卦，上卦先天数为千位，下卦先天数为百位，互卦上卦先天数为十位，互卦下卦先天数为个位"公式重算先天基础数
+    final xiantianBaseNumber = _calculateXiantianBaseNumberByGua(xiantianGua);
+
+    // 步骤5-6：后天卦六爻纳甲和干支和数计算
+    final (
+      houtianBaseNumberByLiuYao,
+      houtianYaoTianGanList,
+      houtianYaoDiZhiList,
+      houtianYaoSumList,
+      houtianUpperSum,
+      houtianLowerSum,
+    ) = _calculateLiuYaoSum(
+      houtianGua,
+    );
+
+    // 使用"取后天卦，上卦后天数为千位，下卦后天数为百位，互卦上卦后天数为十位，互卦下卦后天数为个位"公式重算后天基础数
+    final houtianBaseNumber = _calculateHoutianBaseNumberByGua(houtianGua);
+
+    // 步骤7：提取后天数
+    final (houtianUpperGuaNumber, houtianLowerGuaNumber) = getHoutianNumbers(yuanTangInfo);
+
+    // 步骤8：提取先天数
+    final xiantianUpperGuaNumber = constants.xianTianGuaNumberMapper[yuanTangInfo.xianTanGua.gua.top.name]!;
+    final xiantianLowerGuaNumber = constants.xianTianGuaNumberMapper[yuanTangInfo.xianTanGua.gua.bottom.name]!;
+
+    // 创建数据模型
+    final model = XianHoutianQuShuBaseNumberModel.create(
+      baseNumber: xiantianBaseNumber, // 使用先天卦基础数作为主基础数（也可以选择后天卦）
+      name: "先后天卦取数",
+      description:
+          "先后天卦取数计算（性别:${params.gender}，三元:${params.threeYuan}，节气:${params.birthAfterZhi}）",
+      source: BaseNumberSource.yearZhu, // 使用yearZhu作为来源标识
+      eightChars: params.eightChars,
+      gender: params.gender,
+      threeYuan: params.threeYuan,
+      birthAfterZhi: params.birthAfterZhi,
+      // 天地卦字段（从 tianDiGuaDataSource 提取）
+      ganNumList: tianDiGuaDataSource.ganNumList,
+      zhiNumList: tianDiGuaDataSource.zhiNumList,
+      oddNumTotal: tianDiGuaDataSource.oddNumTotal,
+      evenNumTotal: tianDiGuaDataSource.evenNumTotal,
+      tianGuaNum: tianDiGuaDataSource.tianGuaNum,
+      diGuaNum: tianDiGuaDataSource.diGuaNum,
+      tianGua: tianDiGuaDataSource.tianGua,
+      diGua: tianDiGuaDataSource.diGua,
+      usedThreeYuanWuGong: tianDiGuaDataSource.usedThreeYuanWuGong,
+      // 先后天卦字段
+      yearYinYang: yuanTangInfo.yearYinYang,
+      upperGua: yuanTangInfo.xianTanGua.gua.top,
+      lowerGua: yuanTangInfo.xianTanGua.gua.bottom,
+      xiantianGua: xiantianGua,
+      houtianGua: houtianGua,
+      xiantianUpperGuaNumber: xiantianUpperGuaNumber,
+      xiantianLowerGuaNumber: xiantianLowerGuaNumber,
+      houtianUpperGuaNumber: houtianUpperGuaNumber,
+      houtianLowerGuaNumber: houtianLowerGuaNumber,
+      // 先天卦六爻纳甲字段
+      xiantianYaoTianGanList: xiantianYaoTianGanList,
+      xiantianYaoDiZhiList: xiantianYaoDiZhiList,
+      xiantianYaoSumList: xiantianYaoSumList,
+      xiantianUpperSum: xiantianUpperSum,
+      xiantianLowerSum: xiantianLowerSum,
+      xiantianBaseNumber: xiantianBaseNumber,
+      // 后天卦六爻纳甲字段
+      houtianYaoTianGanList: houtianYaoTianGanList,
+      houtianYaoDiZhiList: houtianYaoDiZhiList,
+      houtianYaoSumList: houtianYaoSumList,
+      houtianUpperSum: houtianUpperSum,
+      houtianLowerSum: houtianLowerSum,
+      houtianBaseNumber: houtianBaseNumber,
+    );
+
+    return BaseNumberModelResult.success(
+      algorithmName: name,
+      algorithmDescription: description,
+      calculationParams: params.description,
+      baseNumbers: [model],
+      sourceData: {
+        'eightChars': params.eightChars.toString(),
+        'gender': params.gender,
+        'threeYuan': params.threeYuan,
+        'birthAfterZhi': params.birthAfterZhi,
+        'xiantianGua': xiantianGua,
+        'houtianGua': houtianGua,
+        'xiantianBaseNumber': xiantianBaseNumber,
+        'houtianBaseNumber': houtianBaseNumber,
+        'calculationMode': getCalculationModeDescription(params),
+      },
+    );
+  }
+
+  @override
+  BaseNumberModelResult handleError(
+    XianHoutianQuShuStrategyParams params,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    return BaseNumberModelResult.error(
+      algorithmName: name,
+      algorithmDescription: description,
+      calculationParams: params.description,
+      errorMessage: "先后天卦取数计算失败: $error",
+      sourceData: {
+        'error': error.toString(),
+        'stackTrace': stackTrace.toString(),
+        'params': params.description,
+      },
+    );
   }
 
   /// 为六爻配置天干（纳甲）

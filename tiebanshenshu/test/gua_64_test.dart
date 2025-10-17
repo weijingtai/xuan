@@ -1,6 +1,6 @@
 import 'package:common/shared/enums/enum_hou_tian_gua.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 
 void main() {
   group("卦测试", () {

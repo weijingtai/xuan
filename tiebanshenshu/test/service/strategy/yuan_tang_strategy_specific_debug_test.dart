@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -41,9 +42,10 @@ void main() {
 
     testParams = YuanTangStrategyParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
+      birthMonth: 8,
     );
 
     final result = strategy.calculate(testParams);
@@ -238,12 +240,12 @@ void main() {
     });
 
     test('后天卦上卦应该是坤', () {
-      expect(model.houtianGua[0], equals('坤'), reason: '后天卦上卦应该是坤');
+      expect(model.houtianGua.top, equals('坤'), reason: '后天卦上卦应该是坤');
       expect(model.houtianUpperGuaNumber, equals(2), reason: '坤卦的后天数是2');
     });
 
     test('后天卦下卦应该是震', () {
-      expect(model.houtianGua[1], equals('震'), reason: '后天卦下卦应该是震');
+      expect(model.houtianGua.bottom, equals('震'), reason: '后天卦下卦应该是震');
       expect(model.houtianLowerGuaNumber, equals(3), reason: '震卦的后天数是3');
     });
 

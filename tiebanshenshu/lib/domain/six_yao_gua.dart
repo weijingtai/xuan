@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:common/shared/enums/enum_di_zhi.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:tiebanshenshu/domain/pure_six_yao_gua.dart';
+import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 
 import '../constant/constants.dart' as Constants;
 import '../utils/tiao_wen_calculator.dart';

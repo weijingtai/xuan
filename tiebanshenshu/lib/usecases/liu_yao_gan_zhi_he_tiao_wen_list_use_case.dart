@@ -125,7 +125,12 @@ class LiuYaoGanZhiHeTiaoWenListUseCase
         baseNumberTiaoWenList: baseNumberTiaoWenList,
         tiaoWenEntities: tiaoWenDataList,
         sourceData: {
-          'eightChars': strategyParams.eightChars.toString(),
+          'fourZhu': FourZhu(
+            yearGanzhi: params.eightChars.year.name,
+            monthGanzhi: params.eightChars.month.name,
+            dayGanzhi: params.eightChars.day.name,
+            timeGanzhi: params.eightChars.time.name,
+          ).toString(),
           'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,

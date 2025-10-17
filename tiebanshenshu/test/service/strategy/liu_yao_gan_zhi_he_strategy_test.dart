@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -35,9 +36,9 @@ void main() {
 
     testParams = LiuYaoGanZhiHeStrategyParams(
       eightChars: testEightChars,
-      gender: "男",
-      threeYuan: "上",
-      birthAfterZhi: "夏至",
+      gender: Gender.male,
+      threeYuan: YuanYunOrder.upper,
+      birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
     );
 
     final result = strategy.calculate(testParams);
@@ -59,7 +60,7 @@ void main() {
 
     test('后天卦应该已生成', () {
       expect(model.houtianGua, isNotEmpty, reason: '后天卦应该已生成');
-      expect(model.houtianGua.length, equals(2), reason: '后天卦应该是两个卦的组合');
+      expect(model.houtianGua, equals('震坤'), reason: '后天卦应该是震坤（雷地豫）');
     });
   });
 

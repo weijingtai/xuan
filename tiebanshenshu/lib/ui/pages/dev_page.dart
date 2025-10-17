@@ -37,6 +37,22 @@ class _DevPageState extends State<DevPage> {
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () {
+                Navigator.of(context).pushNamed('/tiebanshenshu/four_doors_and_gun_fa');
+              },
+              icon: const Icon(Icons.auto_awesome_mosaic),
+              label: const Text('四门法 & 八卦滚法'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
                 Navigator.of(context).pushNamed('/tai-xuan-interactive');
               },
               icon: const Icon(Icons.apps),

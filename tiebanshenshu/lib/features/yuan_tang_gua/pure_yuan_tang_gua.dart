@@ -2,7 +2,7 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../../domain/pure_six_yao_gua.dart';
+import '../six_yao_gua/pure_six_yao_gua.dart';
 import '../six_yao_gua/enum_6_shou.dart';
 import 'yuan_tang_calculator.dart';
 
@@ -118,9 +118,9 @@ class PureYuanTangGua extends PureSixYaoGua {
   }) : super(gua: gua, yaoList: yaoList);
 
   /// 地支列表（上→下 / 下→上）
-  List<List<DiZhi>> get bottomTopDiZhiList =>
-      yuanTangYaoList.reversed.map((e) => e.yangTangZhiList ?? []).toList();
   List<List<DiZhi>> get topBottomDiZhiList =>
+      yuanTangYaoList.reversed.map((e) => e.yangTangZhiList ?? []).toList();
+  List<List<DiZhi>> get bottomTopDiZhiList =>
       yuanTangYaoList.map((e) => e.yangTangZhiList ?? []).toList();
 
   // 综卦、错卦、互卦、变爻等逻辑继承自 PureSixYaoGua
