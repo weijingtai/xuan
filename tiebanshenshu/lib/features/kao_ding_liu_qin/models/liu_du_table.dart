@@ -91,10 +91,10 @@ enum LiuDuTableType {
   /// 坤宫甲流度（考母）
   kunGong,
 
-  /// 木宫甲流度（考妻）
+  /// 木宫甲流度（考妻，第一任）
   muGong,
 
-  /// 金宫甲流度（考夫）
+  /// 金宫甲流度（考夫，第一任）
   jinGong,
 
   /// 纳比卦甲表（考兄弟）
@@ -108,6 +108,18 @@ enum LiuDuTableType {
 
   /// 纳艮卦丙表（考女）
   naGenGuaBing,
+
+  // ==== 继任夫妻支持 ====
+  /// 木宫甲乙度（考妻，第二任）
+  muGongJiaYiDu,
+  /// 戊木甲流度（考妻，第三任）
+  wuMuJia,
+  /// 庚木甲流度（考妻，第四任）
+  gengMuJia,
+  /// 金甲乙流度（考夫，第二任）
+  jinJiaYi,
+  /// 戊金甲流度（考夫，第三任）
+  wuJinJia,
 }
 
 /// 流度表

@@ -10,6 +10,7 @@ import '../services/kao_ding_liu_qin_strategy.dart';
 import '../models/liu_qin_type.dart';
 import '../models/liu_du_table.dart';
 import '../models/session_manager.dart';
+import '../models/spouse_ordinal.dart';
 
 /// UseCase参数
 class KaoDingLiuQinUseCaseParams {
@@ -19,9 +20,13 @@ class KaoDingLiuQinUseCaseParams {
   /// 六亲类型
   final LiuQinType liuQinType;
 
+  /// 夫妻继任（仅考订夫妻时生效）
+  final SpouseOrdinal? spouseOrdinal;
+
   const KaoDingLiuQinUseCaseParams({
     required this.eightChars,
     required this.liuQinType,
+    this.spouseOrdinal,
   });
 
   /// 根据六亲类型获取对应的柱
@@ -77,6 +82,7 @@ class KaoDingLiuQinUseCase {
       liuQinType: params.liuQinType,
       pillar: params.correspondingPillar,
       dayGan: params.dayGan,
+      spouseOrdinal: params.spouseOrdinal,
     );
 
     // 2. 创建Session状态
@@ -97,6 +103,7 @@ class KaoDingLiuQinUseCase {
   Future<Map<LiuQinType, KaoDingLiuQinResult>> executeMultiple(
     EightChars eightChars,
     List<LiuQinType> liuQinTypes,
+    {Map<LiuQinType, SpouseOrdinal>? spouseOrdinals}
   ) async {
     final results = <LiuQinType, KaoDingLiuQinResult>{};
 
@@ -104,6 +111,9 @@ class KaoDingLiuQinUseCase {
       final params = KaoDingLiuQinUseCaseParams(
         eightChars: eightChars,
         liuQinType: liuQinType,
+        spouseOrdinal: liuQinType.isSpouse
+            ? (spouseOrdinals?[liuQinType] ?? SpouseOrdinal.first)
+            : null,
       );
 
       final result = await execute(params);
@@ -116,8 +126,9 @@ class KaoDingLiuQinUseCase {
   /// 计算所有六亲类型
   Future<Map<LiuQinType, KaoDingLiuQinResult>> executeAll(
     EightChars eightChars,
+    {Map<LiuQinType, SpouseOrdinal>? spouseOrdinals}
   ) async {
-    return executeMultiple(eightChars, LiuQinType.values);
+    return executeMultiple(eightChars, LiuQinType.values, spouseOrdinals: spouseOrdinals);
   }
 
   /// 更新当前选择的条文

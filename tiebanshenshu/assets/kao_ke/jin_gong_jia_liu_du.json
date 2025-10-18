@@ -2,7 +2,7 @@
     "name": "金宫甲流度",
     "description": "用来推查丈夫的生年的先天定数",
     "zhiMapper": {
-        "子": {"chiperText": "甲月戊乙戊", "chiperNumber": 10353, "yearGanZhi": "甲子"},
+        "子": {"chiperText": "甲月戊乙戊", "chiperNumber": 10363, "yearGanZhi": "甲子"},
         "丑": {"chiperText": "甲月庚甲戊", "chiperNumber": 10413, "yearGanZhi": "乙丑"},
         "寅": {"chiperText": "甲月庚乙戊", "chiperNumber": 10463, "yearGanZhi": "甲寅"},
         "卯": {"chiperText": "甲月壬甲戊", "chiperNumber": 10513, "yearGanZhi": "乙卯"},

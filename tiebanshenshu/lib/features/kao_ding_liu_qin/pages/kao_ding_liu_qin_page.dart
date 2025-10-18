@@ -5,6 +5,7 @@ import 'package:common/enums.dart';
 import '../models/liu_qin_type.dart';
 import '../widgets/liu_du_table_selection_widget.dart';
 import '../../../presentation/viewmodels/kao_ding_liu_qin_view_model.dart';
+import '../models/spouse_ordinal.dart';
 
 /// 考订六亲页面
 ///
@@ -252,6 +253,44 @@ class _KaoDingLiuQinPageState extends State<KaoDingLiuQinPage> {
   ) {
     final entries = viewModel.allEntriesWithTiaoWen[liuQinType] ?? [];
     final selectedNumber = viewModel.getSelectedTiaoWenNumber(liuQinType);
+
+    if (liuQinType.isSpouse) {
+      final currentOrdinal = viewModel.getSpouseOrdinal(liuQinType);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('夫妻任次：'),
+              const SizedBox(width: 8),
+              DropdownButton<SpouseOrdinal>(
+                value: currentOrdinal,
+                items: SpouseOrdinal.values.map((o) {
+                  return DropdownMenuItem<SpouseOrdinal>(
+                    value: o,
+                    child: Text(o.displayName),
+                  );
+                }).toList(),
+                onChanged: (o) {
+                  if (o != null) {
+                    viewModel.setSpouseOrdinal(liuQinType, o);
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          LiuDuTableSelectionWidget(
+            liuQinType: liuQinType,
+            entries: entries,
+            selectedTiaoWenNumber: selectedNumber,
+            onSelect: (number) {
+              viewModel.selectTiaoWenForType(liuQinType, number);
+            },
+          ),
+        ],
+      );
+    }
 
     return LiuDuTableSelectionWidget(
       liuQinType: liuQinType,

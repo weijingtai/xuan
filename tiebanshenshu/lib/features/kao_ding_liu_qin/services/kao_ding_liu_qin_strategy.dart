@@ -5,6 +5,7 @@ import '../services/qi_gua_helper.dart';
 import '../services/na_jia_liu_qin_helper.dart';
 import '../models/liu_qin_type.dart';
 import '../models/liu_du_table.dart';
+import '../models/spouse_ordinal.dart';
 
 /// 考订六亲计算结果
 ///
@@ -73,18 +74,23 @@ class KaoDingLiuQinStrategy {
   /// [liuQinType] 六亲类型（父/母/夫/妻/兄弟/子/女）
   /// [pillar] 选择的四柱（年柱考父母，日柱考夫妻，月柱考兄弟，时柱考子女）
   /// [dayGan] 日干（用于定六亲）
+  /// [spouseOrdinal] 夫妻继任（仅当 [liuQinType.isSpouse] 时生效）
   ///
   /// 返回完整的计算结果，包含流度表供用户选择
   Future<KaoDingLiuQinResult> calculate({
     required LiuQinType liuQinType,
     required JiaZi pillar,
     required TianGan dayGan,
+    SpouseOrdinal? spouseOrdinal,
   }) async {
     final buffer = StringBuffer();
     buffer.writeln('【考订六亲计算流程】');
     buffer.writeln('六亲类型: ${liuQinType.displayName}');
     buffer.writeln('选择柱: ${pillar.name} (${liuQinType.correspondingPillar})');
     buffer.writeln('日干: ${dayGan.name}');
+    if (liuQinType.isSpouse && spouseOrdinal != null) {
+      buffer.writeln('继任: ${spouseOrdinal.displayName}');
+    }
     buffer.writeln();
 
     // 1. 起卦
@@ -99,8 +105,12 @@ class KaoDingLiuQinStrategy {
     buffer.writeln('【步骤2: 装纳甲和六亲】');
     final naJiaResult = NaJiaLiuQinHelper.installNaJiaAndLiuQin(gua64, dayGan);
     buffer.writeln('归宫: ${naJiaResult.gongGua.name}宫');
-    buffer.writeln('世爻: ${naJiaResult.shiYao.order.name}爻 - ${naJiaResult.shiYao.ganZhi?.name}');
-    buffer.writeln('应爻: ${naJiaResult.yingYao.order.name}爻 - ${naJiaResult.yingYao.ganZhi?.name}');
+    buffer.writeln(
+      '世爻: ${naJiaResult.shiYao.order.name}爻 - ${naJiaResult.shiYao.ganZhi?.name}',
+    );
+    buffer.writeln(
+      '应爻: ${naJiaResult.yingYao.order.name}爻 - ${naJiaResult.yingYao.ganZhi?.name}',
+    );
     buffer.writeln();
 
     // 3. 找目标爻
@@ -126,7 +136,12 @@ class KaoDingLiuQinStrategy {
 
     // 4. 查流度表
     buffer.writeln('【步骤4: 查流度表】');
-    final liuDuTable = await _repository.getTableByLiuQinType(liuQinType);
+    LiuDuTable liuDuTable;
+    if (liuQinType.isSpouse && spouseOrdinal != null) {
+      liuDuTable = await _repository.getSpouseTable(liuQinType, spouseOrdinal);
+    } else {
+      liuDuTable = await _repository.getTableByLiuQinType(liuQinType);
+    }
     buffer.writeln('使用流度表: ${liuDuTable.name}');
     buffer.writeln('流度表类型: ${liuDuTable.type.name}');
     buffer.writeln('流度表条目数: ${liuDuTable.getAllEntries().length}');

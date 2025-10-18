@@ -7,6 +7,7 @@ import '../../features/kao_ding_liu_qin/services/kao_ding_liu_qin_strategy.dart'
 import '../../features/kao_ding_liu_qin/models/session_manager.dart';
 import '../../features/kao_ke/kao_ke_session_models.dart';
 import '../../features/six_yao_gua/pure_six_yao_gua.dart';
+import '../../features/kao_ding_liu_qin/models/spouse_ordinal.dart';
 
 /// 考订六亲状态
 enum KaoDingLiuQinState {
@@ -49,6 +50,12 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
 
   /// 64卦结果（每个六亲类型对应一个64卦）
   Map<LiuQinType, Enum64Gua?>? _gua64Results;
+
+  /// 夫妻任次（仅对夫/妻有效）
+  final Map<LiuQinType, SpouseOrdinal> _spouseOrdinals = {
+    LiuQinType.husband: SpouseOrdinal.first,
+    LiuQinType.wife: SpouseOrdinal.first,
+  };
 
   KaoDingLiuQinViewModel(this._useCase);
 
@@ -152,7 +159,7 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
       _currentEightChars = eightChars;
       notifyListeners();
 
-      final results = await _useCase.executeMultiple(eightChars, liuQinTypes);
+      final results = await _useCase.executeMultiple(eightChars, liuQinTypes, spouseOrdinals: _spouseOrdinals);
 
       // 设置最后一个结果为当前结果
       if (results.isNotEmpty) {
@@ -185,6 +192,7 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
       final results = await _useCase.executeMultiple(
         eightChars,
         LiuQinType.values,
+        spouseOrdinals: _spouseOrdinals,
       );
 
       _allResults = results;
@@ -348,6 +356,49 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
   /// 预加载流度表
   Future<void> preloadTables() async {
     await _useCase.preloadTables();
+  }
+
+  /// 获取当前夫妻任次（默认为第一任）
+  SpouseOrdinal getSpouseOrdinal(LiuQinType type) {
+    return _spouseOrdinals[type] ?? SpouseOrdinal.first;
+  }
+
+  /// 设置夫妻任次并重算该类型
+  Future<void> setSpouseOrdinal(LiuQinType type, SpouseOrdinal ordinal) async {
+    if (!type.isSpouse) return;
+    _spouseOrdinals[type] = ordinal;
+
+    if (_currentEightChars == null) return;
+
+    try {
+      _state = KaoDingLiuQinState.loading;
+      notifyListeners();
+
+      final params = KaoDingLiuQinUseCaseParams(
+        eightChars: _currentEightChars!,
+        liuQinType: type,
+        spouseOrdinal: ordinal,
+      );
+      final result = await _useCase.execute(params);
+      _allResults[type] = result;
+
+      final entriesWithTiaoWen =
+          await _useCase.getLiuDuEntriesWithTiaoWen(result);
+      _allEntriesWithTiaoWen[type] = entriesWithTiaoWen;
+
+      if (result.targetEntry != null) {
+        _selectedTiaoWenNumbers[type] = result.targetEntry!.tiaoWenNumber;
+      }
+
+      _currentResult = result;
+      _state = KaoDingLiuQinState.success;
+      notifyListeners();
+    } catch (e) {
+      _errorMessage = '重算${type.displayName}失败: $e';
+      _state = KaoDingLiuQinState.error;
+      notifyListeners();
+      rethrow;
+    }
   }
 
   @override
