@@ -22,6 +22,9 @@ YuanTangInfo _$YuanTangInfoFromJson(Map<String, dynamic> json) => YuanTangInfo(
   houTianGua: PureYuanTangGua.fromJson(
     json['houTianGua'] as Map<String, dynamic>,
   ),
+  tianDiGuaData: json['tianDiGuaData'] == null
+      ? null
+      : TianDiGuaData.fromJson(json['tianDiGuaData'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$YuanTangInfoToJson(YuanTangInfo instance) =>
@@ -34,6 +37,7 @@ Map<String, dynamic> _$YuanTangInfoToJson(YuanTangInfo instance) =>
       'birthAfterJieQi': _$TwentyFourJieQiEnumMap[instance.birthAfterJieQi]!,
       'xianTanGua': instance.xianTanGua,
       'houTianGua': instance.houTianGua,
+      'tianDiGuaData': instance.tianDiGuaData,
     };
 
 const _$GenderEnumMap = {

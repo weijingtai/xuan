@@ -14,6 +14,7 @@ import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/ba_gua_jia_ze_base_number_model.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
+import 'ba_gua_jia_ze_result.dart';
 
 /// 八卦加则取数法计算参数
 ///
@@ -90,6 +91,147 @@ class BaGuaJiaZeStrategy
   @override
   String get tiaoWenCalculationDescription =>
       defaultTiaoWenCalculationConfig.description;
+
+  // ========== 公开的静态方法 ==========
+
+  /// 使用爻序法计算八卦加则
+  ///
+  /// 只需传入64卦,返回完整的计算结果
+  ///
+  /// [gua64] 64卦枚举
+  ///
+  /// 返回: [BaGuaJiaZeResult] 包含六爻卦、中间结果和最终条文数
+  static BaGuaJiaZeResult calculateByYaoSequenceFromGua64(Enum64Gua gua64) {
+    // 从64卦提取上下卦
+    final upperGua = gua64.top; // Enum8Gua
+    final lowerGua = gua64.bottom; // Enum8Gua
+
+    // 生成六爻卦
+    final gua = PureSixYaoGua.by8Gua(upperGua, lowerGua);
+
+    // 阳爻地支序列
+    final yangDiZhi = [
+      DiZhi.ZI,
+      DiZhi.YIN,
+      DiZhi.CHEN,
+      DiZhi.WU,
+      DiZhi.SHEN,
+      DiZhi.XU,
+    ];
+
+    // 阴爻地支序列
+    final yinDiZhi = [
+      DiZhi.CHOU,
+      DiZhi.MAO,
+      DiZhi.SI,
+      DiZhi.WEI,
+      DiZhi.YOU,
+      DiZhi.HAI,
+    ];
+
+    int yangIndex = 0;
+    int yinIndex = 0;
+    int sum = 0;
+
+    // 从下到上装配地支（索引0是初爻，索引5是上爻）
+    for (int i = 0; i < 6; i++) {
+      final yao = gua.yaoList[i];
+      DiZhi? diZhi;
+
+      if (yao.yinYang == YinYang.YANG) {
+        if (yangIndex < yangDiZhi.length) {
+          diZhi = yangDiZhi[yangIndex++];
+        }
+      } else {
+        if (yinIndex < yinDiZhi.length) {
+          diZhi = yinDiZhi[yinIndex++];
+        }
+      }
+
+      // 将地支配到爻上
+      if (diZhi != null) {
+        yao.naZhi = diZhi;
+        // 累加数字
+        sum += constants.yaoDiZhiNumberMapper[diZhi]!;
+      }
+    }
+
+    // 计算基础数
+    final upperNum = constants.houGuaNumberMapper[upperGua]!;
+    final lowerNum = constants.houGuaNumberMapper[lowerGua]!;
+    final baseNumber = upperNum * 1000 + sum - lowerNum;
+
+    // 生成计算公式
+    final formula = '${upperNum}000 + $sum - $lowerNum = $baseNumber';
+
+    return BaGuaJiaZeResult(
+      pureSixYaoGua: gua,
+      upperGua: upperGua,
+      lowerGua: lowerGua,
+      upperGuaNumber: upperNum,
+      lowerGuaNumber: lowerNum,
+      yaoSum: sum,
+      formula: formula,
+      tiaoWenNumber: baseNumber,
+      methodName: '爻序法',
+      description: '${gua64.name}爻序法计算：上卦${upperGua.name}($upperNum)，下卦${lowerGua.name}($lowerNum)，六爻总和$sum',
+    );
+  }
+
+  /// 使用纳甲法计算八卦加则
+  ///
+  /// 只需传入64卦,返回完整的计算结果
+  ///
+  /// [gua64] 64卦枚举
+  ///
+  /// 返回: [BaGuaJiaZeResult] 包含六爻卦、中间结果和最终条文数
+  static BaGuaJiaZeResult calculateByNaJiaFromGua64(Enum64Gua gua64) {
+    // 从64卦提取上下卦
+    final upperGua = gua64.top; // Enum8Gua
+    final lowerGua = gua64.bottom; // Enum8Gua
+
+    // 生成六爻卦
+    final gua = PureSixYaoGua.by8Gua(upperGua, lowerGua);
+
+    int sum = 0;
+
+    // 下卦纳支（初爻、二爻、三爻）
+    for (var i = 0; i < 3; i++) {
+      final diZhi = constants.innerGuaYaoDiZhi[lowerGua]![i];
+      gua.yaoList[i].naZhi = diZhi;
+      sum += constants.yaoDiZhiNumberMapper[diZhi]!;
+    }
+
+    // 上卦纳支（四爻、五爻、上爻）
+    for (var i = 3; i < 6; i++) {
+      final diZhi = constants.outerGuaYaoDiZhi[upperGua]![i - 3];
+      gua.yaoList[i].naZhi = diZhi;
+      sum += constants.yaoDiZhiNumberMapper[diZhi]!;
+    }
+
+    // 计算基础数
+    final upperNum = constants.houGuaNumberMapper[upperGua]!;
+    final lowerNum = constants.houGuaNumberMapper[lowerGua]!;
+    final baseNumber = upperNum * 1000 + sum - lowerNum;
+
+    // 生成计算公式
+    final formula = '${upperNum}000 + $sum - $lowerNum = $baseNumber';
+
+    return BaGuaJiaZeResult(
+      pureSixYaoGua: gua,
+      upperGua: upperGua,
+      lowerGua: lowerGua,
+      upperGuaNumber: upperNum,
+      lowerGuaNumber: lowerNum,
+      yaoSum: sum,
+      formula: formula,
+      tiaoWenNumber: baseNumber,
+      methodName: '纳甲法',
+      description: '${gua64.name}纳甲法计算：上卦${upperGua.name}($upperNum)，下卦${lowerGua.name}($lowerNum)，六爻总和$sum',
+    );
+  }
+
+  // ========== 原有的私有方法 ==========
 
   @override
   BaseNumberModelResult calculate(BaGuaJiaZeStrategyParams params) {

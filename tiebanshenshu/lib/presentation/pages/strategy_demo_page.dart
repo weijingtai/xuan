@@ -11,6 +11,7 @@ import '../viewmodels/ba_gua_jia_ze_view_model.dart';
 import '../viewmodels/yuan_tang_view_model.dart';
 import '../viewmodels/xian_houtian_jia_ze_view_model.dart';
 import '../viewmodels/liu_yao_gan_zhi_he_view_model.dart';
+import '../viewmodels/gua_yao_gan_zhi_he_view_model.dart';
 import '../viewmodels/xian_houtian_qu_shu_view_model.dart';
 import '../viewmodels/qian_hou_gua_view_model.dart';
 import '../viewmodels/gua_zhong_view_model.dart';
@@ -22,6 +23,7 @@ import '../widgets/tai_xuan_dual_method_card.dart';
 import '../widgets/yuan_tang_card.dart';
 import '../widgets/xian_houtian_jia_ze_card.dart';
 import '../widgets/liu_yao_gan_zhi_he_card.dart';
+import '../widgets/gua_yao_gan_zhi_he_card.dart';
 import '../widgets/xian_houtian_qu_shu_card.dart';
 import '../widgets/qian_hou_gua_card.dart';
 import '../widgets/gua_zhong_card.dart';
@@ -56,6 +58,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
     _TabConfig(label: '元堂卦', icon: Icons.account_balance),
     _TabConfig(label: '先后天', icon: Icons.shuffle),
     _TabConfig(label: '六爻干支', icon: Icons.hexagon_outlined),
+    _TabConfig(label: '卦爻干支', icon: Icons.vertical_align_center),
     _TabConfig(label: '先后天取数', icon: Icons.calculate_outlined),
     _TabConfig(label: '前后卦', icon: Icons.switch_left_outlined),
     _TabConfig(label: '卦中取数', icon: Icons.apps),
@@ -103,6 +106,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final xianHoutianJiaZeViewModel = context
           .read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
+      final guaYaoGanZhiHeViewModel = context.read<GuaYaoGanZhiHeViewModel>();
       final xianHoutianQuShuViewModel = context
           .read<XianHoutianQuShuViewModel>();
       final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
@@ -135,6 +139,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
           threeYuan: YuanYunOrder.upper,
           birthAfterZhi: TwentyFourJieQi.XIA_ZHI,
         ),
+        guaYaoGanZhiHeViewModel.setParams(eightChars: eightChars),
         xianHoutianQuShuViewModel.setParams(
           eightChars: eightChars,
           gender: Gender.male,
@@ -176,6 +181,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       final xianHoutianJiaZeViewModel = context
           .read<XianHoutianJiaZeViewModel>();
       final liuYaoGanZhiHeViewModel = context.read<LiuYaoGanZhiHeViewModel>();
+      final guaYaoGanZhiHeViewModel = context.read<GuaYaoGanZhiHeViewModel>();
       final xianHoutianQuShuViewModel = context
           .read<XianHoutianQuShuViewModel>();
       final qianHouGuaViewModel = context.read<QianHouGuaViewModel>();
@@ -189,6 +195,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
         yuanTangViewModel.refresh(),
         xianHoutianJiaZeViewModel.refresh(),
         liuYaoGanZhiHeViewModel.refresh(),
+        guaYaoGanZhiHeViewModel.refresh(),
         xianHoutianQuShuViewModel.refresh(),
         qianHouGuaViewModel.refresh(),
         guaZhongViewModel.refresh(),
@@ -346,6 +353,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
           ),
         ),
 
+        // 卦爻干支和数法页面
+        _buildStrategyPage(
+          child: Consumer<GuaYaoGanZhiHeViewModel>(
+            builder: (context, viewModel, child) {
+              return _buildGuaYaoGanZhiHeContent(viewModel);
+            },
+          ),
+        ),
+
         // 先后天卦取数页面
         _buildStrategyPage(
           child: Consumer<XianHoutianQuShuViewModel>(
@@ -398,10 +414,12 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
       case 7:
         return 'Strategy演示 - 先后天卦六爻干支和数法';
       case 8:
-        return 'Strategy演示 - 先后天卦取数';
+        return 'Strategy演示 - 卦爻干支和数法';
       case 9:
-        return 'Strategy演示 - 前后卦取数法';
+        return 'Strategy演示 - 先后天卦取数';
       case 10:
+        return 'Strategy演示 - 前后卦取数法';
+      case 11:
         return 'Strategy演示 - 卦中取数法';
       default:
         return 'Strategy演示';
@@ -434,12 +452,15 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
           await context.read<LiuYaoGanZhiHeViewModel>().refresh();
           break;
         case 8:
-          await context.read<XianHoutianQuShuViewModel>().refresh();
+          await context.read<GuaYaoGanZhiHeViewModel>().refresh();
           break;
         case 9:
-          await context.read<QianHouGuaViewModel>().refresh();
+          await context.read<XianHoutianQuShuViewModel>().refresh();
           break;
         case 10:
+          await context.read<QianHouGuaViewModel>().refresh();
+          break;
+        case 11:
           await context.read<GuaZhongViewModel>().refresh();
           break;
         default:
@@ -811,6 +832,35 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
     return LiuYaoGanZhiHeCard(viewModel: viewModel, initiallyExpanded: true);
   }
 
+  /// 构建卦爻干支和数法内容
+  Widget _buildGuaYaoGanZhiHeContent(GuaYaoGanZhiHeViewModel viewModel) {
+    if (viewModel.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(32.0),
+        child: LargeLoadingWidget(message: '计算中...'),
+      );
+    }
+
+    if (viewModel.hasError) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: CustomErrorWidget(
+          message: '计算失败：${viewModel.errorMessage ?? "未知错误"}',
+          onRetry: viewModel.refresh,
+        ),
+      );
+    }
+
+    if (!viewModel.hasResult) {
+      return const Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Center(child: Text('暂无结果')),
+      );
+    }
+
+    return GuaYaoGanZhiHeCard(viewModel: viewModel, initiallyExpanded: true);
+  }
+
   /// 构建先后天卦取数内容
   Widget _buildXianHoutianQuShuContent(XianHoutianQuShuViewModel viewModel) {
     if (viewModel.isLoading) {
@@ -926,6 +976,7 @@ class _StrategyDemoPageState extends State<StrategyDemoPage>
               Text('• 元堂卦：基于元堂卦取数法，包含8种条文计算方法'),
               Text('• 先后天八卦加则法：基于先后天八卦加则法，先天卦递增96四次，后天卦递减96四次'),
               Text('• 先后天卦六爻干支和数法：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各递增减96四次'),
+              Text('• 卦爻干支和数法：基于卦爻干支和数法，支持年干阴阳纳甲法和传统内外卦法两种纳甲方式'),
               Text('• 先后天卦取数：基于六爻纳甲配置，计算干支太玄数之和，先后天卦各使用±48×倍数[2,4,8,16]扩展'),
               Text('• 前后卦取数法：基于元堂卦法取先天卦和后天卦，前卦递增96四次，后卦递减96四次'),
               Text('• 卦中取数法：基于四柱干支太玄数，年月卦和日时卦各产生主卦和互卦条文编号，总计4个条文'),

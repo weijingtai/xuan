@@ -72,7 +72,7 @@ enum Enum64Gua {
   @JsonValue("咸")
   ze_shan_xian("泽山咸", "咸", Enum8Gua.Dui, Enum8Gua.Gen),
   @JsonValue("蹇")
-  shui_shan_jian("水山蹇", "蹇", Enum8Gua.Kun, Enum8Gua.Gen),
+  shui_shan_jian("水山蹇", "蹇", Enum8Gua.Kan, Enum8Gua.Gen),
   @JsonValue("谦")
   di_shan_qian("地山谦", "谦", Enum8Gua.Kun, Enum8Gua.Gen),
   @JsonValue("小过")

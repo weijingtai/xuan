@@ -1,4 +1,5 @@
 import 'package:common/enums.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:tiebanshenshu/constant/constants.dart' as constants;
 import 'package:tiebanshenshu/domain/models/base_number_model.dart';
 import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
@@ -6,6 +7,8 @@ import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';
 import 'pure_yuan_tang_gua.dart';
 import 'yuan_tang_calculator.dart';
 import 'yuan_tang_info.dart';
+
+part 'yuan_tang_info_ext.g.dart';
 
 /// YuanTangInfo 扩展：便捷获取先天/后天大运列表
 extension YuanTangInfoDaYunExt on YuanTangInfo {
@@ -42,10 +45,7 @@ extension YuanTangInfoConversionExt on YuanTangInfo {
     required BaseNumberSource source,
   }) {
     // 计算先天卦大运
-    final xiantianDayunList = YuanTangCalculator.calculateDaYun(
-      xianTanGua,
-      1,
-    );
+    final xiantianDayunList = YuanTangCalculator.calculateDaYun(xianTanGua, 1);
 
     // 计算后天卦大运
     final houtianDayunStartAge = xiantianDayunList.last.endAge + 1;
@@ -94,13 +94,17 @@ extension YuanTangInfoConversionExt on YuanTangInfo {
       // 步骤3: 元堂装卦(先天卦)
       timeGanzhi: eightChars.time.name,
       timeYinYang: timeYinYang.isYang ? "阳" : "阴",
-      totalYangYao:
-          xianTanGua.gua.bottomTopBinaryList.where((b) => b == 1).length,
-      totalYinYao:
-          xianTanGua.gua.bottomTopBinaryList.where((b) => b == 0).length,
+      totalYangYao: xianTanGua.gua.bottomTopBinaryList
+          .where((b) => b == 1)
+          .length,
+      totalYinYao: xianTanGua.gua.bottomTopBinaryList
+          .where((b) => b == 0)
+          .length,
       zhiList: xianTanGua.yuanTangYaoList
-          .map((yao) =>
-              yao.yangTangZhiList?.map((z) => z.name).toList() ?? <String>[])
+          .map(
+            (yao) =>
+                yao.yangTangZhiList?.map((z) => z.name).toList() ?? <String>[],
+          )
           .toList(),
       yuantangYaoIndex: xianTanGua.yuanTangYao.indexAtYaoList,
       yuantangYaoLabel: xianTanGua.yuanTangYao.name,
@@ -111,8 +115,10 @@ extension YuanTangInfoConversionExt on YuanTangInfo {
           constants.houGuaNumberMapper[houTianGua.gua.bottom]!,
       // 步骤4.5: 后天卦元堂装卦
       houtianZhiList: houTianGua.yuanTangYaoList
-          .map((yao) =>
-              yao.yangTangZhiList?.map((z) => z.name).toList() ?? <String>[])
+          .map(
+            (yao) =>
+                yao.yangTangZhiList?.map((z) => z.name).toList() ?? <String>[],
+          )
           .toList(),
       houtianYuantangYaoIndex: houTianGua.yuanTangYao.indexAtYaoList,
       houtianYuantangYaoLabel: houTianGua.yuanTangYao.name,
@@ -127,8 +133,7 @@ extension YuanTangInfoConversionExt on YuanTangInfo {
       // 条文编号
       tiaowenNumberJiazeXiantiangua: tiaowenNumbers.jiazeXiantian,
       tiaowenNumberJiazeHoutiangua: tiaowenNumbers.jiazeHoutian,
-      tiaowenNumberNajiaTaixuanXiantiangua:
-          tiaowenNumbers.najiaTaixuanXiantian,
+      tiaowenNumberNajiaTaixuanXiantiangua: tiaowenNumbers.najiaTaixuanXiantian,
       tiaowenNumberNajiaTaixuanHoutiangua: tiaowenNumbers.najiaTaixuanHoutian,
       tiaowenNumberXiantianBenhu: tiaowenNumbers.benhuXiantian,
       tiaowenNumberHoutianBenhu: tiaowenNumbers.benhuHoutian,
@@ -154,6 +159,7 @@ extension YuanTangInfoConversionExt on YuanTangInfo {
 /// 天地卦生成数据
 ///
 /// 封装步骤1的所有计算中间结果
+@JsonSerializable()
 class TianDiGuaData {
   final List<int> ganNumList;
   final List<List<int>> zhiNumList;
@@ -176,11 +182,15 @@ class TianDiGuaData {
     required this.diGua,
     required this.usedThreeYuanWuGong,
   });
+  factory TianDiGuaData.fromJson(Map<String, dynamic> json) =>
+      _$TianDiGuaDataFromJson(json);
+  Map<String, dynamic> toJson() => _$TianDiGuaDataToJson(this);
 }
 
 /// 条文编号数据
 ///
 /// 封装所有条文计算结果
+@JsonSerializable()
 class TiaowenNumbers {
   final int jiazeXiantian;
   final int jiazeHoutian;
@@ -201,4 +211,7 @@ class TiaowenNumbers {
     required this.guahuListXiantian,
     required this.guahuListHoutian,
   });
+  factory TiaowenNumbers.fromJson(Map<String, dynamic> json) =>
+      _$TiaowenNumbersFromJson(json);
+  Map<String, dynamic> toJson() => _$TiaowenNumbersToJson(this);
 }

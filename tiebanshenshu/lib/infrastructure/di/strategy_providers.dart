@@ -23,6 +23,7 @@ import '../../service/strategy/ba_gua_jia_ze_strategy.dart';
 import '../../service/strategy/yuan_tang_strategy.dart';
 import '../../service/strategy/xian_houtian_jia_ze_strategy.dart';
 import '../../service/strategy/liu_yao_gan_zhi_he_strategy.dart';
+import '../../service/strategy/gua_yao_gan_zhi_he_strategy.dart';
 import '../../service/strategy/xian_houtian_qu_shu_strategy.dart';
 import '../../service/strategy/qian_hou_gua_strategy.dart';
 import '../../service/strategy/gua_zhong_strategy.dart';
@@ -37,6 +38,7 @@ import '../../usecases/ba_gua_jia_ze_tiao_wen_list_use_case.dart';
 import '../../usecases/yuan_tang_tiao_wen_list_use_case.dart';
 import '../../usecases/xian_houtian_jia_ze_tiao_wen_list_use_case.dart';
 import '../../usecases/liu_yao_gan_zhi_he_tiao_wen_list_use_case.dart';
+import '../../usecases/gua_yao_gan_zhi_he_tiao_wen_list_use_case.dart';
 import '../../usecases/xian_houtian_qu_shu_tiao_wen_list_use_case.dart';
 import '../../usecases/qian_hou_gua_tiao_wen_list_use_case.dart';
 import '../../usecases/gua_zhong_tiao_wen_list_use_case.dart';
@@ -50,6 +52,7 @@ import '../../presentation/viewmodels/ba_gua_jia_ze_view_model.dart';
 import '../../presentation/viewmodels/yuan_tang_view_model.dart';
 import '../../presentation/viewmodels/xian_houtian_jia_ze_view_model.dart';
 import '../../presentation/viewmodels/liu_yao_gan_zhi_he_view_model.dart';
+import '../../presentation/viewmodels/gua_yao_gan_zhi_he_view_model.dart';
 import '../../presentation/viewmodels/xian_houtian_qu_shu_view_model.dart';
 import '../../presentation/viewmodels/qian_hou_gua_view_model.dart';
 import '../../presentation/viewmodels/gua_zhong_view_model.dart';
@@ -63,6 +66,19 @@ import '../../features/liuqinkaoke/strategy/liuqinkaoke_calculation_strategy.dar
 import '../../features/liuqinkaoke/strategy/liuqinkaoke_default_strategy.dart';
 import '../../features/liuqinkaoke/usecase/liuqinkaoke_use_case.dart';
 import '../../features/liuqinkaoke/viewmodels/liuqinkaoke_view_model.dart';
+// 考刻
+import '../../constant/kao_ke_constants.dart';
+import '../../features/kao_ke/kao_ke_session_manager.dart';
+import '../../features/kao_ke/kao_ke_calculation_strategy.dart';
+import '../../features/kao_ke/kao_ke_calculation_strategy_impl.dart';
+import '../../features/kao_ke/kao_ke_use_case.dart';
+import '../../features/kao_ke/kao_ke_view_model.dart';
+// 考订六亲
+import '../../features/kao_ding_liu_qin/repositories/liu_du_table_repository.dart';
+import '../../features/kao_ding_liu_qin/services/kao_ding_liu_qin_strategy.dart';
+import '../../features/kao_ding_liu_qin/usecases/kao_ding_liu_qin_use_case.dart';
+import '../../features/kao_ding_liu_qin/models/session_manager.dart';
+import '../../presentation/viewmodels/kao_ding_liu_qin_view_model.dart';
 
 /// Strategy相关的Provider配置
 ///
@@ -95,6 +111,7 @@ class StrategyProviders {
       create: (_) => XianHoutianJiaZeStrategy(),
     ),
     Provider<LiuYaoGanZhiHeStrategy>(create: (_) => LiuYaoGanZhiHeStrategy()),
+    Provider<GuaYaoGanZhiHeStrategy>(create: (_) => GuaYaoGanZhiHeStrategy()),
     Provider<XianHoutianQuShuStrategy>(
       create: (_) => XianHoutianQuShuStrategy(),
     ),
@@ -195,6 +212,12 @@ class StrategyProviders {
         context.read<TiaoWenRepository>(),
       ),
     ),
+    Provider<GuaYaoGanZhiHeTiaoWenListUseCase>(
+      create: (context) => GuaYaoGanZhiHeTiaoWenListUseCase(
+        context.read<GuaYaoGanZhiHeStrategy>(),
+        context.read<TiaoWenRepository>(),
+      ),
+    ),
     Provider<XianHoutianQuShuTiaoWenListUseCase>(
       create: (context) => XianHoutianQuShuTiaoWenListUseCase(
         context.read<XianHoutianQuShuStrategy>(),
@@ -265,6 +288,11 @@ class StrategyProviders {
     ChangeNotifierProvider<LiuYaoGanZhiHeViewModel>(
       create: (context) => LiuYaoGanZhiHeViewModel(
         context.read<LiuYaoGanZhiHeTiaoWenListUseCase>(),
+      ),
+    ),
+    ChangeNotifierProvider<GuaYaoGanZhiHeViewModel>(
+      create: (context) => GuaYaoGanZhiHeViewModel(
+        context.read<GuaYaoGanZhiHeTiaoWenListUseCase>(),
       ),
     ),
     ChangeNotifierProvider<XianHoutianQuShuViewModel>(
@@ -345,6 +373,47 @@ class StrategyProviders {
     ChangeNotifierProvider<LiuQinKaoKeViewModel>(
       create: (context) =>
           LiuQinKaoKeViewModel(context.read<LiuQinKaoKeUseCase>()),
+    ),
+
+    // —— 考刻 DI ——
+    Provider<KaoKeConstants>(create: (_) => KaoKeConstants()),
+    Provider<KaoKeSessionManager>(create: (_) => KaoKeSessionManager()),
+    Provider<KaoKeCalculationStrategy>(
+      create: (context) => KaoKeCalculationStrategyImpl(
+        tiaoWenRepository: context.read<TiaoWenRepository>(),
+      ),
+    ),
+    Provider<KaoKeUseCase>(
+      create: (context) => KaoKeUseCase(
+        sessionManager: context.read<KaoKeSessionManager>(),
+        calculationStrategy: context.read<KaoKeCalculationStrategy>(),
+        kaoKeConstants: context.read<KaoKeConstants>(),
+      ),
+    ),
+    ChangeNotifierProvider<KaoKeViewModel>(
+      create: (context) =>
+          KaoKeViewModel(useCase: context.read<KaoKeUseCase>()),
+    ),
+
+    // —— 考订六亲 DI ——
+    Provider<LiuDuTableRepository>(create: (_) => LiuDuTableRepository()),
+    Provider<KaoDingLiuQinSessionManager>(
+      create: (_) => KaoDingLiuQinSessionManager(),
+    ),
+    Provider<KaoDingLiuQinStrategy>(
+      create: (context) =>
+          KaoDingLiuQinStrategy(context.read<LiuDuTableRepository>()),
+    ),
+    Provider<KaoDingLiuQinUseCase>(
+      create: (context) => KaoDingLiuQinUseCase(
+        liuDuTableRepository: context.read<LiuDuTableRepository>(),
+        tiaoWenRepository: context.read<TiaoWenRepository>(),
+        sessionManager: context.read<KaoDingLiuQinSessionManager>(),
+      ),
+    ),
+    ChangeNotifierProvider<KaoDingLiuQinViewModel>(
+      create: (context) =>
+          KaoDingLiuQinViewModel(context.read<KaoDingLiuQinUseCase>()),
     ),
   ];
 }

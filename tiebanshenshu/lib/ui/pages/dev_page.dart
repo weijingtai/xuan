@@ -187,6 +187,42 @@ class _DevPageState extends State<DevPage> {
                 foregroundColor: Colors.white,
               ),
             ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).pushNamed('/tiebanshenshu/kaoke');
+              },
+              icon: const Icon(Icons.access_time),
+              label: const Text('八刻秘数表考刻'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.deepPurple,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).pushNamed('/tiebanshenshu/kao_ding_liu_qin');
+              },
+              icon: const Icon(Icons.people),
+              label: const Text('考订六亲'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.teal,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
