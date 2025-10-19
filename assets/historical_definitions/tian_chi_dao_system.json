@@ -1,0 +1,28 @@
+{
+  "systemType": "Equatorial",
+  "constellationSystemType": "Historical",
+  "panelSystemType": "historicalCelestialEquatorial",
+  "epochCorrection": "天赤道制",
+  "totalDegree": 365.25,
+  "gongDegreeSeq": [
+    {"gong": "Zi", "degree": 30.4375},
+    {"gong": "Chou", "degree": 30.4375}
+  ],
+  "starInnDegreeSeq": [
+    {"constellation": "Jiao", "degree": 12.0},
+    {"constellation": "Kang", "degree": 9.25}
+  ],
+  "alignmentPointAtConstellation": {
+    "constellation": "Nyu",
+    "degree": 2.1
+  },
+  "alignmentPointAtGong": {
+    "gong": "Zi",
+    "degree": 0.0
+  },
+  "zeroPointJieQi": "DongZhi",
+  "specificationList": [
+    "此为天赤道制排盘体系的定义文件。",
+    "所有度数和规则均基于历史文献。"
+  ]
+}

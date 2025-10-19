@@ -12,7 +12,6 @@ import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
-import 'package:xuan/pages/root_page.dart';
 import 'package:xuan/routes.dart';
 import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -220,7 +219,7 @@ class MyApp extends StatelessWidget {
                 Breakpoint(start: 0, end: 480, name: MOBILE),
                 Breakpoint(start: 481, end: 1200, name: TABLET),
                 Breakpoint(start: 1201, end: double.infinity, name: DESKTOP),
-              ], child: RootPage()),
+              ], child: Container()),
             '/' ||
             CrossPlatformMainPage.routeName =>
               const CrossPlatformMainPage(),
