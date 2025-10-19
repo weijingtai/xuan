@@ -33,7 +33,8 @@ class KaoKeInteractivePage extends StatefulWidget {
 }
 
 class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
-  final TextEditingController _douJiaYiNumberController = TextEditingController();
+  final TextEditingController _douJiaYiNumberController =
+      TextEditingController();
   String? _douJiaYiPreviewText;
   String? _douJiaYiError;
 
@@ -183,14 +184,19 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                       children: [
                         Icon(
                           Icons.info_outline,
-                          color: Theme.of(context).colorScheme.onPrimaryContainer,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onPrimaryContainer,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           '选择刻数',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onPrimaryContainer,
                               ),
                         ),
                       ],
@@ -215,7 +221,8 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
             KeSelectionTable(
               keData: keData,
               birthShiChen: birthShiChen,
-              onKeSelected: (keNumber) => _handleKeSelected(viewModel, keNumber),
+              onKeSelected: (keNumber) =>
+                  _handleKeSelected(viewModel, keNumber),
             ),
             const SizedBox(height: 24),
 
@@ -248,7 +255,8 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
     }
 
     // 基础数来源与已选刻卡片
-    final int baseNumber = keSelection?.tiaoWenNumber ?? douSelection!.tiaoWenNumber;
+    final int baseNumber =
+        keSelection?.tiaoWenNumber ?? douSelection!.tiaoWenNumber;
     final Widget selectedCard = keSelection != null
         ? _buildSelectedKeCard(keSelection)
         : _buildSelectedDouJiaYiCard(douSelection!);
@@ -264,16 +272,14 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
             const SizedBox(height: 16),
 
             // 卦象展示
-            GuaDisplayWidget(
-              guaResult: guaResult,
-              baseNumber: baseNumber,
-            ),
+            GuaDisplayWidget(guaResult: guaResult, baseNumber: baseNumber),
             const SizedBox(height: 16),
 
             // 计算方法选择
             MethodSelectorWidget(
               selectedMethods: viewModel.selectedMethods,
-              onMethodToggled: (method) => _handleMethodToggled(viewModel, method),
+              onMethodToggled: (method) =>
+                  _handleMethodToggled(viewModel, method),
             ),
             const SizedBox(height: 24),
 
@@ -282,9 +288,7 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
               onPressed: () => _handleCalculateFinalResults(viewModel),
               icon: const Icon(Icons.calculate),
               label: const Text('计算最终条文'),
-              style: FilledButton.styleFrom(
-                padding: const EdgeInsets.all(16),
-              ),
+              style: FilledButton.styleFrom(padding: const EdgeInsets.all(16)),
             ),
           ],
         ),
@@ -302,9 +306,7 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
 
     return Padding(
       padding: const EdgeInsets.all(16),
-      child: FinalResultDisplayWidget(
-        finalResults: finalResults,
-      ),
+      child: FinalResultDisplayWidget(finalResults: finalResults),
     );
   }
 
@@ -326,9 +328,9 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                 Text(
                   '已选择的刻（八刻）',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSecondaryContainer,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ],
             ),
@@ -381,9 +383,9 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                 Text(
                   '已选择的刻（斗甲乙宫）',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSecondaryContainer,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
                 ),
               ],
             ),
@@ -441,9 +443,9 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                 Text(
                   '斗甲乙宫（三宫之数）',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -494,11 +496,7 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: douData.keys
-                    .map(
-                      (zhi) => Chip(
-                        label: Text('${zhi.name}刻'),
-                      ),
-                    )
+                    .map((zhi) => Chip(label: Text('${zhi.name}刻')))
                     .toList(),
               ),
             ],
@@ -566,7 +564,8 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
     }
 
     setState(() {
-      _douJiaYiPreviewText = '${birthShiChen.name}时${matched!.ke.name}刻（序 ${matched!.order}）';
+      _douJiaYiPreviewText =
+          '${birthShiChen.name}时${matched!.ke.name}刻（序 ${matched!.order}）';
     });
   }
 
@@ -598,9 +597,8 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
     // 显示回滚选项对话框
     final targetPhase = await showDialog<KaoKeSessionPhase>(
       context: context,
-      builder: (context) => _RollbackDialog(
-        currentPhase: viewModel.currentPhase!,
-      ),
+      builder: (context) =>
+          _RollbackDialog(currentPhase: viewModel.currentPhase!),
     );
 
     if (targetPhase != null && mounted) {
@@ -613,9 +611,7 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
 class _RollbackDialog extends StatelessWidget {
   final KaoKeSessionPhase currentPhase;
 
-  const _RollbackDialog({
-    required this.currentPhase,
-  });
+  const _RollbackDialog({required this.currentPhase});
 
   @override
   Widget build(BuildContext context) {
