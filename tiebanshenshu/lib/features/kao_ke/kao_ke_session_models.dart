@@ -119,6 +119,53 @@ class KeSelectionRecord {
   }
 }
 
+/// 斗甲乙宫刻选择记录
+class DouJiaYiSelectionRecord {
+  /// 出生时辰（如子时）
+  final DiZhi birthShiChen;
+
+  /// 三宫类型（斗/甲/乙）
+  final DouJiaYiType palaceType;
+
+  /// 所属刻的地支（如午刻）
+  final DiZhi keDiZhi;
+
+  /// 该宫内序号（1-5）
+  final int order;
+
+  /// 选中的条文编号(作为基础数)
+  final int tiaoWenNumber;
+
+  /// 选择时间
+  final DateTime selectedAt;
+
+  const DouJiaYiSelectionRecord({
+    required this.birthShiChen,
+    required this.palaceType,
+    required this.keDiZhi,
+    required this.order,
+    required this.tiaoWenNumber,
+    required this.selectedAt,
+  });
+
+  /// 辅助构造：由 DouJiaYiNumber 生成选择记录
+  factory DouJiaYiSelectionRecord.fromDouJiaYiNumber({
+    required DiZhi birthShiChen,
+    required DouJiaYiType palaceType,
+    required DouJiaYiNumber number,
+    required DateTime selectedAt,
+  }) {
+    return DouJiaYiSelectionRecord(
+      birthShiChen: birthShiChen,
+      palaceType: palaceType,
+      keDiZhi: number.ke,
+      order: number.order,
+      tiaoWenNumber: number.tiaoWenNumber,
+      selectedAt: selectedAt,
+    );
+  }
+}
+
 /// 卦象计算结果
 @JsonSerializable()
 class GuaCalculationResult {
@@ -190,6 +237,10 @@ class KaoKeSession {
   )
   final KeSelectionRecord? keSelection;
 
+  /// 斗甲乙宫刻选择记录（不参与快照序列化）
+  @JsonKey(ignore: true)
+  final DouJiaYiSelectionRecord? douJiaYiSelection;
+
   /// 卦象计算结果
   @JsonKey(
     fromJson: _guaResultFromJson,
@@ -230,6 +281,7 @@ class KaoKeSession {
     required this.sessionName,
     required this.eightChars,
     this.keSelection,
+    this.douJiaYiSelection,
     this.guaResult,
     this.selectedMethods = const {
       KaoKeCalculationMethod.baGuaJiaZe,
@@ -270,6 +322,7 @@ class KaoKeSession {
     String? sessionName,
     EightChars? eightChars,
     KeSelectionRecord? keSelection,
+    DouJiaYiSelectionRecord? douJiaYiSelection,
     GuaCalculationResult? guaResult,
     Set<KaoKeCalculationMethod>? selectedMethods,
     Map<KaoKeCalculationMethod, List<TiaoWenResult>>? finalResults,
@@ -286,6 +339,7 @@ class KaoKeSession {
       sessionName: sessionName ?? this.sessionName,
       eightChars: eightChars ?? this.eightChars,
       keSelection: keSelection ?? this.keSelection,
+      douJiaYiSelection: douJiaYiSelection ?? this.douJiaYiSelection,
       guaResult: guaResult ?? this.guaResult,
       selectedMethods: selectedMethods ?? this.selectedMethods,
       finalResults: finalResults ?? this.finalResults,

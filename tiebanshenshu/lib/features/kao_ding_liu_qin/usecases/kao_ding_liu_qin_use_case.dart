@@ -247,6 +247,49 @@ class KaoDingLiuQinUseCase {
     return entriesWithTiaoWen;
   }
 
+  /// 直接根据流度表生成带条文的条目列表（可选目标高亮）
+  Future<List<LiuDuEntryWithTiaoWen>> getLiuDuEntriesWithTiaoWenForTable(
+    LiuDuTable table, {
+    LiuDuEntry? targetEntry,
+  }) async {
+    final entriesWithTiaoWen = <LiuDuEntryWithTiaoWen>[];
+
+    if (table.hasZhiMapper && table.zhiMapper != null) {
+      for (final zhi in DiZhi.values) {
+        final entry = table.zhiMapper![zhi];
+        if (entry != null) {
+          final tiaoWen = await _tiaoWenRepository.getById(entry.tiaoWenNumber);
+          final isTarget = targetEntry != null &&
+              targetEntry.chiperNumber == entry.chiperNumber;
+          entriesWithTiaoWen.add(LiuDuEntryWithTiaoWen(
+            entry: entry,
+            tiaoWen: tiaoWen,
+            isTarget: isTarget,
+            zhi: zhi,
+          ));
+        }
+      }
+    } else {
+      for (final entry in table.getAllEntries()) {
+        final tiaoWen = await _tiaoWenRepository.getById(entry.tiaoWenNumber);
+        final isTarget = targetEntry != null &&
+            targetEntry.chiperNumber == entry.chiperNumber;
+        entriesWithTiaoWen.add(LiuDuEntryWithTiaoWen(
+          entry: entry,
+          tiaoWen: tiaoWen,
+          isTarget: isTarget,
+        ));
+      }
+    }
+
+    return entriesWithTiaoWen;
+  }
+
+  /// 获取兄弟姐妹的甲/乙双表
+  Future<List<LiuDuTable>> getSiblingTables() async {
+    return _liuDuTableRepository.getSiblingTables();
+  }
+
   /// 化卦 - 根据选择的条文编号进行化卦
   ///
   /// [selectedTiaoWenNumbers] 用户选择的条文编号（每个六亲类型对应一个）

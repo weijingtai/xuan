@@ -42,6 +42,9 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
   /// 所有六亲类型的流度表条目（带条文内容）
   Map<LiuQinType, List<LiuDuEntryWithTiaoWen>> _allEntriesWithTiaoWen = {};
 
+  /// 兄弟乙表的流度表条目（带条文内容）
+  List<LiuDuEntryWithTiaoWen> _siblingYiEntriesWithTiaoWen = [];
+
   /// 用户选择的条文（每个六亲类型对应一个条文编号）
   Map<LiuQinType, int> _selectedTiaoWenNumbers = {};
 
@@ -92,6 +95,9 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
   /// 所有六亲类型的流度表条目（带条文内容）
   Map<LiuQinType, List<LiuDuEntryWithTiaoWen>> get allEntriesWithTiaoWen =>
       _allEntriesWithTiaoWen;
+
+  /// 兄弟乙表的流度表条目（带条文内容）
+  List<LiuDuEntryWithTiaoWen> get siblingYiEntriesWithTiaoWen => _siblingYiEntriesWithTiaoWen;
 
   /// 用户选择的条文
   Map<LiuQinType, int> get selectedTiaoWenNumbers => _selectedTiaoWenNumbers;
@@ -212,6 +218,16 @@ class KaoDingLiuQinViewModel extends ChangeNotifier {
               result.targetEntry!.tiaoWenNumber;
         }
       }
+
+      // 额外加载兄弟乙表（纳比卦乙表）
+      _siblingYiEntriesWithTiaoWen = [];
+      final siblingTables = await _useCase.getSiblingTables();
+      final yiTable = siblingTables.firstWhere(
+        (t) => t.type == LiuDuTableType.naBiGuaYi,
+        orElse: () => siblingTables.last,
+      );
+      _siblingYiEntriesWithTiaoWen =
+          await _useCase.getLiuDuEntriesWithTiaoWenForTable(yiTable);
 
       // 设置最后一个结果为当前结果
       if (results.isNotEmpty) {

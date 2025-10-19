@@ -24,6 +24,9 @@ class KaoKeViewModel extends ChangeNotifier {
   /// 12时辰×8刻的完整数据
   Map<DiZhi, List<KaoEigthKeNumber>>? _keSelectionData;
 
+  /// 斗甲乙宫刻数据（按出生时辰所属宫返回的四支 × 1-5）
+  Map<DiZhi, List<DouJiaYiNumber>>? _douJiaYiSelectionData;
+
   KaoKeViewModel({
     required KaoKeUseCase useCase,
   }) : _useCase = useCase;
@@ -34,6 +37,7 @@ class KaoKeViewModel extends ChangeNotifier {
   bool get isLoading => _isLoading;
   String? get error => _error;
   Map<DiZhi, List<KaoEigthKeNumber>>? get keSelectionData => _keSelectionData;
+  Map<DiZhi, List<DouJiaYiNumber>>? get douJiaYiSelectionData => _douJiaYiSelectionData;
 
   /// 当前阶段
   KaoKeSessionPhase? get currentPhase => _session?.currentPhase;
@@ -50,8 +54,11 @@ class KaoKeViewModel extends ChangeNotifier {
   /// 用户出生时辰
   DiZhi? get birthShiChen => _session?.birthShiChen;
 
-  /// 已选择的刻记录
+  /// 已选择的刻记录（八刻）
   KeSelectionRecord? get keSelection => _session?.keSelection;
+
+  /// 已选择的刻记录（斗甲乙宫）
+  DouJiaYiSelectionRecord? get douJiaYiSelection => _session?.douJiaYiSelection;
 
   /// 卦象计算结果
   GuaCalculationResult? get guaResult => _session?.guaResult;
@@ -81,12 +88,17 @@ class KaoKeViewModel extends ChangeNotifier {
         sessionName: sessionName,
       );
 
-      // 加载刻选择数据
+      // 加载刻选择数据（八刻）
       _keSelectionData = _useCase.prepareKeSelectionData();
+
+      // 加载斗甲乙宫刻数据（按出生时辰所属宫）
+      final birth = _session!.birthShiChen;
+      _douJiaYiSelectionData =
+          _useCase.prepareDouJiaYiSelectionDataForBirthShiChen(birth);
     });
   }
 
-  /// 选择刻
+  /// 选择刻（八刻）
   ///
   /// [selectedKe] 用户选择的刻
   Future<void> selectKe(KaoEigthKeNumber selectedKe) async {
@@ -104,6 +116,26 @@ class KaoKeViewModel extends ChangeNotifier {
       );
 
       // 自动计算卦象
+      _session = await _useCase.calculateGua(_session!);
+    });
+  }
+
+  /// 选择刻（斗甲乙宫：按条文编号提交）
+  Future<void> selectDouJiaYiByNumber(int selectedTiaoWenNumber) async {
+    if (_session == null) {
+      _error = '会话未初始化';
+      notifyListeners();
+      return;
+    }
+
+    await _executeWithLoading(() async {
+      // 提交斗甲乙宫选择
+      _session = await _useCase.submitDouJiaYiSelection(
+        session: _session!,
+        selectedTiaoWenNumber: selectedTiaoWenNumber,
+      );
+
+      // 自动计算卦象（与八刻一致）
       _session = await _useCase.calculateGua(_session!);
     });
   }

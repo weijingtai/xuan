@@ -225,11 +225,16 @@ class _KaoDingLiuQinPageState extends State<KaoDingLiuQinPage> {
             // 该分组的流度表
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: group.map((type) {
-                return Expanded(
-                  child: _buildLiuDuTable(viewModel, type),
-                );
-              }).toList(),
+              children: [
+                if (group.contains(LiuQinType.sibling)) ...[
+                  Expanded(child: _buildSiblingTable(viewModel, isYi: false)),
+                  Expanded(child: _buildSiblingTable(viewModel, isYi: true)),
+                ],
+                ...group
+                    .where((type) => type != LiuQinType.sibling)
+                    .map((type) => Expanded(child: _buildLiuDuTable(viewModel, type)))
+                    .toList(),
+              ],
             ),
             const SizedBox(height: 16),
           ],
@@ -292,6 +297,37 @@ class _KaoDingLiuQinPageState extends State<KaoDingLiuQinPage> {
       );
     }
 
+    if (liuQinType.isSibling) {
+      // 兄弟姐妹：并列展示纳比卦甲表与乙表
+      final selectedNumberSibling = viewModel.getSelectedTiaoWenNumber(LiuQinType.sibling);
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('纳比卦（甲表）', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          LiuDuTableSelectionWidget(
+            liuQinType: liuQinType,
+            entries: entries,
+            selectedTiaoWenNumber: selectedNumberSibling,
+            onSelect: (number) {
+              viewModel.selectTiaoWenForType(LiuQinType.sibling, number);
+            },
+          ),
+          const SizedBox(height: 12),
+          Text('纳比卦（乙表）', style: Theme.of(context).textTheme.labelLarge),
+          const SizedBox(height: 8),
+          LiuDuTableSelectionWidget(
+            liuQinType: liuQinType,
+            entries: viewModel.siblingYiEntriesWithTiaoWen,
+            selectedTiaoWenNumber: selectedNumberSibling,
+            onSelect: (number) {
+              viewModel.selectTiaoWenForType(LiuQinType.sibling, number);
+            },
+          ),
+        ],
+      );
+    }
+
     return LiuDuTableSelectionWidget(
       liuQinType: liuQinType,
       entries: entries,
@@ -299,6 +335,30 @@ class _KaoDingLiuQinPageState extends State<KaoDingLiuQinPage> {
       onSelect: (number) {
         viewModel.selectTiaoWenForType(liuQinType, number);
       },
+    );
+  }
+
+  /// 构建兄弟单个子表（甲/乙），用于行内并列展示
+  Widget _buildSiblingTable(KaoDingLiuQinViewModel viewModel, {required bool isYi}) {
+    final selectedNumber = viewModel.getSelectedTiaoWenNumber(LiuQinType.sibling);
+    final entries = isYi
+        ? viewModel.siblingYiEntriesWithTiaoWen
+        : (viewModel.allEntriesWithTiaoWen[LiuQinType.sibling] ?? []);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(isYi ? '纳比卦（乙表）' : '纳比卦（甲表）', style: Theme.of(context).textTheme.labelLarge),
+        const SizedBox(height: 8),
+        LiuDuTableSelectionWidget(
+          liuQinType: LiuQinType.sibling,
+          entries: entries,
+          selectedTiaoWenNumber: selectedNumber,
+          onSelect: (number) {
+            viewModel.selectTiaoWenForType(LiuQinType.sibling, number);
+          },
+        ),
+      ],
     );
   }
 

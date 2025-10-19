@@ -53,6 +53,93 @@ class KaoKeUseCase {
     return _kaoKeConstants.keNumbers;
   }
 
+  /// 2a. 准备斗甲乙宫刻选择数据（按出生时辰确定宫）
+  ///
+  /// 例如：出生子时 -> 斗宫（子午卯酉），返回该宫的四支 × 每支 1-5 条目
+  Map<DiZhi, List<DouJiaYiNumber>>
+      prepareDouJiaYiSelectionDataForBirthShiChen(DiZhi birthShiChen) {
+    final palace = _palaceTypeForShiChen(birthShiChen);
+    final mapper = _kaoKeConstants.eightKeNumberMapper[palace];
+    if (mapper == null) {
+      return {};
+    }
+    return mapper;
+  }
+
+  /// 斗甲乙宫：由出生时辰判定所属宫
+  DouJiaYiType _palaceTypeForShiChen(DiZhi zhi) {
+    // 斗: 子午卯酉；甲: 辰戌丑未；乙: 寅申巳亥
+    const douSet = {
+      DiZhi.ZI,
+      DiZhi.WU,
+      DiZhi.MAO,
+      DiZhi.YOU,
+    };
+    const jiaSet = {
+      DiZhi.CHEN,
+      DiZhi.XU,
+      DiZhi.CHOU,
+      DiZhi.WEI,
+    };
+    const yiSet = {
+      DiZhi.YIN,
+      DiZhi.SHEN,
+      DiZhi.SI,
+      DiZhi.HAI,
+    };
+    if (douSet.contains(zhi)) return DouJiaYiType.dou;
+    if (jiaSet.contains(zhi)) return DouJiaYiType.jia;
+    return DouJiaYiType.yi;
+  }
+
+  /// 3a. 提交斗甲乙宫选择（按条文编号匹配）
+  ///
+  /// 例如：出生子时，选择条文 7298 -> 匹配到 斗宫 午刻 序 2，生成 "子时午刻"
+  Future<KaoKeSession> submitDouJiaYiSelection({
+    required KaoKeSession session,
+    required int selectedTiaoWenNumber,
+  }) async {
+    final birthShiChen = session.birthShiChen;
+    final palace = _palaceTypeForShiChen(birthShiChen);
+    final mapper = _kaoKeConstants.eightKeNumberMapper[palace];
+    if (mapper == null) {
+      throw Exception('未配置三宫映射: $palace');
+    }
+
+    DouJiaYiNumber? matched;
+    for (final entry in mapper.entries) {
+      for (final item in entry.value) {
+        if (item.tiaoWenNumber == selectedTiaoWenNumber) {
+          matched = item;
+          break;
+        }
+      }
+      if (matched != null) break;
+    }
+
+    if (matched == null) {
+      throw Exception('未找到对应三宫之数: $selectedTiaoWenNumber');
+    }
+
+    final record = DouJiaYiSelectionRecord.fromDouJiaYiNumber(
+      birthShiChen: birthShiChen,
+      palaceType: palace,
+      number: matched,
+      selectedAt: DateTime.now(),
+    );
+
+    final updatedSession = session.copyWith(
+      douJiaYiSelection: record,
+    );
+
+    // 使用同一阶段语义：刻已选择
+    final finalSession = await _sessionManager.advanceToPhase(
+      session: updatedSession,
+      targetPhase: KaoKeSessionPhase.keSelected,
+    );
+    return finalSession;
+  }
+
   /// 3. 提交用户选择
   ///
   /// [session] 当前会话
@@ -85,17 +172,21 @@ class KaoKeUseCase {
 
   /// 4. 计算卦象
   ///
-  /// [session] 当前会话(必须已经有keSelection)
+  /// [session] 当前会话(优先使用普通八刻；否则使用斗甲乙宫基础数)
   ///
   /// 返回更新后的会话(已更新到 baseNumberCalculated 阶段)
   Future<KaoKeSession> calculateGua(KaoKeSession session) async {
-    // 验证前置条件
-    if (session.keSelection == null) {
-      throw Exception('必须先选择刻才能计算卦象');
+    // 基础数优先来源：八刻选择；若无则斗甲乙宫选择
+    int? baseNumber;
+    if (session.keSelection != null) {
+      baseNumber = session.keSelection!.tiaoWenNumber;
+    } else if (session.douJiaYiSelection != null) {
+      baseNumber = session.douJiaYiSelection!.tiaoWenNumber;
     }
 
-    // 获取基础数(条文编号)
-    final baseNumber = session.keSelection!.tiaoWenNumber;
+    if (baseNumber == null) {
+      throw Exception('必须先选择刻才能计算卦象');
+    }
 
     // 计算卦象
     final guaResult = _calculationStrategy.calculateGua(baseNumber);
@@ -152,16 +243,21 @@ class KaoKeUseCase {
       throw Exception('必须先计算卦象才能计算最终条文');
     }
 
-    if (session.keSelection == null) {
-      throw Exception('必须先选择刻才能计算最终条文');
-    }
-
     if (session.selectedMethods.isEmpty) {
       throw Exception('必须选择至少一个计算方法');
     }
 
-    // 获取基础数
-    final baseNumber = session.keSelection!.tiaoWenNumber;
+    // 获取基础数：支持八刻或斗甲乙宫
+    int? baseNumber;
+    if (session.keSelection != null) {
+      baseNumber = session.keSelection!.tiaoWenNumber;
+    } else if (session.douJiaYiSelection != null) {
+      baseNumber = session.douJiaYiSelection!.tiaoWenNumber;
+    }
+
+    if (baseNumber == null) {
+      throw Exception('必须先选择刻才能计算最终条文');
+    }
 
     // 计算所有选择方法的条文
     final finalResults = await _calculationStrategy.calculateAllMethods(

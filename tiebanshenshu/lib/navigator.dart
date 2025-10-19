@@ -8,6 +8,8 @@ import 'package:tiebanshenshu/presentation/pages/strategy_demo_page.dart';
 import 'package:tiebanshenshu/presentation/pages/tai_xuan_interactive_page.dart';
 import 'package:tiebanshenshu/presentation/pages/four_doors_and_gun_fa_page.dart';
 import 'package:tiebanshenshu/ui/pages/dev_page.dart';
+import 'package:provider/provider.dart';
+import 'infrastructure/di/strategy_providers.dart';
 
 import 'domain/models/multi_base_number_selection.dart';
 import 'features/liuqinkaoke/pages/liuqinkaoke_selection_page.dart';
@@ -68,10 +70,13 @@ class NavigatorGenerator {
       );
 
       // 尝试从参数中获取八字,如果没有则使用默认值
-      final eightChars = arguments is EightChars ? arguments : defaultEightChars;
+      final eightChars = arguments is EightChars
+          ? arguments
+          : defaultEightChars;
 
-      return KaoKeInteractivePage(
-        eightChars: eightChars,
+      return MultiProvider(
+        providers: StrategyProviders.providers,
+        child: KaoKeInteractivePage(eightChars: eightChars),
       );
     },
 
@@ -86,11 +91,11 @@ class NavigatorGenerator {
       );
 
       // 尝试从参数中获取八字,如果没有则使用默认值
-      final eightChars = arguments is EightChars ? arguments : defaultEightChars;
+      final eightChars = arguments is EightChars
+          ? arguments
+          : defaultEightChars;
 
-      return KaoDingLiuQinPage(
-        eightChars: eightChars,
-      );
+      return KaoDingLiuQinPage(eightChars: eightChars);
     },
   };
 
@@ -104,22 +109,15 @@ class NavigatorGenerator {
               pageContentBuilder(context, arguments: settings.arguments),
         );
         return route;
-      } else {
-        return _errorPage('Could not found route for $name');
       }
-    } else {
-      return _errorPage("Navigator required naviation name.");
     }
-  }
 
-  static Route _errorPage(msg) {
+    // 如果没有找到对应的路由，返回默认的错误页面
     return MaterialPageRoute(
-      builder: (_) {
-        return Scaffold(
-          appBar: AppBar(title: const Text('铁板神数_未知页面')),
-          body: Center(child: Text(msg)),
-        );
-      },
+      builder: (_) => Scaffold(
+        appBar: AppBar(title: const Text('铁版神数_未知页面')),
+        body: Center(child: Text('No route defined for ${settings.name}')),
+      ),
     );
   }
 }

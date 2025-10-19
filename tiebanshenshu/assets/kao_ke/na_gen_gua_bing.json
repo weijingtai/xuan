@@ -1,6 +1,6 @@
 {
     "name": "纳艮卦（丙表）",
-    "description": "纳艮卦相关密数表",
+    "description": "女儿相关密数表",
     "zhiMapper": {
         "子": {"chiperText": "甲丙丙庚戊", "chiperNumber": 12243},
         "丑": {"chiperText": "甲丙丙壬戊", "chiperNumber": 12253},

@@ -9,6 +9,8 @@ import 'widgets/tiao_wen_detail_dialog.dart';
 import 'widgets/gua_display_widget.dart';
 import 'widgets/method_selector_widget.dart';
 import 'widgets/final_result_display_widget.dart';
+import 'widgets/dou_jia_yi_selection_table.dart';
+import '../../repository/tiao_wen_repository.dart';
 
 /// 考刻交互主页面
 ///
@@ -31,6 +33,10 @@ class KaoKeInteractivePage extends StatefulWidget {
 }
 
 class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
+  final TextEditingController _douJiaYiNumberController = TextEditingController();
+  String? _douJiaYiPreviewText;
+  String? _douJiaYiError;
+
   @override
   void initState() {
     super.initState();
@@ -38,6 +44,12 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initialize();
     });
+  }
+
+  @override
+  void dispose() {
+    _douJiaYiNumberController.dispose();
+    super.dispose();
   }
 
   Future<void> _initialize() async {
@@ -186,8 +198,9 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                     const SizedBox(height: 8),
                     Text(
                       '您的出生时辰是: ${birthShiChen.name}\n'
-                      '请从下表中选择最符合实际情况的条文。\n'
-                      '出生时辰所在行使用黑色字体高亮显示。',
+                      '可选择以下两种方式确定刻数：\n'
+                      '1) 传统八刻（12时辰×8刻），从下表选择；\n'
+                      '2) 斗甲乙宫（三宫之数），输入条文编号匹配“X时Y刻”。',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
@@ -198,12 +211,26 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
             ),
             const SizedBox(height: 16),
 
-            // 刻选择表格
+            // 刻选择表格（八刻）
             KeSelectionTable(
               keData: keData,
               birthShiChen: birthShiChen,
               onKeSelected: (keNumber) => _handleKeSelected(viewModel, keNumber),
             ),
+            const SizedBox(height: 24),
+
+            // 斗甲乙宫（三宫之数）输入卡片
+            _buildDouJiaYiInputCard(viewModel),
+            const SizedBox(height: 24),
+            // 斗甲乙宫（三宫之数）选择表格（四支 × 1-5）
+            if (viewModel.douJiaYiSelectionData != null)
+              DouJiaYiSelectionTable(
+                douData: viewModel.douJiaYiSelectionData!,
+                birthShiChen: birthShiChen,
+                onItemSelected: (item) async {
+                  await viewModel.selectDouJiaYiByNumber(item.tiaoWenNumber);
+                },
+              ),
           ],
         ),
       ),
@@ -214,10 +241,17 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
   Widget _buildGuaAndMethodSelectionPhase(KaoKeViewModel viewModel) {
     final guaResult = viewModel.guaResult;
     final keSelection = viewModel.keSelection;
+    final douSelection = viewModel.douJiaYiSelection;
 
-    if (guaResult == null || keSelection == null) {
+    if (guaResult == null || (keSelection == null && douSelection == null)) {
       return const Center(child: Text('数据加载失败'));
     }
+
+    // 基础数来源与已选刻卡片
+    final int baseNumber = keSelection?.tiaoWenNumber ?? douSelection!.tiaoWenNumber;
+    final Widget selectedCard = keSelection != null
+        ? _buildSelectedKeCard(keSelection)
+        : _buildSelectedDouJiaYiCard(douSelection!);
 
     return SingleChildScrollView(
       child: Padding(
@@ -225,14 +259,14 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // 已选择的刻信息
-            _buildSelectedKeCard(keSelection),
+            // 已选择的刻信息（八刻或斗甲乙宫）
+            selectedCard,
             const SizedBox(height: 16),
 
             // 卦象展示
             GuaDisplayWidget(
               guaResult: guaResult,
-              baseNumber: keSelection.tiaoWenNumber,
+              baseNumber: baseNumber,
             ),
             const SizedBox(height: 16),
 
@@ -290,7 +324,7 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  '已选择的刻',
+                  '已选择的刻（八刻）',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                         color: Theme.of(context).colorScheme.onSecondaryContainer,
@@ -329,6 +363,151 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
     );
   }
 
+  Widget _buildSelectedDouJiaYiCard(DouJiaYiSelectionRecord record) {
+    return Card(
+      color: Theme.of(context).colorScheme.secondaryContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.check_circle,
+                  color: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '已选择的刻（斗甲乙宫）',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '${record.birthShiChen.name}时${record.keDiZhi.name}刻（序 ${record.order}）',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+            ),
+            Text(
+              '条文编号: ${record.tiaoWenNumber}',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSecondaryContainer,
+              ),
+            ),
+            FutureBuilder<String?>(
+              future: context
+                  .read<TiaoWenRepository>()
+                  .getTiaoWenContentByNumber(record.tiaoWenNumber),
+              builder: (context, snapshot) {
+                final content = snapshot.data;
+                return Text(
+                  '条文内容: ${content ?? (snapshot.connectionState == ConnectionState.waiting ? '加载中…' : '未找到内容')}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSecondaryContainer,
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDouJiaYiInputCard(KaoKeViewModel viewModel) {
+    final douData = viewModel.douJiaYiSelectionData;
+    final birthShiChen = viewModel.birthShiChen;
+
+    return Card(
+      color: Theme.of(context).colorScheme.surfaceContainer,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(
+                  Icons.filter_alt,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '斗甲乙宫（三宫之数）',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              birthShiChen == null
+                  ? '请先初始化会话'
+                  : '出生时辰：${birthShiChen.name}；输入条文编号以匹配该宫刻数',
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _douJiaYiNumberController,
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: '三宫之数（条文编号）',
+                hintText: '例如：7298',
+                errorText: _douJiaYiError,
+                border: const OutlineInputBorder(),
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: () => _previewDouJiaYiMatch(viewModel),
+                ),
+              ),
+              onSubmitted: (_) => _previewDouJiaYiMatch(viewModel),
+            ),
+            const SizedBox(height: 8),
+            if (_douJiaYiPreviewText != null)
+              Text(
+                _douJiaYiPreviewText!,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton.icon(
+                onPressed: () => _submitDouJiaYi(viewModel),
+                icon: const Icon(Icons.check),
+                label: const Text('按三宫之数确认'),
+              ),
+            ),
+            if (douData != null) ...[
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: douData.keys
+                    .map(
+                      (zhi) => Chip(
+                        label: Text('${zhi.name}刻'),
+                      ),
+                    )
+                    .toList(),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
   // ==================== Event Handlers ====================
 
   Future<void> _handleKeSelected(
@@ -342,6 +521,66 @@ class _KaoKeInteractivePageState extends State<KaoKeInteractivePage> {
       // 用户确认选择
       await viewModel.selectKe(keNumber);
     }
+  }
+
+  void _previewDouJiaYiMatch(KaoKeViewModel viewModel) {
+    setState(() {
+      _douJiaYiError = null;
+      _douJiaYiPreviewText = null;
+    });
+
+    final input = _douJiaYiNumberController.text.trim();
+    final number = int.tryParse(input);
+    if (number == null) {
+      setState(() {
+        _douJiaYiError = '请输入有效的条文编号';
+      });
+      return;
+    }
+
+    final douData = viewModel.douJiaYiSelectionData;
+    final birthShiChen = viewModel.birthShiChen;
+    if (douData == null || birthShiChen == null) {
+      setState(() {
+        _douJiaYiError = '数据未准备就绪';
+      });
+      return;
+    }
+
+    DouJiaYiNumber? matched;
+    for (final entry in douData.entries) {
+      for (final item in entry.value) {
+        if (item.tiaoWenNumber == number) {
+          matched = item;
+          break;
+        }
+      }
+      if (matched != null) break;
+    }
+
+    if (matched == null) {
+      setState(() {
+        _douJiaYiError = '未在本宫找到该条文编号';
+      });
+      return;
+    }
+
+    setState(() {
+      _douJiaYiPreviewText = '${birthShiChen.name}时${matched!.ke.name}刻（序 ${matched!.order}）';
+    });
+  }
+
+  Future<void> _submitDouJiaYi(KaoKeViewModel viewModel) async {
+    final input = _douJiaYiNumberController.text.trim();
+    final number = int.tryParse(input);
+    if (number == null) {
+      setState(() {
+        _douJiaYiError = '请输入有效的条文编号';
+      });
+      return;
+    }
+
+    await viewModel.selectDouJiaYiByNumber(number);
   }
 
   Future<void> _handleMethodToggled(
