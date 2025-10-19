@@ -241,3 +241,124 @@ F. 基准数据与示例输入
 - 针对每一策略的完整数值演算示例（含四卦具体取值与条文编号列表）
 - 将上述状态图另存为单独文档或嵌入到相关页面 README
 - 为各 UseCase/Strategy 添加测试清单（test/ 路径）与基准断言模板
+
+G. 八卦加则取数法（策略）公式补充
+- 基础公式（两法通用）：baseNumber = upperHoutian × 1000 + yaoSum − lowerHoutian
+  - upperHoutian、lowerHoutian 为上/下卦的后天数
+  - yaoSum 为六爻配支后的数字总和（见两种装配方法）
+- 爻序法
+  - 阳爻依次配：子、寅、辰、午、申、戌；阴爻依次配：丑、卯、巳、未、酉、亥
+  - 从下到上为六爻依次装配地支，查表求和得到 yaoSum
+  - 公式演示：upperNum000 + yaoSum − lowerNum = baseNumber
+- 纳甲法
+  - 下卦三爻（初、二、三）用内卦纳支；上卦三爻（四、五、上）用外卦纳支
+  - 查表累加地支数字为 yaoSum
+  - 公式同上
+- 结果产出：每柱分别计算两法，形成两条基础数；默认不做额外“条文展开”，以原始计算结果为准
+
+H. 四柱天干取数法（完整示例）
+- 映射规则：天干→甲1、乙6、丙2、丁7、戊3、己8、庚4、辛9、壬5、癸0
+- 基数拼接（顺序：月、日、时、年）：base = month×1000 + day×100 + time×10 + year
+- 示例（DevConstant.dev_usa：乙巳年、甲申月、戊寅日、庚申时）
+  - 月=甲→1，日=戊→3，时=庚→4，年=乙→6
+  - base = 1×1000 + 3×100 + 4×10 + 6 = 1346
+- 条文展开
+  - 简化：[0, 96, 192, 288] → [1346, 1442, 1538, 1634]
+  - 标准：[0, 96, 192, 288, 384, 480, 576, 672] → [1346, 1442, 1538, 1634, 1730, 1826, 1922, 2018]
+  - 扩展：[0, 96, 192, 288, 384, 480, 576, 672, 768, 864, 960] → [1346, 1442, 1538, 1634, 1730, 1826, 1922, 2018, 2114, 2210, 2306]
+
+I. 日柱变卦取数法（示例模板）
+- 基数构成：四位数拼接 = baseUpperHoutian(千位) + baseLowerHoutian(百位) + interUpperXiantian(十位) + interLowerXiantian(个位)
+  - baseUpperHoutian/baseLowerHoutian：以日柱的地支为上卦、天干为下卦，取后天数
+  - interUpperXiantian/interLowerXiantian：以上述本卦的互卦为准，取先天数
+- 条文展开配置
+  - 标准：base ± [0, 1000]
+  - 简化：base ± [0]
+  - 扩展：base ± [0, 500, 1000, 2000]
+- 示例使用方法：
+  1) 先据“日柱”确定本卦（Gan→下、Zhi→上），查后天数得千/百位
+  2) 取本卦互卦，查先天数得十/个位
+  3) 合成 base，按所选配置展开条文列表
+
+J. 先后天八卦加则法（示例模板）
+- 先天/后天基数：分别用 JiaZe 规则求得（TiaowenCalculator.getTiaowenNumberByJiaZe）
+- 展开策略：
+  - 先天：base + [0, +96, +192, +288, +384]
+  - 后天：base + [0, −96, −192, −288, −384]
+- 示例（演示用）：若先天基数=3146 → [3146, 3242, 3338, 3434, 3530]；若后天基数=2754 → [2754, 2658, 2562, 2466, 2370]
+
+K. 元堂卦取数法（公式与扩展）
+- 生成：依据 EightChars + 性别 + 三元 + 出生后支 + 月令类型 + 历法类型 得到 TianDiGua
+- 取数：
+  - JiaZe（先天/后天）：TiaowenCalculator.getTiaowenNumberByJiaZe
+  - NaJia太玄（先天/后天）：TiaowenCalculator.getTiaowenNumberByTaixuan（六爻干支太玄求和，过滤和=10）
+  - 本互基数（先天/后天）：四位拼接=本卦上(千) + 本卦下(百) + 互卦上(十) + 互卦下(个)
+  - 化卦列表（先天/后天）：在“本互基数”上按 ±48×{2,4,8,16} 扩展，形成 8 条候选
+- 默认页面展开：customList=[0, 96, 192, 288, 384]（在所选基数上加偏移）
+
+L. 测试样例断言模板（Dart）
+- 四柱天干取数法
+```dart
+import 'package:flutter_test/flutter_test.dart';
+// import 实际项目中的 Strategy/Params/Config/DevConstant 等
+
+void main() {
+  test('四柱天干（DevConstant.dev_usa）基数与标准展开', () async {
+    final strategy = FourZhuTianGanStrategy();
+    final params = FourZhuTianGanCalculationParams(
+      eightChars: DevConstant.dev_usa.eightChars,
+      config: GenericTiaoWenCalculationConfig.fourZhuTianGanStandard(),
+    );
+    final result = await strategy.calculate(params);
+    expect(result.isSuccess, isTrue, reason: result.errorMessage ?? '');
+
+    final model = result.models.first;
+    expect(model.baseNumber, 1346);
+    expect(
+      model.tiaoWenList.map((e) => e.number).toList(),
+      [1346, 1442, 1538, 1634, 1730, 1826, 1922, 2018],
+    );
+  });
+}
+```
+- 先后天八卦加则法（示例）
+```dart
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('先后天加则：先天增、后天减', () async {
+    final strategy = XianHoutianJiaZeStrategy();
+    final params = XianHoutianJiaZeCalculationParams(
+      eightChars: DevConstant.dev_usa.eightChars,
+      config: XianHoutianJiaZeStrategy.defaultTiaoWenCalculationConfig,
+    );
+    final result = await strategy.calculate(params);
+    expect(result.isSuccess, isTrue, reason: result.errorMessage ?? '');
+
+    final xtModel = result.models.firstWhere((m) => m.name.contains('先天'));
+    final htModel = result.models.firstWhere((m) => m.name.contains('后天'));
+
+    // 断言偏移集合正确（不校验具体基数）
+    expect(xtModel.tiaoWenOffsets, [0, 96, 192, 288, 384]);
+    expect(htModel.tiaoWenOffsets, [0, -96, -192, -288, -384]);
+  });
+}
+```
+- 日柱变卦取数法（标准配置）
+```dart
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('日柱变卦：标准配置偏移', () async {
+    final strategy = DayGanZhiGuaStrategy();
+    final params = DayGanZhiGuaCalculationParams(
+      eightChars: DevConstant.dev_usa.eightChars,
+      config: DayGanZhiGuaStrategy.standardConfig(),
+    );
+    final result = await strategy.calculate(params);
+    expect(result.isSuccess, isTrue, reason: result.errorMessage ?? '');
+    final model = result.models.first;
+    expect(model.tiaoWenOffsets, [0, 1000]);
+  });
+}
+```
