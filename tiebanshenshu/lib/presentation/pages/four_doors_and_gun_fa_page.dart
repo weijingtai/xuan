@@ -7,6 +7,13 @@ import '../viewmodels/ba_gua_gun_view_model.dart';
 import '../widgets/loading_widget.dart';
 import '../widgets/error_widget.dart';
 
+// 辅助：条文来源与公式（顶层类，避免嵌套类错误）
+class _TiaoWenSourceAndFormula {
+  final String source;
+  final String formula;
+  const _TiaoWenSourceAndFormula(this.source, this.formula);
+}
+
 /// 四门法 & 八卦滚法演示页面
 ///
 /// 展示四门法V2和八卦滚法两种算法的计算结果
@@ -35,6 +42,46 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+
+  // 使用策略生成的 tiaoWenSourceList 来构建来源与公式映射（四门法）
+  Map<int, _TiaoWenSourceAndFormula> _computeSiMenFaSourceMap(
+    SiMenFaViewModel viewModel,
+  ) {
+    final model = viewModel.siMenFaModel;
+    if (model == null) return {};
+
+    final result = <int, _TiaoWenSourceAndFormula>{};
+    for (final info in model.tiaoWenSourceList) {
+      final sourceDesc =
+          '第${info.guaIndex}卦(${info.sourceGua?.fullname ?? '未知'})';
+      final formulaText = info.calculationFormula ?? '';
+      result[info.tiaoWenNumber] = _TiaoWenSourceAndFormula(
+        sourceDesc,
+        formulaText,
+      );
+    }
+    return result;
+  }
+
+  // 使用策略生成的 tiaoWenSourceList 来构建来源与公式映射（八卦滚法）
+  Map<int, _TiaoWenSourceAndFormula> _computeBaGuaGunSourceMap(
+    BaGuaGunViewModel viewModel,
+  ) {
+    final model = viewModel.baGuaGunModel;
+    if (model == null) return {};
+
+    final result = <int, _TiaoWenSourceAndFormula>{};
+    for (final info in model.tiaoWenSourceList) {
+      final sourceDesc =
+          '第${info.guaIndex}卦(${info.sourceGua?.fullname ?? '未知'})';
+      final formulaText = info.calculationFormula ?? '';
+      result[info.tiaoWenNumber] = _TiaoWenSourceAndFormula(
+        sourceDesc,
+        formulaText,
+      );
+    }
+    return result;
   }
 
   /// 初始化ViewModels
@@ -169,9 +216,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
 
   /// 构建加载状态
   Widget _buildLoadingState() {
-    return const Center(
-      child: LargeLoadingWidget(message: '正在初始化...'),
-    );
+    return const Center(child: LargeLoadingWidget(message: '正在初始化...'));
   }
 
   /// 构建主要内容
@@ -281,9 +326,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
           final gua = entry.value;
           return Card(
             child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${entry.key + 1}'),
-              ),
+              leading: CircleAvatar(child: Text('${entry.key + 1}')),
               title: Text(gua.displayText),
               subtitle: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,7 +345,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
 
         // 条文统计
         Card(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+          color: theme.colorScheme.primaryContainer.withOpacity(0.3),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -322,6 +365,55 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
             ),
           ),
         ),
+
+        const SizedBox(height: 16.0),
+
+        // 新增：条文内容列表（含来源与公式）
+        _buildSiMenFaTiaoWenListSection(viewModel),
+      ],
+    );
+  }
+
+  Widget _buildSiMenFaTiaoWenListSection(SiMenFaViewModel viewModel) {
+    final uiModel = viewModel.uiModel!;
+    final theme = Theme.of(context);
+    if (uiModel.tiaoWenDataList.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final sourceMap = _computeSiMenFaSourceMap(viewModel);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '条文内容列表',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8.0),
+        ...uiModel.tiaoWenDataList.map((t) {
+          final info = sourceMap[t.id];
+          final source = info?.source ?? '来源未知';
+          final formula = info?.formula ?? '公式未知';
+          final subtitle = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('来源：$source'),
+              const SizedBox(height: 2.0),
+              Text('公式：$formula'),
+            ],
+          );
+          return Card(
+            child: ListTile(
+              title: Text(
+                '#${t.id} ${t.content1}${t.content2 != null ? ' ${t.content2}' : ''}',
+              ),
+              subtitle: subtitle,
+            ),
+          );
+        }).toList(),
       ],
     );
   }
@@ -420,9 +512,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
           final gua = entry.value;
           return Card(
             child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${entry.key + 1}'),
-              ),
+              leading: CircleAvatar(child: Text('${entry.key + 1}')),
               title: Text(gua.displayText),
               subtitle: gua.threeNumbers != null
                   ? Text(gua.threeNumbers!.displayText)
@@ -445,9 +535,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
           final gua = entry.value;
           return Card(
             child: ListTile(
-              leading: CircleAvatar(
-                child: Text('${entry.key + 5}'),
-              ),
+              leading: CircleAvatar(child: Text('${entry.key + 5}')),
               title: Text(gua.displayText),
               subtitle: gua.threeNumbers != null
                   ? Text(gua.threeNumbers!.displayText)
@@ -460,7 +548,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
 
         // 卦象生成流程说明
         Card(
-          color: theme.colorScheme.secondaryContainer.withValues(alpha: 0.3),
+          color: theme.colorScheme.secondaryContainer.withOpacity(0.3),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -483,7 +571,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
 
         // 三基数计算说明
         Card(
-          color: theme.colorScheme.tertiaryContainer.withValues(alpha: 0.3),
+          color: theme.colorScheme.tertiaryContainer.withOpacity(0.3),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -506,7 +594,7 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
 
         // 条文统计
         Card(
-          color: theme.colorScheme.primaryContainer.withValues(alpha: 0.3),
+          color: theme.colorScheme.primaryContainer.withOpacity(0.3),
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -526,6 +614,54 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
             ),
           ),
         ),
+
+        const SizedBox(height: 16.0),
+        // 新增：条文内容列表（含来源与公式）
+        _buildBaGuaGunTiaoWenListSection(viewModel),
+      ],
+    );
+  }
+
+  Widget _buildBaGuaGunTiaoWenListSection(BaGuaGunViewModel viewModel) {
+    final uiModel = viewModel.uiModel!;
+    final theme = Theme.of(context);
+    if (uiModel.tiaoWenDataList.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final sourceMap = _computeBaGuaGunSourceMap(viewModel);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '条文内容列表',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 8.0),
+        ...uiModel.tiaoWenDataList.map((t) {
+          final info = sourceMap[t.id];
+          final source = info?.source ?? '来源未知';
+          final formula = info?.formula ?? '公式未知';
+          final subtitle = Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('来源：$source'),
+              const SizedBox(height: 2.0),
+              Text('公式：$formula'),
+            ],
+          );
+          return Card(
+            child: ListTile(
+              title: Text(
+                '#${t.id} ${t.content1}${t.content2 != null ? ' ${t.content2}' : ''}',
+              ),
+              subtitle: subtitle,
+            ),
+          );
+        }).toList(),
       ],
     );
   }
@@ -541,20 +677,14 @@ class _FourDoorsAndGunFaPageState extends State<FourDoorsAndGunFaPage>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                '四门法V2',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text('四门法V2', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8.0),
               Text('• 使用后天卦配置和干支数映射'),
               Text('• 生成4个卦：互卦→变爻错卦→第一卦互卦→第二卦互卦'),
               Text('• 计算秘数和先天数'),
               Text('• 生成完整条文列表'),
               SizedBox(height: 16.0),
-              Text(
-                '八卦滚法',
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
+              Text('八卦滚法', style: TextStyle(fontWeight: FontWeight.bold)),
               SizedBox(height: 8.0),
               Text('• 使用先天卦配置和太玄数映射'),
               Text('• 生成8个卦（前四卦+后四卦）'),

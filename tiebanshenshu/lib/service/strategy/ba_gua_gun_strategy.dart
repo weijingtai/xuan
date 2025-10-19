@@ -14,6 +14,7 @@ import '../../utils/tiao_wen_number_calculator.dart';
 import '../../utils/utils.dart';
 import 'base/multi_gua_calculator_base.dart';
 import 'base_calculation_strategy.dart';
+import '../../domain/models/tiao_wen_source_info.dart';
 
 /// 八卦滚法计算参数
 class BaGuaGunStrategyParams extends BaseCalculationParams {
@@ -295,6 +296,38 @@ class BaGuaGunStrategy
       final finalTiaowenList =
           _tiaoWenCalculator.calculateEightGuaTiaowenNumbers(allGuaList);
 
+      // 新增：生成条文来源信息列表（48条）
+      final tiaoWenSourceList = <TiaoWenSourceInfo>[];
+      for (int i = 0; i < allGuaList.length; i++) {
+        final gua = allGuaList[i];
+        final three = guaThreeNumbersList[i];
+        final perGuaTiaoWen = _tiaoWenCalculator.calculateGuaTiaowenList(
+          three.xiantianShunxu,
+          three.xiantianLuoshu,
+          three.houtianLuoshu,
+        );
+        const formulaTypes = [
+          'a*100+b',
+          'a*100+c',
+          'b*100+a',
+          'b*100+c',
+          'c*100+a',
+          'c*100+b',
+        ];
+        for (int j = 0; j < perGuaTiaoWen.length; j++) {
+          final tn = perGuaTiaoWen[j];
+          tiaoWenSourceList.add(TiaoWenSourceInfo.fromThreeNumbers(
+            tiaoWenNumber: tn,
+            sourceGua: gua,
+            guaIndex: i + 1,
+            a: three.xiantianShunxu,
+            b: three.xiantianLuoshu,
+            c: three.houtianLuoshu,
+            formulaType: formulaTypes[j],
+          ));
+        }
+      }
+
       // 步骤5：创建 BaGuaGunBaseNumberModel
       final model = BaGuaGunBaseNumberModel(
         baseNumber: firstFourResult.basicNumber,
@@ -312,6 +345,7 @@ class BaGuaGunStrategy
         lastFourGuaList: lastFourGuaList,
         guaThreeNumbersList: guaThreeNumbersList,
         finalTiaowenList: finalTiaowenList,
+        tiaoWenSourceList: tiaoWenSourceList,
       );
 
       return BaseNumberModelResult.success(

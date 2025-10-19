@@ -78,12 +78,7 @@ class TiaoWenSourceInfo {
       guaIndex: guaIndex,
       calculationMethod: '三基数公式',
       calculationFormula: formula,
-      additionalInfo: {
-        'a': a,
-        'b': b,
-        'c': c,
-        'formulaType': formulaType,
-      },
+      additionalInfo: {'a': a, 'b': b, 'c': c, 'formulaType': formulaType},
     );
   }
 
@@ -105,6 +100,40 @@ class TiaoWenSourceInfo {
       additionalInfo: {
         'secretNumber': secretNumber,
         'xiantianNumber': xiantianNumber,
+      },
+    );
+  }
+
+  /// 创建【四门法】详细来源（秘数×常数−7 + 先天×47）
+  factory TiaoWenSourceInfo.fromSiMenFa({
+    required int tiaoWenNumber,
+    required Enum64Gua secretGua,
+    required int secretGuaIndex,
+    required int secretNumber,
+    required int xiantianNumber,
+    required Enum64Gua xiantianGua,
+    required int xiantianGuaIndex,
+    required int secretConst,
+  }) {
+    final formula =
+        '$xiantianNumber×47 + ($secretNumber×$secretConst − 7) = $tiaoWenNumber';
+
+    return TiaoWenSourceInfo(
+      tiaoWenNumber: tiaoWenNumber,
+      sourceGua: secretGua,
+      guaIndex: secretGuaIndex,
+      baseNumber: secretNumber,
+      calculationMethod: '秘数展开×常数−7 + 先天×47',
+      calculationFormula: formula,
+      additionalInfo: {
+        'secretNumber': secretNumber,
+        'xiantianNumber': xiantianNumber,
+        'secretConst': secretConst,
+        'xiantianFactor': 47,
+        'secretGua': secretGua.name,
+        'secretGuaIndex': secretGuaIndex,
+        'xiantianGua': xiantianGua.name,
+        'xiantianGuaIndex': xiantianGuaIndex,
       },
     );
   }

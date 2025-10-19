@@ -39,6 +39,25 @@ class _DevPageState extends State<DevPage> {
               onPressed: () {
                 Navigator.of(
                   context,
+                ).pushNamed('/tiebanshenshu/huang_ji_v2_demo');
+              },
+              icon: const Icon(Icons.auto_awesome_mosaic),
+              label: const Text('皇极取数'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.white,
+              ),
+            ),
+
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(
+                  context,
                 ).pushNamed('/tiebanshenshu/four_doors_and_gun_fa');
               },
               icon: const Icon(Icons.auto_awesome_mosaic),

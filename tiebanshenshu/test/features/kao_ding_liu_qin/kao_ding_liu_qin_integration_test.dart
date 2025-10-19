@@ -48,7 +48,7 @@ void main() {
       print('\n【考父母计算结果】');
       print(result.calculationDetail);
       print('\n条文编号: ${result.allTiaoWenNumbers}');
-      print('计算方法: ${result.tiaoWenNumbersByMethod.keys.toList()}');
+      // print('计算方法: ${result.tiaoWenNumbersByMethod.keys.toList()}');
 
       // 验证Session管理
       expect(useCase.sessionManager.historyCount, equals(1));

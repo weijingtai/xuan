@@ -27,8 +27,7 @@ class SiMenFaStrategyParams extends BaseCalculationParams {
   });
 
   @override
-  String get description =>
-      "四门法计算（性别:$gender，三元:$threeYuan）";
+  String get description => "四门法计算（性别:$gender，三元:$threeYuan）";
 
   Map<String, dynamic> toMap() {
     return {
@@ -42,28 +41,28 @@ class SiMenFaStrategyParams extends BaseCalculationParams {
 /// 四门法计算器实现
 class SiMenFaCalculator extends MultiGuaCalculatorBase {
   SiMenFaCalculator()
-      : super(
-          // 偶数配置：除以8取余，转后天卦
-          evenNumberConfig: const NumberConfig(
-            numberOperationStrategy: NumberOperationStrategy.mode,
-            factorNumber: 8,
-            guaConversionStrategy: NumberConversionGuaStrategy.toHouTian,
-            withLength: false,
-          ),
-          // 奇数配置：除以8取余，转后天卦
-          oddNumberConfig: const NumberConfig(
-            numberOperationStrategy: NumberOperationStrategy.mode,
-            factorNumber: 8,
-            guaConversionStrategy: NumberConversionGuaStrategy.toHouTian,
-            withLength: false,
-          ),
-          // 天干使用干支数配置
-          ganToNumberStrategy: GanZhiToNumberStrategy.ganZhiNumber,
-          // 地支使用干支数配置
-          zhiToNumberStrategy: GanZhiToNumberStrategy.ganZhiNumber,
-          // 奇数为上卦
-          isOddAsTopGua: true,
-        );
+    : super(
+        // 偶数配置：除以8取余，转后天卦
+        evenNumberConfig: const NumberConfig(
+          numberOperationStrategy: NumberOperationStrategy.mode,
+          factorNumber: 8,
+          guaConversionStrategy: NumberConversionGuaStrategy.toHouTian,
+          withLength: false,
+        ),
+        // 奇数配置：除以8取余，转后天卦
+        oddNumberConfig: const NumberConfig(
+          numberOperationStrategy: NumberOperationStrategy.mode,
+          factorNumber: 8,
+          guaConversionStrategy: NumberConversionGuaStrategy.toHouTian,
+          withLength: false,
+        ),
+        // 天干使用干支数配置
+        ganToNumberStrategy: GanZhiToNumberStrategy.ganZhiNumber,
+        // 地支使用干支数配置
+        zhiToNumberStrategy: GanZhiToNumberStrategy.ganZhiNumber,
+        // 奇数为上卦
+        isOddAsTopGua: true,
+      );
 
   @override
   GuaGenerationConfig getGuaGenerationConfig() {
@@ -96,7 +95,8 @@ class SiMenFaCalculator extends MultiGuaCalculatorBase {
 
 /// 四门法计算策略
 class SiMenFaStrategy
-    extends BaseCalculationStrategy<SiMenFaStrategyParams, BaseNumberModelResult> {
+    extends
+        BaseCalculationStrategy<SiMenFaStrategyParams, BaseNumberModelResult> {
   final _calculator = SiMenFaCalculator();
   final _tiaoWenCalculator = const TiaoWenNumberCalculator();
 
@@ -108,13 +108,13 @@ class SiMenFaStrategy
 
   @override
   List<String> get detailSteps => [
-        "1. 计算基本卦和基本数",
-        "2. 计算变爻基数",
-        "3. 生成前四卦（互卦→变爻错卦→第一卦互卦→第二卦互卦）",
-        "4. 计算秘数列表",
-        "5. 计算先天数列表",
-        "6. 计算最终条文列表",
-      ];
+    "1. 计算基本卦和基本数",
+    "2. 计算变爻基数",
+    "3. 生成前四卦（互卦→变爻错卦→第一卦互卦→第二卦互卦）",
+    "4. 计算秘数列表",
+    "5. 计算先天数列表",
+    "6. 计算最终条文列表",
+  ];
 
   @override
   String get school => "四门法流派";
@@ -132,14 +132,16 @@ class SiMenFaStrategy
       );
 
       // 步骤2：计算秘数列表
-      final isYangYear =
-          params.eightChars.year.gan.yinYang == YinYang.YANG;
-      final secretNumbers =
-          _tiaoWenCalculator.calculateSecretNumbers(isYangYear, result.fourGuaList);
+      final isYangYear = params.eightChars.year.gan.yinYang == YinYang.YANG;
+      final secretNumbers = _tiaoWenCalculator.calculateSecretNumbers(
+        isYangYear,
+        result.fourGuaList,
+      );
 
       // 步骤3：计算先天数列表
-      final xiantianNumbers =
-          _tiaoWenCalculator.calculateXiantianNumbers(result.fourGuaList);
+      final xiantianNumbers = _tiaoWenCalculator.calculateXiantianNumbers(
+        result.fourGuaList,
+      );
 
       // 步骤4：计算最终条文列表
       final finalTiaowenList = _tiaoWenCalculator.calculateFinalTiaowen(
@@ -147,31 +149,53 @@ class SiMenFaStrategy
         secretNumbers,
       );
 
-      // 步骤5：生成条文来源信息列表
+      // 步骤5：生成条文来源信息列表（覆盖全部组合，不仅是前四项）
+      final constantsList = [19, 37, 53, 79, 103, 237];
       final tiaoWenSourceList = <TiaoWenSourceInfo>[];
-      for (int i = 0; i < result.fourGuaList.length; i++) {
-        final gua = result.fourGuaList[i];
-        final secretNum = secretNumbers[i];
-        final xiantianNum = xiantianNumbers[i];
-        final tiaoWenNum = finalTiaowenList[i];
+      for (int xiIndex = 0; xiIndex < xiantianNumbers.length; xiIndex++) {
+        final xiNum = xiantianNumbers[xiIndex];
+        final xiGua = result.fourGuaList[xiIndex];
+        for (int seIndex = 0; seIndex < secretNumbers.length; seIndex++) {
+          final seNum = secretNumbers[seIndex];
+          final seGua = result.fourGuaList[seIndex];
+          for (final k in constantsList) {
+            final secretT = seNum * k - 7;
+            int eachNum = xiNum * 47 + secretT;
+            int finalNum;
+            if (eachNum < 1000) {
+              finalNum = eachNum + 12000;
+            } else if (eachNum > 13000) {
+              final tmpRes = eachNum - 12000;
+              if (tmpRes > 13000) {
+                finalNum = tmpRes - 12000;
+              } else {
+                finalNum = tmpRes;
+              }
+            } else {
+              finalNum = eachNum;
+            }
 
-        tiaoWenSourceList.add(
-          TiaoWenSourceInfo.fromSecretAndXiantian(
-            tiaoWenNumber: tiaoWenNum,
-            sourceGua: gua,
-            guaIndex: i + 1,
-            secretNumber: secretNum,
-            xiantianNumber: xiantianNum,
-          ),
-        );
+            tiaoWenSourceList.add(
+              TiaoWenSourceInfo.fromSiMenFa(
+                tiaoWenNumber: finalNum,
+                secretGua: seGua,
+                secretGuaIndex: seIndex + 1,
+                secretNumber: seNum,
+                xiantianNumber: xiNum,
+                xiantianGua: xiGua,
+                xiantianGuaIndex: xiIndex + 1,
+                secretConst: k,
+              ),
+            );
+          }
+        }
       }
 
       // 步骤6：创建 SiMenFaBaseNumberModel
       final model = SiMenFaBaseNumberModel(
         baseNumber: result.basicNumber,
         name: name,
-        description:
-            "四门法V2计算（性别:${params.gender}，三元:${params.threeYuan}）",
+        description: "四门法V2计算（性别:${params.gender}，三元:${params.threeYuan}）",
         source: BaseNumberSource.yearZhu,
         eightChars: params.eightChars,
         gender: params.gender,
@@ -209,24 +233,6 @@ class SiMenFaStrategy
     }
   }
 
-  BaseNumberModelResult handleError(
-    SiMenFaStrategyParams params,
-    Object error,
-    StackTrace stackTrace,
-  ) {
-    return BaseNumberModelResult.error(
-      algorithmName: name,
-      algorithmDescription: description,
-      calculationParams: params.description,
-      errorMessage: "四门法V2计算失败: $error",
-      sourceData: {
-        'error': error.toString(),
-        'stackTrace': stackTrace.toString(),
-        'params': params.description,
-      },
-    );
-  }
-
   @override
   TiaoWenCalculationConfig get defaultTiaoWenCalculationConfig {
     // 四门法使用复杂的秘数+先天数计算，不使用简单配置
@@ -254,6 +260,23 @@ class SiMenFaStrategy
   }
 
   @override
-  String get tiaoWenCalculationDescription =>
-      "使用秘数和先天数组合计算，生成完整的条文列表";
+  String get tiaoWenCalculationDescription => "使用秘数和先天数组合计算，生成完整的条文列表";
+
+  BaseNumberModelResult handleError(
+    SiMenFaStrategyParams params,
+    Object error,
+    StackTrace stackTrace,
+  ) {
+    return BaseNumberModelResult.error(
+      algorithmName: name,
+      algorithmDescription: description,
+      calculationParams: params.description,
+      errorMessage: "四门法V2计算失败: $error",
+      sourceData: {
+        'error': error.toString(),
+        'stackTrace': stackTrace.toString(),
+        'params': params.description,
+      },
+    );
+  }
 }
