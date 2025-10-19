@@ -96,7 +96,7 @@ class MyApp extends StatelessWidget {
       theme: AppThemes.lightTheme, // 默认使用亮色主题
       darkTheme:  AppThemes.darkTheme, // 设置深色主题
       themeMode: ThemeMode.system, // 跟随系统设置切换
-      initialRoute: '/common/dev/lunar_info_card',
+      initialRoute: '/common/dev',
       onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }
@@ -509,7 +509,7 @@ class _MyHomePageState extends State<MyHomePage> {
         imageFilter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
         child: ColorFiltered(
             colorFilter:
-                ColorFilter.mode(Colors.grey.withOpacity(.7), BlendMode.srcIn),
+                ColorFilter.mode(Colors.grey.withValues(alpha: .7), BlendMode.srcIn),
             child: Image.asset(
               "assets/icons/chinese_ink_mark.png",
               width: 21,

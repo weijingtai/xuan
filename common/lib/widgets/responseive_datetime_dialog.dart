@@ -39,7 +39,7 @@ class ResponsiveDatetimeDialog extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
                   borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(16),
                     topRight: Radius.circular(16),
@@ -72,7 +72,7 @@ class ResponsiveDatetimeDialog extends StatelessWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -99,7 +99,7 @@ class ResponsiveDatetimeDialog extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .onSurface
-                                .withOpacity(0.8),
+                                .withValues(alpha: 0.8),
                           ),
                     ),
                     const SizedBox(height: 24),
@@ -111,7 +111,7 @@ class ResponsiveDatetimeDialog extends StatelessWidget {
                         color: Theme.of(context)
                             .colorScheme
                             .error
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
@@ -183,7 +183,7 @@ class ResponsiveDatetimeDialog extends StatelessWidget {
                             color: Theme.of(context)
                                 .colorScheme
                                 .primary
-                                .withOpacity(0.05),
+                                .withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -236,7 +236,7 @@ void showEnhancedDialog(BuildContext context, QueryDateTimeHeplperModel model) {
   showDialog(
     context: context,
     builder: (context) => ResponsiveDatetimeDialog(model: model),
-    barrierColor: Colors.black.withOpacity(0.4),
+    barrierColor: Colors.black.withValues(alpha: 0.4),
     // transitionDuration: Duration(milliseconds: 200),
     // transitionBuilder: (context, anim1, anim2, child) {
     //   return FadeTransition(

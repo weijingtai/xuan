@@ -351,7 +351,7 @@ class _DestinyQuestionWidgetState extends State<DestinyQuestionWidget>
             slidersColors: const [Color(0xfff7f5f7)],
             containerBoxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withValues(alpha: 0.2),
                 blurRadius: 2,
                 spreadRadius: 4,
               )

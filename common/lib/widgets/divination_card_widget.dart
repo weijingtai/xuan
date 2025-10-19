@@ -112,7 +112,7 @@ class _DivinationCardWidgetState extends State<DivinationCardWidget> {
         boxShadow: selected == type
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 2,
                   spreadRadius: 2,
                   offset: Offset(2, 2),
@@ -173,7 +173,7 @@ class _DivinationCardWidgetState extends State<DivinationCardWidget> {
         boxShadow: selected == type
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 2,
                   spreadRadius: 2,
                   offset: Offset(2, 2),
@@ -184,8 +184,8 @@ class _DivinationCardWidgetState extends State<DivinationCardWidget> {
       child: Material(
         child: Ink(
           child: InkWell(
-            splashColor: Colors.blue.withOpacity(0.3),
-            highlightColor: Colors.blue.withOpacity(0.1),
+            splashColor: Colors.blue.withValues(alpha: 0.3),
+            highlightColor: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(smallRadius),
               topRight: Radius.circular(smallRadius),

@@ -1,6 +1,5 @@
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/themes/gan_zhi_gua_colors.dart';
-import 'package:common/widgets/row_reorderable_card.dart'; // To reuse CardRow constants
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -96,7 +95,7 @@ class ColumnReorderableCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 24,
             offset: const Offset(0, 8),
           ),

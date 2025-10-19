@@ -1,3 +1,4 @@
+import 'package:common/pages/layout_editor_page.dart';
 import 'package:common/dev_constant.dart';
 import 'package:common/enums/enum_di_zhi.dart';
 import 'package:common/enums/enum_jia_zi.dart';
@@ -53,6 +54,16 @@ class _DevTestLunarInfoCardPageState extends State<DevTestLunarInfoCardPage> {
         appBar: AppBar(
           title: const Text('Lunar Info Card Dev Page'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.edit_note),
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const LayoutEditorPage(),
+                  ),
+                );
+              },
+            ),
             Switch(
               value: _isDarkMode,
               onChanged: (value) {

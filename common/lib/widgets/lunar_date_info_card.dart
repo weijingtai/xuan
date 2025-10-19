@@ -52,7 +52,7 @@ class LunarDateInfoCard extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 24,
                     offset: const Offset(0, 8),
                   ),
@@ -307,7 +307,7 @@ class LunarDateInfoCard extends StatelessWidget {
                   children: [
                     Container(
                       decoration: BoxDecoration(
-                        color: Theme.of(context).dividerColor.withOpacity(0.5),
+                        color: Theme.of(context).dividerColor.withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),

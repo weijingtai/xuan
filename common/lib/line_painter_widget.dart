@@ -70,7 +70,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
             Container(
                 width: 1000,
                 height: 1000,
-                color: Colors.grey.withOpacity(.1),
+                color: Colors.grey.withValues(alpha: .1),
                 child: SizedBox(
                   width: 810,
                   height: 810,
@@ -81,7 +81,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
                         width: 800,
                         height: 800,
                         decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(.1),
+                          color: Colors.blue.withValues(alpha: .1),
                           borderRadius:
                               const BorderRadius.all(Radius.circular(800)),
                         ),
@@ -102,7 +102,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
                       //       width: 10,
                       //       height: 10,
                       //       decoration: BoxDecoration(
-                      //         color: Colors.red.withOpacity(.1),
+                      //         color: Colors.red.withValues(alpha: .1),
                       //         borderRadius: BorderRadius.all(Radius.circular(10)),
                       //       ),
                       //     )
@@ -187,7 +187,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
                                 height: 24,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(.1),
+                                  color: Colors.red.withValues(alpha: .1),
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                 ),
@@ -279,7 +279,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
                                 height: 24,
                                 alignment: Alignment.center,
                                 decoration: BoxDecoration(
-                                  color: Colors.green.withOpacity(.1),
+                                  color: Colors.green.withValues(alpha: .1),
                                   borderRadius: const BorderRadius.all(
                                       Radius.circular(12)),
                                 ),
@@ -302,7 +302,7 @@ class _LinePainterWidgetState extends State<LinePainterWidget>
       alignment: Alignment.center,
       width: 1000,
       height: 1000,
-      decoration: BoxDecoration(color: Colors.grey.withOpacity(.1)),
+      decoration: BoxDecoration(color: Colors.grey.withValues(alpha: .1)),
       child: SizedBox(
         width: 1000,
         height: 1000,

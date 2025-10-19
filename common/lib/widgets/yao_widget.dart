@@ -30,7 +30,7 @@ class YaoWidget extends StatelessWidget {
             boxShadow: withShadow
                 ? [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
+                      color: Colors.grey.withValues(alpha: 0.5),
                       spreadRadius: 1,
                       blurRadius: 2,
                       offset: const Offset(0, 0), // changes position of shadow
@@ -55,7 +55,7 @@ class YaoWidget extends StatelessWidget {
                 boxShadow: withShadow
                     ? [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(alpha: 0.5),
                           spreadRadius: 1,
                           blurRadius: 2,
                           offset:
@@ -77,7 +77,7 @@ class YaoWidget extends StatelessWidget {
                   boxShadow: withShadow
                       ? [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
+                            color: Colors.grey.withValues(alpha: 0.5),
                             spreadRadius: 1,
                             blurRadius: 2,
                             offset: const Offset(

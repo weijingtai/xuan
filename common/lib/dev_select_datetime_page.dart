@@ -110,7 +110,14 @@ class _DevEnterPageState extends State<DevEnterPage> {
                   "divinationInfoModel": result,
                 });
               },
-              child: Text("七政四余"))
+              child: Text("七政四余")),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, "/common/four_zhu_edit");
+            },
+            child: const Text("打开四柱布局编辑器"),
+          ),
         ],
       ),
     );

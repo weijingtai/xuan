@@ -238,7 +238,7 @@ class _EightCharsInputState extends State<EightCharsInput>
         color: Colors.purple,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.1),
+            color: Colors.black.withValues(alpha: .1),
             spreadRadius: 3,
             blurRadius: 4,
           ),

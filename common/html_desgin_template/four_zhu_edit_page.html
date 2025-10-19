@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Card Editor</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        @layer base {
+            :root {
+                --background-light: #F9FAFB;
+                --background-dark: #0D1117;
+                --surface-light: #FFFFFF;
+                --surface-dark: #161B22;
+                --primary: #3B82F6;
+                --primary-content: #FFFFFF;
+                --secondary: #A855F7;
+                --text-light: #1F2937;
+                --text-dark: #E5E7EB;
+                --subtle-light: #6B7280;
+                --subtle-dark: #8B949E;
+                --border-light: #D1D5DB;
+                --border-dark: #30363D;
+                --drag-indicator: #3B82F6;
+            }
+            body {
+                @apply bg-[var(--background-light)] text-[var(--text-light)] font-['Inter'] transition-colors duration-300;
+            }
+            .dark body {
+                @apply bg-[var(--background-dark)] text-[var(--text-dark)];
+            }
+            .font-noto {
+                font-family: 'Noto Sans SC', sans-serif;
+            }
+            .dragging {
+                @apply opacity-50 bg-blue-100 dark:bg-blue-900/30 scale-105 shadow-2xl;
+            }
+            .drag-over-active {
+                @apply bg-blue-50 dark:bg-blue-900/20 border-[var(--primary)];
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+<div class="flex flex-col min-h-screen">
+    <header class="bg-[var(--surface-light)] dark:bg-[var(--surface-dark)] border-b border-[var(--border-light)] dark:border-[var(--border-dark)] shadow-sm px-6 py-3 flex items-center justify-between sticky top-0 z-20">
+        <div class="flex-1 flex items-center space-x-4">
+            <div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">
+                        space_dashboard
+                    </span>
+                <select class="block w-52 appearance-none rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-2 pl-3 pr-10 text-sm font-medium focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-noto" id="template-select">
+                    <option>我的默认四柱</option>
+                    <option>大运流年专用</option>
+                    <option>胎元分析盘</option>
+                    <option class="text-[var(--primary)]">新建布局...</option>
+                </select>
+            </div>
+            <input class="w-64 bg-transparent border-x-0 border-t-0 border-b-2 border-[var(--border-light)] dark:border-[var(--border-dark)] focus:border-[var(--primary)] focus:ring-0 text-sm font-medium font-noto" type="text" value="大运流年专用"/>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button class="flex items-center justify-center rounded-md bg-[var(--primary)] px-4 py-2 text-sm font-medium text-[var(--primary-content)] shadow-sm hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--background-dark)] transition-all duration-200">
+                <i class="material-icons mr-2 text-base">save</i>
+                <span class="font-noto">保存</span>
+            </button>
+            <button class="flex items-center justify-center rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] px-4 py-2 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--background-dark)] transition-all duration-200 font-noto">
+                另存为...
+            </button>
+            <button class="flex items-center justify-center rounded-md border border-transparent p-2 text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:bg-gray-100 dark:hover:bg-gray-800/50 hover:text-[var(--text-light)] dark:hover:text-[var(--text-dark)] focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--background-dark)] transition-all duration-200">
+<span class="material-symbols-outlined">
+                        list_alt
+                    </span>
+            </button>
+            <div class="w-px h-6 bg-[var(--border-light)] dark:bg-[var(--border-dark)]"></div>
+            <button class="flex items-center justify-center rounded-md border border-transparent p-2 text-red-600 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-500/20 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-[var(--background-dark)] transition-all duration-200">
+<span class="material-symbols-outlined">
+                       delete
+                    </span>
+            </button>
+        </div>
+    </header>
+    <div class="flex flex-1 overflow-hidden">
+        <aside class="w-96 flex-shrink-0 overflow-y-auto bg-[var(--surface-light)] dark:bg-[var(--surface-dark)] p-6 border-r border-[var(--border-light)] dark:border-[var(--border-dark)]">
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-base font-semibold mb-1 text-gray-900 dark:text-gray-100 font-noto">柱间分隔线</h3>
+                    <p class="text-sm text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mb-4 font-noto">自定义柱与柱之间的分隔线样式</p>
+                    <div class="space-y-4 rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] p-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 font-noto" for="divider-style">样式</label>
+                            <select class="mt-1 block w-full appearance-none rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-2 pl-3 pr-10 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-noto" id="divider-style" name="divider-style">
+                                <option>实线</option>
+                                <option>虚线</option>
+                                <option>点状</option>
+                                <option selected="">无</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 font-noto" for="divider-color">颜色</label>
+                            <div class="mt-1 flex items-center space-x-2">
+                                <input class="w-8 h-8 p-1 border-none rounded-md cursor-pointer bg-transparent" type="color" value="#D1D5DB"/>
+                                <input class="block w-full rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-2 px-3 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" type="text" value="#D1D5DB"/>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 font-noto" for="divider-thickness">粗细 (px)</label>
+                            <input class="mt-1 block w-full rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-2 px-3 text-sm focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" id="divider-thickness" type="number" value="1"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-t border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 font-noto">行信息管理</h3>
+                            <p class="text-sm text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">勾选需要显示的信息行，并拖动调整顺序</p>
+                        </div>
+                        <button class="flex items-center gap-x-1 text-sm text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:text-[var(--primary)] dark:hover:text-[var(--primary)] transition-colors duration-200">
+<span class="material-symbols-outlined text-base">
+restart_alt
+</span>
+                            <span class="font-noto text-xs">重置</span>
+                        </button>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center rounded-lg bg-gray-100 dark:bg-gray-800/50 p-3">
+                            <i class="material-icons text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-3">lock</i>
+                            <span class="font-medium text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">天干 (核心)</span>
+                        </div>
+                        <div class="flex items-center rounded-lg bg-gray-100 dark:bg-gray-800/50 p-3">
+                            <i class="material-icons text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-3">lock</i>
+                            <span class="font-medium text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">地支 (核心)</span>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-3" id="row-list">
+                        <div class="flex flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--surface-dark)] cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-all duration-200 group relative">
+                            <div class="flex items-center justify-between p-3">
+                                <div class="flex items-center">
+                                    <i class="material-icons text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-2 group-active:text-[var(--drag-indicator)]">drag_indicator</i>
+                                    <input checked="" class="h-4 w-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] dark:bg-gray-700 dark:border-gray-600" id="row-tengods" type="checkbox"/>
+                                    <label class="ml-3 font-medium text-sm font-noto" for="row-tengods">十神</label>
+                                </div>
+                                <div class="flex items-center gap-x-2">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto" for="toggle-tengods-title">显示标题</label>
+                                        <button aria-checked="true" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] bg-gray-200 dark:bg-gray-700" id="toggle-tengods-title" role="switch" type="button">
+                                            <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-4 dark:translate-x-4 bg-[var(--primary)]"></span>
+                                        </button>
+                                    </div>
+                                    <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                        <span class="material-symbols-outlined text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">expand_more</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--surface-dark)] cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-all duration-200 group relative">
+                            <div class="flex items-center justify-between p-3">
+                                <div class="flex items-center">
+                                    <i class="material-icons text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-2 group-active:text-[var(--drag-indicator)]">drag_indicator</i>
+                                    <input class="h-4 w-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] dark:bg-gray-700 dark:border-gray-600" id="row-nayin" type="checkbox"/>
+                                    <label class="ml-3 font-medium text-sm font-noto" for="row-nayin">纳音</label>
+                                </div>
+                                <div class="flex items-center gap-x-2">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto" for="toggle-nayin-title">显示标题</label>
+                                        <button aria-checked="true" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] bg-gray-200 dark:bg-gray-700" id="toggle-nayin-title" role="switch" type="button">
+                                            <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-4 dark:translate-x-4 bg-[var(--primary)]"></span>
+                                        </button>
+                                    </div>
+                                    <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                        <span class="material-symbols-outlined text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">expand_more</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--surface-dark)] cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-all duration-200 group relative">
+                            <div class="flex items-center justify-between p-3">
+                                <div class="flex items-center">
+                                    <i class="material-icons text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-2 group-active:text-[var(--drag-indicator)]">drag_indicator</i>
+                                    <input checked="" class="h-4 w-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] dark:bg-gray-700 dark:border-gray-600" id="row-void" type="checkbox"/>
+                                    <label class="ml-3 font-medium text-sm font-noto" for="row-void">空亡</label>
+                                </div>
+                                <div class="flex items-center gap-x-2">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto" for="toggle-void-title">显示标题</label>
+                                        <button aria-checked="true" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] bg-gray-200 dark:bg-gray-700" id="toggle-void-title" role="switch" type="button">
+                                            <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-4 dark:translate-x-4 bg-[var(--primary)]"></span>
+                                        </button>
+                                    </div>
+                                    <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                        <span class="material-symbols-outlined text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">expand_more</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="border-t border-[var(--border-light)] dark:border-[var(--border-dark)] p-3 space-y-3">
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-3">
+                                    <div class="col-span-2">
+                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 font-noto">字体</label>
+                                        <select class="mt-1 block w-full appearance-none rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-1.5 pl-2 pr-8 text-xs focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] font-noto">
+                                            <option>系统默认</option>
+                                            <option>黑体</option>
+                                            <option>宋体</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 font-noto">字号</label>
+                                        <input class="mt-1 block w-full rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-1.5 px-2 text-xs focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" type="number" value="12"/>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 font-noto">颜色</label>
+                                        <div class="mt-1 flex items-center space-x-1.5">
+                                            <input class="w-7 h-7 p-1 border-none rounded-md cursor-pointer bg-transparent" type="color" value="#DC2626"/>
+                                            <input class="block w-full rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-transparent py-1.5 px-2 text-xs focus:border-[var(--primary)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)]" type="text" value="#DC2626"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--surface-dark)] cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-all duration-200 group relative">
+                            <div class="flex items-center justify-between p-3">
+                                <div class="flex items-center">
+                                    <i class="material-icons text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-2 group-active:text-[var(--drag-indicator)]">drag_indicator</i>
+                                    <input class="h-4 w-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] dark:bg-gray-700 dark:border-gray-600" id="row-xunshou" type="checkbox"/>
+                                    <label class="ml-3 font-medium text-sm font-noto" for="row-xunshou">旬首</label>
+                                </div>
+                                <div class="flex items-center gap-x-2">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto" for="toggle-xunshou-title">显示标题</label>
+                                        <button aria-checked="false" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] bg-gray-200 dark:bg-gray-700" id="toggle-xunshou-title" role="switch" type="button">
+                                            <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-0 dark:translate-x-0"></span>
+                                        </button>
+                                    </div>
+                                    <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                        <span class="material-symbols-outlined text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">expand_more</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--surface-dark)] cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-all duration-200 group relative">
+                            <div class="flex items-center justify-between p-3">
+                                <div class="flex items-center">
+                                    <i class="material-icons text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mr-2 group-active:text-[var(--drag-indicator)]">drag_indicator</i>
+                                    <input checked="" class="h-4 w-4 rounded border-gray-300 text-[var(--primary)] focus:ring-[var(--primary)] dark:bg-gray-700 dark:border-gray-600" id="row-hiddenstems" type="checkbox"/>
+                                    <label class="ml-3 font-medium text-sm font-noto" for="row-hiddenstems">地支藏干</label>
+                                </div>
+                                <div class="flex items-center gap-x-2">
+                                    <div class="flex items-center space-x-1">
+                                        <label class="text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto" for="toggle-hiddenstems-title">显示标题</label>
+                                        <button aria-checked="true" class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] bg-gray-200 dark:bg-gray-700" id="toggle-hiddenstems-title" role="switch" type="button">
+                                            <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out translate-x-4 dark:translate-x-4 bg-[var(--primary)]"></span>
+                                        </button>
+                                    </div>
+                                    <button class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50">
+                                        <span class="material-symbols-outlined text-lg text-[var(--subtle-light)] dark:text-[var(--subtle-dark)]">expand_more</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <div class="flex-1 overflow-y-auto overflow-x-hidden p-8">
+                <div class="w-full max-w-7xl mx-auto space-y-8">
+                    <div class="bg-[var(--surface-light)] dark:bg-[var(--surface-dark)] rounded-lg shadow-sm border border-[var(--border-light)] dark:border-[var(--border-dark)] p-3">
+                        <div class="flex items-center space-x-2">
+                            <div class="flex-1 flex items-center space-x-2 overflow-x-auto">
+                                <button class="flex-shrink-0 flex flex-col items-center space-y-1.5 p-2 rounded-md bg-[var(--primary)] text-white text-sm font-medium shadow-sm transition-all duration-200 w-36">
+                                    <div class="flex items-start gap-x-1 text-center scale-[0.25] -m-10">
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-[var(--primary)] font-noto">日</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #8B4513;">戊</div>
+                                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 font-noto">日元</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">大运</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #FF4500;">癸</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">亥</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">流年</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #006400;">甲</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-medium pt-1 font-noto">流年盘</span>
+                                </button>
+                                <button class="flex-shrink-0 flex flex-col items-center space-y-1.5 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50 text-sm font-medium text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] transition-all duration-200 w-36">
+                                    <div class="flex items-start gap-x-1 text-center scale-[0.25] -m-10">
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">年</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #006400;">辛</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">酉</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">大运</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #FF4500;">癸</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">亥</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">流年</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #006400;">甲</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-medium pt-1 font-noto">大运盘</span>
+                                </button>
+                                <button class="flex-shrink-0 flex flex-col items-center space-y-1.5 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800/50 text-sm font-medium text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] transition-all duration-200 w-36">
+                                    <div class="flex items-start gap-x-1 text-center scale-[0.25] -m-10">
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">日</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #8B4513;">戊</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">胎元</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #FF4500;">壬</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">午</div>
+                                        </div>
+                                        <div class="flex flex-col items-center space-y-2 p-3 rounded-lg bg-white dark:bg-slate-800/70 w-40">
+                                            <div class="text-sm font-bold text-slate-400 dark:text-slate-500 font-noto">胎息</div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #006400;">甲</div>
+                                            <div class="w-full border-t border-dashed my-1 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                            <div class="text-5xl font-bold font-noto" style="color: #00008B;">申</div>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-medium pt-1 font-noto">胎元分析</span>
+                                </button>
+                            </div>
+                            <button class="flex items-center justify-center w-8 h-8 rounded-full border border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] transition-colors flex-shrink-0">
+                                <span class="material-symbols-outlined text-xl">add</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex-grow flex items-center justify-center">
+                        <div class="w-full space-y-4">
+                            <input class="w-full bg-transparent text-center text-xl font-bold text-[var(--text-light)] dark:text-[var(--text-dark)] mb-4 tracking-wider font-noto border-0 focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--background-dark)] rounded-md py-2" type="text" value="流年盘"/>
+                            <div class="bg-white dark:bg-[var(--surface-dark)] rounded-xl shadow-lg p-6 border border-solid border-gray-200 dark:border-gray-700 relative">
+                                <div class="absolute top-4 right-4 z-10">
+                                    <button class="flex items-center gap-2 rounded-md border border-[var(--border-light)] dark:border-[var(--border-dark)] px-3 py-1.5 text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-800/50 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:ring-offset-2 dark:focus:ring-offset-[var(--surface-dark)] transition-all duration-200 font-noto">
+                                        <span class="material-symbols-outlined text-base">add_circle_outline</span>
+                                        <span>添加附属盘</span>
+                                    </button>
+                                </div>
+                                <div class="flex items-stretch justify-center text-center cursor-pointer pb-6" id="card-canvas">
+                                    <div class="relative flex flex-col items-center space-y-2 p-4 rounded-lg bg-white dark:bg-slate-800 w-44 group transition-all duration-200 border-2 border-[var(--primary)] shadow-lg cursor-grab active:cursor-grabbing" draggable="true">
+                                        <div class="absolute -top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button class="w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200" onclick="this.closest('[draggable=\'true\']').remove()">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-base font-bold text-[var(--primary)] font-noto">日</div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #8B4513;">戊</div>
+                                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400 font-noto">日元</div>
+                                        <div class="w-full border-t border-dashed my-2 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        <div class="w-full mt-auto space-y-1.5 pt-2 text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">
+                                            <p style="color: rgb(220, 38, 38);"><span class="font-noto">空亡: </span><span class="font-semibold">戌亥</span></p>
+                                            <p><span class="font-noto">藏干: </span><span class="font-semibold text-gray-700 dark:text-gray-300">戊乙癸</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="relative group flex items-center justify-center px-1">
+                                        <div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div>
+                                        <button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100">
+                                            <i class="material-icons text-sm">add</i>
+                                        </button>
+                                    </div>
+                                    <div class="relative flex flex-col items-center space-y-2 p-4 rounded-lg bg-white dark:bg-slate-800 w-44 group transition-all duration-200 border-2 border-transparent hover:shadow-lg hover:border-[var(--primary)] cursor-grab active:cursor-grabbing" draggable="true">
+                                        <div class="absolute -top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button class="w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200" onclick="this.closest('[draggable=\'true\']').remove()">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-base font-bold text-slate-500 dark:text-slate-400 font-noto">大运</div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #FF4500;">癸</div>
+                                        <div class="text-sm font-medium text-[var(--secondary)] font-noto">正财</div>
+                                        <div class="w-full border-t border-dashed my-2 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #00008B;">亥</div>
+                                        <div class="w-full mt-auto space-y-1.5 pt-2 text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">
+                                            <p style="color: rgb(220, 38, 38);"><span class="font-noto">空亡: </span><span class="font-semibold">子丑</span></p>
+                                            <p><span class="font-noto">藏干: </span><span class="font-semibold text-gray-700 dark:text-gray-300">壬甲</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="relative group flex items-center justify-center px-1">
+                                        <div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div>
+                                        <button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100">
+                                            <i class="material-icons text-sm">add</i>
+                                        </button>
+                                    </div>
+                                    <div class="relative flex flex-col items-center space-y-2 p-4 rounded-lg bg-white dark:bg-slate-800 w-44 group transition-all duration-200 border-2 border-transparent hover:shadow-lg hover:border-[var(--primary)] cursor-grab active:cursor-grabbing" draggable="true">
+                                        <div class="absolute -top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button class="w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200" onclick="this.closest('[draggable=\'true\']').remove()">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-base font-bold text-slate-500 dark:text-slate-400 font-noto">流年</div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #006400;">甲</div>
+                                        <div class="text-sm font-medium text-[var(--secondary)] font-noto">七杀</div>
+                                        <div class="w-full border-t border-dashed my-2 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        <div class="w-full mt-auto space-y-1.5 pt-2 text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">
+                                            <p style="color: rgb(220, 38, 38);"><span class="font-noto">空亡: </span><span class="font-semibold">寅卯</span></p>
+                                            <p><span class="font-noto">藏干: </span><span class="font-semibold text-gray-700 dark:text-gray-300">戊乙癸</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="relative group flex items-center justify-center px-1">
+                                        <div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div>
+                                        <button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100">
+                                            <i class="material-icons text-sm">add</i>
+                                        </button>
+                                    </div>
+                                    <div class="relative flex flex-col items-center space-y-2 p-4 rounded-lg bg-white dark:bg-slate-800 w-44 group transition-all duration-200 border-2 border-transparent hover:shadow-lg hover:border-[var(--primary)] cursor-grab active:cursor-grabbing" draggable="true">
+                                        <div class="absolute -top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button class="w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200" onclick="this.closest('[draggable=\'true\']').remove()">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-base font-bold text-slate-500 dark:text-slate-400 font-noto">流月</div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #006400;">丙</div>
+                                        <div class="text-sm font-medium text-[var(--secondary)] font-noto">偏印</div>
+                                        <div class="w-full border-t border-dashed my-2 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #00008B;">寅</div>
+                                        <div class="w-full mt-auto space-y-1.5 pt-2 text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">
+                                            <p style="color: rgb(220, 38, 38);"><span class="font-noto">空亡: </span><span class="font-semibold">戌亥</span></p>
+                                            <p><span class="font-noto">藏干: </span><span class="font-semibold text-gray-700 dark:text-gray-300">甲丙戊</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="relative group flex items-center justify-center px-1">
+                                        <div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div>
+                                        <button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100">
+                                            <i class="material-icons text-sm">add</i>
+                                        </button>
+                                    </div>
+                                    <div class="relative flex flex-col items-center space-y-2 p-4 rounded-lg bg-white dark:bg-slate-800 w-44 group transition-all duration-200 border-2 border-transparent hover:shadow-lg hover:border-[var(--primary)] cursor-grab active:cursor-grabbing" draggable="true">
+                                        <div class="absolute -top-2 -right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button class="w-6 h-6 flex items-center justify-center bg-red-600 text-white rounded-full shadow-md hover:bg-red-700 transition-colors duration-200" onclick="this.closest('[draggable=\'true\']').remove()">
+                                                <span class="material-symbols-outlined text-sm">delete</span>
+                                            </button>
+                                        </div>
+                                        <div class="text-base font-bold text-slate-500 dark:text-slate-400 font-noto">流时</div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #8B4513;">戊</div>
+                                        <div class="text-sm font-medium text-[var(--secondary)] font-noto">比肩</div>
+                                        <div class="w-full border-t border-dashed my-2 border-[var(--border-light)] dark:border-[var(--border-dark)]"></div>
+                                        <div class="text-6xl font-bold font-noto" style="color: #00008B;">辰</div>
+                                        <div class="w-full mt-auto space-y-1.5 pt-2 text-xs text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">
+                                            <p style="color: rgb(220, 38, 38);"><span class="font-noto">空亡: </span><span class="font-semibold">戌亥</span></p>
+                                            <p><span class="font-noto">藏干: </span><span class="font-semibold text-gray-700 dark:text-gray-300">戊乙癸</span></p>
+                                        </div>
+                                    </div>
+                                    <div class="relative group flex items-center justify-center px-1">
+                                        <div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div>
+                                        <button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100">
+                                            <i class="material-icons text-sm">add</i>
+                                        </button>
+                                    </div>
+                                    <div class="flex items-center justify-center w-44 h-auto rounded-lg border-2 border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200">
+                                        <span class="material-symbols-outlined text-4xl">add</span>
+                                    </div>
+                                </div>
+                                <div class="relative bg-white/50 dark:bg-transparent rounded-xl pt-6">
+                                    <div class="absolute -top-px left-1/2 -translate-x-1/2 h-px w-3/4 bg-gradient-to-r from-transparent via-purple-500 to-transparent"></div>
+                                    <div class="absolute top-4 right-6 z-10">
+                                        <button class="w-7 h-7 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-500 dark:text-slate-300 hover:bg-red-500 hover:text-white transition-colors duration-200">
+                                            <i class="material-icons text-base">close</i>
+                                        </button>
+                                    </div>
+                                    <div class="flex justify-between items-center mb-4 px-6">
+                                        <h3 class="text-lg font-semibold text-purple-600 dark:text-purple-400 font-noto">附属盘</h3>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-sm text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] font-noto">对齐:</span>
+                                            <div class="flex items-center rounded-lg bg-gray-100 dark:bg-gray-800/50 p-0.5">
+                                                <button class="p-1.5 rounded-md text-[var(--primary)] bg-white dark:bg-gray-700 shadow-sm">
+                                                    <span class="material-symbols-outlined text-base">vertical_align_top</span>
+                                                </button>
+                                                <button class="p-1.5 rounded-md text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:text-[var(--text-light)] dark:hover:text-[var(--text-dark)]">
+                                                    <span class="material-symbols-outlined text-base">vertical_align_bottom</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="overflow-x-auto">
+                                        <div class="inline-grid grid-flow-col gap-x-4 px-6 pb-4 min-w-full">
+                                            <div class="w-44">
+                                                <div class="text-center py-2 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg border-b-2 border-purple-200 dark:border-purple-700">
+                                                    <p class="font-semibold text-purple-700 dark:text-purple-300 font-noto">旬首</p>
+                                                </div>
+                                                <div class="text-center py-2 bg-purple-50 dark:bg-purple-900/20 rounded-b-lg">
+                                                    <p class="font-bold text-purple-700 dark:text-purple-300 font-noto">甲子</p>
+                                                    <p class="text-xs text-purple-500 dark:text-purple-400 font-noto">金</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-44">
+                                                <div class="text-center py-2 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg border-b-2 border-purple-200 dark:border-purple-700">
+                                                    <p class="font-semibold text-purple-700 dark:text-purple-300 font-noto">旬首</p>
+                                                </div>
+                                                <div class="text-center py-2 bg-purple-50 dark:bg-purple-900/20 rounded-b-lg">
+                                                    <p class="font-bold text-purple-700 dark:text-purple-300 font-noto">甲寅</p>
+                                                    <p class="text-xs text-purple-500 dark:text-purple-400 font-noto">水</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-44">
+                                                <div class="text-center py-2 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg border-b-2 border-purple-200 dark:border-purple-700">
+                                                    <p class="font-semibold text-purple-700 dark:text-purple-300 font-noto">旬首</p>
+                                                </div>
+                                                <div class="text-center py-2 bg-purple-50 dark:bg-purple-900/20 rounded-b-lg">
+                                                    <p class="font-bold text-purple-700 dark:text-purple-300 font-noto">甲辰</p>
+                                                    <p class="text-xs text-purple-500 dark:text-purple-400 font-noto">火</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-44">
+                                                <div class="text-center py-2 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg border-b-2 border-purple-200 dark:border-purple-700">
+                                                    <p class="font-semibold text-purple-700 dark:text-purple-300 font-noto">旬首</p>
+                                                </div>
+                                                <div class="text-center py-2 bg-purple-50 dark:bg-purple-900/20 rounded-b-lg">
+                                                    <p class="font-bold text-purple-700 dark:text-purple-300 font-noto">甲午</p>
+                                                    <p class="text-xs text-purple-500 dark:text-purple-400 font-noto">金</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-44">
+                                                <div class="text-center py-2 bg-purple-100 dark:bg-purple-900/30 rounded-t-lg border-b-2 border-purple-200 dark:border-purple-700">
+                                                    <p class="font-semibold text-purple-700 dark:text-purple-300 font-noto">旬首</p>
+                                                </div>
+                                                <div class="text-center py-2 bg-purple-50 dark:bg-purple-900/20 rounded-b-lg">
+                                                    <p class="font-bold text-purple-700 dark:text-purple-300 font-noto">甲申</p>
+                                                    <p class="text-xs text-purple-500 dark:text-purple-400 font-noto">水</p>
+                                                </div>
+                                            </div>
+                                            <div class="w-44"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex-shrink-0 bg-[var(--surface-light)] dark:bg-[var(--surface-dark)] border-t border-[var(--border-light)] dark:border-[var(--border-dark)] p-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05),0_-2px_4px_-2px_rgba(0,0,0,0.05)] z-10">
+                    <h3 class="text-base font-semibold mb-1 text-gray-900 dark:text-gray-100 font-noto">组件面板</h3>
+                    <p class="text-sm text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] mb-4 font-noto">从这里拖动“柱”到上方画布</p>
+                    <div class="flex space-x-4 overflow-x-auto pb-2" id="pillar-palette">
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--background-dark)] p-3 cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-shadow duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl text-[var(--primary)] mb-2">calendar_today</span>
+                            <span class="font-medium text-sm text-center font-noto">年柱</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--background-dark)] p-3 cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-shadow duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl text-[var(--primary)] mb-2">calendar_month</span>
+                            <span class="font-medium text-sm text-center font-noto">月柱</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--background-dark)] p-3 cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-shadow duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl text-[var(--primary)] mb-2">today</span>
+                            <span class="font-medium text-sm text-center font-noto">日柱</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-[var(--border-light)] dark:border-[var(--border-dark)] bg-white dark:bg-[var(--background-dark)] p-3 cursor-grab active:cursor-grabbing active:border-[var(--drag-indicator)] active:shadow-lg transition-shadow duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl text-[var(--primary)] mb-2">schedule</span>
+                            <span class="font-medium text-sm text-center font-noto">时柱</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] p-3 cursor-grab text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl mb-2">compost</span>
+                            <span class="font-medium text-sm text-center font-noto">胎元</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] p-3 cursor-grab text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl mb-2">trending_up</span>
+                            <span class="font-medium text-sm text-center font-noto">大运</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] p-3 cursor-grab text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl mb-2">event</span>
+                            <span class="font-medium text-sm text-center font-noto">流年</span>
+                        </div>
+                        <div class="flex-shrink-0 flex items-center justify-center flex-col rounded-lg border border-dashed border-[var(--border-light)] dark:border-[var(--border-dark)] p-3 cursor-grab text-[var(--subtle-light)] dark:text-[var(--subtle-dark)] hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 group relative w-32 h-32">
+                            <span class="material-symbols-outlined text-4xl mb-2">more_horiz</span>
+                            <span class="font-medium text-sm text-center font-noto">更多...</span>
+                        </div>
+                    </div>
+                </div>
+            </div></main>
+    </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const cardCanvas = document.getElementById('card-canvas');
+        let draggedItem = null;
+        let placeholder = null;
+        // Delegated event listener for remove buttons
+        cardCanvas.addEventListener('click', function(e) {
+            const removeButton = e.target.closest('.remove-pillar-btn');
+            if (removeButton) {
+                const pillar = removeButton.closest('.pillar-card');
+                const separator = pillar.nextElementSibling;
+                pillar.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                pillar.style.opacity = '0';
+                pillar.style.transform = 'scale(0.8)';
+                if (separator && separator.classList.contains('pillar-separator')) {
+                     separator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                     separator.style.opacity = '0';
+                     separator.style.transform = 'scale(0.8)';
+                }
+                setTimeout(() => {
+                    pillar.remove();
+                    if(separator && separator.classList.contains('pillar-separator')) {
+                        separator.remove();
+                    }
+                }, 300);
+            }
+        });
+        cardCanvas.addEventListener('dragstart', (e) => {
+            const draggableTarget = e.target.closest('[draggable="true"]');
+            if (draggableTarget) {
+                draggedItem = draggableTarget;
+                setTimeout(() => {
+                    draggedItem.classList.add('dragging');
+                }, 0);
+                placeholder = document.createElement('div');
+                placeholder.classList.add('w-44', 'h-auto', 'rounded-lg', 'border-2', 'border-dashed', 'border-[var(--drag-indicator)]', 'bg-blue-50', 'dark:bg-blue-900/20', 'transition-all', 'duration-300');
+                placeholder.style.height = `${draggedItem.offsetHeight}px`;
+            }
+        });
+        cardCanvas.addEventListener('dragend', (e) => {
+            if (draggedItem) {
+                draggedItem.classList.remove('dragging');
+                draggedItem = null;
+                if (placeholder && placeholder.parentNode) {
+                    placeholder.parentNode.removeChild(placeholder);
+                }
+                placeholder = null;
+                cardCanvas.querySelectorAll('[draggable="true"]').forEach(el => el.classList.remove('drag-over-active'));
+            }
+        });
+        cardCanvas.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const targetPillar = e.target.closest('[draggable="true"]');
+            const addButton = e.target.closest('.justify-center.w-44');
+            if (targetPillar && targetPillar !== draggedItem) {
+                 cardCanvas.querySelectorAll('[draggable="true"]').forEach(el => el.classList.remove('drag-over-active'));
+                const rect = targetPillar.getBoundingClientRect();
+                const offsetX = e.clientX - rect.left;
+                // Check if dropping on the pillar itself or its separator
+                let nextElement = targetPillar.nextElementSibling;
+                if(nextElement && nextElement.classList.contains('pillar-separator')){
+                     if (offsetX > (rect.width + nextElement.offsetWidth) / 2) {
+                        cardCanvas.insertBefore(placeholder, nextElement.nextSibling);
+                     } else {
+                        cardCanvas.insertBefore(placeholder, targetPillar);
+                     }
+                } else {
+                    if (offsetX > rect.width / 2) {
+                        cardCanvas.insertBefore(placeholder, targetPillar.nextSibling);
+                    } else {
+                        cardCanvas.insertBefore(placeholder, targetPillar);
+                    }
+                }
+            } else if (addButton) {
+                cardCanvas.querySelectorAll('[draggable="true"]').forEach(el => el.classList.remove('drag-over-active'));
+                addButton.parentNode.insertBefore(placeholder, addButton);
+            }
+        });
+        cardCanvas.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (draggedItem && placeholder && placeholder.parentNode) {
+                placeholder.parentNode.insertBefore(draggedItem, placeholder);
+                 // check if a separator needs to be added or already exists
+                let prev = draggedItem.previousElementSibling;
+                let next = draggedItem.nextElementSibling;
+                // Add separator after if needed
+                if(next && next.draggable && (!prev || !prev.classList.contains('pillar-separator'))){
+                    const separator = document.createElement('div');
+                    separator.className = "relative group flex items-center justify-center px-1 pillar-separator";
+                    separator.innerHTML = `<div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div><button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100"><i class="material-icons text-sm">add</i></button>`;
+                    draggedItem.parentNode.insertBefore(separator, next);
+                }
+                // Add separator before if needed
+                 if(prev && prev.draggable && (!next || !next.classList.contains('pillar-separator'))){
+                    const separator = document.createElement('div');
+                    separator.className = "relative group flex items-center justify-center px-1 pillar-separator";
+                    separator.innerHTML = `<div class="w-px h-2/3 bg-transparent group-hover:bg-[var(--primary)] transition-colors duration-200"></div><button class="absolute z-10 w-6 h-6 flex items-center justify-center bg-white dark:bg-slate-700 rounded-full shadow text-slate-400 dark:text-slate-500 hover:bg-[var(--primary)] hover:text-white transition-all duration-200 scale-0 group-hover:scale-100"><i class="material-icons text-sm">add</i></button>`;
+                    draggedItem.parentNode.insertBefore(separator, draggedItem);
+                 }
+                 // Clean up extra separators
+                 Array.from(cardCanvas.children).forEach((child, index, arr) => {
+                     if(child.classList.contains('pillar-separator') && (!child.previousElementSibling || !child.nextElementSibling || child.nextElementSibling.classList.contains('pillar-separator') || !child.previousElementSibling.draggable || !child.nextElementSibling.draggable)){
+                         child.remove();
+                     }
+                 })
+            }
+        });
+    });
+</script>
+</body></html>
