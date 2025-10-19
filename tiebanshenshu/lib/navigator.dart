@@ -3,20 +3,14 @@ import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
 import 'package:tiebanshenshu/domain/models/yuan_hui_yun_shi.dart';
 import 'package:tiebanshenshu/features/huang_ji/huang_ji_v2_demo_page.dart';
-import 'package:tiebanshenshu/presentation/pages/multi_base_number_selection_page.dart';
 import 'package:tiebanshenshu/presentation/pages/strategy_demo_page.dart';
-import 'package:tiebanshenshu/presentation/pages/tai_xuan_interactive_page.dart';
 import 'package:tiebanshenshu/presentation/pages/four_doors_and_gun_fa_page.dart';
 import 'package:tiebanshenshu/ui/pages/dev_page.dart';
 import 'package:provider/provider.dart';
 import 'infrastructure/di/strategy_providers.dart';
-
-import 'domain/models/multi_base_number_selection.dart';
 import 'features/liuqinkaoke/pages/liuqinkaoke_selection_page.dart';
 import 'features/kao_ke/kao_ke_interactive_page.dart';
 import 'features/kao_ding_liu_qin/pages/kao_ding_liu_qin_page.dart';
-// 旧的V2 Demo页面已删除
-// import 'features/huang_ji_v2_demo_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -32,25 +26,8 @@ class NavigatorGenerator {
     // 旧的V2 Demo路由已删除
     // "/tiebanshenshu/huang_ji_v2_demo": (context, {arguments}) =>
     //     const HuangJiV2DemoPage(),
-    "/tiebanshenshu/multi_selection": (context, {arguments}) =>
-        MultiBaseNumberSelectionPage(
-          yuanHuiYunShi: YuanHuiYunShi.fromEightChars(
-            EightChars(
-              year: JiaZi.GUI_SI, // 癸巳
-              month: JiaZi.JIA_ZI, // 甲子
-              day: JiaZi.DING_YOU, // 丁酉
-              time: JiaZi.GUI_MAO, // 癸卯
-            ),
-          ),
-          requiredTypes: [
-            BaseNumberSelectionType.yuanHui,
-            BaseNumberSelectionType.yunShi,
-          ],
-        ),
     "/tiebanshenshu/strategy_demo": (context, {arguments}) =>
         const StrategyDemoPage(),
-    "/tiebanshenshu/tai_xuan": (context, {arguments}) =>
-        const TaiXuanInteractivePage(),
     "/tiebanshenshu/four_doors_and_gun_fa": (context, {arguments}) =>
         const FourDoorsAndGunFaPage(),
 

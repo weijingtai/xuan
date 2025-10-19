@@ -96,9 +96,7 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
                   onPressed: viewModel.canRedo ? () => viewModel.redo() : null,
                   tooltip: '重做',
                 ),
-                Icon(
-                  _isExpanded ? Icons.expand_less : Icons.expand_more,
-                ),
+                Icon(_isExpanded ? Icons.expand_less : Icons.expand_more),
               ],
             ),
           ],
@@ -126,10 +124,7 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
     }
 
     if (!viewModel.hasResult) {
-      return const Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Text('暂无结果'),
-      );
+      return const Padding(padding: EdgeInsets.all(16.0), child: Text('暂无结果'));
     }
 
     final result = viewModel.currentResult!;
@@ -139,7 +134,7 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBasicInfo(context, result),
+          _buildBasicInfo(context, result, viewModel),
           const SizedBox(height: 16.0),
           _buildTiaoWenResults(context, result, viewModel),
           const SizedBox(height: 16.0),
@@ -151,8 +146,13 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
     );
   }
 
-  Widget _buildBasicInfo(BuildContext context, KaoDingLiuQinResult result) {
+  Widget _buildBasicInfo(
+    BuildContext context,
+    KaoDingLiuQinResult result,
+    KaoDingLiuQinViewModel viewModel,
+  ) {
     final theme = Theme.of(context);
+    final gua64 = viewModel.getGua64(result.liuQinType);
 
     return Container(
       padding: const EdgeInsets.all(12.0),
@@ -172,14 +172,22 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
           const SizedBox(height: 8.0),
           _buildInfoRow('六亲类型', result.liuQinType.displayName),
           _buildInfoRow('选择柱', result.pillar.name),
-          _buildInfoRow('起卦结果', '${result.qiGuaResult.shangGua.name}${result.qiGuaResult.xiaGua.name}'),
+          _buildInfoRow(
+            '起卦结果',
+            '${result.qiGuaResult.shangGua.name}${result.qiGuaResult.xiaGua.name}',
+          ),
           if (result.targetYao != null)
-            _buildInfoRow('目标爻', '${result.targetYao!.order.name}爻 - ${result.targetYao!.ganZhi?.name ?? ""}'),
-          if (result.liuDuEntry != null) ...[
-            _buildInfoRow('流度密码', '${result.liuDuEntry!.chiperText} (${result.liuDuEntry!.chiperNumber})'),
+            _buildInfoRow(
+              '目标爻',
+              '${result.targetYao!.order.name}爻 - ${result.targetYao!.ganZhi?.name ?? ""}',
+            ),
+          if (result.targetEntry != null) ...[
+            _buildInfoRow(
+              '流度密码',
+              '${result.targetEntry!.chiperText} (${result.targetEntry!.chiperNumber})',
+            ),
           ],
-          if (result.huaGua != null)
-            _buildInfoRow('化卦', result.huaGua!.name),
+          if (gua64 != null) _buildInfoRow('化卦', gua64.name),
         ],
       ),
     );
@@ -228,50 +236,34 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
             ),
           ),
           const SizedBox(height: 12.0),
-          ...result.tiaoWenNumbersByMethod.entries.map((entry) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    entry.key,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 4.0),
-                  Wrap(
-                    spacing: 8.0,
-                    runSpacing: 8.0,
-                    children: entry.value.map((number) {
-                      final isSelected = viewModel.currentSessionState?.selectedTiaoWenNumber == number;
-                      return ActionChip(
-                        label: Text('$number'),
-                        backgroundColor: isSelected
-                            ? theme.colorScheme.primary
-                            : null,
-                        labelStyle: isSelected
-                            ? TextStyle(color: theme.colorScheme.onPrimary)
-                            : null,
-                        onPressed: () {
-                          viewModel.selectTiaoWen(number, entry.key);
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 4.0),
-                ],
-              ),
-            );
-          }).toList(),
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 8.0,
+            children: result.allTiaoWenNumbers.map((number) {
+              final isSelected =
+                  viewModel.getSelectedTiaoWenNumber(result.liuQinType) ==
+                  number;
+              return ActionChip(
+                label: Text('$number'),
+                backgroundColor: isSelected ? theme.colorScheme.primary : null,
+                labelStyle: isSelected
+                    ? TextStyle(color: theme.colorScheme.onPrimary)
+                    : null,
+                onPressed: () {
+                  viewModel.selectTiaoWenForType(result.liuQinType, number);
+                },
+              );
+            }).toList(),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCalculationDetail(BuildContext context, KaoDingLiuQinResult result) {
+  Widget _buildCalculationDetail(
+    BuildContext context,
+    KaoDingLiuQinResult result,
+  ) {
     final theme = Theme.of(context);
 
     return ExpansionTile(
@@ -291,17 +283,17 @@ class _KaoDingLiuQinCardState extends State<KaoDingLiuQinCard> {
           ),
           child: Text(
             result.calculationDetail,
-            style: const TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 12,
-            ),
+            style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildHistorySection(BuildContext context, KaoDingLiuQinViewModel viewModel) {
+  Widget _buildHistorySection(
+    BuildContext context,
+    KaoDingLiuQinViewModel viewModel,
+  ) {
     final theme = Theme.of(context);
     final history = viewModel.history;
 

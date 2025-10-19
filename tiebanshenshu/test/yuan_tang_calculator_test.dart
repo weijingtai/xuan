@@ -3,8 +3,6 @@ import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/domain/four_zhu.dart';
 
-import '../service_bak/yuan_tang/yuan_tang_calculator.dart';
-
 void main() {
   group('YuanTangGua Tests', () {
     late EightChars eightChars;

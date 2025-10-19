@@ -88,15 +88,12 @@ void main() {
       );
 
       // 计算父、母、妻、子四种关系
-      final results = await useCase.executeMultiple(
-        eightChars,
-        [
-          LiuQinType.father,
-          LiuQinType.mother,
-          LiuQinType.wife,
-          LiuQinType.son,
-        ],
-      );
+      final results = await useCase.executeMultiple(eightChars, [
+        LiuQinType.father,
+        LiuQinType.mother,
+        LiuQinType.wife,
+        LiuQinType.son,
+      ]);
 
       expect(results.length, equals(4));
       expect(results[LiuQinType.father]?.pillar, equals(JiaZi.XIN_WEI)); // 年柱
@@ -117,15 +114,19 @@ void main() {
       );
 
       // 执行两次计算
-      await useCase.execute(KaoDingLiuQinUseCaseParams(
-        eightChars: eightChars,
-        liuQinType: LiuQinType.father,
-      ));
+      await useCase.execute(
+        KaoDingLiuQinUseCaseParams(
+          eightChars: eightChars,
+          liuQinType: LiuQinType.father,
+        ),
+      );
 
-      await useCase.execute(KaoDingLiuQinUseCaseParams(
-        eightChars: eightChars,
-        liuQinType: LiuQinType.wife,
-      ));
+      await useCase.execute(
+        KaoDingLiuQinUseCaseParams(
+          eightChars: eightChars,
+          liuQinType: LiuQinType.wife,
+        ),
+      );
 
       expect(useCase.sessionManager.historyCount, equals(2));
       expect(useCase.canUndo, isTrue);
@@ -155,23 +156,32 @@ void main() {
       );
 
       // 执行多次计算
-      await useCase.execute(KaoDingLiuQinUseCaseParams(
-        eightChars: eightChars,
-        liuQinType: LiuQinType.father,
-      ));
-      await useCase.execute(KaoDingLiuQinUseCaseParams(
-        eightChars: eightChars,
-        liuQinType: LiuQinType.wife,
-      ));
-      await useCase.execute(KaoDingLiuQinUseCaseParams(
-        eightChars: eightChars,
-        liuQinType: LiuQinType.father,
-      ));
+      await useCase.execute(
+        KaoDingLiuQinUseCaseParams(
+          eightChars: eightChars,
+          liuQinType: LiuQinType.father,
+        ),
+      );
+      await useCase.execute(
+        KaoDingLiuQinUseCaseParams(
+          eightChars: eightChars,
+          liuQinType: LiuQinType.wife,
+        ),
+      );
+      await useCase.execute(
+        KaoDingLiuQinUseCaseParams(
+          eightChars: eightChars,
+          liuQinType: LiuQinType.father,
+        ),
+      );
 
       // 筛选父亲相关的历史记录
       final fatherHistory = useCase.getHistoryByType(LiuQinType.father);
       expect(fatherHistory.length, equals(2));
-      expect(fatherHistory.every((s) => s.result.liuQinType == LiuQinType.father), isTrue);
+      expect(
+        fatherHistory.every((s) => s.result.liuQinType == LiuQinType.father),
+        isTrue,
+      );
 
       // 筛选妻子相关的历史记录
       final wifeHistory = useCase.getHistoryByType(LiuQinType.wife);
@@ -187,10 +197,11 @@ void main() {
       );
 
       // 执行多次计算
-      await useCase.executeMultiple(
-        eightChars,
-        [LiuQinType.father, LiuQinType.wife, LiuQinType.son],
-      );
+      await useCase.executeMultiple(eightChars, [
+        LiuQinType.father,
+        LiuQinType.wife,
+        LiuQinType.son,
+      ]);
 
       final stats = useCase.getStatistics();
       expect(stats['totalCount'], equals(3));

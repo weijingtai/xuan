@@ -2,8 +2,6 @@ import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
 import '../../application/services/candidate_generation_service.dart';
-import '../../application/services/interactive_session_service.dart';
-import '../../application/services/multi_base_number_selection_service.dart';
 import '../../features/huang_ji/huang_ji_session_manager.dart';
 import '../../features/huang_ji/huang_ji_v2_calculation_strategy.dart';
 import '../../features/huang_ji/huang_ji_v2_calculation_strategy_impl.dart';
@@ -11,7 +9,6 @@ import '../../features/huang_ji/huang_ji_v2_use_case.dart';
 import '../../features/huang_ji/huang_ji_v2_view_model.dart';
 import '../../features/liuqinkaoke/repository/liuqinkaoke_session_repository.dart';
 import '../../features/liuqinkaoke/usecase/liuqinkaoke_session_manager.dart';
-import '../../presentation/viewmodels/multi_base_number_selection_view_model.dart';
 import '../../repository/repository_factory.dart';
 import '../../repository/tiao_wen_repository.dart';
 import '../../service/strategy/day_gan_zhi_gua_strategy.dart';
@@ -96,8 +93,8 @@ class StrategyProviders {
     // 条文列表计算配置层
     Provider<TiaoWenListCalculationConfig>(
       create: (_) => TiaoWenListCalculationConfig.listAdd(
-        customList: [96, 192, 384, 768], // 使用传统的48倍数配置：2*48, 4*48, 8*48, 16*48
-        withSub: true, // 包含减法计算
+        customList: [96, 192, 384, 768],
+        withSub: true,
       ),
     ),
 
@@ -124,29 +121,6 @@ class StrategyProviders {
     Provider<TaiXuanFourZhuInteractiveStrategy>(
       create: (_) => TaiXuanFourZhuInteractiveStrategy(),
     ),
-
-    // HuangJiV2 Strategy层 - 已删除旧架构
-    // Provider<HuangJiV2Strategy>(
-    //   create: (_) => HuangJiV2Strategy(),
-    // ),
-
-    // Service层
-    Provider<InteractiveSessionService>(
-      create: (_) => InteractiveSessionServiceImpl(),
-    ),
-    Provider<CandidateGenerationService>(
-      create: (context) =>
-          CandidateGenerationServiceImpl(context.read<TiaoWenRepository>()),
-    ),
-    Provider<MultiBaseNumberSelectionService>(
-      create: (context) => MultiBaseNumberSelectionService(
-        context.read<CandidateGenerationService>(),
-      ),
-    ),
-    // HuangJiV2SessionService - 已删除旧架构
-    // Provider<HuangJiV2SessionService>(
-    //   create: (_) => HuangJiV2SessionService(),
-    // ),
 
     // HuangJi V2 新架构
     Provider<HuangJiV2CalculationStrategy>(
@@ -257,6 +231,7 @@ class StrategyProviders {
         context.read<TiaoWenListCalculationConfig>(),
       ),
     ),
+
     // ViewModel层
     ChangeNotifierProvider<DayGanZhiGuaViewModel>(
       create: (context) =>
@@ -324,27 +299,11 @@ class StrategyProviders {
       ),
     ),
 
-    // Multi Base Number Selection Provider层
-    ChangeNotifierProvider<MultiBaseNumberSelectionViewModel>(
-      create: (context) => MultiBaseNumberSelectionViewModel(
-        context.read<MultiBaseNumberSelectionService>(),
-      ),
-    ),
-
     // HuangJi V2 新架构 ViewModel
     ChangeNotifierProvider<HuangJiV2ViewModel>(
       create: (context) =>
           HuangJiV2ViewModel(useCase: context.read<HuangJiV2UseCase>()),
     ),
-
-    // HuangJiV2 ViewModel层 - 已删除旧架构
-    // ChangeNotifierProvider<HuangJiV2ViewModel>(
-    //   create: (context) => HuangJiV2ViewModel(
-    //     context.read<HuangJiV2UseCase>(),
-    //     context.read<MultiBaseNumberSelectionService>(),
-    //     context.read<TiaoWenRepository>(),
-    //   ),
-    // ),
 
     // —— 六亲考刻 DI ——
     Provider<LiuQinKaoKeSessionRepository>(
