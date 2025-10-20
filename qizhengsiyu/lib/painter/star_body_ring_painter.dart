@@ -4,6 +4,7 @@ import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 
 import '../pages/ui_star_model.dart';
+import 'package:flutter/foundation.dart';
 
 class OuterLifeStarRangePainter extends CustomPainter {
   double innerSize;
@@ -178,8 +179,15 @@ class OuterLifeStarRangePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant OuterLifeStarRangePainter oldDelegate) {
+    return innerSize != oldDelegate.innerSize ||
+        trackSize != oldDelegate.trackSize ||
+        outerSize != oldDelegate.outerSize ||
+        showStarTrackLine != oldDelegate.showStarTrackLine ||
+        showText != oldDelegate.showText ||
+        textStyle != oldDelegate.textStyle ||
+        !listEquals(stars, oldDelegate.stars) ||
+        !mapEquals(starsColorMap, oldDelegate.starsColorMap);
   }
 }
 
@@ -381,8 +389,16 @@ class InnerLifeStarRangePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant InnerLifeStarRangePainter oldDelegate) {
+    return innerSize != oldDelegate.innerSize ||
+        trackSize != oldDelegate.trackSize ||
+        outerSize != oldDelegate.outerSize ||
+        innerPadding != oldDelegate.innerPadding ||
+        showStarTrackLine != oldDelegate.showStarTrackLine ||
+        showText != oldDelegate.showText ||
+        textStyle != oldDelegate.textStyle ||
+        !listEquals(stars, oldDelegate.stars) ||
+        !mapEquals(starsColorMap, oldDelegate.starsColorMap);
   }
 }
 
@@ -433,8 +449,8 @@ class RingSheetPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // TODO: implement shouldRepaint
-    return false;
+  bool shouldRepaint(covariant RingSheetPainter oldDelegate) {
+    return innerRadius != oldDelegate.innerRadius ||
+        outerRadius != oldDelegate.outerRadius;
   }
 }

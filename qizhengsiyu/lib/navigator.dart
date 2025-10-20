@@ -24,6 +24,13 @@ class NavigatorGenerator {
     //       child: const QiZhengSiYuConfigPage(),
     //       // child: ShiJiaQiMenViewPage(),
     //     ),
+    "/qizhengsiyu/config": (context, {arguments}) => MultiProvider(
+          providers: [
+            ChangeNotifierProvider<PanelConfigViewModel>(
+                create: (context) => PanelConfigViewModel(context)),
+          ],
+          child: const QiZhengSiYuConfigPage(),
+        ),
     "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
           providers: [
             ChangeNotifierProvider<BeautyPageViewModel>(
@@ -40,6 +47,7 @@ class NavigatorGenerator {
       final Function? pageContentBuilder = routes[name];
       if (pageContentBuilder != null) {
         final Route route = MaterialPageRoute(
+            settings: settings,
             builder: (context) =>
                 pageContentBuilder(context, arguments: settings.arguments));
         return route;

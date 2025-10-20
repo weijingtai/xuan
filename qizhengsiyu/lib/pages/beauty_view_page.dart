@@ -33,117 +33,24 @@ import '../painter/star_body_ring_painter.dart';
 import '../painter/star_xiu_ring_painter.dart';
 import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
 import '../qi_zheng_si_yu_ui_constant_resources.dart';
-import '../widgets/star_body.dart';
+// star_body.dart import no longer needed after extraction
 import 'beauty_page_viewmodel.dart';
+import 'package:qizhengsiyu/widgets/panel_widget.dart';
+import 'package:qizhengsiyu/widgets/ring_layer.dart';
+import 'package:qizhengsiyu/widgets/star_ring_layer.dart';
+import 'package:qizhengsiyu/widgets/star_track_ring.dart';
+import 'package:qizhengsiyu/widgets/star_body_ring.dart';
+import 'package:qizhengsiyu/widgets/twelve_gong_grid_ring.dart';
+import 'package:qizhengsiyu/widgets/twelve_gong_text_ring.dart';
+import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
+import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
+import 'package:qizhengsiyu/controllers/panel_controller.dart';
+import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
+import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
+import 'package:qizhengsiyu/models/panel_ui_size.dart';
 
-class QiZhengSiYuPanSizeDataModel {
-  // default:
-
-  // late final double centerSize = 172;
-  // late final double diZhi12GongSize = 120;
-  // late final double zodiac12GongSize = 41;
-  // late final double starSeq12GongSize = 360;
-  // late final double destiny12GongSize = 67;
-  // late final double lifeStarRingSize = 16 * 8; // 564
-  // late final double starXiu28RingSize = 96; // 660
-
-  late final double centerSize;
-  late final double diZhi12GongHeight;
-  late final double zodiac12GongHeight;
-  late final double starSeq12GongHeight;
-  late final double destiny12GongHeight;
-  late final double lifeStarRingHeight; // 564
-  late final double starXiu28RingHeight; // 660
-  late final double innerShenShaHeight;
-  late final double outerShenShaHeight;
-
-  double starBodyRadius;
-  double get starBodySize => starBodyRadius * 2;
-  late bool showFateLifeStarRing;
-
-  late double diZhi12GongInner;
-  late double diZhi12GongOuter;
-
-  late double zodiac12GongSizeInner;
-  late double zodiac12GongSizeOuter;
-
-  late double starSeq12GongSizeInner;
-  late double starSeq12GongSizeOuter;
-
-  late double destiny12GongSizeInner;
-  late double destiny12GongSizeOuter;
-
-  late double innerShenShaSizeInner;
-  late double innerShenShaSizeOuter;
-
-  late double outerShenShaSizeInner;
-  late double outerShenShaSizeOuter;
-
-  // double starXiu28RingSizeOuter = 520 + 96; // 616
-  // double starXiu28RingSizeInner = 520 + 96 - 80; // 616 - 80 = 536
-
-  // double fateLifeStarOuterSize = 520 + 96 - 80;
-  // double fateLifeStarTrackSize = 520 + 96 - 80 - 16*3;
-  // double fateLifeStarInnerSize = 436;
-
-  late double innerLifeStarRingOuterSize; //564
-  late double innerLifeStarRingTrackSize;
-  late double innerLifeStarRingInnerSize;
-
-  late double starXiu28RingSizeOuter; // 660
-  late double starXiu28RingSizeInner; // 616 - 80 = 536
-
-  late double outerLifeStarRingInnerSize; // starXiu28RingSizeOuter
-  late double outerLifeStarRingTrackSize;
-  late double outerLifeStarRingOuterSize;
-
-  QiZhengSiYuPanSizeDataModel({
-    required this.starBodyRadius,
-    required this.centerSize,
-    required this.diZhi12GongHeight,
-    required this.zodiac12GongHeight,
-    required this.starSeq12GongHeight,
-    required this.destiny12GongHeight,
-    required this.lifeStarRingHeight,
-    required this.starXiu28RingHeight,
-    required this.showFateLifeStarRing,
-    required this.innerShenShaHeight,
-    required this.outerShenShaHeight,
-  }) {
-    diZhi12GongInner = centerSize;
-    diZhi12GongOuter = centerSize + diZhi12GongHeight * 2;
-
-    zodiac12GongSizeInner = diZhi12GongOuter;
-    zodiac12GongSizeOuter = diZhi12GongOuter + zodiac12GongHeight * 2;
-
-    starSeq12GongSizeInner = zodiac12GongSizeOuter;
-    starSeq12GongSizeOuter = zodiac12GongSizeOuter + starSeq12GongHeight * 2;
-
-    destiny12GongSizeInner = starSeq12GongSizeOuter;
-    destiny12GongSizeOuter = starSeq12GongSizeOuter + destiny12GongHeight * 2;
-
-    innerLifeStarRingInnerSize = destiny12GongSizeOuter;
-    innerLifeStarRingTrackSize =
-        innerLifeStarRingInnerSize + lifeStarRingHeight;
-    innerLifeStarRingOuterSize =
-        innerLifeStarRingInnerSize + lifeStarRingHeight * 2;
-
-    starXiu28RingSizeInner = innerLifeStarRingOuterSize;
-    starXiu28RingSizeOuter = starXiu28RingSizeInner + starXiu28RingHeight * 2;
-
-    outerLifeStarRingInnerSize =
-        starXiu28RingSizeOuter; // starXiu28RingSizeOuter
-    outerLifeStarRingTrackSize = starXiu28RingSizeOuter + lifeStarRingHeight;
-    outerLifeStarRingOuterSize =
-        starXiu28RingSizeOuter + lifeStarRingHeight * 2;
-
-    innerShenShaSizeInner = outerLifeStarRingOuterSize;
-    innerShenShaSizeOuter = innerShenShaSizeInner + innerShenShaHeight * 2;
-
-    outerShenShaSizeInner = innerShenShaSizeOuter;
-    outerShenShaSizeOuter = outerShenShaSizeInner + outerShenShaHeight * 2;
-  }
-}
+// 尺寸模型已迁移至 models/panel_ui_size.dart
 
 class BeautyViewPage extends StatefulWidget {
   const BeautyViewPage({super.key});
@@ -183,6 +90,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   final GlobalKey key1 = GlobalKey();
   final GlobalKey key2 = GlobalKey();
 
+  late PanelController _panelController;
+
   late AnimationController _jupiterController; // 木星
   late AnimationController _saturnController; // 土星
   late AnimationController _venusController; // 金星
@@ -203,15 +112,13 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   late QiZhengSiYuPanSizeDataModel panelSizeDataModel;
 
   Future<void> devInit() async {
+    final vm = context.read<BeautyPageViewModel>();
+    await vm.init();
     final res = await Future.wait([
       loadDiviniation(),
     ]);
-    context
-        .read<BeautyPageViewModel>()
-        .setLifeObserver(res[0] as DivinationInfoModel);
-    context
-        .read<BeautyPageViewModel>()
-        .calculate(context.read<BeautyPageViewModel>().lifeObserver!);
+    vm.setLifeObserver(res[0] as DivinationInfoModel);
+    await vm.calculate(vm.lifeObserver!);
   }
 
   Future<DivinationInfoModel> loadDiviniation() async {
@@ -333,6 +240,41 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         outerShenShaHeight: 90,
         showFateLifeStarRing: true);
 
+    // 创建默认 PanelConfig 并初始化控制器
+    final defaultPanelConfig = PanelConfig(
+      celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
+      houseDivisionSystem: HouseDivisionSystem.equal,
+      panelSystemType: PanelSystemType.tropical,
+      constellationSystemType: ConstellationSystemType.classical,
+      settleLifeType: EnumSettleLifeType.Mao,
+      settleBodyType: EnumSettleBodyType.moon,
+      islifeGongBySunRealTimeLocation: true,
+    );
+
+    _panelController = QiZhengPanelController(
+      config: defaultPanelConfig,
+      basePanel: context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+      daXianPanel: context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
+      innerStars: context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
+      outerStars: context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+      rotationDeg: 30,
+    );
+
+    // 在首帧后读取路由参数并应用配置
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args is PanelConfig) {
+        _panelController.updateConfig(args);
+        final vm = context.read<BeautyPageViewModel>();
+        vm.setOverridePanelConfig(args);
+        vm.init().then((_) {
+          if (vm.lifeObserver != null) {
+            vm.calculate(vm.lifeObserver!);
+          }
+        });
+      }
+    });
+
     // panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
     //     starBodyRadius: 16 + 4,
     //     centerSize: 172,
@@ -365,6 +307,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     showTaiJiDianButtonNotifier.dispose();
     _destiny12GongListNotifier.dispose();
     _selectedTaiJiDestiny12GongListNotifier.dispose();
+    _panelController.dispose();
     super.dispose();
   }
 
@@ -463,6 +406,18 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     }
 
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('七政四余'),
+        actions: [
+          IconButton(
+            tooltip: '配置',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.of(context).pushNamed('/qizhengsiyu/config');
+            },
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -481,21 +436,36 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             //     },
             //   ),
             // ),
-            Container(
-                width: panelMaxSize,
-                height: panelMaxSize,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(),
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Transform.rotate(
-                        angle: 30 * pi / 180,
-                        child: panel(starBodyRadius),
-                      ),
-                      const Expanded(child: SizedBox()),
-                    ])),
+            AspectRatio(
+              aspectRatio: 1,
+              child: LayoutBuilder(
+                builder: (ctx, constraints) {
+                  final panelSize = constraints.biggest.shortestSide;
+                  logger.d("面板计算尺寸为$panelSize");
+                  // 计算缩放比例，确保整个面板在画布内完整可见
+                  final baseCanvasSize =
+                      panelSizeDataModel.outerShenShaSizeOuter;
+                  final scale = panelSize / baseCanvasSize;
+                  return ValueListenableBuilder<double>(
+                    valueListenable: _panelController.rotationDeg,
+                    builder: (ctx, rotation, _) {
+                      return PanelWidget(
+                        canvasSize: panelSize,
+                        rotationDeg: rotation,
+                        child: Transform.scale(
+                          scale: scale < 1 ? scale : 1,
+                          child: SizedBox(
+                            width: baseCanvasSize,
+                            height: baseCanvasSize,
+                            child: panel(starBodyRadius),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
           ],
         ),
       ),
@@ -839,147 +809,150 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         //   ),
         // ),
 
-        // 十二地支宫
-        Transform.rotate(
-          angle: -30 * pi / 180,
-          child: build12DiZhiGong(diZhi12GongOuter * .5, diZhi12GongInner * .5),
+        // 十二地支宫（统一为 RingLayer）
+        RingLayer(
+          showTrack: false,
+          showGrid: _panelController.config.showRingGrid,
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: diZhi12GongInner,
+            outerSize: diZhi12GongOuter,
+          ),
+          bodyRotationAngle: -30 * pi / 180,
+          bodyBuilder: () => build12DiZhiGong(
+            diZhi12GongOuter * .5,
+            diZhi12GongInner * .5,
+          ),
         ),
-        // 黄道十二宫
-        Transform.rotate(
-          angle: -30 * pi / 180,
-          child: zhouTian12GongRing(
-              zodiac12GongSizeInner * .5, zodiac12GongSizeOuter * .5),
+        // 黄道十二宫（统一为 RingLayer）
+        RingLayer(
+          showTrack: false,
+          showGrid: _panelController.config.showRingGrid,
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: zodiac12GongSizeInner,
+            outerSize: zodiac12GongSizeOuter,
+          ),
+          bodyRotationAngle: -30 * pi / 180,
+          bodyBuilder: () => zhouTian12GongRing(
+            zodiac12GongSizeInner * .5,
+            zodiac12GongSizeOuter * .5,
+          ),
         ),
-        // 星次十二宫
-        // drawRingWithTextList(starSeq12GongSizeOuter, 18, starSeqTextList),
-        // 命理十二宫
-        Transform.rotate(
-          angle: -30 * pi / 180,
-          child: buildMingLi12GongRing(
-              destiny12GongSizeInner * .5, destiny12GongSizeOuter * .5),
+        // 命理十二宫（统一为 RingLayer）
+        RingLayer(
+          showTrack: false,
+          showGrid: _panelController.config.showRingGrid,
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: destiny12GongSizeInner,
+            outerSize: destiny12GongSizeOuter,
+          ),
+          bodyRotationAngle: -30 * pi / 180,
+          bodyBuilder: () => buildMingLi12GongRing(
+            destiny12GongSizeInner * .5,
+            destiny12GongSizeOuter * .5,
+          ),
+        ),
+        // 二十八星宿环（统一为 RingLayer）
+        RingLayer(
+          showTrack: true,
+          showGrid: _panelController.config.showRingGrid,
+          trackRotationAngle: rotating * pi / 180,
+          trackBuilder: () => Container(
+            width: starXiu28RingSizeOuter,
+            height: starXiu28RingSizeOuter,
+            alignment: Alignment.center,
+            child: CustomPaint(
+              size: Size(starXiu28RingSizeOuter, starXiu28RingSizeOuter),
+              painter: IndicatorScalePainter(
+                ringWidth: 40,
+                tickLength: 7,
+                indicatorAngle: 45.1,
+              ),
+            ),
+          ),
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: starXiu28RingSizeInner,
+            outerSize: starXiu28RingSizeOuter,
+          ),
+          bodyRotationAngle: rotating * pi / 180,
+          bodyBuilder: () => starXiuRing(starXiu28RingSizeOuter, 40),
         ),
 
-        Transform.rotate(
-          angle: rotating * pi / 180,
-          child: starXiuRing(starXiu28RingSizeOuter, 40),
+        // ShenSha grids refactored into RingLayer below to keep stacking consistent
+        const SizedBox(),
+        const SizedBox(),
+
+        // 本命盘星轨（轨道在下）
+        StarRingLayer(
+          starsListenable:
+              context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+          outerSize: fateLifeStarOuterSize,
+          innerSize: fateLifeStarInnerSize,
+          showTrack: true,
+          showGrid: _panelController.config.showRingGrid,
+          trackRotationAngle: rotating * pi / 180,
+          bodyRotationAngle: -(rotating - 90) * pi / 180,
+          trackBuilder: (stars) => InnerStarTrackRingWidget(
+            stars: stars,
+            outerSize: fateLifeStarOuterSize,
+            innerSize: fateLifeStarInnerSize,
+            trackSize: fateLifeStarTrackSize,
+          ),
+          gridBuilder: twelveGongGridBuilder,
+          bodyBuilder: (stars) => InnerStarBodyRotatingWidget(
+          stars: stars,
+          outerSize: fateLifeStarOuterSize,
+          trackSize: fateLifeStarTrackSize,
+          starBodySize: panelSizeDataModel.starBodySize,
+          allStarsShowNotifier: showStarHuaJiInfoNotifier,
+        ),
         ),
 
-        draw12GongRingGrid(
-          panelSizeDataModel.innerShenShaSizeInner,
-          panelSizeDataModel.innerShenShaSizeOuter,
+        StarRingLayer(
+          starsListenable:
+              context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
+          outerSize: basicLifeStarRingOuterSize,
+          innerSize: basicLifeStarRingInnerSize,
+          showTrack: true,
+          showGrid: _panelController.config.showRingGrid,
+          trackRotationAngle: rotating * pi / 180,
+          bodyRotationAngle: -(rotating - 90) * pi / 180,
+          trackBuilder: (stars) => OuterStarTrackRingWidget(
+          stars: stars,
+          outerSize: basicLifeStarRingOuterSize,
+          innerSize: basicLifeStarRingInnerSize,
+          trackSize: basicLifeStarBodyTrackSize,
         ),
-        draw12GongRingGrid(
-          panelSizeDataModel.outerShenShaSizeInner,
-          panelSizeDataModel.outerShenShaSizeOuter,
+          gridBuilder: twelveGongGridBuilder,
+          bodyBuilder: (stars) => OuterStarBodyRotatingWidget(
+          stars: stars,
+          outerSize: basicLifeStarRingOuterSize,
+          trackSize: basicLifeStarBodyTrackSize,
+          starBodySize: panelSizeDataModel.starBodySize,
+          allStarsShowNotifier: showStarHuaJiInfoNotifier,
+        ),
         ),
 
-        // 大限星轨
-        // 本命盘星轨
-        ValueListenableBuilder<List<UIStarModel>?>(
-            valueListenable:
-                context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
-            builder: (ctx, uiFateStarsList, child) {
-              if (uiFateStarsList == null) {
-                return Container(
-                  width: fateLifeStarOuterSize,
-                  height: fateLifeStarOuterSize,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
-                    border: Border.all(color: Colors.black87, width: 1),
-                  ),
-                );
-              }
-              return Transform.rotate(
-                angle: -(rotating - 90) * pi / 180,
-                child: innerStarBodyRotating(uiFateStarsList),
-              );
-              // return Transform.rotate(
-              //   angle: rotating * pi / 180,
-              //   child: innerStarBodyRotating(uiFateStarsList),
-              // );
-            }),
-        ValueListenableBuilder<List<UIStarModel>?>(
-            valueListenable:
-                context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
-            builder: (ctx, uiFateStarsList, child) {
-              if (uiFateStarsList == null) {
-                return Container(
-                  width: fateLifeStarOuterSize,
-                  height: fateLifeStarOuterSize,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
-                    border: Border.all(color: Colors.black87, width: 1),
-                  ),
-                );
-              }
-              return Transform.rotate(
-                angle: rotating * pi / 180,
-                child: innerStarTrackRing(uiFateStarsList),
-              );
-            }),
-
-        ValueListenableBuilder<List<UIStarModel>?>(
-            valueListenable:
-                context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
-            builder: (ctx, uiBasicStarsList, child) {
-              if (uiBasicStarsList == null) {
-                return Container(
-                  width: basicLifeStarRingOuterSize,
-                  height: basicLifeStarRingOuterSize,
-                  decoration: BoxDecoration(
-                    // color: Colors.yellow,
-                    borderRadius:
-                        BorderRadius.circular(basicLifeStarRingOuterSize),
-                    border: Border.all(color: Colors.black87, width: 1),
-                  ),
-                );
-              }
-              return Transform.rotate(
-                angle: -(rotating - 90) * pi / 180,
-                child: outerStarBodyRotating(uiBasicStarsList),
-              );
-            }),
-        ValueListenableBuilder<List<UIStarModel>?>(
-            valueListenable:
-                context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
-            builder: (ctx, uiBasicStarsList, child) {
-              if (uiBasicStarsList == null) {
-                return Container(
-                  width: basicLifeStarRingOuterSize,
-                  height: basicLifeStarRingOuterSize,
-                  decoration: BoxDecoration(
-                    // color: Colors.yellow,
-                    borderRadius:
-                        BorderRadius.circular(basicLifeStarRingOuterSize),
-                    border: Border.all(color: Colors.black87, width: 1),
-                  ),
-                );
-              }
-              return Transform.rotate(
-                angle: rotating * pi / 180,
-                child: outerStarTrackRing(uiBasicStarsList),
-              );
-            }),
-
-        // 神煞
-        Transform.rotate(
-          angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
-          // angle: 0,
-          child: ValueListenableBuilder<BasePanelModel?>(
+        // 神煞（内圈）
+        RingLayer(
+          showTrack: false,
+          showGrid: _panelController.config.showRingGrid,
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: panelSizeDataModel.innerShenShaSizeInner,
+            outerSize: panelSizeDataModel.innerShenShaSizeOuter,
+          ),
+          bodyRotationAngle: -30 * pi / 180,
+          bodyBuilder: () => ValueListenableBuilder<BasePanelModel?>(
             valueListenable:
                 context.read<BeautyPageViewModel>().uiBasePanelNotifier,
             builder: (ctx, basePanel, child) {
               if (basePanel == null) {
                 return child!;
               }
-              return Transform.rotate(
-                angle: -30 * pi / 180,
-                child: AllShenShaRing(
-                  outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
-                  innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                  shenShaMapper: basePanel.shenShaMapper,
-                  gongOrder: EnumTwelveGong.listAll,
-                ),
+              return AllShenShaRing(
+                outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
+                innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
+                shenShaMapper: basePanel.shenShaMapper,
+                gongOrder: EnumTwelveGong.listAll,
               );
             },
             child: Container(
@@ -989,25 +962,27 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           ),
         ),
 
-        // 流年神煞
-        Transform.rotate(
-          angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
-          // angle: 0,
-          child: ValueListenableBuilder<DaXianPanelModel?>(
+        // 流年神煞（外圈）
+        RingLayer(
+          showTrack: false,
+          showGrid: _panelController.config.showRingGrid,
+          gridBuilder: () => TwelveGongGridRingWidget(
+            innerSize: panelSizeDataModel.outerShenShaSizeInner,
+            outerSize: panelSizeDataModel.outerShenShaSizeOuter,
+          ),
+          bodyRotationAngle: -30 * pi / 180,
+          bodyBuilder: () => ValueListenableBuilder<DaXianPanelModel?>(
               valueListenable:
                   context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
               builder: (ctx, daXianPanel, child) {
                 if (daXianPanel == null) {
                   return child!;
                 }
-                return Transform.rotate(
-                  angle: -30 * pi / 180,
-                  child: AllShenShaRing(
-                    outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
-                    innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
-                    shenShaMapper: daXianPanel.shenShaMapper,
-                    gongOrder: EnumTwelveGong.listAll,
-                  ),
+                return AllShenShaRing(
+                  outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
+                  innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
+                  shenShaMapper: daXianPanel.shenShaMapper,
+                  gongOrder: EnumTwelveGong.listAll,
                 );
               },
               child: Container(
@@ -1023,9 +998,16 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   context.read<BeautyPageViewModel>().uiBasePanelNotifier,
               builder: (ctx, baseModel, _) {
                 if (baseModel == null) {
+                  // 显示中心占位以避免空白
                   return Container(
-                    width: panelSizeDataModel.outerShenShaSizeOuter,
-                    height: panelSizeDataModel.outerShenShaSizeOuter,
+                    width: centerSize,
+                    height: centerSize,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(centerSize),
+                      border: Border.all(color: Colors.black54, width: 1),
+                    ),
+                    child: const Text("加载中..."),
                   );
                 }
                 return center(baseModel);
@@ -1435,90 +1417,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  Widget innerStarBodyRotating(List<UIStarModel> uiBasicLifeStarList) {
-    return Container(
-        width: fateLifeStarOuterSize,
-        height: fateLifeStarOuterSize,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(fateLifeStarOuterSize),
-          border: Border.all(color: Colors.black87, width: 1),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: uiBasicLifeStarList
-              .map((s) => outerEachStarBodyRotation(s))
-              .toList(),
-        ));
-  }
-
-  Widget outerStarBodyRotating(List<UIStarModel> uiBasicLifeStarList) {
-    return Container(
-        width: basicLifeStarRingOuterSize,
-        height: basicLifeStarRingOuterSize,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(basicLifeStarRingOuterSize),
-          border: Border.all(color: Colors.black87, width: 1),
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: uiBasicLifeStarList
-              .map((s) => outerEachStarBodyRotation(s))
-              .toList(),
-        ));
-  }
-
-  Widget outerEachStarBodyRotation(UIStarModel star) {
-    TextStyle starStatusStyle =
-        const TextStyle(height: 1, color: Colors.black87, fontSize: 12);
-    return AnimatedRotation(
-      turns: -star.angle / 360,
-      duration: const Duration(milliseconds: 400),
-      child: Container(
-        height: basicLifeStarRingOuterSize,
-        width: panelSizeDataModel.starBodySize,
-        padding: EdgeInsets.symmetric(
-            vertical: (basicLifeStarRingOuterSize -
-                    panelSizeDataModel.outerLifeStarRingTrackSize -
-                    panelSizeDataModel.starBodySize) *
-                .4),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            AnimatedRotation(
-              duration: const Duration(milliseconds: 400),
-              turns: (star.angle - 120) / 360,
-              child: starBody(star),
-            ),
-            const Expanded(child: SizedBox()),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget starBody(UIStarModel starBody) {
-    TextStyle starBodyTextStyle = GoogleFonts.notoSans(
-        fontSize: 24.0,
-        height: 1,
-        color: QiZhengSiYuUIConstantResources.starsColorMap[starBody.star]!,
-        fontWeight: FontWeight.normal,
-        shadows: [
-          BoxShadow(
-            color: Colors.black38.withOpacity(.3),
-            spreadRadius: 1,
-            blurRadius: 1,
-            offset: const Offset(1, 1), // changes position of shadow
-          )
-        ]);
-
-    return StarBody(
-      starSize: panelSizeDataModel.starBodySize,
-      starBody: starBody,
-      textStyle: starBodyTextStyle,
-      allStarsShowNotifier: showStarHuaJiInfoNotifier,
-    );
-  }
+  // Star body rotation functions have been extracted to
+  // `qizhengsiyu/lib/widgets/star_body_ring.dart` as
+  // `InnerStarBodyRotatingWidget` and `OuterStarBodyRotatingWidget`.
 
   Widget outerStarTrackRing(List<UIStarModel> uiBasicLifeStarList) {
     print("-------- ${uiBasicLifeStarList.length}");
@@ -1976,64 +1877,71 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   // 二十八星宿 刻度环
   Widget starXiuRing(double size, double ringWidth) {
     double outerRadius = size / 2;
-    return Container(
-        width: size, //
-        height: size,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          border: Border.all(color: Colors.grey.withOpacity(.4), width: 1),
-          // color: Colors.black.withOpacity(.1),
-          borderRadius: BorderRadius.circular(outerRadius),
-        ),
-        child: CustomPaint(
-          size: Size(size, size),
-          painter: StarXiuRingPainter(
-            outerSize: starXiu28RingSizeOuter,
-            innerSize: starXiu28RingSizeInner,
-            mapper: QiZhengSiYuConstantResources
-                .ZodiacTropicalModernStarsInnSystemMapper,
-            sevenZhengColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
+    return RepaintBoundary(
+      child: Container(
+          width: size, //
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            border: Border.all(color: Colors.grey.withOpacity(.4), width: 1),
+            // color: Colors黑...withOpacity(.1),
+            borderRadius: BorderRadius.circular(outerRadius),
           ),
-        ));
+          child: CustomPaint(
+            size: Size(size, size),
+            painter: StarXiuRingPainter(
+              outerSize: starXiu28RingSizeOuter,
+              innerSize: starXiu28RingSizeInner,
+              mapper: QiZhengSiYuConstantResources
+                  .ZodiacTropicalModernStarsInnSystemMapper,
+              sevenZhengColorMapper:
+                  QiZhengSiYuUIConstantResources.zhengColorMap,
+            ),
+          )),
+    );
   }
 
   Widget rulingRing(double size, double ringWidth) {
     double outerRadius = size / 2;
-    return Align(
-      alignment: Alignment.center,
-      child: Stack(
-        children: [
-          Container(
-              width: size, //
-              height: size,
-              alignment: Alignment.center,
-              child: CustomPaint(
-                size: Size(size, size),
-                painter: IndicatorScalePainter(
-                    ringWidth: ringWidth, tickLength: 7, indicatorAngle: 45.1),
-              )),
-          Container(
-              width: size, //
-              height: size,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border:
-                    Border.all(color: Colors.grey.withOpacity(.4), width: 1),
-                // color: Colors.black.withOpacity(.1),
-                borderRadius: BorderRadius.circular(outerRadius),
-              ),
-              child: CustomPaint(
-                size: Size(size, size),
-                painter: StarXiuRingPainter(
-                  outerSize: starXiu28RingSizeOuter,
-                  innerSize: starXiu28RingSizeInner,
-                  mapper: QiZhengSiYuConstantResources
-                      .ZodiacTropicalModernStarsInnSystemMapper,
-                  sevenZhengColorMapper:
-                      QiZhengSiYuUIConstantResources.zhengColorMap,
+    return RepaintBoundary(
+      child: Align(
+        alignment: Alignment.center,
+        child: Stack(
+          children: [
+            Container(
+                width: size, //
+                height: size,
+                alignment: Alignment.center,
+                child: CustomPaint(
+                  size: Size(size, size),
+                  painter: IndicatorScalePainter(
+                      ringWidth: ringWidth,
+                      tickLength: 7,
+                      indicatorAngle: 45.1),
+                )),
+            Container(
+                width: size, //
+                height: size,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  border:
+                      Border.all(color: Colors.grey.withOpacity(.4), width: 1),
+                  // color: Colors黑...withOpacity(.1),
+                  borderRadius: BorderRadius.circular(outerRadius),
                 ),
-              )),
-        ],
+                child: CustomPaint(
+                  size: Size(size, size),
+                  painter: StarXiuRingPainter(
+                    outerSize: starXiu28RingSizeOuter,
+                    innerSize: starXiu28RingSizeInner,
+                    mapper: QiZhengSiYuConstantResources
+                        .ZodiacTropicalModernStarsInnSystemMapper,
+                    sevenZhengColorMapper:
+                        QiZhengSiYuUIConstantResources.zhengColorMap,
+                  ),
+                )),
+          ],
+        ),
       ),
     );
   }
@@ -2071,436 +1979,22 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         ));
   }
 
-  Widget destiny12Gong(double innerSize, double outerSize,
-      List<String> contentList, List<String>? zhuanTaiJiList) {
-    return Transform.rotate(
-      angle: 30 * pi / 180,
-      child: ClipOval(
-        child: MouseRegion(
-          hitTestBehavior: HitTestBehavior.translucent,
-          onEnter: (event) => showTaiJiDianButtonNotifier.value = true,
-          onExit: (event) => showTaiJiDianButtonNotifier.value = false,
-          child: Semantics(
-            explicitChildNodes: true,
-            child: Container(
-              alignment: Alignment.center,
-              height: outerSize,
-              width: outerSize,
-              // color: Colors.blue.withOpacity(.1),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(outerSize),
-              ),
-              child: Stack(
-                children: [
-                  ...List.generate(
-                    12,
-                    (i) => Transform.rotate(
-                        angle: -(i * 30 + 75) * pi / 180,
-                        // angle: 0,
-                        origin: Offset.zero,
-                        child: eachDestiny12Gong(contentList[i],
-                            zhuanTaiJiList?[i], i >= 3 && i <= 8)),
-                  )
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  // 命理十二宫环已抽取为组件：`DestinyTwelveGongRingWidget`，位于
+  // `qizhengsiyu/lib/widgets/destiny_twelve_gong_ring.dart`。
 
-    return Transform.rotate(
-      angle: 30 * pi / 180,
-      child: PhysicalModel(
-        shape: BoxShape.circle,
-        color: Colors.red,
-        clipBehavior: Clip.antiAlias,
-        child: MouseRegion(
-          onEnter: (event) => showTaiJiDianButtonNotifier.value = true,
-          onExit: (event) => showTaiJiDianButtonNotifier.value = false,
-          child: Container(
-            alignment: Alignment.center,
-            height: outerSize,
-            width: outerSize,
-            // color: Colors.blue.withOpacity(.1),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              // borderRadius: BorderRadius.circular(outerSize),
-              color: Colors.yellow.withOpacity(.2),
-            ),
-            child: Stack(
-              children: [
-                ...List.generate(
-                  12,
-                  (i) => Transform.rotate(
-                      angle: -(i * 30 + 75) * pi / 180,
-                      // angle: 0,
-                      origin: Offset.zero,
-                      child: eachDestiny12Gong(contentList[i],
-                          zhuanTaiJiList?[i], i >= 3 && i <= 8)),
-                )
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // 命理十二宫宫位单元已抽取至组件私有方法，参见
+  // `DestinyTwelveGongRingWidget._eachDestiny12Gong`。
 
-  Widget eachDestiny12Gong(
-      String gongName, String? zhuanTaiJiGongName, bool reversedDisplay) {
-    Widget taiJiButton = InkWell(
-      borderRadius: BorderRadius.circular(48),
-      onTap: () {
-        selectTaiJiDestinyByGongName(gongName);
-      },
-      child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4),
-          width: 64,
-          alignment: Alignment.center,
-          // decoration: BoxDecoration(
-          //   color: Colors.teal[100]!.withOpacity(.2),
-          //   borderRadius: BorderRadius.circular(10),
-          // ),
-          child: ValueListenableBuilder(
-              valueListenable: showTaiJiDianButtonNotifier,
-              builder: (ctx, show, _) {
-                return AnimatedOpacity(
-                  duration: const Duration(milliseconds: 200),
-                  opacity: show ? .6 : .2,
-                  child: Text(
-                    "转太极",
-                    style: destinyTextStyle.copyWith(
-                        fontSize: 18,
-                        color: Colors.teal,
-                        fontWeight: FontWeight.w300,
-                        decorationStyle: ui.TextDecorationStyle.solid),
-                  ),
-                );
-              })),
-    );
-    if (zhuanTaiJiGongName != null) {
-      taiJiButton = InkWell(
-        onTap: () {
-          unselectTaiJiDestiny();
-        },
-        child: Container(
-            width: 64,
-            alignment: Alignment.center,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Expanded(child: SizedBox()),
-                Text(
-                  zhuanTaiJiGongName,
-                  style: destinyTextStyle.copyWith(
-                      fontSize: 18,
-                      color: zhuanTaiJiGongName == "命宫"
-                          ? Colors.red
-                          : destinyTextStyle.color,
-                      fontWeight: zhuanTaiJiGongName == "命宫"
-                          ? FontWeight.w500
-                          : FontWeight.w300,
-                      decorationStyle: ui.TextDecorationStyle.solid),
-                ),
-                InkWell(
-                    onTap: () {
-                      unselectTaiJiDestiny();
-                    },
-                    child: const Icon(Icons.dangerous_outlined,
-                        size: 14, color: Colors.grey))
-              ],
-            )),
-      );
-    }
-    Widget gong = AnimatedOpacity(
-        opacity: zhuanTaiJiGongName == null ? 1 : .4,
-        duration: const Duration(milliseconds: 200),
-        child: Text(gongName,
-            style: destinyTextStyle.copyWith(
-              color: gongName == "命宫" ? Colors.red : destinyTextStyle.color,
-            )));
-    // Widget gong = Text(
-    //   gongName,
-    //   style: gongName == "命宫"
-    //       ? destinyTextStyle.copyWith(color: Colors.red)
-    //       : destinyTextStyle,
-    // );
-    List<Widget> widgets = [];
-    if (reversedDisplay) {
-      widgets.addAll([taiJiButton, gong]);
-    } else {
-      widgets.addAll([gong, taiJiButton]);
-    }
-    return Column(
-      children: [
-        Expanded(
-          child: Container(),
-        ),
-        Transform.rotate(
-          angle: reversedDisplay ? pi : 0,
-          child: Container(
-              alignment: Alignment.bottomCenter,
-              // height: 36,
-              width: 64,
-              child: Column(
-                children: widgets,
-              )),
-        ),
-      ],
-    );
-  }
+  // 命理十二宫文本环（纯文本演示）已移除，统一使用组件构建。
 
-  Widget drawDestiny12Gong(
-    double innerSize,
-    double outerSize,
-    List<String> contentList,
-    // List<Text> contentList,
-  ) {
-    return Transform.rotate(
-      angle: 30 * pi / 180,
-      child: Container(
-        alignment: Alignment.center,
-        height: outerSize,
-        width: outerSize,
-        // color: Colors.blue.withOpacity(.1),
-        decoration: BoxDecoration(
-          color: Colors.blue.withOpacity(.1),
-          // borderRadius: BorderRadius.circular(outerSize)
-        ),
-        child: Stack(
-          children: [
-            ...List.generate(
-                12,
-                (i) => Transform.rotate(
-                      angle: -(i * 30 + 75) * pi / 180,
-                      // angle: 0,
-                      origin: Offset.zero,
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: Container(),
-                          ),
-                          Transform.rotate(
-                            angle: (i >= 3 && i <= 8) ? pi : 0,
-                            child: Container(
-                                alignment: Alignment.bottomCenter,
-                                height: 36,
-                                width: 64,
-                                color: Colors.red.withOpacity(.1),
-                                // child: e.value,
-                                child: Text(
-                                  contentList[i],
-                                  style: contentList[i] == "命宫"
-                                      ? destinyTextStyle.copyWith(
-                                          color: Colors.red)
-                                      : destinyTextStyle,
-                                )),
-                          )
-                        ],
-                      ),
-                    ))
-          ],
-        ),
-      ),
-    );
-  }
+  // 命理十二宫选中太极环已抽取为组件：`SelectedTaiJiDestinyTwelveGongRingWidget`，位于
+  // `qizhengsiyu/lib/widgets/destiny_twelve_gong_ring.dart`。
 
-  Widget drawSelectedTaiJiDestiny12Gong(
-    double innerSize,
-    double outerSize,
-    List<String>? contentList,
-    // List<Text> contentList,
-  ) {
-    return Transform.rotate(
-      angle: 30 * pi / 180,
-      // angle: 0,
-      child: Container(
-        alignment: Alignment.center,
-        height: outerSize,
-        width: outerSize,
-        decoration: BoxDecoration(
-            // color: Colors.orange.withOpacity(.1),
-            borderRadius: BorderRadius.circular(outerSize)),
-        child: Stack(
-          children: [
-            if (contentList != null)
-              ...List.generate(
-                  12,
-                  (i) => Transform.rotate(
-                        angle: -(i * 30 + 75) * pi / 180,
-                        origin: Offset.zero,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Container(),
-                            ),
-                            Transform.rotate(
-                              angle: (i >= 3 && i <= 9) ? pi : 0,
-                              child: Container(
-                                  height: 42,
-                                  width: 64,
-                                  alignment: Alignment.center,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.center,
-                                    children: [
-                                      const Expanded(child: SizedBox()),
-                                      // Icon(Icons.dangerous,size: 14,color: Colors.transparent,),
-                                      Text(
-                                        contentList[i],
-                                        style: destinyTextStyle.copyWith(
-                                            fontSize: 18,
-                                            color: contentList[i] == "命宫"
-                                                ? Colors.red
-                                                : Colors.black45,
-                                            fontWeight: contentList[i] == "命宫"
-                                                ? FontWeight.w500
-                                                : FontWeight.w300,
-                                            decorationStyle:
-                                                ui.TextDecorationStyle.solid),
-                                      ),
-                                      InkWell(
-                                          onTap: () {
-                                            unselectTaiJiDestiny();
-                                          },
-                                          child: const Icon(
-                                              Icons.dangerous_outlined,
-                                              size: 14,
-                                              color: Colors.grey))
-                                    ],
-                                  )),
-                            ),
-                            const SizedBox(
-                              height: 4,
-                            )
-                          ],
-                        ),
-                      )),
-            if (contentList == null)
-              ...List.generate(
-                  12,
-                  (i) => Transform.rotate(
-                        angle: -(i * 30 + 75) * pi / 180,
-                        // angle: 0,
-                        origin: Offset.zero,
-                        child: Column(
-                          children: [
-                            Expanded(
-                              child: Container(),
-                            ),
-                            Transform.rotate(
-                              angle: (i >= 3 && i <= 8) ? pi : 0,
-                              child: InkWell(
-                                onTap: () {
-                                  selectTaiJiDestiny(i);
-                                },
-                                child: ValueListenableBuilder(
-                                    valueListenable:
-                                        showTaiJiDianButtonNotifier,
-                                    builder: (ctx, isShow, child) {
-                                      return isShow
-                                          ? child!
-                                          : const SizedBox(
-                                              height: 24,
-                                            );
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 4),
-                                      width: 64,
-                                      alignment: Alignment.center,
-                                      decoration: BoxDecoration(
-                                        color:
-                                            Colors.teal[100]!.withOpacity(.2),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        "太极点",
-                                        style: destinyTextStyle.copyWith(
-                                            fontSize: 18,
-                                            color: Colors.black45,
-                                            fontWeight: FontWeight.w300,
-                                            decorationStyle:
-                                                ui.TextDecorationStyle.solid),
-                                      ),
-                                    )),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 12,
-                            )
-                          ],
-                        ),
-                      ))
-          ],
-        ),
-      ),
-    );
-  }
+  // Grid-only ring is now provided by `TwelveGongGridRingWidget` in
+  // `qizhengsiyu/lib/widgets/twelve_gong_grid_ring.dart`.
 
-  Widget draw12GongRingGrid(double innerSize, double outerSize,
-      {double innerPadding = 2}) {
-    double outerRadius = outerSize * .5;
-    double innerRadius = innerSize * .5;
-    return Container(
-        alignment: Alignment.center,
-        height: outerSize,
-        width: outerSize,
-        decoration: BoxDecoration(
-          // color: Colors.red.withOpacity(.1),
-          borderRadius: BorderRadius.circular(outerSize),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-        child: Transform.rotate(
-          angle: 75 * pi / 180,
-          // angle: 0,
-          origin: Offset.zero,
-          child: CustomPaint(
-            size: Size(outerSize, outerSize),
-            painter: RingSheetPainter(
-              innerRadius: innerRadius,
-              outerRadius: outerRadius,
-            ),
-          ),
-        ));
-  }
-
-  Widget draw12GongRingText(
-      double innerSize, double outerSize, List<Text> contentList,
-      {double innerPadding = 2}) {
-    double outerRadius = outerSize * .5;
-    double innerRadius = innerSize * .5;
-    return Container(
-        alignment: Alignment.center,
-        height: outerSize,
-        width: outerSize,
-        decoration: BoxDecoration(
-          // color: Colors.red.withOpacity(.1),
-          borderRadius: BorderRadius.circular(outerSize),
-          border: Border.all(color: Colors.black, width: 1),
-        ),
-        child: Transform.rotate(
-          angle: 75 * pi / 180,
-          // angle: 0,
-          origin: Offset.zero,
-          child: CustomPaint(
-            size: Size(outerSize, outerSize),
-            painter: TextCircleRingPainter(
-              innerRadius: innerRadius,
-              outerRadius: outerRadius,
-              textList: contentList,
-              isAntiClockwise: true,
-              innerPadding: 0,
-              isReverseText: false,
-              isHorizontalText: true,
-            ),
-          ),
-        ));
-  }
+  // 文本环已抽取为组件：`TwelveGongTextRingWidget`，位于
+  // `qizhengsiyu/lib/widgets/twelve_gong_text_ring.dart`。
 
   // 周天12宫
   Widget zhouTian12GongRing(double innerSize, double outerSize) {
@@ -2518,18 +2012,45 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   }
 
   Widget buildMingLi12GongRing(double innerSize, double outerSize) {
-    return ValueListenableBuilder<BasePanelModel?>(
-        valueListenable:
-            context.read<BeautyPageViewModel>().uiBasePanelNotifier,
-        builder: (ctx, basePanel, child) {
-          if (basePanel == null) return child!;
-          final gongStrEntry = basePanel.twelveGongMapper.entries
-              .map((en) => MapEntry(en.key, [en.value.name]));
-          final resultMapper = Map.fromEntries(gongStrEntry);
-          return generateDefault12GongRing(innerSize, outerSize, resultMapper);
-        },
-        child: generateDefault12GongRing(
-            innerSize, outerSize, defaultDestiny12GongMapper));
+    return Stack(
+      children: [
+        ValueListenableBuilder<BasePanelModel?>(
+          valueListenable: context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+          builder: (ctx, basePanel, child) {
+            final List<String> contentList = basePanel == null
+                ? defaultDestiny12GongMapper.values
+                    .map((arr) => arr.first)
+                    .toList(growable: false)
+                : basePanel.twelveGongMapper.values
+                    .map((v) => v.name)
+                    .toList(growable: false);
+            return DestinyTwelveGongRingWidget(
+              innerSize: innerSize,
+              outerSize: outerSize,
+              contentList: contentList,
+              textStyle: destinyTextStyle,
+              showTaiJiButtonNotifier: showTaiJiDianButtonNotifier,
+              onSelectTaiJiByGongName: selectTaiJiDestinyByGongName,
+              onUnselectTaiJi: unselectTaiJiDestiny,
+            );
+          },
+        ),
+        ValueListenableBuilder<List<String>?>(
+          valueListenable: _selectedTaiJiDestiny12GongListNotifier,
+          builder: (ctx, selectedList, child) {
+            return SelectedTaiJiDestinyTwelveGongRingWidget(
+              innerSize: innerSize,
+              outerSize: outerSize,
+              contentList: selectedList,
+              textStyle: destinyTextStyle,
+              showTaiJiDianButtonNotifier: showTaiJiDianButtonNotifier,
+              onSelectTaiJi: selectTaiJiDestiny,
+              onUnselectTaiJi: unselectTaiJiDestiny,
+            );
+          },
+        ),
+      ],
+    );
   }
 
   Map<EnumTwelveGong, List<String>> defaultStarSeq12GongMapper = {
@@ -2576,15 +2097,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     EnumTwelveGong.Xu: ["兄弟"],
     EnumTwelveGong.Hai: ["财帛"],
   };
-  Widget generateDefault12GongRing(double innerSize, double outerSize,
-      Map<EnumTwelveGong, List<String>> mapper) {
-    return Normal12GongRing(
-      outerRadius: outerSize,
-      innerRadius: innerSize,
-      baseGongOffsetAngle: 2 * 30,
-      shenShaMapper: mapper,
-    );
-  }
+  // 默认十二宫环构建函数已迁移至：
+  // `qizhengsiyu/lib/widgets/twelve_gong_default_ring.dart`。
+  // 继续使用同名方法 `generateDefault12GongRing`。
 
   Widget draw12GongRing(
       double innerSize, double outerSize, List<Text> contentList,

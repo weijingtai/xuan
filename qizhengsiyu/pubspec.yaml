@@ -41,7 +41,7 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_city_picker: ^2.1.1
   board_datetime_picker: 2.1.0
-  flutter_sliding_toast: ^1.4.2
+  flutter_sliding_toast: ^1.5.2
   uuid: ^4.5.1
 
   slide_switcher: ^1.1.2

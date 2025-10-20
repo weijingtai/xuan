@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'dart:math' as math;
@@ -329,7 +330,12 @@ class StarXiuRingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant StarXiuRingPainter oldDelegate) {
+    return outerSize != oldDelegate.outerSize ||
+        innerSize != oldDelegate.innerSize ||
+        tickLength != oldDelegate.tickLength ||
+        longTickLength != oldDelegate.longTickLength ||
+        !mapEquals(mapper, oldDelegate.mapper) ||
+        !mapEquals(sevenZhengColorMapper, oldDelegate.sevenZhengColorMapper);
   }
 }

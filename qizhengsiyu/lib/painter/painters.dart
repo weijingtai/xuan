@@ -186,8 +186,14 @@ class MyCirclePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant MyCirclePainter oldDelegate) {
+    return radians != oldDelegate.radians ||
+        starAngle != oldDelegate.starAngle ||
+        starName != oldDelegate.starName ||
+        offsetTimes != oldDelegate.offsetTimes ||
+        toOuter != oldDelegate.toOuter ||
+        textStyle != oldDelegate.textStyle ||
+        backgroundColor != oldDelegate.backgroundColor;
   }
 }
 
@@ -259,8 +265,10 @@ class IndicatorScalePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant IndicatorScalePainter oldDelegate) {
+    return indicatorAngle != oldDelegate.indicatorAngle ||
+        ringWidth != oldDelegate.ringWidth ||
+        tickLength != oldDelegate.tickLength;
   }
 }
 
@@ -452,7 +460,11 @@ class StarBodyPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant StarBodyPainter oldDelegate) {
+    return star != oldDelegate.star ||
+        radians != oldDelegate.radians ||
+        toOuter != oldDelegate.toOuter ||
+        textStyle != oldDelegate.textStyle ||
+        backgroundColor != oldDelegate.backgroundColor;
   }
 }

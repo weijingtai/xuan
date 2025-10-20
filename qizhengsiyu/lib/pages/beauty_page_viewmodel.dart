@@ -167,6 +167,11 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 使用 late 关键字表示在使用前会被初始化，通常在 calculate 方法中。
   late final GenerateBasePanelService _generateBasePanelService;
 
+  PanelConfig? _overridePanelConfig;
+  void setOverridePanelConfig(PanelConfig config) {
+    _overridePanelConfig = config;
+  }
+
   // MARK: - Constructor
 
   /// QiZhengSiYuViewModel 构造函数。
@@ -268,13 +273,13 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 这是触发所有计算的主入口。
   /// [observerPosition]: 包含出生信息、行限时间、经纬度、时区等观测者信息。
   Future<void> calculate(ObserverPosition observerPosition) async {
-    // // 确保管理器和服务已初始化
+    // // 确保管理器服务和已初始化
     // if (_shenShaManager == null || _huaYaoManager == null) {
     //   await init(); // 如果未初始化则先初始化
     // }
     // 更新服务中的观测者位置
     _generateBasePanelService = GenerateBasePanelService(
-        panelConfig: _generatePanelConfig(), // 默认配置
+        panelConfig: _overridePanelConfig ?? _generatePanelConfig(),
         shenShaManager: shenShaManager,
         huaYaoManager: huaYaoManager,
         observerPosition: observerPosition,

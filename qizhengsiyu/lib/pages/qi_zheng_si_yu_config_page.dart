@@ -642,6 +642,8 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
 
       // 调用回调函数
       // widget.onConfigComplete(config);
+      // 跳转到面板页并传递配置
+      Navigator.of(context).pushNamed('/qizhengsiyu/panel', arguments: config);
     } catch (e) {
       // 关闭加载对话框
       Navigator.of(context).pop();

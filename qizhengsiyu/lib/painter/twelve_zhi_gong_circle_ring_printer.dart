@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:flutter/foundation.dart';
 
 class TwelveZhiGongCircleRingPrinter extends CustomPainter {
   final double innerRadius;
@@ -287,7 +288,17 @@ class TwelveZhiGongCircleRingPrinter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(CustomPainter old) {
-    return false;
+  bool shouldRepaint(covariant TwelveZhiGongCircleRingPrinter old) {
+    return innerRadius != old.innerRadius ||
+        outerRadius != old.outerRadius ||
+        isReverseText != old.isReverseText ||
+        isHorizontalText != old.isHorizontalText ||
+        isAntiClockwise != old.isAntiClockwise ||
+        withBackgroundColor != old.withBackgroundColor ||
+        innerPadding != old.innerPadding ||
+        outerPadding != old.outerPadding ||
+        textStyle != old.textStyle ||
+        !listEquals(twelveGongList, old.twelveGongList) ||
+        !mapEquals(starColorMapper, old.starColorMapper);
   }
 }

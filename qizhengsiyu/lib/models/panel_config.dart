@@ -33,9 +33,11 @@ class PanelConfig {
   EnumSettleBodyType settleBodyType;
   EnumTwelveGong bodyCountingToGong;
 
-  /// 立命宫是否以真太阳时计算, 默认以实时太阳时计算，否则根据月令不同，确定太阳所在宫位 如：“子月在寅，丑月在丑，寅月在亥。。。。”
+  /// 立命宫是否以真太阳时计算, 默认以实时太阳时计算，否则根据月令不同，确定太阳所在宫位 如：“子月在寅，丑月在丑，寅月在亥。。。。"
   bool islifeGongBySunRealTimeLocation;
 
+  /// 是否显示径向网格（用于所有环的分宫刻度）
+  bool showRingGrid;
   /// UI 是否启动上升点 --- 移动至UI部分
   // bool withAscendant;
 
@@ -70,6 +72,7 @@ class PanelConfig {
     required this.islifeGongBySunRealTimeLocation,
     this.lifeCountingToGong = EnumTwelveGong.Mao,
     this.bodyCountingToGong = EnumTwelveGong.You,
+    this.showRingGrid = true,
   });
   // copy with
   PanelConfig copyWith({
@@ -91,6 +94,7 @@ class PanelConfig {
     /// 身宫方式
     EnumSettleBodyType? settleBodyType,
     bool? lifeGongBySunRealTimeLocation,
+    bool? showRingGrid,
   }) {
     return PanelConfig(
       celestialCoordinateSystem:
@@ -103,6 +107,9 @@ class PanelConfig {
       settleBodyType: settleBodyType ?? this.settleBodyType,
       islifeGongBySunRealTimeLocation:
           lifeGongBySunRealTimeLocation ?? this.islifeGongBySunRealTimeLocation,
+      showRingGrid: showRingGrid ?? this.showRingGrid,
+      lifeCountingToGong: lifeCountingToGong,
+      bodyCountingToGong: bodyCountingToGong,
     );
   }
 
