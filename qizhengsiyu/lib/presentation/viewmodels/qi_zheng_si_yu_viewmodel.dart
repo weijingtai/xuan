@@ -1,4 +1,5 @@
 import 'package:common/enums/enum_stars.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/observer_position.dart';
@@ -25,6 +26,11 @@ import 'package:qizhengsiyu/pages/StarsResolver.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
 import 'package:qizhengsiyu/models/panel_config.dart' as UIPanelConfig; // UI层的PanelConfig
+import 'package:common/module.dart'; // DivinationInfoModel
+import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/models/divination_datetime.dart';
+import 'package:common/datamodel/location.dart';
+import 'package:common/enums.dart';
 
 /// 七政四余 ViewModel - MVVM架构 + UI兼容层
 ///
@@ -54,14 +60,23 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// 本命盘数据 - 用于 ValueListenableBuilder
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier = ValueNotifier(null);
 
+  /// 获取 ValueListenable 类型的 basePanel (用于PanelController)
+  ValueListenable<BasePanelModel?> get uiBasePanelListenable => uiBasePanelNotifier;
+
   /// 大限盘数据 - 用于 ValueListenableBuilder
   final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier = ValueNotifier(null);
 
   /// 本命星体UI数据 - 用于 ValueListenableBuilder
   final ValueNotifier<List<UIStarModel>?> uiBasicLifeStarsNotifier = ValueNotifier(null);
 
+  /// 获取 ValueListenable 类型的 basicLifeStars (用于PanelController)
+  ValueListenable<List<UIStarModel>?> get uiBasicLifeStarsListenable => uiBasicLifeStarsNotifier;
+
   /// 大限星体UI数据 - 用于 ValueListenableBuilder
   final ValueNotifier<List<UIStarModel>?> uiFateLifeStarsNotifier = ValueNotifier(null);
+
+  /// 获取 ValueListenable 类型的 fateLifeStars (用于PanelController)
+  ValueListenable<List<UIStarModel>?> get uiFateLifeStarsListenable => uiFateLifeStarsNotifier;
 
   /// 观察者位置数据 - 用于 ValueListenableBuilder
   final ValueNotifier<ObserverPosition?> baseObserverPositionNotifier = ValueNotifier(null);
@@ -111,6 +126,64 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   Future<void> init() async {
     await zhouTianModelManager.load();
     // TODO: 加载其他必要的数据源
+  }
+
+  // ==================== UI兼容层: 数据转换方法 ====================
+  /// 设置生命观察者位置 - UI兼容方法
+  ///
+  /// 从 DivinationInfoModel 提取观察者信息并转换为 ObserverPosition
+  /// 此方法保持与旧UI层相同的签名
+  void setLifeObserver(DivinationInfoModel divinationInfoModel) {
+    _lifeObserver = _generateLifeObserverPosition(divinationInfoModel);
+    baseObserverPositionNotifier.value = _lifeObserver;
+  }
+
+  /// 从 DivinationInfoModel 生成 ObserverPosition
+  ObserverPosition _generateLifeObserverPosition(DivinationInfoModel divinationInfoModel) {
+    BaseDivinationDatetimeDataModel datetimeData = divinationInfoModel.divinationDatetime;
+
+    // 找到对应的占卜时间信息
+    DivinationDatetimeModel datetimeModel = datetimeData.timingInfoListJson!
+        .firstWhere((t) => t.uuid == datetimeData.timingInfoUuid)!;
+
+    // 根据观察者类型确定坐标
+    Coordinates coordinates;
+    switch (datetimeModel.observer.type) {
+      case EnumDatetimeType.standard:
+      case EnumDatetimeType.removeDST:
+        coordinates = datetimeModel.observer.location!.address!.province.coordinates!;
+        break;
+      case EnumDatetimeType.meanSolar:
+        coordinates = datetimeModel.observer.location!.address!.city?.coordinates ??
+            datetimeModel.observer.location!.address!.province.coordinates;
+        break;
+      case EnumDatetimeType.trueSolar:
+        if (datetimeModel.observer.isManualCalibration) {
+          coordinates = datetimeModel.observer.location!.preciseCoordinates!;
+        } else {
+          coordinates = datetimeModel.observer.location!.coordinates!;
+        }
+        break;
+    }
+
+    // 构建 ObserverPosition
+    return ObserverPosition(
+      latitude: coordinates.latitude,
+      longitude: coordinates.longitude,
+      altitude: 0,
+      timezone: datetimeModel.observer.timezoneStr,
+      dateTime: datetimeModel.datetime,
+      isDayBirth: _getDayTimeZhi().contains(datetimeModel.timeJiaZi.zhi),
+      yearGanZhi: datetimeModel.yearJiaZi,
+      monthGanZhi: datetimeModel.monthJiaZi,
+      dayGanZhi: datetimeModel.dayJiaZi,
+      timeGanZhi: datetimeModel.timeJiaZi,
+    );
+  }
+
+  /// 获取白天地支列表 (用于判断是否日生)
+  List<String> _getDayTimeZhi() {
+    return ['寅', '卯', '辰', '巳', '午', '未', '申', '酉'];
   }
 
   // ==================== UI兼容层: 兼容版计算方法 ====================

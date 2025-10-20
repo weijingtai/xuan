@@ -254,12 +254,14 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       islifeGongBySunRealTimeLocation: true,
     );
 
+    final vm = context.read<QiZhengSiYuViewModel>();
     _panelController = QiZhengPanelController(
       config: defaultPanelConfig,
-      basePanel: context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
-      daXianPanel: context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
-      innerStars: context.read<QiZhengSiYuViewModel>().uiBasicLifeStarsNotifier,
-      outerStars: context.read<QiZhengSiYuViewModel>().uiFateLifeStarsNotifier,
+      basePanel: vm.uiBasePanelListenable,
+      // TODO: 大限盘功能待实现 - 类型不匹配需要适配层
+      daXianPanel: ValueNotifier(null), // 暂时使用空notifier
+      innerStars: vm.uiBasicLifeStarsListenable,
+      outerStars: vm.uiFateLifeStarsListenable,
       rotationDeg: 30,
     );
 
@@ -954,7 +956,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               return AllShenShaRing(
                 outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
                 innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                shenShaMapper: basePanel.shenShaMapper,
+                shenShaMapper: basePanel.shenShaItemMapper,
                 gongOrder: EnumTwelveGong.listAll,
               );
             },
@@ -974,7 +976,14 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             outerSize: panelSizeDataModel.outerShenShaSizeOuter,
           ),
           bodyRotationAngle: -30 * pi / 180,
-          bodyBuilder: () => ValueListenableBuilder<DaXianPanelModel?>(
+          bodyBuilder: () {
+            // TODO: 大限盘功能待实现 - 暂时显示空容器
+            return Container(
+              width: panelSizeDataModel.outerShenShaSizeOuter,
+              height: panelSizeDataModel.outerShenShaSizeOuter,
+            );
+            /* 原大限盘实现 - 类型不匹配待修复
+            return ValueListenableBuilder<DaXianPanelModel?>(
               valueListenable:
                   context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
               builder: (ctx, daXianPanel, child) {
@@ -991,7 +1000,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               child: Container(
                 width: panelSizeDataModel.outerShenShaSizeOuter,
                 height: panelSizeDataModel.outerShenShaSizeOuter,
-              )),
+              ));
+            */
+          },
         ),
 
         Transform.rotate(

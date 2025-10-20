@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
+import 'package:qizhengsiyu/models/da_xian_panel_model.dart'; // 暂时保留UI层模型
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
 
