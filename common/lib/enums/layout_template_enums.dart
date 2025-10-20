@@ -13,6 +13,7 @@ enum PillarType {
   monthly,
   daily,
   hourly,
+  separator,
 }
 
 enum RowType {
@@ -35,3 +36,5 @@ enum RowType {
 }
 
 enum BorderType { solid, dashed, dotted, none }
+
+enum RowTextAlign { left, center, right }

@@ -16,11 +16,13 @@ class ApplyPillarPresetResult {
 
 class ApplyPillarPresetUseCase {
   ApplyPillarPresetResult call(ApplyPillarPresetParams params) {
-    final newOrder = params.preset.pillars;
+    // Use the preset's pillar id list
+    final newOrder = params.preset.pillarIds;
 
     // Define all possible pillars for each card type
-    const benMingPillars = ['年', '月', '日', '时', '胎元', '刻'];
-    const liuYunPillars = ['大运', '流年', '流月', '流日', '流时'];
+    // Possible pillar ids for each scene (keep ids consistent with PillarType mapping)
+    const benMingPillars = ['year', 'month', 'day', 'time', 'taiyuan', 'ke'];
+    const liuYunPillars = ['dayun', 'liunian'];
 
     final possiblePillars = params.isForBenMing ? benMingPillars : liuYunPillars;
 

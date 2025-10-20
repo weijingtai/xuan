@@ -8,10 +8,25 @@ import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/editor_top_bar.dart';
-import 'package:common/widgets/template_gallery_view.dart';
+import 'package:common/widgets/template_editor_pane.dart';
+import 'package:common/widgets/template_board_view.dart';
+import 'package:common/widgets/pillar_palette.dart';
+import 'package:common/widgets/pillar_preset_list.dart';
+import 'package:common/widgets/generic_pillar_card.dart';
+import 'package:common/models/pillar_data.dart';
+import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/enums/enum_tian_gan.dart';
+import 'package:common/enums/enum_gender.dart';
+import 'package:provider/provider.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
+import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../features/tai_yuan/enum_calculate_strategy.dart';
+import '../widgets/card_row.dart';
 
 const _defaultCollectionId = 'four_zhu_templates';
 
@@ -78,49 +93,84 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
               nameController: _templateNameController,
               onCreateTemplate: () =>
                   _showCreateTemplateDialog(context, viewModel),
-              onOpenGallery: () => _openTemplateGallery(context, viewModel),
+              // Legacy gallery removed; action is a no-op now
+              // onOpenGallery: () {},
               onDeleteTemplate: () => _confirmDelete(context, viewModel),
               onDuplicateTemplate: viewModel.duplicateCurrentTemplate,
-              onSaveTemplate: viewModel.saveCurrentTemplate,
+              onSaveTemplate: () => _saveWithFeedback(context, viewModel),
               onUndoChanges: () => viewModel.revertChanges(),
               onNameChanged: viewModel.updateTemplateName,
             ),
-            body: Column(
-              children: [
-                const TemplateGalleryView(),
-                const SizedBox(height: 8),
-                if (viewModel.errorMessage != null)
-                  _ErrorBanner(
-                    message: viewModel.errorMessage!,
-                    onDismissed: viewModel.clearError,
+            body: TemplateEditorPane(
+              isLoading: viewModel.isLoading,
+              header: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // const TemplateGalleryView(),
+                  const SizedBox(height: 8),
+                  if (viewModel.viewMode == EditorViewMode.canvas)
+                    const PillarPresetList(),
+                  if (viewModel.viewMode == EditorViewMode.canvas) ...[
+                    const SizedBox(height: 8),
+                    const PillarPalette(),
+                  ],
+                  const SizedBox(height: 8),
+                  if (viewModel.errorMessage != null)
+                    _ErrorBanner(
+                      message: viewModel.errorMessage!,
+                      onDismissed: viewModel.clearError,
+                    ),
+                  if (viewModel.hasUnsavedChanges) const _UnsavedBanner(),
+                ],
+              ),
+              sidebar: _EditorSidebar(
+                rowConfigs: viewModel.rowConfigs,
+                cardStyle: viewModel.cardStyle,
+                onRowVisibilityChanged: viewModel.updateRowVisibility,
+                onRowTitleVisibilityChanged: viewModel.updateRowTitleVisibility,
+                onRowOrderChanged: viewModel.updateRowOrder,
+                onDividerTypeChanged: viewModel.updateDividerType,
+                onDividerColorChanged: viewModel.updateDividerColor,
+                onDividerThicknessChanged: viewModel.updateDividerThickness,
+              ),
+              workspace: _EditorWorkspace(
+                isLoading: viewModel.isLoading,
+                chartGroups: viewModel.chartGroups,
+                cardStyle: viewModel.cardStyle,
+                viewMode: viewModel.viewMode,
+                rowConfigs: viewModel.rowConfigs,
+                onReorder: viewModel.reorderPillar,
+              ),
+              actionBar: Row(
+                children: [
+                  FilledButton.icon(
+                    onPressed: viewModel.canSave
+                        ? () => _saveWithFeedback(context, viewModel)
+                        : null,
+                    icon: const Icon(Icons.save),
+                    label: const Text('保存更改'),
                   ),
-                Expanded(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _EditorSidebar(
-                        rowConfigs: viewModel.rowConfigs,
-                        cardStyle: viewModel.cardStyle,
-                        onRowVisibilityChanged: viewModel.updateRowVisibility,
-                        onRowTitleVisibilityChanged:
-                            viewModel.updateRowTitleVisibility,
-                        onDividerTypeChanged: viewModel.updateDividerType,
-                        onDividerColorChanged: viewModel.updateDividerColor,
-                        onDividerThicknessChanged:
-                            viewModel.updateDividerThickness,
-                      ),
-                      Expanded(
-                        child: _EditorWorkspace(
-                          isLoading: viewModel.isLoading,
-                          chartGroups: viewModel.chartGroups,
-                          cardStyle: viewModel.cardStyle,
-                          onReorder: viewModel.reorderPillar,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 12),
+                  OutlinedButton.icon(
+                    onPressed:
+                        viewModel.canRevert ? viewModel.revertChanges : null,
+                    icon: const Icon(Icons.undo),
+                    label: const Text('撤销更改'),
                   ),
-                ),
-              ],
+                  const Spacer(),
+                  OutlinedButton.icon(
+                    onPressed: () => _promptCreateGroup(context),
+                    icon: const Icon(Icons.add),
+                    label: const Text('新增分组'),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () => _promptDeleteSelectedGroup(context),
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('删除选中分组'),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -167,6 +217,77 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
     }
   }
 
+  Future<void> _saveWithFeedback(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+  ) async {
+    await viewModel.saveCurrentTemplate();
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('模板已保存')),
+    );
+    await viewModel.refreshRowConfigs();
+  }
+
+  Future<void> _promptCreateGroup(BuildContext context) async {
+    final controller = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('新增分组'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: '输入分组名称'),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('取消')),
+          FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
+              child: const Text('确定')),
+        ],
+      ),
+    );
+    if (!context.mounted) return;
+    if (name != null) {
+      context.read<FourZhuEditorViewModel>().addGroup(title: name);
+    }
+  }
+
+  Future<void> _promptDeleteSelectedGroup(BuildContext context) async {
+    final vm = context.read<FourZhuEditorViewModel>();
+    final groups = vm.currentTemplate?.chartGroups ?? const [];
+    if (groups.length <= 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('至少需要保留一个分组')),
+      );
+      return;
+    }
+    final selectedId = vm.selectedGroupId ?? groups.first.id;
+    final selected = groups.firstWhere((g) => g.id == selectedId,
+        orElse: () => groups.first);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('删除分组'),
+        content: Text('确认删除分组“${selected.title}”？该操作不可撤销。'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.of(ctx).pop(false),
+              child: const Text('取消')),
+          FilledButton(
+              onPressed: () => Navigator.of(ctx).pop(true),
+              child: const Text('删除')),
+        ],
+      ),
+    );
+    if (ok == true) {
+      vm.removeGroup(selected.id);
+    }
+  }
+
   Future<void> _showCreateTemplateDialog(
     BuildContext context,
     FourZhuEditorViewModel viewModel,
@@ -206,118 +327,19 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
     );
   }
 
-  Future<void> _openTemplateGallery(
+  // Legacy bottom-sheet template gallery removed; using TemplateGalleryView instead.
+
+  Future<void> _openEightCharsPicker(
     BuildContext context,
     FourZhuEditorViewModel viewModel,
   ) async {
-    await showModalBottomSheet<void>(
+    final result = await showEightCharsPickerBottomSheet(
       context: context,
-      isScrollControlled: true,
-      builder: (sheetContext) {
-        return _TemplateGallerySheet(
-          templates: viewModel.templates,
-          currentTemplateId: viewModel.currentTemplate?.id,
-          onApply: (templateId) async {
-            await viewModel.applyTemplate(templateId);
-            if (sheetContext.mounted) {
-              Navigator.of(sheetContext).pop();
-            }
-          },
-          onDuplicate: (templateId) async {
-            await viewModel.duplicateTemplateAsNew(templateId);
-          },
-        );
-      },
+      eightChars: viewModel.previewEightChars,
     );
-  }
-}
-
-class _TemplateGallerySheet extends StatelessWidget {
-  const _TemplateGallerySheet({
-    required this.templates,
-    required this.currentTemplateId,
-    required this.onApply,
-    required this.onDuplicate,
-  });
-
-  final List<LayoutTemplate> templates;
-  final String? currentTemplateId;
-  final Future<void> Function(String templateId) onApply;
-  final Future<void> Function(String templateId) onDuplicate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 420),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    'Template Gallery',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    icon: const Icon(Icons.close),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Material(
-                  color: theme.colorScheme.surface,
-                  child: ListView.separated(
-                    itemCount: templates.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final template = templates[index];
-                      final isCurrent = template.id == currentTemplateId;
-                      final updatedText = template.updatedAt
-                          .toLocal()
-                          .toString()
-                          .split('.')
-                          .first;
-                      return ListTile(
-                        title: Text(template.name),
-                        subtitle: Text(
-                          'Updated $updatedText',
-                          style: theme.textTheme.bodySmall,
-                        ),
-                        selected: isCurrent,
-                        trailing: Wrap(
-                          spacing: 12,
-                          children: [
-                            TextButton(
-                              onPressed: () async {
-                                await onApply(template.id);
-                              },
-                              child: const Text('Apply'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                await onDuplicate(template.id);
-                              },
-                              child: const Text('Duplicate'),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+    if (result is EightChars && context.mounted) {
+      viewModel.updatePreviewData(eightChars: result);
+    }
   }
 }
 
@@ -356,6 +378,7 @@ class _EditorSidebar extends StatelessWidget {
     required this.cardStyle,
     required this.onRowVisibilityChanged,
     required this.onRowTitleVisibilityChanged,
+    required this.onRowOrderChanged,
     required this.onDividerTypeChanged,
     required this.onDividerColorChanged,
     required this.onDividerThicknessChanged,
@@ -365,6 +388,8 @@ class _EditorSidebar extends StatelessWidget {
   final CardStyle? cardStyle;
   final void Function(RowType type, bool isVisible) onRowVisibilityChanged;
   final void Function(RowType type, bool isVisible) onRowTitleVisibilityChanged;
+  final void Function({required int oldIndex, required int newIndex})
+      onRowOrderChanged;
   final void Function(BorderType type) onDividerTypeChanged;
   final void Function(String hex) onDividerColorChanged;
   final void Function(double value) onDividerThicknessChanged;
@@ -397,44 +422,68 @@ class _EditorSidebar extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               children: [
-                ...rowConfigs.map(
-                  (config) => Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: Text(_rowTypeLabel(config.type)),
-                        value: config.isVisible,
-                        onChanged: (value) =>
-                            onRowVisibilityChanged(config.type, value),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 16, bottom: 8),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              value: config.isTitleVisible,
-                              onChanged: (value) => onRowTitleVisibilityChanged(
-                                config.type,
-                                value ?? true,
+                ReorderableListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: rowConfigs.length,
+                  onReorder: (oldIndex, newIndex) {
+                    var target = newIndex;
+                    if (newIndex > oldIndex) target -= 1;
+                    onRowOrderChanged(oldIndex: oldIndex, newIndex: target);
+                  },
+                  itemBuilder: (context, index) {
+                    final config = rowConfigs[index];
+                    return _RowTile(
+                      key: ValueKey('row-${config.type.name}-$index'),
+                      type: config.type,
+                      isVisible: config.isVisible,
+                      isTitleVisible: config.isTitleVisible,
+                      onVisibilityChanged: (value) =>
+                          onRowVisibilityChanged(config.type, value),
+                      onTitleVisibilityChanged: (value) =>
+                          onRowTitleVisibilityChanged(config.type, value),
+                    );
+                  },
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    OutlinedButton(
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('重置行配置'),
+                            content: const Text('将恢复为默认行配置，是否继续？'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(false),
+                                child: const Text('取消'),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            const Text('显示标题'),
-                          ],
-                        ),
-                      ),
-                      Divider(
-                        color: theme.dividerColor.withValues(alpha: 0.3),
-                      ),
-                    ],
-                  ),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(true),
+                                child: const Text('重置'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true) {
+                          // 调用外层 ViewModel 的 resetRowConfigs
+                          final vm = context.read<FourZhuEditorViewModel>();
+                          vm.resetRowConfigs();
+                        }
+                      },
+                      child: const Text('重置行配置'),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Text('分隔线样式', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 12),
                 DropdownButtonFormField<BorderType>(
-                  initialValue: dividerType,
+                  value: dividerType,
                   items: BorderType.values
                       .map(
                         (type) => DropdownMenuItem<BorderType>(
@@ -515,8 +564,254 @@ class _EditorSidebar extends StatelessWidget {
       return null;
     }
 
-    final sanitized = result.startsWith('#') ? result : '#';
-    return sanitized.toUpperCase();
+    final upper = result.toUpperCase();
+    final sanitized = upper.startsWith('#') ? upper : '#$upper';
+    return sanitized;
+  }
+}
+
+class _RowTile extends StatelessWidget {
+  const _RowTile({
+    super.key,
+    required this.type,
+    required this.isVisible,
+    required this.isTitleVisible,
+    required this.onVisibilityChanged,
+    required this.onTitleVisibilityChanged,
+  });
+
+  final RowType type;
+  final bool isVisible;
+  final bool isTitleVisible;
+  final ValueChanged<bool> onVisibilityChanged;
+  final ValueChanged<bool> onTitleVisibilityChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final content = Container(
+      key: key,
+      margin: const EdgeInsets.symmetric(vertical: 6),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.3)),
+        color: theme.colorScheme.surface,
+      ),
+      child: ListTile(
+        leading: const Icon(Icons.drag_indicator),
+        title: Row(
+          children: [
+            Text(_rowTypeLabel(type)),
+            const SizedBox(width: 8),
+            if (!isVisible)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  '已隐藏',
+                  style: theme.textTheme.labelSmall,
+                ),
+              ),
+          ],
+        ),
+        subtitle: Row(
+          children: [
+            Switch(
+              value: isVisible,
+              onChanged: onVisibilityChanged,
+            ),
+            const SizedBox(width: 8),
+            Checkbox(
+              value: isTitleVisible,
+              onChanged: (value) => onTitleVisibilityChanged(value ?? true),
+            ),
+            const SizedBox(width: 4),
+            const Text('显示标题'),
+          ],
+        ),
+        trailing: IconButton(
+          tooltip: '编辑样式',
+          icon: const Icon(Icons.tune),
+          onPressed: () async {
+            await _openRowStyleSheet(context, type, isVisible, isTitleVisible);
+          },
+        ),
+      ),
+    );
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 150),
+      opacity: isVisible ? 1 : 0.6,
+      child: content,
+    );
+  }
+
+  Future<void> _openRowStyleSheet(
+    BuildContext context,
+    RowType type,
+    bool isVisible,
+    bool isTitleVisible,
+  ) async {
+    final vm = context.read<FourZhuEditorViewModel>();
+    double fontSize = 14;
+    String fontFamily = 'NotoSans';
+    String colorHex = '#FF0F172A';
+    RowTextAlign textAlign = RowTextAlign.left;
+    double padding = 4;
+    BorderType borderType = BorderType.solid;
+    String borderColorHex = '#22334155';
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(builder: (context, setState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('编辑样式 — ${_rowTypeLabel(type)}',
+                      style: Theme.of(context).textTheme.titleMedium),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<String>(
+                    value: fontFamily,
+                    items: const [
+                      DropdownMenuItem(
+                          value: 'NotoSans', child: Text('NotoSans')),
+                      DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+                    ],
+                    onChanged: (v) =>
+                        setState(() => fontFamily = v ?? fontFamily),
+                    decoration: const InputDecoration(labelText: '字体'),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('字号 ${fontSize.toStringAsFixed(0)}'),
+                  Slider(
+                    min: 10,
+                    max: 24,
+                    value: fontSize,
+                    onChanged: (v) => setState(() => fontSize = v),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: colorHex,
+                    decoration: const InputDecoration(labelText: '文字颜色 Hex'),
+                    onChanged: (v) => setState(() => colorHex = v.trim()),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<RowTextAlign>(
+                    value: textAlign,
+                    items: RowTextAlign.values
+                        .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(_rowTextAlignLabel(e)),
+                            ))
+                        .toList(),
+                    onChanged: (v) =>
+                        setState(() => textAlign = v ?? textAlign),
+                    decoration: const InputDecoration(labelText: '对齐'),
+                  ),
+                  const SizedBox(height: 12),
+                  Text('内边距 ${padding.toStringAsFixed(0)}'),
+                  Slider(
+                    min: 0,
+                    max: 24,
+                    value: padding,
+                    onChanged: (v) => setState(() => padding = v),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<BorderType>(
+                    value: borderType,
+                    items: BorderType.values
+                        .map((e) => DropdownMenuItem(
+                              value: e,
+                              child: Text(_borderTypeLabel(e)),
+                            ))
+                        .toList(),
+                    onChanged: (v) =>
+                        setState(() => borderType = v ?? borderType),
+                    decoration: const InputDecoration(labelText: '边框样式'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: borderColorHex,
+                    decoration: const InputDecoration(labelText: '边框颜色 Hex'),
+                    onChanged: (v) => setState(() => borderColorHex = v.trim()),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: _colorFromHex(borderColorHex),
+                          border: Border.all(color: Colors.black12),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('边框预览'),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: FilledButton(
+                      onPressed: () {
+                        vm.updateRowStyle(
+                          type,
+                          fontFamily: fontFamily,
+                          fontSize: fontSize,
+                          colorHex: colorHex,
+                          textAlign: textAlign,
+                          padding: padding,
+                          borderType: borderType,
+                          borderColorHex: borderColorHex,
+                        );
+                        Navigator.of(ctx).pop();
+                      },
+                      child: const Text('应用'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+      },
+    );
+  }
+}
+
+class _UnsavedBanner extends StatelessWidget {
+  const _UnsavedBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Material(
+      color: theme.colorScheme.tertiaryContainer.withValues(alpha: 0.1),
+      child: ListTile(
+        leading: const Icon(Icons.info_outline),
+        title: const Text('有未保存的更改，按 Ctrl/⌘+S 保存'),
+      ),
+    );
+  }
+}
+
+String _rowTextAlignLabel(RowTextAlign value) {
+  switch (value) {
+    case RowTextAlign.left:
+      return '左对齐';
+    case RowTextAlign.center:
+      return '居中';
+    case RowTextAlign.right:
+      return '右对齐';
   }
 }
 
@@ -525,12 +820,16 @@ class _EditorWorkspace extends StatelessWidget {
     required this.isLoading,
     required this.chartGroups,
     required this.cardStyle,
+    required this.viewMode,
+    required this.rowConfigs,
     required this.onReorder,
   });
 
   final bool isLoading;
   final List<ChartGroup> chartGroups;
   final CardStyle? cardStyle;
+  final EditorViewMode viewMode;
+  final List<RowConfig> rowConfigs;
   final void Function({
     required String groupId,
     required int oldIndex,
@@ -581,18 +880,172 @@ class _EditorWorkspace extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                _PillarReorderList(
-                  groupId: group.id,
-                  pillars: group.pillarOrder,
-                  dividerType: dividerType,
-                  dividerColor: dividerColor,
-                  onReorder: onReorder,
-                ),
+                switch (viewMode) {
+                  EditorViewMode.table => _PillarReorderList(
+                      groupId: group.id,
+                      pillars: group.pillarOrder,
+                      dividerType: dividerType,
+                      dividerColor: dividerColor,
+                      onReorder: onReorder,
+                    ),
+                  EditorViewMode.canvas => Selector<FourZhuEditorViewModel, String?>(
+                      selector: (_, vm) => vm.selectedGroupId,
+                      builder: (ctx, selectedId, __) => TemplateBoardView(
+                            groupId: group.id,
+                            pillars: group.pillarOrder,
+                            dividerType: dividerType,
+                            dividerColor: dividerColor,
+                            onReorder: onReorder,
+                            onInsert: (
+                                {required groupId, required index, required pillar}) {
+                              context
+                                  .read<FourZhuEditorViewModel>()
+                                  .addPillarToGroupAtIndex(
+                                    groupId: groupId,
+                                    pillar: pillar,
+                                    index: index,
+                                  );
+                            },
+                            onRemove: ({required groupId, required index}) {
+                              context
+                                  .read<FourZhuEditorViewModel>()
+                                  .removePillarFromGroup(
+                                    groupId: groupId,
+                                    index: index,
+                                  );
+                            },
+                            onResetLayout: (gid) => context
+                                .read<FourZhuEditorViewModel>()
+                                .resetGroupLayout(groupId: gid),
+                            onRename: (gid, title) => context
+                                .read<FourZhuEditorViewModel>()
+                                .setGroupTitle(groupId: gid, title: title),
+                            onToggleLock: (gid, locked) => context
+                                .read<FourZhuEditorViewModel>()
+                                .setGroupLocked(groupId: gid, locked: locked),
+                            onSetColor: (gid, colorHex) => context
+                                .read<FourZhuEditorViewModel>()
+                                .setGroupColor(groupId: gid, colorHex: colorHex),
+                            onDeleteGroup: (gid) => context
+                                .read<FourZhuEditorViewModel>()
+                                .removeGroup(gid),
+                            onInsertSeparator:
+                                ({required groupId, required index}) => context
+                                    .read<FourZhuEditorViewModel>()
+                                    .insertSeparator(groupId: groupId, index: index),
+                            onAlignPillars: (gid) => context
+                                .read<FourZhuEditorViewModel>()
+                                .alignPillars(gid),
+                            locked: group.locked,
+                            groupTitle: group.title,
+                            groupColor: group.colorHex,
+                            visibleRowCount:
+                                rowConfigs.where((r) => r.isVisible).length,
+                            expanded: group.expanded,
+                            isSelected: selectedId == group.id,
+                            onDuplicateGroup: () => context
+                                .read<FourZhuEditorViewModel>()
+                                .duplicateGroup(groupId: group.id),
+                            onClearGroup: () => context
+                                .read<FourZhuEditorViewModel>()
+                                .clearGroup(groupId: group.id),
+                            onSelect: () => context
+                                .read<FourZhuEditorViewModel>()
+                                .selectGroup(group.id),
+                            onToggleExpanded: () => context
+                                .read<FourZhuEditorViewModel>()
+                                .toggleGroupExpanded(groupId: group.id),
+                          )),
+                  EditorViewMode.preview => _GroupPreviewCard(
+                      group: group,
+                      rows: rowConfigs,
+                    ),
+                },
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _GroupPreviewCard extends StatelessWidget {
+  const _GroupPreviewCard({required this.group, required this.rows});
+  final ChartGroup group;
+  final List<RowConfig> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    final pillars = group.pillarOrder
+        .map((p) => PillarData(
+            pillarId: p.name, label: _pillarTypeLabel(p), jiaZi: JiaZi.JIA_ZI))
+        .toList();
+
+    bool _visible(RowType t) => rows.any((r) => r.type == t && r.isVisible);
+
+    // 将 RowConfig 映射为 GenericPillarCard 可用的 rowStyles（使用 CardRow 常量作为键）
+    final Map<String, RowConfig> styleMap = {};
+    RowConfig? find(RowType t) => rows.firstWhere((r) => r.type == t,
+        orElse: () => const RowConfig(
+            type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true));
+    void put(String key, RowType t) {
+      final cfg = rows.firstWhere((r) => r.type == t,
+          orElse: () => const RowConfig(
+              type: RowType.heavenlyStem,
+              isVisible: true,
+              isTitleVisible: true));
+      styleMap[key] = cfg;
+    }
+
+    put(CardRow.pillarHeader, RowType.heavenlyStem);
+    put(CardRow.tianGan, RowType.heavenlyStem);
+    put(CardRow.tenGods, RowType.tenGod);
+    put(CardRow.diZhi, RowType.earthlyBranch);
+    put(CardRow.cangGanMain, RowType.hiddenStemsPrimary);
+    put(CardRow.cangGanZhong, RowType.hiddenStemsSecondary);
+    put(CardRow.cangGanYu, RowType.hiddenStemsTertiary);
+    put(CardRow.cangGanMainTenGods, RowType.hiddenStemsPrimaryGods);
+    put(CardRow.cangGanZhongTenGods, RowType.hiddenStemsSecondaryGods);
+    put(CardRow.cangGanYuTenGods, RowType.hiddenStemsTertiaryGods);
+    put(CardRow.xunShou, RowType.xunShou);
+    put(CardRow.naYin, RowType.naYin);
+    put(CardRow.kongWang, RowType.kongWang);
+
+    final vm = context.watch<FourZhuEditorViewModel>();
+    final EightChars eight = vm.previewEightChars ?? EightChars.defualtBaZi();
+    final TaiYuanModel taiYuan = vm.previewTaiYuan ??
+        TaiYuanModel(
+          taiYuanGanZhi: JiaZi.JIA_ZI,
+          taiYuanBeforeMonth: 0,
+          calculateStrategy: TaiYuanCalculateStrategy.monthPillarMethod,
+        );
+
+    return GenericPillarCard(
+      title: group.title,
+      pillars: pillars,
+      dayMaster: eight.dayTianGan,
+      isBenMing: false,
+      gender: null,
+      showTianGan:
+          rows.any((r) => r.type == RowType.heavenlyStem && r.isVisible),
+      showDiZhi:
+          rows.any((r) => r.type == RowType.earthlyBranch && r.isVisible),
+      showTenGods: _visible(RowType.tenGod),
+      showCangGanMain: _visible(RowType.hiddenStemsPrimary),
+      showCangGanMainTenGods: _visible(RowType.hiddenStemsPrimaryGods),
+      showCangGanZhong: _visible(RowType.hiddenStemsSecondary),
+      showCangGanZhongTenGods: _visible(RowType.hiddenStemsSecondaryGods),
+      showCangGanYu: _visible(RowType.hiddenStemsTertiary),
+      showCangGanYuTenGods: _visible(RowType.hiddenStemsTertiaryGods),
+      showXunShou: _visible(RowType.xunShou),
+      showNaYin: _visible(RowType.naYin),
+      showKongWang: _visible(RowType.kongWang),
+      isEditMode: false,
+      isColumnReorderMode: false,
+      onRowReorder: (a, b) {},
+      onPillarReorder: (a, b) {},
+      rowStyles: styleMap,
     );
   }
 }
@@ -624,6 +1077,7 @@ class _PillarReorderList extends StatelessWidget {
 
     return ReorderableListView.builder(
       shrinkWrap: true,
+      primary: false,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: pillars.length,
       onReorder: (oldIndex, newIndex) {
@@ -736,6 +1190,8 @@ String _pillarTypeLabel(PillarType type) {
       return '流日';
     case PillarType.hourly:
       return '流时';
+    case PillarType.separator:
+      return "分割线";
   }
 }
 

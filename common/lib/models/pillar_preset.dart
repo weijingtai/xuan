@@ -1,11 +1,18 @@
-import 'package:equatable/equatable.dart';
+class PillarPreset {
+  final String id;
+  final String name;
+  final String scene; // 适用场景，如 本命/运势 等
+  final List<String> pillarIds; // 例如: ['year','month']
+  final DateTime updatedAt;
+  final bool favorite;
 
-class PillarPreset extends Equatable {
-  final String name;        // The display name, e.g., "四柱八字"
-  final List<String> pillars; // The list of pillar labels, e.g., ['年', '月', '日', '时']
-
-  const PillarPreset({required this.name, required this.pillars});
-
-  @override
-  List<Object?> get props => [name, pillars];
+  const PillarPreset({
+    required this.id,
+    required this.name,
+    required this.scene,
+    required this.pillarIds,
+    required this.updatedAt,
+    this.favorite = false,
+  });
 }
+

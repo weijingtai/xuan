@@ -43,48 +43,49 @@
   - [x] 保持 `TemplateGallery` 标签切换时滚动位置与已选模板状态同步。
 
 ## 编辑区
-- [ ] **编辑容器拆分**
-  - [ ] 将编辑区域重构为 `TemplateEditorPane`，拆分头部、网格、操作栏三个子 Widget。
-  - [ ] 通过 `LayoutBuilder`/`SliverLayoutBuilder` 提供响应式布局，保证 ≥1024px 时展示两列，窄屏自动折行。
-  - [ ] 统一边距、分隔线、背景色和阴影，与设计稿保持一致。
-- [ ] **行列表渲染**
-  - [ ] 使用 `ReorderableListView`/`DragTarget` 支持行拖拽，调用 `viewModel.updateRowOrder()` 并保存顺序。
-  - [ ] 抽离行组件 `_RowTile`，包含可见性开关、文案、快捷操作按钮。
-  - [ ] 行编辑浮层支持字体、字号、对齐、边框样式编辑，并与 `viewModel.updateRowStyle()` 双向绑定。
-  - [ ] 根据 `RowConfig.isVisible` 动态调整行 opacity，同时提供占位提示。
-- [ ] **状态联动**
-  - [ ] 保存成功后刷新行配置（`viewModel.refreshRowConfigs()`）并弹出 SnackBar。
-  - [ ] 提供撤销/重置功能，调用 `viewModel.resetRowConfigs()` 并弹出确认对话框。
+- [x] **编辑容器拆分**
+  - [x] 将编辑区域重构为 `TemplateEditorPane`，拆分头部、网格、操作栏三个子 Widget。
+  - [x] 通过 `LayoutBuilder`/`SliverLayoutBuilder` 提供响应式布局，保证 ≥1024px 时展示两列，窄屏自动折行。
+  - [x] 统一边距、分隔线、背景色和阴影，与设计稿保持一致。
+- [x] **行列表渲染**
+  - [x] 使用 `ReorderableListView`/`DragTarget` 支持行拖拽，调用 `viewModel.updateRowOrder()` 并保存顺序。
+  - [x] 抽离行组件 `_RowTile`，包含可见性开关、文案、快捷操作按钮。
+  - [x] 行编辑浮层支持字体、字号、对齐、边框样式编辑，并与 `viewModel.updateRowStyle()` 双向绑定。
+  - [x] 根据 `RowConfig.isVisible` 动态调整行 opacity，同时提供占位提示。
+- [x] **状态联动**
+  - [x] 保存成功后刷新行配置（`viewModel.refreshRowConfigs()`）并弹出 SnackBar。
+  - [x] 提供撤销/重置功能，调用 `viewModel.resetRowConfigs()` 并弹出确认对话框。
   - [ ] 在表单编辑期间显示未保存提示条与自动保存倒计时（可选）。
 
-## 看板/模板
-- [ ] **看板容器与布局**
-  - [ ] 将看板区封装为 `TemplateBoardView`，负责拖拽列和栅格布局。
+ -## 看板/模板
+ - [x] **看板容器与布局**
+  - [x] 将看板区封装为 `TemplateBoardView`，负责拖拽列和栅格布局。
   - [ ] 重绘标签页样式（底部分隔线、滚动阴影、选中态），并与主题色对齐。
   - [ ] 在容器顶部提供筛选、排序、分组操作区，利用 `SliverPersistentHeader` 固定。
-- [ ] **列组件与交互**
-  - [ ] 抽象 `TemplateBoardColumn`，包含标题、统计信息、操作按钮及内容区域。
-  - [ ] 列标签支持拖拽重排，调用 `viewModel.selectBoard()`、`viewModel.reorderBoards()` 同步状态。
-  - [ ] 列头部显示可见柱位/行数统计，更新逻辑使用 `Selector` 优化。
+ - [ ] **列组件与交互**
+ - [x] 抽象 `TemplateBoardColumn`，包含标题、统计信息、操作按钮及内容区域。
+ - [ ] 列标签支持拖拽重排，调用 `viewModel.selectBoard()`、`viewModel.reorderBoards()` 同步状态。
+  - [x] 列头部显示柱位数量与可见行统计（接口预留）。
+  - [x] 分组拖拽重排（ReorderableListView）与选中态样式增强。
   - [ ] 列支持展开/收起，用户偏好写入 `viewModel.boardPreferences`。
 - [ ] **列内卡片操作**
   - [ ] 在列内部支持 PillarCard 拖拽排序，使用 `DragTarget`/`LongPressDraggable`。
   - [ ] 提供列级别添加/删除入口，调用 `viewModel.addBoard()` / `viewModel.removeBoard()` 并更新 UI。
   - [ ] 列工具条预留密度/列宽/布局切换按钮（先用占位，后续迭代补全）。
 
-## 柱子模板
-- [ ] **柱模板列表**
-  - [ ] 渲染柱模板列表，展示名称、适用场景、包含柱位、更新时间等元信息。
+ -## 柱子模板
+ - [ ] **柱模板列表**
+  - [x] 渲染柱模板列表，展示名称、适用场景、包含柱位、更新时间等元信息。
   - [ ] 支持按模板类别筛选、搜索关键字并高亮匹配内容。
-- [ ] **拖拽与添加**
-  - [ ] 为柱模板卡提供拖拽手柄，拖入看板列时调用 `viewModel.addPillar(boardId, preset)`。
-  - [ ] 在看板区域实现 `DragTarget`，根据拖入类型展示反馈并限制重复添加。
+ - [ ] **拖拽与添加**
+  - [x] 为柱模板卡提供拖拽手柄，拖入看板列时调用 `viewModel.addPillar(boardId, preset)`。
+  - [x] 在看板区域实现 `DragTarget`，根据拖入类型展示反馈并限制重复添加。
   - [ ] 支持点击模板直接添加到当前选中列。
 - [ ] **模板管理**
   - [ ] 实现模板扩展开关，显示详细描述、柱位清单、配色示意。
   - [ ] 防止删除/重复命名，通过 `viewModel.validatePillarTemplate()` 检查后提示用户。
 
-## 模板操作
+-## 模板操作
 - [ ] **模板选择**
   - [x] 在 `TemplateGallery` 中展示模板分类（收藏、最近、全部），并支持 Tab 切换。
   - [ ] 通过 `viewModel.fetchTemplates()` 拉取列表，展示加载、空态、错误态 UI。
@@ -200,4 +201,3 @@
 - [ ] 针对拖拽交互在移动端的手势冲突进行用户测试，必要时加入触控专属手势提示。
 - [ ] 梳理 ViewModel 层的状态拆分，考虑引入分模块状态以降低重建压力。
 - [ ] 探索模板共享/导出功能的需求，评估是否纳入后续版本规划。
-

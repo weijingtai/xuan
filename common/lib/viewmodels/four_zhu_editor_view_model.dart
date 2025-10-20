@@ -10,6 +10,8 @@ import '../domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import '../domain/usecases/layout_templates/save_template_use_case.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
+import '../models/eight_chars.dart';
+import '../features/tai_yuan/tai_yuan_model.dart';
 
 enum EditorViewMode { canvas, table, preview }
 
@@ -103,6 +105,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   LayoutTemplate? get currentTemplate => _currentTemplate;
   CardStyle? get cardStyle => _currentTemplate?.cardStyle;
   List<ChartGroup> get chartGroups => _currentTemplate?.chartGroups ?? const [];
+  String? _selectedGroupId;
+  String? get selectedGroupId => _selectedGroupId;
   List<RowConfig> get rowConfigs => _currentTemplate?.rowConfigs ?? const [];
   List<LayoutTemplate> get templateTabs => _templates;
   TemplateFilterState get filterState => _filterState;
@@ -123,6 +127,25 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         hasUnsavedChanges: _hasUnsavedChanges,
         viewMode: _viewMode,
       );
+
+  // Preview payload for card thumbnails
+  EightChars? _previewEightChars;
+  TaiYuanModel? _previewTaiYuan;
+  EightChars? get previewEightChars => _previewEightChars;
+  TaiYuanModel? get previewTaiYuan => _previewTaiYuan;
+
+  void updatePreviewData({EightChars? eightChars, TaiYuanModel? taiYuan}) {
+    var changed = false;
+    if (eightChars != null && eightChars != _previewEightChars) {
+      _previewEightChars = eightChars;
+      changed = true;
+    }
+    if (taiYuan != null && taiYuan != _previewTaiYuan) {
+      _previewTaiYuan = taiYuan;
+      changed = true;
+    }
+    if (changed) notifyListeners();
+  }
 
   List<LayoutTemplate> get filteredTemplates =>
       List.unmodifiable(_applyTemplateFilters(_templates));
@@ -357,10 +380,32 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     _applyCurrentTemplate(template.copyWith(rowConfigs: configs));
   }
 
-  void updateRowStyle(RowType type,
-      {String? fontFamily, double? fontSize, String? colorHex}) {
-    // Row style details are not yet persisted; placeholder for upcoming implementation.
-    // Keeping method to unblock UI wiring.
+  void updateRowStyle(
+    RowType type, {
+    String? fontFamily,
+    double? fontSize,
+    String? colorHex,
+    RowTextAlign? textAlign,
+    double? padding,
+    BorderType? borderType,
+    String? borderColorHex,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.rowConfigs
+        .map((config) => config.type == type
+            ? config.copyWith(
+                fontFamily: fontFamily ?? config.fontFamily,
+                fontSize: fontSize ?? config.fontSize,
+                textColorHex: colorHex ?? config.textColorHex,
+                textAlign: textAlign ?? config.textAlign,
+                padding: padding ?? config.padding,
+                borderType: borderType ?? config.borderType,
+                borderColorHex: borderColorHex ?? config.borderColorHex,
+              )
+            : config)
+        .toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
   }
 
   void resetRowConfigs() {
@@ -369,6 +414,44 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final defaults =
         _buildDefaultTemplate(collectionId: template.collectionId).rowConfigs;
     _applyCurrentTemplate(template.copyWith(rowConfigs: defaults));
+  }
+
+  void updateRowOrder({
+    required int oldIndex,
+    required int newIndex,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    if (oldIndex == newIndex) return;
+
+    final list = List<RowConfig>.of(template.rowConfigs);
+    if (oldIndex < 0 || oldIndex >= list.length) return;
+    final clampedNew = newIndex.clamp(0, list.length - 1);
+    final item = list.removeAt(oldIndex);
+    list.insert(clampedNew, item);
+
+    _applyCurrentTemplate(template.copyWith(rowConfigs: list));
+  }
+
+  Future<void> refreshRowConfigs() async {
+    final template = _currentTemplate;
+    if (template == null) return;
+    await _withLoading(() async {
+      final latest = await getTemplateByIdUseCase(
+        collectionId: _collectionId,
+        templateId: template.id,
+      );
+      if (latest == null) {
+        _errorMessage = '模板不存在(${template.id})';
+        return;
+      }
+      _currentTemplate = latest;
+      _templates = _templates
+          .map((item) => item.id == latest.id ? latest : item)
+          .toList(growable: false);
+      _hasUnsavedChanges = false;
+      _markRecent(latest.id);
+    });
   }
 
   void reorderPillar({
@@ -394,21 +477,238 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
   }
 
+  void reorderGroups({
+    required int oldIndex,
+    required int newIndex,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    if (oldIndex == newIndex) return;
+    final list = List<ChartGroup>.of(template.chartGroups);
+    final item = list.removeAt(oldIndex);
+    final target = newIndex.clamp(0, list.length);
+    list.insert(target, item);
+    _applyCurrentTemplate(template.copyWith(chartGroups: list));
+  }
+
   void addPillarToGroup({
     required String groupId,
     required PillarType pillar,
   }) {
     final template = _currentTemplate;
     if (template == null) return;
+    final updatedGroups = template.chartGroups.map((group) {
+      if (group.id != groupId) return group;
+      // 去重：如已存在则跳过
+      if (group.pillarOrder.contains(pillar)) return group;
+      return group.copyWith(
+        pillarOrder: List<PillarType>.of(group.pillarOrder)..add(pillar),
+      );
+    }).toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+  }
+
+  void addPillarToGroupAtIndex({
+    required String groupId,
+    required PillarType pillar,
+    required int index,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updatedGroups = template.chartGroups.map((group) {
+      if (group.id != groupId) return group;
+      // 去重：如已存在则跳过
+      if (group.pillarOrder.contains(pillar)) return group;
+      final list = List<PillarType>.of(group.pillarOrder);
+      final clamped = index.clamp(0, list.length);
+      list.insert(clamped, pillar);
+      return group.copyWith(pillarOrder: list);
+    }).toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+  }
+
+  void removePillarFromGroup({
+    required String groupId,
+    required int index,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
     final updatedGroups = template.chartGroups
         .map((group) => group.id == groupId
             ? group.copyWith(
-                pillarOrder: List<PillarType>.of(group.pillarOrder)
-                  ..add(pillar),
+                pillarOrder: () {
+                  final list = List<PillarType>.of(group.pillarOrder);
+                  if (index >= 0 && index < list.length) {
+                    list.removeAt(index);
+                  }
+                  return list;
+                }(),
               )
             : group)
         .toList(growable: false);
     _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+  }
+
+  void insertSeparator({
+    required String groupId,
+    required int index,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updatedGroups = template.chartGroups.map((group) {
+      if (group.id != groupId) return group;
+      final list = List<PillarType>.of(group.pillarOrder);
+      final clamped = index.clamp(0, list.length);
+      list.insert(clamped, PillarType.separator);
+      return group.copyWith(pillarOrder: list);
+    }).toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+  }
+
+  void alignPillars(String groupId) {
+    // 简单占位：当前不做实际宽度计算，未来可传布局信息
+    // 触发一次通知即可
+    notifyListeners();
+  }
+
+  void setGroupLocked({
+    required String groupId,
+    required bool locked,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups
+        .map((group) => group.id == groupId
+            ? group.copyWith(locked: locked)
+            : group)
+        .toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+  }
+
+  void toggleGroupExpanded({required String groupId}) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups.map((group) {
+      if (group.id != groupId) return group;
+      return group.copyWith(expanded: !group.expanded);
+    }).toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+  }
+
+  void selectGroup(String groupId) {
+    if (_selectedGroupId == groupId) return;
+    _selectedGroupId = groupId;
+    notifyListeners();
+  }
+
+  void addGroup({String? title}) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final newGroup = ChartGroup(
+      id: _uuid.v4(),
+      title: title?.trim().isNotEmpty == true ? title!.trim() : '新分组',
+      pillarOrder: const [],
+      locked: false,
+      colorHex: null,
+      expanded: true,
+    );
+    final updated = List<ChartGroup>.of(template.chartGroups)..add(newGroup);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+    _selectedGroupId = newGroup.id;
+    notifyListeners();
+  }
+
+  void removeGroup(String groupId) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups.where((g) => g.id != groupId).toList();
+    if (updated.isEmpty) return; // 至少保留一个分组，以免破坏编辑器
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+    if (_selectedGroupId == groupId) {
+      _selectedGroupId = updated.first.id;
+    }
+    notifyListeners();
+  }
+
+  void setGroupTitle({
+    required String groupId,
+    required String title,
+  }) {
+    final trimmed = title.trim();
+    if (trimmed.isEmpty) return;
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups
+        .map((group) => group.id == groupId
+            ? group.copyWith(title: trimmed)
+            : group)
+        .toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+  }
+
+  void setGroupColor({
+    required String groupId,
+    required String colorHex,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups
+        .map((group) => group.id == groupId
+            ? group.copyWith(colorHex: colorHex)
+            : group)
+        .toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+  }
+
+  void resetGroupLayout({
+    required String groupId,
+  }) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final updated = template.chartGroups
+        .map((group) => group.id == groupId
+            ? group.copyWith(pillarOrder: const [])
+            : group)
+        .toList(growable: false);
+    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+  }
+
+  void clearGroup({required String groupId}) {
+    resetGroupLayout(groupId: groupId);
+  }
+
+  void duplicateGroup({required String groupId}) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final groups = List<ChartGroup>.of(template.chartGroups);
+    final index = groups.indexWhere((g) => g.id == groupId);
+    if (index < 0) return;
+    final source = groups[index];
+    final copy = ChartGroup(
+      id: _uuid.v4(),
+      title: _generateGroupName(source.title),
+      pillarOrder: List<PillarType>.of(source.pillarOrder),
+      locked: source.locked,
+      colorHex: source.colorHex,
+      expanded: source.expanded,
+    );
+    groups.insert(index + 1, copy);
+    _applyCurrentTemplate(template.copyWith(chartGroups: groups));
+    _selectedGroupId = copy.id;
+    notifyListeners();
+  }
+
+  String _generateGroupName(String base) {
+    final prefix = base.isNotEmpty ? base : '新分组';
+    final existing = (_currentTemplate?.chartGroups ?? const [])
+        .map((g) => g.title)
+        .toSet();
+    if (!existing.contains('$prefix (副本)')) return '$prefix (副本)';
+    var i = 2;
+    while (existing.contains('$prefix (副本 $i)')) {
+      i += 1;
+    }
+    return '$prefix (副本 $i)';
   }
 
   Future<void> saveCurrentTemplate() async {

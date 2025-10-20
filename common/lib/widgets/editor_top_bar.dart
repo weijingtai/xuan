@@ -10,7 +10,6 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
     super.key,
     required this.nameController,
     required this.onCreateTemplate,
-    required this.onOpenGallery,
     required this.onDeleteTemplate,
     required this.onDuplicateTemplate,
     required this.onSaveTemplate,
@@ -20,7 +19,6 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
 
   final TextEditingController nameController;
   final Future<void> Function() onCreateTemplate;
-  final VoidCallback onOpenGallery;
   final VoidCallback onDeleteTemplate;
   final VoidCallback onDuplicateTemplate;
   final VoidCallback onSaveTemplate;
@@ -97,7 +95,6 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
             currentTemplate: currentTemplate,
             nameController: nameController,
             onCreateTemplate: onCreateTemplate,
-            onOpenGallery: onOpenGallery,
             onDeleteTemplate: onDeleteTemplate,
             onDuplicateTemplate: onDuplicateTemplate,
             onSaveTemplate: onSaveTemplate,
@@ -117,7 +114,6 @@ class _EditorTopBarBody extends StatelessWidget {
     required this.currentTemplate,
     required this.nameController,
     required this.onCreateTemplate,
-    required this.onOpenGallery,
     required this.onDeleteTemplate,
     required this.onDuplicateTemplate,
     required this.onSaveTemplate,
@@ -130,7 +126,6 @@ class _EditorTopBarBody extends StatelessWidget {
   final LayoutTemplate? currentTemplate;
   final TextEditingController nameController;
   final Future<void> Function() onCreateTemplate;
-  final VoidCallback onOpenGallery;
   final VoidCallback onDeleteTemplate;
   final VoidCallback onDuplicateTemplate;
   final VoidCallback onSaveTemplate;
@@ -157,20 +152,14 @@ class _EditorTopBarBody extends StatelessWidget {
                 templates: templates,
                 currentTemplate: currentTemplate,
                 nameController: nameController,
-                onOpenGallery: onOpenGallery,
                 onDeleteTemplate: onDeleteTemplate,
                 onDuplicateTemplate: onDuplicateTemplate,
                 onSaveTemplate: onSaveTemplate,
                 onUndoChanges: onUndoChanges,
                 onNameChanged: onNameChanged,
               ),
-              const SizedBox(height: 16),
-              _TemplateTabBar(
-                templates: templates,
-                currentTemplate: currentTemplate,
-                isBusy: isBusy,
-                onCreateTemplate: onCreateTemplate,
-              ),
+              // New TemplateGalleryView supersedes the old chip tab bar.
+              // Removing the old _TemplateTabBar to avoid duplicate template UI.
             ],
           ),
         ),
@@ -185,7 +174,6 @@ class _TopBarControls extends StatelessWidget {
     required this.templates,
     required this.currentTemplate,
     required this.nameController,
-    required this.onOpenGallery,
     required this.onDeleteTemplate,
     required this.onDuplicateTemplate,
     required this.onSaveTemplate,
@@ -197,7 +185,6 @@ class _TopBarControls extends StatelessWidget {
   final List<LayoutTemplate> templates;
   final LayoutTemplate? currentTemplate;
   final TextEditingController nameController;
-  final VoidCallback onOpenGallery;
   final VoidCallback onDeleteTemplate;
   final VoidCallback onDuplicateTemplate;
   final VoidCallback onSaveTemplate;
@@ -218,38 +205,7 @@ class _TopBarControls extends StatelessWidget {
             children: [
               const Icon(Icons.space_dashboard_outlined, size: 24),
               const SizedBox(width: 16),
-              SizedBox(
-                width: 220,
-                child: FocusTraversalOrder(
-                  order: const NumericFocusOrder(1),
-                  child: DropdownButtonFormField<String>(
-                    value: currentTemplate?.id,
-                    decoration: const InputDecoration(
-                      labelText: '模板集合',
-                      isDense: true,
-                      border: OutlineInputBorder(borderSide: BorderSide.none),
-                    ),
-                    items: templates
-                        .map(
-                          (template) => DropdownMenuItem<String>(
-                            value: template.id,
-                            child: Text(
-                              template.name,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        )
-                        .toList(growable: false),
-                    onChanged: isBusy
-                        ? null
-                        : (value) {
-                            if (value != null) {
-                              viewModel.selectTemplateByTab(value);
-                            }
-                          },
-                  ),
-                ),
-              ),
+              // Removed legacy template selector dropdown to avoid duplicating UI
               const SizedBox(width: 16),
               Expanded(
                 child: FocusTraversalOrder(
@@ -287,13 +243,7 @@ class _TopBarControls extends StatelessWidget {
                     ? null
                     : (mode) => viewModel.setViewMode(mode),
               ),
-              Tooltip(
-                message: '打开模板库 (Alt+G)',
-                child: IconButton(
-                  icon: const Icon(Icons.collections_bookmark_outlined),
-                  onPressed: isBusy ? null : onOpenGallery,
-                ),
-              ),
+              // Legacy open gallery button removed; TemplateGalleryView handles gallery actions
               Tooltip(
                 message: '切换深色模式',
                 child: Row(

@@ -1,17 +1,15 @@
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
-
-import '../datamodel/location.dart';
 import '../enums/enum_di_zhi.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_tian_gan.dart';
 
-/// 显示城市选择器底部弹窗
-Future<Address?> showEightCharsPickerBottomSheet({
+/// 显示八字选择器底部弹窗
+Future<EightChars?> showEightCharsPickerBottomSheet({
   required BuildContext context,
   required EightChars? eightChars,
 }) {
-  return showModalBottomSheet<Address>(
+  return showModalBottomSheet<EightChars>(
     context: context,
     isScrollControlled: true, // 允许弹窗占据更大空间
     shape: const RoundedRectangleBorder(
@@ -109,22 +107,12 @@ class _EightCharsPickerBottomSheetSheetState
 
   /// 完成选择
   void _finishSelection() {
-    // Location newLocation = widget.initLocation.copyWith(
-    //   province: _selectedProvince.value,
-    //   city: _selectedCity.value,
-    //   area: _selectedCounty.value,
-    // );
-    // Navigator.of(context).pop(newLocation);
-    // 返回最精确的选择结果
-    // if (_selectedCounty.value != null) {
-    //   Navigator.of(context).pop(_selectedCounty.value);
-    // } else if (_selectedCity.value != null) {
-    //   Navigator.of(context).pop(_selectedCity.value);
-    // } else if (_selectedProvince.value != null) {
-    //   Navigator.of(context).pop(_selectedProvince.value);
-    // } else {
-    //   Navigator.of(context).pop();
-    // }
+    final year = _selectedYear.value ?? JiaZi.JIA_ZI;
+    final month = _selectedMonth.value ?? JiaZi.JIA_ZI;
+    final day = _selectedDay.value ?? JiaZi.JIA_ZI;
+    final time = _selectedTime.value ?? JiaZi.JIA_ZI;
+    final result = EightChars(year: year, month: month, day: day, time: time);
+    Navigator.of(context).pop(result);
   }
 
   @override

@@ -111,21 +111,33 @@ class ChartGroup {
     required this.id,
     required this.title,
     required List<PillarType> pillarOrder,
+    this.locked = false,
+    this.colorHex,
+    this.expanded = true,
   }) : pillarOrder = List.unmodifiable(pillarOrder);
 
   final String id;
   final String title;
   final List<PillarType> pillarOrder;
+  final bool locked;
+  final String? colorHex;
+  final bool expanded;
 
   ChartGroup copyWith({
     String? id,
     String? title,
     List<PillarType>? pillarOrder,
+    bool? locked,
+    String? colorHex,
+    bool? expanded,
   }) {
     return ChartGroup(
       id: id ?? this.id,
       title: title ?? this.title,
       pillarOrder: pillarOrder ?? this.pillarOrder,
+      locked: locked ?? this.locked,
+      colorHex: colorHex ?? this.colorHex,
+      expanded: expanded ?? this.expanded,
     );
   }
 
@@ -134,6 +146,9 @@ class ChartGroup {
       'id': id,
       'title': title,
       'pillarOrder': pillarOrder.map((pillar) => pillar.name).toList(),
+      'locked': locked,
+      'colorHex': colorHex,
+      'expanded': expanded,
     };
   }
 
@@ -146,6 +161,9 @@ class ChartGroup {
               (element) => element.name == name as String,
               orElse: () => PillarType.year))
           .toList(),
+      locked: json['locked'] as bool? ?? false,
+      colorHex: json['colorHex'] as String?,
+      expanded: json['expanded'] as bool? ?? true,
     );
   }
 
@@ -156,12 +174,21 @@ class ChartGroup {
     return other is ChartGroup &&
         other.id == id &&
         other.title == title &&
-        const ListEquality<PillarType>().equals(other.pillarOrder, pillarOrder);
+        const ListEquality<PillarType>().equals(other.pillarOrder, pillarOrder) &&
+        other.locked == locked &&
+        other.colorHex == colorHex &&
+        other.expanded == expanded;
   }
 
   @override
   int get hashCode => Object.hash(
-      id, title, const ListEquality<PillarType>().hash(pillarOrder));
+        id,
+        title,
+        const ListEquality<PillarType>().hash(pillarOrder),
+        locked,
+        colorHex,
+        expanded,
+      );
 }
 
 class CardStyle {
@@ -258,21 +285,49 @@ class RowConfig {
     required this.type,
     required this.isVisible,
     required this.isTitleVisible,
+    this.fontFamily,
+    this.fontSize,
+    this.textColorHex,
+    this.textAlign,
+    this.padding,
+    this.borderType,
+    this.borderColorHex,
   });
 
   final RowType type;
   final bool isVisible;
   final bool isTitleVisible;
+  final String? fontFamily;
+  final double? fontSize;
+  final String? textColorHex;
+  final RowTextAlign? textAlign;
+  final double? padding;
+  final BorderType? borderType;
+  final String? borderColorHex;
 
   RowConfig copyWith({
     RowType? type,
     bool? isVisible,
     bool? isTitleVisible,
+    String? fontFamily,
+    double? fontSize,
+    String? textColorHex,
+    RowTextAlign? textAlign,
+    double? padding,
+    BorderType? borderType,
+    String? borderColorHex,
   }) {
     return RowConfig(
       type: type ?? this.type,
       isVisible: isVisible ?? this.isVisible,
       isTitleVisible: isTitleVisible ?? this.isTitleVisible,
+      fontFamily: fontFamily ?? this.fontFamily,
+      fontSize: fontSize ?? this.fontSize,
+      textColorHex: textColorHex ?? this.textColorHex,
+      textAlign: textAlign ?? this.textAlign,
+      padding: padding ?? this.padding,
+      borderType: borderType ?? this.borderType,
+      borderColorHex: borderColorHex ?? this.borderColorHex,
     );
   }
 
@@ -281,6 +336,13 @@ class RowConfig {
       'type': type.name,
       'isVisible': isVisible,
       'isTitleVisible': isTitleVisible,
+      'fontFamily': fontFamily,
+      'fontSize': fontSize,
+      'textColorHex': textColorHex,
+      'textAlign': textAlign?.name,
+      'padding': padding,
+      'borderType': borderType?.name,
+      'borderColorHex': borderColorHex,
     };
   }
 
@@ -292,11 +354,32 @@ class RowConfig {
             orElse: () => RowType.heavenlyStem,
           )
         : RowType.heavenlyStem;
+    final textAlignName = json['textAlign'] as String?;
+    final textAlign = textAlignName != null
+        ? RowTextAlign.values.firstWhere(
+            (e) => e.name == textAlignName,
+            orElse: () => RowTextAlign.left,
+          )
+        : null;
+    final borderTypeName = json['borderType'] as String?;
+    final borderType = borderTypeName != null
+        ? BorderType.values.firstWhere(
+            (e) => e.name == borderTypeName,
+            orElse: () => BorderType.solid,
+          )
+        : null;
 
     return RowConfig(
       type: rowType,
       isVisible: json['isVisible'] as bool? ?? true,
       isTitleVisible: json['isTitleVisible'] as bool? ?? true,
+      fontFamily: json['fontFamily'] as String?,
+      fontSize: (json['fontSize'] as num?)?.toDouble(),
+      textColorHex: json['textColorHex'] as String?,
+      textAlign: textAlign,
+      padding: (json['padding'] as num?)?.toDouble(),
+      borderType: borderType,
+      borderColorHex: json['borderColorHex'] as String?,
     );
   }
 
@@ -307,9 +390,27 @@ class RowConfig {
     return other is RowConfig &&
         other.type == type &&
         other.isVisible == isVisible &&
-        other.isTitleVisible == isTitleVisible;
+        other.isTitleVisible == isTitleVisible &&
+        other.fontFamily == fontFamily &&
+        other.fontSize == fontSize &&
+        other.textColorHex == textColorHex &&
+        other.textAlign == textAlign &&
+        other.padding == padding &&
+        other.borderType == borderType &&
+        other.borderColorHex == borderColorHex;
   }
 
   @override
-  int get hashCode => Object.hash(type, isVisible, isTitleVisible);
+  int get hashCode => Object.hash(
+        type,
+        isVisible,
+        isTitleVisible,
+        fontFamily,
+        fontSize,
+        textColorHex,
+        textAlign,
+        padding,
+        borderType,
+        borderColorHex,
+      );
 }

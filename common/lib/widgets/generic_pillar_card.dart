@@ -7,6 +7,8 @@ import 'package:common/themes/gan_zhi_gua_colors.dart';
 import 'package:common/widgets/card_row.dart';
 import 'package:common/widgets/card_row_widget.dart';
 import 'eight_chars_card.dart';
+import 'package:common/models/layout_template.dart';
+import 'package:common/enums/layout_template_enums.dart';
 
 class GenericPillarCard extends StatefulWidget {
   final String? title;
@@ -16,6 +18,8 @@ class GenericPillarCard extends StatefulWidget {
   final Gender? gender;
 
   final bool showTenGods;
+  final bool showTianGan;
+  final bool showDiZhi;
   final bool showCangGanMain;
   final bool showCangGanMainTenGods;
   final bool showCangGanZhong;
@@ -30,6 +34,7 @@ class GenericPillarCard extends StatefulWidget {
   final bool isColumnReorderMode;
   final void Function(int, int) onRowReorder;
   final void Function(int, int) onPillarReorder;
+  final Map<String, RowConfig>? rowStyles;
 
   const GenericPillarCard({
     Key? key,
@@ -39,6 +44,8 @@ class GenericPillarCard extends StatefulWidget {
     required this.isBenMing,
     this.gender,
     this.showTenGods = false,
+    this.showTianGan = true,
+    this.showDiZhi = true,
     this.showCangGanMain = false,
     this.showCangGanMainTenGods = false,
     this.showCangGanZhong = false,
@@ -52,13 +59,15 @@ class GenericPillarCard extends StatefulWidget {
     this.isColumnReorderMode = false,
     required this.onRowReorder,
     required this.onPillarReorder,
+    this.rowStyles,
   }) : super(key: key);
 
   @override
   _GenericPillarCardState createState() => _GenericPillarCardState();
 }
 
-class _GenericPillarCardState extends State<GenericPillarCard> with SingleTickerProviderStateMixin {
+class _GenericPillarCardState extends State<GenericPillarCard>
+    with SingleTickerProviderStateMixin {
   late List<String> _rowOrder;
   late List<String> _pillarOrder;
 
@@ -71,7 +80,8 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   @override
   void didUpdateWidget(covariant GenericPillarCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!const DeepCollectionEquality().equals(widget.pillars, oldWidget.pillars) ||
+    if (!const DeepCollectionEquality()
+            .equals(widget.pillars, oldWidget.pillars) ||
         widget.showTenGods != oldWidget.showTenGods ||
         widget.showCangGanMain != oldWidget.showCangGanMain ||
         widget.showCangGanMainTenGods != oldWidget.showCangGanMainTenGods ||
@@ -88,13 +98,16 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
 
   void _buildOrders() {
     _pillarOrder = widget.pillars.map((p) => p.label).toList();
-    final newRowOrder = [CardRow.pillarHeader, CardRow.tianGan];
+    final newRowOrder = <String>[CardRow.pillarHeader];
+    if (widget.showTianGan) newRowOrder.add(CardRow.tianGan);
     if (widget.showTenGods) newRowOrder.add(CardRow.tenGods);
-    newRowOrder.add(CardRow.diZhi);
+    if (widget.showDiZhi) newRowOrder.add(CardRow.diZhi);
     if (widget.showCangGanMain) newRowOrder.add(CardRow.cangGanMain);
-    if (widget.showCangGanMainTenGods) newRowOrder.add(CardRow.cangGanMainTenGods);
+    if (widget.showCangGanMainTenGods)
+      newRowOrder.add(CardRow.cangGanMainTenGods);
     if (widget.showCangGanZhong) newRowOrder.add(CardRow.cangGanZhong);
-    if (widget.showCangGanZhongTenGods) newRowOrder.add(CardRow.cangGanZhongTenGods);
+    if (widget.showCangGanZhongTenGods)
+      newRowOrder.add(CardRow.cangGanZhongTenGods);
     if (widget.showCangGanYu) newRowOrder.add(CardRow.cangGanYu);
     if (widget.showCangGanYuTenGods) newRowOrder.add(CardRow.cangGanYuTenGods);
     if (widget.showXunShou) newRowOrder.add(CardRow.xunShou);
@@ -103,9 +116,96 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
     _rowOrder = newRowOrder;
   }
 
-  TextStyle get _tianGanTextStyle => GoogleFonts.zhiMangXing(fontWeight: FontWeight.w200, fontSize: 28, height: 1,);
-  TextStyle get _diZhiTextStyle => GoogleFonts.longCang(fontSize: 28, height: 1, fontWeight: FontWeight.w500,);
-  TextStyle get _labelTextStyle => GoogleFonts.zhiMangXing(fontSize: 14, height: 1.0,);
+  TextStyle get _tianGanTextStyle => GoogleFonts.zhiMangXing(
+        fontWeight: FontWeight.w200,
+        fontSize: 28,
+        height: 1,
+      );
+  TextStyle get _diZhiTextStyle => GoogleFonts.longCang(
+        fontSize: 28,
+        height: 1,
+        fontWeight: FontWeight.w500,
+      );
+  TextStyle get _labelTextStyle => GoogleFonts.zhiMangXing(
+        fontSize: 14,
+        height: 1.0,
+      );
+
+  // Row style resolver (basic mapping)
+  TextStyle _resolveTextStyle(String rowType) {
+    switch (rowType) {
+      case CardRow.tianGan:
+        return _tianGanTextStyle;
+      case CardRow.diZhi:
+        return _diZhiTextStyle;
+      default:
+        return _labelTextStyle;
+    }
+  }
+
+  BoxBorder? _resolveBorder(String rowType) {
+    final cfg = _cfg(rowType);
+    if (cfg == null || cfg.borderType == null) return null;
+    final color = _hexToColor(cfg.borderColorHex ?? '#22334155');
+    switch (cfg.borderType!) {
+      case BorderType.none:
+        return Border.all(color: color.withValues(alpha: 0));
+      case BorderType.solid:
+        return Border.all(color: color);
+      case BorderType.dashed:
+      case BorderType.dotted:
+        return Border.all(color: color.withValues(alpha: 0.6));
+    }
+  }
+
+  EdgeInsets _resolvePadding(String rowType) {
+    final cfg = _cfg(rowType);
+    final double p = (cfg?.padding ?? 4).clamp(0, 24);
+    return EdgeInsets.symmetric(vertical: p);
+  }
+
+  TextAlign _resolveAlign(String rowType) {
+    final align = _cfg(rowType)?.textAlign;
+    switch (align) {
+      case RowTextAlign.center:
+        return TextAlign.center;
+      case RowTextAlign.right:
+        return TextAlign.right;
+      case RowTextAlign.left:
+      default:
+        return TextAlign.center;
+    }
+  }
+
+  TextStyle _applyOverrides(String rowType, TextStyle base) {
+    final cfg = _cfg(rowType);
+    if (cfg == null) return base;
+    var style = base;
+    if (cfg.fontFamily != null) {
+      style = style.copyWith(fontFamily: cfg.fontFamily);
+    }
+    if (cfg.fontSize != null) {
+      style = style.copyWith(fontSize: cfg.fontSize);
+    }
+    if (cfg.textColorHex != null && cfg.textColorHex!.isNotEmpty) {
+      style = style.copyWith(color: _hexToColor(cfg.textColorHex!));
+    }
+    return style;
+  }
+
+  RowConfig? _cfg(String rowType) => widget.rowStyles?[rowType];
+
+  Color _hexToColor(String hex) {
+    final sanitized = hex.trim();
+    final buffer = StringBuffer();
+    if (sanitized.length == 6 || sanitized.length == 7) buffer.write('FF');
+    buffer.write(sanitized.replaceFirst('#', ''));
+    try {
+      return Color(int.parse(buffer.toString(), radix: 16));
+    } catch (_) {
+      return const Color(0xFF0F172A);
+    }
+  }
 
   // All build methods here, adapted
 
@@ -183,9 +283,14 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
     switch (rowType) {
       case CardRow.pillarHeader:
         return _buildPillarHeaderRow(
-            key: key, pillarOrder: pillarOrder, pillars: pillars, isBenMing: widget.isBenMing, gender: widget.gender);
+            key: key,
+            pillarOrder: pillarOrder,
+            pillars: pillars,
+            isBenMing: widget.isBenMing,
+            gender: widget.gender);
       case CardRow.tianGan:
-        return _buildTianGanRow(key: key, pillarOrder: pillarOrder, pillars: pillars);
+        return _buildTianGanRow(
+            key: key, pillarOrder: pillarOrder, pillars: pillars);
       case CardRow.tenGods:
         return _buildTenGodsRow(
             key: key,
@@ -194,7 +299,8 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
             dayMaster: widget.dayMaster,
             isBenMing: widget.isBenMing);
       case CardRow.diZhi:
-        return _buildDiZhiRow(key: key, pillarOrder: pillarOrder, pillars: pillars);
+        return _buildDiZhiRow(
+            key: key, pillarOrder: pillarOrder, pillars: pillars);
       case CardRow.cangGanMain:
         return _buildHiddenGanRow(
             key: key,
@@ -278,16 +384,19 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text(label, style: _labelTextStyle),
+      label: _buildLabel(rowType: CardRow.xunShou, defaultText: label),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
         return Text(
           extractor(jiaZi),
-          style: _labelTextStyle,
-          textAlign: TextAlign.center,
+          style: _applyOverrides(
+              CardRow.xunShou, _resolveTextStyle(CardRow.xunShou)),
+          textAlign: _resolveAlign(CardRow.xunShou),
         );
       }).toList(),
+      padding: _resolvePadding(CardRow.xunShou),
+      border: _resolveBorder(CardRow.xunShou),
     );
   }
 
@@ -300,10 +409,21 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text(isBenMing ? (gender == Gender.male ? '乾造' : (gender == Gender.female ? '坤造' : '')) : '流运', style: _labelTextStyle),
+      label: _buildLabel(
+          rowType: CardRow.pillarHeader,
+          defaultText: isBenMing
+              ? (gender == Gender.male
+                  ? '乾造'
+                  : (gender == Gender.female ? '坤造' : ''))
+              : '流运'),
       cells: pillarOrder.map((pillarLabel) {
-        return Text(pillarLabel, style: _labelTextStyle, textAlign: TextAlign.center);
+        return Text(pillarLabel,
+            style: _applyOverrides(
+                CardRow.pillarHeader, _resolveTextStyle(CardRow.pillarHeader)),
+            textAlign: _resolveAlign(CardRow.pillarHeader));
       }).toList(),
+      padding: _resolvePadding(CardRow.pillarHeader),
+      border: _resolveBorder(CardRow.pillarHeader),
     );
   }
 
@@ -314,16 +434,22 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text('天干', style: _labelTextStyle),
+      label: _buildLabel(rowType: CardRow.tianGan, defaultText: '天干'),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
-        return Text(
-          jiaZi.tianGan.value,
-          style: _tianGanTextStyle.copyWith(color: AppColors.zodiacGanColors[jiaZi.tianGan]),
-          textAlign: TextAlign.center,
-        );
+        var style = _applyOverrides(
+            CardRow.tianGan, _resolveTextStyle(CardRow.tianGan));
+        // 如果未自定义颜色，保持按五行色彩
+        if (widget.rowStyles?[CardRow.tianGan]?.textColorHex == null) {
+          style =
+              style.copyWith(color: AppColors.zodiacGanColors[jiaZi.tianGan]);
+        }
+        return Text(jiaZi.tianGan.value,
+            style: style, textAlign: _resolveAlign(CardRow.tianGan));
       }).toList(),
+      padding: _resolvePadding(CardRow.tianGan),
+      border: _resolveBorder(CardRow.tianGan),
     );
   }
 
@@ -334,16 +460,20 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text('地支', style: _labelTextStyle),
+      label: _buildLabel(rowType: CardRow.diZhi, defaultText: '地支'),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
-        return Text(
-          jiaZi.diZhi.value,
-          style: _diZhiTextStyle.copyWith(color: AppColors.zodiacZhiColors[jiaZi.diZhi]),
-          textAlign: TextAlign.center,
-        );
+        var style =
+            _applyOverrides(CardRow.diZhi, _resolveTextStyle(CardRow.diZhi));
+        if (widget.rowStyles?[CardRow.diZhi]?.textColorHex == null) {
+          style = style.copyWith(color: AppColors.zodiacZhiColors[jiaZi.diZhi]);
+        }
+        return Text(jiaZi.diZhi.value,
+            style: style, textAlign: _resolveAlign(CardRow.diZhi));
       }).toList(),
+      padding: _resolvePadding(CardRow.diZhi),
+      border: _resolveBorder(CardRow.diZhi),
     );
   }
 
@@ -356,7 +486,7 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text('十神', style: _labelTextStyle),
+      label: _buildLabel(rowType: CardRow.tenGods, defaultText: '十神'),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
@@ -366,12 +496,13 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
         } else {
           tenGodText = jiaZi.tianGan.getTenGods(dayMaster).name;
         }
-        return Text(
-          tenGodText,
-          style: _labelTextStyle,
-          textAlign: TextAlign.center,
-        );
+        return Text(tenGodText,
+            style: _applyOverrides(
+                CardRow.tenGods, _resolveTextStyle(CardRow.tenGods)),
+            textAlign: _resolveAlign(CardRow.tenGods));
       }).toList(),
+      padding: _resolvePadding(CardRow.tenGods),
+      border: _resolveBorder(CardRow.tenGods),
     );
   }
 
@@ -384,18 +515,24 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text(label, style: _labelTextStyle),
+      label: _buildLabel(
+          rowType: rowTypeFromIndex(cangGanIndex), defaultText: label),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
         final cangGanList = jiaZi.diZhi.cangGan;
-        final text = cangGanList.length > cangGanIndex ? cangGanList[cangGanIndex].value : '';
-        return Text(
-          text,
-          style: _tianGanTextStyle.copyWith(fontSize: 18),
-          textAlign: TextAlign.center,
-        );
+        final text = cangGanList.length > cangGanIndex
+            ? cangGanList[cangGanIndex].value
+            : '';
+        return Text(text,
+            style: _applyOverrides(
+                rowTypeFromIndex(cangGanIndex),
+                _resolveTextStyle(rowTypeFromIndex(cangGanIndex))
+                    .copyWith(fontSize: 18)),
+            textAlign: _resolveAlign(rowTypeFromIndex(cangGanIndex)));
       }).toList(),
+      padding: _resolvePadding(rowTypeFromIndex(cangGanIndex)),
+      border: _resolveBorder(rowTypeFromIndex(cangGanIndex)),
     );
   }
 
@@ -409,7 +546,8 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
   }) {
     return CardRowWidget(
       key: key,
-      label: Text(label, style: _labelTextStyle),
+      label: _buildLabel(
+          rowType: rowTypeFromIndex(cangGanIndex), defaultText: label),
       cells: pillarOrder.map((pillarLabel) {
         final jiaZi = pillars[pillarLabel];
         if (jiaZi == null) return const SizedBox.shrink();
@@ -419,12 +557,32 @@ class _GenericPillarCardState extends State<GenericPillarCard> with SingleTicker
           final hiddenStem = cangGanList[cangGanIndex];
           text = hiddenStem.getTenGods(dayMaster).name;
         }
-        return Text(
-          text,
-          style: _labelTextStyle,
-          textAlign: TextAlign.center,
-        );
+        return Text(text,
+            style: _applyOverrides(rowTypeFromIndex(cangGanIndex),
+                _resolveTextStyle(rowTypeFromIndex(cangGanIndex))),
+            textAlign: _resolveAlign(rowTypeFromIndex(cangGanIndex)));
       }).toList(),
+      padding: _resolvePadding(rowTypeFromIndex(cangGanIndex)),
+      border: _resolveBorder(rowTypeFromIndex(cangGanIndex)),
     );
+  }
+
+  String rowTypeFromIndex(int index) {
+    switch (index) {
+      case 0:
+        return CardRow.cangGanMain;
+      case 1:
+        return CardRow.cangGanZhong;
+      case 2:
+        return CardRow.cangGanYu;
+      default:
+        return CardRow.cangGanMain;
+    }
+  }
+
+  Widget _buildLabel({required String rowType, required String defaultText}) {
+    final show = widget.rowStyles?[rowType]?.isTitleVisible ?? true;
+    if (!show) return const SizedBox(width: 40);
+    return Text(defaultText, style: _labelTextStyle);
   }
 }
