@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/models/fate_year_month_pair.dart'; // DongWeiDaXianMingGongCountingType 枚举定义在这里
 
 import '../../../enums/enum_panel_system_type.dart';
 
