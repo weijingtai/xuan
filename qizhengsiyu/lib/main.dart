@@ -4,8 +4,8 @@ import 'package:common/enums.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi.dart';

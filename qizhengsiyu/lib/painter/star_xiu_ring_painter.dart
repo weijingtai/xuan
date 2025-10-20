@@ -5,7 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'dart:math' as math;
 
-import '../models/star_inn_gong_degree.dart';
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
 
 class StarXiuRingPainter extends CustomPainter {
   double outerSize;
