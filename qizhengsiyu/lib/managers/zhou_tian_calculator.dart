@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:common/enums.dart';
 
 import '../enums/enum_twelve_gong.dart';
-import '../models/zhou_tian_model.dart';
+import '../domain/entities/models/zhou_tian_model.dart'; // ��用domain层的模型
 import '../xing_xian/gong_constellation_mapping.dart';
 
 // --- 计算逻辑 ---

@@ -1,20 +1,17 @@
-// --- (假设之前的 ZhouTianCalculator 和其数据结构已存在) ---
-// --- (假设 YearMonth, CelestialObject 等辅助类已存在) ---
-
 import 'dart:math';
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
-import 'package:qizhengsiyu/models/base_panel_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart'; // 使用domain层的模型
 
 import '../enums/enum_panel_system_type.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../managers/zhou_tian_calculator.dart';
 import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
-import '../models/star_enter_info.dart';
-import '../models/zhou_tian_model.dart';
+import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
+import '../domain/entities/models/zhou_tian_model.dart'; // 使用domain层的模型
 import 'da_xian_constellation_passage_info.dart';
 import 'da_xian_palace_info.dart';
 import 'gong_constellation_mapping.dart';

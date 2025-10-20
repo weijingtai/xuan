@@ -2,7 +2,7 @@ import 'package:common/enums/enum_di_zhi.dart';
 import 'package:decimal/decimal.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
-import 'package:qizhengsiyu/models/zhou_tian_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart'; // 使用domain层的模型
 
 import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 

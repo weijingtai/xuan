@@ -17,7 +17,7 @@ import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
 import 'package:qizhengsiyu/models/star_angle_speed.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/models/stars_angle.dart';
-import 'package:qizhengsiyu/models/zhou_tian_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/utils/star_walking_info_utils.dart';
 import 'package:timezone/timezone.dart' as tz;
 

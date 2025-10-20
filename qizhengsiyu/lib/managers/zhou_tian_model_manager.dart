@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:common/enums.dart';
 import 'package:flutter/services.dart';
 import 'package:tuple/tuple.dart';
-import '../models/zhou_tian_model.dart';
+import '../domain/entities/models/zhou_tian_model.dart'; // 使用domain层的模型
 import '../models/panel_config.dart';
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
 import '../enums/enum_panel_system_type.dart';
