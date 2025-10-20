@@ -11,30 +11,32 @@ import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:common/module.dart';
-import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
-import 'package:qizhengsiyu/models/eleven_stars_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/passage_year_panel_model.dart';
+import 'package:qizhengsiyu/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
+import 'package:qizhengsiyu/domain/entities/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
-import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
+// import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart'; // 旧的 ViewModel,已废弃
 
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
-import '../models/body_life_model.dart';
+import '../domain/entities/models/body_life_model.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
-import '../models/panel_stars_info.dart';
-import '../models/stars_angle.dart';
-import '../models/observer_position.dart';
+import '../domain/entities/models/panel_stars_info.dart';
+import '../domain/entities/models/stars_angle.dart';
+import '../domain/entities/models/observer_position.dart';
 import '../painter/painters.dart';
 import '../painter/star_body_ring_painter.dart';
 import '../painter/star_xiu_ring_painter.dart';
 import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
 import '../qi_zheng_si_yu_ui_constant_resources.dart';
 // star_body.dart import no longer needed after extraction
-import 'beauty_page_viewmodel.dart';
+// import 'beauty_page_viewmodel.dart'; // 已替换为新的 MVVM ViewModel
+import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
 import 'package:qizhengsiyu/widgets/panel_widget.dart';
 import 'package:qizhengsiyu/widgets/ring_layer.dart';
 import 'package:qizhengsiyu/widgets/star_ring_layer.dart';
@@ -45,10 +47,10 @@ import 'package:qizhengsiyu/widgets/twelve_gong_text_ring.dart';
 import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/models/panel_ui_size.dart';
+import 'package:qizhengsiyu/models/panel_ui_size.dart'; // UI模型,保留在原位置
 
 // 尺寸模型已迁移至 models/panel_ui_size.dart
 
@@ -112,7 +114,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   late QiZhengSiYuPanSizeDataModel panelSizeDataModel;
 
   Future<void> devInit() async {
-    final vm = context.read<BeautyPageViewModel>();
+    final vm = context.read<QiZhengSiYuViewModel>();
     await vm.init();
     final res = await Future.wait([
       loadDiviniation(),
@@ -253,10 +255,10 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
     _panelController = QiZhengPanelController(
       config: defaultPanelConfig,
-      basePanel: context.read<BeautyPageViewModel>().uiBasePanelNotifier,
-      daXianPanel: context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
-      innerStars: context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
-      outerStars: context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+      basePanel: context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
+      daXianPanel: context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
+      innerStars: context.read<QiZhengSiYuViewModel>().uiBasicLifeStarsNotifier,
+      outerStars: context.read<QiZhengSiYuViewModel>().uiFateLifeStarsNotifier,
       rotationDeg: 30,
     );
 
@@ -265,7 +267,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       final args = ModalRoute.of(context)?.settings.arguments;
       if (args is PanelConfig) {
         _panelController.updateConfig(args);
-        final vm = context.read<BeautyPageViewModel>();
+        final vm = context.read<QiZhengSiYuViewModel>();
         vm.setOverridePanelConfig(args);
         vm.init().then((_) {
           if (vm.lifeObserver != null) {
@@ -589,7 +591,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   Widget eigthChatPanel(ObserverPosition observer) {
     // ValueListenableBuilder<ObserverPosition?>(
     // valueListenable: context
-    //     .read<BeautyPageViewModel>()
+    //     .read<QiZhengSiYuViewModel>()
     //     .observerPositionNotifier,
     // builder: (ctx, position, _) {
     //   if (position == null) {
@@ -884,7 +886,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 本命盘星轨（轨道在下）
         StarRingLayer(
           starsListenable:
-              context.read<BeautyPageViewModel>().uiFateLifeStarsNotifier,
+              context.read<QiZhengSiYuViewModel>().uiFateLifeStarsNotifier,
           outerSize: fateLifeStarOuterSize,
           innerSize: fateLifeStarInnerSize,
           showTrack: true,
@@ -909,7 +911,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
         StarRingLayer(
           starsListenable:
-              context.read<BeautyPageViewModel>().uiBasicLifeStarsNotifier,
+              context.read<QiZhengSiYuViewModel>().uiBasicLifeStarsNotifier,
           outerSize: basicLifeStarRingOuterSize,
           innerSize: basicLifeStarRingInnerSize,
           showTrack: true,
@@ -943,7 +945,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           bodyRotationAngle: -30 * pi / 180,
           bodyBuilder: () => ValueListenableBuilder<BasePanelModel?>(
             valueListenable:
-                context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+                context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
             builder: (ctx, basePanel, child) {
               if (basePanel == null) {
                 return child!;
@@ -973,7 +975,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           bodyRotationAngle: -30 * pi / 180,
           bodyBuilder: () => ValueListenableBuilder<DaXianPanelModel?>(
               valueListenable:
-                  context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
+                  context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
               builder: (ctx, daXianPanel, child) {
                 if (daXianPanel == null) {
                   return child!;
@@ -995,7 +997,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           angle: -30 * pi / 180,
           child: ValueListenableBuilder<BasePanelModel?>(
               valueListenable:
-                  context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+                  context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
               builder: (ctx, baseModel, _) {
                 if (baseModel == null) {
                   // 显示中心占位以避免空白
@@ -2015,7 +2017,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Stack(
       children: [
         ValueListenableBuilder<BasePanelModel?>(
-          valueListenable: context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+          valueListenable: context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
           builder: (ctx, basePanel, child) {
             final List<String> contentList = basePanel == null
                 ? defaultDestiny12GongMapper.values
