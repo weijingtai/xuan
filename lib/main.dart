@@ -97,13 +97,13 @@ class MyApp extends StatelessWidget {
       ),
       showSemanticsDebugger: false,
       onGenerateRoute: NavigatorGenerator.generateRoute,
-      // initialRoute: '/qizhengsiyu',
+      initialRoute: '/qizhengsiyu/panel',
       // initialRoute: '/one_year',
       // initialRoute: '/dev', // 七政四余
       // initialRoute: '/common/dev', // 占测记录
       // initialRoute: '/qizhengsiyu/panel', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
-      initialRoute: '/daliuren', // 大六壬 (MVVM)
+      // initialRoute: '/daliuren', // 大六壬 (MVVM)
       // initialRoute: '/daliuren/dev', // 大六壬
       // initialRoute: '/qimendunjia', // 奇门遁甲
       // initialRoute: '/', // main

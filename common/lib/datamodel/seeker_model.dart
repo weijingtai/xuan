@@ -1,8 +1,7 @@
 import 'package:common/models/divination_datetime.dart';
-import 'package:common/shared/shared.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../shared/enums/enum_gender.dart';
+import 'package:common/enums.dart';
 import 'datetime_divination_datamodel.dart';
 import 'location.dart';
 

@@ -1,8 +1,9 @@
-import 'package:common/shared/shared.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:slide_switcher/slide_switcher.dart';
 
+import '../enums/enum_gender.dart';
+import '../enums/enum_jia_zi.dart';
 import 'gan_zhi_picker_alert_dialog.dart';
 
 class DivinationQuestionWidget extends StatefulWidget {
@@ -327,7 +328,7 @@ class _DivinationQuestionWidgetState extends State<DivinationQuestionWidget>
             slidersColors: const [Color(0xfff7f5f7)],
             containerBoxShadow: [
               BoxShadow(
-                color: Colors.grey.withOpacity(0.2),
+                color: Colors.grey.withValues(alpha: 0.2),
                 blurRadius: 2,
                 spreadRadius: 4,
               )

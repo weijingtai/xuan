@@ -1,8 +1,9 @@
-import 'package:common/enums/enum_month_token.dart';
-import 'package:common/enums/enum_twelve_ecliptic_gong.dart';
-import 'package:common/enums/enum_four_seasons.dart';
-import 'package:common/enums/enum_yin_yang.dart';
+import 'enum_four_seasons.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import 'enum_month_token.dart';
+import 'enum_twelve_ecliptic_gong.dart';
+import 'enum_yin_yang.dart';
 
 enum TwentyFourJieQi {
   @JsonValue("冬至")
@@ -98,17 +99,19 @@ enum TwentyFourJieQi {
   static TwentyFourJieQi fromName(String name) {
     return values.firstWhere((element) => element.name == name);
   }
+
   // getPrevious
   TwentyFourJieQi get previous {
     int _order = order - 1;
-    if (_order < 0){
+    if (_order < 0) {
       _order = 23;
     }
     return values[_order];
   }
-  TwentyFourJieQi get next{
+
+  TwentyFourJieQi get next {
     int _order = order + 1;
-    if (_order > 23){
+    if (_order > 23) {
       _order = 0;
     }
     return values[_order];
@@ -189,5 +192,3 @@ enum TwentyFourJieQi {
     }
   }
 }
-
-

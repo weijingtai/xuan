@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
 import 'package:common/datamodel/divination_type_data_model.dart';
+import 'package:common/enums/enum_stars.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,6 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/module.dart';
-import 'package:common/shared/shared.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 
 import 'package:common/painter/text_circle_ring_painter.dart';
@@ -261,7 +261,7 @@ class BeautyViewPageParams {
                 "isReverseSpeculation": false
               },
               "timezoneStr": "America/Los_Angeles",
-              "type": "阳历",
+              "type": "标准时间",
               "hourAdjusted": null,
               "isManualCalibration": false
             },

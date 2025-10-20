@@ -4,23 +4,15 @@ import 'dart:convert';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/common_logger.dart';
-import 'package:common/datamodel/basic_person_info.dart';
-import 'package:common/helpers/solar_time_calculator.dart';
-import 'package:common/models/eight_chars.dart';
 import 'package:common/models/sp_location_datamodel.dart';
-import 'package:common/models/sp_timezone_datamodel.dart';
-import 'package:common/shared/shared.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/widgets/city_picker_bottom_sheet.dart';
 import 'package:common/widgets/eight_chars_input_card.dart';
-import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:logger/web.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +25,7 @@ import 'package:uuid/uuid.dart';
 // import 'package:timezone/data/latest.dart' as tz;
 
 import '../datamodel/location.dart';
+import '../enums/enum_datetime_type.dart';
 import '../helpers/solar_lunar_datetime_helper.dart';
 import '../models/divination_datetime.dart';
 import 'responseive_datetime_dialog.dart';
@@ -684,7 +677,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
         boxShadow: selected == type
             ? [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 2,
                   spreadRadius: 2,
                   offset: Offset(2, 2),
@@ -695,8 +688,8 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
       child: Material(
         child: Ink(
           child: InkWell(
-            splashColor: Colors.blue.withOpacity(0.3),
-            highlightColor: Colors.blue.withOpacity(0.1),
+            splashColor: Colors.blue.withValues(alpha: 0.3),
+            highlightColor: Colors.blue.withValues(alpha: 0.1),
             borderRadius: BorderRadius.only(
               topLeft: Radius.circular(smallRadius),
               topRight: Radius.circular(smallRadius),
@@ -759,7 +752,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                 slidersColors: const [Color(0xfff7f5f7)],
                 containerBoxShadow: [
                   BoxShadow(
-                    color: Colors.grey.withOpacity(0.2),
+                    color: Colors.grey.withValues(alpha: 0.2),
                     blurRadius: 2,
                     spreadRadius: 4,
                   )
@@ -958,7 +951,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                           color: Colors.grey, width: 1),
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withOpacity(0.1),
+                                        color: Colors.black.withValues(alpha: 0.1),
                                         blurRadius: 2,
                                         spreadRadius: 2)
                                   ]),
@@ -1272,7 +1265,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
+                          color: Colors.black.withValues(alpha: 0.1),
                           blurRadius: 2,
                           spreadRadius: 2)
                     ]),
@@ -1365,7 +1358,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                     color: Colors.grey.shade600, width: 1),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
+                                      color: Colors.black.withValues(alpha: 0.1),
                                       blurRadius: 2,
                                       spreadRadius: 2)
                                 ]),

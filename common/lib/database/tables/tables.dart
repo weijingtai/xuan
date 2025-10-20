@@ -17,10 +17,7 @@ import '../../datamodel/seeker_model.dart';
 import '../../datamodel/sub_divination_type_data_model.dart';
 import '../../datamodel/timing_divination_model.dart';
 import '../../models/divination_datetime.dart';
-import '../../shared/enums/enum_datetime_type.dart';
-import '../../shared/enums/enum_gender.dart';
-import '../../shared/enums/enum_jia_zi.dart';
-import '../../shared/enums/enum_panel_type.dart';
+import 'package:common/enums.dart';
 import '../converters/nullable_location_converter.dart';
 
 @DataClassName('CombinedDivination')

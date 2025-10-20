@@ -33,7 +33,7 @@ class GeJuPanelTemplateXiong1 extends StatelessWidget {
           decoration: BoxDecoration(color: color, boxShadow: [
             BoxShadow(
               // color: Colors.black26,
-              color: color.withOpacity(.5),
+              color: color.withValues(alpha: .5),
               offset: const Offset(1, 1), //阴影xy轴偏移量
               blurRadius: 1, //阴影模糊程度
               spreadRadius: 1, //阴影扩散程度
@@ -46,7 +46,7 @@ class GeJuPanelTemplateXiong1 extends StatelessWidget {
           decoration: BoxDecoration(color: color, boxShadow: [
             BoxShadow(
               // color: Colors.black26,
-              color: color.withOpacity(.5),
+              color: color.withValues(alpha: .5),
               offset: const Offset(1, 1), //阴影xy轴偏移量
               blurRadius: 1, //阴影模糊程度
               spreadRadius: 1, //阴影扩散程度
@@ -59,7 +59,7 @@ class GeJuPanelTemplateXiong1 extends StatelessWidget {
           decoration: BoxDecoration(color: color, boxShadow: [
             BoxShadow(
               // color: Colors.black26,
-              color: color.withOpacity(.5),
+              color: color.withValues(alpha: .5),
               offset: const Offset(1, 1), //阴影xy轴偏移量
               blurRadius: 1, //阴影模糊程度
               spreadRadius: 1, //阴影扩散程度
@@ -150,7 +150,7 @@ class GeJuPanelTemplateXiong1 extends StatelessWidget {
                       fontWeight: FontWeight.w600,
                       shadows: [
                         Shadow(
-                            color: Colors.white.withOpacity(.4), blurRadius: 4)
+                            color: Colors.white.withValues(alpha: .4), blurRadius: 4)
                       ]),
                   maxLines: 1,
                   minFontSize: 8,

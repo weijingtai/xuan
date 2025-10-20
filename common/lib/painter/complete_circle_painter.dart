@@ -19,7 +19,7 @@ class CompleteCirclePainter extends CustomPainter {
 
 
     // Paint paint = Paint()
-    //   ..color = Colors.blue.withOpacity(.1)  // 设置背景颜色为蓝色
+    //   ..color = Colors.blue.withValues(alpha: .1)  // 设置背景颜色为蓝色
     //   ..style = PaintingStyle.fill;  // 设置绘图样式为填充
     //
     // // 创建一个与Canvas大小相同的矩形

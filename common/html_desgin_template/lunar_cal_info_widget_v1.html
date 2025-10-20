@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>八字排盘信息</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+    <style type="text/tailwindcss">
+        @tailwind base;
+        @tailwind components;
+        @tailwind utilities;
+        :root {
+          --primary: #AF865C;
+          --background-light: #FFFFFF;
+          --background-dark: #1A1A1A;
+          --card-border-light: #F0F0F0;
+          --card-border-dark: #2A2A2A;
+          --text-primary-light: #1F1F1F;
+          --text-primary-dark: #EFEFEF;
+          --text-secondary-light: #333333;
+          --text-secondary-dark: #D1D1D1;
+          --text-tertiary-light: #555555;
+          --text-tertiary-dark: #B0B0B0;
+          --text-quaternary-light: #888888;
+          --text-quaternary-dark: #999999;
+          --divider-light: #EAEAEA;
+          --divider-dark: #3A3A3A;
+          --track-light: #EEEEEE;
+          --track-dark: #444444;
+          --tag-bg-light: #F7F7F7;
+          --tag-bg-dark: #2C2C2C;
+          --tag-text-light: #555555;
+          --tag-text-dark: #B0B0B0;
+          --hou-bg-light: #F9F6F2;
+          --hou-bg-dark: #252321;
+          --hou-border-light: #EFE9E4;
+          --hou-border-dark: #383430;
+          --hou-text-primary-light: #AF865C;
+          --hou-text-primary-dark: #D4B595;
+          --hou-text-secondary-light: #7D6B5A;
+          --hou-text-secondary-dark: #A5927F;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                primary: "var(--primary)",
+                'background-light': 'var(--background-light)',
+                'background-dark': 'var(--background-dark)',
+                'card-border-light': 'var(--card-border-light)',
+                'card-border-dark': 'var(--card-border-dark)',
+                'text-primary-light': 'var(--text-primary-light)',
+                'text-primary-dark': 'var(--text-primary-dark)',
+                'text-secondary-light': 'var(--text-secondary-light)',
+                'text-secondary-dark': 'var(--text-secondary-dark)',
+                'text-tertiary-light': 'var(--text-tertiary-light)',
+                'text-tertiary-dark': 'var(--text-tertiary-dark)',
+                'text-quaternary-light': 'var(--text-quaternary-light)',
+                'text-quaternary-dark': 'var(--text-quaternary-dark)',
+                'divider-light': 'var(--divider-light)',
+                'divider-dark': 'var(--divider-dark)',
+                'track-light': 'var(--track-light)',
+                'track-dark': 'var(--track-dark)',
+                'tag-bg-light': 'var(--tag-bg-light)',
+                'tag-bg-dark': 'var(--tag-bg-dark)',
+                'tag-text-light': 'var(--tag-text-light)',
+                'tag-text-dark': 'var(--tag-text-dark)',
+                'hou-bg-light': 'var(--hou-bg-light)',
+                'hou-bg-dark': 'var(--hou-bg-dark)',
+                'hou-border-light': 'var(--hou-border-light)',
+                'hou-border-dark': 'var(--hou-border-dark)',
+                'hou-text-primary-light': 'var(--hou-text-primary-light)',
+                'hou-text-primary-dark': 'var(--hou-text-primary-dark)',
+                'hou-text-secondary-light': 'var(--hou-text-secondary-light)',
+                'hou-text-secondary-dark': 'var(--hou-text-secondary-dark)',
+              },
+              fontFamily: {
+                sans: ['"Noto Sans SC"', 'sans-serif'],
+                number: ["DIN Alternate", "sans-serif"],
+              },
+              borderRadius: {
+                'xl': '16px',
+                'lg': '12px',
+              },
+              boxShadow: {
+                'custom': '0px 8px 24px rgba(0, 0, 0, 0.05)',
+              },
+              fontSize: {
+                '2xs': '0.625rem',
+              }
+            },
+          },
+        };
+    </script>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+    <style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-background-dark p-4 flex justify-center items-start min-h-screen font-sans">
+<div class="w-full max-w-sm">
+    <div class="bg-background-light dark:bg-background-dark rounded-xl border border-card-border-light dark:border-card-border-dark shadow-custom p-5 space-y-5">
+        <div>
+            <div class="flex justify-between items-baseline mb-2">
+                <p class="text-base font-medium text-text-primary-light dark:text-text-primary-dark tracking-wide">2025年10月03日</p>
+                <div class="flex items-center space-x-1.5">
+                    <span class="material-symbols-outlined text-text-tertiary-light dark:text-text-tertiary-dark text-lg"> schedule </span>
+                    <p class="font-number text-base font-bold text-text-primary-light dark:text-text-primary-dark tracking-wider">14:09</p>
+                </div>
+            </div>
+            <p class="text-sm text-text-tertiary-light dark:text-text-tertiary-dark">乙巳年 八月十二 未时</p>
+        </div>
+        <hr class="border-t border-divider-light dark:border-divider-dark"/>
+        <div class="space-y-4">
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-text-tertiary-light dark:text-text-tertiary-dark">月令：<span class="text-text-secondary-light dark:text-text-secondary-dark">酉</span></span>
+                <span class="text-primary dark:text-hou-text-primary-dark">仲秋</span>
+            </div>
+            <div class="w-full pt-4">
+                <div class="relative h-2 w-full rounded-full bg-track-light dark:bg-track-dark">
+                    <div class="absolute h-2 rounded-full bg-primary" style="width: 80%;"></div>
+                    <div class="absolute top-[-20px] flex w-full justify-between text-xs text-text-quaternary-light dark:text-text-quaternary-dark">
+                        <span class="font-medium text-primary dark:text-hou-text-primary-dark">秋分 09/23</span>
+                        <span class="font-medium">寒露 10/08</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-center items-center text-xs text-text-tertiary-light dark:text-text-tertiary-dark space-x-2">
+                <span>雷始收声</span>
+                <span>·</span>
+                <span class="text-primary dark:text-hou-text-primary-dark font-medium border-b-2 border-primary dark:border-hou-text-primary-dark pb-0.5">蛰虫坯户</span>
+                <span>·</span>
+                <span>水始涸</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body></html>

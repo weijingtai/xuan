@@ -86,7 +86,7 @@ class GoldText extends StatelessWidget {
         text,
         style: style,
         // style: TextStyle(
-        //   color: Colors.white.withOpacity(.8),
+        //   color: Colors.white.withValues(alpha: .8),
         //   fontSize: fontSize,
         //   fontFamily: 'Roboto', // 使用专业字体
         //   fontWeight: FontWeight.w400, // 调整字体粗细

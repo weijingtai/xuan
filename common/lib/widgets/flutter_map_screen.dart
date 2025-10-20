@@ -509,7 +509,7 @@ class _FlutterMapScreenState extends State<FlutterMapScreen>
           _tmpPolygon.add(
             Polygon(
               points: points,
-              color: Colors.blue.withOpacity(0.3),
+              color: Colors.blue.withValues(alpha: 0.3),
               borderColor: Colors.blue,
               borderStrokeWidth: 2,
             ),

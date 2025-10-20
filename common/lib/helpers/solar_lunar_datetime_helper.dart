@@ -7,7 +7,7 @@ import 'package:common/models/chinese_date_info.dart';
 import 'package:common/models/jie_qi_info.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/models/seventy_two_phenology.dart';
-import 'package:common/shared/shared.dart' show TwentyFourJieQi;
+import 'package:common/enums.dart';
 import 'package:intl/intl.dart';
 import 'package:lunar/lunar.dart';
 import 'package:sweph/sweph.dart';
@@ -18,8 +18,6 @@ import 'package:uuid/uuid.dart';
 import '../datamodel/location.dart' as my;
 import '../datamodel/location.dart';
 import '../features/datetime_details/input_info_params.dart';
-import '../shared/enums/enum_jia_zi.dart';
-import '../shared/enums/enum_three_yuan.dart';
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -612,6 +610,20 @@ class SolarLunarDateTimeHelper {
     10: '十',
     11: '十一',
     12: '腊',
+  };
+  static const intMonthTo4SeasonsMap = {
+    1: '孟春',
+    2: '仲春',
+    3: '季春',
+    4: '孟夏',
+    5: '仲夏',
+    6: '季夏',
+    7: '孟秋',
+    8: '仲秋',
+    9: '季秋',
+    10: '孟冬',
+    11: '仲冬',
+    12: '季冬',
   };
   static const intDay2ChineseMap = {
     1: '初一',

@@ -513,7 +513,7 @@ class _CityPickerChineseWidgetState extends State<CityPickerChineseWidget> {
             return ListTile(
               title: Text(location.name),
               selected: isSelected,
-              selectedTileColor: Colors.blue.withOpacity(0.1),
+              selectedTileColor: Colors.blue.withValues(alpha: 0.1),
               trailing: isSelected
                   ? const Icon(Icons.check, color: Colors.blue)
                   : null,

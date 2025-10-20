@@ -26,7 +26,7 @@ class Season24Tag extends StatelessWidget {
             color: fontColor,
             shadows: [
               Shadow(
-                  color: Colors.white.withOpacity(.2),
+                  color: Colors.white.withValues(alpha: .2),
                   offset: const Offset(1, 1),
                   blurRadius: 1)
             ]);
@@ -61,7 +61,7 @@ class Season24Tag extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                  color: borderColor.withOpacity(.2),
+                  color: borderColor.withValues(alpha: .2),
                   offset: const Offset(1, 1),
                   blurRadius: 1)
             ]),

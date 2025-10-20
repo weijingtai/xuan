@@ -2,10 +2,10 @@ import 'package:common/main.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
-import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
+// import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
 import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
-import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
-import 'package:daliuren/navigator.dart' as DaLiuRen;
+// import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
+// import 'package:daliuren/navigator.dart' as DaLiuRen;
 import 'package:common/navigator.dart' as Common;
 import 'package:xuan/pages/one_year_circle.dart';
 
@@ -21,10 +21,10 @@ class NavigatorGenerator {
           title: 'widgets dev',
         ),
     ...Common.NavigatorGenerator.routes,
-    ...QiMenDunJia.NavigatorGenerator.routes,
+    // ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,
-    ...TaiYiShenShu.NavigatorGenerator.routes,
-    ...DaLiuRen.NavigatorGenerator.routes
+    // ...TaiYiShenShu.NavigatorGenerator.routes,
+    // ...DaLiuRen.NavigatorGenerator.routes
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

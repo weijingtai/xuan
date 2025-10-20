@@ -457,7 +457,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    BaseDivinationDatetimeDataModel _tmp =
+    DatatimeDivinationDetailsDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -603,7 +603,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
+    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;

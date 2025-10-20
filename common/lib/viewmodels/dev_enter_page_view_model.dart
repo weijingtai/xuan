@@ -7,11 +7,8 @@ import 'package:common/module.dart';
 import 'package:common/viewmodels/divination_meta_info.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:common/enums.dart';
 import 'package:common/models/divination_datetime.dart';
-import 'package:tuple/tuple.dart';
-import 'package:uuid/v5.dart';
 import 'package:uuid/v7.dart';
 
 import '../database/app_database.dart';

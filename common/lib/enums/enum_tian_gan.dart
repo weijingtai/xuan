@@ -2,6 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:tuple/tuple.dart';
 
 import 'enum_five_xing.dart'; // Assuming you have the FiveXing enum in a separate file
+import 'enum_five_xing_relationship.dart';
+import 'enum_ten_gods.dart';
 import 'enum_yin_yang.dart'; // Assuming you have the YinYang enum in a separate file
 
 enum TianGan {
@@ -167,6 +169,27 @@ enum TianGan {
   static List<TianGan> get listAll {
     return [JIA, YI, BING, DING, WU, JI, GENG, XIN, REN, GUI];
   }
+
+  EnumTenGods getTenGods(TianGan dayMaster) {
+    final relationship =
+        FiveXingRelationship.checkRelationship(dayMaster.fiveXing, fiveXing);
+    final samePolarity = dayMaster.yinYang == yinYang;
+
+    switch (relationship) {
+      case FiveXingRelationship.TONG: // Same element
+        return samePolarity ? EnumTenGods.BiJian : EnumTenGods.JieCai;
+      case FiveXingRelationship.XIE: // Day master produces other
+        return samePolarity ? EnumTenGods.ShiShen : EnumTenGods.ShangGuan;
+      case FiveXingRelationship.HAO: // Day master controls other
+        return samePolarity ? EnumTenGods.PanCai : EnumTenGods.ZhenCai;
+      case FiveXingRelationship.KE: // Day master is controlled by other
+        return samePolarity ? EnumTenGods.PanGuan : EnumTenGods.ZhengGuan;
+      case FiveXingRelationship.SHENG: // Day master is produced by other
+        return samePolarity ? EnumTenGods.PanYin : EnumTenGods.ZhengYin;
+      default:
+        throw Exception("Unknown relationship for Ten Gods calculation");
+    }
+  }
 }
 
 enum TianGanFiveCombine {
@@ -192,6 +215,14 @@ enum TianGanFiveCombine {
     } else {
       return Tuple2(combine, combine.combine.item1);
     }
+  }
+
+  static TianGan getOtherGan(TianGan tianGan) {
+    /// tuple.item2 为另一个天干
+    TianGanFiveCombine combine = getFiveCombineByTianGan(tianGan);
+    return combine.combine.item1 == tianGan
+        ? combine.combine.item2
+        : combine.combine.item1;
   }
 
   static TianGanFiveCombine getFiveCombineByTianGan(TianGan tianGan) {

@@ -1,7 +1,7 @@
 import 'package:common/models/shen_sha.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-import '../shared/enums/enum_ji_xiong.dart';
+import 'package:common/enums.dart';
 
 part 'shen_sha_bundled.g.dart';
 

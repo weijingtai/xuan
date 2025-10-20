@@ -3,7 +3,7 @@ enum EnumTenGods {
   PanCai("偏财", "才"),
   ZhengYin("正印", "印"),
   PanYin("偏印", "枭"),
-  ShiShen("食身", "食"),
+  ShiShen("食神", "食"),
   ShangGuan("伤官", "伤"),
   ZhengGuan("正官", "官"),
   PanGuan("偏官", "杀"),

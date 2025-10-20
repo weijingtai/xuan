@@ -1,0 +1,270 @@
+Flutter程序架构设计：天机阁 (TianJi Ge) - Bazi Card 自定义模块
+第一部分：Model Layer (数据模型)
+这是整个应用的数据基础，是纯粹的Dart对象，不包含任何业务逻辑。它们在所有层级之间流动。
+
+Dart
+
+// enums.dart - 定义所有类型安全的枚举
+
+// 柱位类型
+enum PillarType {
+  Year, Month, Day, Hour, Ke, // 年月日时刻
+  TaiMeta, // 胎元
+  TaiMonth, // 胎月
+  TaiDay, // 胎月
+  LifeHouse, // 命宫
+  LuckCycle, // 大运
+  Annual, // 流年
+  Monthly, // 流月
+  Daily, // 流日
+  Hourly, // 流时
+}
+
+// 行信息类型
+enum RowType {
+  HeavenlyStem, // 天干
+  EarthlyBranch, // 地支
+  TenGod, // 十神
+  NaYin, // 纳音
+  KongWang, // 空亡
+  XunShou, // 旬首
+  HiddenStems, // 地支藏干
+  HiddenStemsTenGod, // 藏干十神
+
+  HiddenStemsPrimary, // 地支藏干主气
+  HiddenStemsSecondary, // 地支藏干中气
+  HiddenStemsTertiary, // 地支藏干余气
+
+  HiddenStemsPrimaryGods, // 地支藏干主气 十神
+  HiddenStemsSecondaryGods, // 地支藏干中气 十神
+  HiddenStemsTertiaryGods, // 地支藏干余气 十神
+
+  starYun, // 星运
+  selfSiting, // 自坐
+
+}
+
+// 边框样式类型
+enum BorderType { Solid, Dashed, Dotted, None }
+Dart
+
+// layout_template.dart - 核心模型：布局模板
+
+class LayoutTemplate {
+  final String id; // UUID，唯一标识
+  final String name; // 模板名称，如 "大运流年专用"
+  final String collectionId; // 所属模板集的ID
+  final CardStyle cardStyle; // 全局卡片样式
+  final List<ChartGroup> chartGroups; // 核心：包含的图表组列表
+  final List<RowConfig> rowConfigs; // 全局行信息配置
+
+  LayoutTemplate({ /* ... constructor ... */ });
+
+  // 包含 copyWith 方法以支持状态的不可变更新
+  LayoutTemplate copyWith({ /* ... */ });
+}
+
+// chart_group.dart - 图表组模型 (如主盘, 附属盘)
+class ChartGroup {
+  final String id;
+  final String title;
+  final List<PillarType> pillarOrder; // 该图表组自己的柱位顺序
+
+  ChartGroup({ /* ... */ });
+  ChartGroup copyWith({ /* ... */ });
+}
+
+// card_style.dart - 视觉样式模型
+class CardStyle {
+  final BorderType dividerType; // 分隔线样式
+  final String dividerColorHex; // 分隔线颜色
+  final double dividerThickness; // 分隔线粗细
+  final String globalFontFamily;
+  final double globalFontSize;
+  final String globalFontColorHex;
+
+  CardStyle({ /* ... */ });
+  CardStyle copyWith({ /* ... */ });
+}
+
+// row_config.dart - 行信息配置模型
+class RowConfig {
+  final RowType type;
+  final bool isVisible;
+  final bool isTitleVisible;
+  // final String? advancedOption; // 用于存储高级选项的值
+
+  RowConfig({ /* ... */ });
+  RowConfig copyWith({ /* ... */ });
+}
+第二部分：Data Layer (数据层 - Repository)
+这一层是数据的抽象来源，负责数据的持久化和检索。应用的其他部分不关心数据是来自本地的Hive数据库、SQLite还是云端Firebase。
+
+接口定义 (The Contract):
+
+Dart
+
+// layout_template_repository.dart
+
+abstract class LayoutTemplateRepository {
+  /// 获取指定模板集下的所有模板
+  Future<List<LayoutTemplate>> getAllTemplatesInCollection(String collectionId);
+
+  /// 根据ID获取单个模板的详细信息
+  Future<LayoutTemplate> getTemplateById(String id);
+
+  /// 保存一个模板（用于创建或更新）
+  /// 如果模板ID已存在，则覆盖；如果不存在，则创建。
+  Future<void> saveTemplate(LayoutTemplate template);
+
+  /// 根据ID删除一个模板
+  Future<void> deleteTemplate(String id);
+}
+功能说明:
+
+LayoutTemplateRepository 定义了一个清晰的契约，上层（Domain Layer）将依赖于这个抽象接口，而不是具体的实现。
+
+具体实现 (LocalLayoutTemplateRepositoryImpl):
+
+这个类将 implements LayoutTemplateRepository。
+
+内部会使用一个具体的数据库包，例如 Hive。
+
+saveTemplate 方法会将 LayoutTemplate 对象序列化为JSON或Hive的二进制格式并存入Box。
+
+get... 方法会从Box中读取数据并反序列化为 LayoutTemplate 对象。
+
+它处理所有与数据库相关的底层细节。
+
+第三部分：Domain Layer (领域层 - Use Case)
+这一层封装了应用的业务逻辑。每个Use Case代表一个单一、具体的业务操作。它们是连接ViewModel和Repository的桥梁，并且不包含任何平台依赖（纯Dart）。
+
+接口定义 (Use Case Examples):
+
+Dart
+
+// usecase_interfaces.dart
+
+// 加载所有模板的用例
+class GetAllTemplatesUseCase {
+  final LayoutTemplateRepository _repository;
+  GetAllTemplatesUseCase(this._repository);
+
+  Future<List<LayoutTemplate>> call({required String collectionId}) {
+    return _repository.getAllTemplatesInCollection(collectionId);
+  }
+}
+
+// 保存模板的用例
+class SaveTemplateUseCase {
+  final LayoutTemplateRepository _repository;
+  SaveTemplateUseCase(this._repository);
+
+  Future<void> call({required LayoutTemplate template}) {
+    // 这里可以添加业务规则，例如检查模板名称是否为空等
+    if (template.name.isEmpty) {
+      throw Exception('Template name cannot be empty.');
+    }
+    return _repository.saveTemplate(template);
+  }
+}
+
+// 删除模板的用例
+class DeleteTemplateUseCase {
+  final LayoutTemplateRepository _repository;
+  DeleteTemplateUseCase(this._repository);
+
+  Future<void> call({required String id}) {
+    return _repository.deleteTemplate(id);
+  }
+}
+功能说明:
+
+职责单一: 每个Use Case只做一件事（例如，SaveTemplateUseCase 只负责保存）。
+
+业务规则容器: 复杂的业务逻辑（如校验、数据处理）都应该放在这里，而不是ViewModel或Repository。
+
+可测试性: 因为它们是纯Dart类，所以可以非常容易地进行单元测试，只需模拟(mock)传入的Repository即可。
+
+解耦: ViewModel不直接与Repository对话，它只知道调用某个Use Case来完成一个任务。
+
+第四部分：Presentation Layer (表现层 - MVVM)
+这是用户直接交互的层面，包含UI（View）和UI的状态管理器（ViewModel）。
+
+ViewModel (CardEditorViewModel):
+
+这是UI的“大脑”，负责管理状态和响应用户操作。它将使用Provider的ChangeNotifier或Riverpod的StateNotifier来实现。
+
+功能说明:
+
+职责:
+
+持有并管理UI所需的所有状态（State）。
+
+暴露供View调用的公共方法（Actions）。
+
+通过Use Cases执行业务逻辑和数据操作。
+
+当状态改变时，通知View进行重绘。
+
+状态属性 (State Properties):
+
+LayoutTemplate? currentTemplate;: 当前正在编辑的模板对象，是UI渲染的核心数据源。
+
+List<LayoutTemplate> availableTemplates;: 用于填充顶部下拉菜单的模板列表。
+
+bool isLoading;: 用于控制加载指示器（如CircularProgressIndicator）的显示。
+
+bool hasUnsavedChanges;: 用于控制“保存”按钮的启用/禁用状态。
+
+String? errorMessage;: 用于向UI显示错误信息。
+
+公共方法 (Public Methods / Actions):
+
+Future<void> loadInitialData({required String collectionId}): 在页面初始化时调用，使用 GetAllTemplatesUseCase 加载模板列表。
+
+Future<void> selectTemplate({required String templateId}): 用户从下拉菜单选择一个模板时调用，加载并设置 currentTemplate。
+
+void createNewTemplate(): 创建一个新的、默认的 LayoutTemplate 对象并设置为 currentTemplate。
+
+Future<void> saveCurrentTemplate(): 使用 SaveTemplateUseCase 保存 currentTemplate 的当前状态，成功后将 hasUnsavedChanges 设为 false。
+
+Future<void> deleteCurrentTemplate(): 使用 DeleteTemplateUseCase 删除当前模板。
+
+所有编辑操作 (核心):
+
+void updateDividerStyle({BorderType? type, String? color}): 更新分隔线样式。
+
+void addPillarToGroup({required String groupId, required PillarType pillar}): 在指定图表组中添加柱。
+
+void reorderPillarInGroup({required String groupId, required int oldIndex, required int newIndex}): 重排柱的顺序。
+
+void updateRowConfig({required RowType type, required bool isVisible}): 更新行信息的可见性。
+
+实现逻辑: 这些方法会创建一个 currentTemplate 的深拷贝(copyWith)，在新对象上进行修改，然后用新对象替换旧的 currentTemplate，并将 hasUnsavedChanges 设为 true。最后调用 notifyListeners()。这种不可变状态管理的方式更安全、可预测。
+
+View (CardEditorScreen.dart & 其子组件):
+
+UI层应尽可能“笨拙”，只负责两件事：渲染ViewModel提供的状态和将用户输入转发给ViewModel。
+
+功能说明:
+
+结构: 使用Consumer<CardEditorViewModel> (Provider) 或 ConsumerWidget (Riverpod)来构建UI。
+
+渲染状态:
+
+build方法会watch ViewModel中的状态。例如，ReorderableListView的子项列表会根据viewModel.currentTemplate.rowConfigs来构建。
+
+“保存”按钮的onPressed属性会根据viewModel.hasUnsavedChanges来决定是函数还是null。
+
+如果viewModel.isLoading为true，则显示一个加载动画。
+
+转发事件:
+
+拖拽ReorderableListView完成后，其onReorder回调会调用viewModel.reorderRows(oldIndex, newIndex)。
+
+点击“保存”按钮，其onPressed会调用viewModel.saveCurrentTemplate()。
+
+从组件面板拖放一个“柱”到画布上，DragTarget的onAccept回调会调用viewModel.addPillarToGroup(...)。
+
+View本身不包含任何if/else业务逻辑，所有决策都由ViewModel做出。

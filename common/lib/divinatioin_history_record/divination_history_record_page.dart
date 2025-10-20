@@ -1,11 +1,12 @@
 import 'package:common/datamodel/divination_request_info_datamodel.dart';
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:common/database/app_database.dart';
 import 'package:common/database/tables/tables.dart';
 import 'package:drift/drift.dart' hide Column;
 import 'package:provider/provider.dart';
 import 'package:common/datamodel/seeker_model.dart';
+
+import '../enums/enum_gender.dart';
 
 class DivinationHistoryRecordPage extends StatefulWidget {
   const DivinationHistoryRecordPage({super.key});

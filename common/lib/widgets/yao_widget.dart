@@ -1,5 +1,6 @@
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
+
+import '../enums/enum_yin_yang.dart';
 
 class YaoWidget extends StatelessWidget {
   final YinYang yinYangYao;
@@ -29,7 +30,7 @@ class YaoWidget extends StatelessWidget {
             boxShadow: withShadow
                 ? [
                     BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
+                      color: Colors.grey.withValues(alpha: 0.5),
                       spreadRadius: 1,
                       blurRadius: 2,
                       offset: const Offset(0, 0), // changes position of shadow
@@ -54,7 +55,7 @@ class YaoWidget extends StatelessWidget {
                 boxShadow: withShadow
                     ? [
                         BoxShadow(
-                          color: Colors.grey.withOpacity(0.5),
+                          color: Colors.grey.withValues(alpha: 0.5),
                           spreadRadius: 1,
                           blurRadius: 2,
                           offset:
@@ -76,7 +77,7 @@ class YaoWidget extends StatelessWidget {
                   boxShadow: withShadow
                       ? [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.5),
+                            color: Colors.grey.withValues(alpha: 0.5),
                             spreadRadius: 1,
                             blurRadius: 2,
                             offset: const Offset(

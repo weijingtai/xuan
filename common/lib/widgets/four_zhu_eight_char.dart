@@ -1,7 +1,10 @@
-import 'package:common/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tuple/tuple.dart';
+
+import '../enums/enum_di_zhi.dart';
+import '../enums/enum_jia_zi.dart';
+import '../enums/enum_tian_gan.dart';
 
 class FourZhuEightChar extends StatelessWidget {
   final JiaZi year;
@@ -33,7 +36,7 @@ class FourZhuEightChar extends StatelessWidget {
       fontWeight: FontWeight.w500,
       shadows: [
         Shadow(
-            color: Colors.grey.withOpacity(.5),
+            color: Colors.grey.withValues(alpha: .5),
             blurRadius: 2,
             offset: const Offset(0, 0))
       ]);
@@ -44,7 +47,7 @@ class FourZhuEightChar extends StatelessWidget {
       height: 1,
       shadows: [
         Shadow(
-            color: Colors.grey.withOpacity(.5),
+            color: Colors.grey.withValues(alpha: .5),
             blurRadius: 2,
             offset: const Offset(0, 0))
       ]);
@@ -60,9 +63,6 @@ class FourZhuEightChar extends StatelessWidget {
       required JiaZi month,
       required JiaZi day,
       required JiaZi chen}) {
-    // double height = 32;
-    // double width = 42;
-    // 16 + 42 * 5;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -127,28 +127,35 @@ class FourZhuEightChar extends StatelessWidget {
           width: 4,
         ),
         Container(
-            // color: Colors.blue.withOpacity(.1),
+            // color: Colors.blue.withValues(alpha: .1),
             child:
                 each_zhu("年", year.getXunHeader(), year, year.getKongWang())),
         const SizedBox(width: 4),
         Container(
-            // color: Colors.orange.withOpacity(.1),
+            // color: Colors.orange.withValues(alpha: .1),
             child: each_zhu(
                 "月", month.getXunHeader(), month, month.getKongWang())),
         const SizedBox(
           width: 4,
         ),
         Container(
-            // color: Colors.red.withOpacity(.1),
+            // color: Colors.red.withValues(alpha: .1),
             child: each_zhu("日", day.getXunHeader(), day, day.getKongWang())),
         const SizedBox(
           width: 4,
         ),
         Container(
-            // color: Colors.green.withOpacity(.1),
+            // color: Colors.green.withValues(alpha: .1),
             child:
                 each_zhu("时", chen.getXunHeader(), chen, chen.getKongWang())),
-        // SizedBox(width: 24,)
+        const SizedBox(
+          width: 4,
+        ),
+        Container(
+          // color: Colors.green.withValues(alpha: .1),
+            child:
+            each_zhu("时", chen.getXunHeader(), chen, chen.getKongWang())),
+
       ],
     );
   }

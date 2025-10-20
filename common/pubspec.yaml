@@ -67,6 +67,7 @@ dependencies:
   path_provider: ^2.1.5
   flutter_switch: ^0.3.2
   protobuf: ^4.0.0
+  drag_and_drop_lists: ^0.4.2
 #  drift_native: ^2.10.0
 #  dropdown_button2: ^2.3.9
 
