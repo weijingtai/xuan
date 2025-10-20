@@ -8,7 +8,7 @@ import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
 import 'package:common/navigator.dart' as Common;
 import 'package:xuan/pages/one_year_circle.dart';
-// import 'package:tiebanshenshu/navigator.dart' as TieBanShenShu;
+import 'package:tiebanshenshu/navigator.dart' as TieBanShenShu;
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -26,7 +26,7 @@ class NavigatorGenerator {
     ...QiZhengSiYu.NavigatorGenerator.routes,
     ...TaiYiShenShu.NavigatorGenerator.routes,
     ...DaLiuRen.NavigatorGenerator.routes,
-    // ...TieBanShenShu.NavigatorGenerator.routes,
+    ...TieBanShenShu.NavigatorGenerator.routes,
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
