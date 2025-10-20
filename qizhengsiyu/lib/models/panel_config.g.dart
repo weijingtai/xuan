@@ -27,6 +27,7 @@ PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
       bodyCountingToGong: $enumDecodeNullable(
               _$EnumTwelveGongEnumMap, json['bodyCountingToGong']) ??
           EnumTwelveGong.You,
+      showRingGrid: json['showRingGrid'] as bool? ?? true,
     );
 
 Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
@@ -46,6 +47,7 @@ Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
           _$EnumTwelveGongEnumMap[instance.bodyCountingToGong]!,
       'islifeGongBySunRealTimeLocation':
           instance.islifeGongBySunRealTimeLocation,
+      'showRingGrid': instance.showRingGrid,
     };
 
 const _$CelestialCoordinateSystemEnumMap = {
