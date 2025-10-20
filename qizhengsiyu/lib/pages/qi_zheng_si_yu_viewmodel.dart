@@ -13,8 +13,8 @@ import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // 使用domain层模型
+import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层模型
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
 import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
@@ -26,15 +26,15 @@ import 'package:tuple/tuple.dart';
 import '../enums/enum_moon_phases.dart';
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
-import '../models/base_panel_model.dart';
+import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模型
 import '../models/di_zhi_shen_sha.dart';
 import '../models/hua_yao.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/observer_position.dart';
+import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
+import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart';
-import '../models/star_angle_speed.dart';
-import '../models/star_inn_gong_degree.dart';
-import '../models/stars_angle.dart';
+import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
+import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
 import '../models/eleven_stars_info.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_walking_info_utils.dart';
@@ -856,8 +856,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     print(jsonEncode(basePanelModel));
   }
 
-  PanelConfig generatePanelConfig() {
-    return PanelConfig(
+  BasePanelConfig generatePanelConfig() {
+    return BasePanelConfig(
         celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
         houseDivisionSystem: HouseDivisionSystem.equal,
         panelSystemType: PanelSystemType.tropical,
