@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:common/utils/collections_utils.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
 import 'package:tuple/tuple.dart';
 
