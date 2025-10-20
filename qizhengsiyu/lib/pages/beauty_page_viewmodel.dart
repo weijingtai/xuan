@@ -17,8 +17,6 @@ import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart'; // 导入的服务可能需要
 import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
@@ -31,16 +29,18 @@ import '../enums/enum_moon_phases.dart';
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
 import '../managers/zhou_tian_model_manager.dart';
-import '../models/base_panel_model.dart';
+import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模型
+import '../domain/entities/models/panel_config.dart'; // 使用domain层模型
 import '../models/da_xian_panel_model.dart';
 import '../models/di_zhi_shen_sha.dart';
 import '../models/hua_yao.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/observer_position.dart';
+import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
+import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart'; // 可能仍然需要用于更详细信息展示，尽管 ElevenStarsInfo 已弃用
-import '../models/star_angle_speed.dart';
-import '../models/star_inn_gong_degree.dart';
-import '../models/stars_angle.dart';
+import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
+import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
+import '../domain/entities/models/star_enter_info.dart'; // 使用domain层模型
 import '../models/eleven_stars_info.dart'; // 已弃用，但模型本身可能被PanelStarsInfo引用，暂时保留
 import '../qi_zheng_si_yu_constant_resources.dart'; // 常量资源文件，假设存在
 import '../utils/star_walking_info_utils.dart';
@@ -167,8 +167,8 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 使用 late 关键字表示在使用前会被初始化，通常在 calculate 方法中。
   late final GenerateBasePanelService _generateBasePanelService;
 
-  PanelConfig? _overridePanelConfig;
-  void setOverridePanelConfig(PanelConfig config) {
+  BasePanelConfig? _overridePanelConfig;
+  void setOverridePanelConfig(BasePanelConfig config) {
     _overridePanelConfig = config;
   }
 
@@ -527,9 +527,9 @@ class BeautyPageViewModel extends ChangeNotifier {
   }
 
   /// 生成用于 GenerateBasePanelService 的默认面板配置。
-  /// 返回: PanelConfig 对象。
-  PanelConfig _generatePanelConfig() {
-    return PanelConfig(
+  /// 返回: BasePanelConfig 对象。
+  BasePanelConfig _generatePanelConfig() {
+    return BasePanelConfig(
         celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic, // 黄道坐标系
         houseDivisionSystem: HouseDivisionSystem.equal, // 等宫制
         panelSystemType: PanelSystemType.tropical, // 回归制

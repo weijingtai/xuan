@@ -12,7 +12,7 @@ import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
 import 'package:qizhengsiyu/models/hua_yao.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
@@ -32,7 +32,7 @@ import 'an_shen_li_ming_service.dart';
 import 'star_angle_strategy.dart';
 
 class GenerateBasePanelService {
-  final PanelConfig panelConfig;
+  final BasePanelConfig panelConfig;
   final ObserverPosition observerPosition;
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
