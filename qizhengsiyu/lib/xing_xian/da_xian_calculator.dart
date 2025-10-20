@@ -12,7 +12,7 @@ import 'package:qizhengsiyu/models/base_panel_model.dart';
 import '../enums/enum_panel_system_type.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../managers/zhou_tian_calculator.dart';
-import '../models/observer_position.dart';
+import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
 import '../models/star_enter_info.dart';
 import '../models/zhou_tian_model.dart';
 import 'da_xian_constellation_passage_info.dart';

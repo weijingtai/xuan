@@ -6,7 +6,7 @@ import 'package:tuple/tuple.dart';
 import '../enums/enum_qi_zheng.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../models/eleven_stars_info.dart';
-import '../models/observer_position.dart';
+import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
 import '../models/panel_stars_info.dart';
 import '../models/star_enter_info.dart';
 import '../models/stars_angle.dart';

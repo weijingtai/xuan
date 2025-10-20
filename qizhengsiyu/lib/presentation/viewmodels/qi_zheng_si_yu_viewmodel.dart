@@ -21,16 +21,18 @@ import 'package:qizhengsiyu/domain/entities/models/star_position_raw_data.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:common/models/five_star_walking_info.dart';
 import 'package:qizhengsiyu/pages/StarsResolver.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
-import 'package:qizhengsiyu/models/panel_config.dart' as UIPanelConfig; // UI层的PanelConfig
+import 'package:qizhengsiyu/models/panel_config.dart'
+    as UIPanelConfig; // UI层的PanelConfig
 import 'package:common/module.dart'; // DivinationInfoModel
 import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
+
+import '../../models/stars_angle.dart';
 
 /// 七政四余 ViewModel - MVVM架构 + UI兼容层
 ///
@@ -58,28 +60,36 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
   // ==================== UI兼容层: ValueNotifier ====================
   /// 本命盘数据 - 用于 ValueListenableBuilder
-  final ValueNotifier<BasePanelModel?> uiBasePanelNotifier = ValueNotifier(null);
+  final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
+      ValueNotifier(null);
 
   /// 获取 ValueListenable 类型的 basePanel (用于PanelController)
-  ValueListenable<BasePanelModel?> get uiBasePanelListenable => uiBasePanelNotifier;
+  ValueListenable<BasePanelModel?> get uiBasePanelListenable =>
+      uiBasePanelNotifier;
 
   /// 大限盘数据 - 用于 ValueListenableBuilder
-  final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier = ValueNotifier(null);
+  final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
+      ValueNotifier(null);
 
   /// 本命星体UI数据 - 用于 ValueListenableBuilder
-  final ValueNotifier<List<UIStarModel>?> uiBasicLifeStarsNotifier = ValueNotifier(null);
+  final ValueNotifier<List<UIStarModel>?> uiBasicLifeStarsNotifier =
+      ValueNotifier(null);
 
   /// 获取 ValueListenable 类型的 basicLifeStars (用于PanelController)
-  ValueListenable<List<UIStarModel>?> get uiBasicLifeStarsListenable => uiBasicLifeStarsNotifier;
+  ValueListenable<List<UIStarModel>?> get uiBasicLifeStarsListenable =>
+      uiBasicLifeStarsNotifier;
 
   /// 大限星体UI数据 - 用于 ValueListenableBuilder
-  final ValueNotifier<List<UIStarModel>?> uiFateLifeStarsNotifier = ValueNotifier(null);
+  final ValueNotifier<List<UIStarModel>?> uiFateLifeStarsNotifier =
+      ValueNotifier(null);
 
   /// 获取 ValueListenable 类型的 fateLifeStars (用于PanelController)
-  ValueListenable<List<UIStarModel>?> get uiFateLifeStarsListenable => uiFateLifeStarsNotifier;
+  ValueListenable<List<UIStarModel>?> get uiFateLifeStarsListenable =>
+      uiFateLifeStarsNotifier;
 
   /// 观察者位置数据 - 用于 ValueListenableBuilder
-  final ValueNotifier<ObserverPosition?> baseObserverPositionNotifier = ValueNotifier(null);
+  final ValueNotifier<ObserverPosition?> baseObserverPositionNotifier =
+      ValueNotifier(null);
 
   // ==================== UI兼容层: 普通属性 ====================
   /// 大限星体列表
@@ -139,8 +149,10 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   }
 
   /// 从 DivinationInfoModel 生成 ObserverPosition
-  ObserverPosition _generateLifeObserverPosition(DivinationInfoModel divinationInfoModel) {
-    BaseDivinationDatetimeDataModel datetimeData = divinationInfoModel.divinationDatetime;
+  ObserverPosition _generateLifeObserverPosition(
+      DivinationInfoModel divinationInfoModel) {
+    BaseDivinationDatetimeDataModel datetimeData =
+        divinationInfoModel.divinationDatetime;
 
     // 找到对应的占卜时间信息
     DivinationDatetimeModel datetimeModel = datetimeData.timingInfoListJson!
@@ -151,11 +163,13 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     switch (datetimeModel.observer.type) {
       case EnumDatetimeType.standard:
       case EnumDatetimeType.removeDST:
-        coordinates = datetimeModel.observer.location!.address!.province.coordinates!;
+        coordinates =
+            datetimeModel.observer.location!.address!.province.coordinates!;
         break;
       case EnumDatetimeType.meanSolar:
-        coordinates = datetimeModel.observer.location!.address!.city?.coordinates ??
-            datetimeModel.observer.location!.address!.province.coordinates;
+        coordinates =
+            datetimeModel.observer.location!.address!.city?.coordinates ??
+                datetimeModel.observer.location!.address!.province.coordinates;
         break;
       case EnumDatetimeType.trueSolar:
         if (datetimeModel.observer.isManualCalibration) {
@@ -239,12 +253,14 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   ///
   /// 接受完整的配置和观察者位置,执行MVVM架构的计算流程
   /// 使用 CalculationEngine, GenerateBasePanelService 等
-  Future<void> calculateWithConfig(BasePanelConfig config, ObserverPosition observer) async {
+  Future<void> calculateWithConfig(
+      BasePanelConfig config, ObserverPosition observer) async {
     await zhouTianModelManager.load();
 
     final engine = CalculationEngineFactory.create(config);
     final zhouTianModel = await engine.getSystemDefinition(config);
-    final starPositions = await engine.calculateStarPositions(observer.dateTime, observer, config);
+    final starPositions = await engine.calculateStarPositions(
+        observer.dateTime, observer, config);
     final starAngleMapper = _transformStarPositions(starPositions, config);
 
     final panelService = GenerateBasePanelService(
@@ -268,7 +284,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     } else {
       // 如果安全角度未设置,使用默认值10度
       _uiBasicLifeStars = _calculateUIStarsFromMapper(starAngleMapper, 10.0);
-      debugPrint("Warning: Using default safety angle (10.0) for UI stars calculation");
+      debugPrint(
+          "Warning: Using default safety angle (10.0) for UI stars calculation");
     }
 
     // 更新 ValueNotifier (UI兼容层)
@@ -308,7 +325,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       starBodyRadius,
     );
     // 增加额外的填充以优化 UI 外观
-    _baseMiniSafetyAngle = _baseMiniSafetyAngle.ceilToDouble() + _uiSafetyAnglePadding;
+    _baseMiniSafetyAngle =
+        _baseMiniSafetyAngle.ceilToDouble() + _uiSafetyAnglePadding;
     debugPrint("Base Safety Angle Calculated: $_baseMiniSafetyAngle");
   }
 
@@ -328,7 +346,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       starBodyRadius,
     );
     // 增加额外的填充以优化 UI 外观
-    _fateMiniSafetyAngle = _fateMiniSafetyAngle.ceilToDouble() + _uiSafetyAnglePadding;
+    _fateMiniSafetyAngle =
+        _fateMiniSafetyAngle.ceilToDouble() + _uiSafetyAnglePadding;
     debugPrint("Fate Safety Angle Calculated: $_fateMiniSafetyAngle");
   }
 
@@ -424,7 +443,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     return StarsResolver.resolveUIStars(unadjustedStarList);
   }
 
-  Map<EnumStars, StarAngleSpeed> _transformStarPositions(List<StarPositionRawData> starPositions, BasePanelConfig config) {
+  Map<EnumStars, StarAngleSpeed> _transformStarPositions(
+      List<StarPositionRawData> starPositions, BasePanelConfig config) {
     final Map<EnumStars, StarAngleSpeed> mapper = {};
     for (final pos in starPositions) {
       // Find the angle/speed info that matches the current panel configuration
@@ -432,7 +452,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
         (info) =>
             info.panelSystemType == config.panelSystemType &&
             info.coordinateSystem == config.celestialCoordinateSystem,
-        orElse: () => pos.angleRawInfoSet.first, // Fallback to the first available if no exact match
+        orElse: () => pos.angleRawInfoSet
+            .first, // Fallback to the first available if no exact match
       );
       mapper[pos.starType] = StarAngleSpeed(
         angle: matchingInfo.angle,
