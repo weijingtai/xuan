@@ -62,7 +62,7 @@ class SaveCalculatedPanelUseCase {
     required BasePanelModel basicPanelModel,
     required BasePanelConfig panelConfig,
     required DivinationDatetimeModel divinationDatetimeModel,
-    required DivinationRequestInfoDataModel requestInfo,
+    required BaseDivinationDatetimeDataModel requestInfo,
   }) async {
     try {
       final now = DateTime.now();
