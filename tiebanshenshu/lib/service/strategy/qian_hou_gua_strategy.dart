@@ -7,7 +7,6 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/features/six_yao_gua/pure_six_yao_gua.dart';
 
-import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_model.dart';
 import '../../domain/models/base_number_model_result.dart';
 import '../../domain/models/qian_hou_gua_base_number_model.dart';

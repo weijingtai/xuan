@@ -22,7 +22,6 @@ import 'package:tiebanshenshu/domain/models/gua_zhong_base_number_model.dart';
 /// 注意：此测试针对人工规格，需要验证是否匹配三种千位计算方案
 void main() {
   late GuaZhongStrategy strategy;
-  late FourZhu testFourZhu;
   late EightChars testEightChars;
   late GuaZhongStrategyParams testParams;
   late GuaZhongBaseNumberModel model;
@@ -30,17 +29,11 @@ void main() {
   setUp(() {
     strategy = GuaZhongStrategy();
 
-    testFourZhu = FourZhu(
-      yearGanzhi: "己丑",
-      monthGanzhi: "乙亥",
-      dayGanzhi: "癸卯",
-      timeGanzhi: "乙卯",
-    );
     testEightChars = EightChars(
-      year: JiaZi.getFromGanZhiValue(testFourZhu.yearGanzhi)!,
-      month: JiaZi.getFromGanZhiValue(testFourZhu.monthGanzhi)!,
-      day: JiaZi.getFromGanZhiValue(testFourZhu.dayGanzhi)!,
-      time: JiaZi.getFromGanZhiValue(testFourZhu.timeGanzhi)!,
+      year: JiaZi.getFromGanZhiValue("己丑")!,
+      month: JiaZi.getFromGanZhiValue("乙亥")!,
+      day: JiaZi.getFromGanZhiValue("癸卯")!,
+      time: JiaZi.getFromGanZhiValue("乙卯")!,
     );
 
     testParams = GuaZhongStrategyParams(eightChars: testEightChars);
@@ -54,37 +47,29 @@ void main() {
     test('年干支太玄数应该是 己=9, 丑=8', () {
       print('\n年干太玄数: ${model.yearGanTaixuanNumber}');
       print('年支太玄数: ${model.yearZhiTaixuanNumber}');
-      expect(model.yearGanTaixuanNumber, equals(9),
-          reason: '己的太玄数应该是9');
-      expect(model.yearZhiTaixuanNumber, equals(8),
-          reason: '丑的太玄数应该是8');
+      expect(model.yearGanTaixuanNumber, equals(9), reason: '己的太玄数应该是9');
+      expect(model.yearZhiTaixuanNumber, equals(8), reason: '丑的太玄数应该是8');
     });
 
     test('月干支太玄数应该是 乙=8, 亥=4', () {
       print('月干太玄数: ${model.monthGanTaixuanNumber}');
       print('月支太玄数: ${model.monthZhiTaixuanNumber}');
-      expect(model.monthGanTaixuanNumber, equals(8),
-          reason: '乙的太玄数应该是8');
-      expect(model.monthZhiTaixuanNumber, equals(4),
-          reason: '亥的太玄数应该是4');
+      expect(model.monthGanTaixuanNumber, equals(8), reason: '乙的太玄数应该是8');
+      expect(model.monthZhiTaixuanNumber, equals(4), reason: '亥的太玄数应该是4');
     });
 
     test('日干支太玄数应该是 癸=5, 卯=6', () {
       print('日干太玄数: ${model.dayGanTaixuanNumber}');
       print('日支太玄数: ${model.dayZhiTaixuanNumber}');
-      expect(model.dayGanTaixuanNumber, equals(5),
-          reason: '癸的太玄数应该是5');
-      expect(model.dayZhiTaixuanNumber, equals(6),
-          reason: '卯的太玄数应该是6');
+      expect(model.dayGanTaixuanNumber, equals(5), reason: '癸的太玄数应该是5');
+      expect(model.dayZhiTaixuanNumber, equals(6), reason: '卯的太玄数应该是6');
     });
 
     test('时干支太玄数应该是 乙=8, 卯=6', () {
       print('时干太玄数: ${model.timeGanTaixuanNumber}');
       print('时支太玄数: ${model.timeZhiTaixuanNumber}');
-      expect(model.timeGanTaixuanNumber, equals(8),
-          reason: '乙的太玄数应该是8');
-      expect(model.timeZhiTaixuanNumber, equals(6),
-          reason: '卯的太玄数应该是6');
+      expect(model.timeGanTaixuanNumber, equals(8), reason: '乙的太玄数应该是8');
+      expect(model.timeZhiTaixuanNumber, equals(6), reason: '卯的太玄数应该是6');
     });
   });
 
@@ -96,8 +81,7 @@ void main() {
 
       // 年柱: 己(9) + 丑(8) = 17, 17 % 8 = 1 → 乾卦
       // 月柱: 乙(8) + 亥(4) = 12, 12 % 8 = 4 → 震卦
-      expect(model.nianYueZhuGuaName, equals('乾震'),
-          reason: '年月卦应该是乾震（天雷无妄）');
+      expect(model.nianYueZhuGuaName, equals('乾震'), reason: '年月卦应该是乾震（天雷无妄）');
     });
 
     test('年月卦主卦条文应该包含7198（某个方案）', () {
@@ -106,12 +90,12 @@ void main() {
       print('年月卦主卦条文（方案3）: ${model.nianYueZhuGuaTiaoWenNumber_Plan3}');
 
       // 验证是否有某个方案的结果是7198
-      final hasExpectedNumber = model.nianYueZhuGuaTiaoWenNumber_Plan1 == 7198 ||
-                                 model.nianYueZhuGuaTiaoWenNumber_Plan2 == 7198 ||
-                                 model.nianYueZhuGuaTiaoWenNumber_Plan3 == 7198;
+      final hasExpectedNumber =
+          model.nianYueZhuGuaTiaoWenNumber_Plan1 == 7198 ||
+          model.nianYueZhuGuaTiaoWenNumber_Plan2 == 7198 ||
+          model.nianYueZhuGuaTiaoWenNumber_Plan3 == 7198;
 
-      expect(hasExpectedNumber, true,
-          reason: '年月卦主卦条文应该在某个方案中包含7198');
+      expect(hasExpectedNumber, true, reason: '年月卦主卦条文应该在某个方案中包含7198');
     });
 
     test('年月卦互卦条文应该包含7157（某个方案）', () {
@@ -120,12 +104,12 @@ void main() {
       print('年月卦互卦条文（方案3）: ${model.nianYueHuGuaTiaoWenNumber_Plan3}');
 
       // 验证是否有某个方案的结果是7157
-      final hasExpectedNumber = model.nianYueHuGuaTiaoWenNumber_Plan1 == 7157 ||
-                                 model.nianYueHuGuaTiaoWenNumber_Plan2 == 7157 ||
-                                 model.nianYueHuGuaTiaoWenNumber_Plan3 == 7157;
+      final hasExpectedNumber =
+          model.nianYueHuGuaTiaoWenNumber_Plan1 == 7157 ||
+          model.nianYueHuGuaTiaoWenNumber_Plan2 == 7157 ||
+          model.nianYueHuGuaTiaoWenNumber_Plan3 == 7157;
 
-      expect(hasExpectedNumber, true,
-          reason: '年月卦互卦条文应该在某个方案中包含7157');
+      expect(hasExpectedNumber, true, reason: '年月卦互卦条文应该在某个方案中包含7157');
     });
   });
 
@@ -146,9 +130,10 @@ void main() {
       print('日时卦主卦条文（方案3）: ${model.riShiZhuGuaTiaoWenNumber_Plan3}');
 
       // 验证是否有某个方案的结果是9356
-      final hasExpectedNumber = model.riShiZhuGuaTiaoWenNumber_Plan1 == 9356 ||
-                                 model.riShiZhuGuaTiaoWenNumber_Plan2 == 9356 ||
-                                 model.riShiZhuGuaTiaoWenNumber_Plan3 == 9356;
+      final hasExpectedNumber =
+          model.riShiZhuGuaTiaoWenNumber_Plan1 == 9356 ||
+          model.riShiZhuGuaTiaoWenNumber_Plan2 == 9356 ||
+          model.riShiZhuGuaTiaoWenNumber_Plan3 == 9356;
 
       // 如果没有匹配，打印所有条文编号帮助调试
       if (!hasExpectedNumber) {
@@ -163,9 +148,10 @@ void main() {
       print('日时卦互卦条文（方案3）: ${model.riShiHuGuaTiaoWenNumber_Plan3}');
 
       // 验证是否有某个方案的结果是9363
-      final hasExpectedNumber = model.riShiHuGuaTiaoWenNumber_Plan1 == 9363 ||
-                                 model.riShiHuGuaTiaoWenNumber_Plan2 == 9363 ||
-                                 model.riShiHuGuaTiaoWenNumber_Plan3 == 9363;
+      final hasExpectedNumber =
+          model.riShiHuGuaTiaoWenNumber_Plan1 == 9363 ||
+          model.riShiHuGuaTiaoWenNumber_Plan2 == 9363 ||
+          model.riShiHuGuaTiaoWenNumber_Plan3 == 9363;
 
       if (!hasExpectedNumber) {
         print('⚠️  预期9363但未找到匹配');
@@ -177,23 +163,29 @@ void main() {
     test('应该成功计算并返回结果', () {
       final result = strategy.calculate(testParams);
       expect(result.hasError, false, reason: '计算应该成功');
-      expect(result.baseNumbers.length, equals(1),
-          reason: '应该返回1个基础数结果');
+      expect(result.baseNumbers.length, equals(1), reason: '应该返回1个基础数结果');
     });
 
     test('应该生成12个条文编号（4个位置 × 3种方案）', () {
       print('\n所有条文编号: ${model.allTiaoWenNumbers}');
       print('条文总数: ${model.allTiaoWenNumbers.length}');
 
-      expect(model.allTiaoWenNumbers.length, greaterThanOrEqualTo(4),
-          reason: '至少应该有4个去重后的条文');
-      expect(model.allTiaoWenNumbers.length, lessThanOrEqualTo(12),
-          reason: '最多应该有12个条文');
+      expect(
+        model.allTiaoWenNumbers.length,
+        greaterThanOrEqualTo(4),
+        reason: '至少应该有4个去重后的条文',
+      );
+      expect(
+        model.allTiaoWenNumbers.length,
+        lessThanOrEqualTo(12),
+        reason: '最多应该有12个条文',
+      );
     });
 
     test('所有关键字段应该符合人工规格', () {
       final summary = {
-        '四柱': '${testFourZhu.yearGanzhi} ${testFourZhu.monthGanzhi} ${testFourZhu.dayGanzhi} ${testFourZhu.timeGanzhi}',
+        '四柱':
+            '${testEightChars.year.ganZhiStr} ${testEightChars.month.ganZhiStr} ${testEightChars.day.ganZhiStr} ${testEightChars.time.ganZhiStr}',
         '年月卦': model.nianYueZhuGuaName,
         '年月卦主卦（方案1）': model.nianYueZhuGuaTiaoWenNumber_Plan1,
         '年月卦主卦（方案2）': model.nianYueZhuGuaTiaoWenNumber_Plan2,

@@ -15,12 +15,6 @@ void main() {
     test('检查前后卦取数法的条文编号是否在合理范围内', () {
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
 
       // 创建策略
       final strategy = QianHouGuaStrategy();

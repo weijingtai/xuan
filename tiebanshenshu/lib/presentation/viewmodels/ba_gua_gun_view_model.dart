@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import '../../domain/four_zhu.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/ba_gua_gun_base_number_model.dart';
 import '../../usecases/ba_gua_gun_tiao_wen_list_use_case.dart';
@@ -87,8 +86,11 @@ class BaGuaGunViewModel extends BaseTiaoWenListViewModel {
       _domainResult = domainResult;
 
       // 创建UI模型
-      if (domainResult.isSuccess && domainResult.sourceData.containsKey('baGuaGunBaseNumberModel')) {
-        final baGuaGunModel = domainResult.sourceData['baGuaGunBaseNumberModel'] as BaGuaGunBaseNumberModel;
+      if (domainResult.isSuccess &&
+          domainResult.sourceData.containsKey('baGuaGunBaseNumberModel')) {
+        final baGuaGunModel =
+            domainResult.sourceData['baGuaGunBaseNumberModel']
+                as BaGuaGunBaseNumberModel;
         _uiModel = BaGuaGunUIModel.fromDomain(
           baGuaGunModel,
           domainResult.tiaoWenEntities ?? [],
@@ -148,13 +150,7 @@ class BaGuaGunViewModel extends BaseTiaoWenListViewModel {
   /// 获取四柱显示文本
   String get fourZhuDisplayText {
     if (_selectedEightChars == null) return '未选择';
-    final fz = FourZhu(
-      yearGanzhi: _selectedEightChars!.year.name,
-      monthGanzhi: _selectedEightChars!.month.name,
-      dayGanzhi: _selectedEightChars!.day.name,
-      timeGanzhi: _selectedEightChars!.time.name,
-    );
-    return fz.toString();
+    return _selectedEightChars.toString();
   }
 
   /// 获取基本卦显示文本

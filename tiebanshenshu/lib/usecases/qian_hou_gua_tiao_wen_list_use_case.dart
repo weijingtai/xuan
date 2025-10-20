@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 
-import '../domain/four_zhu.dart';
 import 'package:common/models/eight_chars.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
@@ -140,12 +139,6 @@ class QianHouGuaTiaoWenListUseCase
         calculationParams: params.toString(),
         errorMessage: e.toString(),
         sourceData: {
-          'eightChars': FourZhu(
-            yearGanzhi: params.eightChars.year.name,
-            monthGanzhi: params.eightChars.month.name,
-            dayGanzhi: params.eightChars.day.name,
-            timeGanzhi: params.eightChars.time.name,
-          ).toString(),
           'eightChars': params.eightChars.toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,

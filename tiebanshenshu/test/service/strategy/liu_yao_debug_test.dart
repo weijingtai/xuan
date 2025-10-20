@@ -15,20 +15,20 @@ void main() {
       // 使用DevConstant.dev_usa的八字数据
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
 
-      // 创建FourZhu对象
-      final fourZhu = FourZhu(
-        yearGanzhi: eightChars.year.name,
-        monthGanzhi: eightChars.month.name,
-        dayGanzhi: eightChars.day.name,
-        timeGanzhi: eightChars.time.name,
-      );
-
       print('\n========== DEBUG INFO ==========');
-      print('FourZhu: $fourZhu');
-      print('yearGan: ${fourZhu.yearGan}, yearZhi: ${fourZhu.yearZhi}');
-      print('monthGan: ${fourZhu.monthGan}, monthZhi: ${fourZhu.monthZhi}');
-      print('dayGan: ${fourZhu.dayGan}, dayZhi: ${fourZhu.dayZhi}');
-      print('timeGan: ${fourZhu.timeGan}, timeZhi: ${fourZhu.timeZhi}');
+      print('FourZhu: $eightChars');
+      print(
+        'yearGan: ${eightChars.year.tianGan.name}, yearZhi: ${eightChars.year.zhi.name}',
+      );
+      print(
+        'monthGan: ${eightChars.month.tianGan.name}, monthZhi: ${eightChars.month.zhi.name}',
+      );
+      print(
+        'dayGan: ${eightChars.day.tianGan.name}, dayZhi: ${eightChars.day.zhi.name}',
+      );
+      print(
+        'timeGan: ${eightChars.time.tianGan.name}, timeZhi: ${eightChars.time.zhi.name}',
+      );
 
       final strategy = LiuYaoGanZhiHeStrategy();
       final params = LiuYaoGanZhiHeStrategyParams(

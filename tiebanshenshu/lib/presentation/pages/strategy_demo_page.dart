@@ -29,7 +29,6 @@ import '../widgets/qian_hou_gua_card.dart';
 import '../widgets/gua_zhong_card.dart';
 import '../models/ba_gua_jia_ze_ui_model.dart';
 import '../models/yuan_tang_ui_model.dart';
-import '../../domain/four_zhu.dart';
 import '../../service/strategy/yuan_tang_strategy.dart';
 
 /// Strategy演示页面

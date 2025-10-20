@@ -212,10 +212,7 @@ class YuanTangCalculator {
         .toList();
 
     // 合并天干数列表与地支数列表
-    final List<int> combined = [
-      ...ganNumList,
-      ...zhiNumList.expand((x) => x),
-    ];
+    final List<int> combined = [...ganNumList, ...zhiNumList.expand((x) => x)];
 
     // 2.1. 分成奇数与偶数两组
     /// 奇数组
@@ -1231,6 +1228,105 @@ class YuanTangCalculator {
     liuyueList.sort((a, b) => a.month.compareTo(b.month));
 
     return liuyueList;
+  }
+
+  /// 生成天地卦
+  ///
+  /// 参数：
+  /// - [eightChars]: 四柱信息
+  /// - [gender]: 性别（"男" / "女"）
+  /// - [threeYuan]: 三元（"上" / "中" / "下"）
+  ///
+  /// 返回: (tianGua, diGua, ganNumList, zhiNumList, oddNumTotal, evenNumTotal,
+  ///        tianGuaNum, diGuaNum, usedThreeYuanWuGong)
+  static (
+    Enum8Gua, // tianGua
+    Enum8Gua, // diGua
+    List<int>, // ganNumList
+    List<List<int>>, // zhiNumList
+    int, // oddNumTotal
+    int, // evenNumTotal
+    int, // tianGuaNum
+    int, // diGuaNum
+    bool, // usedThreeYuanWuGong
+  )
+  generateTianDiGua({
+    required EightChars eightChars,
+    required Gender gender,
+    required YuanYunOrder threeYuan,
+  }) {
+    // print("~~~~~~~~");
+    // 提取四柱天干数列表
+    final ganNumList = [
+      constants.ganNumberMapper[eightChars.year.gan]!,
+      constants.ganNumberMapper[eightChars.month.gan]!,
+      constants.ganNumberMapper[eightChars.day.gan]!,
+      constants.ganNumberMapper[eightChars.time.gan]!,
+    ];
+
+    // 提取四柱地支数列表（每个地支两个数）
+    final zhiNumList = [
+      constants.zhiNumberMapper[eightChars.year.zhi]!,
+      constants.zhiNumberMapper[eightChars.month.zhi]!,
+      constants.zhiNumberMapper[eightChars.day.zhi]!,
+      constants.zhiNumberMapper[eightChars.time.zhi]!,
+    ];
+
+    // 展开地支数列表用于计算奇偶和
+    final zhiNumTotalList = [
+      ...constants.zhiNumberMapper[eightChars.year.zhi]!,
+      ...constants.zhiNumberMapper[eightChars.month.zhi]!,
+      ...constants.zhiNumberMapper[eightChars.day.zhi]!,
+      ...constants.zhiNumberMapper[eightChars.time.zhi]!,
+    ];
+
+    // 计算奇数和、偶数和
+    final oddNumTotal =
+        (ganNumList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b) +
+        zhiNumTotalList.where((i) => i % 2 == 1).fold<int>(0, (a, b) => a + b));
+
+    final evenNumTotal =
+        (ganNumList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b) +
+        zhiNumTotalList.where((i) => i % 2 == 0).fold<int>(0, (a, b) => a + b));
+
+    // 计算天数（奇数和 模25）
+    final tianGuaNum = gua_utils.calculateGuaNum(oddNumTotal, 25, 5);
+
+    // 计算地数（偶数和 模30）
+    final diGuaNum = gua_utils.calculateGuaNum(evenNumTotal, 30, 3);
+    // 数配卦
+    final yearYinYang = eightChars.yearTianGan.yinYang;
+    Enum8Gua tianGua;
+    Enum8Gua diGua;
+    bool usedThreeYuanWuGong = true;
+
+    // 天卦配卦（天数为5时查询三元五宫）
+    tianGua = numberToHouTianGua(
+      number: tianGuaNum,
+      gender: gender,
+      threeYuan: threeYuan,
+      yearYinYang: yearYinYang,
+    );
+
+    // 地卦配卦（地数为5时查询三元五宫）
+    diGua = numberToHouTianGua(
+      number: diGuaNum,
+      gender: gender,
+      threeYuan: threeYuan,
+      yearYinYang: yearYinYang,
+    );
+
+    return (
+      tianGua,
+      diGua,
+      ganNumList,
+      zhiNumList,
+      oddNumTotal,
+      evenNumTotal,
+      tianGuaNum,
+      diGuaNum,
+      usedThreeYuanWuGong,
+    );
   }
 
   /// 获取应爻位置（用于流月卦计算）

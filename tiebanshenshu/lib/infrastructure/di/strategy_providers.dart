@@ -1,7 +1,6 @@
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 
-import '../../application/services/candidate_generation_service.dart';
 import '../../features/huang_ji/huang_ji_session_manager.dart';
 import '../../features/huang_ji/huang_ji_v2_calculation_strategy.dart';
 import '../../features/huang_ji/huang_ji_v2_calculation_strategy_impl.dart';

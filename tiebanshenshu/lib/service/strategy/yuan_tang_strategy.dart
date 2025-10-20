@@ -17,7 +17,6 @@ import '../../domain/models/yuan_tang_base_number_model.dart';
 import '../../domain/models/yuan_tang_model_result.dart';
 import '../../utils/utils.dart' as gua_utils;
 import '../../utils/tiao_wen_calculator.dart';
-import '../../utils/yuan_tang_gua_helper.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';
 
@@ -214,7 +213,7 @@ class YuanTangStrategy
       tianGuaNum,
       diGuaNum,
       usedThreeYuanWuGong,
-    ) = YuanTangGuaHelper.generateTianDiGua(
+    ) = YuanTangCalculator.generateTianDiGua(
       eightChars: params.eightChars,
       gender: params.gender,
       threeYuan: params.threeYuan,

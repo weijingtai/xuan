@@ -6,7 +6,6 @@ library;
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_tian_gan.dart';
 import '../../constant/constants.dart' as Constants;
-import '../../domain/four_zhu.dart';
 import '../../utils/tiao_wen_calculator.dart';
 import 'base_calculation_strategy.dart';
 import 'standard_calculation_strategy.dart';

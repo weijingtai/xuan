@@ -1,7 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
-import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/xian_houtian_gua_base_number_model.dart';
@@ -180,13 +179,7 @@ class XianHoutianJiaZeViewModel extends BaseTiaoWenListViewModel {
   /// 获取四柱显示文本
   String get fourZhuDisplayText {
     if (_selectedEightChars == null) return '未选择';
-    final fz = FourZhu(
-      yearGanzhi: _selectedEightChars!.year.name,
-      monthGanzhi: _selectedEightChars!.month.name,
-      dayGanzhi: _selectedEightChars!.day.name,
-      timeGanzhi: _selectedEightChars!.time.name,
-    );
-    return fz.toString();
+    return _selectedEightChars.toString();
   }
 
   /// 获取先天卦显示文本

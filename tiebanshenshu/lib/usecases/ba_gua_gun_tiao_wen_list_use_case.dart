@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import '../domain/four_zhu.dart';
 import '../domain/models/base_number_tiao_wen_list_model.dart';
 import '../domain/models/multi_base_number_result.dart';
 import '../domain/models/ba_gua_gun_base_number_model.dart';
@@ -93,12 +92,6 @@ class BaGuaGunTiaoWenListUseCase
         sourceData: {
           // 同步返回八字及转换后的四柱字符串，便于UI层显示
           'eightChars': params.eightChars.toString(),
-          'fourZhu': FourZhu(
-            yearGanzhi: params.eightChars.year.name,
-            monthGanzhi: params.eightChars.month.name,
-            dayGanzhi: params.eightChars.day.name,
-            timeGanzhi: params.eightChars.time.name,
-          ).toString(),
           'gender': params.gender,
           'threeYuan': params.threeYuan,
           'basicGua': baGuaGunModel.basicGua,

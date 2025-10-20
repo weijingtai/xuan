@@ -2,7 +2,6 @@ import 'package:common/enums.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:tiebanshenshu/enums.dart';
-import '../../domain/four_zhu.dart';
 import '../../domain/models/base_number_tiao_wen_list_model.dart';
 import '../../domain/models/multi_base_number_result.dart';
 import '../../domain/models/yuan_tang_base_number_model.dart';
@@ -176,13 +175,7 @@ class YuanTangViewModel extends BaseTiaoWenListViewModel {
   /// 获取四柱显示文本
   String get fourZhuDisplayText {
     if (_currentEightChars == null) return '未选择';
-    final fz = FourZhu(
-      yearGanzhi: _currentEightChars!.year.name,
-      monthGanzhi: _currentEightChars!.month.name,
-      dayGanzhi: _currentEightChars!.day.name,
-      timeGanzhi: _currentEightChars!.time.name,
-    );
-    return fz.toString();
+    return _currentEightChars.toString();
   }
 
   @override
