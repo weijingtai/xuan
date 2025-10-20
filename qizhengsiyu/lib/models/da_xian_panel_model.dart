@@ -3,10 +3,10 @@ import 'package:common/models/shen_sha.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/enum_twelve_gong.dart';
+import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层的模型
+import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
+import '../domain/entities/models/stars_angle.dart'; // 使用domain层的模型
 import 'hua_yao.dart';
-import 'star_angle_speed.dart';
-import 'star_enter_info.dart';
-import 'stars_angle.dart';
 
 part 'da_xian_panel_model.g.dart';
 
