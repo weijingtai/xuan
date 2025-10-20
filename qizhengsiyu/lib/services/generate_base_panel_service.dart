@@ -11,7 +11,7 @@ import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
-import 'package:qizhengsiyu/models/hua_yao.dart';
+import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层的模型
@@ -96,6 +96,18 @@ class GenerateBasePanelService {
     final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
         .map((e) => HuaYaoStarPair(e.key, e.value))
         .toList();
+
+    // 转换为新的化曜格式
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (final pair in huaYaoStarPairList) {
+      final huaYaoItem = HuaYaoItem.fromHuaYao(pair.huaYao);
+      if (huaYaoItemMapper.containsKey(pair.star)) {
+        huaYaoItemMapper[pair.star]!.add(huaYaoItem);
+      } else {
+        huaYaoItemMapper[pair.star] = [huaYaoItem];
+      }
+    }
+
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(observerPosition.yearGanZhi);
@@ -118,8 +130,8 @@ class GenerateBasePanelService {
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       bodyLifeModel: bodyLifeModel,
       twelveGongMapper: twelveGongMapper,
-      shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      shenShaItemMapper: shenShaMapper,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }

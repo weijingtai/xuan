@@ -7,7 +7,7 @@ import 'package:common/utils/collections_utils.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao_shen_sha.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/hua_yao.dart';
+import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:tuple/tuple.dart';
