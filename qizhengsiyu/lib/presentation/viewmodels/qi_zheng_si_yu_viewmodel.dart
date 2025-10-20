@@ -32,7 +32,7 @@ import 'package:common/models/divination_datetime.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
 
-import '../../models/stars_angle.dart';
+import '../../domain/entities/models/stars_angle.dart'; // 使用domain层模型
 
 /// 七政四余 ViewModel - MVVM架构 + UI兼容层
 ///
