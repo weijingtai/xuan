@@ -132,9 +132,9 @@ class _ScalableShiJiaQiMenViewPageState
   TextStyle get panInfoTextStyle => ConstantUiResourcesOfQiMen.panInfoTextStyle;
 
   TextStyle switcherInactivatedStyle =
-      const TextStyle(fontSize: 16, color: Color(0xff636f7b), height: 1.0);
+      const TextStyle(fontSize: 14, color: Color(0xff636f7b), height: 1.0);
   TextStyle baseActivatedStyle = TextStyle(
-      fontSize: 16,
+      fontSize: 14,
       color: const Color(0xff636f7b),
       height: 1.0,
       fontWeight: FontWeight.w500,
@@ -610,6 +610,8 @@ class _ScalableShiJiaQiMenViewPageState
     );
   }
 
+  TextStyle optionTitleTextStyle = TextStyle(
+      fontSize: 12, fontWeight: FontWeight.w300, color: Colors.black87);
   Widget buildGongTenGanKeYing(UIEachGongModel uiGong, UIGongExplains explains,
       double width, double height) {
     return SizedBox(
@@ -924,6 +926,10 @@ class _ScalableShiJiaQiMenViewPageState
         });
   }
 
+  SizedBox intervalSizedBox = const SizedBox(
+    height: 6,
+  );
+
   ///list.length 为 2 或者为 3是
   Widget buildSelectionPan() {
     return Container(
@@ -947,7 +953,7 @@ class _ScalableShiJiaQiMenViewPageState
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(
-              height: 36,
+              height: 18,
             ),
             Center(
               child: ValueListenableBuilder(
@@ -964,7 +970,7 @@ class _ScalableShiJiaQiMenViewPageState
                             break;
                         }
                       },
-                      containerHeight: 56,
+                      containerHeight: 42,
                       containerWight: 240,
                       indents: 2,
                       containerColor: const Color(0xffe4e5eb),
@@ -981,23 +987,22 @@ class _ScalableShiJiaQiMenViewPageState
                       children: [
                         AnimatedDefaultTextStyle(
                             style: type != PlateType.ZHUAN_PAN
-                                ? baseActivatedStyle.copyWith(fontSize: 24)
-                                : zhuanPanActivatedStyle.copyWith(fontSize: 24),
+                                ? baseActivatedStyle.copyWith(fontSize: 18)
+                                : zhuanPanActivatedStyle.copyWith(fontSize: 18),
                             duration: const Duration(milliseconds: 200),
                             child: Text("${PlateType.ZHUAN_PAN.name}法")),
                         AnimatedDefaultTextStyle(
                             style: type != PlateType.FEI_PAN
-                                ? baseActivatedStyle.copyWith(fontSize: 24)
-                                : feiPanActivatedStyle.copyWith(fontSize: 24),
+                                ? baseActivatedStyle.copyWith(fontSize: 18)
+                                : feiPanActivatedStyle.copyWith(fontSize: 2184),
                             duration: const Duration(milliseconds: 200),
                             child: Text("${PlateType.FEI_PAN.name}法")),
                       ]);
                 },
               ),
             ),
-            const SizedBox(
-              height: 20,
-            ),
+            intervalSizedBox,
+            intervalSizedBox,
             ValueListenableBuilder(
                 valueListenable: arrangeTypeNotifier,
                 builder: (ctx, arrangeType, _) {
@@ -1006,7 +1011,7 @@ class _ScalableShiJiaQiMenViewPageState
                       onSelect: (index) {
                         arrangeTypeNotifier.value = ArrangeType.values[index];
                       },
-                      containerHeight: 42,
+                      containerHeight: 32,
                       containerWight: 350,
                       indents: 4,
                       containerColor: const Color(0xffe4e5eb),
@@ -1021,17 +1026,17 @@ class _ScalableShiJiaQiMenViewPageState
                       children: ArrangeType.values
                           .map((t) => AnimatedDefaultTextStyle(
                               style: arrangeType != t
-                                  ? switcherInactivatedStyle
-                                  : switcherActivatedStyle,
+                                  ? switcherInactivatedStyle.copyWith(
+                                      fontSize: 14)
+                                  : switcherActivatedStyle.copyWith(
+                                      fontSize: 14),
                               duration: const Duration(milliseconds: 200),
                               child: Text("${t.name}法")))
                           .toList());
                 }),
-            const SizedBox(
-              height: 16,
-            ),
+            intervalSizedBox,
             Container(
-                margin: const EdgeInsets.all(16),
+                margin: const EdgeInsets.all(0),
                 child: Column(
                   children: [
                     Row(
@@ -1045,12 +1050,9 @@ class _ScalableShiJiaQiMenViewPageState
                             Container(
                               alignment: Alignment.centerLeft,
                               width: 240,
-                              child: const Text(
+                              child: Text(
                                 "中宫寄宫：",
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w300,
-                                    color: Colors.black87),
+                                style: optionTitleTextStyle,
                               ),
                             ),
                             ValueListenableBuilder(
@@ -1062,7 +1064,7 @@ class _ScalableShiJiaQiMenViewPageState
                                         jiGongHintNotifier.value =
                                             CenterGongJiGongType.values[index];
                                       },
-                                      containerHeight: 36,
+                                      containerHeight: 32,
                                       containerWight: 240,
                                       indents: 4,
                                       containerColor: const Color(0xffe4e5eb),
@@ -1100,9 +1102,7 @@ class _ScalableShiJiaQiMenViewPageState
                             )
                           ],
                         ),
-                        const SizedBox(
-                          width: 12,
-                        ),
+                        intervalSizedBox,
                         ValueListenableBuilder(
                             valueListenable: jiGongHintNotifier,
                             builder: (content, jiGong, _) =>
@@ -1118,7 +1118,7 @@ class _ScalableShiJiaQiMenViewPageState
                                             jiGong) {
                                           return SizedBox(
                                             width: 160,
-                                            height: 48,
+                                            height: 36,
                                             child:
                                                 CustomDropdown<String>.search(
                                               decoration:
@@ -1165,7 +1165,7 @@ class _ScalableShiJiaQiMenViewPageState
                                         } else {
                                           return SizedBox(
                                             width: 160,
-                                            height: 48,
+                                            height: 42,
                                             child:
                                                 CustomDropdown<String>.search(
                                               decoration: CustomDropdownDecoration(
@@ -1234,9 +1234,7 @@ class _ScalableShiJiaQiMenViewPageState
                                     }))
                       ],
                     ),
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    intervalSizedBox,
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1244,12 +1242,9 @@ class _ScalableShiJiaQiMenViewPageState
                         Container(
                           alignment: Alignment.centerLeft,
                           width: 240,
-                          child: const Text(
+                          child: Text(
                             "月令旺衰取法：",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.black87),
+                            style: optionTitleTextStyle,
                           ),
                         ),
                         ValueListenableBuilder(
@@ -1261,7 +1256,7 @@ class _ScalableShiJiaQiMenViewPageState
                                     monthTokenTypeNotifier.value =
                                         MonthTokenTypeEnum.values[index];
                                   },
-                                  containerHeight: 36,
+                                  containerHeight: 32,
                                   containerWight: 240,
                                   indents: 4,
                                   containerColor: const Color(0xffe4e5eb),
@@ -1344,9 +1339,7 @@ class _ScalableShiJiaQiMenViewPageState
                         )
                       ],
                     ),
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    intervalSizedBox,
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1354,12 +1347,9 @@ class _ScalableShiJiaQiMenViewPageState
                         Container(
                           alignment: Alignment.centerLeft,
                           width: 240,
-                          child: const Text(
+                          child: Text(
                             "“神”与“宫”旺衰：",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.black87),
+                            style: optionTitleTextStyle,
                           ),
                         ),
                         ValueListenableBuilder(
@@ -1371,7 +1361,7 @@ class _ScalableShiJiaQiMenViewPageState
                                     godWithGongTypeNotifier.value =
                                         GodWithGongTypeEnum.values[index];
                                   },
-                                  containerHeight: 36,
+                                  containerHeight: 32,
                                   containerWight: 240,
                                   indents: 4,
                                   containerColor: const Color(0xffe4e5eb),
@@ -1416,9 +1406,7 @@ class _ScalableShiJiaQiMenViewPageState
                         )
                       ],
                     ),
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    intervalSizedBox,
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1426,12 +1414,9 @@ class _ScalableShiJiaQiMenViewPageState
                         Container(
                           alignment: Alignment.centerLeft,
                           width: 240,
-                          child: const Text(
+                          child: Text(
                             "“星”与“宫”旺衰：",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.black87),
+                            style: optionTitleTextStyle,
                           ),
                         ),
                         ValueListenableBuilder(
@@ -1443,7 +1428,7 @@ class _ScalableShiJiaQiMenViewPageState
                                         GongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
-                                  containerHeight: 36,
+                                  containerHeight: 32,
                                   containerWight: 240,
                                   indents: 4,
                                   containerColor: const Color(0xffe4e5eb),
@@ -1488,9 +1473,7 @@ class _ScalableShiJiaQiMenViewPageState
                         )
                       ],
                     ),
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    intervalSizedBox,
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1498,12 +1481,9 @@ class _ScalableShiJiaQiMenViewPageState
                         Container(
                           alignment: Alignment.centerLeft,
                           width: 240,
-                          child: const Text(
+                          child: Text(
                             "“门”与“宫”旺衰：",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.black87),
+                            style: optionTitleTextStyle,
                           ),
                         ),
                         ValueListenableBuilder(
@@ -1515,7 +1495,7 @@ class _ScalableShiJiaQiMenViewPageState
                                         GongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
-                                  containerHeight: 36,
+                                  containerHeight: 32,
                                   containerWight: 240,
                                   indents: 4,
                                   containerColor: const Color(0xffe4e5eb),
@@ -1558,9 +1538,7 @@ class _ScalableShiJiaQiMenViewPageState
                         )
                       ],
                     ),
-                    const SizedBox(
-                      height: 12,
-                    ),
+                    intervalSizedBox,
                     Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
@@ -1568,13 +1546,8 @@ class _ScalableShiJiaQiMenViewPageState
                         Container(
                           alignment: Alignment.centerLeft,
                           width: 240,
-                          child: const Text(
-                            "“干”与“宫”旺衰：",
-                            style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w300,
-                                color: Colors.black87),
-                          ),
+                          child:
+                              Text("“干”与“宫”旺衰：", style: optionTitleTextStyle),
                         ),
                         ValueListenableBuilder(
                             valueListenable: ganGongTypeNotifier,
@@ -1585,7 +1558,7 @@ class _ScalableShiJiaQiMenViewPageState
                                         GanGongTypeEnum.values[index];
                                   },
                                   initialIndex: gt.index,
-                                  containerHeight: 36,
+                                  containerHeight: 32,
                                   containerWight: 240,
                                   indents: 4,
                                   containerColor: const Color(0xffe4e5eb),
@@ -1630,9 +1603,7 @@ class _ScalableShiJiaQiMenViewPageState
                     ),
                   ],
                 )),
-            const SizedBox(
-              height: 16,
-            ),
+            intervalSizedBox,
             ValueListenableBuilder(
                 valueListenable: arrangeTypeNotifier,
                 builder: (ctx, arrangeType, _) {

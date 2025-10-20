@@ -1208,7 +1208,7 @@ class _ScalableBeautifulPageState extends State<ScalableBeautifulPage>
         height: panSize.height + 2,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.blue,
             borderRadius: BorderRadius.circular(36),
             boxShadow: [
               BoxShadow(

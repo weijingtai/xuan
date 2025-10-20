@@ -11,11 +11,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:lunar/calendar/Lunar.dart';
-import 'package:qimendunjia/model/ten_gan_ke_ying.dart';
-import 'package:qimendunjia/model/ten_gan_ke_ying_ge_ju.dart';
-import 'package:qimendunjia/utils/constant_ui_resources_of_qi_men.dart';
-import 'package:qimendunjia/widgets/ten_gan_ke_ying_yin_zhang.dart';
-
 class RootPage extends StatefulWidget {
   double defaultEachGongWidth = 256;
   RootPage({super.key});

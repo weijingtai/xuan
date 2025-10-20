@@ -30,7 +30,7 @@ dependencies:
     path: ../common
   dotlottie_loader: ^0.0.4
   auto_size_text: ^3.0.0
-  flutter_sliding_toast: ^1.4.3
+  flutter_sliding_toast: ^1.5.2
   json_serializable: ^6.8.0
   json_annotation: ^4.9.0
   flutter_animate: 4.5.0
