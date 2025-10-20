@@ -15,6 +15,7 @@ import 'package:xuan/pages/cross_platform_main_page.dart';
 import 'package:xuan/routes.dart';
 import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:qizhengsiyu/di.dart' as qizhengsiyu_di; // 添加七政四余依赖注入
 
 import 'NavigatorGenerator.dart';
 
@@ -74,6 +75,8 @@ void main() async {
               create: (ctx) =>
                   DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
                     ..initState()),
+          // 七政四余模块的依赖注入
+          ...qizhengsiyu_di.createProviders(),
         ],
         child: const MyApp(),
       ),
