@@ -102,3 +102,54 @@ const _$Enum28ConstellationsEnumMap = {
   Enum28Constellations.Bi_Shui_Yu: '壁',
   Enum28Constellations.Kui_Mu_Lang: '奎',
 };
+
+PalaceConstellationSegment _$PalaceConstellationSegmentFromJson(
+        Map<String, dynamic> json) =>
+    PalaceConstellationSegment(
+      constellationName:
+          $enumDecode(_$Enum28ConstellationsEnumMap, json['constellationName']),
+      startInConstellationDeg:
+          (json['startInConstellationDeg'] as num).toDouble(),
+      endInConstellationDeg: (json['endInConstellationDeg'] as num).toDouble(),
+      startInPalaceDeg: (json['startInPalaceDeg'] as num).toDouble(),
+      endInPalaceDeg: (json['endInPalaceDeg'] as num).toDouble(),
+      segmentLengthDeg: (json['segmentLengthDeg'] as num).toDouble(),
+      crossesConstellationAtPalaceDeg:
+          (json['crossesConstellationAtPalaceDeg'] as num?)?.toDouble(),
+    );
+
+Map<String, dynamic> _$PalaceConstellationSegmentToJson(
+        PalaceConstellationSegment instance) =>
+    <String, dynamic>{
+      'constellationName':
+          _$Enum28ConstellationsEnumMap[instance.constellationName]!,
+      'startInConstellationDeg': instance.startInConstellationDeg,
+      'endInConstellationDeg': instance.endInConstellationDeg,
+      'startInPalaceDeg': instance.startInPalaceDeg,
+      'endInPalaceDeg': instance.endInPalaceDeg,
+      'segmentLengthDeg': instance.segmentLengthDeg,
+      'crossesConstellationAtPalaceDeg':
+          instance.crossesConstellationAtPalaceDeg,
+    };
+
+PalaceMappingResult _$PalaceMappingResultFromJson(Map<String, dynamic> json) =>
+    PalaceMappingResult(
+      palaceName: $enumDecode(_$EnumTwelveGongEnumMap, json['palaceName']),
+      absStartDeg: (json['absStartDeg'] as num).toDouble(),
+      absEndDeg: (json['absEndDeg'] as num).toDouble(),
+      totalWidthDeg: (json['totalWidthDeg'] as num).toDouble(),
+      segments: (json['segments'] as List<dynamic>)
+          .map((e) =>
+              PalaceConstellationSegment.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$PalaceMappingResultToJson(
+        PalaceMappingResult instance) =>
+    <String, dynamic>{
+      'palaceName': _$EnumTwelveGongEnumMap[instance.palaceName]!,
+      'absStartDeg': instance.absStartDeg,
+      'absEndDeg': instance.absEndDeg,
+      'totalWidthDeg': instance.totalWidthDeg,
+      'segments': instance.segments,
+    };

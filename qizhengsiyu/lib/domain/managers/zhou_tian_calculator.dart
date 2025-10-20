@@ -428,17 +428,6 @@ class ZhouTianCalculator {
       for (ConstellationSegment segment in constellationResult.segments) {
         EnumTwelveGong palaceName = segment.palaceName;
 
-        // 计算该分段在周天中的绝对位置
-        CelestialObject<EnumTwelveGong> palaceData = palacesData[palaceName]!;
-
-        // 计算分段在周天中的绝对起始和结束度数
-        double segmentAbsStartDeg = normalizeAngle(
-            palaceData.absStartContinuous + segment.startInPalaceDeg,
-            zhouTianModel.totalDegree);
-        double segmentAbsEndDeg = normalizeAngle(
-            palaceData.absStartContinuous + segment.endInPalaceDeg,
-            zhouTianModel.totalDegree);
-
         // 创建宫位中的星宿分段信息
         PalaceConstellationSegment palaceSegment = PalaceConstellationSegment(
           constellationName: constellationResult.constellationName,
@@ -451,8 +440,6 @@ class ZhouTianCalculator {
           startInPalaceDeg: segment.startInPalaceDeg,
           endInPalaceDeg: segment.endInPalaceDeg,
           segmentLengthDeg: segment.segmentLengthDeg,
-          absStartDeg: segmentAbsStartDeg,
-          absEndDeg: segmentAbsEndDeg,
         );
 
         palaceToSegments[palaceName]!.add(palaceSegment);
@@ -476,7 +463,7 @@ class ZhouTianCalculator {
             palaceData.absStartContinuous, zhouTianModel.totalDegree),
         absEndDeg: normalizeAngle(
             palaceData.absEndContinuous, zhouTianModel.totalDegree),
-        constellationSegments: segments,
+        segments: segments,
       );
 
       results.add(palaceResult);
