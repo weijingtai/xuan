@@ -6,7 +6,7 @@ import '../enums/enum_twelve_gong.dart';
 import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层的模型
 import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 import '../domain/entities/models/stars_angle.dart'; // 使用domain层的模型
-import 'hua_yao.dart';
+import '../domain/entities/models/hua_yao.dart'; // 使用domain层的模型
 
 part 'da_xian_panel_model.g.dart';
 
