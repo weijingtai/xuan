@@ -8,186 +8,186 @@
 
 ---
 
-## 阶段1: 环境准备与分支管理
+## 阶段1: 环境准备与分支管理 ✅
 
-### 1.1 Git分支操作
-- [ ] 确认当前在 `refactor/74-ui` 分支
-- [ ] 备份当前工作区状态 (git stash 或 commit)
-- [ ] 创建新的集成分支 `refactor/74-integrated`
-- [ ] 验证新分支创建成功 (git branch 查看)
+### 1.1 Git分支操作✅
+- [x] 确认当前在 `refactor/74-ui` 分支
+- [x] 备份当前工作区状态 (git stash 或 commit)
+- [x] 创建新的集成分支 `refactor/74-integrated`
+- [x] 验证新分支创建成功 (git branch 查看)
 
-### 1.2 备份关键文件
-- [ ] 备份 `qizhengsiyu/lib/pages/beauty_page_viewmodel.dart` 到 `.bak`
-- [ ] 备份 `qizhengsiyu/lib/pages/beauty_view_page.dart` 到 `.bak`
-- [ ] 备份 `qizhengsiyu/pubspec.yaml` 到 `.bak`
-- [ ] 创建备份清单文件记录所有备份路径
-
----
-
-## 阶段2: 深度分析两个分支的接口差异
-
-### 2.1 分析 UI 分支的 BeautyPageViewModel
-- [ ] 列出所有 `ValueNotifier` 属性及其类型
-- [ ] 列出所有 public getter 方法
-- [ ] 列出所有 public 方法 (init, calculate, 等)
-- [ ] 列出所有 private 方法的功能 (需要移植的)
-- [ ] 记录 ChangeNotifier 的使用位置
-- [ ] 记录依赖的 Manager/Service 类
-
-### 2.2 分析 MVVM 分支的 QiZhengSiYuViewModel
-- [ ] 列出现有的 public 属性
-- [ ] 列出现有的 public 方法
-- [ ] 列出构造函数参数 (依赖注入)
-- [ ] 记录 UseCase 的调用方式
-- [ ] 记录 Repository 的使用方式
-
-### 2.3 生成接口对比表
-- [ ] 创建 `interface_comparison.md` 文档
-- [ ] 列出 UI 分支有但 MVVM 分支没有的接口
-- [ ] 列出两个分支都有但签名不同的接口
-- [ ] 标记哪些接口需要添加
-- [ ] 标记哪些接口需要适配
-
-### 2.4 分析 UI 层的实际调用
-- [ ] 扫描 `beauty_view_page.dart` 中所有 `context.read<BeautyPageViewModel>()` 调用
-- [ ] 记录所有 `ValueListenableBuilder` 使用的 notifier
-- [ ] 记录所有直接访问的 getter
-- [ ] 记录所有方法调用及其参数
-- [ ] 生成 `ui_dependencies.md` 文档
+### 1.2 备份关键文件 ✅
+- [x] 备份 `qizhengsiyu/lib/pages/beauty_page_viewmodel.dart` 到 `.bak`
+- [x] 备份 `qizhengsiyu/lib/pages/beauty_view_page.dart` 到 `.bak`
+- [x] 备份 `qizhengsiyu/pubspec.yaml` 到 `.bak`
+- [x] 创建备份清单文件记录所有备份路径
 
 ---
 
-## 阶段3: 合并 MVVM 架构层代码
+## 阶段2: 深度分析两个分支的接口差异 ✅
 
-### 3.1 合并 domain 层
-- [ ] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/domain/` 整个目录
-- [ ] 验证 domain 层文件完整性 (检查关键子目录存在)
-- [ ] 检查是否有编译错误 (暂时忽略缺少依赖的错误)
-- [ ] 记录 domain 层引入的新依赖包
+### 2.1 分析 UI 分支的 BeautyPageViewModel ✅
+- [x] 列出所有 `ValueNotifier` 属性及其类型
+- [x] 列出所有 public getter 方法
+- [x] 列出所有 public 方法 (init, calculate, 等)
+- [x] 列出所有 private 方法的功能 (需要移植的)
+- [x] 记录 ChangeNotifier 的使用位置
+- [x] 记录依赖的 Manager/Service 类
 
-### 3.2 合并 data 层
-- [ ] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/data/` 整个目录
-- [ ] 验证 data 层文件完整性
-- [ ] 检查 DAO 和 Repository 实现是否完整
-- [ ] 记录 data 层引入的新依赖包
+### 2.2 分析 MVVM 分支的 QiZhengSiYuViewModel ✅
+- [x] 列出现有的 public 属性
+- [x] 列出现有的 public 方法
+- [x] 列出构造函数参数 (依赖注入)
+- [x] 记录 UseCase 的调用方式
+- [x] 记录 Repository 的使用方式
 
-### 3.3 合并依赖注入配置
-- [ ] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/di.dart`
-- [ ] 阅读 `di.dart` 了解依赖注入结构
-- [ ] 记录需要注册的 Provider 列表
+### 2.3 生成接口对比表 ✅
+- [x] 创建 `interface_comparison.md` 文档
+- [x] 列出 UI 分支有但 MVVM 分支没有的接口
+- [x] 列出两个分支都有但签名不同的接口
+- [x] 标记哪些接口需要添加
+- [x] 标记哪些接口需要适配
 
-### 3.4 合并 presentation 层 (选择性)
-- [ ] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart`
-- [ ] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/presentation/models/ui_star_model.dart`
-- [ ] 对比 UI 分支和 MVVM 分支的 `ui_star_model.dart` 差异
-- [ ] 如果有差异, 记录需要手动合并的字段
+### 2.4 分析 UI 层的实际调用 ✅
+- [x] 扫描 `beauty_view_page.dart` 中所有 `context.read<BeautyPageViewModel>()` 调用
+- [x] 记录所有 `ValueListenableBuilder` 使用的 notifier
+- [x] 记录所有直接访问的 getter
+- [x] 记录所有方法调用及其参数
+- [x] 生成 `ui_dependencies.md` 文档 (集成到interface_comparison.md)
 
-### 3.5 处理 pubspec.yaml
+---
+
+## 阶段3: 合并 MVVM 架构层代码 ✅
+
+### 3.1 合并 domain 层 ✅
+- [x] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/domain/` 整个目录
+- [x] 验证 domain 层文件完整性 (检查关键子目录存在)
+- [x] 检查是否有编译错误 (暂时忽略缺少依赖的错误)
+- [x] 记录 domain 层引入的新依赖包
+
+### 3.2 合并 data 层 ✅
+- [x] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/data/` 整个目录
+- [x] 验证 data 层文件完整性
+- [x] 检查 DAO 和 Repository 实现是否完整
+- [x] 记录 data 层引入的新依赖包
+
+### 3.3 合并依赖注入配置 ✅
+- [x] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/di.dart`
+- [x] 阅读 `di.dart` 了解依赖注入结构
+- [x] 记录需要注册的 Provider 列表
+
+### 3.4 合并 presentation 层 (选择性) ✅
+- [x] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart`
+- [x] 从 `refactor/74-mu` 检出 `qizhengsiyu/lib/presentation/models/ui_star_model.dart`
+- [x] 对比 UI 分支和 MVVM 分支的 `ui_star_model.dart` 差异
+- [x] 如果有差异, 记录需要手动合并的字段 (发现重复,已删除MVVM版本)
+
+### 3.5 处理 pubspec.yaml ⏸️
 - [ ] 从 `refactor/74-mu` 获取新增的依赖包列表
 - [ ] 手动将新依赖添加到当前 `pubspec.yaml`
 - [ ] 保留 UI 分支的 UI 相关依赖 (lottie, responsive_framework 等)
 - [ ] 运行 `flutter pub get`
 - [ ] 验证依赖安装成功
 
-### 3.6 处理模型路径迁移
-- [ ] 记录 UI 分支 `lib/models/` 下的所有文件
-- [ ] 对比 MVVM 分支 `lib/domain/entities/models/` 的相同文件
-- [ ] 确认 MVVM 分支是否包含所有必要的模型
-- [ ] 如果有缺失, 从 UI 分支复制过去
+### 3.6 处理模型路径迁移 ✅
+- [x] 记录 UI 分支 `lib/models/` 下的所有文件
+- [x] 对比 MVVM 分支 `lib/domain/entities/models/` 的相同文件
+- [x] 确认 MVVM 分支是否包含所有必要的模型
+- [x] 如果有缺失, 从 UI 分支复制过去 (已确认完整)
 
 ---
 
-## 阶段4: 扩展 QiZhengSiYuViewModel (核心任务)
+## 阶段4: 扩展 QiZhengSiYuViewModel (核心任务) ✅
 
-### 4.1 添加 ValueNotifier 属性
-- [ ] 添加 `uiBasePanelNotifier: ValueNotifier<BasePanelModel?>`
-- [ ] 添加 `uiDaXianPanelNotifier: ValueNotifier<DaXianPanelModel?>`
-- [ ] 添加 `uiBasicLifeStarsNotifier: ValueNotifier<List<UIStarModel>?>`
-- [ ] 添加 `uiFateLifeStarsNotifier: ValueNotifier<List<UIStarModel>?>`
-- [ ] 添加 `baseObserverPositionNotifier: ValueNotifier<ObserverPosition?>`
-- [ ] 在构造函数中初始化所有 ValueNotifier
-- [ ] 在 dispose 方法中释放所有 ValueNotifier
+### 4.1 添加 ValueNotifier 属性 ✅
+- [x] 添加 `uiBasePanelNotifier: ValueNotifier<BasePanelModel?>`
+- [x] 添加 `uiDaXianPanelNotifier: ValueNotifier<DaXianPanelModel?>`
+- [x] 添加 `uiBasicLifeStarsNotifier: ValueNotifier<List<UIStarModel>?>`
+- [x] 添加 `uiFateLifeStarsNotifier: ValueNotifier<List<UIStarModel>?>`
+- [x] 添加 `baseObserverPositionNotifier: ValueNotifier<ObserverPosition?>`
+- [x] 在构造函数中初始化所有 ValueNotifier
+- [x] 在 dispose 方法中释放所有 ValueNotifier
 
-### 4.2 添加普通 Getter 属性
-- [ ] 添加 `_uiBasicLifeStars: List<UIStarModel>` 及其 getter
-- [ ] 添加 `_uiFateLifeStars: List<UIStarModel>` 及其 getter
-- [ ] 添加 `_daXianMapper: Map<EnumStars, FiveStarWalkingInfo>?` 及其 getter
-- [ ] 添加 `_lifeObserver: ObserverPosition?` 及其 getter
-- [ ] 验证所有 getter 的返回类型正确
+### 4.2 添加普通 Getter 属性 ✅
+- [x] 添加 `_uiBasicLifeStars: List<UIStarModel>` 及其 getter
+- [x] 添加 `_uiFateLifeStars: List<UIStarModel>` 及其 getter
+- [x] 添加 `_daXianMapper: Map<EnumStars, FiveStarWalkingInfo>?` 及其 getter
+- [x] 添加 `_lifeObserver: ObserverPosition?` 及其 getter
+- [x] 验证所有 getter 的返回类型正确
 
-### 4.3 添加 Manager 的 Getter (如果还没有)
-- [ ] 确认 `shenShaManager` getter 存在
-- [ ] 确认 `huaYaoManager` getter 存在
-- [ ] 确认 `zhouTianModelManager` getter 存在
-- [ ] 如果缺失, 从构造函数参数暴露为 getter
+### 4.3 添加 Manager 的 Getter (如果还没有) ✅
+- [x] 确认 `shenShaManager` getter 存在
+- [x] 确认 `huaYaoManager` getter 存在
+- [x] 确认 `zhouTianModelManager` getter 存在
+- [x] 如果缺失, 从构造函数参数暴露为 getter (已通过构造函数注入)
 
-### 4.4 实现 init() 方法
-- [ ] 创建 `Future<void> init()` 方法
-- [ ] 在 init 中调用 `zhouTianModelManager.load()`
-- [ ] 在 init 中加载其他必要的数据源 (如果有)
-- [ ] 添加错误处理 (try-catch)
-- [ ] 添加日志记录初始化状态
+### 4.4 实现 init() 方法 ✅
+- [x] 创建 `Future<void> init()` 方法
+- [x] 在 init 中调用 `zhouTianModelManager.load()`
+- [x] 在 init 中加载其他必要的数据源 (如果有)
+- [x] 添加错误处理 (try-catch)
+- [x] 添加日志记录初始化状态
 
-### 4.5 实现兼容版 calculate() 方法
-- [ ] 创建 `Future<void> calculate(ObserverPosition observerPosition)` 方法
-- [ ] 保存 `observerPosition` 到 `_lifeObserver`
-- [ ] 更新 `baseObserverPositionNotifier.value`
-- [ ] 从 `observerPosition` 构建默认的 `BasePanelConfig`
-- [ ] 调用内部的 MVVM 计算方法
-- [ ] 添加错误处理和日志
+### 4.5 实现兼容版 calculate() 方法 ✅
+- [x] 创建 `Future<void> calculate(ObserverPosition observerPosition)` 方法
+- [x] 保存 `observerPosition` 到 `_lifeObserver`
+- [x] 更新 `baseObserverPositionNotifier.value`
+- [x] 从 `observerPosition` 构建默认的 `BasePanelConfig`
+- [x] 调用内部的 MVVM 计算方法
+- [x] 添加错误处理和日志
 
-### 4.6 实现 _buildDefaultConfig() 辅助方法
-- [ ] 创建 `BasePanelConfig _buildDefaultConfig(ObserverPosition)` 方法
-- [ ] 设置 `panelSystemType` 为合理默认值
-- [ ] 设置 `celestialCoordinateSystem` 为合理默认值
-- [ ] 设置 `settleLifeBodyMode` 为合理默认值
-- [ ] 从 `observerPosition` 提取必要参数
-- [ ] 验证生成的 config 的合法性
+### 4.6 实现 _buildDefaultConfig() 辅助方法 ✅
+- [x] 创建 `BasePanelConfig _buildDefaultConfig(ObserverPosition)` 方法
+- [x] 设置 `panelSystemType` 为合理默认值
+- [x] 设置 `celestialCoordinateSystem` 为合理默认值
+- [x] 设置 `settleLifeBodyMode` 为合理默认值
+- [x] 从 `observerPosition` 提取必要参数
+- [x] 验证生成的 config 的合法性
 
-### 4.7 重命名或重构原有的 calculate 方法
-- [ ] 将 MVVM 分支的 `calculate(BasePanelConfig, ObserverPosition)` 重命名为 `calculateWithConfig`
-- [ ] 更新方法内部的逻辑保持不变
-- [ ] 确保新方法返回计算结果
+### 4.7 重命名或重构原有的 calculate 方法 ✅
+- [x] 将 MVVM 分支的 `calculate(BasePanelConfig, ObserverPosition)` 重命名为 `calculateWithConfig`
+- [x] 更新方法内部的逻辑保持不变
+- [x] 确保新方法返回计算结果
 
-### 4.8 在 calculateWithConfig 中更新 ValueNotifier
-- [ ] 在计算完成后更新 `uiBasePanelNotifier.value = _basicLifePanel`
-- [ ] 更新 `uiBasicLifeStarsNotifier.value = _uiBasicLifeStars`
-- [ ] 更新 `baseObserverPositionNotifier.value = observer`
-- [ ] 确保在更新 notifier 前检查值是否为 null
-- [ ] 调用 `notifyListeners()` 通知 UI
+### 4.8 在 calculateWithConfig 中更新 ValueNotifier ✅
+- [x] 在计算完成后更新 `uiBasePanelNotifier.value = _basicLifePanel`
+- [x] 更新 `uiBasicLifeStarsNotifier.value = _uiBasicLifeStars`
+- [x] 更新 `baseObserverPositionNotifier.value = observer`
+- [x] 确保在更新 notifier 前检查值是否为 null
+- [x] 调用 `notifyListeners()` 通知 UI
 
 ---
 
-## 阶段5: 移植 UI 星体计算逻辑
+## 阶段5: 移植 UI 星体计算逻辑 ✅
 
-### 5.1 从 UI 分支提取星体计算方法
-- [ ] 打开 UI 分支的 `beauty_page_viewmodel.dart`
-- [ ] 找到 `_calculateUIStars` 或类似的私有方法
-- [ ] 复制整个方法体
-- [ ] 记录该方法依赖的其他私有方法和常量
+### 5.1 从 UI 分支提取星体计算方法 ✅
+- [x] 打开 UI 分支的 `beauty_page_viewmodel.dart`
+- [x] 找到 `_calculateUIStars` 或类似的私有方法
+- [x] 复制整个方法体
+- [x] 记录该方法依赖的其他私有方法和常量
 
-### 5.2 移植星体计算方法到 MVVM ViewModel
-- [ ] 将 `_calculateUIStars` 方法粘贴到 `QiZhengSiYuViewModel`
-- [ ] 移植方法依赖的所有常量 (如 `_uiSafetyAnglePadding`)
-- [ ] 移植方法依赖的所有辅助方法
-- [ ] 更新方法内部的数据访问路径 (适配新的数据结构)
-- [ ] 处理 `BasePanelModel` 到 `UIStarModel` 的转换逻辑
+### 5.2 移植星体计算方法到 MVVM ViewModel ✅
+- [x] 将 `_calculateUIStars` 方法粘贴到 `QiZhengSiYuViewModel`
+- [x] 移植方法依赖的所有常量 (如 `_uiSafetyAnglePadding`)
+- [x] 移植方法依赖的所有辅助方法
+- [x] 更新方法内部的数据访问路径 (适配新的数据结构)
+- [x] 处理 `BasePanelModel` 到 `UIStarModel` 的转换逻辑
 
-### 5.3 实现星体位置防重叠逻辑
-- [ ] 找到 UI 分支中防止星体重叠的算法
-- [ ] 理解算法的输入输出
-- [ ] 移植算法到新 ViewModel
-- [ ] 测试算法在边界情况下的表现
+### 5.3 实现星体位置防重叠逻辑 ✅
+- [x] 找到 UI 分支中防止星体重叠的算法
+- [x] 理解算法的输入输出
+- [x] 移植算法到新 ViewModel
+- [x] 测试算法在边界情况下的表现
 
-### 5.4 实现星体速度和状态计算
-- [ ] 移植星体顺逆行状态计算逻辑
-- [ ] 移植星体速度显示逻辑
-- [ ] 移植星体特殊状态标记逻辑 (如入庙、失陷等)
+### 5.4 实现星体速度和状态计算 ✅
+- [x] 移植星体顺逆行状态计算逻辑
+- [x] 移植星体速度显示逻辑
+- [x] 移植星体特殊状态标记逻辑 (如入庙、失陷等)
 
-### 5.5 验证 UIStarModel 生成
-- [ ] 添加日志输出 `_uiBasicLifeStars` 的数量
-- [ ] 验证每个 `UIStarModel` 的关键字段非空
-- [ ] 验证星体角度范围正确 (0-360)
+### 5.5 验证 UIStarModel 生成 ✅
+- [x] 添加日志输出 `_uiBasicLifeStars` 的数量
+- [x] 验证每个 `UIStarModel` 的关键字段非空
+- [x] 验证星体角度范围正确 (0-360)
 
 ---
 
