@@ -1,14 +1,14 @@
 import 'package:common/enums.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_qi_zheng.dart';
 import '../enums/enum_twelve_gong.dart';
-import '../models/eleven_stars_info.dart';
+import '../domain/entities/models/eleven_stars_info.dart'; // 使用domain层的模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
 import '../models/panel_stars_info.dart';
-import '../models/star_enter_info.dart';
+import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 import '../models/stars_angle.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_degree_inn_gong_helper.dart';

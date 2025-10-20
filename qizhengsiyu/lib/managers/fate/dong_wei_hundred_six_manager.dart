@@ -1,9 +1,9 @@
 import 'package:common/utils.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 import 'package:tuple/tuple.dart';
 
 import '../../models/fate_dong_wei_da_xian.dart';

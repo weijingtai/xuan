@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:tuple/tuple.dart';
 import '../models/zhou_tian_model.dart';
 import '../models/panel_config.dart';
-import '../models/naming_degree_pair.dart';
+import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
 import '../enums/enum_panel_system_type.dart';
 
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';

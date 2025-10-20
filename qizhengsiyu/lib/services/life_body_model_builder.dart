@@ -9,8 +9,8 @@ import 'package:tuple/tuple.dart';
 
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_twelve_gong.dart';
-import '../models/naming_degree_pair.dart';
-import '../models/star_inn_gong_degree.dart';
+import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_degree_inn_gong_helper.dart';
 

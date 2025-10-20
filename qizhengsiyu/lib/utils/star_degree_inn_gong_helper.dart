@@ -2,7 +2,7 @@ import 'package:common/enums.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_twelve_gong.dart';
-import '../models/star_inn_gong_degree.dart';
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
 import '../qi_zheng_si_yu_constant_resources.dart';
 
 class StarDegreeInnGongHelper {
