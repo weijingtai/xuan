@@ -47,7 +47,8 @@ import 'package:qizhengsiyu/widgets/twelve_gong_text_ring.dart';
 import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
-import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
+import 'package:qizhengsiyu/models/panel_config.dart'; // UI层使用的PanelConfig
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart' as DomainConfig; // domain层的BasePanelConfig
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/models/panel_ui_size.dart'; // UI模型,保留在原位置

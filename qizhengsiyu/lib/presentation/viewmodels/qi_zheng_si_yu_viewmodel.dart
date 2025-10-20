@@ -24,6 +24,7 @@ import 'package:common/models/five_star_walking_info.dart';
 import 'package:qizhengsiyu/pages/StarsResolver.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
+import 'package:qizhengsiyu/models/panel_config.dart' as UIPanelConfig; // UI层的PanelConfig
 
 /// 七政四余 ViewModel - MVVM架构 + UI兼容层
 ///
@@ -101,6 +102,9 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// 大限盘星体的最小安全角度
   double _fateMiniSafetyAngle = 0.0;
 
+  /// UI层覆盖配置 (用于路由参数传入的配置)
+  UIPanelConfig.PanelConfig? _overridePanelConfig;
+
   // ==================== UI兼容层: 初始化方法 ====================
   /// 初始化 ViewModel
   /// 用于加载周天模型等必要数据
@@ -118,23 +122,43 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     _lifeObserver = observerPosition;
     baseObserverPositionNotifier.value = observerPosition;
 
-    // 构建默认配置
-    final config = _buildDefaultConfig(observerPosition);
+    // 如果有override配置,优先使用
+    final config = _overridePanelConfig != null
+        ? _convertUIPanelConfigToBasePanelConfig(_overridePanelConfig!)
+        : _buildDefaultConfig(observerPosition);
 
     // 调用 MVVM 架构的计算方法
     await calculateWithConfig(config, observerPosition);
   }
 
+  /// 设置覆盖配置 - UI兼容方法
+  ///
+  /// 允许UI层通过路由参数等方式传入自定义配置
+  void setOverridePanelConfig(UIPanelConfig.PanelConfig config) {
+    _overridePanelConfig = config;
+  }
+
+  /// 将UI层的PanelConfig转换为domain层的BasePanelConfig
+  BasePanelConfig _convertUIPanelConfigToBasePanelConfig(
+      UIPanelConfig.PanelConfig uiConfig) {
+    return BasePanelConfig(
+      celestialCoordinateSystem: uiConfig.celestialCoordinateSystem,
+      houseDivisionSystem: uiConfig.houseDivisionSystem,
+      panelSystemType: uiConfig.panelSystemType,
+      constellationSystemType: uiConfig.constellationSystemType,
+      settleLifeType: uiConfig.settleLifeType,
+      settleBodyType: uiConfig.settleBodyType,
+      islifeGongBySunRealTimeLocation: uiConfig.islifeGongBySunRealTimeLocation,
+      lifeCountingToGong: uiConfig.lifeCountingToGong,
+      bodyCountingToGong: uiConfig.bodyCountingToGong,
+    );
+  }
+
   /// 构建默认星盘配置
   /// 从观察者位置推断合理的默认配置
   BasePanelConfig _buildDefaultConfig(ObserverPosition observer) {
-    // TODO: 根据实际需求设置默认值
-    return BasePanelConfig(
-      panelSystemType: EnumPanelSystemType.zodiacTropicalModern, // 默认使用现代回归黄道制
-      celestialCoordinateSystem: EnumCelestialCoordinateSystem.ecliptic, // 默认黄道坐标
-      settleLifeBodyMode: EnumSettleLifeBody.defaultMode, // 默认安命身模式
-      // 其他配置项使用默认值
-    );
+    // 使用 BasePanelConfig 提供的默认配置
+    return BasePanelConfig.defaultBasicPanelConfig();
   }
 
   // ==================== MVVM核心: 完整配置版计算方法 ====================
