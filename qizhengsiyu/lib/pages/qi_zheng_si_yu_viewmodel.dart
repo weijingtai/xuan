@@ -28,7 +28,7 @@ import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
 import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模型
 import '../models/di_zhi_shen_sha.dart';
-import '../models/hua_yao.dart';
+import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart';

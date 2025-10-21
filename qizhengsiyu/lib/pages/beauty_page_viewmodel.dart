@@ -33,7 +33,7 @@ import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模�
 import '../domain/entities/models/panel_config.dart'; // 使用domain层模型
 import '../models/da_xian_panel_model.dart';
 import '../models/di_zhi_shen_sha.dart';
-import '../models/hua_yao.dart';
+import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart'; // 可能仍然需要用于更详细信息展示，尽管 ElevenStarsInfo 已弃用
