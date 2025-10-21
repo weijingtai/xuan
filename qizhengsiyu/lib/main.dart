@@ -25,14 +25,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: '七政四余',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-      // showSemanticsDebugger: false,
-      // initialRoute: "/qizhengsiyu/panel",
-      // onGenerateRoute: NavigatorGenerator.generateRoute,
+      showSemanticsDebugger: false,
+      initialRoute: "/qizhengsiyu/panel",  // ⭐ 使用路由导航
+      onGenerateRoute: NavigatorGenerator.generateRoute,  // ⭐ 启用路由生成器
     );
   }
 }

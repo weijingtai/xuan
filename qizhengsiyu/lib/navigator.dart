@@ -6,39 +6,49 @@ import 'package:qizhengsiyu/pages/beauty_view_page.dart';
 import 'package:qizhengsiyu/pages/primary_page.dart';
 import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
 
-import 'pages/qi_zheng_si_yu_config_page.dart';
-import 'viewmodels/panel_config_viewmodel.dart';
+import 'data/datasources/local/app_database.dart';
+import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
+import 'data/repositories/qizhengsiyu_pan_repository.dart';
+import 'di.dart';
+import 'domain/managers/hua_yao_manager.dart';
+import 'domain/managers/shen_sha_manager.dart';
+import 'domain/managers/zhou_tian_model_manager.dart';
+import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import 'domain/usecases/save_calculated_panel_usecase.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
       RouteObserver<PageRoute>();
   static Logger logger = Logger();
   static final routes = {
-    // "/qizhengsiyu": (context, {arguments}) => PrimaryPage(),
-    // "/qizhengsiyu": (context, {arguments}) => BeautyPage(),
-    // "/qizhengsiyu": (context, {arguments}) => MultiProvider(
-    //       providers: [
-    //         ChangeNotifierProvider<PanelConfigViewModel>(
-    //             create: (context) => PanelConfigViewModel(context)),
-    //       ],
-    //       child: const QiZhengSiYuConfigPage(),
-    //       // child: ShiJiaQiMenViewPage(),
-    //     ),
-    "/qizhengsiyu/config": (context, {arguments}) => MultiProvider(
-          providers: [
-            ChangeNotifierProvider<PanelConfigViewModel>(
-                create: (context) => PanelConfigViewModel(context)),
-          ],
-          child: const QiZhengSiYuConfigPage(),
-        ),
-    "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(
-          providers: [
-            ChangeNotifierProvider<BeautyPageViewModel>(
-                create: (context) => BeautyPageViewModel()..init()),
-          ],
-          child: const BeautyViewPage(),
-          // child: ShiJiaQiMenViewPage(),
-        ),
+    "/qizhengsiyu/panel": (context, {arguments}) => MultiProvider(providers: [
+          // ============ 核心依赖注入 ============
+          ...createProviders(), // ⭐⭐⭐ 关键!注入所有数据层、业务层和新的MVVM ViewModel
+
+          // 数据库
+          Provider<AppDatabase>(
+            create: (ctx) => AppDatabase(),
+            dispose: (ctx, db) => db.close(),
+          ),
+
+          // 仓储
+          Provider<IQiZhengSiYuPanRepository>(
+            create: (ctx) => QiZhengSiYuPanRepository(
+              appDatabase: ctx.read<AppDatabase>(),
+            ),
+          ),
+
+          // UseCase
+          Provider<SaveCalculatedPanelUseCase>(
+              create: (ctx) => SaveCalculatedPanelUseCase(
+                  qiZhengSiYuPanRepository:
+                      ctx.read<IQiZhengSiYuPanRepository>())),
+
+          // ViewModel - 旧的UI层 ViewModel (暂时保留无参数构造,等待后续重构)
+          ChangeNotifierProvider<BeautyPageViewModel>(
+              create: (ctx) => BeautyPageViewModel()),
+        ], child: const BeautyViewPage() // ⭐ 使用 const 构造
+            )
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

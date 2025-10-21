@@ -10,6 +10,7 @@ import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:common/enums/enum_stars.dart';
+import 'package:common/enums/enum_jia_zi.dart'; // JiaZi
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/passage_year_panel_model.dart';
@@ -117,11 +118,24 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   Future<void> devInit() async {
     final vm = context.read<QiZhengSiYuViewModel>();
     await vm.init();
-    final res = await Future.wait([
-      loadDiviniation(),
-    ]);
-    vm.setLifeObserver(res[0] as DivinationInfoModel);
-    await vm.calculate(vm.lifeObserver!);
+
+    // 使用默认测试数据:直接设置 ObserverPosition
+    // TODO: 后续可以从数据库加载真实数据
+    final testDateTime = DateTime(1990, 1, 1, 12, 0);
+    final testObserver = ObserverPosition(
+      dateTime: testDateTime,
+      latitude: 39.9042, // 北京纬度
+      longitude: 116.4074, // 北京经度
+      altitude: 0,
+      timezone: 'Asia/Shanghai',
+      isDayBirth: true,
+      yearGanZhi: JiaZi.GENG_WU, // 庚午年 (1990)
+      monthGanZhi: JiaZi.WU_ZI, // 戊子月
+      dayGanZhi: JiaZi.JIA_XU, // 甲戌日
+      timeGanZhi: JiaZi.GENG_WU, // 庚午时
+    );
+
+    await vm.calculate(testObserver);
   }
 
   Future<DivinationInfoModel> loadDiviniation() async {
