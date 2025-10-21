@@ -236,7 +236,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         diZhi12GongHeight: 50,
         zodiac12GongHeight: 24,
         starSeq12GongHeight: 0,
-        destiny12GongHeight: 42,
+        destiny12GongHeight: 70, // 增加命理十二宫的径向高度,避免文字挤在一起
         lifeStarRingHeight: 48, // 64
         starXiu28RingHeight: 36, // 660
         innerShenShaHeight: 90,
@@ -852,8 +852,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           ),
           bodyRotationAngle: -30 * pi / 180,
           bodyBuilder: () => buildMingLi12GongRing(
-            destiny12GongSizeInner * .5,
-            destiny12GongSizeOuter * .5,
+            destiny12GongSizeInner,  // DestinyTwelveGongRingWidget期望直径,不是半径
+            destiny12GongSizeOuter,  // DestinyTwelveGongRingWidget期望直径,不是半径
           ),
         ),
         // 二十八星宿环（统一为 RingLayer）

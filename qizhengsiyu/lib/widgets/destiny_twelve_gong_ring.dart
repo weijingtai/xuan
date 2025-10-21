@@ -189,6 +189,7 @@ class DestinyTwelveGongRingWidget extends StatelessWidget {
             child: Column(children: widgets),
           ),
         ),
+        const SizedBox(height: 20), // 增加文字距离外边缘的间距,让文字更靠近中心
       ],
     );
   }
@@ -270,7 +271,7 @@ class SelectedTaiJiDestinyTwelveGongRingWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 20), // 增加间距,让文字更靠近中心
                     ],
                   ),
                 ),
