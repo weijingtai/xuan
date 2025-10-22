@@ -297,48 +297,48 @@
 ### 里程碑 M3.1：看板视觉完善（6小时）
 
 #### Task 3.1.1：实现分组卡片容器（1.5h）
-- [ ] 在 `_EditorWorkspace` 中实现分组横向滚动容器
-- [ ] 每个分组渲染为独立卡片（圆角、阴影）
-- [ ] 分组标题栏显示：标题 + 柱位数量 + 操作菜单
-- [ ] 选中分组高亮边框（蓝色）
-- [ ] 点击分组调用 `viewModel.selectGroup(groupId)`
+- [x] 在 `_EditorWorkspace` 中实现分组横向滚动容器
+- [x] 每个分组渲染为独立卡片（圆角、阴影）
+- [x] 分组标题栏显示：标题 + 柱位数量 + 操作菜单
+- [x] 选中分组高亮边框（蓝色）
+- [x] 点击分组调用 `viewModel.selectGroup(groupId)`
 - **验收标准**：多分组时横向滚动，选中时高亮
 
 #### Task 3.1.2：实现柱位卡片渲染（2h）
-- [ ] 在分组内渲染柱位列表（使用 `GenericPillarCard` 或自定义）
-- [ ] 每个柱位显示：
+- [x] 在分组内渲染柱位列表（使用 `GenericPillarCard` 或自定义）
+- [x] 每个柱位显示：
   - 天干/地支（大字，五行配色）
   - 十神（小字，根据 `rowConfigs` 可见性）
   - 藏干/纳音（根据 `rowConfigs` 可见性）
-- [ ] 读取 `viewModel.previewEightChars` 作为示例数据
-- [ ] 如果无数据，显示占位图标
+- [x] 读取 `viewModel.previewEightChars` 作为示例数据
+- [x] 如果无数据，显示占位图标
 - **验收标准**：柱位卡片显示完整信息
 
 #### Task 3.1.3：实现五行配色系统（1h）
-- [ ] 在 `lib/utils/` 下创建 `five_elements_colors.dart`
-- [ ] 定义天干->五行->颜色映射：
+- [x] 在 `lib/utils/` 下创建 `five_elements_colors.dart`
+- [x] 定义天干->五行->颜色映射：
   - 甲乙=木=绿色
   - 丙丁=火=红色
   - 戊己=土=黄色
   - 庚辛=金=白色
   - 壬癸=水=黑色
-- [ ] 创建 `getFiveElementColor(TianGan gan)` 工具函数
-- [ ] 在柱位卡片中应用颜色
+- [x] 创建 `getFiveElementColor(TianGan gan)` 工具函数
+- [x] 在柱位卡片中应用颜色
 - **验收标准**：不同天干显示不同颜色
 
 #### Task 3.1.4：添加"添加列盘"按钮（0.5h）
-- [ ] 在分组滚动容器末尾添加"+"按钮卡片
-- [ ] 点击调用 `_promptCreateGroup(context)`（已存在）
-- [ ] 样式：虚线边框、居中图标
+- [x] 在分组滚动容器末尾添加"+"按钮卡片
+- [x] 点击调用 `_promptCreateGroup(context)`（已存在）
+- [x] 样式：虚线边框、居中图标
 - **验收标准**：点击后弹出新建分组对话框
 
 #### Task 3.1.5：实现分组操作菜单（1h）
-- [ ] 在分组标题栏添加 `PopupMenuButton`
-- [ ] 菜单项：重命名、复制、删除、展开/收起
-- [ ] 实现"重命名"：弹出输入对话框，调用 `viewModel.renameGroup()`
-- [ ] 实现"复制"：调用 `viewModel.duplicateGroup()`
-- [ ] 实现"删除"：调用现有的删除逻辑
-- [ ] 实现"展开/收起"：调用 `viewModel.toggleGroupExpanded()`
+- [x] 在分组标题栏添加 `PopupMenuButton`
+- [x] 菜单项：重命名、复制、删除、展开/收起
+- [x] 实现"重命名"：弹出输入对话框，调用 `viewModel.renameGroup()`
+- [x] 实现"复制"：调用 `viewModel.duplicateGroup()`
+- [x] 实现"删除"：调用现有的删除逻辑
+- [x] 实现"展开/收起"：调用 `viewModel.toggleGroupExpanded()`
 - **验收标准**：所有菜单项功能正常
 
 ---
@@ -346,40 +346,40 @@
 ### 里程碑 M3.2：拖拽交互增强（6小时）
 
 #### Task 3.2.1：实现柱位拖拽删除（1h）
-- [ ] 在每个柱位卡片上添加删除按钮（hover 时显示）
-- [ ] 点击时调用 `viewModel.removePillarFromGroup()`
-- [ ] 添加删除确认对话框（可选）
-- [ ] 删除时播放淡出动画
-- **验收标准**：点击后柱位消失
+- [x] 在每个柱位卡片上添加删除按钮（hover 时显示）
+- [x] 点击时调用 `viewModel.removePillarFromGroup()`
+- [x] 添加删除确认对话框（可选）
+- [x] 删除时播放淡出动画
+**验收标准**：点击后柱位消失
 
 #### Task 3.2.2：实现拖拽高亮反馈（1.5h）
-- [ ] 在 `DragTarget` 的 `builder` 中检测 `candidateData`
-- [ ] 当有数据悬浮时，显示蓝色虚线边框
-- [ ] 添加"释放以添加"提示文字
-- [ ] 拒绝数据时显示红色边框（如重复柱位）
-- [ ] 添加边框渐变动画（AnimatedContainer）
-- **验收标准**：拖拽时视觉反馈明确
+- [x] 在 `DragTarget` 的 `builder` 中检测 `candidateData`
+- [x] 当有数据悬浮时，显示蓝色虚线边框
+- [x] 添加"释放以添加"提示文字
+- [x] 拒绝数据时显示红色边框（如重复柱位）
+- [x] 添加边框渐变动画（AnimatedContainer）
+**验收标准**：拖拽时视觉反馈明确
 
 #### Task 3.2.3：实现拖拽预览优化（1h）
-- [ ] 在 `Draggable` 的 `feedback` 中使用半透明卡片
-- [ ] 显示柱位名称和图标
-- [ ] 添加阴影效果
-- [ ] 优化 `childWhenDragging`：显示占位虚影
-- **验收标准**：拖拽时预览清晰美观
+- [x] 在 `Draggable` 的 `feedback` 中使用半透明卡片
+- [x] 显示柱位名称和图标
+- [x] 添加阴影效果
+- [x] 优化 `childWhenDragging`：显示占位虚影
+**验收标准**：拖拽时预览清晰美观
 
 #### Task 3.2.4：实现柱位重排拖拽（1.5h）
-- [ ] 在分组内使用 `ReorderableListView` 或自定义拖拽逻辑
-- [ ] 柱位间拖拽时显示插入位置指示器
-- [ ] 调用 `viewModel.reorderPillar()` 更新顺序
-- [ ] 添加平滑动画过渡
-- **验收标准**：柱位顺序可拖拽调整
+- [x] 在分组内使用 `ReorderableListView` 或自定义拖拽逻辑
+- [x] 柱位间拖拽时显示插入位置指示器
+- [x] 调用 `viewModel.reorderPillar()` 更新顺序
+- [x] 添加平滑动画过渡
+**验收标准**：柱位顺序可拖拽调整
 
 #### Task 3.2.5：实现跨分组拖拽（1h）
-- [ ] 扩展 `DragTarget` 接受来自其他分组的柱位
-- [ ] 拖拽数据携带源分组 ID
-- [ ] 实现 `viewModel.movePillarBetweenGroups()` 方法
-- [ ] 验证柱位在目标分组中不重复
-- **验收标准**：柱位可在分组间移动
+- [x] 扩展 `DragTarget` 接受来自其他分组的柱位
+- [x] 拖拽数据携带源分组 ID
+- [x] 实现 `viewModel.movePillarBetweenGroups()` 方法
+- [x] 验证柱位在目标分组中不重复
+**验收标准**：柱位可在分组间移动
 
 ---
 
@@ -389,7 +389,7 @@
 - [ ] 添加 `renameGroup({required String groupId, required String newTitle})` 方法
 - [x] 查找对应分组并更新标题
 - [x] 调用 `_markUnsaved()`
-- [ ] 添加单元测试
+- [x] 添加单元测试
 - **验收标准**：重命名后标题更新
 
 #### Task 3.3.2：实现 duplicateGroup 方法（0.5h）
@@ -480,7 +480,7 @@
 - [ ] 在 `TemplateBoardView` 的 `DragTarget.onAccept` 中处理
 - [ ] 一次性添加预设中的所有柱位
 - [ ] 显示添加成功提示
-- **验收标准**：拖拽预设卡后批量添加柱位
+- **验收标准**：拖拽预设后批量添加柱位
 
 #### Task 4.2.4：添加预设收藏功能（1h）
 - [ ] 在预设卡片右上角添加星标按钮
@@ -612,9 +612,9 @@
 - [ ] 测试状态变更逻辑
 - [ ] 测试异步操作（加载/保存）
 - [ ] 测试边界情况
-- **验收标准**：ViewModel 测试覆盖率 > 85%
+- **验收标准**：ViewModel 测试覆盖率 > 90%
 
-#### Task 6.1.2：Repository 测试（1h）
+#### Task 6.1.2：Repository 测试（2h）
 - [ ] Mock LayoutTemplateDao
 - [ ] 测试 CRUD 操作
 - [ ] 测试数据转换
