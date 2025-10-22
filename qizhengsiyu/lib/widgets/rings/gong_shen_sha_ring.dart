@@ -603,7 +603,7 @@ class _ShenShaGongLayoutDelegate extends MultiChildLayoutDelegate {
   }
 
   @override
-  bool shouldRelayout(covariant _ShenShaLayoutDelegate oldDelegate) =>
+  bool shouldRelayout(covariant _ShenShaGongLayoutDelegate oldDelegate) =>
       oldDelegate.itemCount != itemCount ||
       oldDelegate.radius != radius ||
       oldDelegate.itemSize != itemSize;

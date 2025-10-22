@@ -68,7 +68,8 @@ class DestinyTwelveGongRingWidget extends StatelessWidget {
                       child: _eachDestiny12Gong(
                         context,
                         gongName: contentList[i],
-                        zhuanTaiJiGongName: zhuanTaiJiList != null ? zhuanTaiJiList![i] : null,
+                        zhuanTaiJiGongName:
+                            zhuanTaiJiList != null ? zhuanTaiJiList![i] : null,
                         reversedDisplay: i >= 3 && i <= 8,
                       ),
                     ),
@@ -145,14 +146,19 @@ class DestinyTwelveGongRingWidget extends StatelessWidget {
                 zhuanTaiJiGongName,
                 style: textStyle.copyWith(
                   fontSize: 18,
-                  color: zhuanTaiJiGongName == "命宫" ? Colors.red : (textStyle.color ?? Colors.black87),
-                  fontWeight: zhuanTaiJiGongName == "命宫" ? FontWeight.w500 : FontWeight.w300,
+                  color: zhuanTaiJiGongName == "命宫"
+                      ? Colors.red
+                      : (textStyle.color ?? Colors.black87),
+                  fontWeight: zhuanTaiJiGongName == "命宫"
+                      ? FontWeight.w500
+                      : FontWeight.w300,
                   decorationStyle: ui.TextDecorationStyle.solid,
                 ),
               ),
               InkWell(
                 onTap: onUnselectTaiJi,
-                child: const Icon(Icons.dangerous_outlined, size: 14, color: Colors.grey),
+                child: const Icon(Icons.dangerous_outlined,
+                    size: 14, color: Colors.grey),
               ),
             ],
           ),
@@ -166,7 +172,9 @@ class DestinyTwelveGongRingWidget extends StatelessWidget {
       child: Text(
         gongName,
         style: textStyle.copyWith(
-          color: gongName == "命宫" ? Colors.red : (textStyle.color ?? Colors.black87),
+          color: gongName == "命宫"
+              ? Colors.red
+              : (textStyle.color ?? Colors.black87),
         ),
       ),
     );
@@ -185,11 +193,14 @@ class DestinyTwelveGongRingWidget extends StatelessWidget {
           angle: reversedDisplay ? pi : 0,
           child: Container(
             alignment: Alignment.bottomCenter,
-            width: 64,
-            child: Column(children: widgets),
+            width: 64, // 增加容器宽度，给文字更多空间
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: widgets,
+            ),
           ),
         ),
-        const SizedBox(height: 20), // 增加文字距离外边缘的间距,让文字更靠近中心
+        const SizedBox(height: 4), // 增加文字距离外边缘的间距，避免压线
       ],
     );
   }
@@ -258,20 +269,25 @@ class SelectedTaiJiDestinyTwelveGongRingWidget extends StatelessWidget {
                                 contentList![i],
                                 style: textStyle.copyWith(
                                   fontSize: 18,
-                                  color: contentList![i] == "命宫" ? Colors.red : Colors.black45,
-                                  fontWeight: contentList![i] == "命宫" ? FontWeight.w500 : FontWeight.w300,
+                                  color: contentList![i] == "命宫"
+                                      ? Colors.red
+                                      : Colors.black45,
+                                  fontWeight: contentList![i] == "命宫"
+                                      ? FontWeight.w500
+                                      : FontWeight.w300,
                                   decorationStyle: ui.TextDecorationStyle.solid,
                                 ),
                               ),
                               InkWell(
                                 onTap: onUnselectTaiJi,
-                                child: const Icon(Icons.dangerous_outlined, size: 14, color: Colors.grey),
+                                child: const Icon(Icons.dangerous_outlined,
+                                    size: 14, color: Colors.grey),
                               ),
                             ],
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20), // 增加间距,让文字更靠近中心
+                      const SizedBox(height: 28), // 增加间距,避免文字压线
                     ],
                   ),
                 ),
@@ -292,7 +308,7 @@ class SelectedTaiJiDestinyTwelveGongRingWidget extends StatelessWidget {
                           child: _buildTaiJiDianButton(context),
                         ),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 20), // 增加间距，保持一致性
                     ],
                   ),
                 ),

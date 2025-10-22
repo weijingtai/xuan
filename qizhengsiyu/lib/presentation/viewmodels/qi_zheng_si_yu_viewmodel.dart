@@ -31,6 +31,7 @@ import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
+import 'package:uuid/uuid.dart'; // 用于生成UUID
 
 import '../../domain/entities/models/stars_angle.dart'; // 使用domain层模型
 
@@ -104,6 +105,10 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   ObserverPosition? _lifeObserver;
   ObserverPosition? get lifeObserver => _lifeObserver;
 
+  /// 流年观察者位置
+  ObserverPosition? _fateObserver;
+  ObserverPosition? get fateObserver => _fateObserver;
+
   // ==================== UI兼容层: 常量 ====================
   /// UI安全角度额外增加的度数,用于避免星体图标重叠
   static const double _uiSafetyAnglePadding = 2.0;
@@ -156,7 +161,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
     // 找到对应的占卜时间信息
     DivinationDatetimeModel datetimeModel = datetimeData.timingInfoListJson!
-        .firstWhere((t) => t.uuid == datetimeData.timingInfoUuid)!;
+        .firstWhere((t) => t.uuid == datetimeData.timingInfoUuid);
 
     // 根据观察者类型确定坐标
     Coordinates coordinates;
@@ -164,7 +169,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       case EnumDatetimeType.standard:
       case EnumDatetimeType.removeDST:
         coordinates =
-            datetimeModel.observer.location!.address!.province.coordinates!;
+            datetimeModel.observer.location!.address!.province.coordinates;
         break;
       case EnumDatetimeType.meanSolar:
         coordinates =
@@ -293,6 +298,9 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     uiBasicLifeStarsNotifier.value = _uiBasicLifeStars;
 
     notifyListeners();
+
+    // 基础命盘计算完成后自动计算流年
+    await calculateDaXian();
   }
 
   // ==================== UI兼容层: dispose ====================
@@ -461,5 +469,130 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
       );
     }
     return mapper;
+  }
+
+  // ==================== 流年计算方法 ====================
+
+  /// 计算流年星盘
+  /// [fateDatetime]: 流年时间点，默认为当前时间
+  Future<void> calculateDaXian([DateTime? fateDatetime]) async {
+    final targetDateTime = fateDatetime ?? DateTime.now();
+
+    // 确保基础命盘已计算
+    if (_basicLifePanel == null || _lifeObserver == null) {
+      debugPrint("Warning: Cannot calculate fate panel without basic life panel");
+      return;
+    }
+
+    // 生成流年观察者位置
+    _fateObserver = _generateFateObserverPosition(targetDateTime, _lifeObserver!);
+
+    try {
+      // 调用流年计算服务
+      final panelService = GenerateBasePanelService(
+        panelConfig: _buildDefaultConfig(_lifeObserver!),
+        observerPosition: _lifeObserver!,
+        shenShaManager: shenShaManager,
+        huaYaoManager: huaYaoManager,
+      );
+
+      // 重新计算流年星体位置
+      final config = _buildDefaultConfig(_lifeObserver!);
+      final engine = CalculationEngineFactory.create(config);
+      final zhouTianModel = await engine.getSystemDefinition(config);
+      final starPositions = await engine.calculateStarPositions(
+          _fateObserver!.dateTime, _fateObserver!, config);
+      final starAngleMapper = _transformStarPositions(starPositions, config);
+
+      // 计算流年盘
+      final passageYearPanel = await panelService.calculateDaXia(
+        _basicLifePanel!,
+        _fateObserver!,
+        zhouTianModel: zhouTianModel,
+        starAngleMapper: starAngleMapper,
+      );
+
+      // 计算流年星体UI数据
+      _uiFateLifeStars = _calculateUIStarsFromMapper(
+        starAngleMapper,
+        _fateMiniSafetyAngle > 0 ? _fateMiniSafetyAngle : 10.0,
+      );
+
+      // 更新UI
+      uiDaXianPanelNotifier.value = passageYearPanel;
+      uiFateLifeStarsNotifier.value = _uiFateLifeStars;
+
+      debugPrint("Fate panel calculated successfully for $targetDateTime");
+      debugPrint("Fate stars count: ${_uiFateLifeStars.length}");
+
+    } catch (e) {
+      debugPrint("Error calculating fate panel: $e");
+      _uiFateLifeStars = [];
+      uiDaXianPanelNotifier.value = null;
+      uiFateLifeStarsNotifier.value = null;
+    }
+
+    notifyListeners();
+  }
+
+  /// 生成流年观察者位置
+  /// [fateDatetime]: 流年时间点
+  /// [baseObserver]: 基础命盘的观察者位置
+  ObserverPosition _generateFateObserverPosition(
+      DateTime fateDatetime, ObserverPosition baseObserver) {
+
+    // 将流年时间转换为与基础观察者相同的时区
+    final tzDatetime = tz.TZDateTime.from(
+        fateDatetime, tz.getLocation(baseObserver.timezone));
+
+    // 计算流年干支
+    final yearGanZhi = _calculateYearGanZhi(tzDatetime);
+    final monthGanZhi = _calculateMonthGanZhi(tzDatetime);
+    final dayGanZhi = _calculateDayGanZhi(tzDatetime);
+    final timeGanZhi = _calculateTimeGanZhi(tzDatetime);
+
+    // 判断是否日生
+    final isDayBirth = _getDayTimeZhi().contains(timeGanZhi.zhi);
+
+    return ObserverPosition(
+      latitude: baseObserver.latitude,
+      longitude: baseObserver.longitude,
+      altitude: baseObserver.altitude,
+      timezone: baseObserver.timezone,
+      dateTime: tzDatetime,
+      isDayBirth: isDayBirth,
+      yearGanZhi: yearGanZhi,
+      monthGanZhi: monthGanZhi,
+      dayGanZhi: dayGanZhi,
+      timeGanZhi: timeGanZhi,
+    );
+  }
+
+  /// 计算年份干支（简化版本，实际应使用完整干支计算）
+  JiaZi _calculateYearGanZhi(tz.TZDateTime datetime) {
+    // 这里应该使用完整的干支计算逻辑
+    // 为简化，返回基础命盘的年份干支
+    return _lifeObserver!.yearGanZhi;
+  }
+
+  /// 计算月份干支（简化版本）
+  JiaZi _calculateMonthGanZhi(tz.TZDateTime datetime) {
+    // 这里应该使用完整的干支计算逻辑
+    // 为简化，返回基础命盘的月份干支
+    return _lifeObserver!.monthGanZhi;
+  }
+
+  /// 计算日干支（简化版本）
+  JiaZi _calculateDayGanZhi(tz.TZDateTime datetime) {
+    // 这里应该使用完整的干支计算逻辑
+    // 为简化，返回基础命盘的日干支
+    return _lifeObserver!.dayGanZhi;
+  }
+
+  /// 计算时辰干支（简化版本）
+  JiaZi _calculateTimeGanZhi(tz.TZDateTime datetime) {
+    // 这里应该使用完整的干支计算逻辑
+    // 为简化，返回基础命盘的时辰干支
+    return _lifeObserver!.timeGanZhi;
   }
 }

@@ -49,7 +49,8 @@ import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
 import 'package:qizhengsiyu/models/panel_config.dart'; // UI层使用的PanelConfig
-import 'package:qizhengsiyu/domain/entities/models/panel_config.dart' as DomainConfig; // domain层的BasePanelConfig
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
+    as DomainConfig; // domain层的BasePanelConfig
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/models/panel_ui_size.dart'; // UI模型,保留在原位置
@@ -831,7 +832,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 十二地支宫（统一为 RingLayer）
         RingLayer(
           showTrack: false,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           gridBuilder: () => TwelveGongGridRingWidget(
             innerSize: diZhi12GongInner,
             outerSize: diZhi12GongOuter,
@@ -845,7 +846,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 黄道十二宫（统一为 RingLayer）
         RingLayer(
           showTrack: false,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           gridBuilder: () => TwelveGongGridRingWidget(
             innerSize: zodiac12GongSizeInner,
             outerSize: zodiac12GongSizeOuter,
@@ -859,21 +860,21 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 命理十二宫（统一为 RingLayer）
         RingLayer(
           showTrack: false,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: true,
           gridBuilder: () => TwelveGongGridRingWidget(
             innerSize: destiny12GongSizeInner,
             outerSize: destiny12GongSizeOuter,
           ),
           bodyRotationAngle: -30 * pi / 180,
           bodyBuilder: () => buildMingLi12GongRing(
-            destiny12GongSizeInner,  // DestinyTwelveGongRingWidget期望直径,不是半径
-            destiny12GongSizeOuter,  // DestinyTwelveGongRingWidget期望直径,不是半径
+            destiny12GongSizeInner, // DestinyTwelveGongRingWidget期望直径,不是半径
+            destiny12GongSizeOuter, // DestinyTwelveGongRingWidget期望直径,不是半径
           ),
         ),
         // 二十八星宿环（统一为 RingLayer）
         RingLayer(
           showTrack: true,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           trackRotationAngle: rotating * pi / 180,
           trackBuilder: () => Container(
             width: starXiu28RingSizeOuter,
@@ -907,7 +908,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           outerSize: fateLifeStarOuterSize,
           innerSize: fateLifeStarInnerSize,
           showTrack: true,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           trackRotationAngle: rotating * pi / 180,
           bodyRotationAngle: -(rotating - 90) * pi / 180,
           trackBuilder: (stars) => InnerStarTrackRingWidget(
@@ -918,12 +919,12 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           ),
           gridBuilder: twelveGongGridBuilder,
           bodyBuilder: (stars) => InnerStarBodyRotatingWidget(
-          stars: stars,
-          outerSize: fateLifeStarOuterSize,
-          trackSize: fateLifeStarTrackSize,
-          starBodySize: panelSizeDataModel.starBodySize,
-          allStarsShowNotifier: showStarHuaJiInfoNotifier,
-        ),
+            stars: stars,
+            outerSize: fateLifeStarOuterSize,
+            trackSize: fateLifeStarTrackSize,
+            starBodySize: panelSizeDataModel.starBodySize,
+            allStarsShowNotifier: showStarHuaJiInfoNotifier,
+          ),
         ),
 
         StarRingLayer(
@@ -932,29 +933,29 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           outerSize: basicLifeStarRingOuterSize,
           innerSize: basicLifeStarRingInnerSize,
           showTrack: true,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           trackRotationAngle: rotating * pi / 180,
           bodyRotationAngle: -(rotating - 90) * pi / 180,
           trackBuilder: (stars) => OuterStarTrackRingWidget(
-          stars: stars,
-          outerSize: basicLifeStarRingOuterSize,
-          innerSize: basicLifeStarRingInnerSize,
-          trackSize: basicLifeStarBodyTrackSize,
-        ),
+            stars: stars,
+            outerSize: basicLifeStarRingOuterSize,
+            innerSize: basicLifeStarRingInnerSize,
+            trackSize: basicLifeStarBodyTrackSize,
+          ),
           gridBuilder: twelveGongGridBuilder,
           bodyBuilder: (stars) => OuterStarBodyRotatingWidget(
-          stars: stars,
-          outerSize: basicLifeStarRingOuterSize,
-          trackSize: basicLifeStarBodyTrackSize,
-          starBodySize: panelSizeDataModel.starBodySize,
-          allStarsShowNotifier: showStarHuaJiInfoNotifier,
-        ),
+            stars: stars,
+            outerSize: basicLifeStarRingOuterSize,
+            trackSize: basicLifeStarBodyTrackSize,
+            starBodySize: panelSizeDataModel.starBodySize,
+            allStarsShowNotifier: showStarHuaJiInfoNotifier,
+          ),
         ),
 
         // 神煞（内圈）
         RingLayer(
           showTrack: false,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           gridBuilder: () => TwelveGongGridRingWidget(
             innerSize: panelSizeDataModel.innerShenShaSizeInner,
             outerSize: panelSizeDataModel.innerShenShaSizeOuter,
@@ -984,38 +985,31 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         // 流年神煞（外圈）
         RingLayer(
           showTrack: false,
-          showGrid: _panelController.config.showRingGrid,
+          showGrid: false,
           gridBuilder: () => TwelveGongGridRingWidget(
             innerSize: panelSizeDataModel.outerShenShaSizeInner,
             outerSize: panelSizeDataModel.outerShenShaSizeOuter,
           ),
           bodyRotationAngle: -30 * pi / 180,
           bodyBuilder: () {
-            // TODO: 大限盘功能待实现 - 暂时显示空容器
-            return Container(
-              width: panelSizeDataModel.outerShenShaSizeOuter,
-              height: panelSizeDataModel.outerShenShaSizeOuter,
-            );
-            /* 原大限盘实现 - 类型不匹配待修复
-            return ValueListenableBuilder<DaXianPanelModel?>(
-              valueListenable:
-                  context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
-              builder: (ctx, daXianPanel, child) {
-                if (daXianPanel == null) {
-                  return child!;
-                }
-                return AllShenShaRing(
-                  outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
-                  innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
-                  shenShaMapper: daXianPanel.shenShaMapper,
-                  gongOrder: EnumTwelveGong.listAll,
-                );
-              },
-              child: Container(
-                width: panelSizeDataModel.outerShenShaSizeOuter,
-                height: panelSizeDataModel.outerShenShaSizeOuter,
-              ));
-            */
+            return ValueListenableBuilder<PassageYearPanelModel?>(
+                valueListenable:
+                    context.read<QiZhengSiYuViewModel>().uiDaXianPanelNotifier,
+                builder: (ctx, daXianPanel, child) {
+                  if (daXianPanel == null) {
+                    return child!;
+                  }
+                  return AllShenShaRing(
+                    outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
+                    innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
+                    shenShaMapper: daXianPanel.shenShaItemMapper,
+                    gongOrder: EnumTwelveGong.listAll,
+                  );
+                },
+                child: Container(
+                  width: panelSizeDataModel.outerShenShaSizeOuter,
+                  height: panelSizeDataModel.outerShenShaSizeOuter,
+                ));
           },
         ),
 
@@ -2043,7 +2037,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Stack(
       children: [
         ValueListenableBuilder<BasePanelModel?>(
-          valueListenable: context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
+          valueListenable:
+              context.read<QiZhengSiYuViewModel>().uiBasePanelNotifier,
           builder: (ctx, basePanel, child) {
             final List<String> contentList = basePanel == null
                 ? defaultDestiny12GongMapper.values
