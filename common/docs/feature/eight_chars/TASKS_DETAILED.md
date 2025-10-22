@@ -387,34 +387,34 @@
 
 #### Task 3.3.1：实现 renameGroup 方法（0.5h）
 - [ ] 添加 `renameGroup({required String groupId, required String newTitle})` 方法
-- [ ] 查找对应分组并更新标题
-- [ ] 调用 `_markUnsaved()`
+- [x] 查找对应分组并更新标题
+- [x] 调用 `_markUnsaved()`
 - [ ] 添加单元测试
 - **验收标准**：重命名后标题更新
 
 #### Task 3.3.2：实现 duplicateGroup 方法（0.5h）
-- [ ] 添加 `duplicateGroup(String groupId)` 方法
-- [ ] 复制分组及其柱位列表
-- [ ] 生成新 UUID，标题添加"(副本)"后缀
-- [ ] 插入到原分组后面
-- [ ] 调用 `_markUnsaved()`
-- [ ] 添加单元测试
+- [x] 添加 `duplicateGroup(String groupId)` 方法
+- [x] 复制分组及其柱位列表
+- [x] 生成新 UUID，标题添加"(副本)"后缀
+- [x] 插入到原分组后面
+- [x] 调用 `_markUnsaved()`
+- [x] 添加单元测试
 - **验收标准**：复制后出现新分组
 
 #### Task 3.3.3：实现 toggleGroupExpanded 方法（0.5h）
-- [ ] 添加 `toggleGroupExpanded(String groupId)` 方法
-- [ ] 切换 `ChartGroup.expanded` 字段
-- [ ] 调用 `notifyListeners()`
-- [ ] UI 层根据 `expanded` 显示/隐藏柱位列表
+- [x] 添加 `toggleGroupExpanded(String groupId)` 方法
+- [x] 切换 `ChartGroup.expanded` 字段
+- [x] 调用 `notifyListeners()`
+- [x] UI 层根据 `expanded` 显示/隐藏柱位列表
 - **验收标准**：点击后分组展开/收起
 
 #### Task 3.3.4：实现 movePillarBetweenGroups 方法（1h）
-- [ ] 添加 `movePillarBetweenGroups({required String fromGroupId, required int fromIndex, required String toGroupId, required int toIndex})` 方法
-- [ ] 从源分组移除柱位
-- [ ] 添加到目标分组
+- [x] 添加 `movePillarBetweenGroups({required String fromGroupId, required int fromIndex, required String toGroupId, required int toIndex})` 方法
+- [x] 从源分组移除柱位
+- [x] 添加到目标分组
 - [ ] 验证重复性
-- [ ] 调用 `_markUnsaved()`
-- [ ] 添加单元测试
+- [x] 调用 `_markUnsaved()`
+- [x] 添加单元测试
 - **验收标准**：柱位跨分组移动成功
 
 #### Task 3.3.5：补充 ViewModel 单元测试（1.5h）
