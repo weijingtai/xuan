@@ -195,10 +195,8 @@ class TemplateBoardView extends StatelessWidget {
                 },
                 itemBuilder: (context, index) {
                   final pillar = pillars[index];
-                  return KeepAlive(
+                  return DragTarget<Object>(
                     key: ValueKey('board-$groupId-$index-${pillar.name}'),
-                    keepAlive: true,
-                    child: DragTarget<Object>(
                     onWillAccept: (data) => !locked && data != null,
                     onAccept: (data) {
                         if (data is PillarData) {
@@ -250,7 +248,6 @@ class TemplateBoardView extends StatelessWidget {
                           ],
                       );
                     },
-                  ),
                   );
                 },
               ),

@@ -951,7 +951,8 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                           color: Colors.grey, width: 1),
                                   boxShadow: [
                                     BoxShadow(
-                                        color: Colors.black.withValues(alpha: 0.1),
+                                        color:
+                                            Colors.black.withValues(alpha: 0.1),
                                         blurRadius: 2,
                                         spreadRadius: 2)
                                   ]),
@@ -1358,7 +1359,8 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                                     color: Colors.grey.shade600, width: 1),
                                 boxShadow: [
                                   BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.1),
+                                      color:
+                                          Colors.black.withValues(alpha: 0.1),
                                       blurRadius: 2,
                                       spreadRadius: 2)
                                 ]),
@@ -2156,7 +2158,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
       });
     } else {
       InteractiveToast.pop(
-        context,
+        context: context,
         title: const Text("为了便于后续操作请先选择出生地"),
         toastSetting: const PopupToastSetting(
           animationDuration: Duration(seconds: 2),

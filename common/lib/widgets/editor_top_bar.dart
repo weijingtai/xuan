@@ -45,10 +45,25 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
           const _SaveIntent(),
       LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyS):
           const _SaveIntent(),
+      // M4.3.3 - 命令级撤销 (Ctrl+Z)
       LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyZ):
-          const _UndoIntent(),
+          const _CommandUndoIntent(),
       LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyZ):
-          const _UndoIntent(),
+          const _CommandUndoIntent(),
+      // M4.3.3 - 命令级重做 (Ctrl+Y 或 Ctrl+Shift+Z)
+      LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyY):
+          const _CommandRedoIntent(),
+      LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyY):
+          const _CommandRedoIntent(),
+      LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyZ):
+          const _CommandRedoIntent(),
+      LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyZ):
+          const _CommandRedoIntent(),
+      // 原有的撤销所有未保存修改 (Ctrl+R)
+      LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyR):
+          const _RevertIntent(),
+      LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyR):
+          const _RevertIntent(),
       const SingleActivator(LogicalKeyboardKey.keyN, control: true, shift: true):
           const _CreateTemplateIntent(),
       const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true):
@@ -65,7 +80,23 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
             }
             return null;
           }),
-          _UndoIntent: CallbackAction<_UndoIntent>(onInvoke: (intent) {
+          // M4.3.3 - 命令级撤销/重做
+          _CommandUndoIntent: CallbackAction<_CommandUndoIntent>(onInvoke: (intent) {
+            final vm = context.read<FourZhuEditorViewModel>();
+            if (vm.canUndo) {
+              vm.undoLastChange();
+            }
+            return null;
+          }),
+          _CommandRedoIntent: CallbackAction<_CommandRedoIntent>(onInvoke: (intent) {
+            final vm = context.read<FourZhuEditorViewModel>();
+            if (vm.canRedo) {
+              vm.redoLastChange();
+            }
+            return null;
+          }),
+          // 原有的撤销所有未保存修改
+          _RevertIntent: CallbackAction<_RevertIntent>(onInvoke: (intent) {
             if (uiState.canRevert) {
               onUndoChanges();
             }
@@ -205,7 +236,17 @@ class _TopBarControls extends StatelessWidget {
             children: [
               const Icon(Icons.space_dashboard_outlined, size: 24),
               const SizedBox(width: 16),
-              // Removed legacy template selector dropdown to avoid duplicating UI
+              // Task 2.2.1 - 模板下拉选择器
+              _TemplateDropdownSelector(
+                templates: templates,
+                currentTemplate: currentTemplate,
+                isEnabled: !isBusy,
+                onChanged: (templateId) {
+                  if (templateId != null) {
+                    viewModel.selectTemplate(templateId);
+                  }
+                },
+              ),
               const SizedBox(width: 16),
               Expanded(
                 child: FocusTraversalOrder(
@@ -229,21 +270,16 @@ class _TopBarControls extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 24),
-        FocusTraversalOrder(
-          order: const NumericFocusOrder(3),
-          child: Wrap(
-            alignment: WrapAlignment.end,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            spacing: 12,
-            runSpacing: 8,
-            children: [
-              _ViewModeSelector(
-                mode: uiState.viewMode,
-                onChanged: isBusy
-                    ? null
-                    : (mode) => viewModel.setViewMode(mode),
-              ),
-              // Legacy open gallery button removed; TemplateGalleryView handles gallery actions
+        Flexible(
+          child: FocusTraversalOrder(
+            order: const NumericFocusOrder(3),
+            child: Wrap(
+              alignment: WrapAlignment.end,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
+              children: [
+              // 移除ViewModeSelector - 视图模式已合并
               Tooltip(
                 message: '切换深色模式',
                 child: Row(
@@ -259,12 +295,42 @@ class _TopBarControls extends StatelessWidget {
                   ],
                 ),
               ),
+              // M4.3.3 - 命令级撤销按钮
+              Selector<FourZhuEditorViewModel, bool>(
+                selector: (_, vm) => vm.canUndo,
+                builder: (context, canUndo, _) {
+                  return Tooltip(
+                    message: '撤销上一步操作 (Ctrl+Z)',
+                    child: IconButton(
+                      onPressed: canUndo && !isBusy
+                          ? () => viewModel.undoLastChange()
+                          : null,
+                      icon: const Icon(Icons.undo, size: 20),
+                    ),
+                  );
+                },
+              ),
+              // M4.3.3 - 命令级重做按钮
+              Selector<FourZhuEditorViewModel, bool>(
+                selector: (_, vm) => vm.canRedo,
+                builder: (context, canRedo, _) {
+                  return Tooltip(
+                    message: '重做 (Ctrl+Y 或 Ctrl+Shift+Z)',
+                    child: IconButton(
+                      onPressed: canRedo && !isBusy
+                          ? () => viewModel.redoLastChange()
+                          : null,
+                      icon: const Icon(Icons.redo, size: 20),
+                    ),
+                  );
+                },
+              ),
               Tooltip(
-                message: '撤销未保存修改 (Ctrl+Z)',
+                message: '放弃所有未保存修改 (Ctrl+R)',
                 child: FilledButton.icon(
                   onPressed: uiState.canRevert && !isBusy ? onUndoChanges : null,
-                  icon: const Icon(Icons.history, size: 16),
-                  label: const Text('撤销'),
+                  icon: const Icon(Icons.restore, size: 16),
+                  label: const Text('还原'),
                 ),
               ),
               Tooltip(
@@ -289,6 +355,17 @@ class _TopBarControls extends StatelessWidget {
                   label: const Text('复制'),
                 ),
               ),
+              // Task 2.2.2 - 另存为按钮
+              Tooltip(
+                message: '另存为新模板',
+                child: OutlinedButton.icon(
+                  onPressed: isBusy
+                      ? null
+                      : () => _showSaveAsDialog(context, viewModel),
+                  icon: const Icon(Icons.save_as, size: 16),
+                  label: const Text('另存为'),
+                ),
+              ),
               Tooltip(
                 message: '删除模板',
                 child: IconButton(
@@ -299,6 +376,7 @@ class _TopBarControls extends StatelessWidget {
               ),
             ],
           ),
+        ),
         ),
       ],
     );
@@ -438,6 +516,141 @@ class _TemplateTabChipState extends State<_TemplateTabChip> {
   }
 }
 
+/// Task 2.2.1 - 模板下拉选择器组件
+class _TemplateDropdownSelector extends StatelessWidget {
+  const _TemplateDropdownSelector({
+    required this.templates,
+    required this.currentTemplate,
+    required this.isEnabled,
+    required this.onChanged,
+  });
+
+  final List<LayoutTemplate> templates;
+  final LayoutTemplate? currentTemplate;
+  final bool isEnabled;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      constraints: const BoxConstraints(minWidth: 150, maxWidth: 250),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.3),
+        ),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: currentTemplate?.id,
+          isExpanded: true,
+          icon: const Icon(Icons.arrow_drop_down, size: 20),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          style: theme.textTheme.bodyMedium,
+          items: templates.map((template) {
+            return DropdownMenuItem<String>(
+              value: template.id,
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.article_outlined,
+                    size: 16,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      template.name,
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: isEnabled ? onChanged : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Task 2.2.2 - 另存为对话框
+void _showSaveAsDialog(
+  BuildContext context,
+  FourZhuEditorViewModel viewModel,
+) {
+  final controller = TextEditingController();
+
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.save_as, size: 20),
+            SizedBox(width: 8),
+            Text('另存为新模板'),
+          ],
+        ),
+        content: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('请输入新模板名称:'),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  labelText: '模板名称',
+                  hintText: '例如: 我的自定义模板',
+                  border: OutlineInputBorder(),
+                ),
+                onSubmitted: (value) {
+                  if (value.trim().isNotEmpty) {
+                    Navigator.of(dialogContext).pop();
+                    // Task 2.2.3 - 调用 ViewModel 方法
+                    viewModel.saveTemplateAs(value.trim());
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('已另存为: ${value.trim()}')),
+                    );
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('取消'),
+          ),
+          FilledButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isNotEmpty) {
+                Navigator.of(dialogContext).pop();
+                // Task 2.2.3 - 调用 ViewModel 方法
+                viewModel.saveTemplateAs(name);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('已另存为: $name')),
+                );
+              }
+            },
+            child: const Text('保存'),
+          ),
+        ],
+      );
+    },
+  );
+}
+
 class _ViewModeSelector extends StatelessWidget {
   const _ViewModeSelector({
     required this.mode,
@@ -487,8 +700,19 @@ class _SaveIntent extends Intent {
   const _SaveIntent();
 }
 
-class _UndoIntent extends Intent {
-  const _UndoIntent();
+// M4.3.3 - 命令级撤销Intent
+class _CommandUndoIntent extends Intent {
+  const _CommandUndoIntent();
+}
+
+// M4.3.3 - 命令级重做Intent
+class _CommandRedoIntent extends Intent {
+  const _CommandRedoIntent();
+}
+
+// 撤销所有未保存修改Intent
+class _RevertIntent extends Intent {
+  const _RevertIntent();
 }
 
 class _NextTemplateIntent extends Intent {
