@@ -47,6 +47,7 @@ import 'package:qizhengsiyu/widgets/twelve_gong_grid_ring.dart';
 import 'package:qizhengsiyu/widgets/twelve_gong_text_ring.dart';
 import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
+import 'package:qizhengsiyu/widgets/center_text_circle_widget.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
 import 'package:qizhengsiyu/models/panel_config.dart'; // UI层使用的PanelConfig
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
@@ -247,7 +248,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
           });
     panelSizeDataModel = QiZhengSiYuPanSizeDataModel(
         starBodyRadius: 16,
-        centerSize: 128,
+        centerSize: 140,
         diZhi12GongHeight: 50,
         zodiac12GongHeight: 24,
         starSeq12GongHeight: 0,
@@ -498,55 +499,12 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         height: centerSize,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          // color: Colors.black.withOpacity(.1),
           borderRadius: BorderRadius.circular(centerSize),
           border: Border.all(color: Colors.black, width: 1),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "立命",
-                  style: TextStyle(fontSize: 12, height: 1.2),
-                ),
-                // SizedBox(width: 4,),
-                Text(
-                  basePanel.bodyLifeModel.lifeConstellatioin.fullname,
-                  style: TextStyle(fontSize: 14, height: 1.2),
-                ),
-                Text(
-                  "${basePanel.bodyLifeModel.lifeDegree.toStringAsFixed(1)}°",
-                  style: TextStyle(fontSize: 12, height: 1.2),
-                ),
-              ],
-            ),
-            fourZhu(basePanel.bodyLifeModel),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  "${basePanel.bodyLifeModel.bodyGongDegree.toStringAsFixed(1)}°",
-                  style: TextStyle(fontSize: 12, height: 1.2),
-                ),
-                // SizedBox(width: 4,),
-                Text(
-                  basePanel.bodyLifeModel.bodyConstellation.fullname,
-                  style: TextStyle(fontSize: 14, height: 1.2),
-                ),
-
-                Text(
-                  "安身",
-                  style: TextStyle(fontSize: 12, height: 1.2),
-                ),
-              ],
-            )
-          ],
+        child: CenterTextCircleWidget(
+          bodyLifeModel: basePanel.bodyLifeModel,
+          size: centerSize,
         ));
   }
 
