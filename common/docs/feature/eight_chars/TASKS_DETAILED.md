@@ -431,30 +431,30 @@
 ### 里程碑 M4.1：底部面板布局调整（4小时）
 
 #### Task 4.1.1：将底部面板移至 actionBar（1h）
-- [ ] 在 `four_zhu_edit_page.dart` 中将 `PillarPalette` 从 `header` 移到 `actionBar`
-- [ ] 调整布局为横向滚动
-- [ ] 确保不与保存按钮冲突
+- [x] 在 `four_zhu_edit_page.dart` 中将 `PillarPalette` 从 `header` 移到 `actionBar`
+- [x] 调整布局为横向滚动
+- [x] 确保不与保存按钮冲突
 - **验收标准**：底部面板固定在页面底部
 
 #### Task 4.1.2：实现面板展开/收起功能（1.5h）
-- [ ] 在 ViewModel 中添加 `_isPaletteExpanded` 状态
-- [ ] 添加 `togglePaletteExpanded()` 方法
-- [ ] 在底部面板右侧添加箭头按钮
-- [ ] 收起时仅显示图标栏，展开时显示完整内容
-- [ ] 添加展开/收起动画（AnimatedContainer）
+- [x] 在 ViewModel 中添加 `_isPaletteExpanded` 状态
+- [x] 添加 `togglePaletteExpanded()` 方法
+- [x] 在底部面板右侧添加箭头按钮
+- [x] 收起时仅显示图标栏，展开时显示完整内容
+- [x] 添加展开/收起动画（AnimatedContainer）
 - **验收标准**：点击箭头后面板收起/展开
 
 #### Task 4.1.3：优化柱位组件显示（1h）
-- [ ] 限制显示柱位数量（年月日时胎元大运，共6个）
-- [ ] 移除"更多..."占位项
-- [ ] 调整组件尺寸适配底部空间
-- [ ] 添加 tooltip 显示柱位说明
+- [x] 限制显示柱位数量（年月日时胎元大运，共6个）
+- [x] 移除"更多..."占位项
+- [x] 调整组件尺寸适配底部空间
+- [x] 添加 tooltip 显示柱位说明
 - **验收标准**：6个柱位清晰显示
 
 #### Task 4.1.4：持久化面板展开状态（0.5h）
-- [ ] 使用 SharedPreferences 保存 `isPaletteExpanded`
-- [ ] 初始化时加载状态
-- [ ] 状态变更时保存
+- [x] 使用 SharedPreferences 保存 `isPaletteExpanded`
+- [x] 初始化时加载状态
+- [x] 状态变更时保存
 - **验收标准**：重启应用后状态保持
 
 ---
