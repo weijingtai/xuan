@@ -131,10 +131,10 @@ class BeautyPageViewModel extends ChangeNotifier {
   // ObserverPosition? get observerPosition => _observerPosition;
 
   /// UI 绘制本命盘时星体所需的最小安全角度。
-  double _baseMiniSafetyAngle = 5;
+  double _baseMiniSafetyAngle = 2;
 
   /// UI 绘制行限盘时星体所需的最小安全角度。
-  double _fateMiniSafetyAngle = 7;
+  double _fateMiniSafetyAngle = 3;
 
   /// 神煞数据管理器。
   ShenShaManager? _shenShaManager;
