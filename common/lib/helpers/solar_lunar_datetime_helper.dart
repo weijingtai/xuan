@@ -15,9 +15,16 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
+import 'package:common/features/four_zhu/four_zhu_engine.dart';
+import 'package:common/features/four_zhu/strategies/impl/day_23_boundary_strategy.dart';
+import 'package:common/features/four_zhu/strategies/impl/day_0_boundary_strategy.dart';
+import 'package:common/features/four_zhu/strategies/impl/hour_five_mouse_dun_strategy.dart';
+import 'package:common/features/four_zhu/strategies/impl/hour_fixed_zi_ping_strategy.dart';
 import '../datamodel/location.dart' as my;
 import '../datamodel/location.dart';
 import '../features/datetime_details/input_info_params.dart';
+import 'package:common/features/datetime_details/zi_strategy_store.dart';
+import 'package:common/features/datetime_details/jieqi_phenology_store.dart';
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -35,58 +42,39 @@ class SolarLunarDateTimeHelper {
 
   static ChineseDateInfo cacluateChineseDateInfo(
       DateTime time, ZiShiStrategy strategy) {
-    Lunar lunar;
-    switch (strategy) {
-      case ZiShiStrategy.startFrom23:
-        // 当时间为23点时 算作第二天的子时
-        if (time.hour == 23) {
-          // copy this time
-          DateTime time0 = DateTime.parse(dateFormat.format(time));
-          DateTime newTime = time0.add(const Duration(hours: 1));
-          lunar = Lunar.fromDate(newTime);
-        } else {
-          lunar = Lunar.fromDate(time);
-        }
-        break;
-      case ZiShiStrategy.startFrom0:
-        // 以每日零点作为换日柱与子时，每个时辰相对 startFrom23 中的时间断向后平移一个小时
-        if (time.hour % 2 == 1) {
-          lunar = Lunar.fromDate(time.subtract(const Duration(hours: 1)));
-        } else {
-          lunar = Lunar.fromDate(time);
-        }
-        break;
-      case ZiShiStrategy.splitedZi:
-        lunar = Lunar.fromDate(time);
-        print(lunar.getBaZi());
-        break;
-    }
+    // 1) 将配置映射为引擎组合
+    final (ZiBoundary boundary, ChildHourMode mode) = _mapZiStrategy(strategy);
+    final engine = FourZhuEngine.create(boundary: boundary, childHourMode: mode);
 
-    List<String> eightCharsStr = lunar.getBaZi();
+    // 2) 以“日柱策略锚点”作为 Lunar 的参考时间，确保节气/物候与日柱一致
+    final dayStrategy = switch (boundary) {
+      ZiBoundary.at23 => const Day23BoundaryStrategy(),
+      ZiBoundary.at0 => const Day0BoundaryStrategy(),
+    };
+    final anchor = dayStrategy.decideDayAnchor(time);
+    final lunar = Lunar.fromDate(anchor.effectiveDateTime);
 
-    EightChars eightChars = EightChars(
-        year: JiaZi.getFromGanZhiValue(eightCharsStr[0])!,
-        month: JiaZi.getFromGanZhiValue(eightCharsStr[1])!,
-        day: JiaZi.getFromGanZhiValue(eightCharsStr[2])!,
-        time: JiaZi.getFromGanZhiValue(eightCharsStr[3])!);
+    // 3) 计算四柱（八字）
+    final ec = engine.calculate(time).eightChars;
 
-    // 获取 七十二物候
-    Phenology wuHou = Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
-    String jieQi;
-    DateTime jieQiDateTime;
-    DateTime jieQiEndAt;
-    // final DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    final eightChars = ec;
+
+    // 节气与物候计算策略
+    final JieQiType jqType = JieQiPhenologyStore.jieQiType;
+    final PhenologyStrategy phStrategy = JieQiPhenologyStore.phenologyStrategy;
+
+    // 计算稳定（定气法）节气边界：当前或上一节气
+    String baseJieQiName;
+    DateTime stabilizingStart;
+    DateTime stabilizingEnd;
     if (lunar.getCurrentJieQi() == null) {
-      jieQi = lunar.getPrevJieQi().getName();
-      jieQiDateTime =
-          dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
-      jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
+      baseJieQiName = lunar.getPrevJieQi().getName();
+      stabilizingStart = dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
+      stabilizingEnd = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
     } else {
-      jieQi = lunar.getCurrentJieQi()!.getName();
-      jieQiDateTime =
-          dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
-      // 如果当天是节气，getNextJieQi() 还是当前这个，所以需要加2天时间再取
-      jieQiEndAt = dateFormat.parse(lunar
+      baseJieQiName = lunar.getCurrentJieQi()!.getName();
+      stabilizingStart = dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
+      stabilizingEnd = dateFormat.parse(lunar
           .getCurrentJieQi()!
           .getSolar()
           .next(2)
@@ -95,21 +83,63 @@ class SolarLunarDateTimeHelper {
           .getSolar()
           .toYmdHms());
     }
+
+    // 平气法：固定间隔（回归年/24）约 15.2184 天
+    const double tropicalYearDays = 365.2422;
+    final Duration levelingInterval = Duration(milliseconds: (tropicalYearDays / 24 * 24 * 60 * 60 * 1000).round());
+    // 计算上一节气的稳定起点（用于推导平气起点）
+    final DateTime prevStabilizingStart = dateFormat.parse(lunar.getPrevJieQi(true).getSolar().toYmdHms());
+    final DateTime levelingStart = prevStabilizingStart.add(levelingInterval);
+    final DateTime levelingEnd = levelingStart.add(levelingInterval);
+
+    // 根据选择的节气类型，确定展示的节气区间
+    final DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
+    final DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+
+    // 物候计算：基于所选策略（定气或平气）将交节时刻 + n*5 天，并根据 anchor 所在区间选取初/二/三候
+    final DateTime phenologyBaseStart = phStrategy == PhenologyStrategy.stabilizingBased ? stabilizingStart : levelingStart;
+    final chosenJieQi = TwentyFourJieQi.fromName(baseJieQiName);
+    final List<Phenology> candidates = Phenology.phenologyList.where((p) => p.jieqi == chosenJieQi).toList();
+    int idx;
+    final int secondsSinceBase = anchor.effectiveDateTime.difference(phenologyBaseStart).inSeconds;
+    if (secondsSinceBase <= 0) {
+      idx = 0;
+    } else {
+      final int fiveDaySeconds = 5 * 24 * 60 * 60;
+      idx = (secondsSinceBase / fiveDaySeconds).floor().clamp(0, 2);
+    }
+    final Phenology wuHou = candidates.isNotEmpty ? candidates[idx] : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
     var threeYuanNineYun = calculateThreeYuanNineYun(lunar.getYear());
     return ChineseDateInfo(
         threeYuan: threeYuanNineYun.item1,
         nineYun: threeYuanNineYun.item2,
         eightChars: eightChars,
         phenology: wuHou,
-        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
-        lunarDay: dayMap[lunar.getDayInChinese()]!,
+        lunarMonth: lunar.getMonth(),
+        lunarDay: lunar.getDay(),
         isLeapMonth:
             LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap(),
         jieQiInfo: JieQiInfo(
-          jieQi: TwentyFourJieQi.fromName(jieQi),
-          startAt: jieQiDateTime,
+          jieQi: chosenJieQi,
+          startAt: jieQiStartAt,
           endAt: jieQiEndAt,
         ));
+  }
+
+  static (ZiBoundary, ChildHourMode) _mapZiStrategy(ZiShiStrategy s) {
+    switch (s) {
+      case ZiShiStrategy.noDistinguishAt23:
+      case ZiShiStrategy.startFrom23:
+        return (ZiBoundary.at23, ChildHourMode.noDistinguish);
+      case ZiShiStrategy.distinguishAt0FiveMouse:
+      case ZiShiStrategy.startFrom0:
+      case ZiShiStrategy.splitedZi:
+        return (ZiBoundary.at0, ChildHourMode.distinguishFiveMouse);
+      case ZiShiStrategy.distinguishAt0Fixed:
+        return (ZiBoundary.at0, ChildHourMode.distinguishFixed);
+      case ZiShiStrategy.bandsStartAt0:
+        return (ZiBoundary.at0, ChildHourMode.bandsStart0);
+    }
   }
 
   /// 根据年份计算三元九运
@@ -148,34 +178,39 @@ class SolarLunarDateTimeHelper {
   // item3 日期
   static Tuple4<EightChars, Lunar, Phenology, JieQiInfo> getEighthChars(
       DateTime time) {
-    /// 当时间为23点时 算作第二天的子时
+    // 使用全局子时策略映射到引擎和日界
+    final (ZiBoundary boundary, ChildHourMode mode) =
+        _mapZiStrategy(ZiStrategyStore.current);
+    final engine = FourZhuEngine.create(boundary: boundary, childHourMode: mode);
 
-    var lunar = Lunar.fromDate(time);
-    if (time.hour == 23) {
-      // copy this time
-      DateTime time0 = DateTime.parse(dateFormat.format(time));
-      DateTime newTime = time0.add(const Duration(hours: 1));
-      lunar = Lunar.fromDate(newTime);
-    }
-    List<String> eightCharsStr = lunar.getBaZi();
+    final dayStrategy = switch (boundary) {
+      ZiBoundary.at23 => const Day23BoundaryStrategy(),
+      ZiBoundary.at0 => const Day0BoundaryStrategy(),
+    };
+    final anchor = dayStrategy.decideDayAnchor(time);
 
-    int wuHouIndex = WU_HOU.indexOf(lunar.getWuHou());
-    Phenology wuHou = Phenology.phenologyList[wuHouIndex];
-    String jieQi;
-    DateTime jieQiDateTime;
-    DateTime jieQiEndAt;
-    // final DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    // 获取 Lunar 对应信息（用于月相、节气等）
+    final lunar = Lunar.fromDate(anchor.effectiveDateTime);
+
+    // 通过引擎计算四柱
+    final ec = engine.calculate(time).eightChars;
+
+    // 节气与物候策略
+    final JieQiType jqType = JieQiPhenologyStore.jieQiType;
+    final PhenologyStrategy phStrategy = JieQiPhenologyStore.phenologyStrategy;
+
+    // 稳定（定气）节气起止
+    String baseJieQiName;
+    DateTime stabilizingStart;
+    DateTime stabilizingEnd;
     if (lunar.getCurrentJieQi() == null) {
-      jieQi = lunar.getPrevJieQi().getName();
-      jieQiDateTime =
-          dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
-      jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
+      baseJieQiName = lunar.getPrevJieQi().getName();
+      stabilizingStart = dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
+      stabilizingEnd = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
     } else {
-      jieQi = lunar.getCurrentJieQi()!.getName();
-      jieQiDateTime =
-          dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
-      // 如果当天是节气，getNextJieQi() 还是当前这个，所以需要加2天时间再取
-      jieQiEndAt = dateFormat.parse(lunar
+      baseJieQiName = lunar.getCurrentJieQi()!.getName();
+      stabilizingStart = dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
+      stabilizingEnd = dateFormat.parse(lunar
           .getCurrentJieQi()!
           .getSolar()
           .next(2)
@@ -185,22 +220,40 @@ class SolarLunarDateTimeHelper {
           .toYmdHms());
     }
 
-    // print("${jieQi} ${jieQiDateTime} - ${jieQiEndAt} ${lunar.getPrevJieQi()} ${lunar.getCurrentJieQi()==null}");
-    // print("节气时间：${jieQiDateTime}");
+    // 平气法：固定间隔（回归年/24）约 15.2184 天
+    const double tropicalYearDays = 365.2422;
+    final Duration levelingInterval = Duration(milliseconds: (tropicalYearDays / 24 * 24 * 60 * 60 * 1000).round());
+    final DateTime prevStabilizingStart = dateFormat.parse(lunar.getPrevJieQi(true).getSolar().toYmdHms());
+    final DateTime levelingStart = prevStabilizingStart.add(levelingInterval);
+    final DateTime levelingEnd = levelingStart.add(levelingInterval);
+
+    final DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
+    final DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+
+    // 物候 - 根据策略确定基准
+    final DateTime phenologyBaseStart = phStrategy == PhenologyStrategy.stabilizingBased ? stabilizingStart : levelingStart;
+    final chosenJieQi = TwentyFourJieQi.fromName(baseJieQiName);
+    final List<Phenology> candidates = Phenology.phenologyList.where((p) => p.jieqi == chosenJieQi).toList();
+    int idx;
+    final int secondsSinceBase = anchor.effectiveDateTime.difference(phenologyBaseStart).inSeconds;
+    if (secondsSinceBase <= 0) {
+      idx = 0;
+    } else {
+      final int fiveDaySeconds = 5 * 24 * 60 * 60;
+      idx = (secondsSinceBase / fiveDaySeconds).floor().clamp(0, 2);
+    }
+    final Phenology wuHou = candidates.isNotEmpty ? candidates[idx] : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
 
     return Tuple4(
-        EightChars(
-            year: JiaZi.getFromGanZhiValue(eightCharsStr[0])!,
-            month: JiaZi.getFromGanZhiValue(eightCharsStr[1])!,
-            day: JiaZi.getFromGanZhiValue(eightCharsStr[2])!,
-            time: JiaZi.getFromGanZhiValue(eightCharsStr[3])!),
-        lunar,
-        wuHou,
-        JieQiInfo(
-          jieQi: TwentyFourJieQi.fromName(jieQi),
-          startAt: jieQiDateTime,
-          endAt: jieQiEndAt,
-        ));
+      ec,
+      lunar,
+      wuHou,
+      JieQiInfo(
+        jieQi: chosenJieQi,
+        startAt: jieQiStartAt,
+        endAt: jieQiEndAt,
+      ),
+    );
   }
 
   static DivinationDatetimeModel calculateNormalQueryDateTimeInfo(

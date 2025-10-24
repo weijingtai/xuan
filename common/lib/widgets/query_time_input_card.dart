@@ -30,6 +30,11 @@ import '../helpers/solar_lunar_datetime_helper.dart';
 import '../models/divination_datetime.dart';
 import 'responseive_datetime_dialog.dart';
 import '../viewmodels/timezone_location_viewmodel.dart';
+import 'zi_strategy_settings_card.dart';
+import 'jieqi_phenology_settings_card.dart';
+import 'package:common/features/datetime_details/jieqi_phenology_store.dart';
+import 'package:common/features/datetime_details/zi_strategy_store.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 
 class QueryTimeInputCard extends StatefulWidget {
   // final String defaultTimeZone;
@@ -603,7 +608,7 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               return AnimatedContainer(
                 duration: Duration(milliseconds: 300),
                 width: contentWidth - (contentPadding * 2),
-                height: selectedTabBarButton == DateTimeType.solar ? 480 : 80,
+                height: selectedTabBarButton == DateTimeType.solar ? 600 : 240,
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.only(
@@ -633,12 +638,36 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                         getDateTimeTypeByPageIndex(index);
                   },
                   children: [
-                    _buildTimeSelectionContent(),
+                    Column(
+                      children: [
+                        Expanded(child: _buildTimeSelectionContent()),
+                        const SizedBox(height: 8),
+                      ],
+                    ),
                     const Center(child: Text('Content of Tab 2')),
                     _eightCharsPage()
                   ],
                 ),
               );
+            },
+          ),
+          const SizedBox(height: 8),
+          // 将设置卡片移出内层 Card，独立展示
+          ZiStrategySettingsCard(
+            applyOnChange: false,
+            onStrategyChanged: (s) {
+              ZiStrategyStore.set(s);
+              _timezoneLocationViewModel.selectedTimeNotifier.value =
+                  _timezoneLocationViewModel.selectedTimeNotifier.value;
+            },
+          ),
+          JieQiPhenologySettingsCard(
+            applyOnChange: false,
+            onChanged: (jieQiType, phStrategy) {
+              JieQiPhenologyStore.jieQiType = jieQiType;
+              JieQiPhenologyStore.phenologyStrategy = phStrategy;
+              _timezoneLocationViewModel.selectedTimeNotifier.value =
+                  _timezoneLocationViewModel.selectedTimeNotifier.value;
             },
           ),
         ],

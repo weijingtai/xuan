@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'input_info_params.dart';
 import 'calculation_strategy_config.dart';
 import 'processors/timezone_processor.dart';
+import 'zi_strategy_store.dart';
 import 'processors/dst_processor.dart';
 import 'processors/solar_time_processor.dart';
 
@@ -100,6 +101,8 @@ class DateTimeDetailsBundleCalculation {
     params.validate();
 
     try {
+      // 使用全局运行期策略覆盖配置中的子时策略（开发阶段默认行为）
+      config = config.copyWith(ziStrategy: ZiStrategyStore.current);
       // 1. 基础时区处理 - 获取UTC时间和ChineseDateInfo
       final timezoneData = await TimezoneProcessor.process(
         inputDateTime: params.inputDateTime,

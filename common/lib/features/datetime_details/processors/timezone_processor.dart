@@ -7,7 +7,7 @@ class TimezoneProcessor {
   static Future<TimezoneProcessResult> process({
     required DateTime inputDateTime,
     required String timezoneStr,
-    ZiShiStrategy ziStrategy = ZiShiStrategy.startFrom23,
+    ZiShiStrategy ziStrategy = ZiShiStrategy.noDistinguishAt23,
   }) async {
     // 获取时区信息
     final location = tz.getLocation(timezoneStr);

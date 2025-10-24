@@ -11,15 +11,27 @@ part 'input_info_params.g.dart';
 
 @JsonEnum()
 enum ZiShiStrategy {
+  @JsonValue('noDistinguishAt23')
+  noDistinguishAt23, // 不区分早晚：23 为界，23:00–1:00 统一按次日（日时均次日）
+
+  @JsonValue('distinguishAt0FiveMouse')
+  distinguishAt0FiveMouse, // 区分早晚：0 为界，时柱五鼠遁（晚子时当日、早子时次日；时柱均按次日）
+
+  @JsonValue('distinguishAt0Fixed')
+  distinguishAt0Fixed, // 区分早晚：0 为界，时柱固定壬子/癸丑
+
+  @JsonValue('bandsStartAt0')
+  bandsStartAt0, // 以 0:00-1:59 为子时，整日两小时一支（五鼠遁起干）
+
+  // 兼容旧值（保留序列化兼容性）
   @JsonValue('startFrom23')
-  startFrom23, // 23:00 为子时开始，为次日
+  startFrom23, // 旧：映射为 noDistinguishAt23
 
   @JsonValue('startFrom0')
-  startFrom0, // 00:00 为子时，为次日
+  startFrom0, // 旧：映射为 distinguishAt0FiveMouse
 
   @JsonValue('splitedZi')
-  splitedZi, // 分早晚子时，早子时为23:00 - 00:00，晚子时为00:00 - 00:59。早子时使用当日日柱，晚子时使用次日日柱。
-  // Lunar默认使用
+  splitedZi, // 旧：映射为 distinguishAt0FiveMouse（区分早晚，五鼠遁）
 }
 
 @JsonEnum()
