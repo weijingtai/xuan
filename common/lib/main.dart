@@ -24,6 +24,7 @@ import 'enums/enum_hou_tian_gua.dart';
 import 'line_painter_widget.dart';
 import 'features/datetime_details/zi_strategy_store.dart';
 import 'features/datetime_details/jieqi_phenology_store.dart';
+import 'features/datetime_details/jieqi_entry_strategy_store.dart';
 
 Future<void> initServices() async {
   // 在这里可以进行其他异步初始化操作
@@ -54,6 +55,7 @@ void main() async {
     // Load persisted default 子时策略 before building widgets
     await ZiStrategyStore.initFromPrefs();
     await JieQiPhenologyStore.initFromPrefs();
+    await JieQiEntryStrategyStore.initFromPrefs();
     runApp(
       MultiProvider(
         providers: [

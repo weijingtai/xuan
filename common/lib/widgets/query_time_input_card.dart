@@ -35,6 +35,8 @@ import 'jieqi_phenology_settings_card.dart';
 import 'package:common/features/datetime_details/jieqi_phenology_store.dart';
 import 'package:common/features/datetime_details/zi_strategy_store.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
+import 'jieqi_entry_settings_card.dart';
+import 'package:common/features/datetime_details/jieqi_entry_strategy_store.dart';
 
 class QueryTimeInputCard extends StatefulWidget {
   // final String defaultTimeZone;
@@ -666,6 +668,13 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
             onChanged: (jieQiType, phStrategy) {
               JieQiPhenologyStore.jieQiType = jieQiType;
               JieQiPhenologyStore.phenologyStrategy = phStrategy;
+              _timezoneLocationViewModel.selectedTimeNotifier.value =
+                  _timezoneLocationViewModel.selectedTimeNotifier.value;
+            },
+          ),
+          JieQiEntrySettingsCard(
+            applyOnChange: false,
+            onChanged: (p) {
               _timezoneLocationViewModel.selectedTimeNotifier.value =
                   _timezoneLocationViewModel.selectedTimeNotifier.value;
             },

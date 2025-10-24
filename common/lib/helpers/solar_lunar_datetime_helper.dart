@@ -25,6 +25,7 @@ import '../datamodel/location.dart';
 import '../features/datetime_details/input_info_params.dart';
 import 'package:common/features/datetime_details/zi_strategy_store.dart';
 import 'package:common/features/datetime_details/jieqi_phenology_store.dart';
+import 'package:common/features/datetime_details/jieqi_entry_strategy_store.dart';
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -93,20 +94,74 @@ class SolarLunarDateTimeHelper {
     final DateTime levelingEnd = levelingStart.add(levelingInterval);
 
     // 根据选择的节气类型，确定展示的节气区间
-    final DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
-    final DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+    DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
+    DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+
+    // 交节精度：若锚点与“交节起点”处于同一桶（时辰/小时），则视为已进入下一节气
+    (DateTime nextStabilizingStart, String nextStabilizingName) _nextStabilizing(Lunar l) {
+      final next = l.getNextJieQi();
+      return (dateFormat.parse(next.getSolar().toYmdHms()), next.getName());
+    }
+    DateTime nextLevelingStart = levelingStart.add(levelingInterval);
+    bool _sameBucket(DateTime a, DateTime b) {
+      final p = JieQiEntryStrategyStore.current;
+      switch (p) {
+        case JieQiEntryPrecision.second:
+          return false; // 精确到秒，不做同桶提前进入
+        case JieQiEntryPrecision.minute:
+          return a.year == b.year && a.month == b.month && a.day == b.day && a.hour == b.hour && a.minute == b.minute;
+        case JieQiEntryPrecision.hour:
+          return a.year == b.year && a.month == b.month && a.day == b.day && a.hour == b.hour;
+        case JieQiEntryPrecision.shichen:
+          final (ZiBoundary boundary, ChildHourMode mode) = _mapZiStrategy(strategy);
+          int shichenLabel(DateTime t) {
+            final h = t.hour;
+            return boundary == ZiBoundary.at0
+                ? h ~/ 2
+                : (h >= 23 || h == 0) ? 0 : ((h + 1) ~/ 2);
+          }
+          return shichenLabel(a) == shichenLabel(b);
+      }
+    }
+    bool _entered(DateTime anchorTime, DateTime boundaryTime) {
+      final p = JieQiEntryStrategyStore.current;
+      if (p == JieQiEntryPrecision.second) {
+        return anchorTime.isAfter(boundaryTime) || anchorTime.isAtSameMomentAs(boundaryTime);
+      }
+      return _sameBucket(anchorTime, boundaryTime) || anchorTime.isAfter(boundaryTime) || anchorTime.isAtSameMomentAs(boundaryTime);
+    }
+
+    if (jqType == JieQiType.stabilizing) {
+      final (DateTime nextStart, String nextName) = _nextStabilizing(lunar);
+      if (!_entered(anchor.effectiveDateTime, stabilizingStart) && _sameBucket(anchor.effectiveDateTime, stabilizingStart)) {
+        // 提前进入下一节气（同桶）
+        jieQiStartAt = nextStart;
+        jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().next(2).toYmdHms());
+        baseJieQiName = nextName;
+      }
+    } else {
+      if (!_entered(anchor.effectiveDateTime, levelingStart) && _sameBucket(anchor.effectiveDateTime, levelingStart)) {
+        // 提前进入下一节气（同桶）
+        jieQiStartAt = nextLevelingStart;
+        jieQiEndAt = nextLevelingStart.add(levelingInterval);
+        baseJieQiName = TwentyFourJieQi.fromName(baseJieQiName).next.name;
+      }
+    }
 
     // 物候计算：基于所选策略（定气或平气）将交节时刻 + n*5 天，并根据 anchor 所在区间选取初/二/三候
     final DateTime phenologyBaseStart = phStrategy == PhenologyStrategy.stabilizingBased ? stabilizingStart : levelingStart;
     final chosenJieQi = TwentyFourJieQi.fromName(baseJieQiName);
     final List<Phenology> candidates = Phenology.phenologyList.where((p) => p.jieqi == chosenJieQi).toList();
-    int idx;
-    final int secondsSinceBase = anchor.effectiveDateTime.difference(phenologyBaseStart).inSeconds;
-    if (secondsSinceBase <= 0) {
-      idx = 0;
+    // 物候边界应用交节精度（同桶进入）
+    final DateTime b1 = phenologyBaseStart.add(const Duration(days: 5));
+    final DateTime b2 = phenologyBaseStart.add(const Duration(days: 10));
+    int idx = 0;
+    if (_entered(anchor.effectiveDateTime, b2)) {
+      idx = 2;
+    } else if (_entered(anchor.effectiveDateTime, b1)) {
+      idx = 1;
     } else {
-      final int fiveDaySeconds = 5 * 24 * 60 * 60;
-      idx = (secondsSinceBase / fiveDaySeconds).floor().clamp(0, 2);
+      idx = 0;
     }
     final Phenology wuHou = candidates.isNotEmpty ? candidates[idx] : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
     var threeYuanNineYun = calculateThreeYuanNineYun(lunar.getYear());
@@ -227,20 +282,70 @@ class SolarLunarDateTimeHelper {
     final DateTime levelingStart = prevStabilizingStart.add(levelingInterval);
     final DateTime levelingEnd = levelingStart.add(levelingInterval);
 
-    final DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
-    final DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+    DateTime jieQiStartAt = jqType == JieQiType.stabilizing ? stabilizingStart : levelingStart;
+    DateTime jieQiEndAt = jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
+
+    (DateTime nextStabilizingStart, String nextStabilizingName) _nextStabilizing(Lunar l) {
+      final next = l.getNextJieQi();
+      return (dateFormat.parse(next.getSolar().toYmdHms()), next.getName());
+    }
+    DateTime nextLevelingStart = levelingStart.add(levelingInterval);
+    bool _sameBucket(DateTime a, DateTime b) {
+      final p = JieQiEntryStrategyStore.current;
+      switch (p) {
+        case JieQiEntryPrecision.second:
+          return false;
+        case JieQiEntryPrecision.minute:
+          return a.year == b.year && a.month == b.month && a.day == b.day && a.hour == b.hour && a.minute == b.minute;
+        case JieQiEntryPrecision.hour:
+          return a.year == b.year && a.month == b.month && a.day == b.day && a.hour == b.hour;
+        case JieQiEntryPrecision.shichen:
+          final (ZiBoundary boundary, ChildHourMode mode) = _mapZiStrategy(ZiStrategyStore.current);
+          int shichenLabel(DateTime t) {
+            final h = t.hour;
+            return boundary == ZiBoundary.at0
+                ? h ~/ 2
+                : (h >= 23 || h == 0) ? 0 : ((h + 1) ~/ 2);
+          }
+          return shichenLabel(a) == shichenLabel(b);
+      }
+    }
+    bool _entered(DateTime anchorTime, DateTime boundaryTime) {
+      final p = JieQiEntryStrategyStore.current;
+      if (p == JieQiEntryPrecision.second) {
+        return anchorTime.isAfter(boundaryTime) || anchorTime.isAtSameMomentAs(boundaryTime);
+      }
+      return _sameBucket(anchorTime, boundaryTime) || anchorTime.isAfter(boundaryTime) || anchorTime.isAtSameMomentAs(boundaryTime);
+    }
+
+    if (jqType == JieQiType.stabilizing) {
+      final (DateTime nextStart, String nextName) = _nextStabilizing(lunar);
+      if (!_entered(anchor.effectiveDateTime, stabilizingStart) && _sameBucket(anchor.effectiveDateTime, stabilizingStart)) {
+        jieQiStartAt = nextStart;
+        jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().next(2).toYmdHms());
+        baseJieQiName = nextName;
+      }
+    } else {
+      if (!_entered(anchor.effectiveDateTime, levelingStart) && _sameBucket(anchor.effectiveDateTime, levelingStart)) {
+        jieQiStartAt = nextLevelingStart;
+        jieQiEndAt = nextLevelingStart.add(levelingInterval);
+        baseJieQiName = TwentyFourJieQi.fromName(baseJieQiName).next.name;
+      }
+    }
 
     // 物候 - 根据策略确定基准
     final DateTime phenologyBaseStart = phStrategy == PhenologyStrategy.stabilizingBased ? stabilizingStart : levelingStart;
     final chosenJieQi = TwentyFourJieQi.fromName(baseJieQiName);
     final List<Phenology> candidates = Phenology.phenologyList.where((p) => p.jieqi == chosenJieQi).toList();
-    int idx;
-    final int secondsSinceBase = anchor.effectiveDateTime.difference(phenologyBaseStart).inSeconds;
-    if (secondsSinceBase <= 0) {
-      idx = 0;
+    final DateTime b1 = phenologyBaseStart.add(const Duration(days: 5));
+    final DateTime b2 = phenologyBaseStart.add(const Duration(days: 10));
+    int idx = 0;
+    if (_entered(anchor.effectiveDateTime, b2)) {
+      idx = 2;
+    } else if (_entered(anchor.effectiveDateTime, b1)) {
+      idx = 1;
     } else {
-      final int fiveDaySeconds = 5 * 24 * 60 * 60;
-      idx = (secondsSinceBase / fiveDaySeconds).floor().clamp(0, 2);
+      idx = 0;
     }
     final Phenology wuHou = candidates.isNotEmpty ? candidates[idx] : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
 
