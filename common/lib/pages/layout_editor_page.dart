@@ -5,6 +5,9 @@ import 'package:common/widgets/pillar_palette.dart';
 import 'package:common/widgets/pillar_card.dart';
 import 'package:flutter/material.dart';
 
+import '../enums/enum_jia_zi.dart';
+import '../models/pillar_preset.dart';
+
 class LayoutEditorPage extends StatefulWidget {
   const LayoutEditorPage({Key? key}) : super(key: key);
 
@@ -102,43 +105,53 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
               child: Column(
                 children: [
                   Expanded(
-                    child: DragTarget<PillarData>(
-                      builder: (context, candidateData, rejectedData) {
-                        return Container(
-                          color: Theme.of(context).scaffoldBackgroundColor,
-                          child: ReorderableListView(
-                            scrollDirection: Axis.horizontal,
-                            children: <Widget>[
-                              for (int index = 0; index < _canvasPillars.length; index += 1)
-                                PillarCard(
-                                  key: Key(_canvasPillars[index].pillarId),
-                                  pillar: _canvasPillars[index],
-                                  onDelete: () {
-                                    setState(() {
-                                      _canvasPillars.removeAt(index);
-                                    });
-                                  },
-                                ),
-                            ],
-                            onReorder: (int oldIndex, int newIndex) {
+              child: DragTarget<Object>(
+                builder: (context, candidateData, rejectedData) {
+                  return Container(
+                    color: Theme.of(context).scaffoldBackgroundColor,
+                    child: ReorderableListView(
+                      scrollDirection: Axis.horizontal,
+                      children: <Widget>[
+                        for (int index = 0; index < _canvasPillars.length; index += 1)
+                          PillarCard(
+                            key: Key(_canvasPillars[index].pillarId),
+                            pillar: _canvasPillars[index],
+                            onDelete: () {
                               setState(() {
-                                if (oldIndex < newIndex) {
-                                  newIndex -= 1;
-                                }
-                                final PillarData item = _canvasPillars.removeAt(oldIndex);
-                                _canvasPillars.insert(newIndex, item);
+                                _canvasPillars.removeAt(index);
                               });
                             },
                           ),
-                        );
-                      },
-                      onAccept: (data) {
+                      ],
+                      onReorder: (int oldIndex, int newIndex) {
                         setState(() {
-                          _canvasPillars.add(data);
+                          if (oldIndex < newIndex) {
+                            newIndex -= 1;
+                          }
+                          final PillarData item = _canvasPillars.removeAt(oldIndex);
+                          _canvasPillars.insert(newIndex, item);
                         });
                       },
                     ),
-                  ),
+                  );
+                },
+                onAccept: (Object data) {
+                  setState(() {
+                    if (data is PillarData) {
+                      _canvasPillars.add(data);
+                    } else if (data is PillarPreset) {
+                      for (final id in (data as PillarPreset).pillarIds) {
+                        _canvasPillars.add(PillarData(
+                          pillarId: id,
+                          label: id, // 或适当标签
+                          jiaZi: JiaZi.JIA_ZI, // 默认值，根据需要调整
+                        ));
+                      }
+                    }
+                  });
+                },
+              ),
+            ),
                   const PillarPalette(),
                 ],
               ),

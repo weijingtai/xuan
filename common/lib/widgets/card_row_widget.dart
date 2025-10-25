@@ -27,7 +27,7 @@ class CardRowWidget extends StatelessWidget {
           ),
           Expanded(
             child: Row(
-              children: cells.map((cell) => Expanded(child: cell)).toList(),
+              children: cells,
             ),
           ),
         ],

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:common/main.dart' as common_app;
 
 void main() {
-  // 直接启动 common 模块的入口
-  common_app.main();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
