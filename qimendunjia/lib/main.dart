@@ -1,69 +1,12 @@
-import 'package:common/common_logger.dart';
-import 'package:common/database/app_database.dart' as db;
-import 'package:common/database/world_info_database.dart' as db;
-import 'package:common/datasource/geo_location_repository.dart';
-import 'package:common/datasource/loca_binary/world_country_repository.dart';
-import 'package:common/viewmodels/dev_enter_page_view_model.dart';
-import 'package:common/viewmodels/timezone_location_viewmodel.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_web_plugins/url_strategy.dart';
-import 'package:provider/provider.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:qimendunjia/navigator.dart';
-import 'package:common/enums.dart';
+import 'package:qimendunjia/di/service_locator.dart';
 
-Future<void> initServices() async {
-  // 初始化时区数据
-  tz.initializeTimeZones();
+void main() {
+  // 初始化依赖注入
+  serviceLocator.init();
 
-  // Web平台使用路径URL策略
-  if (kIsWeb) {
-    usePathUrlStrategy();
-  }
-
-  // 确保Flutter绑定已初始化
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // 记录启动日志
-  CommonLogger().logger.i("奇门遁甲模块已启动");
-}
-
-void main() async {
-  // 初始化服务
-  await initServices();
-
-  // 启动应用
   runApp(const QiMenDunJiaApp());
-  // runApp(
-  //   MultiProvider(
-  //     providers: [],
-  //     // providers: [
-  //     //   // 数据库提供者
-  //     //   Provider<db.AppDatabase>(
-  //     //     create: (ctx) => db.AppDatabase(),
-  //     //     dispose: (ctx, db) => db.close(),
-  //     //   ),
-  //     //   Provider<db.WorldInfoDatabase>(
-  //     //     create: (ctx) => db.WorldInfoDatabase(),
-  //     //     dispose: (ctx, db) => db.close(),
-  //     //   ),
-  //     //   // 开发页面视图模型
-  //     //   ListenableProvider<DevEnterPageViewModel>(
-  //     //     create: (ctx) =>
-  //     //         DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
-  //     //           ..initState(),
-  //     //   ),
-  //     //   // 时区位置视图模型
-  //     //   ListenableProvider<TimezoneLocationViewModel>(
-  //     //     create: (ctx) => TimezoneLocationViewModel(
-  //     //       appFeatureModule: AppFeatureModule.QiMenDunJia,
-  //     //     ),
-  //     //   ),
-  //     // ],
-  //     child: const QiMenDunJiaApp(),
-  //   ),
-  // );
 }
 
 class QiMenDunJiaApp extends StatelessWidget {
@@ -76,17 +19,151 @@ class QiMenDunJiaApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
-        // 可以在这里添加更多主题配置
-        fontFamily: 'NotoSansSC-Regular',
       ),
-      // 设置初始路由为奇门遁甲主页面
-      initialRoute: '/qimendunjia',
-      // 使用项目的导航生成器
-      onGenerateRoute: NavigatorGenerator.generateRoute,
-      // 添加路由观察者用于调试
-      navigatorObservers: [NavigatorGenerator.routeObserver],
-      // 调试横幅设置
       debugShowCheckedModeBanner: false,
+      // 首页：架构选择页面
+      home: const ArchitectureSelectionPage(),
+      onGenerateRoute: NavigatorGenerator.generateRoute,
+      navigatorObservers: [NavigatorGenerator.routeObserver],
+    );
+  }
+}
+
+/// 架构选择页面
+///
+/// 允许用户选择使用传统架构或MVVM+UseCase架构
+class ArchitectureSelectionPage extends StatelessWidget {
+  const ArchitectureSelectionPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('奇门遁甲'),
+        centerTitle: true,
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                '选择应用架构',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                '本应用提供两种架构实现，功能相同',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 48),
+
+              // 旧版架构卡片
+              _buildArchitectureCard(
+                context,
+                title: '传统架构版本',
+                subtitle: 'ViewModel + UI直接通信',
+                description: '• 简单直接的状态管理\n• ViewModel直接处理业务逻辑\n• 适合快速开发和原型验证',
+                color: Colors.blue,
+                icon: Icons.layers,
+                route: '/qimendunjia',
+              ),
+
+              const SizedBox(height: 24),
+
+              // 新版架构卡片
+              _buildArchitectureCard(
+                context,
+                title: 'MVVM+UseCase版本',
+                subtitle: 'Clean Architecture分层架构',
+                description: '• Domain层独立业务逻辑\n• UseCase封装用例场景\n• Repository模式分离数据层',
+                color: Colors.green,
+                icon: Icons.architecture,
+                route: '/qimendunjia/mvvm',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildArchitectureCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required String description,
+    required Color color,
+    required IconData icon,
+    required String route,
+  }) {
+    return Card(
+      elevation: 4,
+      child: InkWell(
+        onTap: () {
+          Navigator.of(context).pushNamed(route);
+        },
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            border: Border.all(color: color.withValues(alpha: 0.3), width: 2),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, size: 48, color: color),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios, color: color),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

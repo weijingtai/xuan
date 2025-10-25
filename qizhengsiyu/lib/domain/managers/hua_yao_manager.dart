@@ -3,6 +3,11 @@ import 'package:common/utils.dart';
 import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart';
 import 'package:qizhengsiyu/domain/services/hua_yao_service.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+<<<<<<<< HEAD:qizhengsiyu/lib/domain/managers/hua_yao_manager.dart
+========
+import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
+>>>>>>>> refactor/74-integrated:qizhengsiyu/lib/managers/hua_yao_manager.dart
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:tuple/tuple.dart';
 

@@ -5,7 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:tuple/tuple.dart';
 
 import 'eleven_stars_info.dart';
-import 'star_angle_speed.dart';
+import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
 
 class PanelStarsInfo {
   final ElevenStarsInfo sun;

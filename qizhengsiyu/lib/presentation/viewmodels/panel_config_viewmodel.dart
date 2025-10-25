@@ -6,8 +6,7 @@ import 'package:qizhengsiyu/enums/enum_panel_ring.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_school.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-
-import '../../domain/entities/models/panel_config.dart';
+import 'package:qizhengsiyu/models/panel_config.dart';
 
 /// 命盘配置视图模型
 ///
@@ -27,7 +26,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   Address? _location;
 
   // 自定义配置
-  late BasePanelConfig _customConfig;
+  late PanelConfig _customConfig;
   BuildContext context;
 
   /// 构造函数
@@ -35,6 +34,8 @@ class PanelConfigViewModel extends ChangeNotifier {
   /// [initialConfig] 初始配置，用于恢复上次的设置
   PanelConfigViewModel(this.context) {
     _customConfig = PanelConfigViewModel.getPreviousPanelConfig();
+    // 如果没有位置信息，设置一个默认地址，避免校验阻塞
+    _location ??= Address.defualtAddress;
     // if (initialConfig != null) {
     //   _configType = initialConfig.configType;
     //   _customConfig = initialConfig.customConfig;
@@ -89,7 +90,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   Address? get location => _location;
 
   /// 获取自定义配置
-  BasePanelConfig get customConfig => _customConfig;
+  PanelConfig get customConfig => _customConfig;
 
   /// 更新配置类型
   void updateQueryType(EnumQueryType configType) {
@@ -112,7 +113,7 @@ class PanelConfigViewModel extends ChangeNotifier {
   }
 
   /// 更新自定义配置
-  void updateCustomConfig(BasePanelConfig customConfig) {
+  void updateCustomConfig(PanelConfig customConfig) {
     _customConfig = customConfig;
   }
 
@@ -148,9 +149,10 @@ class PanelConfigViewModel extends ChangeNotifier {
   }
 
   /// 构建完整的配置对象
-  void buildConfig() {
+  PanelConfig buildConfig() {
+    // 如果位置信息为空，使用默认地址
     if (_location == null) {
-      throw Exception('位置信息不能为空');
+      _location = Address.defualtAddress;
     }
 
     if (_configType == EnumQueryType.destiny && _basicPersonInfo == null) {
@@ -161,19 +163,8 @@ class PanelConfigViewModel extends ChangeNotifier {
       throw Exception('占卜事情模式下，占卜信息不能为空');
     }
 
-    // return PanelConfig(
-    // this.queryType,
-    //   required this.coordinateSystem,
-    //   required this.starInnSystem,
-    //   required this.starInnType,
-    //   required this.schoolType,
-    //   required this.settleLifeType,
-    //   required this.settleBodyType,
-    //   required this.withAscendant,
-    //   required this.huaYaoType,
-    //   required this.panelRingOrder,
-    //   required this.classicBooks
-    // );
+    // 当前版本仅返回自定义配置，后续可融合其他字段
+    return _customConfig;
   }
 
   /// 验证配置是否完整
@@ -186,25 +177,20 @@ class PanelConfigViewModel extends ChangeNotifier {
     }
   }
 
-  static BasePanelConfig getPreviousPanelConfig() {
-    throw UnimplementedError("从数据库中获取");
-    // 从数据库中获取
-    //   return PanelConfig(
-    //       queryType: EnumQueryType.destiny,
-    //       coordinateSystem: CoordinateSystemType.Ecliptic,
-    //       starInnSystem: PanelSystem.Tropical,
-    //       starInnType: StarInnType.Mordern,
-    //       schoolType: EnumSchoolType.GuoLao,
-    //       settleLifeType: EnumSettleLifeType.Mao,
-    //       settleBodyType: EnumSettleBodyType.TiaYin,
-    //       withAscendant: false,
-    //       huaYaoType: EnumHuaYaoType.Both,
-    //       uiPanelRingOrder: UIEnumPanelRing.moria,
-    //       classicBooks: ["《果老星宗》"]);
-    //
+  static PanelConfig getPreviousPanelConfig() {
+    // TODO: 从数据库恢复用户上次配置；当前返回默认配置
+    return PanelConfig(
+      celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
+      houseDivisionSystem: HouseDivisionSystem.equal,
+      panelSystemType: PanelSystemType.tropical,
+      constellationSystemType: ConstellationSystemType.classical,
+      settleLifeType: EnumSettleLifeType.Mao,
+      settleBodyType: EnumSettleBodyType.moon,
+      islifeGongBySunRealTimeLocation: true,
+    );
   }
 
-  BasePanelConfig getCustomConfig() {
+  PanelConfig getCustomConfig() {
     return _customConfig;
   }
 

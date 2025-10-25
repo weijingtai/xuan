@@ -61,14 +61,14 @@ dependencies:
   common:
     path: ./common
 
-  qimendunjia:
-    path: ./qimendunjia
+  # qimendunjia:
+  #   path: ./qimendunjia
   qizhengsiyu:
     path: ./qizhengsiyu
-  taiyishenshu:
-    path: ./taiyishenshu
-  daliuren:
-    path: ./daliuren
+  # taiyishenshu:
+  #   path: ./taiyishenshu
+  # daliuren:
+  #   path: ./daliuren
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -76,7 +76,7 @@ dependencies:
   cupertino_icons: ^1.0.5
   dotlottie_loader: ^0.0.4
   auto_size_text: ^3.0.0
-  flutter_sliding_toast: ^1.4.2
+  flutter_sliding_toast: ^1.5.2
   flutter_animate: 4.5.0
   timezone: ^0.10.0
   lat_lng_to_timezone: ^0.2.0

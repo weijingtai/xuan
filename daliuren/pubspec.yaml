@@ -43,7 +43,7 @@ dependencies:
   json_serializable: ^6.8.0
   json_annotation: ^4.9.0
   board_datetime_picker: 2.1.0
-  flutter_sliding_toast: ^1.4.2
+  flutter_sliding_toast: ^1.5.2
   common:
     path: ../common
   drift_dev: ^2.27.0

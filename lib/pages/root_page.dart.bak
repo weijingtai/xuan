@@ -11,11 +11,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:lottie/lottie.dart';
 import 'package:lunar/calendar/Lunar.dart';
-// import 'package:qimendunjia/model/ten_gan_ke_ying.dart';
-// import 'package:qimendunjia/model/ten_gan_ke_ying_ge_ju.dart';
-// import 'package:qimendunjia/utils/constant_ui_resources_of_qi_men.dart';
-// import 'package:qimendunjia/widgets/ten_gan_ke_ying_yin_zhang.dart';
-
 class RootPage extends StatefulWidget {
   double defaultEachGongWidth = 256;
   RootPage({super.key});
@@ -615,501 +610,501 @@ class _RootPageState extends State<RootPage>
     ]);
   }
 
-  // Widget _gong(
-  //     double cardSize, bool showHint, bool withYinGan, bool withAnGan) {
-  //   bool displayGeJu = false;
-  //   bool displayTenGanKeYing = false;
-  //   return ValueListenableBuilder(
-  //       valueListenable: cardPaddingSizeNotifier,
-  //       builder: (context, paddingSize, _) {
-  //         // double paddingSideWidth = paddingSize;
-  //         double paddingSideWidth = cardSize * .08;
-  //         if (paddingSideWidth < 12) {
-  //           paddingSideWidth = 0;
-  //         }
-  //         double centerWidth = cardSize - paddingSideWidth * 2;
-  //         double centerBoxWidth = (cardSize * 0.4) * .7;
-  //         double centerSideWidth = (cardSize * 0.4) * .25 * 1.6;
-  //
-  //         double fontSize = (cardSize * 0.4) * .3;
-  //         if (fontSize < 16) {
-  //           fontSize = 16;
-  //         }
-  //         double yinAnGanfontSize = fontSize * .8;
-  //         // double yinAnGanHintFontSize = yinAnGanfontSize *.5;
-  //         double hintFontSize = yinAnGanfontSize * .5;
-  //         double yinAnGanHintFontSize = hintFontSize;
-  //
-  //         Duration duration = Duration(milliseconds: 400);
-  //         return AnimatedContainer(
-  //           duration: Duration.zero,
-  //           width: cardSize,
-  //           height: cardSize,
-  //           decoration: BoxDecoration(
-  //             borderRadius: BorderRadius.circular(24),
-  //           ),
-  //           child: Stack(
-  //             children: [
-  //               Row(
-  //                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                 crossAxisAlignment: CrossAxisAlignment.center,
-  //                 children: [
-  //                   Container(
-  //                     width: paddingSideWidth,
-  //                     height: cardSize,
-  //                     // color: Colors.blue.withOpacity(.2),
-  //                     alignment: Alignment.centerRight,
-  //                     // margin: EdgeInsets.symmetric(vertical: paddingSideWidth),
-  //                     child: AnimatedSwitcher(
-  //                       duration: Duration(milliseconds: 200),
-  //                       child: paddingSideWidth < 10
-  //                           ? Container()
-  //                           : AutoSizeText(
-  //                               "卯",
-  //                               style: ConstantUiResourcesOfQiMen
-  //                                   .twelveDiZhiTextStyle
-  //                                   .copyWith(fontSize: paddingSideWidth),
-  //                               minFontSize: 10,
-  //                               maxFontSize: 32,
-  //                             ),
-  //                     ),
-  //                   ),
-  //                   SizedBox(
-  //                     // color: Colors.orange.withOpacity(.1),
-  //                     // width: centerBoxWidth + centerSideWidth * 2,
-  //                     // width: isHor?centerWidth:centerWidth+yinAnGanfontSize+yinAnGanHintFontSize,
-  //                     width: centerWidth,
-  //                     height: cardSize,
-  //                     // color: Colors.yellow.withOpacity(.1),
-  //                     child: Column(
-  //                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //                       crossAxisAlignment: CrossAxisAlignment.center,
-  //                       children: [
-  //                         Container(
-  //                           width: centerWidth,
-  //                           height: paddingSideWidth,
-  //                           // color: Colors.red.withOpacity(.1),
-  //                           alignment: Alignment.bottomCenter,
-  //                           child: AnimatedSwitcher(
-  //                             duration: Duration(milliseconds: 200),
-  //                             child: paddingSideWidth < 10
-  //                                 ? Container()
-  //                                 : AutoSizeText(
-  //                                     "午",
-  //                                     style: ConstantUiResourcesOfQiMen
-  //                                         .twelveDiZhiTextStyle
-  //                                         .copyWith(fontSize: paddingSideWidth),
-  //                                     minFontSize: 10,
-  //                                     maxFontSize: 32,
-  //                                   ),
-  //                           ),
-  //                         ),
-  //                         Container(
-  //                           // color: Colors.orange.withOpacity(.1),
-  //                           // width: centerWidth,
-  //                           // height: centerWidth,
-  //                           // height: cardSize - paddingSideWidth * 2,
-  //                           child: ValueListenableBuilder(
-  //                               valueListenable: isHorNotifier,
-  //                               builder: (ctx, isHorOld, _) {
-  //                                 bool isHor =
-  //                                     (centerBoxWidth + centerSideWidth * 2) <=
-  //                                         120;
-  //                                 // print("${(centerBoxWidth + centerSideWidth *2)} --- $isHor");
-  //                                 return Stack(
-  //                                   alignment: Alignment.center,
-  //                                   children: [
-  //                                     // Positioned(
-  //                                     //   left: 0,
-  //                                     //   child:
-  //                                     // ),
-  //                                     Container(
-  //                                       // width: centerBoxWidth + centerSideWidth *2,
-  //                                       // height: centerBoxWidth + centerSideWidth *2 + fontSize * .6,
-  //                                       // color: Colors.black54.withOpacity(.1),
-  //                                       child: Row(
-  //                                         mainAxisAlignment:
-  //                                             MainAxisAlignment.center,
-  //                                         children: [
-  //                                           AnimatedContainer(
-  //                                             duration:
-  //                                                 Duration(milliseconds: 400),
-  //                                             // height: isHor?centerWidth * .6:,
-  //                                             // color: Colors.green.withOpacity(.1),
-  //                                             width: isHor
-  //                                                 ? centerSideWidth
-  //                                                 : yinAnGanfontSize,
-  //                                             alignment: isHor
-  //                                                 ? Alignment.center
-  //                                                 : Alignment.centerLeft,
-  //                                             child: Column(
-  //                                               mainAxisAlignment:
-  //                                                   MainAxisAlignment
-  //                                                       .spaceAround,
-  //                                               crossAxisAlignment:
-  //                                                   CrossAxisAlignment.center,
-  //                                               children: [
-  //                                                 yinAnGan(
-  //                                                     TianGan.DING,
-  //                                                     "天暗",
-  //                                                     TwelveZhangSheng.DI_WANG,
-  //                                                     TwelveZhangSheng.SI,
-  //                                                     yinAnGanfontSize,
-  //                                                     yinAnGanHintFontSize,
-  //                                                     isHor,
-  //                                                     showHint,
-  //                                                     duration),
-  //                                                 yinAnGan(
-  //                                                     TianGan.XIN,
-  //                                                     "隐干",
-  //                                                     TwelveZhangSheng.LIN_GUAN,
-  //                                                     TwelveZhangSheng.MU,
-  //                                                     yinAnGanfontSize,
-  //                                                     yinAnGanHintFontSize,
-  //                                                     isHor,
-  //                                                     showHint,
-  //                                                     duration),
-  //                                                 yinAnGan(
-  //                                                     TianGan.BING,
-  //                                                     "人暗",
-  //                                                     TwelveZhangSheng.LIN_GUAN,
-  //                                                     TwelveZhangSheng.LIN_GUAN,
-  //                                                     yinAnGanfontSize,
-  //                                                     yinAnGanHintFontSize,
-  //                                                     isHor,
-  //                                                     showHint,
-  //                                                     duration),
-  //                                               ],
-  //                                             ),
-  //                                           ),
-  //                                           AnimatedContainer(
-  //                                             duration: duration,
-  //                                             // height: centerWidth,
-  //                                             // height: centerBoxWidth + centerSideWidth *2 + fontSize * .6,
-  //                                             // width: isHor?centerBoxWidth:centerBoxWidth+yinAnGanfontSize,
-  //                                             // width: isHor?centerBoxWidth+fontSize:centerBoxWidth+fontSize,
-  //                                             width: fontSize * 3,
-  //                                             alignment: Alignment.centerLeft,
-  //                                             // color: Colors.red.withOpacity(.9),
-  //                                             // margin: EdgeInsets.only(left: isHor?centerSideWidth:yinAnGanfontSize),
-  //                                             child: Column(
-  //                                               mainAxisAlignment:
-  //                                                   MainAxisAlignment
-  //                                                       .spaceBetween,
-  //                                               crossAxisAlignment:
-  //                                                   CrossAxisAlignment.start,
-  //                                               children: [
-  //                                                 Container(
-  //                                                   // width: centerBoxWidth+fontSize,
-  //                                                   width: fontSize * 3,
-  //                                                   alignment: Alignment.center,
-  //                                                   // color:Colors.blue.withOpacity(.2),
-  //                                                   child: _gods(
-  //                                                       "值符",
-  //                                                       fontSize * 2,
-  //                                                       fontSize * .75 * .5,
-  //                                                       showHint: showHint),
-  //                                                 ),
-  //                                                 SizedBox(
-  //                                                     // width: centerBoxWidth+fontSize,
-  //                                                     width: fontSize * 3,
-  //                                                     // color: Colors.blue.withOpacity(.1),
-  //                                                     child: _stars(
-  //                                                         "天芮",
-  //                                                         fontSize * 2,
-  //                                                         fontSize * .5,
-  //                                                         true,
-  //                                                         isHor,
-  //                                                         showHint: showHint)),
-  //                                                 Container(
-  //                                                     // width: centerBoxWidth+fontSize,
-  //                                                     width: fontSize * 3,
-  //                                                     alignment:
-  //                                                         Alignment.center,
-  //                                                     // color: Colors.blue.withOpacity(.1),
-  //                                                     child: Column(
-  //                                                       children: [
-  //                                                         // _doors("休门",fontSize* 2,fontSize * .5,showHint: showHint),
-  //                                                         _doors(
-  //                                                             "休门",
-  //                                                             fontSize * 2,
-  //                                                             fontSize *
-  //                                                                 .75 *
-  //                                                                 .5,
-  //                                                             showHint:
-  //                                                                 showHint),
-  //                                                         Text("值符",
-  //                                                             style: ConstantUiResourcesOfQiMen
-  //                                                                 .nineStarTextStyle
-  //                                                                 .copyWith(
-  //                                                                     fontSize:
-  //                                                                         fontSize *
-  //                                                                             .6,
-  //                                                                     color: Colors
-  //                                                                         .grey
-  //                                                                         .withOpacity(
-  //                                                                             .8)))
-  //                                                       ],
-  //                                                     ))
-  //                                               ],
-  //                                             ),
-  //                                           ),
-  //                                           Container(
-  //                                             // AnimatedContainer(
-  //                                             //   duration: duration,
-  //                                             //   color: Colors.green.withOpacity(.1),
-  //                                             // height: isHor?centerWidth * .5:centerWidth,
-  //                                             // width: centerSideWidth,
-  //                                             child: Column(
-  //                                               mainAxisAlignment:
-  //                                                   MainAxisAlignment
-  //                                                       .spaceAround,
-  //                                               crossAxisAlignment:
-  //                                                   CrossAxisAlignment.center,
-  //                                               children: [
-  //                                                 tianDiPanGanMarked(
-  //                                                     TianGan.DING,
-  //                                                     TwelveZhangSheng.BING,
-  //                                                     TwelveZhangSheng.DI_WANG,
-  //                                                     fontSize,
-  //                                                     hintFontSize,
-  //                                                     showHint,
-  //                                                     TianGan.DING,
-  //                                                     TwelveZhangSheng.BING,
-  //                                                     TwelveZhangSheng.DI_WANG),
-  //                                                 SizedBox(
-  //                                                   height: 4,
-  //                                                 ),
-  //                                                 tianDiPanGanMarked(
-  //                                                     TianGan.GENG,
-  //                                                     TwelveZhangSheng.BING,
-  //                                                     TwelveZhangSheng.DI_WANG,
-  //                                                     fontSize,
-  //                                                     hintFontSize,
-  //                                                     showHint,
-  //                                                     TianGan.DING,
-  //                                                     TwelveZhangSheng.BING,
-  //                                                     TwelveZhangSheng.DI_WANG,
-  //                                                     isTianPan: false),
-  //                                               ],
-  //                                             ),
-  //                                           )
-  //                                         ],
-  //                                       ),
-  //                                     ),
-  //                                   ],
-  //                                 );
-  //                               }),
-  //                         ),
-  //                         Container(
-  //                           width: centerWidth,
-  //                           height: paddingSideWidth,
-  //                           // color: Colors.orange.withOpacity(.1),
-  //                           alignment: Alignment.topCenter,
-  //                           child: AnimatedSwitcher(
-  //                             duration: Duration(milliseconds: 200),
-  //                             child: paddingSideWidth < 10
-  //                                 ? Container()
-  //                                 : AutoSizeText(
-  //                                     "子",
-  //                                     style: ConstantUiResourcesOfQiMen
-  //                                         .twelveDiZhiTextStyle
-  //                                         .copyWith(fontSize: paddingSideWidth),
-  //                                     minFontSize: 10,
-  //                                     maxFontSize: 32,
-  //                                   ),
-  //                           ),
-  //                         ),
-  //                       ],
-  //                     ),
-  //                   ),
-  //                   Container(
-  //                     width: paddingSideWidth,
-  //                     height: cardSize,
-  //                     // color: Colors.blue.withOpacity(.2),
-  //                     alignment: Alignment.centerLeft,
-  //                     margin: EdgeInsets.symmetric(vertical: paddingSize),
-  //                     child: AnimatedSwitcher(
-  //                       duration: Duration(milliseconds: 200),
-  //                       child: paddingSideWidth < 10
-  //                           ? Container()
-  //                           : AutoSizeText(
-  //                               "酉",
-  //                               style: ConstantUiResourcesOfQiMen
-  //                                   .twelveDiZhiTextStyle
-  //                                   .copyWith(fontSize: paddingSideWidth),
-  //                               minFontSize: 10,
-  //                               maxFontSize: 32,
-  //                             ),
-  //                     ),
-  //                   ),
-  //                 ],
-  //               ),
-  //               if (displayTenGanKeYing)
-  //                 AnimatedPositioned(
-  //                   left: paddingSideWidth * .5,
-  //                   top: paddingSideWidth * .5,
-  //                   duration: Duration(milliseconds: 200),
-  //                   child: Container(
-  //                     width: 52,
-  //                     height: 52,
-  //                     decoration: BoxDecoration(
-  //                         image: DecorationImage(
-  //                             image: AssetImage("assets/icons/yin_zhang.png"),
-  //                             colorFilter: ColorFilter.mode(
-  //                                 Color.fromRGBO(176, 31, 36, .8),
-  //                                 BlendMode.srcIn),
-  //                             fit: BoxFit.cover)),
-  //                     child: Row(
-  //                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                       crossAxisAlignment: CrossAxisAlignment.center,
-  //                       children: [
-  //                         Column(
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           children: [
-  //                             // Text("朱",style: TextStyle(fontSize: 52 * .3,color: Colors.white),),
-  //                             Text("朱",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             Text("雀",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             // Text("雀",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
-  //                           ],
-  //                         ),
-  //                         Column(
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           children: [
-  //                             // Text("投",style: TextStyle(fontSize: 52 * .3,color: Colors.white)),
-  //                             // Text("江",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
-  //                             Text("投",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             Text("江",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                           ],
-  //                         )
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //               if (displayTenGanKeYing)
-  //                 AnimatedPositioned(
-  //                   left: paddingSideWidth * .5,
-  //                   top: paddingSideWidth * .5,
-  //                   duration: Duration(milliseconds: 200),
-  //                   child: Container(
-  //                     width: 52,
-  //                     height: 52,
-  //                     decoration: BoxDecoration(
-  //                         image: DecorationImage(
-  //                             image: AssetImage("assets/icons/yin_zhang.png"),
-  //                             colorFilter: ColorFilter.mode(
-  //                                 Color.fromRGBO(176, 31, 36, .8),
-  //                                 BlendMode.srcIn),
-  //                             fit: BoxFit.cover)),
-  //                     child: Row(
-  //                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                       crossAxisAlignment: CrossAxisAlignment.center,
-  //                       children: [
-  //                         Column(
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           children: [
-  //                             // Text("朱",style: TextStyle(fontSize: 52 * .3,color: Colors.white),),
-  //                             Text("朱",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             Text("雀",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             // Text("雀",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
-  //                           ],
-  //                         ),
-  //                         Column(
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           children: [
-  //                             // Text("投",style: TextStyle(fontSize: 52 * .3,color: Colors.white)),
-  //                             // Text("江",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
-  //                             Text("投",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                             Text("江",
-  //                                 style: ConstantUiResourcesOfQiMen
-  //                                     .eightSkyDoorTextStyle
-  //                                     .copyWith(
-  //                                         fontSize: 52 * .3,
-  //                                         color: Colors.white)),
-  //                           ],
-  //                         )
-  //                       ],
-  //                     ),
-  //                   ),
-  //                 ),
-  //               if (displayGeJu)
-  //                 AnimatedPositioned(
-  //                     // left: paddingSideWidth * .5,
-  //                     // bottom: paddingSideWidth* .5,
-  //                     bottom: paddingSideWidth * .5,
-  //                     left: 0,
-  //                     duration: Duration(milliseconds: 200),
-  //                     child: Transform.scale(
-  //                         scale: 1,
-  //                         // child: Container(
-  //                         // color: Colors.redAccent,
-  //                         child: ge_ju_template_small(
-  //                             "天运昌气",
-  //                             Color.fromRGBO(59, 78, 61, 1),
-  //                             Color.fromRGBO(240, 167, 46, 1)))
-  //                     // ),
-  //                     ),
-  //               if (displayGeJu)
-  //                 AnimatedPositioned(
-  //                     // left: paddingSideWidth * .5,
-  //                     // bottom: paddingSideWidth* .5,
-  //                     bottom: paddingSideWidth * .5,
-  //                     right: 0,
-  //                     duration: Duration(milliseconds: 200),
-  //                     child: Transform.scale(
-  //                         scale: 1,
-  //                         // child: Container(
-  //                         // color: Colors.redAccent,
-  //                         child: ge_ju_template_small(
-  //                             "天辅吉时",
-  //                             Color.fromRGBO(25, 44, 59, 1),
-  //                             Color.fromRGBO(176, 132, 88, 1)))
-  //                     // ),
-  //                     )
-  //             ],
-  //           ),
-  //         );
-  //       });
-  // }
+  Widget _gong(
+      double cardSize, bool showHint, bool withYinGan, bool withAnGan) {
+    bool displayGeJu = false;
+    bool displayTenGanKeYing = false;
+    return ValueListenableBuilder(
+        valueListenable: cardPaddingSizeNotifier,
+        builder: (context, paddingSize, _) {
+          // double paddingSideWidth = paddingSize;
+          double paddingSideWidth = cardSize * .08;
+          if (paddingSideWidth < 12) {
+            paddingSideWidth = 0;
+          }
+          double centerWidth = cardSize - paddingSideWidth * 2;
+          double centerBoxWidth = (cardSize * 0.4) * .7;
+          double centerSideWidth = (cardSize * 0.4) * .25 * 1.6;
+
+          double fontSize = (cardSize * 0.4) * .3;
+          if (fontSize < 16) {
+            fontSize = 16;
+          }
+          double yinAnGanfontSize = fontSize * .8;
+          // double yinAnGanHintFontSize = yinAnGanfontSize *.5;
+          double hintFontSize = yinAnGanfontSize * .5;
+          double yinAnGanHintFontSize = hintFontSize;
+
+          Duration duration = Duration(milliseconds: 400);
+          return AnimatedContainer(
+            duration: Duration.zero,
+            width: cardSize,
+            height: cardSize,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: Stack(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: paddingSideWidth,
+                      height: cardSize,
+                      // color: Colors.blue.withOpacity(.2),
+                      alignment: Alignment.centerRight,
+                      // margin: EdgeInsets.symmetric(vertical: paddingSideWidth),
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 200),
+                        child: paddingSideWidth < 10
+                            ? Container()
+                            : AutoSizeText(
+                                "卯",
+                                style: ConstantUiResourcesOfQiMen
+                                    .twelveDiZhiTextStyle
+                                    .copyWith(fontSize: paddingSideWidth),
+                                minFontSize: 10,
+                                maxFontSize: 32,
+                              ),
+                      ),
+                    ),
+                    SizedBox(
+                      // color: Colors.orange.withOpacity(.1),
+                      // width: centerBoxWidth + centerSideWidth * 2,
+                      // width: isHor?centerWidth:centerWidth+yinAnGanfontSize+yinAnGanHintFontSize,
+                      width: centerWidth,
+                      height: cardSize,
+                      // color: Colors.yellow.withOpacity(.1),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: centerWidth,
+                            height: paddingSideWidth,
+                            // color: Colors.red.withOpacity(.1),
+                            alignment: Alignment.bottomCenter,
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 200),
+                              child: paddingSideWidth < 10
+                                  ? Container()
+                                  : AutoSizeText(
+                                      "午",
+                                      style: ConstantUiResourcesOfQiMen
+                                          .twelveDiZhiTextStyle
+                                          .copyWith(fontSize: paddingSideWidth),
+                                      minFontSize: 10,
+                                      maxFontSize: 32,
+                                    ),
+                            ),
+                          ),
+                          Container(
+                            // color: Colors.orange.withOpacity(.1),
+                            // width: centerWidth,
+                            // height: centerWidth,
+                            // height: cardSize - paddingSideWidth * 2,
+                            child: ValueListenableBuilder(
+                                valueListenable: isHorNotifier,
+                                builder: (ctx, isHorOld, _) {
+                                  bool isHor =
+                                      (centerBoxWidth + centerSideWidth * 2) <=
+                                          120;
+                                  // print("${(centerBoxWidth + centerSideWidth *2)} --- $isHor");
+                                  return Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      // Positioned(
+                                      //   left: 0,
+                                      //   child:
+                                      // ),
+                                      Container(
+                                        // width: centerBoxWidth + centerSideWidth *2,
+                                        // height: centerBoxWidth + centerSideWidth *2 + fontSize * .6,
+                                        // color: Colors.black54.withOpacity(.1),
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            AnimatedContainer(
+                                              duration:
+                                                  Duration(milliseconds: 400),
+                                              // height: isHor?centerWidth * .6:,
+                                              // color: Colors.green.withOpacity(.1),
+                                              width: isHor
+                                                  ? centerSideWidth
+                                                  : yinAnGanfontSize,
+                                              alignment: isHor
+                                                  ? Alignment.center
+                                                  : Alignment.centerLeft,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  yinAnGan(
+                                                      TianGan.DING,
+                                                      "天暗",
+                                                      TwelveZhangSheng.DI_WANG,
+                                                      TwelveZhangSheng.SI,
+                                                      yinAnGanfontSize,
+                                                      yinAnGanHintFontSize,
+                                                      isHor,
+                                                      showHint,
+                                                      duration),
+                                                  yinAnGan(
+                                                      TianGan.XIN,
+                                                      "隐干",
+                                                      TwelveZhangSheng.LIN_GUAN,
+                                                      TwelveZhangSheng.MU,
+                                                      yinAnGanfontSize,
+                                                      yinAnGanHintFontSize,
+                                                      isHor,
+                                                      showHint,
+                                                      duration),
+                                                  yinAnGan(
+                                                      TianGan.BING,
+                                                      "人暗",
+                                                      TwelveZhangSheng.LIN_GUAN,
+                                                      TwelveZhangSheng.LIN_GUAN,
+                                                      yinAnGanfontSize,
+                                                      yinAnGanHintFontSize,
+                                                      isHor,
+                                                      showHint,
+                                                      duration),
+                                                ],
+                                              ),
+                                            ),
+                                            AnimatedContainer(
+                                              duration: duration,
+                                              // height: centerWidth,
+                                              // height: centerBoxWidth + centerSideWidth *2 + fontSize * .6,
+                                              // width: isHor?centerBoxWidth:centerBoxWidth+yinAnGanfontSize,
+                                              // width: isHor?centerBoxWidth+fontSize:centerBoxWidth+fontSize,
+                                              width: fontSize * 3,
+                                              alignment: Alignment.centerLeft,
+                                              // color: Colors.red.withOpacity(.9),
+                                              // margin: EdgeInsets.only(left: isHor?centerSideWidth:yinAnGanfontSize),
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Container(
+                                                    // width: centerBoxWidth+fontSize,
+                                                    width: fontSize * 3,
+                                                    alignment: Alignment.center,
+                                                    // color:Colors.blue.withOpacity(.2),
+                                                    child: _gods(
+                                                        "值符",
+                                                        fontSize * 2,
+                                                        fontSize * .75 * .5,
+                                                        showHint: showHint),
+                                                  ),
+                                                  SizedBox(
+                                                      // width: centerBoxWidth+fontSize,
+                                                      width: fontSize * 3,
+                                                      // color: Colors.blue.withOpacity(.1),
+                                                      child: _stars(
+                                                          "天芮",
+                                                          fontSize * 2,
+                                                          fontSize * .5,
+                                                          true,
+                                                          isHor,
+                                                          showHint: showHint)),
+                                                  Container(
+                                                      // width: centerBoxWidth+fontSize,
+                                                      width: fontSize * 3,
+                                                      alignment:
+                                                          Alignment.center,
+                                                      // color: Colors.blue.withOpacity(.1),
+                                                      child: Column(
+                                                        children: [
+                                                          // _doors("休门",fontSize* 2,fontSize * .5,showHint: showHint),
+                                                          _doors(
+                                                              "休门",
+                                                              fontSize * 2,
+                                                              fontSize *
+                                                                  .75 *
+                                                                  .5,
+                                                              showHint:
+                                                                  showHint),
+                                                          Text("值符",
+                                                              style: ConstantUiResourcesOfQiMen
+                                                                  .nineStarTextStyle
+                                                                  .copyWith(
+                                                                      fontSize:
+                                                                          fontSize *
+                                                                              .6,
+                                                                      color: Colors
+                                                                          .grey
+                                                                          .withOpacity(
+                                                                              .8)))
+                                                        ],
+                                                      ))
+                                                ],
+                                              ),
+                                            ),
+                                            Container(
+                                              // AnimatedContainer(
+                                              //   duration: duration,
+                                              //   color: Colors.green.withOpacity(.1),
+                                              // height: isHor?centerWidth * .5:centerWidth,
+                                              // width: centerSideWidth,
+                                              child: Column(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceAround,
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.center,
+                                                children: [
+                                                  tianDiPanGanMarked(
+                                                      TianGan.DING,
+                                                      TwelveZhangSheng.BING,
+                                                      TwelveZhangSheng.DI_WANG,
+                                                      fontSize,
+                                                      hintFontSize,
+                                                      showHint,
+                                                      TianGan.DING,
+                                                      TwelveZhangSheng.BING,
+                                                      TwelveZhangSheng.DI_WANG),
+                                                  SizedBox(
+                                                    height: 4,
+                                                  ),
+                                                  tianDiPanGanMarked(
+                                                      TianGan.GENG,
+                                                      TwelveZhangSheng.BING,
+                                                      TwelveZhangSheng.DI_WANG,
+                                                      fontSize,
+                                                      hintFontSize,
+                                                      showHint,
+                                                      TianGan.DING,
+                                                      TwelveZhangSheng.BING,
+                                                      TwelveZhangSheng.DI_WANG,
+                                                      isTianPan: false),
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }),
+                          ),
+                          Container(
+                            width: centerWidth,
+                            height: paddingSideWidth,
+                            // color: Colors.orange.withOpacity(.1),
+                            alignment: Alignment.topCenter,
+                            child: AnimatedSwitcher(
+                              duration: Duration(milliseconds: 200),
+                              child: paddingSideWidth < 10
+                                  ? Container()
+                                  : AutoSizeText(
+                                      "子",
+                                      style: ConstantUiResourcesOfQiMen
+                                          .twelveDiZhiTextStyle
+                                          .copyWith(fontSize: paddingSideWidth),
+                                      minFontSize: 10,
+                                      maxFontSize: 32,
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: paddingSideWidth,
+                      height: cardSize,
+                      // color: Colors.blue.withOpacity(.2),
+                      alignment: Alignment.centerLeft,
+                      margin: EdgeInsets.symmetric(vertical: paddingSize),
+                      child: AnimatedSwitcher(
+                        duration: Duration(milliseconds: 200),
+                        child: paddingSideWidth < 10
+                            ? Container()
+                            : AutoSizeText(
+                                "酉",
+                                style: ConstantUiResourcesOfQiMen
+                                    .twelveDiZhiTextStyle
+                                    .copyWith(fontSize: paddingSideWidth),
+                                minFontSize: 10,
+                                maxFontSize: 32,
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (displayTenGanKeYing)
+                  AnimatedPositioned(
+                    left: paddingSideWidth * .5,
+                    top: paddingSideWidth * .5,
+                    duration: Duration(milliseconds: 200),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage("assets/icons/yin_zhang.png"),
+                              colorFilter: ColorFilter.mode(
+                                  Color.fromRGBO(176, 31, 36, .8),
+                                  BlendMode.srcIn),
+                              fit: BoxFit.cover)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Text("朱",style: TextStyle(fontSize: 52 * .3,color: Colors.white),),
+                              Text("朱",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              Text("雀",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              // Text("雀",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Text("投",style: TextStyle(fontSize: 52 * .3,color: Colors.white)),
+                              // Text("江",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
+                              Text("投",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              Text("江",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                if (displayTenGanKeYing)
+                  AnimatedPositioned(
+                    left: paddingSideWidth * .5,
+                    top: paddingSideWidth * .5,
+                    duration: Duration(milliseconds: 200),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage("assets/icons/yin_zhang.png"),
+                              colorFilter: ColorFilter.mode(
+                                  Color.fromRGBO(176, 31, 36, .8),
+                                  BlendMode.srcIn),
+                              fit: BoxFit.cover)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Text("朱",style: TextStyle(fontSize: 52 * .3,color: Colors.white),),
+                              Text("朱",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              Text("雀",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              // Text("雀",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
+                            ],
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              // Text("投",style: TextStyle(fontSize: 52 * .3,color: Colors.white)),
+                              // Text("江",style: TextStyle(fontSize: 52 * .3,color: Colors.white))
+                              Text("投",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                              Text("江",
+                                  style: ConstantUiResourcesOfQiMen
+                                      .eightSkyDoorTextStyle
+                                      .copyWith(
+                                          fontSize: 52 * .3,
+                                          color: Colors.white)),
+                            ],
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                if (displayGeJu)
+                  AnimatedPositioned(
+                      // left: paddingSideWidth * .5,
+                      // bottom: paddingSideWidth* .5,
+                      bottom: paddingSideWidth * .5,
+                      left: 0,
+                      duration: Duration(milliseconds: 200),
+                      child: Transform.scale(
+                          scale: 1,
+                          // child: Container(
+                          // color: Colors.redAccent,
+                          child: ge_ju_template_small(
+                              "天运昌气",
+                              Color.fromRGBO(59, 78, 61, 1),
+                              Color.fromRGBO(240, 167, 46, 1)))
+                      // ),
+                      ),
+                if (displayGeJu)
+                  AnimatedPositioned(
+                      // left: paddingSideWidth * .5,
+                      // bottom: paddingSideWidth* .5,
+                      bottom: paddingSideWidth * .5,
+                      right: 0,
+                      duration: Duration(milliseconds: 200),
+                      child: Transform.scale(
+                          scale: 1,
+                          // child: Container(
+                          // color: Colors.redAccent,
+                          child: ge_ju_template_small(
+                              "天辅吉时",
+                              Color.fromRGBO(25, 44, 59, 1),
+                              Color.fromRGBO(176, 132, 88, 1)))
+                      // ),
+                      )
+              ],
+            ),
+          );
+        });
+  }
 
   Widget tianDiPanGanMarked(
       TianGan gan,

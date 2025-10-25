@@ -12,7 +12,6 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../enums/enum_panel_system_type.dart';
 import '../../enums/enum_qi_zheng.dart';
 import '../../enums/enum_settle_life_body.dart';
-import '../../presentation/widgets/rings/shen_sha_item.dart';
 import '../../utils/star_enter_info_calculator.dart';
 import '../entities/models/base_panel_model.dart';
 import '../entities/models/body_life_model.dart';
@@ -37,7 +36,6 @@ class GenerateBasePanelService {
 
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
-
 
   GenerateBasePanelService(
       {required this.panelConfig,
@@ -83,8 +81,7 @@ class GenerateBasePanelService {
 
     final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
-      return MapEntry(
-          key, value.map((e) => e).toList());
+      return MapEntry(key, value.map((e) => e).toList());
     });
 
     // 将神煞从ShenSha 处理成 String
@@ -139,10 +136,11 @@ class GenerateBasePanelService {
   }
 
   Future<PassageYearPanelModel> calculateDaXia(
-      BasePanelModel basePanel, ObserverPosition daXianObserver, {
-      required ZhouTianModel zhouTianModel,
-      required Map<EnumStars, StarAngleSpeed> starAngleMapper,
-    }) async {
+    BasePanelModel basePanel,
+    ObserverPosition daXianObserver, {
+    required ZhouTianModel zhouTianModel,
+    required Map<EnumStars, StarAngleSpeed> starAngleMapper,
+  }) async {
     // 大限与 计算星命基础命盘一样，但是不计算 四主 与 命理十二宫的位置。
     // 在计算神煞时则是借用原局的命宫等位置进行计算
 
@@ -168,8 +166,7 @@ class GenerateBasePanelService {
             daXianObserver.isDayBirth);
     final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
-      return MapEntry(
-          key, value.map((e) => e).toList());
+      return MapEntry(key, value.map((e) => e).toList());
     });
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = await huaYaoManager.calculate(
