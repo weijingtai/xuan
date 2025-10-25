@@ -195,17 +195,15 @@ class TemplateBoardView extends StatelessWidget {
                 },
                 itemBuilder: (context, index) {
                   final pillar = pillars[index];
-                  return KeepAlive(
-                    key: ValueKey('board-$groupId-$index-${pillar.name}'),
-                    keepAlive: true,
-                    child: DragTarget<Object>(
-                    onWillAccept: (data) => !locked && data != null,
-                    onAccept: (data) {
+                  if (pillar == PillarType.separator) {
+                    return DragTarget<Object>(
+                      key: ValueKey('board-$groupId-$index-separator'),
+                      onWillAccept: (data) => !locked && data != null,
+                      onAccept: (data) {
                         if (data is PillarData) {
                           final type = _mapPillarDataToType(data);
                           if (type != null) {
-                            onInsert(
-                                groupId: groupId, index: index, pillar: type);
+                            onInsert(groupId: groupId, index: index, pillar: type);
                           }
                           return;
                         }
@@ -213,45 +211,88 @@ class TemplateBoardView extends StatelessWidget {
                           for (final id in data.pillarIds.reversed) {
                             final type = _mapPillarIdToType(id);
                             if (type != null) {
-                              onInsert(
-                                  groupId: groupId, index: index, pillar: type);
+                              onInsert(groupId: groupId, index: index, pillar: type);
                             }
                           }
                           return;
                         }
                       },
-                    builder: (context, candidateData, rejectedData) {
-                      final highlight = candidateData.isNotEmpty;
-                      return Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          TemplateBoardColumn(
+                      builder: (context, candidateData, rejectedData) {
+                        final highlight = candidateData.isNotEmpty;
+                        final borderC = groupColor != null ? _colorFromHex(groupColor!) : dividerColor;
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            GestureDetector(
+                              onLongPress: locked ? null : () => onRemove(groupId: groupId, index: index),
+                              child: Container(
+                                width: 20,
+                                height: 140,
+                                color: highlight ? Theme.of(context).colorScheme.primary.withOpacity(0.2) : null,
+                                child: VerticalDivider(
+                                  color: borderC,
+                                  thickness: 2,
+                                  indent: 10,
+                                  endIndent: 10,
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              key: ValueKey('insert-sep-$groupId-$index'),
+                              icon: const Icon(Icons.more_vert),
+                              tooltip: '在此后插入分隔符',
+                              onPressed: locked ? null : () => onInsertSeparator?.call(groupId: groupId, index: index + 1),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    return DragTarget<Object>(
+                      key: ValueKey('board-$groupId-$index-${pillar.name}'),
+                      onWillAccept: (data) => !locked && data != null,
+                      onAccept: (data) {
+                        if (data is PillarData) {
+                          final type = _mapPillarDataToType(data);
+                          if (type != null) {
+                            onInsert(groupId: groupId, index: index, pillar: type);
+                          }
+                          return;
+                        }
+                        if (data is PillarPreset) {
+                          for (final id in data.pillarIds.reversed) {
+                            final type = _mapPillarIdToType(id);
+                            if (type != null) {
+                              onInsert(groupId: groupId, index: index, pillar: type);
+                            }
+                          }
+                          return;
+                        }
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        final highlight = candidateData.isNotEmpty;
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TemplateBoardColumn(
                               label: _pillarTypeLabel(pillar),
                               index: index,
                               locked: locked,
-                              borderColor: groupColor != null
-                                  ? _colorFromHex(groupColor!)
-                                  : dividerColor,
-                              onRemove: () =>
-                                  onRemove(groupId: groupId, index: index),
+                              borderColor: groupColor != null ? _colorFromHex(groupColor!) : dividerColor,
+                              onRemove: () => onRemove(groupId: groupId, index: index),
                               highlight: highlight,
                             ),
                             IconButton(
                               key: ValueKey('insert-sep-$groupId-$index'),
                               icon: const Icon(Icons.more_vert),
                               tooltip: '在此后插入分隔符',
-                              onPressed: locked
-                                  ? null
-                                  : () => onInsertSeparator?.call(
-                                        groupId: groupId,
-                                        index: index + 1,
-                                      ),
+                              onPressed: locked ? null : () => onInsertSeparator?.call(groupId: groupId, index: index + 1),
                             ),
                           ],
-                      );
-                    },
-                  ),
-                  );
+                        );
+                      },
+                    );
+                  }
                 },
               ),
             )

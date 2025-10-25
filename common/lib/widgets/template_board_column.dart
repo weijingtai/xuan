@@ -24,15 +24,30 @@ class TemplateBoardColumn extends StatelessWidget {
     return Semantics(
       label: '列 $label，位置 ${index + 1}',
       enabled: true,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
         width: 160,
         margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: borderColor),
-          color: theme.colorScheme.surface,
-          boxShadow: const [
-            BoxShadow(blurRadius: 2, offset: Offset(0, 1), color: Color(0x14000000)),
+          border: Border.all(
+            color: highlight && !locked
+                ? theme.colorScheme.primary
+                : borderColor,
+            width: highlight && !locked ? 2 : 1,
+          ),
+          color: highlight && !locked
+              ? theme.colorScheme.primary.withValues(alpha: 0.08)
+              : theme.colorScheme.surface,
+          boxShadow: [
+            BoxShadow(
+              blurRadius: highlight && !locked ? 8 : 2,
+              offset: Offset(0, highlight && !locked ? 2 : 1),
+              color: highlight && !locked
+                  ? theme.colorScheme.primary.withValues(alpha: 0.3)
+                  : const Color(0x14000000),
+            ),
           ],
         ),
         padding: const EdgeInsets.all(12),

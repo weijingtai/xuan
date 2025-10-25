@@ -8,23 +8,22 @@ import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/editor_top_bar.dart';
+import 'package:common/widgets/editor_sidebar_v2.dart'; // 使用新的 Sidebar
 import 'package:common/widgets/template_editor_pane.dart';
 import 'package:common/widgets/template_board_view.dart';
+import 'package:common/widgets/template_gallery_view.dart';
 import 'package:common/widgets/pillar_palette.dart';
-import 'package:common/widgets/pillar_preset_list.dart';
 import 'package:common/widgets/generic_pillar_card.dart';
 import 'package:common/models/pillar_data.dart';
 import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_tian_gan.dart';
-import 'package:common/enums/enum_gender.dart';
 import 'package:provider/provider.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
 import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
+import '../datasource/layout_template_local_data_source.dart';
 import '../features/tai_yuan/enum_calculate_strategy.dart';
 import '../widgets/card_row.dart';
 
@@ -106,15 +105,9 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
               header: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // const TemplateGalleryView(),
+                  const TemplateGalleryView(),
                   const SizedBox(height: 8),
-                  if (viewModel.viewMode == EditorViewMode.canvas)
-                    const PillarPresetList(),
-                  if (viewModel.viewMode == EditorViewMode.canvas) ...[
-                    const SizedBox(height: 8),
-                    const PillarPalette(),
-                  ],
-                  const SizedBox(height: 8),
+                  // 移除旧的PillarPresetList,已被TemplateGalleryView替代
                   if (viewModel.errorMessage != null)
                     _ErrorBanner(
                       message: viewModel.errorMessage!,
@@ -123,25 +116,21 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                   if (viewModel.hasUnsavedChanges) const _UnsavedBanner(),
                 ],
               ),
-              sidebar: _EditorSidebar(
-                rowConfigs: viewModel.rowConfigs,
-                cardStyle: viewModel.cardStyle,
-                onRowVisibilityChanged: viewModel.updateRowVisibility,
-                onRowTitleVisibilityChanged: viewModel.updateRowTitleVisibility,
-                onRowOrderChanged: viewModel.updateRowOrder,
-                onDividerTypeChanged: viewModel.updateDividerType,
-                onDividerColorChanged: viewModel.updateDividerColor,
-                onDividerThicknessChanged: viewModel.updateDividerThickness,
-              ),
+              sidebar: const EditorSidebarV2(), // 使用新的侧边栏组件
               workspace: _EditorWorkspace(
                 isLoading: viewModel.isLoading,
                 chartGroups: viewModel.chartGroups,
                 cardStyle: viewModel.cardStyle,
-                viewMode: viewModel.viewMode,
                 rowConfigs: viewModel.rowConfigs,
                 onReorder: viewModel.reorderPillar,
               ),
-              actionBar: Row(
+              actionBar: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 将PillarPalette移到底部
+                  const PillarPalette(),
+                  const SizedBox(height: 12),
+                  Row(
                 children: [
                   FilledButton.icon(
                     onPressed: viewModel.canSave
@@ -169,6 +158,8 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('删除选中分组'),
                   ),
+                ],
+              ),
                 ],
               ),
             ),
@@ -820,7 +811,6 @@ class _EditorWorkspace extends StatelessWidget {
     required this.isLoading,
     required this.chartGroups,
     required this.cardStyle,
-    required this.viewMode,
     required this.rowConfigs,
     required this.onReorder,
   });
@@ -828,7 +818,6 @@ class _EditorWorkspace extends StatelessWidget {
   final bool isLoading;
   final List<ChartGroup> chartGroups;
   final CardStyle? cardStyle;
-  final EditorViewMode viewMode;
   final List<RowConfig> rowConfigs;
   final void Function({
     required String groupId,
@@ -839,6 +828,8 @@ class _EditorWorkspace extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final viewModel = context.watch<FourZhuEditorViewModel>();
+
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -861,14 +852,39 @@ class _EditorWorkspace extends StatelessWidget {
       itemCount: chartGroups.length,
       itemBuilder: (context, index) {
         final group = chartGroups[index];
+        final isSelected = viewModel.selectedGroupId == group.id;
+
         return Card(
           margin: const EdgeInsets.only(bottom: 16),
           clipBehavior: Clip.antiAlias,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+          elevation: isSelected ? 4 : 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : theme.dividerColor.withValues(alpha: 0.2),
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Container(
+            decoration: isSelected
+                ? BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary.withValues(alpha: 0.05),
+                        theme.colorScheme.primary.withValues(alpha: 0.02),
+                      ],
+                    ),
+                  )
+                : null,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                 Row(
                   children: [
                     Text(group.title, style: theme.textTheme.titleMedium),
@@ -880,17 +896,10 @@ class _EditorWorkspace extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                switch (viewMode) {
-                  EditorViewMode.table => _PillarReorderList(
-                      groupId: group.id,
-                      pillars: group.pillarOrder,
-                      dividerType: dividerType,
-                      dividerColor: dividerColor,
-                      onReorder: onReorder,
-                    ),
-                  EditorViewMode.canvas => Selector<FourZhuEditorViewModel, String?>(
-                      selector: (_, vm) => vm.selectedGroupId,
-                      builder: (ctx, selectedId, __) => TemplateBoardView(
+                // 合并视图模式 - 同时显示画布操作和预览Card
+                Selector<FourZhuEditorViewModel, String?>(
+                    selector: (_, vm) => vm.selectedGroupId,
+                    builder: (ctx, selectedId, __) => TemplateBoardView(
                             groupId: group.id,
                             pillars: group.pillarOrder,
                             dividerType: dividerType,
@@ -956,18 +965,44 @@ class _EditorWorkspace extends StatelessWidget {
                                 .read<FourZhuEditorViewModel>()
                                 .toggleGroupExpanded(groupId: group.id),
                           )),
-                  EditorViewMode.preview => _GroupPreviewCard(
-                      group: group,
-                      rows: rowConfigs,
-                    ),
-                },
+                // 在画布下方显示预览Card (仅在展开时渲染，减少性能开销)
+                if (group.expanded) ...[
+                  const SizedBox(height: 16),
+                  _GroupPreviewCard(
+                    group: group,
+                    rows: rowConfigs,
+                  ),
+                ],
               ],
             ),
+          ),
           ),
         );
       },
     );
   }
+}
+
+// 预览数据 - 用于优化 Selector 性能
+class _PreviewData {
+  const _PreviewData({
+    required this.eightChars,
+    required this.taiYuan,
+  });
+
+  final EightChars eightChars;
+  final TaiYuanModel taiYuan;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is _PreviewData &&
+        other.eightChars == eightChars &&
+        other.taiYuan == taiYuan;
+  }
+
+  @override
+  int get hashCode => Object.hash(eightChars, taiYuan);
 }
 
 class _GroupPreviewCard extends StatelessWidget {
@@ -1012,114 +1047,48 @@ class _GroupPreviewCard extends StatelessWidget {
     put(CardRow.naYin, RowType.naYin);
     put(CardRow.kongWang, RowType.kongWang);
 
-    final vm = context.watch<FourZhuEditorViewModel>();
-    final EightChars eight = vm.previewEightChars ?? EightChars.defualtBaZi();
-    final TaiYuanModel taiYuan = vm.previewTaiYuan ??
-        TaiYuanModel(
-          taiYuanGanZhi: JiaZi.JIA_ZI,
-          taiYuanBeforeMonth: 0,
-          calculateStrategy: TaiYuanCalculateStrategy.monthPillarMethod,
-        );
-
-    return GenericPillarCard(
-      title: group.title,
-      pillars: pillars,
-      dayMaster: eight.dayTianGan,
-      isBenMing: false,
-      gender: null,
-      showTianGan:
-          rows.any((r) => r.type == RowType.heavenlyStem && r.isVisible),
-      showDiZhi:
-          rows.any((r) => r.type == RowType.earthlyBranch && r.isVisible),
-      showTenGods: _visible(RowType.tenGod),
-      showCangGanMain: _visible(RowType.hiddenStemsPrimary),
-      showCangGanMainTenGods: _visible(RowType.hiddenStemsPrimaryGods),
-      showCangGanZhong: _visible(RowType.hiddenStemsSecondary),
-      showCangGanZhongTenGods: _visible(RowType.hiddenStemsSecondaryGods),
-      showCangGanYu: _visible(RowType.hiddenStemsTertiary),
-      showCangGanYuTenGods: _visible(RowType.hiddenStemsTertiaryGods),
-      showXunShou: _visible(RowType.xunShou),
-      showNaYin: _visible(RowType.naYin),
-      showKongWang: _visible(RowType.kongWang),
-      isEditMode: false,
-      isColumnReorderMode: false,
-      onRowReorder: (a, b) {},
-      onPillarReorder: (a, b) {},
-      rowStyles: styleMap,
-    );
-  }
-}
-
-class _PillarReorderList extends StatelessWidget {
-  const _PillarReorderList({
-    required this.groupId,
-    required this.pillars,
-    required this.dividerType,
-    required this.dividerColor,
-    required this.onReorder,
-  });
-
-  final String groupId;
-  final List<PillarType> pillars;
-  final BorderType dividerType;
-  final Color dividerColor;
-  final void Function({
-    required String groupId,
-    required int oldIndex,
-    required int newIndex,
-  }) onReorder;
-
-  @override
-  Widget build(BuildContext context) {
-    if (pillars.isEmpty) {
-      return const Text('暂无柱位');
-    }
-
-    return ReorderableListView.builder(
-      shrinkWrap: true,
-      primary: false,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: pillars.length,
-      onReorder: (oldIndex, newIndex) {
-        var targetIndex = newIndex;
-        if (newIndex > oldIndex) {
-          targetIndex -= 1;
-        }
-        onReorder(
-          groupId: groupId,
-          oldIndex: oldIndex,
-          newIndex: targetIndex,
-        );
-      },
-      itemBuilder: (context, index) {
-        final pillar = pillars[index];
-        return Container(
-          key: ValueKey('pillar-$groupId-$index-${pillar.name}'),
-          margin: const EdgeInsets.symmetric(vertical: 4),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            border: _buildBorder(),
-            color: Theme.of(context).cardColor,
-          ),
-          child: ListTile(
-            leading: const Icon(Icons.drag_indicator),
-            title: Text(_pillarTypeLabel(pillar)),
+    // 优化: 使用 Selector 只监听 previewEightChars 和 previewTaiYuan，减少不必要的重建
+    return Selector<FourZhuEditorViewModel, _PreviewData>(
+      selector: (_, vm) => _PreviewData(
+        eightChars: vm.previewEightChars ?? EightChars.defualtBaZi(),
+        taiYuan: vm.previewTaiYuan ??
+            TaiYuanModel(
+              taiYuanGanZhi: JiaZi.JIA_ZI,
+              taiYuanBeforeMonth: 0,
+              calculateStrategy: TaiYuanCalculateStrategy.monthPillarMethod,
+            ),
+      ),
+      builder: (context, previewData, _) {
+        return RepaintBoundary(
+          child: GenericPillarCard(
+            title: group.title,
+            pillars: pillars,
+            dayMaster: previewData.eightChars.dayTianGan,
+            isBenMing: false,
+            gender: null,
+            showTianGan:
+                rows.any((r) => r.type == RowType.heavenlyStem && r.isVisible),
+            showDiZhi:
+                rows.any((r) => r.type == RowType.earthlyBranch && r.isVisible),
+            showTenGods: _visible(RowType.tenGod),
+            showCangGanMain: _visible(RowType.hiddenStemsPrimary),
+            showCangGanMainTenGods: _visible(RowType.hiddenStemsPrimaryGods),
+            showCangGanZhong: _visible(RowType.hiddenStemsSecondary),
+            showCangGanZhongTenGods: _visible(RowType.hiddenStemsSecondaryGods),
+            showCangGanYu: _visible(RowType.hiddenStemsTertiary),
+            showCangGanYuTenGods: _visible(RowType.hiddenStemsTertiaryGods),
+            showXunShou: _visible(RowType.xunShou),
+            showNaYin: _visible(RowType.naYin),
+            showKongWang: _visible(RowType.kongWang),
+            isEditMode: false,
+            isColumnReorderMode: false,
+            onRowReorder: (a, b) {},
+            onPillarReorder: (a, b) {},
+            rowStyles: styleMap,
           ),
         );
       },
     );
-  }
-
-  BoxBorder _buildBorder() {
-    switch (dividerType) {
-      case BorderType.dashed:
-      case BorderType.dotted:
-        return Border.all(color: dividerColor.withValues(alpha: 0.6));
-      case BorderType.none:
-        return Border.all(color: dividerColor.withValues(alpha: 0));
-      case BorderType.solid:
-        return Border.all(color: dividerColor);
-    }
   }
 }
 

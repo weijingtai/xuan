@@ -1,4 +1,4 @@
-﻿# Eight Chars Template TODOs
+# Eight Chars Template TODOs
 
 - [x] 完善 `LayoutTemplateRepository` 接口的文档注释，明确异常约定与返回值约束。
 - [x] 调整模板 DTO 及 mapper，确保 `version`、`updatedAt` 能被 SharedPreferences/Drift 正确覆盖。
@@ -74,15 +74,15 @@
   - [ ] 列工具条预留密度/列宽/布局切换按钮（先用占位，后续迭代补全）。
 
  -## 柱子模板
- - [ ] **柱模板列表**
+ - [x] **柱模板列表**
   - [x] 渲染柱模板列表，展示名称、适用场景、包含柱位、更新时间等元信息。
-  - [ ] 支持按模板类别筛选、搜索关键字并高亮匹配内容。
- - [ ] **拖拽与添加**
+  - [x] 支持按模板类别筛选、搜索关键字并高亮匹配内容。
+ - [x] **拖拽与添加**
   - [x] 为柱模板卡提供拖拽手柄，拖入看板列时调用 `viewModel.addPillar(boardId, preset)`。
   - [x] 在看板区域实现 `DragTarget`，根据拖入类型展示反馈并限制重复添加。
   - [ ] 支持点击模板直接添加到当前选中列。
 - [ ] **模板管理**
-  - [ ] 实现模板扩展开关，显示详细描述、柱位清单、配色示意。
+  - [x] 实现模板扩展开关，显示详细描述、柱位清单、配色示意。
   - [ ] 防止删除/重复命名，通过 `viewModel.validatePillarTemplate()` 检查后提示用户。
 
 -## 模板操作
@@ -100,26 +100,26 @@
   - [x] 实现 `selectTemplateByTab(TabId)`，刷新模板集合并触发 `fetchTemplatesForTab`。
   - [x] 维护 `displayMode`、`isSaving`、`hasPendingChanges` 等 UI 状态，必要时使用 `ValueNotifier` 优化。
   - [x] 暴露键盘快捷键流/只读标记，供顶栏和模板页通过 `Selector` 订阅。
-- [ ] **模板 CRUD**
-  - [ ] 实现 `createTemplate(name, preset)`，调用 `CreateTemplateUseCase` 并写入缓存。
-  - [ ] 实现 `applyTemplate`、`duplicateAsNew`、`deleteTemplate`，补齐错误处理与 Toast 提示。
+- [x] **模板 CRUD**
+  - [x] 实现 `createTemplate(name, preset)`，调用 `CreateTemplateUseCase` 并写入缓存。
+  - [x] 实现 `applyTemplate`、`duplicateAsNew`、`deleteTemplate`，补齐错误处理与 Toast 提示。
   - [ ] 提供批量操作接口（收藏、归档、批量删除），与模板列表的多选交互对齐。
-- [ ] **看板与柱子管理**
-  - [ ] 实现 `selectBoard`、`addBoard`、`removeBoard`、`reorderBoards`，并持久化用户偏好。
-  - [ ] 实现 `addPillar`、`removePillar`、`insertSeparator`、`alignPillars` 等列内接口，保证与拖拽交互一致。
-  - [ ] 提供 `updateRowVisibility`、`updateRowStyle`、`resetRowConfigs` 的写入流程和撤销栈。
+- [x] **看板与柱子管理**
+  - [x] 实现 `selectBoard`、`addBoard`、`removeBoard`、`reorderBoards`，并持久化用户偏好。
+  - [x] 实现 `addPillar`、`removePillar`、`insertSeparator`、`alignPillars` 等列内接口，保证与拖拽交互一致。
+  - [x] 提供 `updateRowVisibility`、`updateRowStyle`、`resetRowConfigs` 的写入流程和撤销栈。
 - [ ] **模型与持久化**
   - [ ] 为 `RowConfig` 扩展 `RowTextStyle`（字体、字号、颜色、对齐、边框等）并完善 DTO/JSON 映射。
   - [ ] 设计模板、看板、柱子偏好的 Drift 表或 SharedPreferences key，补全 Repository 转换器。
   - [ ] 拆分 `DuplicateTemplateUseCase`、`CreateTemplateUseCase`、`SyncTemplateUseCase` 等业务用例，串联错误处理。
 
 ## 验证与文档
-- [ ] **单元与小部件测试**
-  - [ ] 为 ViewModel 新增 API（`selectBoard`、`updateRowStyle`、`createTemplate` 等）补充单元测试，覆盖错误路径。
-  - [ ] 为顶栏、模板列表、拖拽交互添加 Widget 测试，用 `WidgetTester` 模拟点击、拖拽与快捷键。
+- [x] **单元与小部件测试**
+  - [x] 为 ViewModel 新增 API（`selectBoard`、`updateRowStyle`、`createTemplate` 等）补充单元测试，覆盖错误路径。
+  - [x] 为顶栏、模板列表、拖拽交互添加 Widget 测试，用 `WidgetTester` 模拟点击、拖拽与快捷键。
   - [ ] 编写集成测试验证模板应用后 UI 状态与持久化结果一致。
 - [ ] **文档与演示**
-  - [ ] 更新 PRD/README，记录信息架构、状态流与键盘操作说明。
+  - [x] 更新 PRD/README，记录信息架构、状态流与键盘操作说明。
   - [ ] 产出演示脚本与动图（light/dark 模式各一份），展示主要交互流程。
   - [ ] 在 `docs/feature/eight_chars` 下新增 changelog，归档关键决策与约束。
 

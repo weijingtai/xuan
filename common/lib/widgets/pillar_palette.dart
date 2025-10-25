@@ -35,12 +35,68 @@ class PillarPalette extends StatelessWidget {
     return Draggable<PillarData>(
       data: pillarData,
       feedback: Material(
+        elevation: 8,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          width: 120,
+          height: 120,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                theme.colorScheme.primary.withValues(alpha: 0.9),
+                theme.colorScheme.primary.withValues(alpha: 0.7),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 48, color: Colors.white),
+              const SizedBox(height: 8),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      childWhenDragging: Opacity(
+        opacity: 0.3,
         child: Container(
           width: 100,
-          height: 100,
-          color: theme.colorScheme.primary.withValues(alpha: 0.5),
-          child: Center(
-            child: Text(label, style: const TextStyle(color: Colors.white)),
+          margin: const EdgeInsets.symmetric(horizontal: 8.0),
+          decoration: BoxDecoration(
+            color: theme.scaffoldBackgroundColor,
+            border: Border.all(
+              color: theme.dividerColor.withValues(alpha: 0.3),
+              style: BorderStyle.solid,
+            ),
+            borderRadius: BorderRadius.circular(8.0),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 40, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+              const SizedBox(height: 8),
+              Text(label, style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.3),
+              )),
+            ],
           ),
         ),
       ),
