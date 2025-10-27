@@ -1,0 +1,35 @@
+import 'package:flutter/material.dart';
+import '../enums/layout_template_enums.dart';
+import '../models/drag_payloads.dart';
+
+/// Demo-only draggable for inserting a pillar with custom values.
+class TestPillarInfoDraggable extends StatelessWidget {
+  const TestPillarInfoDraggable({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Example payload: 柱:大运,乙亥,山头火,[空亡]申酉
+    const payload = PillarPayload(
+      pillarType: PillarType.luckCycle,
+      pillarLabel: '大运',
+      perRowValues: {
+        RowType.heavenlyStem: '乙',
+        RowType.earthlyBranch: '亥',
+        RowType.naYin: '山头火',
+        RowType.kongWang: '申酉',
+      },
+    );
+
+    return Draggable<PillarPayload>(
+      data: payload,
+      feedback: Material(
+        elevation: 6,
+        color: Colors.transparent,
+        child: const Chip(label: Text('拖拽: 大运柱')),
+      ),
+      childWhenDragging:
+          const Opacity(opacity: 0.5, child: Chip(label: Text('大运柱'))),
+      child: const Chip(label: Text('大运柱')),
+    );
+  }
+}

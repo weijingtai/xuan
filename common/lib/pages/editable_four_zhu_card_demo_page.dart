@@ -6,8 +6,11 @@ import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
 import '../widgets/editable_four_zhu_card.dart';
 import '../widgets/test_pillar_draggable.dart';
+import '../widgets/test_pillar_info_draggable.dart';
+import '../widgets/test_row_info_draggable.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
+import '../viewmodels/four_zhu_layout_controller.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -22,8 +25,7 @@ class _EditableFourZhuCardDemoPageState
   bool _isEditable = false;
 
   late EightChars _sample;
-  late List<PillarType> _pillars;
-  late List<RowConfig> _rows;
+  late FourZhuLayoutController _controller;
   late CardStyle _cardStyle;
 
   // 列拖拽卡片状态
@@ -43,49 +45,25 @@ class _EditableFourZhuCardDemoPageState
       day: JiaZi.BING_YIN,
       time: JiaZi.DING_MAO,
     );
-    _pillars = const [
-      PillarType.year,
-      PillarType.month,
-      PillarType.day,
-      PillarType.hour
-    ];
-    _rows = const [
-      RowConfig(
-          type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(
-          type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-    ];
-
-    // 初始化列拖拽卡片状态
-    _columnPillars = const [
-      PillarType.year,
-      PillarType.month,
-      PillarType.day,
-      PillarType.hour
-    ];
-    _columnRows = const [
-      RowConfig(
-          type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(
-          type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-    ];
-
-    // 初始化行拖拽卡片状态
-    _rowPillars = const [
-      PillarType.year,
-      PillarType.month,
-      PillarType.day,
-      PillarType.hour
-    ];
-    _rowRows = const [
-      RowConfig(
-          type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(
-          type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-    ];
+    // Initialize shared controller with default pillars/rows
+    _controller = FourZhuLayoutController(
+      pillars: const [
+        PillarType.year,
+        PillarType.month,
+        PillarType.day,
+        PillarType.hour,
+      ],
+      rows: const [
+        RowConfig(
+            type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
+        RowConfig(
+            type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
+        RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+      ],
+    );
+    // Rebuild page when pillars or rows update
+    _controller.pillars.addListener(() => setState(() {}));
+    _controller.rows.addListener(() => setState(() {}));
 
     _cardStyle = const CardStyle(
       dividerType: BorderType.solid,
@@ -129,6 +107,24 @@ class _EditableFourZhuCardDemoPageState
                     TestPillarDraggable(type: PillarType.separator),
                   ],
                 ),
+                const SizedBox(height: 16),
+                // 外部“柱信息”拖拽源（仅用于列卡的插入演示）
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: const [
+                    TestPillarInfoDraggable(),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                // 外部“行信息”拖拽源（仅用于行卡的插入演示）
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: const [
+                    TestRowInfoDraggable(),
+                  ],
+                ),
                 const SizedBox(height: 24),
 
                 // 原始的 EditableFourZhuCard
@@ -140,14 +136,19 @@ class _EditableFourZhuCardDemoPageState
                     eightChars: _sample,
                     isEditable: _isEditable,
                     axis: Axis.horizontal,
-                    pillarOrder: _pillars,
-                    rowConfigs: _rows,
+                    pillarOrder: _controller.pillars.value,
+                    rowConfigs: _controller.rows.value,
                     cardStyle: _cardStyle,
                     rowLabelResolver: _rowLabel,
                     pillarLabelResolver: _pillarLabel,
-                    onPillarOrderChanged: (updated) =>
-                        setState(() => _pillars = updated),
+                    onPillarOrderChanged: _controller.setPillars,
+                    onRowConfigsChanged: _controller.setRows,
                     onAddPillarRequested: () => _showAddMenu(context),
+                    // 使内层Card无视觉效果，与外层Card一致
+                    backgroundColor: Colors.transparent,
+                    padding: EdgeInsets.zero,
+                    elevation: 0,
+                    borderRadius: BorderRadius.zero,
                   ),
                 ),
 
@@ -161,13 +162,12 @@ class _EditableFourZhuCardDemoPageState
                   child: ColumnReorderableFourZhuCard(
                     eightChars: _sample,
                     isEditable: _isEditable,
-                    pillarOrder: _columnPillars,
-                    rowConfigs: _columnRows,
+                    pillarOrder: _controller.pillars.value,
+                    rowConfigs: _controller.rows.value,
                     cardStyle: _cardStyle,
                     rowLabelResolver: _rowLabel,
                     pillarLabelResolver: _pillarLabel,
-                    onPillarOrderChanged: (updated) =>
-                        setState(() => _columnPillars = updated),
+                    onPillarOrderChanged: _controller.setPillars,
                   ),
                 ),
 
@@ -181,13 +181,12 @@ class _EditableFourZhuCardDemoPageState
                   child: RowReorderableFourZhuCard(
                     eightChars: _sample,
                     isEditable: _isEditable,
-                    pillarOrder: _rowPillars,
-                    rowConfigs: _rowRows,
+                    pillarOrder: _controller.pillars.value,
+                    rowConfigs: _controller.rows.value,
                     cardStyle: _cardStyle,
                     rowLabelResolver: _rowLabel,
                     pillarLabelResolver: _pillarLabel,
-                    onRowConfigsChanged: (updated) =>
-                        setState(() => _rowRows = updated),
+                    onRowConfigsChanged: _controller.setRows,
                   ),
                 ),
 
@@ -329,7 +328,7 @@ class _EditableFourZhuCardDemoPageState
       ],
     );
     if (selected != null) {
-      setState(() => _pillars = List.of(_pillars)..add(selected));
+      _controller.setPillars(List.of(_controller.pillars.value)..add(selected));
     }
   }
 
@@ -361,5 +360,11 @@ class _EditableFourZhuCardDemoPageState
       default:
         return '';
     }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 }

@@ -7,6 +7,7 @@ import '../enums/enum_jia_zi.dart' as jz;
 import '../models/eight_chars.dart';
 import '../models/layout_template.dart' show CardStyle, RowConfig;
 import '../utils/style_resolver.dart';
+import '../models/drag_payloads.dart';
 
 /// 允许行拖拽的四柱卡片
 /// 使用 ReorderableListView 实现行的拖拽重排
@@ -39,40 +40,54 @@ class RowReorderableFourZhuCard extends StatefulWidget {
   final PillarLabelResolver? pillarLabelResolver;
 
   @override
-  State<RowReorderableFourZhuCard> createState() => _RowReorderableFourZhuCardState();
+  State<RowReorderableFourZhuCard> createState() =>
+      _RowReorderableFourZhuCardState();
 }
 
 class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
   late List<PillarType> _pillars;
   late List<RowConfig> _rows;
+  final Map<int, Map<PillarType, String>> _rowOverrides = {};
+  final Map<int, String> _rowLabelOverrides = {};
+  int? _hoverRowInsertIndex;
 
   @override
   void initState() {
     super.initState();
     _pillars = List<PillarType>.of(
-      widget.pillarOrder ?? const [
-        PillarType.year,
-        PillarType.month,
-        PillarType.day,
-        PillarType.hour,
-      ],
+      widget.pillarOrder ??
+          const [
+            PillarType.year,
+            PillarType.month,
+            PillarType.day,
+            PillarType.hour,
+          ],
     );
     _rows = List<RowConfig>.of(
-      widget.rowConfigs ?? const [
-        RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-        RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-        RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-      ],
+      widget.rowConfigs ??
+          const [
+            RowConfig(
+                type: RowType.heavenlyStem,
+                isVisible: true,
+                isTitleVisible: true),
+            RowConfig(
+                type: RowType.earthlyBranch,
+                isVisible: true,
+                isTitleVisible: true),
+            RowConfig(
+                type: RowType.naYin, isVisible: true, isTitleVisible: true),
+          ],
     );
   }
 
   @override
   void didUpdateWidget(covariant RowReorderableFourZhuCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.pillarOrder != null && widget.pillarOrder != oldWidget.pillarOrder) {
+    // Always refresh local state from incoming props when provided
+    if (widget.pillarOrder != null) {
       _pillars = List<PillarType>.of(widget.pillarOrder!);
     }
-    if (widget.rowConfigs != null && widget.rowConfigs != oldWidget.rowConfigs) {
+    if (widget.rowConfigs != null) {
       _rows = List<RowConfig>.of(widget.rowConfigs!);
     }
   }
@@ -80,8 +95,10 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
   @override
   Widget build(BuildContext context) {
     final visibleRows = _rows.where((r) => r.isVisible).toList();
-    final headerH = widget.metricsResolver.headerHeight(context, cardStyle: widget.cardStyle);
-    final cellH = widget.metricsResolver.rowHeight(context, cardStyle: widget.cardStyle);
+    final headerH = widget.metricsResolver
+        .headerHeight(context, cardStyle: widget.cardStyle);
+    final cellH =
+        widget.metricsResolver.rowHeight(context, cardStyle: widget.cardStyle);
 
     final labelStyle = widget.styleResolver.resolveTextStyle(
       context: context,
@@ -104,15 +121,20 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         if (widget.isEditable)
           ..._buildReorderableDataRows(visibleRows, cellH, labelStyle)
         else
-          ...visibleRows.map((cfg) {
-            final rLabel = widget.rowLabelResolver?.call(cfg.type) ?? _defaultRowLabel(cfg.type);
+          ...visibleRows.asMap().entries.map((entry) {
+            final idx = entry.key;
+            final cfg = entry.value;
+            final baseLabel = widget.rowLabelResolver?.call(cfg.type) ??
+                _defaultRowLabel(cfg.type);
+            final rLabel = _rowLabelOverrides[idx] ?? baseLabel;
             final style = widget.styleResolver.resolveTextStyle(
               context: context,
               rowType: cfg.type,
               cardStyle: widget.cardStyle,
               rowConfig: cfg,
             );
-            return _buildStaticDataRow(rLabel, cfg, style, cellH, labelStyle);
+            return _buildStaticDataRow(
+                idx, rLabel, cfg, style, cellH, labelStyle);
           }),
 
         // 底部占位行（与列拖拽卡片保持布局一致）
@@ -131,7 +153,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         children: [
           const SizedBox(width: 72),
           ..._pillars.map((p) {
-            final pillarLabel = widget.pillarLabelResolver?.call(p) ?? _defaultPillarLabel(p);
+            final pillarLabel =
+                widget.pillarLabelResolver?.call(p) ?? _defaultPillarLabel(p);
             return Expanded(
               child: Center(
                 child: Text(
@@ -154,67 +177,138 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     TextStyle labelStyle,
   ) {
     return [
-      ReorderableListView(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        buildDefaultDragHandles: false,
-        proxyDecorator: (child, index, animation) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, child) {
-              final t = Curves.easeInOut.transform(animation.value);
-              return Transform.scale(
-                scale: 1.0 + (0.03 * t),
-                child: Material(
-                  elevation: 8.0 + (8.0 * t),
-                  color: Colors.transparent,
-                  borderRadius: BorderRadius.circular(4),
-                  child: Container(
-                    decoration: BoxDecoration(
+      Stack(
+        children: [
+          ReorderableListView(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            buildDefaultDragHandles: false,
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final t = Curves.easeInOut.transform(animation.value);
+                  return Transform.scale(
+                    scale: 1.0 + (0.03 * t),
+                    child: Material(
+                      elevation: 8.0 + (8.0 * t),
+                      color: Colors.transparent,
                       borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: Theme.of(context).colorScheme.primary,
-                        width: 2 + t,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.primary,
+                            width: 2 + t,
+                          ),
+                        ),
+                        child: child,
                       ),
                     ),
-                    child: child,
-                  ),
-                ),
+                  );
+                },
+                child: child,
               );
             },
-            child: child,
-          );
-        },
-        onReorder: (oldIndex, newIndex) {
-          setState(() {
-            if (newIndex > oldIndex) {
-              newIndex -= 1;
-            }
-            final item = _rows.removeAt(oldIndex);
-            _rows.insert(newIndex, item);
-          });
-          widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
-        },
-        children: visibleRows.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final cfg = entry.value;
-          final rLabel = widget.rowLabelResolver?.call(cfg.type) ?? _defaultRowLabel(cfg.type);
-          final style = widget.styleResolver.resolveTextStyle(
-            context: context,
-            rowType: cfg.type,
-            cardStyle: widget.cardStyle,
-            rowConfig: cfg,
-          );
-          return _buildReorderableDataRow(
-            key: ValueKey(cfg.type),
-            index: idx,
-            rowLabel: rLabel,
-            cfg: cfg,
-            style: style,
-            cellH: cellH,
-            labelStyle: labelStyle,
-          );
-        }).toList(),
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (newIndex > oldIndex) {
+                  newIndex -= 1;
+                }
+                final item = _rows.removeAt(oldIndex);
+                _rows.insert(newIndex, item);
+                _moveRowOverride(oldIndex, newIndex);
+              });
+              widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
+            },
+            children: visibleRows.asMap().entries.map((entry) {
+              final idx = entry.key;
+              final cfg = entry.value;
+              final baseLabel = widget.rowLabelResolver?.call(cfg.type) ??
+                  _defaultRowLabel(cfg.type);
+              final rLabel = _rowLabelOverrides[idx] ?? baseLabel;
+              final style = widget.styleResolver.resolveTextStyle(
+                context: context,
+                rowType: cfg.type,
+                cardStyle: widget.cardStyle,
+                rowConfig: cfg,
+              );
+              return _buildReorderableDataRow(
+                key: ValueKey('${cfg.type}-$idx'),
+                index: idx,
+                rowLabel: rLabel,
+                cfg: cfg,
+                style: style,
+                cellH: cellH,
+                labelStyle: labelStyle,
+              );
+            }).toList(),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: false,
+              child: Column(
+                children: List.generate(visibleRows.length + 1, (i) {
+                  return SizedBox(
+                    height: cellH,
+                    child: DragTarget<RowInfoPayload>(
+                      onWillAccept: (data) {
+                        setState(() => _hoverRowInsertIndex = i);
+                        return data != null;
+                      },
+                      onLeave: (_) =>
+                          setState(() => _hoverRowInsertIndex = null),
+                      onAccept: (data) {
+                        _insertExternalRow(i, data);
+                        setState(() => _hoverRowInsertIndex = null);
+                      },
+                      builder: (ctx, candidate, rejected) {
+                        final active =
+                            candidate.isNotEmpty && _hoverRowInsertIndex == i;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 120),
+                          constraints: const BoxConstraints.expand(),
+                          margin: EdgeInsets.zero,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: active
+                                  ? Theme.of(ctx).colorScheme.primary
+                                  : Theme.of(ctx)
+                                      .dividerColor
+                                      .withValues(alpha: 0.1),
+                              width: active ? 2 : 1,
+                            ),
+                            borderRadius: BorderRadius.circular(4),
+                            color: active
+                                ? Theme.of(ctx)
+                                    .colorScheme
+                                    .primary
+                                    .withValues(alpha: 0.06)
+                                : Colors.transparent,
+                          ),
+                          child: active
+                              ? Center(
+                                  child: Text(
+                                    '在此插入行',
+                                    style: Theme.of(ctx)
+                                        .textTheme
+                                        .bodySmall
+                                        ?.copyWith(
+                                          color:
+                                              Theme.of(ctx).colorScheme.primary,
+                                        ),
+                                  ),
+                                )
+                              : null,
+                        );
+                      },
+                    ),
+                  );
+                }),
+              ),
+            ),
+          ),
+        ],
       ),
     ];
   }
@@ -250,8 +344,12 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                   width: 72,
                   height: cellH,
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                    borderRadius: const BorderRadius.horizontal(left: Radius.circular(4)),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .surfaceContainerHighest
+                        .withValues(alpha: 0.2),
+                    borderRadius:
+                        const BorderRadius.horizontal(left: Radius.circular(4)),
                   ),
                   child: Center(
                     child: Row(
@@ -261,7 +359,10 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                         Icon(
                           Icons.drag_indicator,
                           size: 14,
-                          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withValues(alpha: 0.7),
                         ),
                         const SizedBox(width: 4),
                         Flexible(
@@ -283,7 +384,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                       height: cellH,
                       padding: const EdgeInsets.symmetric(horizontal: 4),
                       child: Center(
-                        child: _buildCell(context, cfg.type, p, style),
+                        child:
+                            _buildCellWithOverride(index, cfg.type, p, style),
                       ),
                     ),
                   );
@@ -305,6 +407,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
   }
 
   Widget _buildStaticDataRow(
+    int index,
     String rowLabel,
     RowConfig cfg,
     TextStyle style,
@@ -320,7 +423,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             width: 72,
             height: cellH,
             child: Center(
-              child: Text(rowLabel, style: labelStyle, textAlign: TextAlign.center),
+              child: Text(rowLabel,
+                  style: labelStyle, textAlign: TextAlign.center),
             ),
           ),
           // 数据单元格
@@ -330,7 +434,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 height: cellH,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Center(
-                  child: _buildCell(context, cfg.type, p, style),
+                  child: _buildCellWithOverride(index, cfg.type, p, style),
                 ),
               ),
             );
@@ -350,22 +454,37 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     );
   }
 
-  Widget _buildCell(BuildContext context, RowType row, PillarType pillar, TextStyle style) {
+  Widget _buildCell(
+      BuildContext context, RowType row, PillarType pillar, TextStyle style) {
     switch (row) {
       case RowType.heavenlyStem:
         final text = _tianGanForPillar(pillar).value;
-        final color = widget.elementColorResolver.colorForGan(_tianGanForPillar(pillar), context);
-        return Text(text, style: style.copyWith(color: color), textAlign: TextAlign.center);
+        final color = widget.elementColorResolver
+            .colorForGan(_tianGanForPillar(pillar), context);
+        return Text(text,
+            style: style.copyWith(color: color), textAlign: TextAlign.center);
       case RowType.earthlyBranch:
         final text = _diZhiForPillar(pillar).value;
-        final color = widget.elementColorResolver.colorForZhi(_diZhiForPillar(pillar), context);
-        return Text(text, style: style.copyWith(color: color), textAlign: TextAlign.center);
+        final color = widget.elementColorResolver
+            .colorForZhi(_diZhiForPillar(pillar), context);
+        return Text(text,
+            style: style.copyWith(color: color), textAlign: TextAlign.center);
       case RowType.naYin:
         final jy = _jiaZiForPillar(pillar);
         return Text(jy.naYin.name, style: style, textAlign: TextAlign.center);
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  // New: cell rendering with per-row overrides
+  Widget _buildCellWithOverride(
+      int rowIndex, RowType row, PillarType pillar, TextStyle style) {
+    final override = _rowOverrides[rowIndex]?[pillar];
+    if (override != null) {
+      return Text(override, style: style, textAlign: TextAlign.center);
+    }
+    return _buildCell(context, row, pillar, style);
   }
 
   tg.TianGan _tianGanForPillar(PillarType p) {
@@ -439,5 +558,87 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
       default:
         return type.name;
     }
+  }
+
+  void _moveRowOverride(int oldIndex, int newIndex) {
+    final currentOverrides =
+        Map<int, Map<PillarType, String>>.from(_rowOverrides);
+    final currentLabels = Map<int, String>.from(_rowLabelOverrides);
+    _rowOverrides.clear();
+    _rowLabelOverrides.clear();
+
+    for (final entry in currentOverrides.entries) {
+      final k = entry.key;
+      int newKey;
+      if (k == oldIndex) {
+        newKey = newIndex;
+      } else if (oldIndex < newIndex && k > oldIndex && k <= newIndex) {
+        newKey = k - 1;
+      } else if (oldIndex > newIndex && k < oldIndex && k >= newIndex) {
+        newKey = k + 1;
+      } else {
+        newKey = k;
+      }
+      _rowOverrides[newKey] = entry.value;
+    }
+
+    for (final entry in currentLabels.entries) {
+      final k = entry.key;
+      int newKey;
+      if (k == oldIndex) {
+        newKey = newIndex;
+      } else if (oldIndex < newIndex && k > oldIndex && k <= newIndex) {
+        newKey = k - 1;
+      } else if (oldIndex > newIndex && k < oldIndex && k >= newIndex) {
+        newKey = k + 1;
+      } else {
+        newKey = k;
+      }
+      _rowLabelOverrides[newKey] = entry.value;
+    }
+  }
+
+  void _insertExternalRow(int index, RowInfoPayload payload) {
+    setState(() {
+      if (_rowOverrides.isNotEmpty) {
+        final shifted = <int, Map<PillarType, String>>{};
+        for (final e in _rowOverrides.entries) {
+          final newKey = e.key >= index ? e.key + 1 : e.key;
+          shifted[newKey] = e.value;
+        }
+        _rowOverrides
+          ..clear()
+          ..addAll(shifted);
+      }
+      if (_rowLabelOverrides.isNotEmpty) {
+        final shiftedLabels = <int, String>{};
+        for (final e in _rowLabelOverrides.entries) {
+          final newKey = e.key >= index ? e.key + 1 : e.key;
+          shiftedLabels[newKey] = e.value;
+        }
+        _rowLabelOverrides
+          ..clear()
+          ..addAll(shiftedLabels);
+      }
+
+      final newCfg = RowConfig(
+        type: payload.rowType,
+        isVisible: true,
+        isTitleVisible: true,
+      );
+      _rows.insert(index, newCfg);
+      if (payload.rowLabel != null) {
+        _rowLabelOverrides[index] = payload.rowLabel!;
+      }
+      if (payload.perPillarValues != null) {
+        _rowOverrides[index] =
+            Map<PillarType, String>.of(payload.perPillarValues!);
+      }
+    });
+    debugPrint('[RowCard] Accepted external row at index ' +
+        index.toString() +
+        ', type=' +
+        payload.rowType.name);
+    widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
   }
 }

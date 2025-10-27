@@ -8,6 +8,7 @@ import '../enums/enum_jia_zi.dart' as jz;
 import '../models/eight_chars.dart';
 import '../models/layout_template.dart' show CardStyle, RowConfig;
 import '../utils/style_resolver.dart';
+import '../models/drag_payloads.dart';
 
 /// 允许列（柱）拖拽的四柱卡片
 /// 使用 ReorderableListView 实现列的拖拽重排
@@ -40,40 +41,56 @@ class ColumnReorderableFourZhuCard extends StatefulWidget {
   final PillarLabelResolver? pillarLabelResolver;
 
   @override
-  State<ColumnReorderableFourZhuCard> createState() => _ColumnReorderableFourZhuCardState();
+  State<ColumnReorderableFourZhuCard> createState() =>
+      _ColumnReorderableFourZhuCardState();
 }
 
-class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuCard> {
+class _ColumnReorderableFourZhuCardState
+    extends State<ColumnReorderableFourZhuCard> {
   late List<PillarType> _pillars;
   late List<RowConfig> _rows;
+  // External insert support: overrides and label overrides keyed by column index
+  final Map<int, Map<RowType, String>> _columnOverrides = {};
+  final Map<int, String> _pillarLabelOverrides = {};
+  int? _hoverInsertIndex;
 
   @override
   void initState() {
     super.initState();
     _pillars = List<PillarType>.of(
-      widget.pillarOrder ?? const [
-        PillarType.year,
-        PillarType.month,
-        PillarType.day,
-        PillarType.hour,
-      ],
+      widget.pillarOrder ??
+          const [
+            PillarType.year,
+            PillarType.month,
+            PillarType.day,
+            PillarType.hour,
+          ],
     );
     _rows = List<RowConfig>.of(
-      widget.rowConfigs ?? const [
-        RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-        RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-        RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-      ],
+      widget.rowConfigs ??
+          const [
+            RowConfig(
+                type: RowType.heavenlyStem,
+                isVisible: true,
+                isTitleVisible: true),
+            RowConfig(
+                type: RowType.earthlyBranch,
+                isVisible: true,
+                isTitleVisible: true),
+            RowConfig(
+                type: RowType.naYin, isVisible: true, isTitleVisible: true),
+          ],
     );
   }
 
   @override
   void didUpdateWidget(covariant ColumnReorderableFourZhuCard oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.pillarOrder != null && widget.pillarOrder != oldWidget.pillarOrder) {
+    // Always refresh local state from incoming props when provided
+    if (widget.pillarOrder != null) {
       _pillars = List<PillarType>.of(widget.pillarOrder!);
     }
-    if (widget.rowConfigs != null && widget.rowConfigs != oldWidget.rowConfigs) {
+    if (widget.rowConfigs != null) {
       _rows = List<RowConfig>.of(widget.rowConfigs!);
     }
   }
@@ -81,8 +98,10 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
   @override
   Widget build(BuildContext context) {
     final visibleRows = _rows.where((r) => r.isVisible).toList();
-    final headerH = widget.metricsResolver.headerHeight(context, cardStyle: widget.cardStyle);
-    final cellH = widget.metricsResolver.rowHeight(context, cardStyle: widget.cardStyle);
+    final headerH = widget.metricsResolver
+        .headerHeight(context, cardStyle: widget.cardStyle);
+    final cellH =
+        widget.metricsResolver.rowHeight(context, cardStyle: widget.cardStyle);
 
     final labelStyle = widget.styleResolver.resolveTextStyle(
       context: context,
@@ -95,7 +114,8 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
     return LayoutBuilder(
       builder: (context, constraints) {
         final containerWidth = constraints.maxWidth;
-        final availableWidth = containerWidth - 72 - (widget.isEditable ? 48 : 0);
+        final availableWidth =
+            containerWidth - 72 - (widget.isEditable ? 48 : 0);
         final columnWidth = availableWidth / _pillars.length;
 
         return Column(
@@ -112,72 +132,180 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
                 // 中间可拖拽的列
                 Expanded(
                   child: SizedBox(
-                    height: headerH + visibleRows.length * cellH + (widget.isEditable ? 32 : 0), // 增加底部👆的高度
-                    child: widget.isEditable
-                        ? ReorderableListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            buildDefaultDragHandles: false,
-                            itemCount: _pillars.length,
-                            onReorder: (oldIndex, newIndex) {
-                              setState(() {
-                                if (newIndex > oldIndex) {
-                                  newIndex -= 1;
-                                }
-                                final item = _pillars.removeAt(oldIndex);
-                                _pillars.insert(newIndex, item);
-                              });
-                              widget.onPillarOrderChanged?.call(List<PillarType>.of(_pillars));
-                            },
-                            proxyDecorator: (child, index, animation) {
-                              return AnimatedBuilder(
-                                animation: animation,
-                                builder: (context, child) {
-                                  final t = Curves.easeInOut.transform(animation.value);
-                                  return Transform.scale(
-                                    scale: 1.0 + (0.05 * t),
-                                    child: Transform.rotate(
-                                      angle: 0.02 * t,
-                                      child: Material(
-                                        elevation: 8.0 + (8.0 * t),
-                                        color: Colors.transparent,
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(8),
-                                            border: Border.all(
-                                              color: Theme.of(context).colorScheme.primary,
-                                              width: 2 + t,
+                    height: headerH +
+                        visibleRows.length * cellH +
+                        (widget.isEditable ? 32 : 0), // 增加底部👆的高度
+                    child: Stack(
+                      children: [
+                        // Base: existing reorderable list or static row
+                        Positioned.fill(
+                          child: widget.isEditable
+                              ? ReorderableListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  buildDefaultDragHandles: false,
+                                  itemCount: _pillars.length,
+                                  onReorder: (oldIndex, newIndex) {
+                                    setState(() {
+                                      if (newIndex > oldIndex) {
+                                        newIndex -= 1;
+                                      }
+                                      final item = _pillars.removeAt(oldIndex);
+                                      _pillars.insert(newIndex, item);
+                                      _moveColumnOverride(oldIndex, newIndex);
+                                    });
+                                    widget.onPillarOrderChanged
+                                        ?.call(List<PillarType>.of(_pillars));
+                                  },
+                                  proxyDecorator: (child, index, animation) {
+                                    return AnimatedBuilder(
+                                      animation: animation,
+                                      builder: (context, child) {
+                                        final t = Curves.easeInOut
+                                            .transform(animation.value);
+                                        return Transform.scale(
+                                          scale: 1.0 + (0.05 * t),
+                                          child: Transform.rotate(
+                                            angle: 0.02 * t,
+                                            child: Material(
+                                              elevation: 8.0 + (8.0 * t),
+                                              color: Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              child: Container(
+                                                decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(8),
+                                                  border: Border.all(
+                                                    color: Theme.of(context)
+                                                        .colorScheme
+                                                        .primary,
+                                                    width: 2 + t,
+                                                  ),
+                                                ),
+                                                child: child,
+                                              ),
                                             ),
                                           ),
-                                          child: child,
+                                        );
+                                      },
+                                      child: child,
+                                    );
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final p = _pillars[index];
+                                    return SizedBox(
+                                      key: ValueKey('$p-$index'),
+                                      width: columnWidth,
+                                      child: ReorderableDragStartListener(
+                                        index: index,
+                                        child: _buildColumn(
+                                          p,
+                                          headerH,
+                                          cellH,
+                                          labelStyle,
+                                          visibleRows,
+                                          true,
+                                          index,
                                         ),
                                       ),
+                                    );
+                                  },
+                                )
+                              : Row(
+                                  children: _pillars.asMap().entries.map((e) {
+                                    final index = e.key;
+                                    final p = e.value;
+                                    return SizedBox(
+                                      width: columnWidth,
+                                      child: _buildColumn(
+                                        p,
+                                        headerH,
+                                        cellH,
+                                        labelStyle,
+                                        visibleRows,
+                                        false,
+                                        index,
+                                      ),
+                                    );
+                                  }).toList(),
+                                ),
+                        ),
+                        // Overlay: external pillar insert drop zones
+                        if (widget.isEditable)
+                          Positioned.fill(
+                            child: IgnorePointer(
+                              ignoring: false,
+                              child: Row(
+                                children:
+                                    List.generate(_pillars.length + 1, (i) {
+                                  return SizedBox(
+                                    width: columnWidth,
+                                    child: DragTarget<PillarPayload>(
+                                      onWillAccept: (data) {
+                                        setState(() => _hoverInsertIndex = i);
+                                        return data != null;
+                                      },
+                                      onLeave: (_) => setState(
+                                          () => _hoverInsertIndex = null),
+                                      onAccept: (data) {
+                                        _insertExternalPillar(i, data);
+                                        setState(
+                                            () => _hoverInsertIndex = null);
+                                      },
+                                      builder: (ctx, candidate, rejected) {
+                                        final active = candidate.isNotEmpty &&
+                                            _hoverInsertIndex == i;
+                                        return AnimatedContainer(
+                                          duration:
+                                              const Duration(milliseconds: 120),
+                                          constraints:
+                                              const BoxConstraints.expand(),
+                                          margin: EdgeInsets.zero,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: active
+                                                  ? Theme.of(ctx)
+                                                      .colorScheme
+                                                      .primary
+                                                  : Theme.of(ctx)
+                                                      .dividerColor
+                                                      .withValues(alpha: 0.1),
+                                              width: active ? 2 : 1,
+                                            ),
+                                            borderRadius:
+                                                BorderRadius.circular(6),
+                                            color: active
+                                                ? Theme.of(ctx)
+                                                    .colorScheme
+                                                    .primary
+                                                    .withValues(alpha: 0.06)
+                                                : Colors.transparent,
+                                          ),
+                                          child: active
+                                              ? Center(
+                                                  child: Text(
+                                                    '在此插入列',
+                                                    style: Theme.of(ctx)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: Theme.of(ctx)
+                                                              .colorScheme
+                                                              .primary,
+                                                        ),
+                                                  ),
+                                                )
+                                              : null,
+                                        );
+                                      },
                                     ),
                                   );
-                                },
-                                child: child,
-                              );
-                            },
-                            itemBuilder: (context, index) {
-                              final p = _pillars[index];
-                              return SizedBox(
-                                key: ValueKey(p),
-                                width: columnWidth,
-                                child: ReorderableDragStartListener(
-                                  index: index,
-                                  child: _buildColumn(p, headerH, cellH, labelStyle, visibleRows, true),
-                                ),
-                              );
-                            },
-                          )
-                        : Row(
-                            children: _pillars.map((p) {
-                              return SizedBox(
-                                width: columnWidth,
-                                child: _buildColumn(p, headerH, cellH, labelStyle, visibleRows, false),
-                              );
-                            }).toList(),
+                                }),
+                              ),
+                            ),
                           ),
+                      ],
+                    ),
                   ),
                 ),
 
@@ -199,15 +327,17 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
   ) {
     return Column(
       children: [
-        SizedBox(width: 72, height: headerH), // 空白标题
+        SizedBox(width: 72, height: headerH),
         ...visibleRows.map((cfg) {
-          final rLabel = widget.rowLabelResolver?.call(cfg.type) ?? _defaultRowLabel(cfg.type);
+          final rLabel = widget.rowLabelResolver?.call(cfg.type) ??
+              _defaultRowLabel(cfg.type);
           return Container(
             width: 72,
             height: cellH,
             padding: const EdgeInsets.symmetric(vertical: 2),
             child: Center(
-              child: Text(rLabel, style: labelStyle, textAlign: TextAlign.center),
+              child:
+                  Text(rLabel, style: labelStyle, textAlign: TextAlign.center),
             ),
           );
         }),
@@ -222,8 +352,11 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
     TextStyle labelStyle,
     List<RowConfig> visibleRows,
     bool isEditable,
+    int colIndex,
   ) {
-    final pillarLabel = widget.pillarLabelResolver?.call(pillar) ?? _defaultPillarLabel(pillar);
+    final baseLabel =
+        widget.pillarLabelResolver?.call(pillar) ?? _defaultPillarLabel(pillar);
+    final pillarLabel = _pillarLabelOverrides[colIndex] ?? baseLabel;
 
     return MouseRegion(
       cursor: isEditable ? SystemMouseCursors.grab : SystemMouseCursors.basic,
@@ -235,7 +368,8 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
             decoration: isEditable
                 ? BoxDecoration(
                     border: Border.all(
-                      color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                      color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.3),
                       width: 1,
                     ),
                     borderRadius: BorderRadius.circular(4),
@@ -250,8 +384,12 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
                   padding: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: isEditable
                       ? BoxDecoration(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.2),
+                          borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(4)),
                         )
                       : null,
                   child: Center(
@@ -263,7 +401,10 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
                           Icon(
                             Icons.drag_indicator,
                             size: 16,
-                            color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.7),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.7),
                           ),
                         if (isEditable) const SizedBox(width: 4),
                         Flexible(
@@ -288,9 +429,16 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
                   );
                   return Container(
                     height: cellH,
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Center(
-                      child: _buildCell(context, cfg.type, pillar, style),
+                      child: _buildCellAt(
+                        context,
+                        row: cfg.type,
+                        colIndex: colIndex,
+                        pillar: pillar,
+                        style: style,
+                      ),
                     ),
                   );
                 }),
@@ -313,16 +461,35 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
     );
   }
 
-  Widget _buildCell(BuildContext context, RowType row, PillarType pillar, TextStyle style) {
+  Widget _buildCellAt(
+    BuildContext context, {
+    required RowType row,
+    required int colIndex,
+    required PillarType pillar,
+    required TextStyle style,
+  }) {
+    final override = _columnOverrides[colIndex]?[row];
+    if (override != null) {
+      return Text(override, style: style, textAlign: TextAlign.center);
+    }
+    return _buildCell(context, row, pillar, style);
+  }
+
+  Widget _buildCell(
+      BuildContext context, RowType row, PillarType pillar, TextStyle style) {
     switch (row) {
       case RowType.heavenlyStem:
         final text = _tianGanForPillar(pillar).value;
-        final color = widget.elementColorResolver.colorForGan(_tianGanForPillar(pillar), context);
-        return Text(text, style: style.copyWith(color: color), textAlign: TextAlign.center);
+        final color = widget.elementColorResolver
+            .colorForGan(_tianGanForPillar(pillar), context);
+        return Text(text,
+            style: style.copyWith(color: color), textAlign: TextAlign.center);
       case RowType.earthlyBranch:
         final text = _diZhiForPillar(pillar).value;
-        final color = widget.elementColorResolver.colorForZhi(_diZhiForPillar(pillar), context);
-        return Text(text, style: style.copyWith(color: color), textAlign: TextAlign.center);
+        final color = widget.elementColorResolver
+            .colorForZhi(_diZhiForPillar(pillar), context);
+        return Text(text,
+            style: style.copyWith(color: color), textAlign: TextAlign.center);
       case RowType.naYin:
         final jy = _jiaZiForPillar(pillar);
         return Text(jy.naYin.name, style: style, textAlign: TextAlign.center);
@@ -402,5 +569,70 @@ class _ColumnReorderableFourZhuCardState extends State<ColumnReorderableFourZhuC
       default:
         return type.name;
     }
+  }
+
+  void _insertExternalPillar(int index, PillarPayload data) {
+    setState(() {
+      _pillars.insert(index, data.pillarType);
+      final nextOverrides = <int, Map<RowType, String>>{};
+      final nextLabels = <int, String>{};
+      for (final entry in _columnOverrides.entries) {
+        final newKey = entry.key >= index ? entry.key + 1 : entry.key;
+        nextOverrides[newKey] = entry.value;
+      }
+      for (final entry in _pillarLabelOverrides.entries) {
+        final newKey = entry.key >= index ? entry.key + 1 : entry.key;
+        nextLabels[newKey] = entry.value;
+      }
+      _columnOverrides
+        ..clear()
+        ..addAll(nextOverrides);
+      _pillarLabelOverrides
+        ..clear()
+        ..addAll(nextLabels);
+      _columnOverrides[index] = Map<RowType, String>.of(data.perRowValues);
+      if (data.pillarLabel != null) {
+        _pillarLabelOverrides[index] = data.pillarLabel!;
+      }
+    });
+    debugPrint('[ColumnCard] Accepted external pillar at index ' +
+        index.toString() +
+        ', type=' +
+        data.pillarType.name);
+    widget.onPillarOrderChanged?.call(List<PillarType>.of(_pillars));
+  }
+
+  void _moveColumnOverride(int oldIndex, int newIndex) {
+    if (oldIndex == newIndex) return;
+    final ov = _columnOverrides.remove(oldIndex);
+    final label = _pillarLabelOverrides.remove(oldIndex);
+    final shifted = <int, Map<RowType, String>>{};
+    final shiftedLabels = <int, String>{};
+    for (final entry in _columnOverrides.entries) {
+      var k = entry.key;
+      if (oldIndex < newIndex) {
+        if (k > oldIndex && k <= newIndex) k -= 1;
+      } else {
+        if (k >= newIndex && k < oldIndex) k += 1;
+      }
+      shifted[k] = entry.value;
+    }
+    for (final entry in _pillarLabelOverrides.entries) {
+      var k = entry.key;
+      if (oldIndex < newIndex) {
+        if (k > oldIndex && k <= newIndex) k -= 1;
+      } else {
+        if (k >= newIndex && k < oldIndex) k += 1;
+      }
+      shiftedLabels[k] = entry.value;
+    }
+    _columnOverrides
+      ..clear()
+      ..addAll(shifted);
+    _pillarLabelOverrides
+      ..clear()
+      ..addAll(shiftedLabels);
+    if (ov != null) _columnOverrides[newIndex] = ov;
+    if (label != null) _pillarLabelOverrides[newIndex] = label;
   }
 }
