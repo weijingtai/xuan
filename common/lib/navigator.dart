@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import './divinatioin_history_record/divination_history_record_page.dart';
 import 'package:common/pages/dev_test_lunar_info_card_page.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
+import 'package:common/pages/editable_four_zhu_card_demo_page.dart';
+import 'package:common/pages/reorderable_cards_demo.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -21,6 +23,9 @@ class NavigatorGenerator {
     "/common/history": (context, {arguments}) =>
         const DivinationHistoryRecordPage(),
     "/common/four_zhu_edit": (context, {arguments}) => const FourZhuEditPage(),
+    "/common/editable_card_demo": (context, {arguments}) =>
+        const EditableFourZhuCardDemoPage(),
+    // "/common/reorderable_cards": (context, {arguments}) => const ReorderableCardsDemo(),
   };
 
   static Route<dynamic> generateRoute(RouteSettings settings) {

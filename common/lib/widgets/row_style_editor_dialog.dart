@@ -91,7 +91,7 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
               const SizedBox(height: 12),
 
               DropdownButtonFormField<String>(
-                initialValue: _selectedFontFamily,
+                value: _selectedFontFamily,
                 decoration: const InputDecoration(
                   labelText: '字体家族',
                   border: OutlineInputBorder(),
@@ -99,10 +99,13 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
                 ),
                 items: const [
                   DropdownMenuItem(value: null, child: Text('继承全局')),
-                  DropdownMenuItem(value: 'NotoSansSC-Regular', child: Text('NotoSansSC-Regular')),
+                  DropdownMenuItem(
+                      value: 'NotoSansSC-Regular',
+                      child: Text('NotoSansSC-Regular')),
                   DropdownMenuItem(value: 'system', child: Text('系统默认')),
                 ],
-                onChanged: (value) => setState(() => _selectedFontFamily = value),
+                onChanged: (value) =>
+                    setState(() => _selectedFontFamily = value),
               ),
 
               const SizedBox(height: 12),
@@ -147,14 +150,16 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
-                      controller: TextEditingController(text: _selectedTextColor ?? ''),
+                      controller:
+                          TextEditingController(text: _selectedTextColor ?? ''),
                       decoration: const InputDecoration(
                         labelText: 'Hex 颜色值',
                         hintText: '#FF000000',
                         border: OutlineInputBorder(),
                         isDense: true,
                       ),
-                      onChanged: (value) => setState(() => _selectedTextColor = value),
+                      onChanged: (value) =>
+                          setState(() => _selectedTextColor = value),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -162,7 +167,8 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
                     IconButton(
                       icon: const Icon(Icons.clear, size: 18),
                       tooltip: '清除（继承全局）',
-                      onPressed: () => setState(() => _selectedTextColor = null),
+                      onPressed: () =>
+                          setState(() => _selectedTextColor = null),
                     ),
                 ],
               ),
@@ -172,11 +178,31 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  _ColorChip(color: '#FF000000', label: '黑', onTap: () => setState(() => _selectedTextColor = '#FF000000')),
-                  _ColorChip(color: '#FFDC2626', label: '红', onTap: () => setState(() => _selectedTextColor = '#FFDC2626')),
-                  _ColorChip(color: '#FF16A34A', label: '绿', onTap: () => setState(() => _selectedTextColor = '#FF16A34A')),
-                  _ColorChip(color: '#FF2563EB', label: '蓝', onTap: () => setState(() => _selectedTextColor = '#FF2563EB')),
-                  _ColorChip(color: '#FFEAB308', label: '黄', onTap: () => setState(() => _selectedTextColor = '#FFEAB308')),
+                  _ColorChip(
+                      color: '#FF000000',
+                      label: '黑',
+                      onTap: () =>
+                          setState(() => _selectedTextColor = '#FF000000')),
+                  _ColorChip(
+                      color: '#FFDC2626',
+                      label: '红',
+                      onTap: () =>
+                          setState(() => _selectedTextColor = '#FFDC2626')),
+                  _ColorChip(
+                      color: '#FF16A34A',
+                      label: '绿',
+                      onTap: () =>
+                          setState(() => _selectedTextColor = '#FF16A34A')),
+                  _ColorChip(
+                      color: '#FF2563EB',
+                      label: '蓝',
+                      onTap: () =>
+                          setState(() => _selectedTextColor = '#FF2563EB')),
+                  _ColorChip(
+                      color: '#FFEAB308',
+                      label: '黄',
+                      onTap: () =>
+                          setState(() => _selectedTextColor = '#FFEAB308')),
                 ],
               ),
 
@@ -215,7 +241,7 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
               Text('边框样式', style: theme.textTheme.titleMedium),
               const SizedBox(height: 12),
               DropdownButtonFormField<BorderType>(
-                initialValue: _selectedBorderType ?? BorderType.none,
+                value: _selectedBorderType ?? BorderType.none,
                 decoration: const InputDecoration(
                   labelText: '边框类型',
                   border: OutlineInputBorder(),
@@ -227,20 +253,24 @@ class _RowStyleEditorDialogState extends State<RowStyleEditorDialog> {
                     child: Text(_getBorderTypeName(type)),
                   );
                 }).toList(),
-                onChanged: (value) => setState(() => _selectedBorderType = value),
+                onChanged: (value) =>
+                    setState(() => _selectedBorderType = value),
               ),
 
-              if (_selectedBorderType != null && _selectedBorderType != BorderType.none) ...[
+              if (_selectedBorderType != null &&
+                  _selectedBorderType != BorderType.none) ...[
                 const SizedBox(height: 12),
                 TextField(
-                  controller: TextEditingController(text: _selectedBorderColor ?? ''),
+                  controller:
+                      TextEditingController(text: _selectedBorderColor ?? ''),
                   decoration: const InputDecoration(
                     labelText: '边框颜色 Hex',
                     hintText: '#FFD1D5DB',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
-                  onChanged: (value) => setState(() => _selectedBorderColor = value),
+                  onChanged: (value) =>
+                      setState(() => _selectedBorderColor = value),
                 ),
               ],
 
@@ -405,7 +435,8 @@ class _ColorChip extends StatelessWidget {
 
   bool _isLightColor(String hex) {
     final color = _parseColor(hex);
-    final luminance = (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
+    final luminance =
+        (0.299 * color.red + 0.587 * color.green + 0.114 * color.blue) / 255;
     return luminance > 0.5;
   }
 }
@@ -476,13 +507,15 @@ class _PreviewSection extends StatelessWidget {
   Border? _buildBorder(ThemeData theme) {
     if (borderType == null || borderType == BorderType.none) return null;
 
-    final color = borderColor != null ? _parseColor(borderColor) : theme.dividerColor;
+    final color =
+        borderColor != null ? _parseColor(borderColor) : theme.dividerColor;
 
     switch (borderType!) {
       case BorderType.solid:
         return Border.all(color: color);
       case BorderType.dashed:
-        return Border.all(color: color, style: BorderStyle.solid); // Flutter 不支持虚线，用实线替代
+        return Border.all(
+            color: color, style: BorderStyle.solid); // Flutter 不支持虚线，用实线替代
       case BorderType.dotted:
         return Border.all(color: color, style: BorderStyle.solid);
       case BorderType.none:

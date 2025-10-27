@@ -8,6 +8,12 @@ import 'package:provider/provider.dart';
 import 'models/divination_datetime.dart';
 import 'viewmodels/dev_enter_page_view_model.dart';
 import 'widgets/divination_card_widget.dart';
+import 'widgets/column_reorderable_four_zhu_card.dart';
+import 'widgets/row_reorderable_four_zhu_card.dart';
+import 'enums/layout_template_enums.dart';
+import 'enums/enum_jia_zi.dart';
+import 'models/eight_chars.dart';
+import 'models/layout_template.dart';
 
 class DevEnterPage extends StatefulWidget {
   const DevEnterPage({super.key});
@@ -25,12 +31,49 @@ class _DevEnterPageState extends State<DevEnterPage> {
 
   final PageController _pageController = PageController();
 
+  // 四柱卡片相关状态
+  bool _isEditable = false;
+  late EightChars _sample;
+  late List<PillarType> _columnPillars;
+  late List<PillarType> _rowPillars;
+  late List<RowConfig> _columnRows;
+  late List<RowConfig> _rowRows;
+  late CardStyle _cardStyle;
+
   // late final DevEnterPageViewModel _viewModel;
   @override
   void initState() {
     super.initState();
     // _viewModel = DevEnterPageViewModel();
     // context.read<DevEnterPageViewModel>().initState();
+
+    // 初始化四柱示例数据
+    _sample = EightChars(
+      year: JiaZi.JIA_ZI,
+      month: JiaZi.YI_CHOU,
+      day: JiaZi.BING_YIN,
+      time: JiaZi.DING_MAO,
+    );
+    _columnPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
+    _rowPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
+    _columnRows = const [
+      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
+      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
+      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+    ];
+    _rowRows = const [
+      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
+      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
+      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+    ];
+    _cardStyle = const CardStyle(
+      dividerType: BorderType.solid,
+      dividerColorHex: '#FF334155',
+      dividerThickness: 1,
+      globalFontFamily: 'NotoSansSC-Regular',
+      globalFontSize: 16,
+      globalFontColorHex: '#FF0F172A',
+    );
   }
 
   @override

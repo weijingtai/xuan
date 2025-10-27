@@ -51,11 +51,14 @@ class EditorSidebarV2 extends StatelessWidget {
                 _RowConfigSection(
                   rowConfigs: rowConfigs,
                   onRowVisibilityChanged: viewModel.updateRowVisibility,
-                  onRowTitleVisibilityChanged: viewModel.updateRowTitleVisibility,
+                  onRowTitleVisibilityChanged:
+                      viewModel.updateRowTitleVisibility,
                   onRowOrderChanged: (oldIndex, newIndex) {
-                    viewModel.updateRowOrder(oldIndex: oldIndex, newIndex: newIndex);
+                    viewModel.updateRowOrder(
+                        oldIndex: oldIndex, newIndex: newIndex);
                   },
-                  onRowStyleEdit: (config) => _showRowStyleDialog(context, config, viewModel),
+                  onRowStyleEdit: (config) =>
+                      _showRowStyleDialog(context, config, viewModel),
                 ),
 
                 const Divider(height: 32),
@@ -143,7 +146,7 @@ class _DividerConfigSection extends StatelessWidget {
 
         // 样式下拉框
         DropdownButtonFormField<BorderType>(
-          initialValue: dividerType,
+          value: dividerType,
           decoration: const InputDecoration(
             labelText: '样式',
             border: OutlineInputBorder(),
@@ -194,7 +197,8 @@ class _DividerConfigSection extends StatelessWidget {
 
         // 粗细输入
         TextField(
-          controller: TextEditingController(text: dividerThickness.toStringAsFixed(0)),
+          controller:
+              TextEditingController(text: dividerThickness.toStringAsFixed(0)),
           decoration: const InputDecoration(
             labelText: '粗细 (px)',
             border: OutlineInputBorder(),
@@ -252,7 +256,8 @@ class _RowConfigSection extends StatelessWidget {
 
   final List<RowConfig> rowConfigs;
   final void Function(RowType type, bool isVisible) onRowVisibilityChanged;
-  final void Function(RowType type, bool isTitleVisible) onRowTitleVisibilityChanged;
+  final void Function(RowType type, bool isTitleVisible)
+      onRowTitleVisibilityChanged;
   final void Function(int oldIndex, int newIndex) onRowOrderChanged;
   final ValueChanged<RowConfig> onRowStyleEdit;
 
@@ -261,13 +266,17 @@ class _RowConfigSection extends StatelessWidget {
     final theme = Theme.of(context);
 
     // 分离核心行和可选行
-    final coreRows = rowConfigs.where((config) =>
-      config.type == RowType.heavenlyStem || config.type == RowType.earthlyBranch
-    ).toList();
+    final coreRows = rowConfigs
+        .where((config) =>
+            config.type == RowType.heavenlyStem ||
+            config.type == RowType.earthlyBranch)
+        .toList();
 
-    final optionalRows = rowConfigs.where((config) =>
-      config.type != RowType.heavenlyStem && config.type != RowType.earthlyBranch
-    ).toList();
+    final optionalRows = rowConfigs
+        .where((config) =>
+            config.type != RowType.heavenlyStem &&
+            config.type != RowType.earthlyBranch)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +357,8 @@ class _CoreRowItem extends StatelessWidget {
         style: theme.textTheme.bodyMedium,
       ),
       subtitle: const Text('核心', style: TextStyle(fontSize: 11)),
-      tileColor: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+      tileColor:
+          theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
     );
   }
@@ -409,7 +419,8 @@ class _OptionalRowItem extends StatelessWidget {
                 children: [
                   Checkbox(
                     value: config.isTitleVisible,
-                    onChanged: (value) => onTitleVisibilityChanged(value ?? false),
+                    onChanged: (value) =>
+                        onTitleVisibilityChanged(value ?? false),
                   ),
                   const Text('显示标题', style: TextStyle(fontSize: 11)),
                 ],
@@ -493,7 +504,8 @@ class _GlobalFontSection extends StatelessWidget {
           ),
           items: const [
             DropdownMenuItem(value: '系统默认', child: Text('系统默认')),
-            DropdownMenuItem(value: 'NotoSansSC-Regular', child: Text('NotoSansSC-Regular')),
+            DropdownMenuItem(
+                value: 'NotoSansSC-Regular', child: Text('NotoSansSC-Regular')),
           ],
           onChanged: (value) {
             if (value != null) onFontFamilyChanged(value);

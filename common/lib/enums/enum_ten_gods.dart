@@ -13,4 +13,6 @@ enum EnumTenGods {
   final String name;
   final String singleName;
   const EnumTenGods(this.name, this.singleName);
+
+  String get shortName => singleName;
 }
