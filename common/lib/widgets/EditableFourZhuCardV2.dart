@@ -30,6 +30,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   late final ValueNotifier<Size> totalSizeNotifier;
   late final VoidCallback _jiaZiListener;
   late final VoidCallback _rowListListener;
+  late final ValueNotifier<CardMode?> _lockedModeNotifier; // 标题点击锁定的模式
   double pillarWidth = 64;
   double rowTitleWidth = 52;
   double columnTitleHeight = 24;
@@ -43,6 +44,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   void initState() {
     super.initState();
     totalSizeNotifier = ValueNotifier<Size>(_computeTotalSize());
+    _lockedModeNotifier = ValueNotifier<CardMode?>(null);
 
     // Listen to data changes to keep size in sync
     _jiaZiListener = () {
@@ -60,6 +62,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
     widget.jiaZiNotifier.removeListener(_jiaZiListener);
     widget.rowListNotifier.removeListener(_rowListListener);
     totalSizeNotifier.dispose();
+    _lockedModeNotifier.dispose();
     super.dispose();
   }
 
@@ -180,12 +183,23 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
 
                     // 标题可拖拽
                     final titleCell = cell(
-                        Size(
-                            rowTitleWidth,
-                            (title == "天干" || title == "地支")
-                                ? ganZhiCellSize.height
-                                : columnTitleHeight),
-                        _dragTitle(getColumnTitleText(title.toString())));
+                      Size(
+                          rowTitleWidth,
+                          (title == "天干" || title == "地支")
+                              ? ganZhiCellSize.height
+                              : otherCellHeight),
+                      ValueListenableBuilder<CardMode?>(
+                        valueListenable: _lockedModeNotifier,
+                        builder: (context, locked, _) {
+                          final bool? active =
+                              locked == null ? null : (locked == CardMode.row);
+                          return _dragRowHandle(
+                            getColumnTitleText(title.toString()),
+                            active: active,
+                          );
+                        },
+                      ),
+                    );
                     cellList.add(
                       ReorderableDragStartListener(
                           index: index, child: titleCell),
@@ -342,23 +356,30 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         // borderRadius: BorderRadius.circular(16),
       ),
       child: Center(
-        child: Row(
-          // mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            cell(Size(pillarWidth, columnTitleHeight),
-                getColumnTitleText(titleList[0])),
+        child: ValueListenableBuilder(
+          valueListenable: _lockedModeNotifier,
+          builder: (context, locked, child) {
+            final bool? active =
+                locked == null ? null : (locked == CardMode.column);
+            return Row(
+              // mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                cell(Size(pillarWidth, columnTitleHeight),
+                    getColumnTitleText(titleList[0], active: active)),
 
-            cell(Size(pillarWidth, columnTitleHeight),
-                getColumnTitleText(titleList[1])),
-            cell(Size(pillarWidth, ganZhiCellSize.height),
-                getColumnTitleText(titleList[1])),
+                cell(Size(pillarWidth, columnTitleHeight),
+                    getColumnTitleText(titleList[1], active: active)),
+                cell(Size(pillarWidth, ganZhiCellSize.height),
+                    getColumnTitleText(titleList[1], active: active)),
 
-            // 地支
-            cell(Size(pillarWidth, ganZhiCellSize.height),
-                getColumnTitleText(titleList[1])),
-            cell(Size(pillarWidth, otherCellHeight),
-                getColumnTitleText(titleList[1])),
-          ],
+                // 地支
+                cell(Size(pillarWidth, ganZhiCellSize.height),
+                    getColumnTitleText(titleList[1], active: active)),
+                cell(Size(pillarWidth, otherCellHeight),
+                    getColumnTitleText(titleList[1], active: active)),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -440,7 +461,17 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
             index: index,
             child: cell(
               Size(ganZhiCellSize.width, columnTitleHeight),
-              _dragTitle(getColumnTitleText(tuple.item1)),
+              ValueListenableBuilder<CardMode?>(
+                valueListenable: _lockedModeNotifier,
+                builder: (context, locked, _) {
+                  final bool? active =
+                      locked == null ? null : (locked == CardMode.column);
+                  return _dragColumnHandle(
+                    getColumnTitleText(tuple.item1, active: active),
+                    active: active,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -509,53 +540,152 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
     );
   }
 
-  Widget _dragTitle(Widget title) {
+  // 统一封装：根据锁定状态显示不同颜色的拖拽图标；文本颜色由外部 AnimatedDefaultTextStyle 控制
+  // active == true => 黑色；active == false => 灰色；active == null => 中性
+  Widget _dragRowHandle(Widget title, {bool? active}) {
+    final Color targetIconColor =
+        active == null ? Colors.black45 : (active ? Colors.black : Colors.grey);
+    final Color targetTextColor =
+        active == null ? Colors.black87 : (active ? Colors.black : Colors.grey);
+    Widget _animatedTitle(Widget t, Color target) {
+      if (t is Text) {
+        final String data = t.data ?? '';
+        final TextStyle base = t.style ?? const TextStyle();
+        return TweenAnimationBuilder<Color?>(
+          tween: ColorTween(end: target),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          builder: (context, color, _) => Text(
+            data,
+            style: base.copyWith(color: color),
+            textAlign: t.textAlign,
+            maxLines: t.maxLines,
+            overflow: t.overflow,
+            softWrap: t.softWrap,
+          ),
+        );
+      }
+      return AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        style: TextStyle(color: target),
+        child: t,
+      );
+    }
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
+        TweenAnimationBuilder<Color?>(
+          tween: ColorTween(end: targetIconColor),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          builder: (context, color, _) =>
+              Icon(Icons.drag_indicator, size: 16, color: color),
+        ),
         const SizedBox(width: 4),
-        Flexible(child: title),
+        Flexible(child: _animatedTitle(title, targetTextColor)),
       ],
     );
   }
 
+  Widget _dragColumnHandle(Widget title, {bool? active}) {
+    final Color targetIconColor =
+        active == null ? Colors.black87 : (active ? Colors.black : Colors.grey);
+    final Color targetTextColor =
+        active == null ? Colors.black87 : (active ? Colors.black : Colors.grey);
+    Widget _animatedTitle(Widget t, Color target) {
+      if (t is Text) {
+        final String data = t.data ?? '';
+        final TextStyle base = t.style ?? const TextStyle();
+        return TweenAnimationBuilder<Color?>(
+          tween: ColorTween(end: target),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          builder: (context, color, _) => Text(
+            data,
+            style: base.copyWith(color: color),
+            textAlign: t.textAlign,
+            maxLines: t.maxLines,
+            overflow: t.overflow,
+            softWrap: t.softWrap,
+          ),
+        );
+      }
+      return AnimatedDefaultTextStyle(
+        duration: const Duration(milliseconds: 180),
+        curve: Curves.easeOut,
+        style: TextStyle(color: target),
+        child: t,
+      );
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TweenAnimationBuilder<Color?>(
+          tween: ColorTween(end: targetIconColor),
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOut,
+          builder: (context, color, _) =>
+              Icon(Icons.drag_indicator, size: 16, color: color),
+        ),
+        const SizedBox(width: 4),
+        Flexible(child: _animatedTitle(title, targetTextColor)),
+      ],
+    );
+  }
+
+  // 桌面端：悬停“无感”切换；触屏端：点击切换
   Widget _dragTitleSwitcher(Widget title) {
-    // 鼠标经过时切换到行模式，用于快速从列视图切换至行视图
-    return MouseRegion(
-      onEnter: (_) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        _lockedModeNotifier.value = CardMode.row;
         widget.cardModeNotifier.value = CardMode.row;
       },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
-          const SizedBox(width: 4),
-          Flexible(child: title),
-        ],
+      child: MouseRegion(
+        onEnter: (_) {
+          _lockedModeNotifier.value = CardMode.row;
+          widget.cardModeNotifier.value = CardMode.row;
+        },
+        child: ValueListenableBuilder<CardMode?>(
+          valueListenable: _lockedModeNotifier,
+          builder: (context, locked, _) {
+            final bool? active =
+                locked == null ? null : (locked == CardMode.row);
+            return _dragRowHandle(title, active: active);
+          },
+        ),
       ),
     );
   }
 
   // 鼠标经过列标题时切换到列模式，用于从行视图快速切回列视图
   Widget _dragColumnTitleSwitcher(Widget title) {
-    return MouseRegion(
-      onEnter: (_) {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () {
+        _lockedModeNotifier.value = CardMode.column;
         widget.cardModeNotifier.value = CardMode.column;
       },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
-          const SizedBox(width: 4),
-          Flexible(child: title),
-        ],
+      child: MouseRegion(
+        onEnter: (_) {
+          _lockedModeNotifier.value = CardMode.column;
+          widget.cardModeNotifier.value = CardMode.column;
+        },
+        child: ValueListenableBuilder<CardMode?>(
+          valueListenable: _lockedModeNotifier,
+          builder: (context, locked, _) {
+            final bool? active =
+                locked == null ? null : (locked == CardMode.column);
+            return _dragColumnHandle(title, active: active);
+          },
+        ),
       ),
     );
   }
@@ -570,14 +700,30 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         style: TextStyle(fontSize: 24, color: Colors.black87));
   }
 
-  Text getRowTitleText(String rowTitle) {
-    return Text(rowTitle,
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold));
+  AnimatedDefaultTextStyle getRowTitleText(String rowTitle, {bool? active}) {
+    return AnimatedDefaultTextStyle(
+      child: Text(rowTitle),
+      style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: active == null
+              ? Colors.black87
+              : (active == true ? Colors.black : Colors.black26)),
+      duration: const Duration(milliseconds: 180),
+    );
   }
 
-  Text getColumnTitleText(String title) {
-    return Text(title,
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold));
+  AnimatedDefaultTextStyle getColumnTitleText(String title, {bool? active}) {
+    return AnimatedDefaultTextStyle(
+      child: Text(title),
+      style: TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.bold,
+          color: active == null
+              ? Colors.black87
+              : (active ? Colors.black : Colors.black26)),
+      duration: const Duration(milliseconds: 180),
+    );
   }
 
   Text getNaYinText(String content) {

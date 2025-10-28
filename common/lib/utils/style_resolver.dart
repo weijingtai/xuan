@@ -79,7 +79,8 @@ class DefaultLayoutMetricsResolver extends LayoutMetricsResolver {
   double tileWidth(BuildContext context, {CardStyle? cardStyle}) {
     // Base width scalable with global font size for accessibility
     final base = (cardStyle?.globalFontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14) * 10;
-    return base.clamp(140, 220);
+    // Make pillars slightly narrower by lowering the minimum width bound.
+    return base.clamp(120, 220);
   }
 
   @override

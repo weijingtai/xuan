@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:tuple/tuple.dart';
 
+import '../enums/enum_gender.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/eight_chars.dart';
 import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
+import '../widgets/EditableFourZhuCardV2.dart';
+import '../widgets/EditableFourZhuCardV3.dart';
 import '../widgets/editable_four_zhu_card.dart';
 import '../widgets/test_pillar_draggable.dart';
 import '../widgets/test_pillar_info_draggable.dart';
@@ -20,13 +24,26 @@ class EditableFourZhuCardDemoPage extends StatefulWidget {
       _EditableFourZhuCardDemoPageState();
 }
 
+enum CardMode {
+  normal,
+  column,
+  row,
+}
+
 class _EditableFourZhuCardDemoPageState
     extends State<EditableFourZhuCardDemoPage> {
+  final ValueNotifier<CardMode> _cardModeNotifier =
+      ValueNotifier<CardMode>(CardMode.normal);
   bool _isEditable = false;
+  double? _desiredColumnCardWidth;
 
   late EightChars _sample;
   late FourZhuLayoutController _controller;
   late CardStyle _cardStyle;
+
+  ValueNotifier<EdgeInsets> _paddingNotifier = ValueNotifier<EdgeInsets>(
+    EdgeInsets.zero,
+  );
 
   // 列拖拽卡片状态
   late List<PillarType> _columnPillars;
@@ -35,6 +52,21 @@ class _EditableFourZhuCardDemoPageState
   // 行拖拽卡片状态
   late List<PillarType> _rowPillars;
   late List<RowConfig> _rowRows;
+
+  final ValueNotifier<List<Tuple2<String, JiaZi>>> _jiaZiNotifier =
+      ValueNotifier<List<Tuple2<String, JiaZi>>>([
+    Tuple2("年", JiaZi.JIA_ZI),
+    Tuple2("月", JiaZi.YI_CHOU),
+    Tuple2("日", JiaZi.BING_YIN),
+    Tuple2("时", JiaZi.DING_MAO),
+  ]);
+  final ValueNotifier<List<String>> _rowListNotifier =
+      ValueNotifier<List<String>>([
+    '乾造',
+    '天干',
+    '地支',
+    '纳音',
+  ]);
 
   @override
   void initState() {
@@ -64,6 +96,11 @@ class _EditableFourZhuCardDemoPageState
     // Rebuild page when pillars or rows update
     _controller.pillars.addListener(() => setState(() {}));
     _controller.rows.addListener(() => setState(() {}));
+    // Also listen for shared overrides/labels changes
+    _controller.columnOverrides.addListener(() => setState(() {}));
+    _controller.pillarLabelOverrides.addListener(() => setState(() {}));
+    _controller.rowOverrides.addListener(() => setState(() {}));
+    _controller.rowLabelOverrides.addListener(() => setState(() {}));
 
     _cardStyle = const CardStyle(
       dividerType: BorderType.solid,
@@ -96,10 +133,10 @@ class _EditableFourZhuCardDemoPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Wrap(
+                const Wrap(
                   spacing: 8,
                   runSpacing: 8,
-                  children: const [
+                  children: [
                     TestPillarDraggable(type: PillarType.year),
                     TestPillarDraggable(type: PillarType.month),
                     TestPillarDraggable(type: PillarType.day),
@@ -126,6 +163,69 @@ class _EditableFourZhuCardDemoPageState
                   ],
                 ),
                 const SizedBox(height: 24),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    EditableFourZhuCardv2(
+                      cardModeNotifier: _cardModeNotifier,
+                      jiaZiNotifier: _jiaZiNotifier,
+                      rowListNotifier: _rowListNotifier,
+                      paddingNotifier: _paddingNotifier,
+                      gender: Gender.male,
+                    ),
+                    // 新增：单视图双轴拖拽的 V3 版本
+                    EditableFourZhuCardV3(
+                      jiaZiNotifier: _jiaZiNotifier,
+                      rowListNotifier: _rowListNotifier,
+                      paddingNotifier: _paddingNotifier,
+                      gender: Gender.male,
+                    ),
+                  ],
+                ),
+                SizedBox(height: 18),
+                ValueListenableBuilder<CardMode>(
+                  valueListenable: _cardModeNotifier,
+                  builder: (context, value, child) {
+                    return Row(children: [
+                      ElevatedButton(
+                          onPressed: () {
+                            _cardModeNotifier.value = CardMode.normal;
+                          },
+                          child: Text(
+                            '普通模式',
+                            style: TextStyle(
+                                color: value == CardMode.normal
+                                    ? Colors.red
+                                    : Colors.black),
+                          )),
+                      ElevatedButton(
+                          onPressed: () {
+                            _cardModeNotifier.value = CardMode.column;
+                          },
+                          child: Text(
+                            '列模式',
+                            style: TextStyle(
+                                color: value == CardMode.column
+                                    ? Colors.red
+                                    : Colors.black),
+                          )),
+                      ElevatedButton(
+                          onPressed: () {
+                            _cardModeNotifier.value = CardMode.row;
+                          },
+                          child: Text(
+                            '行模式',
+                            style: TextStyle(
+                                color: value == CardMode.row
+                                    ? Colors.red
+                                    : Colors.black),
+                          )),
+                    ]);
+                  },
+                ),
+
+                const SizedBox(height: 24),
 
                 // 原始的 EditableFourZhuCard
                 _buildCardSection(
@@ -144,12 +244,19 @@ class _EditableFourZhuCardDemoPageState
                     onPillarOrderChanged: _controller.setPillars,
                     onRowConfigsChanged: _controller.setRows,
                     onAddPillarRequested: () => _showAddMenu(context),
+                    // NEW: 传入控制器的覆盖数据
+                    columnOverrides: _controller.columnOverrides.value,
+                    pillarLabelOverrides:
+                        _controller.pillarLabelOverrides.value,
+                    rowOverrides: _controller.rowOverrides.value,
+                    rowLabelOverrides: _controller.rowLabelOverrides.value,
                     // 使内层Card无视觉效果，与外层Card一致
                     backgroundColor: Colors.transparent,
                     padding: EdgeInsets.zero,
                     elevation: 0,
                     borderRadius: BorderRadius.zero,
                   ),
+                  desiredWidth: _desiredColumnCardWidth,
                 ),
 
                 const SizedBox(height: 24),
@@ -159,16 +266,55 @@ class _EditableFourZhuCardDemoPageState
                   title: '列拖拽卡片 (ColumnReorderableFourZhuCard)',
                   subtitle: _isEditable ? '拖拽列标题或底部👆重排列' : null,
                   color: Colors.green,
-                  child: ColumnReorderableFourZhuCard(
-                    eightChars: _sample,
-                    isEditable: _isEditable,
-                    pillarOrder: _controller.pillars.value,
-                    rowConfigs: _controller.rows.value,
-                    cardStyle: _cardStyle,
-                    rowLabelResolver: _rowLabel,
-                    pillarLabelResolver: _pillarLabel,
-                    onPillarOrderChanged: _controller.setPillars,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final maxW = constraints.maxWidth;
+                      final targetW = (_desiredColumnCardWidth ?? maxW)
+                          .clamp(0, maxW)
+                          .toDouble();
+                      return Align(
+                        alignment: Alignment.centerLeft,
+                        child: SizedBox(
+                          width: targetW,
+                          child: ColumnReorderableFourZhuCard(
+                            eightChars: _sample,
+                            isEditable: _isEditable,
+                            pillarOrder: _controller.pillars.value,
+                            rowConfigs: _controller.rows.value,
+                            cardStyle: _cardStyle,
+                            rowLabelResolver: _rowLabel,
+                            pillarLabelResolver: _pillarLabel,
+                            onPillarOrderChanged: _controller.setPillars,
+                            // Shared overrides wiring
+                            columnOverrides: _controller.columnOverrides.value,
+                            pillarLabelOverrides:
+                                _controller.pillarLabelOverrides.value,
+                            onColumnOverridesChanged:
+                                _controller.setColumnOverrides,
+                            onPillarLabelOverridesChanged:
+                                _controller.setPillarLabelOverrides,
+                            // New: read shared row-level overrides and labels
+                            rowOverrides: _controller.rowOverrides.value,
+                            rowLabelOverrides:
+                                _controller.rowLabelOverrides.value,
+                            // 缩放柱宽至当前宽度的50%
+                            pillarWidthScale: 0.5,
+                            // 接入内容驱动的期望卡片宽度回调
+                            onDesiredCardWidthChanged: (w) {
+                              if (_desiredColumnCardWidth != w) {
+                                WidgetsBinding.instance
+                                    .addPostFrameCallback((_) {
+                                  if (!mounted) return;
+                                  setState(() => _desiredColumnCardWidth = w);
+                                });
+                              }
+                            },
+                          ),
+                        ),
+                      );
+                    },
                   ),
+                  desiredWidth: _desiredColumnCardWidth,
                 ),
 
                 const SizedBox(height: 24),
@@ -186,8 +332,20 @@ class _EditableFourZhuCardDemoPageState
                     cardStyle: _cardStyle,
                     rowLabelResolver: _rowLabel,
                     pillarLabelResolver: _pillarLabel,
+                    // Shared overrides wiring
+                    rowOverrides: _controller.rowOverrides.value,
+                    rowLabelOverrides: _controller.rowLabelOverrides.value,
+                    onRowOverridesChanged: _controller.setRowOverrides,
+                    onRowLabelOverridesChanged:
+                        _controller.setRowLabelOverrides,
+                    // New: read-only column-level overrides and pillar label overrides
+                    columnOverrides: _controller.columnOverrides.value,
+                    pillarLabelOverrides:
+                        _controller.pillarLabelOverrides.value,
+                    // 新增：将行配置更新回传到控制器，保持单一数据源
                     onRowConfigsChanged: _controller.setRows,
                   ),
+                  desiredWidth: _desiredColumnCardWidth,
                 ),
 
                 const SizedBox(height: 24),
@@ -258,6 +416,7 @@ class _EditableFourZhuCardDemoPageState
     String? subtitle,
     required Color color,
     required Widget child,
+    double? desiredWidth,
   }) {
     // 根据标题确定背景颜色
     Color cardBackgroundColor;
@@ -302,14 +461,26 @@ class _EditableFourZhuCardDemoPageState
           ],
         ),
         const SizedBox(height: 8),
-        // Card内容 - 添加背景颜色
-        Card(
-          elevation: 2,
-          color: cardBackgroundColor,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: child,
-          ),
+        // Card内容 - 使用 Align+SizedBox 保持按期望宽度收缩
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final maxW = constraints.maxWidth;
+            final targetW = (desiredWidth ?? maxW).clamp(0, maxW).toDouble();
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: SizedBox(
+                width: targetW,
+                child: Card(
+                  elevation: 2,
+                  color: cardBackgroundColor,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: child,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -365,6 +536,10 @@ class _EditableFourZhuCardDemoPageState
   @override
   void dispose() {
     _controller.dispose();
+    _cardModeNotifier.dispose();
+    _jiaZiNotifier.dispose();
+    _rowListNotifier.dispose();
+    _paddingNotifier.dispose();
     super.dispose();
   }
 }

@@ -12,9 +12,25 @@ class FourZhuLayoutController {
   /// Current row configurations
   final ValueNotifier<List<RowConfig>> rows;
 
+  /// Column-level overrides: per column index, map row type -> display value
+  final ValueNotifier<Map<int, Map<RowType, String>>> columnOverrides;
+
+  /// Custom pillar labels: per column index -> label text
+  final ValueNotifier<Map<int, String>> pillarLabelOverrides;
+
+  /// Row-level overrides: per row index, map pillar type -> display value
+  final ValueNotifier<Map<int, Map<PillarType, String>>> rowOverrides;
+
+  /// Custom row labels: per row index -> label text
+  final ValueNotifier<Map<int, String>> rowLabelOverrides;
+
   FourZhuLayoutController({
     List<PillarType>? pillars,
     List<RowConfig>? rows,
+    Map<int, Map<RowType, String>>? columnOverrides,
+    Map<int, String>? pillarLabelOverrides,
+    Map<int, Map<PillarType, String>>? rowOverrides,
+    Map<int, String>? rowLabelOverrides,
   })  : pillars = ValueNotifier<List<PillarType>>(
           List<PillarType>.of(pillars ??
               const [
@@ -38,6 +54,18 @@ class FourZhuLayoutController {
                 RowConfig(
                     type: RowType.naYin, isVisible: true, isTitleVisible: true),
               ]),
+        ),
+        columnOverrides = ValueNotifier<Map<int, Map<RowType, String>>>(
+          Map<int, Map<RowType, String>>.of(columnOverrides ?? const {}),
+        ),
+        pillarLabelOverrides = ValueNotifier<Map<int, String>>(
+          Map<int, String>.of(pillarLabelOverrides ?? const {}),
+        ),
+        rowOverrides = ValueNotifier<Map<int, Map<PillarType, String>>>(
+          Map<int, Map<PillarType, String>>.of(rowOverrides ?? const {}),
+        ),
+        rowLabelOverrides = ValueNotifier<Map<int, String>>(
+          Map<int, String>.of(rowLabelOverrides ?? const {}),
         );
 
   void setPillars(List<PillarType> next) {
@@ -46,6 +74,26 @@ class FourZhuLayoutController {
 
   void setRows(List<RowConfig> next) {
     rows.value = List<RowConfig>.of(next);
+  }
+
+  void setColumnOverrides(Map<int, Map<RowType, String>> next) {
+    columnOverrides.value = next.map(
+      (k, v) => MapEntry(k, Map<RowType, String>.of(v)),
+    );
+  }
+
+  void setPillarLabelOverrides(Map<int, String> next) {
+    pillarLabelOverrides.value = Map<int, String>.of(next);
+  }
+
+  void setRowOverrides(Map<int, Map<PillarType, String>> next) {
+    rowOverrides.value = next.map(
+      (k, v) => MapEntry(k, Map<PillarType, String>.of(v)),
+    );
+  }
+
+  void setRowLabelOverrides(Map<int, String> next) {
+    rowLabelOverrides.value = Map<int, String>.of(next);
   }
 
   /// Reorder pillars by indices (same semantics as ReorderableListView)
@@ -74,5 +122,9 @@ class FourZhuLayoutController {
   void dispose() {
     pillars.dispose();
     rows.dispose();
+    columnOverrides.dispose();
+    pillarLabelOverrides.dispose();
+    rowOverrides.dispose();
+    rowLabelOverrides.dispose();
   }
 }

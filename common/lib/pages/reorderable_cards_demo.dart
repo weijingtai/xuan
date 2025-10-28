@@ -6,6 +6,7 @@ import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
+import '../viewmodels/four_zhu_layout_controller.dart';
 
 /// 演示页面：展示列拖拽和行拖拽的两个四柱卡片
 class ReorderableCardsDemo extends StatefulWidget {
@@ -17,12 +18,10 @@ class ReorderableCardsDemo extends StatefulWidget {
 
 class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
   bool _isEditable = false;
+  double? _desiredColumnCardWidth;
 
   late EightChars _sample;
-  late List<PillarType> _columnPillars;
-  late List<PillarType> _rowPillars;
-  late List<RowConfig> _columnRows;
-  late List<RowConfig> _rowRows;
+  late FourZhuLayoutController _controller;
   late CardStyle _cardStyle;
 
   @override
@@ -34,18 +33,28 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
       day: JiaZi.BING_YIN,
       time: JiaZi.DING_MAO,
     );
-    _columnPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
-    _rowPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
-    _columnRows = const [
-      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-    ];
-    _rowRows = const [
-      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
-    ];
+    _controller = FourZhuLayoutController(
+      pillars: const [
+        PillarType.year,
+        PillarType.month,
+        PillarType.day,
+        PillarType.hour
+      ],
+      rows: const [
+        RowConfig(
+            type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
+        RowConfig(
+            type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
+        RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+      ],
+    );
+    _controller.pillars.addListener(() => setState(() {}));
+    _controller.rows.addListener(() => setState(() {}));
+    // Also listen for shared overrides/labels changes
+    _controller.columnOverrides.addListener(() => setState(() {}));
+    _controller.pillarLabelOverrides.addListener(() => setState(() {}));
+    _controller.rowOverrides.addListener(() => setState(() {}));
+    _controller.rowLabelOverrides.addListener(() => setState(() {}));
     _cardStyle = const CardStyle(
       dividerType: BorderType.solid,
       dividerColorHex: '#FF334155',
@@ -77,108 +86,213 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // 列拖拽卡片
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.view_column, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              '列拖拽卡片',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            const Spacer(),
-                            if (_isEditable)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primaryContainer,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '拖拽列标题或底部👆重排列',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                // 列拖拽卡片（Card按期望宽度收缩）
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxW = constraints.maxWidth;
+                    final targetW = (_desiredColumnCardWidth ?? maxW)
+                        .clamp(0, maxW)
+                        .toDouble();
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: targetW,
+                        child: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.view_column, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '列拖拽卡片',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    const Spacer(),
+                                    if (_isEditable)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .primaryContainer,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          '拖拽列标题或底部👆重排列',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimaryContainer,
+                                              ),
+                                        ),
                                       ),
+                                  ],
                                 ),
-                              ),
-                          ],
+                                const SizedBox(height: 16),
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final maxW = constraints.maxWidth;
+                                    final targetW =
+                                        (_desiredColumnCardWidth ?? maxW)
+                                            .clamp(0, maxW)
+                                            .toDouble();
+                                    return Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: SizedBox(
+                                        width: targetW,
+                                        child: ColumnReorderableFourZhuCard(
+                                          eightChars: _sample,
+                                          isEditable: _isEditable,
+                                          pillarOrder:
+                                              _controller.pillars.value,
+                                          rowConfigs: _controller.rows.value,
+                                          cardStyle: _cardStyle,
+                                          rowLabelResolver: _rowLabel,
+                                          pillarLabelResolver: _pillarLabel,
+                                          onPillarOrderChanged:
+                                              _controller.setPillars,
+                                          // Shared overrides wiring
+                                          columnOverrides:
+                                              _controller.columnOverrides.value,
+                                          pillarLabelOverrides: _controller
+                                              .pillarLabelOverrides.value,
+                                          onColumnOverridesChanged:
+                                              _controller.setColumnOverrides,
+                                          onPillarLabelOverridesChanged:
+                                              _controller
+                                                  .setPillarLabelOverrides,
+                                          // New: read shared row-level overrides and labels
+                                          rowOverrides:
+                                              _controller.rowOverrides.value,
+                                          rowLabelOverrides: _controller
+                                              .rowLabelOverrides.value,
+                                          // 缩放柱宽至当前宽度的50%
+                                          pillarWidthScale: 0.5,
+                                          // 接入内容驱动宽度回调：使用post-frame避免构建期setState
+                                          onDesiredCardWidthChanged: (w) {
+                                            if (_desiredColumnCardWidth != w) {
+                                              WidgetsBinding.instance
+                                                  .addPostFrameCallback((_) {
+                                                if (!mounted) return;
+                                                setState(() =>
+                                                    _desiredColumnCardWidth =
+                                                        w);
+                                              });
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        ColumnReorderableFourZhuCard(
-                          eightChars: _sample,
-                          isEditable: _isEditable,
-                          pillarOrder: _columnPillars,
-                          rowConfigs: _columnRows,
-                          cardStyle: _cardStyle,
-                          rowLabelResolver: _rowLabel,
-                          pillarLabelResolver: _pillarLabel,
-                          onPillarOrderChanged: (updated) => setState(() => _columnPillars = updated),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 24),
 
-                // 行拖拽卡片
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.view_agenda, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              '行拖拽卡片',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                            const Spacer(),
-                            if (_isEditable)
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.secondaryContainer,
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  '拖拽行右侧👆重排行',
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                        color: Theme.of(context).colorScheme.onSecondaryContainer,
+                // 行拖拽卡片（Card按期望宽度收缩）
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    final maxW = constraints.maxWidth;
+                    final targetW = (_desiredColumnCardWidth ?? maxW)
+                        .clamp(0, maxW)
+                        .toDouble();
+                    return Align(
+                      alignment: Alignment.centerLeft,
+                      child: SizedBox(
+                        width: targetW,
+                        child: Card(
+                          elevation: 2,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    const Icon(Icons.view_agenda, size: 20),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      '行拖拽卡片',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                    ),
+                                    const Spacer(),
+                                    if (_isEditable)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondaryContainer,
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          '拖拽行右侧👆重排行',
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodySmall
+                                              ?.copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSecondaryContainer,
+                                              ),
+                                        ),
                                       ),
+                                  ],
                                 ),
-                              ),
-                          ],
+                                const SizedBox(height: 16),
+                                RowReorderableFourZhuCard(
+                                  eightChars: _sample,
+                                  isEditable: _isEditable,
+                                  pillarOrder: _controller.pillars.value,
+                                  rowConfigs: _controller.rows.value,
+                                  cardStyle: _cardStyle,
+                                  rowLabelResolver: _rowLabel,
+                                  pillarLabelResolver: _pillarLabel,
+                                  // Shared overrides wiring
+                                  rowOverrides: _controller.rowOverrides.value,
+                                  rowLabelOverrides:
+                                      _controller.rowLabelOverrides.value,
+                                  onRowOverridesChanged:
+                                      _controller.setRowOverrides,
+                                  onRowLabelOverridesChanged:
+                                      _controller.setRowLabelOverrides,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        RowReorderableFourZhuCard(
-                          eightChars: _sample,
-                          isEditable: _isEditable,
-                          pillarOrder: _rowPillars,
-                          rowConfigs: _rowRows,
-                          cardStyle: _cardStyle,
-                          rowLabelResolver: _rowLabel,
-                          pillarLabelResolver: _pillarLabel,
-                          onRowConfigsChanged: (updated) => setState(() => _rowRows = updated),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
 
                 const SizedBox(height: 24),
@@ -186,7 +300,8 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
                 // 说明卡片
                 if (!_isEditable)
                   Card(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
                       child: Column(
@@ -202,9 +317,13 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
                               const SizedBox(width: 8),
                               Text(
                                 '使用说明',
-                                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleSmall
+                                    ?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
                                     ),
                               ),
                             ],
@@ -241,15 +360,17 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
         return '天干';
       case RowType.earthlyBranch:
         return '地支';
+      case RowType.tenGod:
+        return '十神';
       case RowType.naYin:
         return '纳音';
       default:
-        return '';
+        return type.name;
     }
   }
 
-  String _pillarLabel(PillarType type) {
-    switch (type) {
+  String _pillarLabel(PillarType p) {
+    switch (p) {
       case PillarType.year:
         return '年';
       case PillarType.month:
@@ -259,7 +380,7 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
       case PillarType.hour:
         return '时';
       default:
-        return '';
+        return p.name;
     }
   }
 }

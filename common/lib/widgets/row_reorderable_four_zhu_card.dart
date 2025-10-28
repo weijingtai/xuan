@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:collection/collection.dart';
 
 import '../enums/layout_template_enums.dart';
 import '../enums/enum_tian_gan.dart' as tg;
@@ -25,6 +26,13 @@ class RowReorderableFourZhuCard extends StatefulWidget {
     this.elementColorResolver = const DefaultElementColorResolver(),
     this.rowLabelResolver,
     this.pillarLabelResolver,
+    this.rowOverrides,
+    this.rowLabelOverrides,
+    this.onRowOverridesChanged,
+    this.onRowLabelOverridesChanged,
+    // New: read-only shared overrides from column card/controller
+    this.columnOverrides,
+    this.pillarLabelOverrides,
   });
 
   final EightChars eightChars;
@@ -38,6 +46,14 @@ class RowReorderableFourZhuCard extends StatefulWidget {
   final ElementColorResolver elementColorResolver;
   final RowLabelResolver? rowLabelResolver;
   final PillarLabelResolver? pillarLabelResolver;
+  // New: shared overrides and callbacks
+  final Map<int, Map<PillarType, String>>? rowOverrides;
+  final Map<int, String>? rowLabelOverrides;
+  final ValueChanged<Map<int, Map<PillarType, String>>>? onRowOverridesChanged;
+  final ValueChanged<Map<int, String>>? onRowLabelOverridesChanged;
+  // New: read-only column-level overrides and pillar label overrides
+  final Map<int, Map<RowType, String>>? columnOverrides;
+  final Map<int, String>? pillarLabelOverrides;
 
   @override
   State<RowReorderableFourZhuCard> createState() =>
@@ -49,7 +65,12 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
   late List<RowConfig> _rows;
   final Map<int, Map<PillarType, String>> _rowOverrides = {};
   final Map<int, String> _rowLabelOverrides = {};
+  // New: caches for read-only column-level overrides and pillar label overrides
+  final Map<int, Map<RowType, String>> _columnOverrides = {};
+  final Map<int, String> _pillarLabelOverrides = {};
   int? _hoverRowInsertIndex;
+  bool _hoveringExternalRow = false;
+  bool _isInternalDragging = false; // 跟踪内部拖拽状态
 
   @override
   void initState() {
@@ -78,6 +99,24 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 type: RowType.naYin, isVisible: true, isTitleVisible: true),
           ],
     );
+    // Initialize overrides from incoming shared state if provided
+    if (widget.rowOverrides != null) {
+      _rowOverrides.clear();
+      _rowOverrides.addAll(widget.rowOverrides!);
+    }
+    if (widget.rowLabelOverrides != null) {
+      _rowLabelOverrides.clear();
+      _rowLabelOverrides.addAll(widget.rowLabelOverrides!);
+    }
+    // New: initialize column-level overrides and pillar label overrides
+    if (widget.columnOverrides != null) {
+      _columnOverrides.clear();
+      _columnOverrides.addAll(widget.columnOverrides!);
+    }
+    if (widget.pillarLabelOverrides != null) {
+      _pillarLabelOverrides.clear();
+      _pillarLabelOverrides.addAll(widget.pillarLabelOverrides!);
+    }
   }
 
   @override
@@ -88,7 +127,34 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
       _pillars = List<PillarType>.of(widget.pillarOrder!);
     }
     if (widget.rowConfigs != null) {
-      _rows = List<RowConfig>.of(widget.rowConfigs!);
+      // 仅当传入的行配置与当前本地状态不一致时才刷新，避免本地插入/重排被父级覆盖
+      final incoming = widget.rowConfigs!;
+      final eq = const ListEquality<RowConfig>();
+      if (!eq.equals(incoming, _rows)) {
+        _rows = List<RowConfig>.of(incoming);
+      }
+    }
+    // Refresh overrides if provided
+    if (widget.rowOverrides != null) {
+      _rowOverrides
+        ..clear()
+        ..addAll(widget.rowOverrides!);
+    }
+    if (widget.rowLabelOverrides != null) {
+      _rowLabelOverrides
+        ..clear()
+        ..addAll(widget.rowLabelOverrides!);
+    }
+    // New: refresh read-only column-level overrides and pillar label overrides
+    if (widget.columnOverrides != null) {
+      _columnOverrides
+        ..clear()
+        ..addAll(widget.columnOverrides!);
+    }
+    if (widget.pillarLabelOverrides != null) {
+      _pillarLabelOverrides
+        ..clear()
+        ..addAll(widget.pillarLabelOverrides!);
     }
   }
 
@@ -126,7 +192,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             final cfg = entry.value;
             final baseLabel = widget.rowLabelResolver?.call(cfg.type) ??
                 _defaultRowLabel(cfg.type);
-            final rLabel = _rowLabelOverrides[idx] ?? baseLabel;
+            final absIdx = _rows.indexOf(cfg);
+            final rLabel = _rowLabelOverrides[absIdx] ?? baseLabel;
             final style = widget.styleResolver.resolveTextStyle(
               context: context,
               rowType: cfg.type,
@@ -134,7 +201,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
               rowConfig: cfg,
             );
             return _buildStaticDataRow(
-                idx, rLabel, cfg, style, cellH, labelStyle);
+                absIdx, rLabel, cfg, style, cellH, labelStyle);
           }),
 
         // 底部占位行（与列拖拽卡片保持布局一致）
@@ -152,9 +219,14 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
       child: Row(
         children: [
           const SizedBox(width: 72),
-          ..._pillars.map((p) {
-            final pillarLabel =
+          // New: use index-based pillar label overrides
+          ..._pillars.asMap().entries.map((entry) {
+            final colIndex = entry.key;
+            final p = entry.value;
+            final baseLabel =
                 widget.pillarLabelResolver?.call(p) ?? _defaultPillarLabel(p);
+            final labelOverride = _pillarLabelOverrides[colIndex];
+            final pillarLabel = labelOverride ?? baseLabel;
             return Expanded(
               child: Center(
                 child: Text(
@@ -169,6 +241,24 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         ],
       ),
     );
+  }
+
+  // New: cell rendering with per-row overrides, falling back to column-level overrides
+  Widget _buildCellWithOverride(
+      int rowIndex, RowType row, PillarType pillar, TextStyle style) {
+    final rowOverride = _rowOverrides[rowIndex]?[pillar];
+    if (rowOverride != null) {
+      return Text(rowOverride, style: style, textAlign: TextAlign.center);
+    }
+    // Fallback to column-level override by column index
+    final colIndex = _pillars.indexOf(pillar);
+    if (colIndex != -1) {
+      final colOverride = _columnOverrides[colIndex]?[row];
+      if (colOverride != null) {
+        return Text(colOverride, style: style, textAlign: TextAlign.center);
+      }
+    }
+    return _buildCell(context, row, pillar, style);
   }
 
   List<Widget> _buildReorderableDataRows(
@@ -212,12 +302,19 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             },
             onReorder: (oldIndex, newIndex) {
               setState(() {
-                if (newIndex > oldIndex) {
-                  newIndex -= 1;
-                }
-                final item = _rows.removeAt(oldIndex);
-                _rows.insert(newIndex, item);
-                _moveRowOverride(oldIndex, newIndex);
+                final oldCfg = visibleRows[oldIndex];
+                final oldAbs = _rows.indexOf(oldCfg);
+                final targetAbs =
+                    _computeAbsoluteInsertIndex(newIndex, visibleRows);
+                final insertAbs =
+                    targetAbs > oldAbs ? targetAbs - 1 : targetAbs;
+                final item = _rows.removeAt(oldAbs);
+                _rows.insert(insertAbs, item);
+                _moveRowOverride(oldAbs, insertAbs);
+                // 内部拖拽完成，清除拖拽状态
+                _isInternalDragging = false;
+                _hoverRowInsertIndex = null;
+                _hoveringExternalRow = false;
               });
               widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
             },
@@ -226,7 +323,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
               final cfg = entry.value;
               final baseLabel = widget.rowLabelResolver?.call(cfg.type) ??
                   _defaultRowLabel(cfg.type);
-              final rLabel = _rowLabelOverrides[idx] ?? baseLabel;
+              final absIdx = _rows.indexOf(cfg);
+              final rLabel = _rowLabelOverrides[absIdx] ?? baseLabel;
               final style = widget.styleResolver.resolveTextStyle(
                 context: context,
                 rowType: cfg.type,
@@ -234,7 +332,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 rowConfig: cfg,
               );
               return _buildReorderableDataRow(
-                key: ValueKey('${cfg.type}-$idx'),
+                // 使用 identityHashCode 生成稳定且基于对象身份的 Key，避免值相等对象的 Key 冲突
+                key: ValueKey<int>(identityHashCode(cfg)),
                 index: idx,
                 rowLabel: rLabel,
                 cfg: cfg,
@@ -244,67 +343,210 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
               );
             }).toList(),
           ),
+          // 动态空隙层 - 真正的 ReorderableListView 效果
           Positioned.fill(
             child: IgnorePointer(
               ignoring: false,
               child: Column(
-                children: List.generate(visibleRows.length + 1, (i) {
-                  return SizedBox(
-                    height: cellH,
-                    child: DragTarget<RowInfoPayload>(
-                      onWillAccept: (data) {
-                        setState(() => _hoverRowInsertIndex = i);
-                        return data != null;
-                      },
-                      onLeave: (_) =>
-                          setState(() => _hoverRowInsertIndex = null),
-                      onAccept: (data) {
-                        _insertExternalRow(i, data);
-                        setState(() => _hoverRowInsertIndex = null);
-                      },
-                      builder: (ctx, candidate, rejected) {
-                        final active =
-                            candidate.isNotEmpty && _hoverRowInsertIndex == i;
-                        return AnimatedContainer(
-                          duration: const Duration(milliseconds: 120),
-                          constraints: const BoxConstraints.expand(),
-                          margin: EdgeInsets.zero,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: active
-                                  ? Theme.of(ctx).colorScheme.primary
-                                  : Theme.of(ctx)
-                                      .dividerColor
-                                      .withValues(alpha: 0.1),
-                              width: active ? 2 : 1,
-                            ),
-                            borderRadius: BorderRadius.circular(4),
-                            color: active
-                                ? Theme.of(ctx)
-                                    .colorScheme
-                                    .primary
-                                    .withValues(alpha: 0.06)
-                                : Colors.transparent,
+                children: List.generate(visibleRows.length + 1, (insertIndex) {
+                  // 如果这是悬停的插入位置，显示占位符空隙（支持外部与内部拖拽）
+                  final isHoveringHere = _hoverRowInsertIndex == insertIndex &&
+                      (_hoveringExternalRow || _isInternalDragging);
+
+                  return Column(
+                    children: [
+                      // 动态空隙 - 在外部拖拽悬停或内部拖拽时显示
+                      // 在“空隙”区域也允许投递，确保插入发生在提示位置
+                      DragTarget<Object>(
+                        onWillAccept: (data) {
+                          final accept = data is RowInfoPayload || data is int;
+                          if (accept) {
+                            setState(() {
+                              _hoverRowInsertIndex = insertIndex;
+                              _hoveringExternalRow = data is RowInfoPayload;
+                              _isInternalDragging = data is int;
+                            });
+                          }
+                          return accept;
+                        },
+                        onLeave: (_) => setState(() {
+                          _hoverRowInsertIndex = null;
+                          _hoveringExternalRow = false;
+                          _isInternalDragging = false;
+                        }),
+                        onAccept: (data) {
+                          if (data is RowInfoPayload) {
+                            // 外部拖拽：在当前“空隙”索引插入
+                            _insertExternalRow(insertIndex, data);
+                          } else if (data is int) {
+                            // 内部拖拽：重排序插入到当前“空隙”索引
+                            if (data != insertIndex) {
+                              _reorderRowFromDragTarget(data, insertIndex);
+                            }
+                          }
+                          setState(() {
+                            _hoverRowInsertIndex = null;
+                            _hoveringExternalRow = false;
+                            _isInternalDragging = false;
+                          });
+                        },
+                        builder: (ctx, candidate, rejected) {
+                          return AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            height: isHoveringHere ? cellH : 0,
+                            child: isHoveringHere
+                                ? Container(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 4, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary
+                                          .withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .primary
+                                            .withValues(alpha: 0.3),
+                                        width: 2,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        '在此插入行',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium
+                                            ?.copyWith(
+                                              color: Theme.of(context)
+                                                  .colorScheme
+                                                  .primary,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                          );
+                        },
+                      ),
+                      // 拖拽目标区域 - 统一处理内部和外部拖拽
+                      if (insertIndex < visibleRows.length)
+                        Container(
+                          height: cellH,
+                          child: DragTarget<Object>(
+                            onWillAccept: (data) {
+                              // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
+                              final accept =
+                                  data is RowInfoPayload || data is int;
+                              if (accept) {
+                                setState(() {
+                                  _hoverRowInsertIndex = insertIndex;
+                                  _hoveringExternalRow = data is RowInfoPayload;
+                                });
+                              }
+                              return accept;
+                            },
+                            onLeave: (_) => setState(() {
+                              _hoverRowInsertIndex = null;
+                              _hoveringExternalRow = false;
+                            }),
+                            onAccept: (data) {
+                              if (data is RowInfoPayload) {
+                                // 外部拖拽：插入新行到当前索引（与空隙提示一致）
+                                _insertExternalRow(insertIndex, data);
+                              } else if (data is int) {
+                                // 内部拖拽：重排序现有行，目标为当前索引
+                                if (data != insertIndex) {
+                                  _reorderRowFromDragTarget(data, insertIndex);
+                                }
+                              }
+                              setState(() {
+                                _hoverRowInsertIndex = null;
+                                _hoveringExternalRow = false;
+                                _isInternalDragging = false;
+                              });
+                            },
+                            builder: (ctx, candidate, rejected) => Container(),
                           ),
-                          child: active
-                              ? Center(
-                                  child: Text(
-                                    '在此插入行',
-                                    style: Theme.of(ctx)
-                                        .textTheme
-                                        .bodySmall
-                                        ?.copyWith(
-                                          color:
-                                              Theme.of(ctx).colorScheme.primary,
-                                        ),
-                                  ),
-                                )
-                              : null,
-                        );
-                      },
-                    ),
+                        ),
+                    ],
                   );
                 }),
+              ),
+            ),
+          ),
+          // 第一个位置的拖拽目标（在所有行之前）- 统一处理内部和外部拖拽
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: cellH / 2,
+            child: DragTarget<Object>(
+              onWillAccept: (data) {
+                // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
+                final accept = data is RowInfoPayload || data is int;
+                if (accept) {
+                  setState(() {
+                    _hoverRowInsertIndex = 0;
+                    _hoveringExternalRow = data is RowInfoPayload;
+                  });
+                }
+                return accept;
+              },
+              onLeave: (_) => setState(() {
+                _hoverRowInsertIndex = null;
+                _hoveringExternalRow = false;
+              }),
+              onAccept: (data) {
+                if (data is RowInfoPayload) {
+                  // 外部拖拽：插入新行
+                  _insertExternalRow(0, data);
+                } else if (data is int) {
+                  // 内部拖拽：重排序现有行
+                  if (data != 0) {
+                    _reorderRowFromDragTarget(data, 0);
+                  }
+                }
+                setState(() {
+                  _hoverRowInsertIndex = null;
+                  _hoveringExternalRow = false;
+                });
+              },
+              builder: (ctx, candidate, rejected) => Container(),
+            ),
+          ),
+          // Visual overlay hint: show when any compatible external row is hovering
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: true,
+              child: AnimatedOpacity(
+                duration: const Duration(milliseconds: 120),
+                opacity: _hoveringExternalRow ? 1.0 : 0.0,
+                child: Center(
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withValues(alpha: 0.06),
+                      border: Border.all(
+                          color: Theme.of(context).colorScheme.primary),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      '释放加入',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -325,80 +567,88 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     return ReorderableDragStartListener(
       key: key,
       index: index,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: MouseRegion(
-          cursor: SystemMouseCursors.grab,
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: Row(
-              children: [
-                // 行标签（带拖拽图标）
-                Container(
-                  width: 72,
-                  height: cellH,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.2),
-                    borderRadius:
-                        const BorderRadius.horizontal(left: Radius.circular(4)),
-                  ),
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.drag_indicator,
-                          size: 14,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .primary
-                              .withValues(alpha: 0.7),
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            rowLabel,
-                            style: labelStyle,
-                            textAlign: TextAlign.center,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+      child: GestureDetector(
+        onLongPressStart: (_) {
+          // 内部拖拽开始
+          setState(() {
+            _isInternalDragging = true;
+          });
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: MouseRegion(
+            cursor: SystemMouseCursors.grab,
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: Theme.of(context).dividerColor.withValues(alpha: 0.3),
+                  width: 1,
                 ),
-                // 数据单元格
-                ..._pillars.map((p) {
-                  return Expanded(
-                    child: Container(
-                      height: cellH,
-                      padding: const EdgeInsets.symmetric(horizontal: 4),
-                      child: Center(
-                        child:
-                            _buildCellWithOverride(index, cfg.type, p, style),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Row(
+                children: [
+                  // 行标签（带拖拽图标）
+                  Container(
+                    width: 72,
+                    height: cellH,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .surfaceContainerHighest
+                          .withValues(alpha: 0.2),
+                      borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(4)),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.drag_indicator,
+                            size: 14,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.7),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              rowLabel,
+                              style: labelStyle,
+                              textAlign: TextAlign.center,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  );
-                }),
-                // 行拖拽句柄
-                SizedBox(
-                  width: 48,
-                  height: cellH,
-                  child: const Center(
-                    child: Text('👆', style: TextStyle(fontSize: 20)),
                   ),
-                ),
-              ],
+                  // 数据单元格
+                  ..._pillars.map((p) {
+                    return Expanded(
+                      child: Container(
+                        height: cellH,
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: Center(
+                          child: _buildCellWithOverride(
+                              _rows.indexOf(cfg), cfg.type, p, style),
+                        ),
+                      ),
+                    );
+                  }),
+                  // 行拖拽句柄
+                  SizedBox(
+                    width: 48,
+                    height: cellH,
+                    child: const Center(
+                      child: Text('👆', style: TextStyle(fontSize: 20)),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -477,15 +727,8 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     }
   }
 
-  // New: cell rendering with per-row overrides
-  Widget _buildCellWithOverride(
-      int rowIndex, RowType row, PillarType pillar, TextStyle style) {
-    final override = _rowOverrides[rowIndex]?[pillar];
-    if (override != null) {
-      return Text(override, style: style, textAlign: TextAlign.center);
-    }
-    return _buildCell(context, row, pillar, style);
-  }
+  // Deprecated: moved implementation earlier with column-level fallback
+  // See the _buildCellWithOverride defined above.
 
   tg.TianGan _tianGanForPillar(PillarType p) {
     switch (p) {
@@ -596,14 +839,32 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
       }
       _rowLabelOverrides[newKey] = entry.value;
     }
+
+    // Notify shared controller via callbacks
+    widget.onRowOverridesChanged
+        ?.call(Map<int, Map<PillarType, String>>.of(_rowOverrides));
+    widget.onRowLabelOverridesChanged
+        ?.call(Map<int, String>.of(_rowLabelOverrides));
   }
 
   void _insertExternalRow(int index, RowInfoPayload payload) {
     setState(() {
+      final absIndex = _computeAbsoluteInsertIndex(
+          index, _rows.where((r) => r.isVisible).toList());
+
+      // First insert the new row configuration
+      final newCfg = RowConfig(
+        type: payload.rowType,
+        isVisible: true,
+        isTitleVisible: true,
+      );
+      _rows.insert(absIndex, newCfg);
+
+      // Then shift existing overrides to make room for the new row
       if (_rowOverrides.isNotEmpty) {
         final shifted = <int, Map<PillarType, String>>{};
         for (final e in _rowOverrides.entries) {
-          final newKey = e.key >= index ? e.key + 1 : e.key;
+          final newKey = e.key >= absIndex ? e.key + 1 : e.key;
           shifted[newKey] = e.value;
         }
         _rowOverrides
@@ -613,7 +874,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
       if (_rowLabelOverrides.isNotEmpty) {
         final shiftedLabels = <int, String>{};
         for (final e in _rowLabelOverrides.entries) {
-          final newKey = e.key >= index ? e.key + 1 : e.key;
+          final newKey = e.key >= absIndex ? e.key + 1 : e.key;
           shiftedLabels[newKey] = e.value;
         }
         _rowLabelOverrides
@@ -621,24 +882,70 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
           ..addAll(shiftedLabels);
       }
 
-      final newCfg = RowConfig(
-        type: payload.rowType,
-        isVisible: true,
-        isTitleVisible: true,
-      );
-      _rows.insert(index, newCfg);
+      // Finally set the new row's override data
       if (payload.rowLabel != null) {
-        _rowLabelOverrides[index] = payload.rowLabel!;
+        _rowLabelOverrides[absIndex] = payload.rowLabel!;
       }
       if (payload.perPillarValues != null) {
-        _rowOverrides[index] =
+        _rowOverrides[absIndex] =
             Map<PillarType, String>.of(payload.perPillarValues!);
       }
     });
+    // Notify shared controller via callbacks
+    widget.onRowOverridesChanged
+        ?.call(Map<int, Map<PillarType, String>>.of(_rowOverrides));
+    widget.onRowLabelOverridesChanged
+        ?.call(Map<int, String>.of(_rowLabelOverrides));
+
     debugPrint('[RowCard] Accepted external row at index ' +
         index.toString() +
         ', type=' +
         payload.rowType.name);
     widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
+  }
+
+  /// 处理来自 DragTarget 的内部行重排序
+  void _reorderRowFromDragTarget(int oldVisibleIndex, int newVisibleIndex) {
+    setState(() {
+      final visibleRows = _rows.where((r) => r.isVisible).toList();
+
+      // 确保索引有效
+      if (oldVisibleIndex < 0 || oldVisibleIndex >= visibleRows.length) return;
+
+      final oldCfg = visibleRows[oldVisibleIndex];
+      final oldAbs = _rows.indexOf(oldCfg);
+      final targetAbs =
+          _computeAbsoluteInsertIndex(newVisibleIndex, visibleRows);
+      final insertAbs = targetAbs > oldAbs ? targetAbs - 1 : targetAbs;
+
+      // 执行重排序
+      final item = _rows.removeAt(oldAbs);
+      _rows.insert(insertAbs, item);
+      _moveRowOverride(oldAbs, insertAbs);
+    });
+
+    widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
+    debugPrint(
+        '[RowCard] Reordered row from $oldVisibleIndex to $newVisibleIndex via DragTarget');
+  }
+
+  int _computeAbsoluteInsertIndex(
+      int visibleInsertIndex, List<RowConfig> visibleRows) {
+    if (visibleRows.isEmpty) return 0;
+    if (visibleInsertIndex <= 0) {
+      final firstVisible = _rows.indexWhere((r) => r.isVisible);
+      return firstVisible == -1 ? 0 : firstVisible;
+    }
+    int count = 0;
+    for (int j = 0; j < _rows.length; j++) {
+      if (_rows[j].isVisible) {
+        if (count == visibleInsertIndex) {
+          return j; // insert before this visible row
+        }
+        count++;
+      }
+    }
+    final lastVisible = _rows.lastIndexWhere((r) => r.isVisible);
+    return lastVisible == -1 ? _rows.length : lastVisible + 1;
   }
 }

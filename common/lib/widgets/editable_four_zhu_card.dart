@@ -47,6 +47,11 @@ class EditableFourZhuCard extends StatefulWidget {
     this.pillarLabelResolver,
     this.axis = Axis.horizontal,
     this.onAddPillarRequested,
+    // NEW: override maps for labels and cells
+    this.columnOverrides,
+    this.pillarLabelOverrides,
+    this.rowOverrides,
+    this.rowLabelOverrides,
   });
 
   final EightChars eightChars;
@@ -75,6 +80,12 @@ class EditableFourZhuCard extends StatefulWidget {
   final Axis axis;
   final VoidCallback? onAddPillarRequested;
 
+  // NEW: override maps
+  final Map<int, Map<RowType, String>>? columnOverrides;
+  final Map<int, String>? pillarLabelOverrides;
+  final Map<int, Map<PillarType, String>>? rowOverrides;
+  final Map<int, String>? rowLabelOverrides;
+
   @override
   State<EditableFourZhuCard> createState() => _EditableFourZhuCardState();
 }
@@ -85,6 +96,12 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
   int? _hoverDropIndex;
   int? _draggingIndex;
   int? _draggingRowIndex;
+
+  // NEW: local override maps
+  late Map<int, Map<RowType, String>> _columnOverrides;
+  late Map<int, String> _pillarLabelOverrides;
+  late Map<int, Map<PillarType, String>> _rowOverrides;
+  late Map<int, String> _rowLabelOverrides;
 
   @override
   void initState() {
@@ -115,6 +132,15 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                 type: RowType.naYin, isVisible: true, isTitleVisible: true),
           ],
     );
+    // NEW: initialize overrides
+    _columnOverrides =
+        Map<int, Map<RowType, String>>.of(widget.columnOverrides ?? const {});
+    _pillarLabelOverrides =
+        Map<int, String>.of(widget.pillarLabelOverrides ?? const {});
+    _rowOverrides =
+        Map<int, Map<PillarType, String>>.of(widget.rowOverrides ?? const {});
+    _rowLabelOverrides =
+        Map<int, String>.of(widget.rowLabelOverrides ?? const {});
   }
 
   @override
@@ -126,6 +152,21 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
     }
     if (widget.rowConfigs != null) {
       _rows = List<RowConfig>.of(widget.rowConfigs!);
+    }
+    // NEW: sync override maps
+    if (widget.columnOverrides != null) {
+      _columnOverrides =
+          Map<int, Map<RowType, String>>.of(widget.columnOverrides!);
+    }
+    if (widget.pillarLabelOverrides != null) {
+      _pillarLabelOverrides = Map<int, String>.of(widget.pillarLabelOverrides!);
+    }
+    if (widget.rowOverrides != null) {
+      _rowOverrides =
+          Map<int, Map<PillarType, String>>.of(widget.rowOverrides!);
+    }
+    if (widget.rowLabelOverrides != null) {
+      _rowLabelOverrides = Map<int, String>.of(widget.rowLabelOverrides!);
     }
   }
 
@@ -191,8 +232,9 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                     children: _pillars.asMap().entries.map((entry) {
                       final idx = entry.key;
                       final p = entry.value;
-                      final pillarLabel = widget.pillarLabelResolver?.call(p) ??
-                          _defaultPillarLabel(p);
+                      final pillarLabel = _pillarLabelOverrides[idx] ??
+                          (widget.pillarLabelResolver?.call(p) ??
+                              _defaultPillarLabel(p));
                       final isDragging = _draggingIndex == idx;
 
                       final headerCell = Container(
@@ -306,8 +348,10 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
         ...visibleRows.asMap().entries.expand((entry) {
           final rowIdx = entry.key;
           final cfg = entry.value;
-          final rLabel = widget.rowLabelResolver?.call(cfg.type) ??
-              _defaultRowLabel(cfg.type);
+          final absRowIndex = _rows.indexOf(cfg);
+          final rLabel = _rowLabelOverrides[absRowIndex] ??
+              (widget.rowLabelResolver?.call(cfg.type) ??
+                  _defaultRowLabel(cfg.type));
 
           return [
             if (widget.isEditable && rowIdx == 0) _buildRowDropZone(0),
@@ -368,6 +412,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
       cardStyle: widget.cardStyle,
       rowConfig: cfg,
     );
+    final absRowIndex = _rows.indexOf(cfg);
 
     final rowContent = Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
@@ -383,13 +428,16 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
             ),
           ),
           // Data cells
-          ..._pillars.map((p) {
+          ..._pillars.asMap().entries.map((entry) {
+            final colIndex = entry.key;
+            final p = entry.value;
             return Expanded(
               child: Container(
                 height: cellH,
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Center(
-                  child: _buildCell(context, cfg.type, p, style),
+                  child: _buildCellWithOverride(
+                      context, colIndex, cfg.type, p, style, absRowIndex),
                 ),
               ),
             );
@@ -695,7 +743,8 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                 height: cellH,
                 child: Align(
                   alignment: Alignment.center,
-                  child: _buildCell(context, cfg.type, pillar, style),
+                  child: _buildCellWithOverride(context, idx, cfg.type, pillar,
+                      style, _rows.indexOf(cfg)),
                 ),
               );
             }),
@@ -884,8 +933,9 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
             children: _rows
                 .where((r) => r.isVisible)
                 .map((r) => Text(
-                      widget.rowLabelResolver?.call(r.type) ??
-                          _defaultRowLabel(r.type),
+                      _rowLabelOverrides[_rows.indexOf(r)] ??
+                          (widget.rowLabelResolver?.call(r.type) ??
+                              _defaultRowLabel(r.type)),
                       style: labelStyle,
                     ))
                 .toList(),
@@ -1286,8 +1336,8 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
   }
 
   Widget _buildRow(BuildContext context, RowConfig cfg) {
-    final rowLabel =
-        widget.rowLabelResolver?.call(cfg.type) ?? _defaultRowLabel(cfg.type);
+    final rowLabel = _rowLabelOverrides[_rows.indexOf(cfg)] ??
+        (widget.rowLabelResolver?.call(cfg.type) ?? _defaultRowLabel(cfg.type));
     final labelStyle = widget.styleResolver.resolveTextStyle(
       context: context,
       rowType: cfg.type,
@@ -1302,6 +1352,8 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
       cardStyle: widget.cardStyle,
       rowConfig: cfg,
     );
+
+    final absRowIndex = _rows.indexOf(cfg);
 
     return Padding(
       padding: rowPad,
@@ -1332,8 +1384,11 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                 const dzWidth = 24.0;
                 final cellW = count > 0 ? contentWidth / count : 0.0;
 
+                // Replace rowCells mapping in _buildRow to use asMap() and pass context
                 final rowCells = Row(
-                  children: _pillars.map((p) {
+                  children: _pillars.asMap().entries.map((entry) {
+                    final colIndex = entry.key;
+                    final p = entry.value;
                     final effective = widget.styleResolver.resolveTextStyle(
                       context: context,
                       rowType: cfg.type,
@@ -1342,7 +1397,8 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                     );
                     return SizedBox(
                       width: cellW,
-                      child: _buildCell(context, cfg.type, p, effective),
+                      child: _buildCellWithOverride(context, colIndex, cfg.type,
+                          p, effective, absRowIndex),
                     );
                   }).toList(),
                 );
@@ -1434,6 +1490,17 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
         ],
       ),
     );
+  }
+
+  Widget _buildCellWithOverride(BuildContext context, int colIndex, RowType row,
+      PillarType pillar, TextStyle style, int absRowIndex) {
+    final colMap = _columnOverrides[colIndex];
+    final rowMap = _rowOverrides[absRowIndex];
+    final String? overrideText = colMap?[row] ?? rowMap?[pillar];
+    if (overrideText != null) {
+      return Text(overrideText, style: style, textAlign: TextAlign.center);
+    }
+    return _buildCell(context, row, pillar, style);
   }
 
   Widget _buildCell(
@@ -1567,3 +1634,6 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
     }
   }
 }
+
+// Top-level helper removed; override-aware cell builder is implemented inside EditableFourZhuCardState.
+// Removed top-level placeholder for _buildCellWithOverride. Instance method inside state is used.
