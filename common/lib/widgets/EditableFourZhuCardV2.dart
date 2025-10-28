@@ -28,6 +28,8 @@ class EditableFourZhuCardv2 extends StatefulWidget {
 
 class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   late final ValueNotifier<Size> totalSizeNotifier;
+  late final VoidCallback _jiaZiListener;
+  late final VoidCallback _rowListListener;
   double pillarWidth = 64;
   double rowTitleWidth = 52;
   double columnTitleHeight = 24;
@@ -40,11 +42,36 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   @override
   void initState() {
     super.initState();
-    totalSizeNotifier = ValueNotifier<Size>(Size(
-        pillarWidth * widget.jiaZiNotifier.value.length + rowTitleWidth,
+    totalSizeNotifier = ValueNotifier<Size>(_computeTotalSize());
+
+    // Listen to data changes to keep size in sync
+    _jiaZiListener = () {
+      totalSizeNotifier.value = _computeTotalSize();
+    };
+    _rowListListener = () {
+      totalSizeNotifier.value = _computeTotalSize();
+    };
+    widget.jiaZiNotifier.addListener(_jiaZiListener);
+    widget.rowListNotifier.addListener(_rowListListener);
+  }
+
+  @override
+  void dispose() {
+    widget.jiaZiNotifier.removeListener(_jiaZiListener);
+    widget.rowListNotifier.removeListener(_rowListListener);
+    totalSizeNotifier.dispose();
+    super.dispose();
+  }
+
+  Size _computeTotalSize() {
+    final pillars = widget.jiaZiNotifier.value.length;
+    final rows = widget.rowListNotifier.value.length;
+    // Height: title row + two gan/zhi rows + remaining rows treated as otherCellHeight
+    final double height = columnTitleHeight +
         ganZhiCellSize.height * 2 +
-            (widget.rowListNotifier.value.length - 3) * otherCellHeight +
-            columnTitleHeight));
+        (rows - 3) * otherCellHeight;
+    final double width = rowTitleWidth + pillarWidth * pillars;
+    return Size(width, height);
   }
 
   @override
@@ -109,26 +136,62 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         child: ValueListenableBuilder<List<String>>(
             valueListenable: widget.rowListNotifier,
             builder: (context, value, child) {
-              return ReorderableListView.builder(
+              // 先渲染首行（“乾造/坤造”），从可重排列表中剥离，保证绝对固定
+              // 计算首行总宽度：标题列宽 + 四柱列宽总和
+              final double _headerTotalWidth =
+                  rowTitleWidth + pillarWidth * zhuList.length;
+              final headerRow = SizedBox(
+                key: const ValueKey('row-header-gender'),
+                width: _headerTotalWidth,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // 性别标题单元格（固定，不可拖拽）
+                    cell(Size(rowTitleWidth, columnTitleHeight),
+                        getGenderText(widget.gender)),
+                    // 四柱列标题（年/月/日/时），与原实现保持一致
+                    for (final t2 in zhuList)
+                      cell(
+                          Size(pillarWidth, columnTitleHeight),
+                          _dragColumnTitleSwitcher(
+                              getColumnTitleText(t2.item1))),
+                  ],
+                ),
+              );
+
+              // 构建其余可重排行（不包含首行）
+              final reorderable = ReorderableListView.builder(
                   scrollDirection: Axis.vertical,
                   buildDefaultDragHandles: false,
-                  itemCount: value.length,
-                  onReorder: onRowReorder,
+                  itemCount: (value.length - 1).clamp(0, value.length),
+                  onReorder: (oldIndex, newIndex) {
+                    // 将局部索引映射到全局索引（+1），首行固定不参与
+                    int oi = oldIndex + 1;
+                    int ni = newIndex + 1;
+                    onRowReorder(oi, ni);
+                  },
                   itemBuilder: (context, index) {
+                    // 注意：此处 index 为局部索引，真实标题取 value[index+1]
                     double itemWidth = pillarWidth;
                     double height = otherCellHeight;
-                    final title = value[index];
+                    final title = value[index + 1];
                     List<Widget> cellList = [];
-                    // double itemWidth = pillarWidth;
-                    if (index == 0) {
-                      cellList.add(cell(Size(rowTitleWidth, columnTitleHeight),
-                          getGenderText(widget.gender)));
-                    } else {
-                      cellList.add(cell(Size(rowTitleWidth, height),
-                          getColumnTitleText(title.toString())));
-                    }
+
+                    // 标题可拖拽
+                    final titleCell = cell(
+                        Size(
+                            rowTitleWidth,
+                            (title == "天干" || title == "地支")
+                                ? ganZhiCellSize.height
+                                : columnTitleHeight),
+                        _dragTitle(getColumnTitleText(title.toString())));
+                    cellList.add(
+                      ReorderableDragStartListener(
+                          index: index, child: titleCell),
+                    );
+
                     if (title == "天干" || title == "地支") {
-                      // itemWidth = ganZhiCellSize.width;
                       height = otherCellHeight * 2;
                       for (int i = 0; i < zhuList.length; i++) {
                         cellList.add(cell(
@@ -138,32 +201,38 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                                 : getDiZhiText(zhuList[i].item2.diZhi)));
                       }
                     } else if (title == "纳音") {
-                      zhuList.forEach((t2) {
+                      for (final t2 in zhuList) {
                         cellList.add(cell(Size(itemWidth, otherCellHeight),
                             getNaYinText(t2.item2.naYinStr)));
-                      });
+                      }
                     } else {
-                      zhuList.forEach((t2) {
+                      for (final t2 in zhuList) {
                         cellList.add(cell(Size(itemWidth, columnTitleHeight),
                             getColumnTitleText(t2.item1)));
-                      });
+                      }
                     }
 
                     return SizedBox(
-                      key: ValueKey(widget.rowListNotifier.value[index]),
+                      key: ValueKey(widget.rowListNotifier.value[index + 1]),
                       width: pillarWidth,
-                      child: ReorderableDragStartListener(
-                        index: index,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            ...cellList,
-                          ],
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ...cellList,
+                        ],
                       ),
                     );
                   });
+
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  headerRow,
+                  Expanded(child: reorderable),
+                ],
+              );
             }));
   }
 
@@ -179,33 +248,48 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       child: ValueListenableBuilder<List<Tuple2<String, JiaZi>>>(
         valueListenable: widget.jiaZiNotifier,
         builder: (context, value, child) {
-          return ReorderableListView.builder(
+          // 固定首列（标题列）剥离，不参与可重排，始终位于最左侧
+          final headerColumn = SizedBox(
+            key: const ValueKey("rowTitle"),
+            width: rowTitleWidth,
+            child: _rowTitleColumnItem(
+                widget.rowListNotifier.value, size.height, rowTitleWidth),
+          );
+
+          // 其余列可重排，仅包含柱数据
+          final reorderable = ReorderableListView.builder(
             scrollDirection: Axis.horizontal,
             buildDefaultDragHandles: false,
-            itemCount: value.length + 1,
-            onReorder: onColumnReorder,
+            itemCount: value.length,
+            onReorder: (oldIndex, newIndex) {
+              setState(() {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final item = widget.jiaZiNotifier.value.removeAt(oldIndex);
+                widget.jiaZiNotifier.value.insert(newIndex, item);
+                // 触发监听者更新，避免列表原地变更未通知到外部
+                widget.jiaZiNotifier.value =
+                    List.of(widget.jiaZiNotifier.value);
+              });
+            },
             itemBuilder: (context, index) {
-              if (index == 0) {
-                return SizedBox(
-                  key: ValueKey("rowTitle"),
-                  width: rowTitleWidth,
-                  child: ReorderableDragStartListener(
-                    index: index,
-                    child: _rowTitleColumnItem(widget.rowListNotifier.value,
-                        size.height, rowTitleWidth),
-                  ),
-                );
-              }
-              final tuple = value[index - 1];
+              final tuple = value[index];
               return SizedBox(
                 key: ValueKey(tuple.item1),
                 width: pillarWidth,
-                child: ReorderableDragStartListener(
-                  index: index,
-                  child: _pillarItemForColumn(tuple, size.height, pillarWidth),
-                ),
+                child: _pillarItemForColumn(
+                    tuple, size.height, pillarWidth, index),
               );
             },
+          );
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              headerColumn,
+              Expanded(child: reorderable),
+            ],
           );
         },
       ),
@@ -213,23 +297,37 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   }
 
   void onRowReorder(int oldIndex, int newIndex) {
+    // 固定首行：不允许移动索引0的项目，也不允许将其他项目放到索引0
+    debugPrint('onRowReorder: oldIndex=$oldIndex, newIndex=$newIndex');
+    if (oldIndex == 0 || newIndex == 0) {
+      debugPrint('onRowReorder: skip, header row fixed at index 0');
+      return; // 直接跳过，保证首行不变
+    }
     setState(() {
       if (oldIndex < newIndex) {
         newIndex -= 1;
       }
       final String item = widget.rowListNotifier.value.removeAt(oldIndex);
       widget.rowListNotifier.value.insert(newIndex, item);
+      debugPrint('onRowReorder: applied, insert at index=$newIndex');
+      // 触发监听者更新，避免列表原地变更未通知到外部
+      widget.rowListNotifier.value = List.of(widget.rowListNotifier.value);
     });
   }
 
   void onColumnReorder(int oldIndex, int newIndex) {
+    // 首项为行标题列（索引0），实际柱数据从索引1开始
+    if (oldIndex == 0 || newIndex == 0) return;
     setState(() {
-      if (oldIndex < newIndex) {
-        newIndex -= 1;
+      int o = oldIndex - 1;
+      int n = newIndex - 1;
+      if (o < n) {
+        n -= 1;
       }
-      final Tuple2<String, JiaZi> item =
-          widget.jiaZiNotifier.value.removeAt(oldIndex);
-      widget.jiaZiNotifier.value.insert(newIndex, item);
+      final item = widget.jiaZiNotifier.value.removeAt(o);
+      widget.jiaZiNotifier.value.insert(n, item);
+      // 触发监听者更新，避免列表原地变更未通知到外部
+      widget.jiaZiNotifier.value = List.of(widget.jiaZiNotifier.value);
     });
   }
 
@@ -308,25 +406,61 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       child: Column(
         children: [
           // title
+          // 首项为“乾造/坤造”等性别标题，不加入拖拽指示图标，仅显示文本
           cell(Size(width, columnTitleHeight), getGenderText(widget.gender)),
 
           // 天干
           cell(Size(width, ganZhiCellSize.height),
-              getRowTitleText(titleList[1])),
+              _dragTitleSwitcher(getRowTitleText(titleList[1]))),
 
           // 地支
           cell(Size(width, ganZhiCellSize.height),
-              getRowTitleText(titleList[2])),
+              _dragTitleSwitcher(getRowTitleText(titleList[2]))),
           // 纳音
-          cell(Size(width, otherCellHeight), getRowTitleText(titleList[3])),
+          cell(Size(width, otherCellHeight),
+              _dragTitleSwitcher(getRowTitleText(titleList[3]))),
         ],
       ),
     );
   }
 
   Widget _pillarItemForColumn(
-      Tuple2<String, JiaZi> tuple, double height, double width) {
+      Tuple2<String, JiaZi> tuple, double height, double width, int index) {
     final jiaZi = tuple.item2;
+    // Build vertical content based on current row order to keep row/column synchronized
+    final List<String> rowOrder = widget.rowListNotifier.value;
+    final List<Widget> children = [];
+
+    for (int i = 0; i < rowOrder.length; i++) {
+      final String rowName = rowOrder[i];
+      if (i == 0) {
+        // First row represents column title; keep drag handle here
+        children.add(
+          ReorderableDragStartListener(
+            index: index,
+            child: cell(
+              Size(ganZhiCellSize.width, columnTitleHeight),
+              _dragTitle(getColumnTitleText(tuple.item1)),
+            ),
+          ),
+        );
+        continue;
+      }
+
+      if (rowName == "天干") {
+        children.add(cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
+      } else if (rowName == "地支") {
+        children.add(cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
+      } else if (rowName == "纳音") {
+        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
+            getNaYinText(jiaZi.naYinStr)));
+      } else {
+        // Fallback: show column title text for unknown row types
+        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
+            getColumnTitleText(tuple.item1)));
+      }
+    }
+
     return Container(
       width: width,
       height: height,
@@ -336,20 +470,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // title
-          cell(Size(ganZhiCellSize.width, columnTitleHeight),
-              getColumnTitleText(tuple.item1)),
-
-          // 天干
-          cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)),
-
-          // 地支
-          cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)),
-          // 纳音
-          cell(Size(ganZhiCellSize.width, otherCellHeight),
-              getNaYinText(jiaZi.naYinStr)),
-        ],
+        children: children,
       ),
     );
   }
@@ -374,7 +495,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         ));
   }
 
-  Widget cell(Size cellSize, Text text) {
+  Widget cell(Size cellSize, Widget child) {
     return Container(
       width: cellSize.width,
       height: cellSize.height,
@@ -383,7 +504,58 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         // borderRadius: BorderRadius.circular(16),
       ),
       child: Center(
-        child: text,
+        child: child,
+      ),
+    );
+  }
+
+  Widget _dragTitle(Widget title) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
+        const SizedBox(width: 4),
+        Flexible(child: title),
+      ],
+    );
+  }
+
+  Widget _dragTitleSwitcher(Widget title) {
+    // 鼠标经过时切换到行模式，用于快速从列视图切换至行视图
+    return MouseRegion(
+      onEnter: (_) {
+        widget.cardModeNotifier.value = CardMode.row;
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
+          const SizedBox(width: 4),
+          Flexible(child: title),
+        ],
+      ),
+    );
+  }
+
+  // 鼠标经过列标题时切换到列模式，用于从行视图快速切回列视图
+  Widget _dragColumnTitleSwitcher(Widget title) {
+    return MouseRegion(
+      onEnter: (_) {
+        widget.cardModeNotifier.value = CardMode.column;
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.drag_indicator, size: 16, color: Colors.black45),
+          const SizedBox(width: 4),
+          Flexible(child: title),
+        ],
       ),
     );
   }
