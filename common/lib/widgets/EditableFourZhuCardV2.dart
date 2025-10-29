@@ -6,6 +6,17 @@ import 'package:tuple/tuple.dart';
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../pages/editable_four_zhu_card_demo_page.dart';
+import '../models/drag_payloads.dart';
+import '../enums/layout_template_enums.dart';
+
+// --- Drag-in insert support: shared types ---
+enum _DragKind { column, row }
+
+class _InsertPayload {
+  final String title;
+  final JiaZi? jiaZi;
+  const _InsertPayload(this.title, {this.jiaZi});
+}
 
 class EditableFourZhuCardv2 extends StatefulWidget {
   final ValueNotifier<CardMode> cardModeNotifier;
@@ -39,6 +50,10 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
 
   Size get ganZhiCellSize => Size(pillarWidth, 48);
   double otherCellHeight = 32;
+
+  // --- Drag-in insert support ---
+  int? _hoverColumnInsertIndex;
+  int? _hoverRowInsertIndex;
 
   @override
   void initState() {
@@ -146,19 +161,53 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
               final headerRow = SizedBox(
                 key: const ValueKey('row-header-gender'),
                 width: _headerTotalWidth,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Stack(
                   children: [
-                    // 性别标题单元格（固定，不可拖拽）
-                    cell(Size(rowTitleWidth, columnTitleHeight),
-                        getGenderText(widget.gender)),
-                    // 四柱列标题（年/月/日/时），与原实现保持一致
-                    for (final t2 in zhuList)
-                      cell(
-                          Size(pillarWidth, columnTitleHeight),
-                          _dragColumnTitleSwitcher(
-                              getColumnTitleText(t2.item1))),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // 性别标题单元格（固定，不可拖拽）
+                        cell(Size(rowTitleWidth, columnTitleHeight),
+                            getGenderText(widget.gender)),
+                        // 四柱列标题（年/月/日/时），与原实现保持一致
+                        for (final t2 in zhuList)
+                          cell(
+                              Size(pillarWidth, columnTitleHeight),
+                              _dragColumnTitleSwitcher(
+                                  getColumnTitleText(t2.item1))),
+                      ],
+                    ),
+                    // 覆盖在标题区域的列插入 DragTarget（不改变布局宽度）
+                    Positioned.fill(
+                      child: DragTarget<Tuple2<_DragKind, _InsertPayload>>(
+                        onWillAccept: (data) => data?.item1 == _DragKind.column,
+                        onMove: (details) {
+                          final data = details.data;
+                          if (data.item1 != _DragKind.column) return;
+                          final box = context.findRenderObject() as RenderBox?;
+                          if (box == null) return;
+                          final local = box.globalToLocal(details.offset);
+                          final dx = local.dx - rowTitleWidth;
+                          _hoverColumnInsertIndex =
+                              _computeColumnInsertIndexFromDx(
+                                  dx, zhuList.length);
+                          setState(() {});
+                        },
+                        onLeave: (_) {
+                          setState(() => _hoverColumnInsertIndex = null);
+                        },
+                        onAccept: (payload) {
+                          final insertIndex = _hoverColumnInsertIndex ?? 0;
+                          _addColumnAt(insertIndex, payload.item2);
+                          setState(() => _hoverColumnInsertIndex = null);
+                        },
+                        builder: (context, c, r) {
+                          // 透明覆盖，不改变原布局；可按需添加可视反馈
+                          return Container(color: Colors.transparent);
+                        },
+                      ),
+                    ),
                   ],
                 ),
               );
@@ -219,6 +268,11 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                         cellList.add(cell(Size(itemWidth, otherCellHeight),
                             getNaYinText(t2.item2.naYinStr)));
                       }
+                    } else if (title == "空亡") {
+                      for (final t2 in zhuList) {
+                        cellList.add(cell(Size(itemWidth, otherCellHeight),
+                            getKongWangText(t2.item2.getKongWang())));
+                      }
                     } else {
                       for (final t2 in zhuList) {
                         cellList.add(cell(Size(itemWidth, columnTitleHeight),
@@ -226,25 +280,92 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                       }
                     }
 
-                    return SizedBox(
+                    // 在每个行项之前增加一个“缝隙式”插入接收层，避免覆盖拖拽手柄
+                    const double insertGapHeight = 10;
+                    final int globalIndex = index + 1; // 行视图索引从1开始（0为标题行）
+                    return Column(
                       key: ValueKey(widget.rowListNotifier.value[index + 1]),
-                      width: pillarWidth,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ...cellList,
-                        ],
-                      ),
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          height: insertGapHeight,
+                          child: DragTarget<Object>(
+                            onWillAccept: (data) {
+                              // 仅接受外部行插入或内部行插入负载，忽略重排拖拽
+                              return (data is Tuple2<_DragKind,
+                                          _InsertPayload> &&
+                                      data.item1 == _DragKind.row) ||
+                                  (data is RowInfoPayload);
+                            },
+                            onAccept: (payload) {
+                              final insertIndex = globalIndex; // 在该行之前插入
+                              if (payload
+                                  is Tuple2<_DragKind, _InsertPayload>) {
+                                _addRowAt(insertIndex, payload.item2);
+                              } else if (payload is RowInfoPayload) {
+                                final title =
+                                    payload.rowLabel ?? payload.rowType.name;
+                                _addRowAt(insertIndex, _InsertPayload(title));
+                              }
+                            },
+                            builder: (context, c, r) {
+                              return const SizedBox.shrink();
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: pillarWidth,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ...cellList,
+                            ],
+                          ),
+                        ),
+                        if (index == (value.length - 2))
+                          // 末尾再增加一个插入接收层，允许插入到最后
+                          SizedBox(
+                            height: insertGapHeight,
+                            child: DragTarget<Object>(
+                              onWillAccept: (data) {
+                                return (data is Tuple2<_DragKind,
+                                            _InsertPayload> &&
+                                        data.item1 == _DragKind.row) ||
+                                    (data is RowInfoPayload);
+                              },
+                              onAccept: (payload) {
+                                final insertIndex =
+                                    widget.rowListNotifier.value.length; // 末尾
+                                if (payload
+                                    is Tuple2<_DragKind, _InsertPayload>) {
+                                  _addRowAt(insertIndex, payload.item2);
+                                } else if (payload is RowInfoPayload) {
+                                  final title =
+                                      payload.rowLabel ?? payload.rowType.name;
+                                  _addRowAt(insertIndex, _InsertPayload(title));
+                                }
+                              },
+                              builder: (context, c, r) {
+                                return const SizedBox.shrink();
+                              },
+                            ),
+                          ),
+                      ],
                     );
                   });
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+              return Stack(
                 children: [
-                  headerRow,
-                  Expanded(child: reorderable),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      headerRow,
+                      Expanded(child: reorderable),
+                    ],
+                  ),
+                  // 暂时移除行视图数据区域的插入接收层，避免影响行重排交互
                 ],
               );
             }));
@@ -289,20 +410,200 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
             },
             itemBuilder: (context, index) {
               final tuple = value[index];
-              return SizedBox(
-                key: ValueKey(tuple.item1),
-                width: pillarWidth,
-                child: _pillarItemForColumn(
-                    tuple, size.height, pillarWidth, index),
+              // 在每个列项之前增加一个“缝隙式”插入接收层，避免覆盖拖拽手柄
+              const double insertGapWidth = 12;
+              return Row(
+                key: ObjectKey(tuple),
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: insertGapWidth,
+                    child: DragTarget<Object>(
+                      onWillAccept: (data) {
+                        return (data is Tuple2<_DragKind, _InsertPayload> &&
+                                data.item1 == _DragKind.column) ||
+                            (data is PillarPayload);
+                      },
+                      onAccept: (payload) {
+                        final insertIndex = index; // 在该列之前插入
+                        if (payload is Tuple2<_DragKind, _InsertPayload>) {
+                          _addColumnAt(insertIndex, payload.item2);
+                        } else if (payload is PillarPayload) {
+                          final label =
+                              payload.pillarLabel ?? payload.pillarType.name;
+                          JiaZi? jz;
+                          final gan =
+                              payload.perRowValues[RowType.heavenlyStem];
+                          final zhi =
+                              payload.perRowValues[RowType.earthlyBranch];
+                          if (gan != null && zhi != null) {
+                            jz = JiaZi.getFromGanZhiValue('$gan$zhi');
+                          }
+                          _addColumnAt(
+                              insertIndex, _InsertPayload(label, jiaZi: jz));
+                        }
+                      },
+                      builder: (context, c, r) {
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    width: pillarWidth,
+                    child: _pillarItemForColumn(
+                        tuple, size.height, pillarWidth, index),
+                  ),
+                  if (index == value.length - 1)
+                    SizedBox(
+                      width: insertGapWidth,
+                      child: DragTarget<Object>(
+                        onWillAccept: (data) {
+                          return (data is Tuple2<_DragKind, _InsertPayload> &&
+                                  data.item1 == _DragKind.column) ||
+                              (data is PillarPayload);
+                        },
+                        onAccept: (payload) {
+                          final insertIndex = value.length; // 末尾
+                          if (payload is Tuple2<_DragKind, _InsertPayload>) {
+                            _addColumnAt(insertIndex, payload.item2);
+                          } else if (payload is PillarPayload) {
+                            final label =
+                                payload.pillarLabel ?? payload.pillarType.name;
+                            JiaZi? jz;
+                            final gan =
+                                payload.perRowValues[RowType.heavenlyStem];
+                            final zhi =
+                                payload.perRowValues[RowType.earthlyBranch];
+                            if (gan != null && zhi != null) {
+                              jz = JiaZi.getFromGanZhiValue('$gan$zhi');
+                            }
+                            _addColumnAt(
+                                insertIndex, _InsertPayload(label, jiaZi: jz));
+                          }
+                        },
+                        builder: (context, c, r) {
+                          return const SizedBox.shrink();
+                        },
+                      ),
+                    ),
+                ],
               );
             },
           );
 
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          return Stack(
             children: [
-              headerColumn,
-              Expanded(child: reorderable),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  headerColumn,
+                  Expanded(child: reorderable),
+                ],
+              ),
+              // 左侧标题列上的行插入 DragTarget（不改变布局宽度）
+              Positioned(
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: rowTitleWidth,
+                child: DragTarget<Object>(
+                  onWillAccept: (data) {
+                    debugPrint('Row DragTarget(title col) onWillAccept: $data');
+                    // 接受内部行插入 Tuple2<_DragKind,row> 或外部 RowInfoPayload
+                    final ok = (data is Tuple2<_DragKind, _InsertPayload> &&
+                            data.item1 == _DragKind.row) ||
+                        (data is RowInfoPayload);
+                    return ok;
+                  },
+                  onMove: (details) {
+                    final box = context.findRenderObject() as RenderBox?;
+                    if (box == null) return;
+                    final local = box.globalToLocal(details.offset);
+                    final dy = local.dy;
+                    _hoverRowInsertIndex = _computeRowInsertIndexFromDy(
+                        dy, widget.rowListNotifier.value);
+                    debugPrint(
+                        'Row DragTarget(title col) hover index: $_hoverRowInsertIndex, dy: $dy');
+                    setState(() {});
+                  },
+                  onLeave: (_) {
+                    debugPrint('Row DragTarget(title col) onLeave');
+                    setState(() => _hoverRowInsertIndex = null);
+                  },
+                  onAccept: (payload) {
+                    final insertIndex = _hoverRowInsertIndex ?? 1;
+                    debugPrint(
+                        'Row DragTarget(title col) onAccept: insertIndex=$insertIndex, payload=$payload');
+                    if (payload is Tuple2<_DragKind, _InsertPayload>) {
+                      _addRowAt(insertIndex, payload.item2);
+                    } else if (payload is RowInfoPayload) {
+                      final title = payload.rowLabel ?? payload.rowType.name;
+                      _addRowAt(insertIndex, _InsertPayload(title));
+                    }
+                    setState(() => _hoverRowInsertIndex = null);
+                  },
+                  builder: (context, c, r) {
+                    return Container(color: Colors.transparent);
+                  },
+                ),
+              ),
+              // 暂时移除列视图中的行数据区域插入接收层，避免影响重排
+              // 暂时移除列视图数据区域的列插入接收层，避免影响列重排
+              /*Positioned(
+                left: rowTitleWidth,
+                top: columnTitleHeight,
+                right: 0,
+                bottom: 0,
+                child: DragTarget<Object>(
+                  onWillAccept: (data) {
+                    debugPrint('Column DragTarget onWillAccept: $data');
+                    final ok = (data is Tuple2<_DragKind, _InsertPayload> &&
+                            data.item1 == _DragKind.column) ||
+                        (data is PillarPayload);
+                    return ok;
+                  },
+                  onMove: (details) {
+                    final box = context.findRenderObject() as RenderBox?;
+                    if (box == null) return;
+                    final local = box.globalToLocal(details.offset);
+                    // 覆盖层已从 rowTitleWidth 开始，坐标系本身不含标题列宽度
+                    final dx = local.dx;
+                    _hoverColumnInsertIndex =
+                        _computeColumnInsertIndexFromDx(dx, value.length);
+                    debugPrint(
+                        'Column insert index: $_hoverColumnInsertIndex, dx: $dx');
+                    setState(() {});
+                  },
+                  onLeave: (_) {
+                    debugPrint('Column DragTarget onLeave');
+                    setState(() => _hoverColumnInsertIndex = null);
+                  },
+                  onAccept: (payload) {
+                    final insertIndex = _hoverColumnInsertIndex ?? 0;
+                    debugPrint(
+                        'Column DragTarget onAccept: insertIndex=$insertIndex, payload=$payload');
+                    if (payload is Tuple2<_DragKind, _InsertPayload>) {
+                      _addColumnAt(insertIndex, payload.item2);
+                    } else if (payload is PillarPayload) {
+                      // Map external payload to internal insert payload
+                      final label =
+                          payload.pillarLabel ?? payload.pillarType.name;
+                      JiaZi? jz;
+                      final gan = payload.perRowValues[RowType.heavenlyStem];
+                      final zhi = payload.perRowValues[RowType.earthlyBranch];
+                      if (gan != null && zhi != null) {
+                        jz = JiaZi.getFromGanZhiValue('$gan$zhi');
+                      }
+                      _addColumnAt(
+                          insertIndex, _InsertPayload(label, jiaZi: jz));
+                    }
+                    setState(() => _hoverColumnInsertIndex = null);
+                  },
+                  builder: (context, c, r) {
+                    return Container(color: Colors.transparent);
+                  },
+                ),
+              ),*/
             ],
           );
         },
@@ -365,18 +666,18 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
               // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 cell(Size(pillarWidth, columnTitleHeight),
-                    getColumnTitleText(titleList[0], active: active)),
+                    getColumnTitleText(titleList[0])),
 
                 cell(Size(pillarWidth, columnTitleHeight),
-                    getColumnTitleText(titleList[1], active: active)),
+                    getColumnTitleText(titleList[1])),
                 cell(Size(pillarWidth, ganZhiCellSize.height),
-                    getColumnTitleText(titleList[1], active: active)),
+                    getColumnTitleText(titleList[1])),
 
                 // 地支
                 cell(Size(pillarWidth, ganZhiCellSize.height),
-                    getColumnTitleText(titleList[1], active: active)),
+                    getColumnTitleText(titleList[1])),
                 cell(Size(pillarWidth, otherCellHeight),
-                    getColumnTitleText(titleList[1], active: active)),
+                    getColumnTitleText(titleList[1])),
               ],
             );
           },
@@ -467,7 +768,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                   final bool? active =
                       locked == null ? null : (locked == CardMode.column);
                   return _dragColumnHandle(
-                    getColumnTitleText(tuple.item1, active: active),
+                    getColumnTitleText(tuple.item1),
                     active: active,
                   );
                 },
@@ -485,6 +786,9 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       } else if (rowName == "纳音") {
         children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
             getNaYinText(jiaZi.naYinStr)));
+      } else if (rowName == "空亡") {
+        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
+            getKongWangText(jiaZi.getKongWang())));
       } else {
         // Fallback: show column title text for unknown row types
         children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
@@ -700,30 +1004,19 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         style: TextStyle(fontSize: 24, color: Colors.black87));
   }
 
-  AnimatedDefaultTextStyle getRowTitleText(String rowTitle, {bool? active}) {
-    return AnimatedDefaultTextStyle(
-      child: Text(rowTitle),
-      style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: active == null
-              ? Colors.black87
-              : (active == true ? Colors.black : Colors.black26)),
-      duration: const Duration(milliseconds: 180),
-    );
+  Text getKongWangText(Tuple2<DiZhi, DiZhi> kongWang) {
+    return Text('${kongWang.item1.name}/${kongWang.item2.name}',
+        style: const TextStyle(fontSize: 14, color: Colors.black87));
   }
 
-  AnimatedDefaultTextStyle getColumnTitleText(String title, {bool? active}) {
-    return AnimatedDefaultTextStyle(
-      child: Text(title),
-      style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: active == null
-              ? Colors.black87
-              : (active ? Colors.black : Colors.black26)),
-      duration: const Duration(milliseconds: 180),
-    );
+  Text getRowTitleText(String rowTitle) {
+    return Text(rowTitle,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold));
+  }
+
+  Text getColumnTitleText(String title) {
+    return Text(title,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold));
   }
 
   Text getNaYinText(String content) {
@@ -740,5 +1033,55 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       content = '坤造';
     }
     return Text(content, style: TextStyle(fontSize: 14, color: Colors.black87));
+  }
+
+  // --- Helpers: compute insert index & apply insert ---
+  int _computeColumnInsertIndexFromDx(double dx, int n) {
+    if (dx <= 0) return 0;
+    final double w = pillarWidth;
+    // midpoint-based index: gaps from 0..n
+    final int cell = (dx / w).floor();
+    final double within = dx - cell * w;
+    final int insert = within < w / 2 ? cell : (cell + 1);
+    return insert.clamp(0, n);
+  }
+
+  int _computeRowInsertIndexFromDy(double dy, List<String> rows) {
+    // rows[0] is gender header (fixed), insert index starts from 1
+    double cy = 0;
+    // gap before first data row is index 1
+    if (dy <= columnTitleHeight) return 1;
+    cy += columnTitleHeight;
+    // 天干
+    if (dy <= cy + ganZhiCellSize.height) return 2;
+    cy += ganZhiCellSize.height;
+    // 地支
+    if (dy <= cy + ganZhiCellSize.height) return 3;
+    cy += ganZhiCellSize.height;
+    // remaining rows (each otherCellHeight)
+    final int restCount = rows.length - 3;
+    final double restDy = dy - cy;
+    final int cell = (restDy / otherCellHeight).floor();
+    final double within = restDy - cell * otherCellHeight;
+    final int insert = (within < otherCellHeight / 2 ? cell : (cell + 1)) + 4;
+    return insert.clamp(1, rows.length);
+  }
+
+  void _addColumnAt(int insertIndex, _InsertPayload payload) {
+    final list = List<Tuple2<String, JiaZi>>.of(widget.jiaZiNotifier.value);
+    final title = payload.title.isNotEmpty ? payload.title : '新柱';
+    final jz = payload.jiaZi ?? JiaZi.JIA_ZI;
+    insertIndex = insertIndex.clamp(0, list.length);
+    list.insert(insertIndex, Tuple2(title, jz));
+    widget.jiaZiNotifier.value = list;
+  }
+
+  void _addRowAt(int insertIndex, _InsertPayload payload) {
+    final list = List<String>.of(widget.rowListNotifier.value);
+    // 保持首行不变：插入索引最小为1
+    insertIndex = insertIndex.clamp(1, list.length);
+    final title = payload.title.isNotEmpty ? payload.title : '自定义';
+    list.insert(insertIndex, title);
+    widget.rowListNotifier.value = list;
   }
 }

@@ -15,6 +15,16 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final ValueNotifier<List<String>> rowListNotifier;
   final ValueNotifier<EdgeInsets> paddingNotifier;
   final Gender gender;
+  // Optional: decorate drag feedback (overlay proxy)
+  final Widget Function(BuildContext context, Widget child)?
+      dragFeedbackBuilder;
+  // Optional: decorate insert indicators
+  final Decoration Function(BuildContext context, bool isHover)?
+      columnInsertDecorationBuilder;
+  final Decoration Function(BuildContext context, bool isHover)?
+      rowInsertDecorationBuilder;
+  // Optional: visualize hysteresis boundaries for debugging
+  final bool debugHysteresisOverlay;
 
   const EditableFourZhuCardV3({
     super.key,
@@ -22,6 +32,10 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.rowListNotifier,
     required this.paddingNotifier,
     required this.gender,
+    this.dragFeedbackBuilder,
+    this.columnInsertDecorationBuilder,
+    this.rowInsertDecorationBuilder,
+    this.debugHysteresisOverlay = false,
   });
 
   @override
@@ -31,6 +45,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
 enum _DragKind { row, column }
 
 class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
+  // Root card key for global position checks
+  final GlobalKey _cardKey = GlobalKey();
   // Metrics
   double pillarWidth = 64;
   double rowTitleWidth = 52;
@@ -47,8 +63,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // Drag state
   int? _draggingColumnIndex;
   int? _hoverColumnInsertIndex; // between 0..pillars.len
+  // Drop animation state: fade-in the inserted column briefly
+  int? _dropAnimatingColIndex;
+  bool _dropColFadeActive = false;
   int? _draggingRowIndex; // absolute row index (skip header row 0)
   int? _hoverRowInsertIndex; // between 1..rows.len (skip header at 0)
+  // Drop animation state: fade-in the inserted row briefly
+  int? _dropAnimatingRowIndex;
+  bool _dropRowFadeActive = false;
   // Throttle timestamps for continuous onMove updates
   DateTime? _lastColMoveAt;
   DateTime? _lastRowMoveAt;
@@ -61,6 +83,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // Last committed insert indices for hysteresis
   int? _lastColInsertIndex;
   int? _lastRowInsertIndex;
+
+  // Drag feedback status notifiers: control dynamic "插入"/"删除" prompts on the dragged piece itself
+  // When hovering a valid insert target inside the card, set insert=true, delete=false
+  // When leaving card targets (outside card), set delete=true, insert=false
+  final ValueNotifier<bool> _dragWantsInsert = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> _dragWantsDelete = ValueNotifier<bool>(false);
+  // Guard to prevent double-accept across overlapping DragTargets
+  bool _rowAccepting = false;
+
+  // Hysteresis margins to reduce jitter near boundaries
+  static const double _colHysteresisFrac = 0.12; // fraction of pillarWidth
+  static const double _rowHysteresisPx = 8.0; // pixels around row mid boundary
 
   double _smooth(double? prev, double next, [double alpha = 0.25]) {
     if (prev == null) return next;
@@ -129,6 +163,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     widget.jiaZiNotifier.removeListener(_pillarsListener);
     widget.rowListNotifier.removeListener(_rowsListener);
     _sizeNotifier.dispose();
+    _dragWantsInsert.dispose();
+    _dragWantsDelete.dispose();
     super.dispose();
   }
 
@@ -149,6 +185,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       builder: (context, size, child) {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
+          key: _cardKey,
           width: size.width,
           height: size.height,
           decoration: BoxDecoration(
@@ -171,55 +208,131 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       width: totalWidth,
       height: columnTitleHeight,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               _cell(Size(rowTitleWidth, columnTitleHeight),
                   _genderText(widget.gender)),
-              ...pillars.asMap().entries.map((entry) {
-                final colIdx = entry.key;
-                final title = entry.value.item1;
-                final childCell = _cell(Size(pillarWidth, columnTitleHeight),
-                    _dragHandle(_columnTitleText(title)));
-                // 当正在拖拽该列时，将其在原布局中收缩为 0 宽度，以避免空白插槽
-                final childWhenDragging = const SizedBox(width: 0, height: 0);
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.fastOutSlowIn,
-                  offset:
-                      Offset(_computeColumnShift(colIdx, pillars.length), 0),
-                  child: AnimatedSize(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.fastOutSlowIn,
-                    child: SizedBox(
-                      width: _draggingColumnIndex == colIdx ? 0 : pillarWidth,
-                      height: columnTitleHeight,
-                      child: Draggable<Tuple2<_DragKind, int>>(
-                        data: Tuple2(_DragKind.column, colIdx),
-                        onDragStarted: () =>
-                            setState(() => _draggingColumnIndex = colIdx),
-                        onDragEnd: (_) => setState(() {
-                          _draggingColumnIndex = null;
-                          _hoverColumnInsertIndex = null;
-                        }),
-                        dragAnchorStrategy: pointerDragAnchorStrategy,
-                        feedback: Material(
-                          color: Colors.transparent,
-                          elevation: 8,
-                          child: Transform.scale(
-                            scale: 1.02,
-                            child: _buildFullColumnFeedback(
-                                title, entry.value.item2, rows),
+              ...(() {
+                final d = _draggingColumnIndex;
+                final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+                final List<Widget> children = [];
+                for (int i = 0; i < pillars.length; i++) {
+                  // 在每个列前插入一个可动画的幽灵占位，宽度在 0..pillarWidth 之间动画
+                  final bool dragging = d != null;
+                  children.add(AnimatedContainer(
+                    duration: dragging
+                        ? const Duration(milliseconds: 180)
+                        : Duration.zero,
+                    curve: Curves.easeOut,
+                    width: dragging && t == i ? pillarWidth : 0,
+                    height: columnTitleHeight,
+                    color: dragging && t == i
+                        ? Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withOpacity(0.08)
+                        : Colors.transparent,
+                  ));
+                  if (d == i) continue; // 拖拽中的列不占原位置
+                  final title = pillars[i].item1;
+                  final childCell = Stack(
+                    children: [
+                      _cell(Size(pillarWidth, columnTitleHeight),
+                          _dragHandle(_columnTitleText(title))),
+                      if (dragging && t == i)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.12),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.35),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        childWhenDragging: childWhenDragging,
-                        child: childCell,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    ],
+                  );
+                  children.add(SizedBox(
+                      width: pillarWidth,
+                      height: columnTitleHeight,
+                      child: AnimatedSlide(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        offset:
+                            (_dropColFadeActive && _dropAnimatingColIndex == i)
+                                ? const Offset(0.06, 0)
+                                : Offset.zero,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          opacity: (_dropColFadeActive &&
+                                  _dropAnimatingColIndex == i)
+                              ? 0.0
+                              : 1.0,
+                          child: Draggable<Tuple2<_DragKind, int>>(
+                            data: Tuple2(_DragKind.column, i),
+                            onDragStarted: () {
+                              setState(() => _draggingColumnIndex = i);
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDragEnd: (details) {
+                              final at = details.offset;
+                              final outside = !_isGlobalPointInsideCard(at);
+                              final wantsDelete = _dragWantsDelete.value;
+                              if (outside || wantsDelete) {
+                                _deleteColumn(i);
+                              }
+                              setState(() {
+                                _draggingColumnIndex = null;
+                                _hoverColumnInsertIndex = null;
+                                _lastColInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            dragAnchorStrategy: pointerDragAnchorStrategy,
+                            feedback: widget.dragFeedbackBuilder?.call(
+                                  context,
+                                  _buildFullColumnFeedback(
+                                      title, pillars[i].item2, rows),
+                                ) ??
+                                _statusFeedback(
+                                  _buildFullColumnFeedback(
+                                      title, pillars[i].item2, rows),
+                                ),
+                            child: childCell,
+                          ),
+                        ),
+                      )));
+                }
+                // 末尾插入位的可动画幽灵占位
+                final bool dragging = d != null;
+                children.add(AnimatedContainer(
+                  duration: dragging
+                      ? const Duration(milliseconds: 180)
+                      : Duration.zero,
+                  curve: Curves.easeOut,
+                  width: dragging && t == pillars.length ? pillarWidth : 0,
+                  height: columnTitleHeight,
+                  color: dragging && t == pillars.length
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+                      : Colors.transparent,
+                ));
+                return children;
+              })(),
             ],
           ),
           // 统一 DragTarget：填充在列标题区域之上，持续计算 hover 插入索引
@@ -243,28 +356,80 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final n = pillars.length;
                 final d = _draggingColumnIndex;
                 if (d == null) return;
-                // Midpoint-based insert index
-                final target = _computeColumnInsertIndexFromDx(dx, n);
+                // Midpoint-based insert index with hysteresis near boundaries
+                final candidate = _computeColumnInsertIndexFromDx(dx, n);
+                final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+                if (last == null) {
+                  setState(() {
+                    _hoverColumnInsertIndex = candidate;
+                    _lastColInsertIndex = candidate;
+                  });
+                  _dragWantsInsert.value = true;
+                  _dragWantsDelete.value = false;
+                  return;
+                }
+                if (candidate == last) {
+                  return; // no change
+                }
+                final margin = pillarWidth * _colHysteresisFrac;
+                final rightBoundary = (last + 0.5) * pillarWidth;
+                final leftBoundary = (last - 0.5) * pillarWidth;
+                bool allowUpdate = false;
+                if (candidate > last) {
+                  // moving right: must surpass right boundary + margin
+                  allowUpdate = dx > rightBoundary + margin;
+                } else {
+                  // moving left: must pass left boundary - margin
+                  allowUpdate = dx < leftBoundary - margin;
+                }
+                if (!allowUpdate) return;
                 setState(() {
-                  _hoverColumnInsertIndex = target;
-                  _lastColInsertIndex = target;
+                  _hoverColumnInsertIndex = candidate;
+                  _lastColInsertIndex = candidate;
                 });
+                _dragWantsInsert.value = true;
+                _dragWantsDelete.value = false;
               },
-              onLeave: (_) => setState(() {
-                _hoverColumnInsertIndex = null;
-                _lastColInsertIndex = null;
-              }),
+              onLeave: (_) {
+                setState(() {
+                  _hoverColumnInsertIndex = null;
+                  _lastColInsertIndex = null;
+                });
+                _dragWantsInsert.value = false;
+                _dragWantsDelete.value = true;
+              },
               onAccept: (payload) {
                 final insertIndex = _hoverColumnInsertIndex ?? 0;
                 setState(() {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
+                  // 关键修复：接受插入后立即清除拖拽索引，避免被拖拽列被跳过而“消失”
+                  _draggingColumnIndex = null;
                 });
                 _reorderColumns(payload.item2, insertIndex);
+                _dragWantsInsert.value = false;
+                _dragWantsDelete.value = false;
               },
               builder: (context, _, __) => const SizedBox.expand(),
             ),
           ),
+          // Debug overlay: visualize column midpoint boundaries and hysteresis margins
+          if (widget.debugHysteresisOverlay)
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: true,
+                child: CustomPaint(
+                  painter: _ColumnHysteresisPainter(
+                    columns: pillars.length,
+                    rowTitleWidth: rowTitleWidth,
+                    pillarWidth: pillarWidth,
+                    margin: pillarWidth * _colHysteresisFrac,
+                    color:
+                        Theme.of(context).colorScheme.primary.withOpacity(0.45),
+                  ),
+                ),
+              ),
+            ),
           // 插入位指示条：在当前 hover 的插入索引位置绘制细线，增强可视反馈
           if (_hoverColumnInsertIndex != null)
             Positioned(
@@ -276,6 +441,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 color: Theme.of(context).colorScheme.primary.withOpacity(0.35),
               ),
             ),
+          // 移除卡片右上角删除提示，仅保留拖拽物上的动态徽标
         ],
       ),
     );
@@ -284,52 +450,140 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final leftHeader = SizedBox(
       width: rowTitleWidth,
       child: Stack(
+        clipBehavior: Clip.none,
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ...rows.asMap().entries.skip(1).map((entry) {
-                final absRowIdx = entry.key; // >=1
-                final rowName = entry.value;
-                final cell = _cell(
-                  _rowCellSize(rowName),
-                  _dragHandle(_rowTitleText(rowName)),
-                );
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.fastOutSlowIn,
-                  offset: Offset(0, _computeRowShift(absRowIdx, rows.length)),
-                  child: AnimatedSize(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.fastOutSlowIn,
-                    child: SizedBox(
-                      height: _draggingRowIndex == absRowIdx
-                          ? 0
-                          : _rowCellSize(rowName).height,
-                      child: Draggable<Tuple2<_DragKind, int>>(
-                        data: Tuple2(_DragKind.row, absRowIdx),
-                        onDragStarted: () =>
-                            setState(() => _draggingRowIndex = absRowIdx),
-                        onDragEnd: (_) => setState(() {
-                          _draggingRowIndex = null;
-                          _hoverRowInsertIndex = null;
-                        }),
-                        dragAnchorStrategy: pointerDragAnchorStrategy,
-                        feedback: Material(
-                          color: Colors.transparent,
-                          elevation: 8,
-                          child: Transform.scale(
-                            scale: 1.02,
-                            child: _buildFullRowFeedback(rowName, pillars),
+              ...(() {
+                final d = _draggingRowIndex;
+                final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+                final List<Widget> children = [];
+                for (final entry in rows.asMap().entries.skip(1)) {
+                  final absRowIdx = entry.key; // >=1
+                  final rowName = entry.value;
+                  final rowSize = _rowCellSize(rowName);
+                  // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
+                  final bool draggingRow = d != null;
+                  children.add(AnimatedContainer(
+                    duration: draggingRow
+                        ? const Duration(milliseconds: 180)
+                        : Duration.zero,
+                    curve: Curves.easeOut,
+                    width: rowTitleWidth,
+                    height: draggingRow && t == absRowIdx ? rowSize.height : 0,
+                    color: draggingRow && t == absRowIdx
+                        ? Theme.of(context)
+                            .colorScheme
+                            .secondary
+                            .withOpacity(0.08)
+                        : Colors.transparent,
+                  ));
+                  if (d == absRowIdx) continue; // 拖拽中的行不占原位置
+                  final cell = Stack(
+                    children: [
+                      _cell(
+                        rowSize,
+                        _dragHandle(_rowTitleText(rowName)),
+                      ),
+                      if (draggingRow && t == absRowIdx)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .secondary
+                                    .withOpacity(0.12),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .secondary
+                                      .withOpacity(0.35),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                        childWhenDragging: const SizedBox(width: 0, height: 0),
-                        child: cell,
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
+                    ],
+                  );
+                  children.add(SizedBox(
+                      height: rowSize.height,
+                      child: AnimatedSlide(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        offset: (_dropRowFadeActive &&
+                                _dropAnimatingRowIndex == absRowIdx)
+                            ? const Offset(0, 0.06)
+                            : Offset.zero,
+                        child: AnimatedOpacity(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          opacity: (_dropRowFadeActive &&
+                                  _dropAnimatingRowIndex == absRowIdx)
+                              ? 0.0
+                              : 1.0,
+                          child: Draggable<Tuple2<_DragKind, int>>(
+                            data: Tuple2(_DragKind.row, absRowIdx),
+                            onDragStarted: () {
+                              setState(() => _draggingRowIndex = absRowIdx);
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDragEnd: (details) {
+                              final at = details.offset;
+                              final outside = !_isGlobalPointInsideCard(at);
+                              final wantsDelete = _dragWantsDelete.value;
+                              if (outside || wantsDelete) {
+                                _deleteRow(absRowIdx);
+                              }
+                              setState(() {
+                                _draggingRowIndex = null;
+                                _hoverRowInsertIndex = null;
+                                _lastRowInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            dragAnchorStrategy: pointerDragAnchorStrategy,
+                            feedback: widget.dragFeedbackBuilder?.call(
+                                  context,
+                                  _buildFullRowFeedback(rowName, pillars),
+                                ) ??
+                                _statusFeedback(
+                                  _buildFullRowFeedback(rowName, pillars),
+                                ),
+                            child: cell,
+                          ),
+                        ),
+                      )));
+                }
+                // 末尾插入位的可动画幽灵占位
+                final draggedRowName =
+                    (d != null && d < rows.length) ? rows[d] : null;
+                final draggedSize = draggedRowName != null
+                    ? _rowCellSize(draggedRowName)
+                    : Size(rowTitleWidth, 0);
+                final bool draggingRow = d != null;
+                children.add(AnimatedContainer(
+                  duration: draggingRow
+                      ? const Duration(milliseconds: 180)
+                      : Duration.zero,
+                  curve: Curves.easeOut,
+                  width: rowTitleWidth,
+                  height: draggingRow && (t == rows.length)
+                      ? draggedSize.height
+                      : 0,
+                  color: draggingRow && (t == rows.length)
+                      ? Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.08)
+                      : Colors.transparent,
+                ));
+                return children;
+              })(),
             ],
           ),
           Positioned.fill(
@@ -351,11 +605,45 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final dy = local.dy;
                 final d = _draggingRowIndex;
                 if (d == null) return;
-                // Midpoint-based insert index
-                final target = _computeRowInsertIndexFromDyMidpoint(dy, rows);
+                // Midpoint-based insert index with hysteresis near boundaries
+                final candidate =
+                    _computeRowInsertIndexFromDyMidpoint(dy, rows);
+                final last = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+                if (last == null) {
+                  setState(() {
+                    _hoverRowInsertIndex = candidate;
+                    _lastRowInsertIndex = candidate;
+                  });
+                  return;
+                }
+                if (candidate == last) {
+                  return; // no change
+                }
+                // 顶部插入位特殊处理：当目标为第一个可拖拽行（索引1）时立即更新，避免不让位
+                if (candidate == 1) {
+                  setState(() {
+                    _hoverRowInsertIndex = 1;
+                    _lastRowInsertIndex = 1;
+                  });
+                  return;
+                }
+                // compute boundary mid Y for last index (between last and last+1)
+                final boundaryDown = _rowBoundaryMidY(last, rows);
+                // boundary up is between last-1 and last; handle edge case at 1
+                final boundaryUp =
+                    last > 1 ? _rowBoundaryMidY(last - 1, rows) : 0.0;
+                bool allowUpdate = false;
+                if (candidate > last) {
+                  // moving down: must surpass boundaryDown + margin
+                  allowUpdate = dy > boundaryDown + _rowHysteresisPx;
+                } else {
+                  // moving up: must go above boundaryUp - margin
+                  allowUpdate = dy < boundaryUp - _rowHysteresisPx;
+                }
+                if (!allowUpdate) return;
                 setState(() {
-                  _hoverRowInsertIndex = target;
-                  _lastRowInsertIndex = target;
+                  _hoverRowInsertIndex = candidate;
+                  _lastRowInsertIndex = candidate;
                 });
               },
               onLeave: (_) => setState(() {
@@ -363,22 +651,55 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 _lastRowInsertIndex = null;
               }),
               onAccept: (payload) {
+                if (_rowAccepting) return;
+                _rowAccepting = true;
                 final insertIndex = _hoverRowInsertIndex ?? 1;
                 setState(() {
                   _hoverRowInsertIndex = null;
                   _lastRowInsertIndex = null;
+                  // 关键修复：接受插入后立即清除拖拽索引，避免被拖拽行被跳过而“消失”
+                  _draggingRowIndex = null;
                 });
                 _reorderRows(payload.item2, insertIndex);
+                Future.microtask(() {
+                  if (!mounted) return;
+                  setState(() {
+                    _rowAccepting = false;
+                  });
+                });
               },
               builder: (context, _, __) => const SizedBox.expand(),
             ),
           ),
+          // Debug overlay: visualize row midpoint boundaries and hysteresis margins
+          if (widget.debugHysteresisOverlay)
+            Positioned.fill(
+              child: IgnorePointer(
+                ignoring: true,
+                child: CustomPaint(
+                  painter: _RowHysteresisPainter(
+                    midYs: List<double>.generate(
+                      rows.length - 1,
+                      (i) => _rowBoundaryMidY(i + 1, rows),
+                    ),
+                    rowTitleWidth: rowTitleWidth,
+                    marginPx: _rowHysteresisPx,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .secondary
+                        .withOpacity(0.45),
+                  ),
+                ),
+              ),
+            ),
           // 插入位指示条：在当前 hover 的行插入索引位置绘制横线，增强可视反馈
           if (_hoverRowInsertIndex != null)
             Positioned(
               left: 0,
-              top: _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) -
-                  1,
+              top: (_hoverRowInsertIndex == 1)
+                  ? 0
+                  : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) -
+                      1,
               width: rowTitleWidth,
               height: 2,
               child: Container(
@@ -393,69 +714,363 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // Data grid: according to current row order
     final dataGrid = SizedBox(
       width: pillarWidth * pillars.length,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: pillars.asMap().entries.map((entry) {
-          final colIdx = entry.key;
-          final tuple = entry.value;
-          final jz = tuple.item2;
-          // For each column, build vertical stack per row order, and dim when dragging this column
-          final columnContent = Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              ...rows.asMap().entries.skip(1).map((rEntry) {
-                final absRowIdx = rEntry.key;
-                final rowName = rEntry.value;
-                Widget cell;
-                if (rowName == '天干') {
-                  cell = _cell(ganZhiCellSize, _tianGanText(jz.tianGan));
-                } else if (rowName == '地支') {
-                  cell = _cell(ganZhiCellSize, _diZhiText(jz.diZhi));
-                } else if (rowName == '纳音') {
-                  cell = _cell(Size(pillarWidth, otherCellHeight),
-                      _naYinText(jz.naYinStr));
-                } else {
-                  // Fallback: show title text cell
-                  cell = _cell(Size(pillarWidth, otherCellHeight),
-                      _columnTitleText(tuple.item1));
-                }
-                return AnimatedSlide(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.fastOutSlowIn,
-                  offset: Offset(0, _computeRowShift(absRowIdx, rows.length)),
-                  child: AnimatedSize(
-                    duration: const Duration(milliseconds: 180),
-                    curve: Curves.fastOutSlowIn,
-                    child: _draggingRowIndex == absRowIdx
-                        ? const SizedBox.shrink()
-                        : AnimatedOpacity(
-                            duration: const Duration(milliseconds: 120),
-                            opacity: _draggingRowIndex == absRowIdx ? 0.4 : 1.0,
-                            child: cell,
-                          ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: (() {
+              final d = _draggingColumnIndex;
+              final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+              final List<Widget> children = [];
+              for (int i = 0; i < pillars.length; i++) {
+                // 在每个列前插入一个可动画的幽灵列，占位宽度 0..pillarWidth
+                final bool dragging = d != null;
+                children.add(AnimatedContainer(
+                  duration: dragging
+                      ? const Duration(milliseconds: 180)
+                      : Duration.zero,
+                  curve: Curves.easeOut,
+                  width: dragging && t == i ? pillarWidth : 0,
+                  color: dragging && t == i
+                      ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+                      : Colors.transparent,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: rows
+                        .asMap()
+                        .entries
+                        .skip(1)
+                        .map((r) => SizedBox(
+                              width: pillarWidth,
+                              height: (r.value == '天干' || r.value == '地支')
+                                  ? ganZhiCellSize.height
+                                  : otherCellHeight,
+                            ))
+                        .toList(),
                   ),
+                ));
+                if (d == i) continue; // 拖拽中的列不占原位置
+                final tuple = pillars[i];
+                final jz = tuple.item2;
+                final columnContent = Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    ...(() {
+                      final dRow = _draggingRowIndex;
+                      final tRow = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+                      final List<Widget> rowChildren = [];
+                      for (final rEntry in rows.asMap().entries.skip(1)) {
+                        final absRowIdx = rEntry.key;
+                        final rowName = rEntry.value;
+                        final rowSize = _rowCellSize(rowName);
+                        // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
+                        final bool draggingRow = dRow != null;
+                        rowChildren.add(AnimatedContainer(
+                          duration: draggingRow
+                              ? const Duration(milliseconds: 180)
+                              : Duration.zero,
+                          curve: Curves.easeOut,
+                          width: pillarWidth,
+                          height: draggingRow && tRow == absRowIdx
+                              ? rowSize.height
+                              : 0,
+                          color: draggingRow && tRow == absRowIdx
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withOpacity(0.08)
+                              : Colors.transparent,
+                        ));
+                        if (dRow == absRowIdx) continue; // 拖拽中的行不占原位置
+                        Widget cell;
+                        if (rowName == '天干') {
+                          cell =
+                              _cell(ganZhiCellSize, _tianGanText(jz.tianGan));
+                        } else if (rowName == '地支') {
+                          cell = _cell(ganZhiCellSize, _diZhiText(jz.diZhi));
+                        } else if (rowName == '纳音') {
+                          cell = _cell(Size(pillarWidth, otherCellHeight),
+                              _naYinText(jz.naYinStr));
+                        } else {
+                          cell = _cell(Size(pillarWidth, otherCellHeight),
+                              _columnTitleText(tuple.item1));
+                        }
+                        rowChildren.add(AnimatedSlide(
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          offset: (_dropRowFadeActive &&
+                                  _dropAnimatingRowIndex == absRowIdx)
+                              ? const Offset(0, 0.06)
+                              : Offset.zero,
+                          child: Stack(
+                            children: [
+                              AnimatedOpacity(
+                                duration: const Duration(milliseconds: 240),
+                                curve: Curves.easeOutCubic,
+                                opacity: (_dropRowFadeActive &&
+                                        _dropAnimatingRowIndex == absRowIdx)
+                                    ? 0.0
+                                    : (_draggingRowIndex == absRowIdx
+                                        ? 0.9
+                                        : 1.0),
+                                child: cell,
+                              ),
+                              if (draggingRow && tRow == absRowIdx)
+                                Positioned.fill(
+                                  child: IgnorePointer(
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary
+                                            .withOpacity(0.12),
+                                        border: Border.all(
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary
+                                              .withOpacity(0.35),
+                                          width: 1,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ));
+                      }
+                      // 末尾插入：为最后一行之后增加可动画幽灵占位
+                      final draggedRowName = (_draggingRowIndex != null &&
+                              _draggingRowIndex! < rows.length)
+                          ? rows[_draggingRowIndex!]
+                          : null;
+                      final draggedSize = draggedRowName != null
+                          ? _rowCellSize(draggedRowName)
+                          : Size(pillarWidth, 0);
+                      final bool draggingRow = dRow != null;
+                      rowChildren.add(AnimatedContainer(
+                        duration: draggingRow
+                            ? const Duration(milliseconds: 180)
+                            : Duration.zero,
+                        curve: Curves.easeOut,
+                        width: pillarWidth,
+                        height: draggingRow && (tRow == rows.length)
+                            ? draggedSize.height
+                            : 0,
+                        color: draggingRow && (tRow == rows.length)
+                            ? Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withOpacity(0.08)
+                            : Colors.transparent,
+                      ));
+                      return rowChildren;
+                    })(),
+                  ],
                 );
-              }).toList(),
-            ],
-          );
-          return AnimatedSlide(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.fastOutSlowIn,
-            offset: Offset(_computeColumnShift(colIdx, pillars.length), 0),
-            child: AnimatedSize(
-              duration: const Duration(milliseconds: 180),
-              curve: Curves.fastOutSlowIn,
-              child: SizedBox(
-                width: _draggingColumnIndex == colIdx ? 0 : pillarWidth,
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 120),
-                  opacity: _draggingColumnIndex == colIdx ? 0.4 : 1.0,
-                  child: columnContent,
+                children.add(AnimatedSlide(
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeOutCubic,
+                  offset: (_dropColFadeActive && _dropAnimatingColIndex == i)
+                      ? const Offset(0.06, 0)
+                      : Offset.zero,
+                  child: Stack(
+                    children: [
+                      AnimatedOpacity(
+                        duration: const Duration(milliseconds: 240),
+                        curve: Curves.easeOutCubic,
+                        opacity:
+                            (_dropColFadeActive && _dropAnimatingColIndex == i)
+                                ? 0.0
+                                : 1.0,
+                        child: SizedBox(
+                          width: pillarWidth,
+                          child: columnContent,
+                        ),
+                      ),
+                      if (dragging && t == i)
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .primary
+                                    .withOpacity(0.12),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary
+                                      .withOpacity(0.35),
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ));
+              }
+              // 末尾列插入位的可动画幽灵列
+              final bool dragging = d != null;
+              children.add(AnimatedContainer(
+                duration: dragging
+                    ? const Duration(milliseconds: 180)
+                    : Duration.zero,
+                curve: Curves.easeOut,
+                width: dragging && t == pillars.length ? pillarWidth : 0,
+                color: dragging && t == pillars.length
+                    ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+                    : Colors.transparent,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: rows
+                      .asMap()
+                      .entries
+                      .skip(1)
+                      .map((r) => SizedBox(
+                            width: pillarWidth,
+                            height: (r.value == '天干' || r.value == '地支')
+                                ? ganZhiCellSize.height
+                                : otherCellHeight,
+                          ))
+                      .toList(),
+                ),
+              ));
+              return children;
+            })(),
+          ),
+          // 覆盖数据网格区域的统一 DragTarget：在右侧也能持续计算行插入索引
+          Positioned.fill(
+            child: DragTarget<Tuple2<_DragKind, int>>(
+              onWillAccept: (data) => data?.item1 == _DragKind.row,
+              onMove: (details) {
+                final data = details.data;
+                if (data.item1 != _DragKind.row) return;
+                // 轻节流：约 12ms 更新一次，避免过度重绘
+                final now = DateTime.now();
+                if (_lastRowMoveAt != null &&
+                    now.difference(_lastRowMoveAt!).inMilliseconds < 12) {
+                  return;
+                }
+                _lastRowMoveAt = now;
+                final box = context.findRenderObject() as RenderBox?;
+                if (box == null) return;
+                final local = box.globalToLocal(details.offset);
+                final dy = local.dy;
+                final dRow = _draggingRowIndex;
+                if (dRow == null) return;
+                // Midpoint-based insert index with hysteresis near boundaries
+                final candidate =
+                    _computeRowInsertIndexFromDyMidpoint(dy, rows);
+                final last = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+                if (last == null) {
+                  setState(() {
+                    _hoverRowInsertIndex = candidate;
+                    _lastRowInsertIndex = candidate;
+                  });
+                  _dragWantsInsert.value = true;
+                  _dragWantsDelete.value = false;
+                  return;
+                }
+                if (candidate == last) {
+                  return; // no change
+                }
+                // 顶部插入位特殊处理：当目标为第一个可拖拽行（索引1）时立即更新，避免不让位
+                if (candidate == 1) {
+                  setState(() {
+                    _hoverRowInsertIndex = 1;
+                    _lastRowInsertIndex = 1;
+                  });
+                  _dragWantsInsert.value = true;
+                  _dragWantsDelete.value = false;
+                  return;
+                }
+                // compute boundary mid Y for last index (between last and last+1)
+                final boundaryDown = _rowBoundaryMidY(last, rows);
+                // boundary up is between last-1 and last; handle edge case at 1
+                final boundaryUp =
+                    last > 1 ? _rowBoundaryMidY(last - 1, rows) : 0.0;
+                bool allowUpdate = false;
+                if (candidate > last) {
+                  // moving down: must surpass boundaryDown + margin
+                  allowUpdate = dy > boundaryDown + _rowHysteresisPx;
+                } else {
+                  // moving up: must go above boundaryUp - margin
+                  allowUpdate = dy < boundaryUp - _rowHysteresisPx;
+                }
+                if (!allowUpdate) return;
+                setState(() {
+                  _hoverRowInsertIndex = candidate;
+                  _lastRowInsertIndex = candidate;
+                });
+                _dragWantsInsert.value = true;
+                _dragWantsDelete.value = false;
+              },
+              onLeave: (_) {
+                setState(() {
+                  _hoverRowInsertIndex = null;
+                  _lastRowInsertIndex = null;
+                });
+                _dragWantsInsert.value = false;
+                _dragWantsDelete.value = true;
+              },
+              onAccept: (payload) {
+                if (_rowAccepting) return;
+                _rowAccepting = true;
+                final insertIndex = _hoverRowInsertIndex ?? 1;
+                setState(() {
+                  _hoverRowInsertIndex = null;
+                  _lastRowInsertIndex = null;
+                  _draggingRowIndex = null;
+                });
+                _reorderRows(payload.item2, insertIndex);
+                Future.microtask(() {
+                  if (!mounted) return;
+                  setState(() {
+                    _rowAccepting = false;
+                  });
+                });
+                _dragWantsInsert.value = false;
+                _dragWantsDelete.value = false;
+              },
+              builder: (context, _, __) => const SizedBox.expand(),
+            ),
+          ),
+          // 行插入指示线（右侧数据网格覆盖）
+          if (_hoverRowInsertIndex != null)
+            Positioned(
+              left: 0,
+              top: (_hoverRowInsertIndex == 1)
+                  ? 0
+                  : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) -
+                      1,
+              width: pillarWidth * pillars.length,
+              height: 2,
+              child: Container(
+                color:
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.35),
+              ),
+            ),
+          // 整行高亮：在目标插入位对应的整行显示提示（提升可见性）
+          if (_hoverRowInsertIndex != null &&
+              _hoverRowInsertIndex! >= 1 &&
+              _hoverRowInsertIndex! < rows.length)
+            Positioned(
+              left: 0,
+              top: _computeRowTopFromIndex(_hoverRowInsertIndex!, rows),
+              width: pillarWidth * pillars.length,
+              height: _rowCellSize(rows[_hoverRowInsertIndex!]).height,
+              child: IgnorePointer(
+                child: Container(
+                  color:
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.06),
                 ),
               ),
             ),
-          );
-        }).toList(),
+        ],
       ),
     );
 
@@ -505,21 +1120,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         _reorderColumns(payload.item2, insertIndex);
       },
       builder: (context, candidateData, rejectedData) {
+        final decoration =
+            widget.columnInsertDecorationBuilder?.call(context, isHover) ??
+                BoxDecoration(
+                  color: Colors.transparent,
+                  border: isHover
+                      ? Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .primary
+                              .withOpacity(0.25),
+                          width: 1.5,
+                        )
+                      : Border.all(color: Colors.transparent, width: 0),
+                );
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.fastOutSlowIn,
           width: isHover ? pillarWidth : 12, // 保持最小命中宽度
           height: columnTitleHeight, // 高度保持与标题一致
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: isHover
-                ? Border.all(
-                    color:
-                        Theme.of(context).colorScheme.primary.withOpacity(0.25),
-                    width: 1.5,
-                  )
-                : Border.all(color: Colors.transparent, width: 0),
-          ),
+          decoration: decoration,
         );
       },
     );
@@ -543,23 +1163,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         _reorderRows(payload.item2, insertIndex);
       },
       builder: (context, candidateData, rejectedData) {
+        final decoration =
+            widget.rowInsertDecorationBuilder?.call(context, isHover) ??
+                BoxDecoration(
+                  color: Colors.transparent,
+                  border: isHover
+                      ? Border.all(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .secondary
+                              .withOpacity(0.25),
+                          width: 1.5,
+                        )
+                      : Border.all(color: Colors.transparent, width: 0),
+                );
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.fastOutSlowIn,
           width: rowTitleWidth,
           height: isHover ? otherCellHeight : 12, // 保持最小命中高度
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: isHover
-                ? Border.all(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .secondary
-                        .withOpacity(0.25),
-                    width: 1.5,
-                  )
-                : Border.all(color: Colors.transparent, width: 0),
-          ),
+          decoration: decoration,
         );
       },
     );
@@ -582,6 +1205,139 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return acc;
   }
 
+  // 计算目标行顶部位置（用于整行高亮覆盖）
+  double _computeRowTopFromIndex(int index, List<String> rows) {
+    // index 取值 [1..rows.length-1]；1 对应第一数据行，top=0
+    double acc = 0.0;
+    for (final entry in rows.asMap().entries) {
+      final idx = entry.key;
+      final name = entry.value;
+      if (idx == 0) continue; // 跳过标题行
+      if (idx == index) break;
+      final h = (name == '天干' || name == '地支')
+          ? ganZhiCellSize.height
+          : otherCellHeight;
+      acc += h;
+    }
+    return acc;
+  }
+
+  // 判断全局点是否在卡片容器内
+  bool _isGlobalPointInsideCard(Offset global) {
+    final ctx = _cardKey.currentContext;
+    if (ctx == null) return true; // 默认为在内，避免误删
+    final box = ctx.findRenderObject() as RenderBox?;
+    if (box == null) return true;
+    final origin = box.localToGlobal(Offset.zero);
+    final size = box.size;
+    final rect = Rect.fromLTWH(origin.dx, origin.dy, size.width, size.height);
+    return rect.contains(global);
+  }
+
+  // 删除列
+  void _deleteColumn(int index) {
+    final list = List<Tuple2<String, JiaZi>>.of(widget.jiaZiNotifier.value);
+    if (index < 0 || index >= list.length) return;
+    list.removeAt(index);
+    widget.jiaZiNotifier.value = list;
+  }
+
+  // 删除行（跳过标题行，索引>=1）
+  void _deleteRow(int absIndex) {
+    final rows = List<String>.of(widget.rowListNotifier.value);
+    if (absIndex <= 0 || absIndex >= rows.length) return;
+    rows.removeAt(absIndex);
+    widget.rowListNotifier.value = rows;
+  }
+
+  // 已移除：卡片右上角删除提示徽标；仅保留拖拽物上的动态徽标
+
+  // Default feedback wrapper used when no custom decorator provided
+  Widget _defaultFeedback(Widget child) {
+    return Material(
+      color: Colors.transparent,
+      elevation: 8,
+      child: Transform.scale(
+        scale: 1.02,
+        child: child,
+      ),
+    );
+  }
+
+  // Status-aware feedback: overlay dynamic "插入" / "删除" prompts on the dragged piece itself
+  Widget _statusFeedback(Widget child) {
+    return Material(
+      color: Colors.transparent,
+      elevation: 8,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Transform.scale(scale: 1.02, child: child),
+          Positioned(
+            right: 6,
+            top: 4,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: _dragWantsDelete,
+              builder: (context, wantsDelete, _) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: _dragWantsInsert,
+                  builder: (context, wantsInsert, __) {
+                    // Priority: 删除 > 插入；都为 false 时不显示
+                    if (wantsDelete) {
+                      return _statusBadge(
+                        context,
+                        text: '删除',
+                        color: Theme.of(context).colorScheme.error,
+                        bgOpacity: 0.12,
+                      );
+                    } else if (wantsInsert) {
+                      return _statusBadge(
+                        context,
+                        text: '插入',
+                        color: Theme.of(context).colorScheme.primary,
+                        bgOpacity: 0.12,
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _statusBadge(BuildContext context,
+      {required String text, required Color color, double bgOpacity = 0.12}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(bgOpacity),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: color.withOpacity(0.6), width: 1),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: color,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  // --- Debug painters ---
+  // Visualize column mid boundaries (k + 0.5) and hysteresis margins
+  // Boundaries are measured from start of the first column content (after rowTitle)
+  // We draw vertical lines at x = rowTitleWidth + pillarWidth * (k + 0.5)
+  // and margin lines at x +/- margin
+  static const double _debugStroke = 1.0;
+  static const double _debugMarginStroke = 0.5;
+// Keep class open; painter classes are defined at file end.
+
   void _reorderColumns(int fromIdx, int insertIndex) {
     // Current columns length
     final list = widget.jiaZiNotifier.value;
@@ -596,6 +1352,28 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     target = target.clamp(0, list.length);
     list.insert(target, item);
     widget.jiaZiNotifier.value = List<Tuple2<String, JiaZi>>.of(list);
+    // 统一清理拖拽状态 + 触发插入淡入动画
+    setState(() {
+      _draggingColumnIndex = null;
+      _hoverColumnInsertIndex = null;
+      _lastColInsertIndex = null;
+      _dropAnimatingColIndex = target;
+      _dropColFadeActive = true;
+    });
+    // 下一帧开始淡入
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _dropColFadeActive = false;
+      });
+    });
+    // 动画结束后清理索引
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (!mounted) return;
+      setState(() {
+        _dropAnimatingColIndex = null;
+      });
+    });
   }
 
   void _reorderRows(int fromAbsIdx, int insertIndex) {
@@ -611,6 +1389,28 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     target = target.clamp(1, rows.length);
     rows.insert(target, item);
     widget.rowListNotifier.value = List<String>.of(rows);
+    // 统一清理拖拽状态 + 触发插入淡入动画
+    setState(() {
+      _draggingRowIndex = null;
+      _hoverRowInsertIndex = null;
+      _lastRowInsertIndex = null;
+      _dropAnimatingRowIndex = target;
+      _dropRowFadeActive = true;
+    });
+    // 下一帧开始淡入
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _dropRowFadeActive = false;
+      });
+    });
+    // 动画结束后清理索引
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (!mounted) return;
+      setState(() {
+        _dropAnimatingRowIndex = null;
+      });
+    });
   }
 
   // --- UI helpers ---
@@ -759,6 +1559,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return insertIndex.clamp(1, rows.length);
   }
 
+  // 返回行索引 `idx` 的中点 Y（局部坐标），用于滞回判断
+  // 索引范围为数据行索引（>=1），标题行 0 被跳过
+  double _rowBoundaryMidY(int idx, List<String> rows) {
+    double acc = 0.0;
+    for (final entry in rows.asMap().entries) {
+      final i = entry.key;
+      final name = entry.value;
+      if (i == 0) continue;
+      final h = (name == '天干' || name == '地支')
+          ? ganZhiCellSize.height
+          : otherCellHeight;
+      if (i == idx) {
+        return acc + h / 2.0;
+      }
+      acc += h;
+    }
+    return acc; // fallback 到底部中点之外，理论上不应命中
+  }
+
   // Build full row feedback (row title + cells across all columns)
   Widget _buildFullRowFeedback(
       String rowName, List<Tuple2<String, JiaZi>> pillars) {
@@ -832,4 +1651,105 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // Placeholder; replace with actual NaYin display when available
         style: TextStyle(fontSize: 14, color: Colors.amber),
       );
+}
+
+// --- Debug Painters (defined outside of State class) ---
+// Visualize column midpoint boundaries and hysteresis margins
+class _ColumnHysteresisPainter extends CustomPainter {
+  final int columns;
+  final double rowTitleWidth;
+  final double pillarWidth;
+  final double margin;
+  final Color color;
+
+  const _ColumnHysteresisPainter({
+    required this.columns,
+    required this.rowTitleWidth,
+    required this.pillarWidth,
+    required this.margin,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final midPaint = Paint()
+      ..color = color
+      ..strokeWidth = _EditableFourZhuCardV3State._debugStroke
+      ..style = PaintingStyle.stroke;
+    final marginPaint = Paint()
+      ..color = color.withOpacity(0.6)
+      ..strokeWidth = _EditableFourZhuCardV3State._debugMarginStroke
+      ..style = PaintingStyle.stroke;
+
+    for (int k = 0; k < columns; k++) {
+      final midX = rowTitleWidth + pillarWidth * (k + 0.5);
+      // Mid line
+      canvas.drawLine(Offset(midX, 0), Offset(midX, size.height), midPaint);
+      // Margin lines
+      canvas.drawLine(
+        Offset(midX - margin, 0),
+        Offset(midX - margin, size.height),
+        marginPaint,
+      );
+      canvas.drawLine(
+        Offset(midX + margin, 0),
+        Offset(midX + margin, size.height),
+        marginPaint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _ColumnHysteresisPainter oldDelegate) {
+    return columns != oldDelegate.columns ||
+        rowTitleWidth != oldDelegate.rowTitleWidth ||
+        pillarWidth != oldDelegate.pillarWidth ||
+        margin != oldDelegate.margin ||
+        color != oldDelegate.color;
+  }
+}
+
+// Visualize row midpoint boundaries and hysteresis margins
+class _RowHysteresisPainter extends CustomPainter {
+  final List<double> midYs; // authoritative midpoints for data rows (>=1)
+  final double rowTitleWidth;
+  final double marginPx; // hysteresis margin in pixels
+  final Color color;
+
+  const _RowHysteresisPainter({
+    required this.midYs,
+    required this.rowTitleWidth,
+    required this.marginPx,
+    required this.color,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final midPaint = Paint()
+      ..color = color
+      ..strokeWidth = _EditableFourZhuCardV3State._debugStroke
+      ..style = PaintingStyle.stroke;
+    final marginPaint = Paint()
+      ..color = color.withOpacity(0.6)
+      ..strokeWidth = _EditableFourZhuCardV3State._debugMarginStroke
+      ..style = PaintingStyle.stroke;
+
+    for (final midY in midYs) {
+      // Mid line across the left header width
+      canvas.drawLine(Offset(0, midY), Offset(rowTitleWidth, midY), midPaint);
+      // Margin lines above and below midpoint
+      canvas.drawLine(Offset(0, midY - marginPx),
+          Offset(rowTitleWidth, midY - marginPx), marginPaint);
+      canvas.drawLine(Offset(0, midY + marginPx),
+          Offset(rowTitleWidth, midY + marginPx), marginPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _RowHysteresisPainter oldDelegate) {
+    return midYs != oldDelegate.midYs ||
+        rowTitleWidth != oldDelegate.rowTitleWidth ||
+        marginPx != oldDelegate.marginPx ||
+        color != oldDelegate.color;
+  }
 }

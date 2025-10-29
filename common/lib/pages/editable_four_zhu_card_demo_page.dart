@@ -180,6 +180,7 @@ class _EditableFourZhuCardDemoPageState
                       rowListNotifier: _rowListNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
+                      debugHysteresisOverlay: true,
                     ),
                   ],
                 ),
