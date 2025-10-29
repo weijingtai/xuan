@@ -6,6 +6,8 @@ import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_tian_gan.dart';
 import '../enums/enum_di_zhi.dart';
+import '../enums/layout_template_enums.dart';
+import '../models/drag_payloads.dart';
 
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
@@ -83,6 +85,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // Last committed insert indices for hysteresis
   int? _lastColInsertIndex;
   int? _lastRowInsertIndex;
+
+  // External hover flags to expand card size during drag-over (better UX)
+  bool _hoveringExternalPillar = false;
+  bool _hoveringExternalRow = false;
+  double _externalRowHoverHeight = 0.0;
 
   // Drag feedback status notifiers: control dynamic "插入"/"删除" prompts on the dragged piece itself
   // When hovering a valid insert target inside the card, set insert=true, delete=false
@@ -183,16 +190,58 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return ValueListenableBuilder<Size>(
       valueListenable: _sizeNotifier,
       builder: (context, size, child) {
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          key: _cardKey,
-          width: size.width,
-          height: size.height,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: _buildGrid(size),
+        // Expand card size dynamically only when hovering an external pillar/row
+        final pillars = widget.jiaZiNotifier.value;
+        final rows = widget.rowListNotifier.value;
+        final bool hasColGhost = _hoveringExternalPillar;
+        final bool hasRowGhost = _hoveringExternalRow;
+        final double extraColWidth = hasColGhost ? pillarWidth : 0.0;
+        double extraRowHeight = 0.0;
+        if (hasRowGhost) {
+          if (_hoveringExternalRow) {
+            extraRowHeight = _externalRowHoverHeight;
+          }
+        }
+        return Stack(
+          children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 80),
+              curve: Curves.easeOutCubic,
+              key: _cardKey,
+              width: size.width + extraColWidth,
+              height: size.height + extraRowHeight,
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: _buildGrid(size),
+            ),
+            // 删除高亮边框：当拖拽意图为删除时显示红色边框
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ValueListenableBuilder<bool>(
+                  valueListenable: _dragWantsDelete,
+                  builder: (context, wantsDelete, _) {
+                    return AnimatedOpacity(
+                      duration: const Duration(milliseconds: 80),
+                      curve: Curves.easeOutCubic,
+                      opacity: wantsDelete ? 1.0 : 0.0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Theme.of(context).colorScheme.error,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
@@ -201,7 +250,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildGrid(Size size) {
     final pillars = widget.jiaZiNotifier.value;
     final rows = widget.rowListNotifier.value;
-    final totalWidth = rowTitleWidth + pillarWidth * pillars.length;
+    // 仅在外部柱悬停时，为插入位预留一列的宽度（内部重排不扩展卡片）
+    final bool hasColGhost = _hoveringExternalPillar;
+    final double extraColWidth = hasColGhost ? pillarWidth : 0.0;
+    final totalWidth =
+        rowTitleWidth + pillarWidth * pillars.length + extraColWidth;
 
     // Header row: gender + column titles; overlay a unified drag target for continuous index updates
     final headerRow = SizedBox(
@@ -221,7 +274,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final List<Widget> children = [];
                 for (int i = 0; i < pillars.length; i++) {
                   // 在每个列前插入一个可动画的幽灵占位，宽度在 0..pillarWidth 之间动画
-                  final bool dragging = d != null;
+                  final bool dragging = d != null || _hoveringExternalPillar;
                   children.add(AnimatedContainer(
                     duration: dragging
                         ? const Duration(milliseconds: 180)
@@ -288,13 +341,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               _dragWantsInsert.value = false;
                               _dragWantsDelete.value = false;
                             },
-                            onDragEnd: (details) {
-                              final at = details.offset;
-                              final outside = !_isGlobalPointInsideCard(at);
-                              final wantsDelete = _dragWantsDelete.value;
-                              if (outside || wantsDelete) {
+                            onDraggableCanceled: (velocity, offset) {
+                              // 未被任何 DragTarget 接受，若释放点在卡片外则删除
+                              final outside = !_isGlobalPointInsideCard(offset);
+                              if (outside) {
                                 _deleteColumn(i);
                               }
+                              setState(() {
+                                _draggingColumnIndex = null;
+                                _hoverColumnInsertIndex = null;
+                                _lastColInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDragCompleted: () {
+                              // 已被卡片内的插入目标接受，重置状态
                               setState(() {
                                 _draggingColumnIndex = null;
                                 _hoverColumnInsertIndex = null;
@@ -319,7 +381,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       )));
                 }
                 // 末尾插入位的可动画幽灵占位
-                final bool dragging = d != null;
+                final bool dragging = d != null || _hoveringExternalPillar;
                 children.add(AnimatedContainer(
                   duration: dragging
                       ? const Duration(milliseconds: 180)
@@ -337,11 +399,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           ),
           // 统一 DragTarget：填充在列标题区域之上，持续计算 hover 插入索引
           Positioned.fill(
-            child: DragTarget<Tuple2<_DragKind, int>>(
-              onWillAccept: (data) => data?.item1 == _DragKind.column,
+            child: DragTarget<Object>(
+              onWillAccept: (data) {
+                final ok = (data is Tuple2 &&
+                        data.item1 is _DragKind &&
+                        data.item1 == _DragKind.column) ||
+                    (data is PillarPayload);
+                if (data is PillarPayload) {
+                  setState(() => _hoveringExternalPillar = true);
+                }
+                return ok;
+              },
               onMove: (details) {
-                final data = details.data;
-                if (data.item1 != _DragKind.column) return;
                 // 轻节流：约 12ms 更新一次，避免过度重绘
                 final now = DateTime.now();
                 if (_lastColMoveAt != null &&
@@ -349,14 +418,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   return;
                 }
                 _lastColMoveAt = now;
+                // 标记外部柱悬停，用于在未内部拖拽时仍显示幽灵列并扩展宽度
+                final isExternal = details.data is PillarPayload;
+                if (_hoveringExternalPillar != isExternal) {
+                  setState(() => _hoveringExternalPillar = isExternal);
+                }
                 final box = context.findRenderObject() as RenderBox?;
                 if (box == null) return;
                 final local = box.globalToLocal(details.offset);
                 final dx = local.dx - rowTitleWidth;
                 final n = pillars.length;
-                final d = _draggingColumnIndex;
-                if (d == null) return;
-                // Midpoint-based insert index with hysteresis near boundaries
+                // 支持内部列拖拽与外部柱载荷的插入索引计算
                 final candidate = _computeColumnInsertIndexFromDx(dx, n);
                 final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
                 if (last == null) {
@@ -376,10 +448,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final leftBoundary = (last - 0.5) * pillarWidth;
                 bool allowUpdate = false;
                 if (candidate > last) {
-                  // moving right: must surpass right boundary + margin
+                  // 向右移动：超过右边界+margin
                   allowUpdate = dx > rightBoundary + margin;
                 } else {
-                  // moving left: must pass left boundary - margin
+                  // 向左移动：低于左边界-margin
                   allowUpdate = dx < leftBoundary - margin;
                 }
                 if (!allowUpdate) return;
@@ -394,6 +466,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 setState(() {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
+                  _hoveringExternalPillar = false;
                 });
                 _dragWantsInsert.value = false;
                 _dragWantsDelete.value = true;
@@ -403,10 +476,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 setState(() {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
-                  // 关键修复：接受插入后立即清除拖拽索引，避免被拖拽列被跳过而“消失”
                   _draggingColumnIndex = null;
+                  _hoveringExternalPillar = false;
                 });
-                _reorderColumns(payload.item2, insertIndex);
+                if (payload is Tuple2) {
+                  final kind = payload.item1;
+                  final fromIdx = payload.item2 as int;
+                  if (kind == _DragKind.column) {
+                    _reorderColumns(fromIdx, insertIndex);
+                  }
+                } else if (payload is PillarPayload) {
+                  _insertExternalPillar(insertIndex, payload);
+                }
                 _dragWantsInsert.value = false;
                 _dragWantsDelete.value = false;
               },
@@ -464,7 +545,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final rowName = entry.value;
                   final rowSize = _rowCellSize(rowName);
                   // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
-                  final bool draggingRow = d != null;
+                  final bool draggingRow = d != null || _hoveringExternalRow;
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
@@ -531,13 +612,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               _dragWantsInsert.value = false;
                               _dragWantsDelete.value = false;
                             },
-                            onDragEnd: (details) {
-                              final at = details.offset;
-                              final outside = !_isGlobalPointInsideCard(at);
-                              final wantsDelete = _dragWantsDelete.value;
-                              if (outside || wantsDelete) {
+                            onDraggableCanceled: (velocity, offset) {
+                              final outside = !_isGlobalPointInsideCard(offset);
+                              if (outside) {
                                 _deleteRow(absRowIdx);
                               }
+                              setState(() {
+                                _draggingRowIndex = null;
+                                _hoverRowInsertIndex = null;
+                                _lastRowInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDragCompleted: () {
                               setState(() {
                                 _draggingRowIndex = null;
                                 _hoverRowInsertIndex = null;
@@ -587,11 +675,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             ],
           ),
           Positioned.fill(
-            child: DragTarget<Tuple2<_DragKind, int>>(
-              onWillAccept: (data) => data?.item1 == _DragKind.row,
+            child: DragTarget<Object>(
+              onWillAccept: (data) {
+                final ok = (data is Tuple2 && data.item1 == _DragKind.row) ||
+                    (data is RowInfoPayload);
+                if (data is RowInfoPayload) {
+                  setState(() {
+                    _hoveringExternalRow = true;
+                    _externalRowHoverHeight =
+                        _rowCellSize(data.rowLabel ?? '纳音').height;
+                  });
+                }
+                return ok;
+              },
               onMove: (details) {
-                final data = details.data;
-                if (data.item1 != _DragKind.row) return;
                 // 轻节流：约 12ms 更新一次，避免过度重绘
                 final now = DateTime.now();
                 if (_lastRowMoveAt != null &&
@@ -599,12 +696,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   return;
                 }
                 _lastRowMoveAt = now;
+                final isExternal = details.data is RowInfoPayload;
+                if (isExternal) {
+                  final payload = details.data as RowInfoPayload;
+                  final h = _rowCellSize(payload.rowLabel ?? '纳音').height;
+                  if (_hoveringExternalRow != true ||
+                      _externalRowHoverHeight != h) {
+                    setState(() {
+                      _hoveringExternalRow = true;
+                      _externalRowHoverHeight = h;
+                    });
+                  }
+                }
                 final box = context.findRenderObject() as RenderBox?;
                 if (box == null) return;
                 final local = box.globalToLocal(details.offset);
                 final dy = local.dy;
-                final d = _draggingRowIndex;
-                if (d == null) return;
                 // Midpoint-based insert index with hysteresis near boundaries
                 final candidate =
                     _computeRowInsertIndexFromDyMidpoint(dy, rows);
@@ -649,6 +756,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               onLeave: (_) => setState(() {
                 _hoverRowInsertIndex = null;
                 _lastRowInsertIndex = null;
+                _hoveringExternalRow = false;
+                _externalRowHoverHeight = 0.0;
               }),
               onAccept: (payload) {
                 if (_rowAccepting) return;
@@ -657,10 +766,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 setState(() {
                   _hoverRowInsertIndex = null;
                   _lastRowInsertIndex = null;
-                  // 关键修复：接受插入后立即清除拖拽索引，避免被拖拽行被跳过而“消失”
                   _draggingRowIndex = null;
+                  _hoveringExternalRow = false;
+                  _externalRowHoverHeight = 0.0;
                 });
-                _reorderRows(payload.item2, insertIndex);
+                if (payload is Tuple2) {
+                  final kind = payload.item1;
+                  final fromAbsIdx = payload.item2 as int;
+                  if (kind == _DragKind.row) {
+                    _reorderRows(fromAbsIdx, insertIndex);
+                  }
+                } else if (payload is RowInfoPayload) {
+                  _insertExternalRow(insertIndex, payload);
+                }
                 Future.microtask(() {
                   if (!mounted) return;
                   setState(() {
@@ -713,7 +831,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // Data grid: according to current row order
     final dataGrid = SizedBox(
-      width: pillarWidth * pillars.length,
+      width: pillarWidth * pillars.length + extraColWidth,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -725,7 +843,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               final List<Widget> children = [];
               for (int i = 0; i < pillars.length; i++) {
                 // 在每个列前插入一个可动画的幽灵列，占位宽度 0..pillarWidth
-                final bool dragging = d != null;
+                final bool dragging = d != null || _hoveringExternalPillar;
                 children.add(AnimatedContainer(
                   duration: dragging
                       ? const Duration(milliseconds: 180)
@@ -765,7 +883,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         final rowName = rEntry.value;
                         final rowSize = _rowCellSize(rowName);
                         // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
-                        final bool draggingRow = dRow != null;
+                        final bool draggingRow =
+                            dRow != null || _hoveringExternalRow;
                         rowChildren.add(AnimatedContainer(
                           duration: draggingRow
                               ? const Duration(milliseconds: 180)
@@ -848,7 +967,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       final draggedSize = draggedRowName != null
                           ? _rowCellSize(draggedRowName)
                           : Size(pillarWidth, 0);
-                      final bool draggingRow = dRow != null;
+                      final bool draggingRow =
+                          dRow != null || _hoveringExternalRow;
                       rowChildren.add(AnimatedContainer(
                         duration: draggingRow
                             ? const Duration(milliseconds: 180)
@@ -856,7 +976,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         curve: Curves.easeOut,
                         width: pillarWidth,
                         height: draggingRow && (tRow == rows.length)
-                            ? draggedSize.height
+                            ? (dRow != null
+                                ? draggedSize.height
+                                : _externalRowHoverHeight)
                             : 0,
                         color: draggingRow && (tRow == rows.length)
                             ? Theme.of(context)
@@ -1108,16 +1230,30 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _columnInsertTarget(int insertIndex, int max) {
     // insertIndex in [0..max], where 0 is after gender cell, >=1 between columns
     final isHover = _hoverColumnInsertIndex == insertIndex;
-    return DragTarget<Tuple2<_DragKind, int>>(
+    return DragTarget<Object>(
       onWillAccept: (data) {
-        if (data == null || data.item1 != _DragKind.column) return false;
+        // Accept internal column drag or external PillarPayload
+        final ok = (data is Tuple2 &&
+                data.item1 is _DragKind &&
+                data.item1 == _DragKind.column) ||
+            (data is PillarPayload);
+        if (!ok) return false;
         setState(() => _hoverColumnInsertIndex = insertIndex);
         return true;
       },
       onLeave: (_) => setState(() => _hoverColumnInsertIndex = null),
       onAccept: (payload) {
         setState(() => _hoverColumnInsertIndex = null);
-        _reorderColumns(payload.item2, insertIndex);
+        if (payload is Tuple2) {
+          // internal reorder
+          final kind = payload.item1;
+          final fromIdx = payload.item2 as int;
+          if (kind == _DragKind.column) {
+            _reorderColumns(fromIdx, insertIndex);
+          }
+        } else if (payload is PillarPayload) {
+          _insertExternalPillar(insertIndex, payload);
+        }
       },
       builder: (context, candidateData, rejectedData) {
         final decoration =
@@ -1250,6 +1386,39 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     widget.rowListNotifier.value = rows;
   }
 
+  // 接受外部行信息载荷并插入到指定位置（支持例如「空亡」行）
+  void _insertExternalRow(int insertIndex, RowInfoPayload payload) {
+    final rows = List<String>.of(widget.rowListNotifier.value);
+    // 行插入索引范围：[1..rows.length]
+    final target = insertIndex.clamp(1, rows.length);
+    final title = payload.rowLabel ?? payload.rowType.name;
+    rows.insert(target, title);
+    widget.rowListNotifier.value = rows;
+
+    // 触发与内部重排一致的插入淡入动画
+    setState(() {
+      _draggingRowIndex = null;
+      _hoverRowInsertIndex = null;
+      _lastRowInsertIndex = null;
+      _dropAnimatingRowIndex = target;
+      _dropRowFadeActive = true;
+    });
+    // 下一帧关闭淡入标记
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _dropRowFadeActive = false;
+      });
+    });
+    // 动画结束后清理索引
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (!mounted) return;
+      setState(() {
+        _dropAnimatingRowIndex = null;
+      });
+    });
+  }
+
   // 已移除：卡片右上角删除提示徽标；仅保留拖拽物上的动态徽标
 
   // Default feedback wrapper used when no custom decorator provided
@@ -1368,6 +1537,55 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       });
     });
     // 动画结束后清理索引
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (!mounted) return;
+      setState(() {
+        _dropAnimatingColIndex = null;
+      });
+    });
+  }
+
+  void _insertExternalPillar(int insertIndex, PillarPayload payload) {
+    // Build JiaZi from provided perRowValues if possible
+    final tgStr = payload.perRowValues[RowType.heavenlyStem];
+    final dzStr = payload.perRowValues[RowType.earthlyBranch];
+    JiaZi jz;
+    if (tgStr != null && dzStr != null) {
+      final tg = TianGan.getFromValue(tgStr);
+      final dz = DiZhi.getFromValue(dzStr);
+      if (tg != null && dz != null) {
+        jz = JiaZi.getFromGanZhiEnum(tg, dz);
+      } else {
+        jz = widget.jiaZiNotifier.value.isNotEmpty
+            ? widget.jiaZiNotifier.value.first.item2
+            : JiaZi.getByNumber(1);
+      }
+    } else {
+      jz = widget.jiaZiNotifier.value.isNotEmpty
+          ? widget.jiaZiNotifier.value.first.item2
+          : JiaZi.getByNumber(1);
+    }
+
+    final label = payload.pillarLabel ?? payload.pillarType.name;
+    final list = List<Tuple2<String, JiaZi>>.of(widget.jiaZiNotifier.value);
+    final target = insertIndex.clamp(0, list.length);
+    list.insert(target, Tuple2(label, jz));
+    widget.jiaZiNotifier.value = list;
+
+    // Trigger drop animation similar to internal reorder
+    setState(() {
+      _draggingColumnIndex = null;
+      _hoverColumnInsertIndex = null;
+      _lastColInsertIndex = null;
+      _dropAnimatingColIndex = target;
+      _dropColFadeActive = true;
+    });
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _dropColFadeActive = false;
+      });
+    });
     Future.delayed(const Duration(milliseconds: 240), () {
       if (!mounted) return;
       setState(() {
