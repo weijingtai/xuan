@@ -1,0 +1,38 @@
+import 'package:flutter/material.dart';
+import '../enums/layout_template_enums.dart';
+import '../models/drag_payloads.dart';
+
+/// 分割线演示拖拽源组件。
+///
+/// 用途：在可编辑四柱卡片（V3）中，通过拖拽该组件插入一条“行分割符”行，
+/// 该行以极薄的顶部边框呈现，不占用常规单元格内容高度。
+class TestDividerRowDraggable extends StatelessWidget {
+  const TestDividerRowDraggable({super.key});
+
+  /// 构建拖拽入口视图。
+  ///
+  /// 参数：
+  /// - context: Flutter 构建上下文。
+  /// 返回：
+  /// - Widget：可拖拽的 Chip，用于向卡片投递 RowInfoPayload。
+  @override
+  Widget build(BuildContext context) {
+    const payload = RowInfoPayload(
+      // 在 V3 中，当提供 rowLabel 时，rowType 仅作占位，不参与具体渲染逻辑。
+      rowType: RowType.naYin,
+      rowLabel: '行分割符',
+    );
+
+    return Draggable<RowInfoPayload>(
+      data: payload,
+      feedback: Material(
+        elevation: 6,
+        color: Colors.transparent,
+        child: const Chip(label: Text('拖拽: 行分割符')),
+      ),
+      childWhenDragging:
+          const Opacity(opacity: 0.5, child: Chip(label: Text('行分割符'))),
+      child: const Chip(label: Text('行分割符')),
+    );
+  }
+}

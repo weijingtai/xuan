@@ -12,6 +12,7 @@ import '../widgets/editable_four_zhu_card.dart';
 import '../widgets/test_pillar_draggable.dart';
 import '../widgets/test_pillar_info_draggable.dart';
 import '../widgets/test_row_info_draggable.dart';
+import '../widgets/test_divider_row_draggable.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
@@ -160,6 +161,7 @@ class _EditableFourZhuCardDemoPageState
                   runSpacing: 8,
                   children: const [
                     TestRowInfoDraggable(),
+                    TestDividerRowDraggable(),
                   ],
                 ),
                 const SizedBox(height: 24),

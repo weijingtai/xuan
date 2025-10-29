@@ -37,7 +37,7 @@ class TestPillarDraggable extends StatelessWidget {
       case PillarType.hour:
         return '时柱';
       case PillarType.separator:
-        return '分隔符';
+        return '列分隔符';
       default:
         return type.name;
     }

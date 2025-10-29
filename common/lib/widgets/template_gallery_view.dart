@@ -134,7 +134,7 @@ class TemplateGalleryView extends StatelessWidget {
             case PillarType.hourly:
               return '流时';
             case PillarType.separator:
-              return '分隔符';
+              return '列分隔符';
           }
         }
 
@@ -208,7 +208,8 @@ class TemplateGalleryView extends StatelessWidget {
                         children: [
                           FilterChip(
                             label: const Text('天干'),
-                            selected: visibleRows.contains(RowType.heavenlyStem),
+                            selected:
+                                visibleRows.contains(RowType.heavenlyStem),
                             onSelected: (v) => setState(() {
                               if (v) {
                                 visibleRows.add(RowType.heavenlyStem);
@@ -219,7 +220,8 @@ class TemplateGalleryView extends StatelessWidget {
                           ),
                           FilterChip(
                             label: const Text('地支'),
-                            selected: visibleRows.contains(RowType.earthlyBranch),
+                            selected:
+                                visibleRows.contains(RowType.earthlyBranch),
                             onSelected: (v) => setState(() {
                               if (v) {
                                 visibleRows.add(RowType.earthlyBranch);
@@ -342,7 +344,8 @@ class _PresetCard extends StatelessWidget {
                   ]
                 : [
                     theme.colorScheme.surfaceContainerHighest,
-                    theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                    theme.colorScheme.surfaceContainerHighest
+                        .withValues(alpha: 0.5),
                   ],
           ),
           borderRadius: BorderRadius.circular(12),
@@ -395,8 +398,10 @@ class _PresetCard extends StatelessWidget {
                       '${preset.defaultPillars.length}柱',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: isSelected
-                            ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
-                            : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                            ? theme.colorScheme.onPrimaryContainer
+                                .withValues(alpha: 0.8)
+                            : theme.colorScheme.onSurface
+                                .withValues(alpha: 0.6),
                       ),
                     ),
                   ],
@@ -408,7 +413,8 @@ class _PresetCard extends StatelessWidget {
                 preset.description,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: isSelected
-                      ? theme.colorScheme.onPrimaryContainer.withValues(alpha: 0.8)
+                      ? theme.colorScheme.onPrimaryContainer
+                          .withValues(alpha: 0.8)
                       : theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
                 maxLines: 1,
