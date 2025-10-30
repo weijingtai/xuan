@@ -16,6 +16,8 @@ import '../widgets/test_divider_row_draggable.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
+import '../models/drag_payloads.dart';
+import '../models/pillar_content.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -69,6 +71,10 @@ class _EditableFourZhuCardDemoPageState
     '纳音',
   ]);
 
+  // 新版 V3 载荷：柱与行都承载语义与数据
+  late final ValueNotifier<List<PillarPayload>> _pillarsPayloadNotifier;
+  late final ValueNotifier<List<RowInfoPayload>> _rowsPayloadNotifier;
+
   @override
   void initState() {
     super.initState();
@@ -111,6 +117,66 @@ class _EditableFourZhuCardDemoPageState
       globalFontSize: 16,
       globalFontColorHex: '#FF0F172A',
     );
+
+    // 初始化 V3 载荷型 Notifier
+    _pillarsPayloadNotifier = ValueNotifier<List<PillarPayload>>([
+      PillarPayload(
+        pillarType: PillarType.year,
+        pillarContent: PillarContent(
+          id: 'pillar-year',
+          pillarType: PillarType.year,
+          label: '年',
+          jiaZi: _sample.year,
+          description: '示例年柱',
+          version: '1',
+          sourceKind: PillarSourceKind.userInput,
+        ),
+      ),
+      PillarPayload(
+        pillarType: PillarType.month,
+        pillarContent: PillarContent(
+          id: 'pillar-month',
+          pillarType: PillarType.month,
+          label: '月',
+          jiaZi: _sample.month,
+          description: '示例月柱',
+          version: '1',
+          sourceKind: PillarSourceKind.userInput,
+        ),
+      ),
+      PillarPayload(
+        pillarType: PillarType.day,
+        pillarContent: PillarContent(
+          id: 'pillar-day',
+          pillarType: PillarType.day,
+          label: '日',
+          jiaZi: _sample.day,
+          description: '示例日柱',
+          version: '1',
+          sourceKind: PillarSourceKind.userInput,
+        ),
+      ),
+      PillarPayload(
+        pillarType: PillarType.hour,
+        pillarContent: PillarContent(
+          id: 'pillar-hour',
+          pillarType: PillarType.hour,
+          label: '时',
+          jiaZi: _sample.time,
+          description: '示例时柱',
+          version: '1',
+          sourceKind: PillarSourceKind.userInput,
+        ),
+      ),
+    ]);
+
+    _rowsPayloadNotifier = ValueNotifier<List<RowInfoPayload>>([
+      // 标题行（索引0）：使用 label 承载“乾造”，类型仅作占位
+      RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '乾造'),
+      RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
+      RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
+      RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音'),
+    ]);
   }
 
   @override
@@ -178,8 +244,8 @@ class _EditableFourZhuCardDemoPageState
                     ),
                     // 新增：单视图双轴拖拽的 V3 版本
                     EditableFourZhuCardV3(
-                      jiaZiNotifier: _jiaZiNotifier,
-                      rowListNotifier: _rowListNotifier,
+                      pillarsNotifier: _pillarsPayloadNotifier,
+                      rowListNotifier: _rowsPayloadNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
                       debugHysteresisOverlay: true,
@@ -542,6 +608,8 @@ class _EditableFourZhuCardDemoPageState
     _cardModeNotifier.dispose();
     _jiaZiNotifier.dispose();
     _rowListNotifier.dispose();
+    _pillarsPayloadNotifier.dispose();
+    _rowsPayloadNotifier.dispose();
     _paddingNotifier.dispose();
     super.dispose();
   }

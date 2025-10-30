@@ -1,4 +1,7 @@
 import '../enums/layout_template_enums.dart';
+import 'pillar_styles.dart';
+import 'pillar_content.dart';
+import 'row_strategy.dart';
 
 /// Payload for dragging a pillar (column) into a card.
 class PillarPayload {
@@ -6,6 +9,11 @@ class PillarPayload {
     required this.pillarType,
     this.pillarLabel,
     this.perRowValues = const {},
+    this.columnWidth,
+    this.placeholderStyle,
+    this.textAlign,
+    this.orderIndex,
+    this.pillarContent,
   });
 
   /// The type of pillar to insert (e.g., PillarType.luckCycle for 大运).
@@ -17,6 +25,98 @@ class PillarPayload {
   /// Optional overrides for each row in this pillar.
   /// For example: {RowType.heavenlyStem: '乙', RowType.earthlyBranch: '亥'}
   final Map<RowType, String> perRowValues;
+
+  /// Optional explicit column width for UI rendering during external drag.
+  /// If provided, UI can use this width to size the ghost column.
+  final double? columnWidth;
+
+  /// Optional placeholder style for drag-and-drop feedback.
+  final PillarPlaceholderStyle? placeholderStyle;
+
+  /// Optional text alignment for pillar label/content.
+  final RowTextAlign? textAlign;
+
+  /// Optional UI insertion order within a container.
+  /// When provided, the UI may use this value to place the pillar.
+  final int? orderIndex;
+
+  /// Optional embedded core data for this pillar.
+  /// When provided, row strategies and other modules can consume
+  /// `PillarContent` directly without additional lookups.
+  final PillarContent? pillarContent;
+
+  /// Returns a new `PillarPayload` with selected fields updated.
+  ///
+  /// Parameters:
+  /// - [pillarType]: New pillar type if changing semantic。
+  /// - [pillarLabel]: New display label for the pillar。
+  /// - [perRowValues]: New per-row override values。
+  /// - [columnWidth]: Explicit width override; set `null` to clear。
+  /// - [placeholderStyle]: Placeholder style for feedback overlay。
+  /// - [textAlign]: Text alignment override; set `null` to clear。
+  ///
+  /// Returns: A copied payload reflecting the specified updates.
+  PillarPayload copyWith({
+    PillarType? pillarType,
+    String? pillarLabel,
+    Map<RowType, String>? perRowValues,
+    double? columnWidth,
+    PillarPlaceholderStyle? placeholderStyle,
+    RowTextAlign? textAlign,
+    int? orderIndex,
+    PillarContent? pillarContent,
+  }) {
+    return PillarPayload(
+      pillarType: pillarType ?? this.pillarType,
+      pillarLabel: pillarLabel ?? this.pillarLabel,
+      perRowValues: perRowValues ?? this.perRowValues,
+      columnWidth: columnWidth ?? this.columnWidth,
+      placeholderStyle: placeholderStyle ?? this.placeholderStyle,
+      textAlign: textAlign ?? this.textAlign,
+      orderIndex: orderIndex ?? this.orderIndex,
+      pillarContent: pillarContent ?? this.pillarContent,
+    );
+  }
+
+  /// Resolves the expected ghost column width for UI.
+  ///
+  /// Parameters:
+  /// - [defaultWidth]: Current unified pillar width used by the card。
+  /// - [minWidth]: Minimum allowed width（默认 40）。
+  /// - [maxWidth]: Maximum allowed width（默认 160）。
+  ///
+  /// Returns: A `double` representing the width to apply.
+  double resolveWidth({
+    required double defaultWidth,
+    double minWidth = 40.0,
+    double maxWidth = 160.0,
+  }) {
+    final w = columnWidth ?? defaultWidth;
+    if (w.isNaN || w.isInfinite) return defaultWidth;
+    return w.clamp(minWidth, maxWidth);
+  }
+
+  /// Factory helper: create a Luck Cycle pillar payload with common row values.
+  static PillarPayload luckCycle({
+    String label = '大运',
+    Map<RowType, String> perRowValues = const {},
+    double? columnWidth,
+    PillarPlaceholderStyle? placeholderStyle,
+    RowTextAlign? textAlign,
+    int? orderIndex,
+    PillarContent? pillarContent,
+  }) {
+    return PillarPayload(
+      pillarType: PillarType.luckCycle,
+      pillarLabel: label,
+      perRowValues: perRowValues,
+      columnWidth: columnWidth,
+      placeholderStyle: placeholderStyle,
+      textAlign: textAlign,
+      orderIndex: orderIndex,
+      pillarContent: pillarContent,
+    );
+  }
 }
 
 /// Payload for dragging a row info into a card (to insert a new row).
@@ -25,6 +125,9 @@ class RowInfoPayload {
     required this.rowType,
     this.rowLabel,
     this.perPillarValues = const {},
+    this.rowHeight,
+    this.textAlign,
+    this.strategy,
   });
 
   /// The type of row to insert (e.g., RowType.kongWang for 空亡).
@@ -36,4 +139,96 @@ class RowInfoPayload {
   /// Optional overrides for each pillar in this row.
   /// For example: {PillarType.year: '戌亥', PillarType.month: '戌亥'}
   final Map<PillarType, String> perPillarValues;
+
+  /// Optional explicit row height to use for UI rendering.
+  /// If provided, UI should prefer this value over implicit heuristics.
+  final double? rowHeight;
+
+  /// Optional text alignment for row title/content in UI.
+  final RowTextAlign? textAlign;
+
+  /// Optional embedded computation strategy producing or owning this row.
+  /// Embedding allows late recomputation or context-aware updates by the UI.
+  final RowComputationStrategy? strategy;
+
+  /// Creates a standard 空亡 row payload.
+  ///
+  /// Parameters:
+  /// - [label]: Custom row title to display (defaults to '空亡').
+  /// - [values]: Per-pillar overrides (e.g., 年/月/日/时/大运 的空亡值)。
+  /// - [rowHeight]: Explicit UI height override for the row.
+  /// - [textAlign]: Optional text alignment for UI rendering.
+  ///
+  /// Returns: A `RowInfoPayload` representing an 空亡信息行。
+  static RowInfoPayload kongWang({
+    String label = '空亡',
+    Map<PillarType, String> values = const {},
+    double? rowHeight,
+    RowTextAlign? textAlign,
+    RowComputationStrategy? strategy,
+  }) {
+    return RowInfoPayload(
+      rowType: RowType.kongWang,
+      rowLabel: label,
+      perPillarValues: values,
+      rowHeight: rowHeight,
+      textAlign: textAlign,
+      strategy: strategy,
+    );
+  }
+
+  /// Returns a new `RowInfoPayload` with selected fields updated.
+  ///
+  /// Parameters:
+  /// - [rowType]: New row type if changing semantic (e.g., 从空亡切换到纳音)。
+  /// - [rowLabel]: New display label for the row.
+  /// - [perPillarValues]: New per-pillar override values.
+  /// - [rowHeight]: Explicit height override; set `null` to clear.
+  /// - [textAlign]: Text alignment override; set `null` to clear.
+  ///
+  /// Returns: A copied payload reflecting the specified updates.
+  RowInfoPayload copyWith({
+    RowType? rowType,
+    String? rowLabel,
+    Map<PillarType, String>? perPillarValues,
+    double? rowHeight,
+    RowTextAlign? textAlign,
+    RowComputationStrategy? strategy,
+  }) {
+    return RowInfoPayload(
+      rowType: rowType ?? this.rowType,
+      rowLabel: rowLabel ?? this.rowLabel,
+      perPillarValues: perPillarValues ?? this.perPillarValues,
+      rowHeight: rowHeight ?? this.rowHeight,
+      textAlign: textAlign ?? this.textAlign,
+      strategy: strategy ?? this.strategy,
+    );
+  }
+
+  /// Resolves the expected UI height for this row.
+  ///
+  /// Parameters:
+  /// - [heavenlyAndEarthlyHeight]: Height to use for 干支行（默认 48）。
+  /// - [otherHeight]: Height for general rows like 空亡/纳音（默认 32）。
+  /// - [dividerHeight]: Height for divider-like rows（默认 8）。
+  ///
+  /// Returns: A `double` representing the UI height to apply.
+  double resolveHeight({
+    double heavenlyAndEarthlyHeight = 48,
+    double otherHeight = 32,
+    double dividerHeight = 8,
+  }) {
+    if (rowHeight != null) return rowHeight!;
+    // 类型优先，其次按 label 语义兜底
+    if (rowType == RowType.heavenlyStem || rowType == RowType.earthlyBranch) {
+      return heavenlyAndEarthlyHeight;
+    }
+    if (rowLabel == '天干' || rowLabel == '地支') {
+      return heavenlyAndEarthlyHeight;
+    }
+    if (rowLabel == '分割线' || rowLabel == '行分割符') {
+      return dividerHeight;
+    }
+    return otherHeight;
+  }
 }

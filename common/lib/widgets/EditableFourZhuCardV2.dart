@@ -51,6 +51,13 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
   Size get ganZhiCellSize => Size(pillarWidth, 48);
   double otherCellHeight = 32;
 
+  // 分割线参数：按“padding + thickness”动态计算尺寸（与V3保持一致）
+  double _rowDividerPaddingTop = 4.0;
+  double _rowDividerPaddingBottom = 4.0;
+  double _rowDividerThickness = 0.8;
+  double get _rowDividerHeightEffective =>
+      _rowDividerPaddingTop + _rowDividerPaddingBottom + _rowDividerThickness;
+
   // --- Drag-in insert support ---
   int? _hoverColumnInsertIndex;
   int? _hoverRowInsertIndex;
@@ -83,11 +90,13 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
 
   Size _computeTotalSize() {
     final pillars = widget.jiaZiNotifier.value.length;
-    final rows = widget.rowListNotifier.value.length;
-    // Height: title row + two gan/zhi rows + remaining rows treated as otherCellHeight
-    final double height = columnTitleHeight +
-        ganZhiCellSize.height * 2 +
-        (rows - 3) * otherCellHeight;
+    final rows = widget.rowListNotifier.value;
+    // 高度：标题行 + 逐行累计（天干/地支用48，其它用32，分隔行用有效高度）
+    double height = columnTitleHeight; // 首行（性别/标题）
+    for (int i = 0; i < rows.length; i++) {
+      if (i == 0) continue; // 跳过标题行
+      height += _rowHeightByName(rows[i]);
+    }
     final double width = rowTitleWidth + pillarWidth * pillars;
     return Size(width, height);
   }
@@ -783,6 +792,20 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         children.add(cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
       } else if (rowName == "地支") {
         children.add(cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
+      } else if (rowName == '分割线' || rowName == '行分割符' || rowName == '行分隔符') {
+        children.add(
+          SizedBox(
+            width: ganZhiCellSize.width,
+            height: _rowDividerHeightEffective,
+            child: Center(
+              child: Divider(
+                height: _rowDividerHeightEffective,
+                thickness: _rowDividerThickness,
+                color: Theme.of(context).dividerColor,
+              ),
+            ),
+          ),
+        );
       } else if (rowName == "纳音") {
         children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
             getNaYinText(jiaZi.naYinStr)));
@@ -808,6 +831,15 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         children: children,
       ),
     );
+  }
+
+  // 行高解析：按行名返回对应高度（含分隔行别名）
+  double _rowHeightByName(String name) {
+    if (name == '天干' || name == '地支') return ganZhiCellSize.height;
+    if (name == '分割线' || name == '行分割符' || name == '行分隔符') {
+      return _rowDividerHeightEffective;
+    }
+    return otherCellHeight;
   }
 
   Widget _pillarItemForRow(
