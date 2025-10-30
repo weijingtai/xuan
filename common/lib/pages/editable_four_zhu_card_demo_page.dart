@@ -18,6 +18,7 @@ import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
 import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
+import '../models/row_strategy.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -175,7 +176,8 @@ class _EditableFourZhuCardDemoPageState
       RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '乾造'),
       RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
       RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
-      RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音'),
+      // 纳音行：加入策略以便与 V3 的策略渲染路径对齐
+      RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音', strategy: NaYinRowStrategy()),
     ]);
   }
 
@@ -248,7 +250,7 @@ class _EditableFourZhuCardDemoPageState
                       rowListNotifier: _rowsPayloadNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
-                      debugHysteresisOverlay: true,
+                      debugHysteresisOverlay: false,
                     ),
                   ],
                 ),

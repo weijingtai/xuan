@@ -887,8 +887,9 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         _rowLabelOverrides[absIndex] = payload.rowLabel!;
       }
       if (payload.perPillarValues != null) {
+        // Adapt string-keyed pillar ids (e.g., 'pillar-year') to PillarType keys
         _rowOverrides[absIndex] =
-            Map<PillarType, String>.of(payload.perPillarValues!);
+            _coercePerPillarValuesToEnum(payload.perPillarValues!);
       }
     });
     // Notify shared controller via callbacks
@@ -947,5 +948,34 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     }
     final lastVisible = _rows.lastIndexWhere((r) => r.isVisible);
     return lastVisible == -1 ? _rows.length : lastVisible + 1;
+  }
+
+  /// Coerce per-pillar values keyed by `PillarContent.id` strings
+  /// (e.g., 'pillar-year', 'pillar-month', 'pillar-day', 'pillar-hour')
+  /// into the enum-keyed map expected by this legacy card.
+  Map<PillarType, String> _coercePerPillarValuesToEnum(
+      Map<String, String> input) {
+    final result = <PillarType, String>{};
+    for (final entry in input.entries) {
+      final key = entry.key;
+      final val = entry.value;
+      final t = _pillarTypeFromId(key);
+      if (t != null) {
+        result[t] = val;
+      }
+    }
+    return result;
+  }
+
+  /// Best-effort mapping from pillar `id` string to `PillarType`.
+  /// Supports common ids produced by `PillarContent.id`.
+  PillarType? _pillarTypeFromId(String id) {
+    // Normalize to lower-case for resilient matching
+    final s = id.toLowerCase();
+    if (s.contains('year')) return PillarType.year;
+    if (s.contains('month')) return PillarType.month;
+    if (s.contains('day')) return PillarType.day;
+    if (s.contains('hour')) return PillarType.hour;
+    return null;
   }
 }

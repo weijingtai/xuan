@@ -137,8 +137,9 @@ class RowInfoPayload {
   final String? rowLabel;
 
   /// Optional overrides for each pillar in this row.
-  /// For example: {PillarType.year: '戌亥', PillarType.month: '戌亥'}
-  final Map<PillarType, String> perPillarValues;
+  /// Keys are pillar unique `id`, e.g. {'year#1': '戌亥', 'month#1': '戌亥'}.
+  /// Using `id` differentiates repeated pillar types (e.g., multiple luck cycles).
+  final Map<String, String> perPillarValues;
 
   /// Optional explicit row height to use for UI rendering.
   /// If provided, UI should prefer this value over implicit heuristics.
@@ -162,7 +163,7 @@ class RowInfoPayload {
   /// Returns: A `RowInfoPayload` representing an 空亡信息行。
   static RowInfoPayload kongWang({
     String label = '空亡',
-    Map<PillarType, String> values = const {},
+    Map<String, String> values = const {},
     double? rowHeight,
     RowTextAlign? textAlign,
     RowComputationStrategy? strategy,
@@ -190,7 +191,7 @@ class RowInfoPayload {
   RowInfoPayload copyWith({
     RowType? rowType,
     String? rowLabel,
-    Map<PillarType, String>? perPillarValues,
+    Map<String, String>? perPillarValues,
     double? rowHeight,
     RowTextAlign? textAlign,
     RowComputationStrategy? strategy,
@@ -203,6 +204,34 @@ class RowInfoPayload {
       textAlign: textAlign ?? this.textAlign,
       strategy: strategy ?? this.strategy,
     );
+  }
+
+  /// Resolve display value for a pillar (prefer overrides; fall back to strategy).
+  ///
+  /// Parameters:
+  /// - [pillar]: Target `PillarContent`.
+  /// - [input]: Computation context to use when no override is present.
+  ///
+  /// Returns: The text value; returns `null` if no override and no strategy.
+  String? valueFor(PillarContent pillar, RowComputationInput input) {
+    final override = perPillarValues[pillar.id];
+    if (override != null) return override;
+    final s = strategy;
+    if (s == null) return null;
+    final result = s.compute(input);
+    return result.perPillarValues[pillar.id];
+  }
+
+  /// Compute per-pillar values for this row across all pillars.
+  /// Overrides win; strategy fills missing entries.
+  Map<String, String> computeValues(RowComputationInput input) {
+    final s = strategy;
+    if (s == null) return perPillarValues;
+    final result = s.compute(input);
+    return {
+      ...result.perPillarValues,
+      ...perPillarValues,
+    };
   }
 
   /// Resolves the expected UI height for this row.

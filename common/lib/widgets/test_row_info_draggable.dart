@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/drag_payloads.dart';
+import '../models/row_strategy.dart';
 
 /// Demo-only draggable for inserting a row info (e.g., 空亡) with values.
 class TestRowInfoDraggable extends StatelessWidget {
@@ -9,16 +10,13 @@ class TestRowInfoDraggable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Example payload: 「空亡」: 年柱[戌亥], 月柱[戌亥], 日柱[戌亥], 时柱[戌亥], 大运[戌亥]
-    const payload = RowInfoPayload(
+    RowInfoPayload payload = RowInfoPayload(
       rowType: RowType.kongWang,
       rowLabel: '空亡',
-      perPillarValues: {
-        PillarType.year: '戌亥',
-        PillarType.month: '戌亥',
-        PillarType.day: '戌亥',
-        PillarType.hour: '戌亥',
-        PillarType.luckCycle: '戌亥',
-      },
+      // Per-pillar overrides now keyed by pillar `id`.
+      // In demo context without concrete pillar ids, keep empty and let strategy compute.
+      perPillarValues: {},
+      strategy: KongWangRowStrategy(),
     );
 
     return Draggable<RowInfoPayload>(
