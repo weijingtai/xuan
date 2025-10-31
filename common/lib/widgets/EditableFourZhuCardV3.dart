@@ -56,6 +56,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double rowTitleWidth = 52;
   double columnTitleHeight = 24;
   double otherCellHeight = 32;
+  // 独立抓手行/列的尺寸
+  double dragHandleRowHeight = 20;
+  double dragHandleColWidth = 20;
   double dividerRowHeight = 8; // 旧的默认分割线高度（不再直接使用）
   // 分割线参数：按“padding + thickness”动态计算尺寸
   double _rowDividerPaddingTop = 4.0;
@@ -386,8 +389,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               duration: const Duration(milliseconds: 80),
               curve: Curves.easeOutCubic,
               key: _cardKey,
-              width: size.width + extraColWidth,
-              height: size.height + extraRowHeight,
+              width: size.width + extraColWidth + dragHandleColWidth,
+              height: size.height + extraRowHeight + dragHandleRowHeight,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -403,7 +406,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           data.item1 is _DragKind &&
                           data.item1 == _DragKind.column) ||
                       (data is PillarPayload) ||
-                      (data is PillarType);
+                      (data is PillarType) ||
+                      (data is TitlePayload &&
+                          (data as TitlePayload).kind == TitleKind.column);
                   if (ok && (data is PillarPayload || data is PillarType)) {
                     setState(() => _hoveringExternalPillar = true);
                   }
@@ -515,6 +520,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _insertExternalPillar(insertIndex, payload);
                   } else if (payload is PillarType) {
                     _insertExternalPillarFromType(insertIndex, payload);
+                  } else if (payload is TitlePayload &&
+                      payload.kind == TitleKind.column &&
+                      payload.pillarType != null) {
+                    _reorderColumnsByType(payload.pillarType!, insertIndex);
                   }
                   _dragWantsInsert.value = false;
                   _dragWantsDelete.value = false;
@@ -549,7 +558,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             // 插入位指示条（全卡覆盖）：在当前 hover 的插入索引位置绘制纵向细线，增强可视反馈
             if (_hoverColumnInsertIndex != null) ...[
               Builder(builder: (context) {
-                // 使用可变列宽累计，正确定位插入指示线
+                // 使用可变列宽累计，正确定位插入指示线（抓手列移至右侧后移除左侧偏移）
                 final left = rowTitleWidth +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
@@ -559,11 +568,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   left: left,
                   top: 0,
                   width: 2,
-                  height: size.height + extraRowHeight,
+                  height: size.height + extraRowHeight + dragHandleRowHeight,
                   child: IgnorePointer(
                     ignoring: true,
                     child: SizedBox(
-                      height: size.height + extraRowHeight,
+                      height:
+                          size.height + extraRowHeight + dragHandleRowHeight,
                       width: 2,
                       child: VerticalDivider(
                         width: 2,
@@ -601,9 +611,95 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
     final totalWidth = rowTitleWidth + _totalColsWidth(pillars) + extraColWidth;
 
+    // Grip row: standalone handles for columns (no long-press required)
+    final gripRow = SizedBox(
+      width: dragHandleColWidth + totalWidth,
+      height: dragHandleRowHeight,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _cell(Size(rowTitleWidth, dragHandleRowHeight),
+              const SizedBox.shrink()),
+          ...List.generate(pillars.length, (i) {
+            final bool isSeparatorCol = _isSeparatorColumnIndex(i);
+            final double colW =
+                isSeparatorCol ? _colDividerWidthEffective : pillarWidth;
+            if (isSeparatorCol) {
+              return SizedBox(
+                width: colW,
+                height: dragHandleRowHeight,
+              );
+            }
+            final title = pillars[i].item1;
+            return SizedBox(
+              width: colW,
+              height: dragHandleRowHeight,
+              child: Center(
+                child: Draggable<Tuple2<_DragKind, int>>(
+                  data: Tuple2(_DragKind.column, i),
+                  onDragStarted: () {
+                    setState(() => _draggingColumnIndex = i);
+                    _dragWantsInsert.value = false;
+                    _dragWantsDelete.value = false;
+                  },
+                  onDraggableCanceled: (velocity, offset) {
+                    final outside = !_isGlobalPointInsideCard(offset);
+                    if (outside) {
+                      _deleteColumn(i);
+                    }
+                    setState(() {
+                      _draggingColumnIndex = null;
+                      _hoverColumnInsertIndex = null;
+                      _lastColInsertIndex = null;
+                    });
+                    _dragWantsInsert.value = false;
+                    _dragWantsDelete.value = false;
+                  },
+                  onDragCompleted: () {
+                    setState(() {
+                      _draggingColumnIndex = null;
+                      _hoverColumnInsertIndex = null;
+                      _lastColInsertIndex = null;
+                    });
+                    _dragWantsInsert.value = false;
+                    _dragWantsDelete.value = false;
+                  },
+                  dragAnchorStrategy: pointerDragAnchorStrategy,
+                  feedback: _offsetFeedbackUp(
+                    widget.dragFeedbackBuilder?.call(
+                          context,
+                          _buildFullColumnFeedback(
+                              title, pillars[i].item2, rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars)),
+                        ) ??
+                        _statusFeedback(
+                          _buildFullColumnFeedback(
+                              title, pillars[i].item2, rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars)),
+                        ),
+                    // 以整列反馈高度向上偏移，使反馈位于光标上方
+                    _columnFeedbackTotalHeight(rows),
+                  ),
+                  child: const Icon(Icons.drag_indicator, size: 14),
+                ),
+              ),
+            );
+          }),
+          SizedBox(
+            width: dragHandleColWidth,
+            height: dragHandleRowHeight,
+          ),
+        ],
+      ),
+    );
+
     // Header row: gender + column titles; overlay a unified drag target for continuous index updates
     final headerRow = SizedBox(
-      width: totalWidth,
+      width: dragHandleColWidth + totalWidth,
       height: columnTitleHeight,
       child: Stack(
         clipBehavior: Clip.none,
@@ -654,7 +750,119 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             ),
                           ),
                         )
-                      : _dragHandle(_columnTitleText(title));
+                      : (() {
+                          // 将列标题包裹为可拖拽的 TitlePayload（列）
+                          final payloads = widget.pillarsNotifier.value;
+                          final type = (i >= 0 && i < payloads.length)
+                              ? payloads[i].pillarType
+                              : null;
+                          final titleWidget = _columnTitleText(title);
+                          // 专用抓手：立即拖拽（非长按），用于可靠的排序交互
+                          final grip = Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Draggable<Tuple2<_DragKind, int>>(
+                              data: Tuple2(_DragKind.column, i),
+                              onDragStarted: () {
+                                setState(() => _draggingColumnIndex = i);
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                              },
+                              onDraggableCanceled: (velocity, offset) {
+                                final outside =
+                                    !_isGlobalPointInsideCard(offset);
+                                if (outside) {
+                                  _deleteColumn(i);
+                                }
+                                setState(() {
+                                  _draggingColumnIndex = null;
+                                  _hoverColumnInsertIndex = null;
+                                  _lastColInsertIndex = null;
+                                });
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                              },
+                              onDragCompleted: () {
+                                setState(() {
+                                  _draggingColumnIndex = null;
+                                  _hoverColumnInsertIndex = null;
+                                  _lastColInsertIndex = null;
+                                });
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                              },
+                              dragAnchorStrategy: pointerDragAnchorStrategy,
+                              feedback: widget.dragFeedbackBuilder?.call(
+                                    context,
+                                    _buildFullColumnFeedback(
+                                        title, pillars[i].item2, rows,
+                                        widthOverride:
+                                            _isSeparatorColumnIndex(i)
+                                                ? null
+                                                : _colWidthAtIndex(i, pillars)),
+                                  ) ??
+                                  _statusFeedback(
+                                    _buildFullColumnFeedback(
+                                        title, pillars[i].item2, rows,
+                                        widthOverride:
+                                            _isSeparatorColumnIndex(i)
+                                                ? null
+                                                : _colWidthAtIndex(i, pillars)),
+                                  ),
+                              child: const Icon(Icons.drag_indicator, size: 14),
+                            ),
+                          );
+                          final inner = Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              grip,
+                              Flexible(child: titleWidget),
+                            ],
+                          );
+                          if (type == null) return inner;
+                          return LongPressDraggable<Object>(
+                            data: TitlePayload.column(
+                              pillarType: type,
+                              titleLabel: title,
+                            ),
+                            onDragStarted: () {
+                              setState(() => _draggingColumnIndex = i);
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDraggableCanceled: (velocity, offset) {
+                              setState(() {
+                                _draggingColumnIndex = null;
+                                _hoverColumnInsertIndex = null;
+                                _lastColInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            onDragCompleted: () {
+                              setState(() {
+                                _draggingColumnIndex = null;
+                                _hoverColumnInsertIndex = null;
+                                _lastColInsertIndex = null;
+                              });
+                              _dragWantsInsert.value = false;
+                              _dragWantsDelete.value = false;
+                            },
+                            dragAnchorStrategy: pointerDragAnchorStrategy,
+                            feedback: _defaultFeedback(
+                              _cell(
+                                Size(
+                                  _isSeparatorColumnIndex(i)
+                                      ? _colDividerWidthEffective
+                                      : pillarWidth,
+                                  columnTitleHeight,
+                                ),
+                                _columnTitleText(title),
+                              ),
+                            ),
+                            child: inner,
+                          );
+                        })();
                   final childCell = Stack(
                     children: [
                       _cell(Size(colW, columnTitleHeight), headerInner),
@@ -766,6 +974,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ));
                 return children;
               })(),
+              SizedBox(
+                width: dragHandleColWidth,
+                height: columnTitleHeight,
+              ),
             ],
           ),
           // 统一 DragTarget：填充在列标题区域之上，持续计算 hover 插入索引
@@ -776,7 +988,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         data.item1 is _DragKind &&
                         data.item1 == _DragKind.column) ||
                     (data is PillarPayload) ||
-                    (data is PillarType);
+                    (data is PillarType) ||
+                    (data is TitlePayload &&
+                        (data as TitlePayload).kind == TitleKind.column);
                 if (data is PillarPayload || data is PillarType) {
                   setState(() => _hoveringExternalPillar = true);
                 }
@@ -903,6 +1117,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   _insertExternalPillar(insertIndex, payload);
                 } else if (payload is PillarType) {
                   _insertExternalPillarFromType(insertIndex, payload);
+                } else if (payload is TitlePayload &&
+                    payload.kind == TitleKind.column &&
+                    payload.pillarType != null) {
+                  _reorderColumnsByType(payload.pillarType!, insertIndex);
                 }
                 _dragWantsInsert.value = false;
                 _dragWantsDelete.value = false;
@@ -986,6 +1204,129 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ),
     );
 
+    // Grip column: standalone handles for rows (no long-press required)
+    final gripColumn = SizedBox(
+      width: dragHandleColWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...(() {
+            final List<Widget> children = [];
+            final d = _draggingRowIndex;
+            final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+            for (final entry in rows.asMap().entries.skip(1)) {
+              final absRowIdx = entry.key;
+              final rowName = entry.value;
+              final rowSize = _rowCellSize(rowName);
+              final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
+              final bool draggingRow = d != null || _hoveringExternalRow;
+              // 幽灵占位
+              children.add(AnimatedContainer(
+                duration: draggingRow
+                    ? const Duration(milliseconds: 180)
+                    : Duration.zero,
+                curve: Curves.easeOut,
+                width: dragHandleColWidth,
+                height: draggingRow && t == absRowIdx
+                    ? (() {
+                        final d = _draggingRowIndex;
+                        if (d != null && d < rows.length) {
+                          final draggedName = rows[d];
+                          final override = _rowHeightOverrides[d];
+                          return override ?? _rowHeightByName(draggedName);
+                        } else if (_hoveringExternalRow) {
+                          return _externalRowHoverHeight;
+                        }
+                        return rowSize.height;
+                      })()
+                    : 0,
+                color: draggingRow && t == absRowIdx
+                    ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
+                    : Colors.transparent,
+              ));
+              if (d == absRowIdx) continue;
+              children.add(SizedBox(
+                width: dragHandleColWidth,
+                height: rowSize.height,
+                child: isSeparatorRow
+                    ? const SizedBox.shrink()
+                    : Center(
+                        child: Draggable<Tuple2<_DragKind, int>>(
+                          data: Tuple2(_DragKind.row, absRowIdx),
+                          onDragStarted: () {
+                            setState(() => _draggingRowIndex = absRowIdx);
+                            _dragWantsInsert.value = false;
+                            _dragWantsDelete.value = false;
+                          },
+                          onDraggableCanceled: (velocity, offset) {
+                            final outside = !_isGlobalPointInsideCard(offset);
+                            setState(() {
+                              _draggingRowIndex = null;
+                              _hoverRowInsertIndex = null;
+                              _lastRowInsertIndex = null;
+                              _hoveringExternalRow = false;
+                              _externalRowHoverHeight = 0.0;
+                            });
+                            _dragWantsInsert.value = false;
+                            _dragWantsDelete.value = false;
+                            if (outside) {
+                              _deleteRow(absRowIdx);
+                            }
+                          },
+                          onDragCompleted: () {
+                            setState(() {
+                              _draggingRowIndex = null;
+                              _hoverRowInsertIndex = null;
+                              _lastRowInsertIndex = null;
+                              _hoveringExternalRow = false;
+                              _externalRowHoverHeight = 0.0;
+                            });
+                            _dragWantsInsert.value = false;
+                            _dragWantsDelete.value = false;
+                          },
+                          dragAnchorStrategy: pointerDragAnchorStrategy,
+                          feedback: _offsetFeedbackLeft(
+                            widget.dragFeedbackBuilder?.call(
+                                  context,
+                                  _buildFullRowFeedback(rowName, pillars,
+                                      absRowIndex: absRowIdx),
+                                ) ??
+                                _statusFeedback(
+                                  _buildFullRowFeedback(rowName, pillars,
+                                      absRowIndex: absRowIdx),
+                                ),
+                            // 按整行反馈宽度左移，使内容整体位于光标左侧
+                            _rowFeedbackTotalWidth(pillars),
+                          ),
+                          child: const Icon(Icons.drag_indicator, size: 14),
+                        ),
+                      ),
+              ));
+            }
+            // 末尾插入位幽灵占位
+            final bool draggingRow = d != null || _hoveringExternalRow;
+            children.add(AnimatedContainer(
+              duration: draggingRow
+                  ? const Duration(milliseconds: 180)
+                  : Duration.zero,
+              curve: Curves.easeOut,
+              width: dragHandleColWidth,
+              height: draggingRow && (t == rows.length)
+                  ? (_draggingRowIndex != null
+                      ? (_rowHeightOverrides[_draggingRowIndex!] ??
+                          _rowHeightByName(rows[_draggingRowIndex!]))
+                      : _externalRowHoverHeight)
+                  : 0,
+              color: draggingRow && (t == rows.length)
+                  ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
+                  : Colors.transparent,
+            ));
+            return children;
+          })(),
+        ],
+      ),
+    );
+
     // Left header column: row titles; overlay a unified drag target for continuous row index updates
     final leftHeader = SizedBox(
       width: rowTitleWidth,
@@ -1049,10 +1390,121 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ),
                         )
                       else
-                        _cell(
-                          rowSize,
-                          _dragHandle(_rowTitleText(rowName)),
-                        ),
+                        (() {
+                          // 将行标题包裹为可拖拽的 TitlePayload（行）
+                          final rowPayloads = widget.rowListNotifier.value;
+                          RowInfoPayload? rPayload;
+                          if (absRowIdx >= 0 &&
+                              absRowIdx < rowPayloads.length) {
+                            rPayload = rowPayloads[absRowIdx];
+                          }
+                          final titleWidget = _rowTitleText(rowName);
+                          // 专用抓手：立即拖拽（非长按），用于可靠的排序交互
+                          final grip = Padding(
+                            padding: const EdgeInsets.only(right: 4),
+                            child: Draggable<Tuple2<_DragKind, int>>(
+                              data: Tuple2(_DragKind.row, absRowIdx),
+                              onDragStarted: () {
+                                setState(() => _draggingRowIndex = absRowIdx);
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                              },
+                              onDraggableCanceled: (velocity, offset) {
+                                final outside =
+                                    !_isGlobalPointInsideCard(offset);
+                                setState(() {
+                                  _draggingRowIndex = null;
+                                  _hoverRowInsertIndex = null;
+                                  _lastRowInsertIndex = null;
+                                  _hoveringExternalRow = false;
+                                  _externalRowHoverHeight = 0.0;
+                                });
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                                if (outside) {
+                                  _deleteRow(absRowIdx);
+                                }
+                              },
+                              onDragCompleted: () {
+                                setState(() {
+                                  _draggingRowIndex = null;
+                                  _hoverRowInsertIndex = null;
+                                  _lastRowInsertIndex = null;
+                                  _hoveringExternalRow = false;
+                                  _externalRowHoverHeight = 0.0;
+                                });
+                                _dragWantsInsert.value = false;
+                                _dragWantsDelete.value = false;
+                              },
+                              dragAnchorStrategy: pointerDragAnchorStrategy,
+                              feedback: _offsetFeedbackRight(
+                                widget.dragFeedbackBuilder?.call(
+                                      context,
+                                      _buildFullRowFeedback(rowName, pillars,
+                                          absRowIndex: absRowIdx),
+                                    ) ??
+                                    _statusFeedback(
+                                      _buildFullRowFeedback(rowName, pillars,
+                                          absRowIndex: absRowIdx),
+                                    ),
+                                // 取消横向偏移，使反馈紧贴光标
+                                0,
+                              ),
+                              child: const Icon(Icons.drag_indicator, size: 14),
+                            ),
+                          );
+                          final inner = Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              grip,
+                              Flexible(child: titleWidget),
+                            ],
+                          );
+                          if (rPayload == null) {
+                            return _cell(rowSize, inner);
+                          }
+                          return _cell(
+                            rowSize,
+                            LongPressDraggable<Object>(
+                              data: TitlePayload.row(
+                                rowType: rPayload.rowType,
+                                titleLabel:
+                                    rPayload.rowLabel ?? rPayload.rowType.name,
+                              ),
+                              onDragStarted: () {
+                                setState(() => _draggingRowIndex = absRowIdx);
+                              },
+                              onDraggableCanceled: (velocity, offset) {
+                                setState(() {
+                                  _draggingRowIndex = null;
+                                  _hoverRowInsertIndex = null;
+                                  _lastRowInsertIndex = null;
+                                  _hoveringExternalRow = false;
+                                  _externalRowHoverHeight = 0.0;
+                                });
+                              },
+                              onDragCompleted: () {
+                                setState(() {
+                                  _draggingRowIndex = null;
+                                  _hoverRowInsertIndex = null;
+                                  _lastRowInsertIndex = null;
+                                  _hoveringExternalRow = false;
+                                  _externalRowHoverHeight = 0.0;
+                                });
+                              },
+                              dragAnchorStrategy: pointerDragAnchorStrategy,
+                              feedback: _offsetFeedbackRight(
+                                _defaultFeedback(
+                                  _cell(rowSize, _rowTitleText(rowName)),
+                                ),
+                                // 取消横向偏移，使反馈紧贴光标
+                                0,
+                              ),
+                              child: inner,
+                            ),
+                          );
+                        })(),
                       if (draggingRow && t == absRowIdx)
                         Positioned.fill(
                           child: IgnorePointer(
@@ -1126,15 +1578,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               _dragWantsDelete.value = false;
                             },
                             dragAnchorStrategy: pointerDragAnchorStrategy,
-                            feedback: widget.dragFeedbackBuilder?.call(
-                                  context,
-                                  _buildFullRowFeedback(rowName, pillars,
-                                      absRowIndex: absRowIdx),
-                                ) ??
-                                _statusFeedback(
-                                  _buildFullRowFeedback(rowName, pillars,
-                                      absRowIndex: absRowIdx),
-                                ),
+                            feedback: _offsetFeedbackRight(
+                              widget.dragFeedbackBuilder?.call(
+                                    context,
+                                    _buildFullRowFeedback(rowName, pillars,
+                                        absRowIndex: absRowIdx),
+                                  ) ??
+                                  _statusFeedback(
+                                    _buildFullRowFeedback(rowName, pillars,
+                                        absRowIndex: absRowIdx),
+                                  ),
+                              // 取消横向偏移，使反馈紧贴光标
+                              0,
+                            ),
                             child: cell,
                           ),
                         ),
@@ -1176,7 +1632,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             child: DragTarget<Object>(
               onWillAccept: (data) {
                 final ok = (data is Tuple2 && data.item1 == _DragKind.row) ||
-                    (data is RowInfoPayload);
+                    (data is RowInfoPayload) ||
+                    (data is TitlePayload &&
+                        (data as TitlePayload).kind == TitleKind.row);
                 if (data is RowInfoPayload) {
                   setState(() {
                     _hoveringExternalRow = true;
@@ -1275,6 +1733,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   }
                 } else if (payload is RowInfoPayload) {
                   _insertExternalRow(insertIndex, payload);
+                } else if (payload is TitlePayload &&
+                    payload.kind == TitleKind.row) {
+                  _reorderRowsByTitlePayload(payload, insertIndex);
                 }
                 Future.microtask(() {
                   if (!mounted) return;
@@ -1823,8 +2284,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           children: [
             leftHeader,
             dataGrid,
+            gripColumn,
           ],
         ),
+        gripRow,
       ],
     );
   }
@@ -1854,7 +2317,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final ok = (data is Tuple2 &&
                 data.item1 is _DragKind &&
                 data.item1 == _DragKind.column) ||
-            (data is PillarPayload);
+            (data is PillarPayload) ||
+            (data is TitlePayload &&
+                (data as TitlePayload).kind == TitleKind.column);
         if (!ok) return false;
         setState(() => _hoverColumnInsertIndex = insertIndex);
         return true;
@@ -1871,6 +2336,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           }
         } else if (payload is PillarPayload) {
           _insertExternalPillar(insertIndex, payload);
+        } else if (payload is TitlePayload &&
+            payload.kind == TitleKind.column &&
+            payload.pillarType != null) {
+          _reorderColumnsByType(payload.pillarType!, insertIndex);
         }
       },
       builder: (context, candidateData, rejectedData) {
@@ -2092,6 +2561,82 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
+  // Offset feedback left by a given width so content appears to the left of cursor
+  Widget _offsetFeedbackLeft(Widget child, double dx) {
+    if (dx == 0) return child;
+    return Transform.translate(
+      offset: Offset(-dx, 0),
+      child: child,
+    );
+  }
+
+  // Offset feedback right by a given width so content appears to the right of cursor
+  Widget _offsetFeedbackRight(Widget child, double dx) {
+    if (dx == 0) return child;
+    return Transform.translate(
+      offset: Offset(dx, 0),
+      child: child,
+    );
+  }
+
+  /// 水平居中反馈：按给定宽度的一半向左平移，使反馈组件以光标为中心显示。
+  ///
+  /// 参数：
+  /// - child: 需要居中的反馈组件。
+  /// - dx: 反馈组件的总宽度，用于计算居中位移（dx/2）。
+  /// 返回：
+  /// - Widget：居中后的反馈组件。
+  Widget _offsetFeedbackCenterX(Widget child, double dx) {
+    if (dx == 0) return child;
+    return Transform.translate(
+      offset: Offset(-dx / 2, 0),
+      child: child,
+    );
+  }
+
+  /// 精确水平居中反馈：考虑抓手锚点（例如独立抓手的 `dragHandleColWidth/2`），
+  /// 让反馈组件的几何中心与抓手中心对齐。
+  ///
+  /// 参数：
+  /// - child: 需要居中的反馈组件。
+  /// - totalWidth: 反馈组件的总宽度（用于计算其中心）。
+  /// - anchorX: 抓手内光标相对 child 左上角的水平偏移（典型为抓手宽度的一半）。
+  /// 返回：
+  /// - Widget：居中后的反馈组件。
+  Widget _offsetFeedbackCenterAt(
+      Widget child, double totalWidth, double anchorX) {
+    if (totalWidth == 0) return child;
+    // 将反馈的中心对齐到光标处：左移 (反馈中心X - 抓手锚点X)
+    final double shiftLeft = (totalWidth / 2) - anchorX;
+    return Transform.translate(
+      offset: Offset(-shiftLeft, 0),
+      child: child,
+    );
+  }
+
+  // Calculate full row feedback width: left title + all columns
+  double _rowFeedbackTotalWidth(List<Tuple2<String, JiaZi>> pillars) {
+    return rowTitleWidth + _totalColsWidth(pillars);
+  }
+
+  // Calculate full column feedback height: header + all row heights
+  double _columnFeedbackTotalHeight(List<String> rows) {
+    double total = columnTitleHeight;
+    for (final name in rows.skip(1)) {
+      total += _rowHeightByName(name);
+    }
+    return total;
+  }
+
+  // Offset feedback up by a given height so content appears above cursor
+  Widget _offsetFeedbackUp(Widget child, double dy) {
+    if (dy == 0) return child;
+    return Transform.translate(
+      offset: Offset(0, -dy),
+      child: child,
+    );
+  }
+
   // Status-aware feedback: overlay dynamic "插入" / "删除" prompts on the dragged piece itself
   Widget _statusFeedback(Widget child) {
     return Material(
@@ -2102,7 +2647,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         children: [
           Transform.scale(scale: 1.02, child: child),
           Positioned(
-            right: 6,
+            left: 6,
             top: 4,
             child: ValueListenableBuilder<bool>(
               valueListenable: _dragWantsDelete,
@@ -2205,6 +2750,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         _dropAnimatingColIndex = null;
       });
     });
+  }
+
+  // 基于列 TitlePayload（按 PillarType）进行列重排
+  void _reorderColumnsByType(PillarType type, int insertIndex) {
+    final list = List<PillarPayload>.of(widget.pillarsNotifier.value);
+    final fromIdx = list.indexWhere((p) => p.pillarType == type);
+    if (fromIdx < 0) return;
+    _reorderColumns(fromIdx, insertIndex);
   }
 
   /// 重映射列宽覆盖映射：在列重排时保持覆盖键与新索引同步。
@@ -2409,6 +2962,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         _dropAnimatingRowIndex = null;
       });
     });
+  }
+
+  // 基于行 TitlePayload（按 RowType 与可选 label）进行行重排
+  void _reorderRowsByTitlePayload(TitlePayload t, int insertIndex) {
+    if (t.kind != TitleKind.row) return;
+    final rows = List<RowInfoPayload>.of(widget.rowListNotifier.value);
+    int fromAbsIdx = -1;
+    for (int i = 0; i < rows.length; i++) {
+      final rp = rows[i];
+      final label = rp.rowLabel ?? rp.rowType.name;
+      if (rp.rowType == t.rowType &&
+          (t.titleLabel == null || t.titleLabel == label)) {
+        fromAbsIdx = i;
+        break;
+      }
+    }
+    if (fromAbsIdx <= 0) return; // 跳过标题行索引0或未找到
+    _reorderRows(fromAbsIdx, insertIndex);
   }
 
   /// 重映射行高覆盖映射：在行重排时保持覆盖键与新索引同步。

@@ -3,6 +3,37 @@ import 'pillar_styles.dart';
 import 'pillar_content.dart';
 import 'row_strategy.dart';
 
+/// Payload representing a draggable title item for either columns or rows.
+/// Used when the UI allows reordering titles directly without dragging full cells.
+class TitlePayload {
+  const TitlePayload.column({
+    required this.pillarType,
+    this.titleLabel,
+  })  : kind = TitleKind.column,
+        rowType = null;
+
+  const TitlePayload.row({
+    required this.rowType,
+    this.titleLabel,
+  })  : kind = TitleKind.row,
+        pillarType = null;
+
+  /// Distinguish whether this payload is for a column title or a row title.
+  final TitleKind kind;
+
+  /// Optional display label associated with the title.
+  final String? titleLabel;
+
+  /// Column association when `kind == TitleKind.column`.
+  final PillarType? pillarType;
+
+  /// Row association when `kind == TitleKind.row`.
+  final RowType? rowType;
+}
+
+/// Enumeration for `TitlePayload` kinds.
+enum TitleKind { column, row }
+
 /// Payload for dragging a pillar (column) into a card.
 class PillarPayload {
   const PillarPayload({
