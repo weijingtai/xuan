@@ -5,34 +5,37 @@ import 'row_strategy.dart';
 
 /// Payload representing a draggable title item for either columns or rows.
 /// Used when the UI allows reordering titles directly without dragging full cells.
-class TitlePayload {
-  const TitlePayload.column({
-    required this.pillarType,
-    this.titleLabel,
-  })  : kind = TitleKind.column,
-        rowType = null;
-
-  const TitlePayload.row({
-    required this.rowType,
-    this.titleLabel,
-  })  : kind = TitleKind.row,
-        pillarType = null;
-
-  /// Distinguish whether this payload is for a column title or a row title.
-  final TitleKind kind;
-
-  /// Optional display label associated with the title.
-  final String? titleLabel;
-
-  /// Column association when `kind == TitleKind.column`.
-  final PillarType? pillarType;
-
-  /// Row association when `kind == TitleKind.row`.
-  final RowType? rowType;
+/// Title row payload: a special row payload used when dragging row titles.
+///
+/// 语义：作为“标题行”的拖拽载荷，但继承 `RowInfoPayload`，以便与现有行插入/重排逻辑对齐。
+/// 注意：该载荷仅用于标题行的排序，不代表插入新的数据行。
+class TitleRowPayload extends RowInfoPayload {
+  /// Creates a title row payload for drag interactions.
+  ///
+  /// Parameters:
+  /// - [rowType]: The associated `RowType` of the title row（如天干/地支）。
+  /// - [titleLabel]: Optional display label for the title row（如“天干”）。
+  const TitleRowPayload({
+    required RowType rowType,
+    String? titleLabel,
+  }) : super(rowType: rowType, rowLabel: titleLabel);
 }
 
-/// Enumeration for `TitlePayload` kinds.
-enum TitleKind { column, row }
+/// Title column payload: a special pillar payload used when dragging column titles.
+///
+/// 语义：作为“标题列”的拖拽载荷，但继承 `PillarPayload`，以便与现有列插入/重排逻辑对齐。
+/// 注意：该载荷仅用于标题列的排序，不代表插入新的数据列。
+class TitleColumnPayload extends PillarPayload {
+  /// Creates a title column payload for drag interactions.
+  ///
+  /// Parameters:
+  /// - [pillarType]: The associated `PillarType` of the title column（如年/月/日/时）。
+  /// - [titleLabel]: Optional display label for the title column（如“年”）。
+  const TitleColumnPayload({
+    required PillarType pillarType,
+    String? titleLabel,
+  }) : super(pillarType: pillarType, pillarLabel: titleLabel);
+}
 
 /// Payload for dragging a pillar (column) into a card.
 class PillarPayload {

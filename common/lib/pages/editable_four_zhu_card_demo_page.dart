@@ -177,7 +177,8 @@ class _EditableFourZhuCardDemoPageState
       RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
       RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
       // 纳音行：加入策略以便与 V3 的策略渲染路径对齐
-      RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音', strategy: NaYinRowStrategy()),
+      RowInfoPayload(
+          rowType: RowType.naYin, rowLabel: '纳音', strategy: NaYinRowStrategy()),
     ]);
   }
 
@@ -237,14 +238,18 @@ class _EditableFourZhuCardDemoPageState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    EditableFourZhuCardv2(
-                      cardModeNotifier: _cardModeNotifier,
-                      jiaZiNotifier: _jiaZiNotifier,
-                      rowListNotifier: _rowListNotifier,
-                      paddingNotifier: _paddingNotifier,
-                      gender: Gender.male,
+                    // 仅展示 V3（独立抓手版），避免与旧版 V2 标题拖拽混淆
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'V3（独立抓手版）：首行/首列仅通过抓手排序，标题不可拖拽',
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(fontWeight: FontWeight.w600),
+                      ),
                     ),
-                    // 新增：单视图双轴拖拽的 V3 版本
+                    // 单视图双轴拖拽的 V3 版本
                     EditableFourZhuCardV3(
                       pillarsNotifier: _pillarsPayloadNotifier,
                       rowListNotifier: _rowsPayloadNotifier,
