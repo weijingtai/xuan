@@ -52,6 +52,3 @@ app.*.map.json
 .specify/
 .vscode/
  
-# Android/Gradle caches (generated)
-**/.android/
-**/.gradle/
