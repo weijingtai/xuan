@@ -501,7 +501,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final box = context.findRenderObject() as RenderBox?;
                   if (box == null) return;
                   final local = box.globalToLocal(details.offset);
-                  final dx = local.dx - rowTitleWidth;
+                  // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
+                  final hasRowTitleCol = widget.pillarsNotifier.value.any(
+                      (p) => p.pillarType == PillarType.rowTitleColumn);
+                  final dx = local.dx - (hasRowTitleCol ? 0 : rowTitleWidth);
                   final n = pillars.length;
                   final candidate = _computeColumnInsertIndexFromDx(dx, n);
                   final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
@@ -603,8 +606,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             // 插入位指示条（全卡覆盖）：在当前 hover 的插入索引位置绘制纵向细线，增强可视反馈
             if (_hoverColumnInsertIndex != null) ...[
               Builder(builder: (context) {
-                // 使用可变列宽累计，正确定位插入指示线（抓手列移至右侧后移除左侧偏移）
-                final left = rowTitleWidth +
+                // 使用可变列宽累计，正确定位插入指示线
+                // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
+                final hasRowTitleCol = widget.pillarsNotifier.value.any(
+                    (p) => p.pillarType == PillarType.rowTitleColumn);
+                final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
                 print(
@@ -641,6 +647,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildGrid(Size size) {
     final pillars = _effectivePillarsTuples();
     final rows = _currentRowLabels();
+    // 检查是否存在行标题列（在方法开头统一定义，避免重复）
+    final hasRowTitleColumn = widget.pillarsNotifier.value.any(
+        (payload) => payload.pillarType == PillarType.rowTitleColumn);
     // 仅在外部柱悬停时，为插入位预留一列的宽度（内部重排不扩展卡片）
     // 行拖拽进行中时，强制屏蔽网格内的幽灵列
     final bool rowDraggingActive =
@@ -656,7 +665,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ghostWidth = _colWidthAtIndex(dCol, pillars);
     }
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
-    final totalWidth = rowTitleWidth + _totalColsWidth(pillars) + extraColWidth;
+    // 如果存在行标题列则不额外添加 rowTitleWidth（行标题列宽度已包含在 _totalColsWidth 中）
+    final totalWidth = (hasRowTitleColumn ? 0 : rowTitleWidth) +
+        _totalColsWidth(pillars) + extraColWidth;
 
     // Grip row: standalone handles for columns (no long-press required)
     final gripRow = SizedBox(
@@ -665,12 +676,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _cell(Size(rowTitleWidth, dragHandleRowHeight),
-              const SizedBox.shrink()),
+          // 只在没有行标题列时渲染左侧空白单元格
+          if (!hasRowTitleColumn)
+            _cell(Size(rowTitleWidth, dragHandleRowHeight),
+                const SizedBox.shrink()),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
-            final double colW =
-                isSeparatorCol ? _colDividerWidthEffective : pillarWidth;
+            // 使用可变列宽，与 totalWidth 计算保持一致
+            final double colW = _colWidthAtIndex(i, pillars);
             if (isSeparatorCol) {
               return SizedBox(
                 width: colW,
@@ -731,11 +744,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     // 以整列反馈高度向上偏移，使反馈位于光标上方
                     _columnFeedbackTotalHeight(rows),
                   ),
-                  child: const Icon(Icons.drag_indicator, size: 14),
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.grab,
+                    child: const Icon(Icons.drag_indicator,
+                        size: 14, color: Colors.black),
+                  ),
                 ),
               ),
             );
           }),
+          // 为右侧的 gripColumn 预留空间
           SizedBox(
             width: dragHandleColWidth,
             height: dragHandleRowHeight,
@@ -754,22 +772,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 检查第一列是否为行标题列
-              // 如果是，则不在这里渲染（会在循环中处理）
-              // 如果不是，则渲染硬编码的性别单元格
+              // 检查是否存在行标题列
+              // 如果存在，则不在这里渲染（会在循环中处理）
+              // 如果不存在，则渲染硬编码的性别单元格
               ...(() {
                 final payloads = widget.pillarsNotifier.value;
-                final hasRowTitleColumn = payloads.isNotEmpty &&
-                    payloads[0].pillarType == PillarType.rowTitleColumn;
+                final hasRowTitleColumn = payloads.any(
+                    (payload) => payload.pillarType == PillarType.rowTitleColumn);
 
                 if (!hasRowTitleColumn) {
-                  // 旧逻辑：第一列不是行标题列，显示硬编码的性别
+                  // 旧逻辑：没有行标题列，显示硬编码的性别
                   return [
                     _cell(Size(rowTitleWidth, columnTitleHeight),
                         _genderText(widget.gender))
                   ];
                 }
-                return <Widget>[]; // 第一列是行标题列，稍后在循环中处理
+                return <Widget>[]; // 存在行标题列，稍后在循环中处理
               })(),
               ...(() {
                 final d = _draggingColumnIndex;
@@ -893,8 +911,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                                     : _colWidthAtIndex(
                                                         i, pillars)),
                                       ),
-                                  child: const Icon(Icons.drag_indicator,
-                                      size: 14),
+                                  child: MouseRegion(
+                                    cursor: SystemMouseCursors.grab,
+                                    child: const Icon(Icons.drag_indicator,
+                                        size: 14, color: Colors.black),
+                                  ),
                                 ),
                               );
                               final inner = Row(
@@ -1027,6 +1048,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ));
                 return children;
               })(),
+              // 为右侧的 gripColumn 预留空间
               SizedBox(
                 width: dragHandleColWidth,
                 height: columnTitleHeight,
@@ -1097,7 +1119,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final box = context.findRenderObject() as RenderBox?;
                 if (box == null) return;
                 final local = box.globalToLocal(details.offset);
-                final dx = local.dx - rowTitleWidth;
+                // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
+                final hasRowTitleCol = widget.pillarsNotifier.value.any(
+                    (p) => p.pillarType == PillarType.rowTitleColumn);
+                final dx = local.dx - (hasRowTitleCol ? 0 : rowTitleWidth);
                 final n = pillars.length;
                 // 支持内部列拖拽与外部柱载荷的插入索引计算（变动列宽）
                 final candidate =
@@ -1211,48 +1236,58 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               child: Stack(
                 children: [
                   for (int i = 1; i < pillars.length; i++)
-                    Positioned(
-                      // 分隔拖拽手柄位置按可变列宽累计定位
-                      left: rowTitleWidth + _sumColWidthsUpTo(i, pillars) - 4,
-                      top: columnTitleHeight,
-                      bottom: 0,
-                      width: 8,
-                      child: MouseRegion(
-                        cursor: SystemMouseCursors.resizeColumn,
-                        child: GestureDetector(
-                          behavior: HitTestBehavior.translucent,
-                          onPanStart: (details) {
-                            setState(() {
-                              _resizingDividerIndex = i;
-                              _initialPillarWidth = pillarWidth;
-                            });
-                          },
-                          onPanUpdate: (details) {
-                            final box = _cardKey.currentContext
-                                ?.findRenderObject() as RenderBox?;
-                            if (box == null) return;
-                            final idx = _resizingDividerIndex ?? i;
-                            if (idx <= 0) return;
-                            // 将全局坐标转换到卡片局部坐标，以统一基准
-                            final local =
-                                box.globalToLocal(details.globalPosition);
-                            final dx = local.dx - rowTitleWidth;
-                            // 依据分割线序号，将目标位置换算为统一列宽（所有列同宽）
-                            final computed = (dx / idx)
-                                .clamp(_minPillarWidth, _maxPillarWidth);
-                            setState(() {
-                              pillarWidth = computed;
-                            });
-                          },
-                          onPanEnd: (_) {
-                            setState(() {
-                              _resizingDividerIndex = null;
-                              _initialPillarWidth = null;
-                            });
-                          },
+                    Builder(builder: (context) {
+                      // 当存在行标题列时，不需要加上 rowTitleWidth
+                      final hasRowTitleCol = widget.pillarsNotifier.value.any(
+                          (p) => p.pillarType == PillarType.rowTitleColumn);
+                      return Positioned(
+                        // 分隔拖拽手柄位置按可变列宽累计定位
+                        left: (hasRowTitleCol ? 0 : rowTitleWidth) +
+                            _sumColWidthsUpTo(i, pillars) -
+                            4,
+                        top: columnTitleHeight,
+                        bottom: 0,
+                        width: 8,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.resizeColumn,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onPanStart: (details) {
+                              setState(() {
+                                _resizingDividerIndex = i;
+                                _initialPillarWidth = pillarWidth;
+                              });
+                            },
+                            onPanUpdate: (details) {
+                              final box = _cardKey.currentContext
+                                  ?.findRenderObject() as RenderBox?;
+                              if (box == null) return;
+                              final idx = _resizingDividerIndex ?? i;
+                              if (idx <= 0) return;
+                              // 将全局坐标转换到卡片局部坐标，以统一基准
+                              final local =
+                                  box.globalToLocal(details.globalPosition);
+                              // 当存在行标题列时，不需要减去 rowTitleWidth
+                              final hasRowTitleCol2 = widget.pillarsNotifier.value
+                                  .any((p) => p.pillarType == PillarType.rowTitleColumn);
+                              final dx = local.dx - (hasRowTitleCol2 ? 0 : rowTitleWidth);
+                              // 依据分割线序号，将目标位置换算为统一列宽（所有列同宽）
+                              final computed = (dx / idx)
+                                  .clamp(_minPillarWidth, _maxPillarWidth);
+                              setState(() {
+                                pillarWidth = computed;
+                              });
+                            },
+                            onPanEnd: (_) {
+                              setState(() {
+                                _resizingDividerIndex = null;
+                                _initialPillarWidth = null;
+                              });
+                            },
+                          ),
                         ),
-                      ),
-                    ),
+                      );
+                    }),
                 ],
               ),
             ),
@@ -1297,9 +1332,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ));
 
                 for (final entry in rows.asMap().entries) {
-                  // 移除 skip(1)，允许索引0
-                  final absRowIdx = entry.key; // >= 0（包括表头行）
+                  final absRowIdx = entry.key;
                   final rowName = entry.value;
+                  // 跳过标题行（索引 0），因为标题行已在 headerRow 中独立渲染
+                  if (absRowIdx == 0) continue;
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
                   // 幽灵占位
@@ -1390,7 +1426,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 // 按整行反馈宽度左移，使内容整体位于光标左侧
                                 _rowFeedbackTotalWidth(pillars),
                               ),
-                              child: const Icon(Icons.drag_indicator, size: 14),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: const Icon(Icons.drag_indicator,
+                                    size: 14, color: Colors.black),
+                              ),
                             ),
                           ),
                   ));
@@ -1566,9 +1606,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ));
 
                 for (final entry in rows.asMap().entries) {
-                  // 移除 skip(1)，允许索引0
-                  final absRowIdx = entry.key; // >= 0（包括表头行）
+                  final absRowIdx = entry.key;
                   final rowName = entry.value;
+                  // 跳过标题行（索引 0），因为标题行已在 headerRow 中独立渲染
+                  if (absRowIdx == 0) continue;
                   final rowSize = _rowCellSize(rowName);
 
                   // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
@@ -1767,7 +1808,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                     ? _rowHeightOverrides[absRowIdx]! / 2
                                     : _rowHeightByName(rowName) / 2,
                               ),
-                              child: const Icon(Icons.drag_indicator, size: 14),
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: const Icon(Icons.drag_indicator,
+                                    size: 14, color: Colors.black),
+                              ),
                             ),
                           );
                           // 普通行：使用 Stack 叠加布局，titleWidget 居中，grip 在左侧
@@ -2153,7 +2198,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       final tRow = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                       final List<Widget> rowChildren = [];
                       // 构造一次行计算输入上下文，用于策略按需计算
-                      final pillarPayloads = widget.pillarsNotifier.value;
+                      // pillarPayloads 已在外层声明，直接使用
                       final pillarContents = pillarPayloads
                           .map((p) => p.pillarContent)
                           .whereType<PillarContent>()
@@ -2184,7 +2229,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             ? const Duration(milliseconds: 180)
                             : Duration.zero,
                         curve: Curves.easeOut,
-                        width: pillarWidth,
+                        width: colW,
                         height: (_hoveringExternalRow && tRow == 1)
                             ? _externalRowHoverHeight
                             : 0,
@@ -2208,8 +2253,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               ? const Duration(milliseconds: 180)
                               : Duration.zero,
                           curve: Curves.easeOut,
-                          // 行占位宽度统一按柱宽处理，而非分隔列的有效窄宽
-                          width: pillarWidth,
+                          // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
+                          width: colW,
                           height: draggingRow &&
                                   tRow == absRowIdx &&
                                   !(tRow == 1 &&
@@ -2243,19 +2288,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         if (dRow == absRowIdx) continue; // 拖拽中的行不占原位置
                         Widget cell;
 
-                        // 检查当前列是否为行标题列
-                        final isRowTitleCol =
-                            (i >= 0 && i < pillarPayloads.length) &&
-                                pillarPayloads[i].pillarType ==
-                                    PillarType.rowTitleColumn;
-
+                        // isRowTitleCol 和 colW 已在外层声明，直接使用
                         final bool isSeparatorColumn =
                             _isSeparatorTitle(tuple.item1);
-                        final double colW = isRowTitleCol
-                            ? _colWidthAtIndex(i, pillars)
-                            : (isSeparatorColumn
-                                ? _colDividerWidthEffective
-                                : pillarWidth);
 
                         // 行标题列：显示行标签而非柱数据
                         if (isRowTitleCol) {
@@ -2349,8 +2384,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 ),
                                 rowSize.height / 2,
                               ),
-                              child: Icon(Icons.drag_indicator,
-                                  size: 14, color: Colors.black87), // 明确指定颜色
+                              child: MouseRegion(
+                                cursor: SystemMouseCursors.grab,
+                                child: const Icon(Icons.drag_indicator,
+                                    size: 14, color: Colors.black),
+                              ),
                             );
 
                             // 使用 Stack 布局：titleWidget在整个单元格居中，grip浮在左侧
@@ -2473,10 +2511,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           : null;
                       final draggedSize = draggedRowName != null
                           ? Size(
-                              pillarWidth,
+                              colW,
                               (_rowHeightOverrides[_draggingRowIndex!] ??
                                   _rowHeightByName(draggedRowName)))
-                          : Size(pillarWidth, 0);
+                          : Size(colW, 0);
                       final bool draggingRow =
                           dRow != null || _hoveringExternalRow;
                       rowChildren.add(AnimatedContainer(
@@ -2740,11 +2778,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ),
     );
 
-    // 检查是否有行标题列：如果第一柱是 rowTitleColumn，则不渲染独立的 leftHeader
-    final hasRowTitleColumn = pillars.isNotEmpty &&
-        widget.pillarsNotifier.value.isNotEmpty &&
-        widget.pillarsNotifier.value[0].pillarType == PillarType.rowTitleColumn;
-
+    // 使用方法开头定义的 hasRowTitleColumn 判断是否渲染独立的 leftHeader
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -2754,7 +2788,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           children: [
             if (!hasRowTitleColumn) leftHeader, // 仅在无行标题列时渲染
             dataGrid,
-            gripColumn,
+            gripColumn, // 始终显示右侧行拖拽列
           ],
         ),
         gripRow,
