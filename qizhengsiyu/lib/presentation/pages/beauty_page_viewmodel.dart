@@ -37,7 +37,7 @@ import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart'; // 可能仍然需要用于更详细信息展示，尽管 ElevenStarsInfo 已弃用
-import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
+import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
 import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
 import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
 import '../domain/entities/models/star_enter_info.dart'; // 使用domain层模型

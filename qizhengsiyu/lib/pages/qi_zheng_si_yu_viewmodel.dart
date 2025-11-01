@@ -32,7 +32,7 @@ import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
 import '../models/panel_stars_info.dart';
-import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
+import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
 import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
 import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
 import '../models/eleven_stars_info.dart';
