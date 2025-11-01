@@ -1126,6 +1126,8 @@ String _rowTypeLabel(RowType type) {
       return '神煞';
     case RowType.selfSiting:
       return '命宫';
+    case RowType.columnHeaderRow:
+      return '表头行';
   }
 }
 
@@ -1161,6 +1163,8 @@ String _pillarTypeLabel(PillarType type) {
       return '流时';
     case PillarType.separator:
       return "分割线";
+    case PillarType.rowTitleColumn:
+      return "行标题列";
   }
 }
 

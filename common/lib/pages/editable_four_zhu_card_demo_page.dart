@@ -7,8 +7,8 @@ import '../models/eight_chars.dart';
 import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
 import '../widgets/EditableFourZhuCardV2.dart';
-import '../widgets/EditableFourZhuCardV3.dart';
 import '../widgets/editable_four_zhu_card.dart';
+import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/test_pillar_draggable.dart';
 import '../widgets/test_pillar_info_draggable.dart';
 import '../widgets/test_row_info_draggable.dart';
@@ -121,6 +121,9 @@ class _EditableFourZhuCardDemoPageState
 
     // 初始化 V3 载荷型 Notifier
     _pillarsPayloadNotifier = ValueNotifier<List<PillarPayload>>([
+      // 第一列：行标题列（特殊柱）
+      RowTitleColumnPayload(width: 52),
+      // 数据柱：年月日时
       PillarPayload(
         pillarType: PillarType.year,
         pillarContent: PillarContent(
@@ -172,8 +175,9 @@ class _EditableFourZhuCardDemoPageState
     ]);
 
     _rowsPayloadNotifier = ValueNotifier<List<RowInfoPayload>>([
-      // 标题行（索引0）：使用 label 承载“乾造”，类型仅作占位
-      RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '乾造'),
+      // 第一行：表头行（特殊行，包含性别标识和列标题）
+      ColumnHeaderRowPayload(gender: Gender.male, height: 24),
+      // 数据行
       RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
       RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
       // 纳音行：加入策略以便与 V3 的策略渲染路径对齐
@@ -255,7 +259,7 @@ class _EditableFourZhuCardDemoPageState
                       rowListNotifier: _rowsPayloadNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
-                      debugHysteresisOverlay: false,
+                      // debugHysteresisOverlay: false,
                     ),
                   ],
                 ),

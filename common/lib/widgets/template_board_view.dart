@@ -455,6 +455,8 @@ String _pillarTypeLabel(PillarType type) {
       return '流时';
     case PillarType.separator:
       return '分隔符';
+    case PillarType.rowTitleColumn:
+      return '行标题列';
   }
 }
 

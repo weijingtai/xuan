@@ -1,4 +1,5 @@
 import '../enums/layout_template_enums.dart';
+import '../enums/enum_gender.dart';
 import 'pillar_styles.dart';
 import 'pillar_content.dart';
 import 'row_strategy.dart';
@@ -35,6 +36,56 @@ class TitleColumnPayload extends PillarPayload {
     required PillarType pillarType,
     String? titleLabel,
   }) : super(pillarType: pillarType, pillarLabel: titleLabel);
+}
+
+/// Row title column payload: represents the special column containing row titles.
+///
+/// 语义：行标题列作为一个特殊的"柱"，包含所有行的标题文本。
+/// 特点：
+/// - 每个单元格的内容不同（根据行类型显示不同的标题）
+/// - 可以与普通柱（年月日时）互换位置
+/// - 左上角单元格显示性别标识（乾造/坤造）
+class RowTitleColumnPayload extends PillarPayload {
+  /// Creates a row title column payload.
+  ///
+  /// Parameters:
+  /// - [width]: Optional custom width for the row title column.
+  const RowTitleColumnPayload({
+    double? width,
+  }) : super(
+          pillarType: PillarType.rowTitleColumn,
+          pillarLabel: '行标题',
+          columnWidth: width,
+        );
+}
+
+/// Column header row payload: represents the special row containing column titles and gender.
+///
+/// 语义：表头行作为一个特殊的"行"，包含性别标识和所有列的标题文本。
+/// 特点：
+/// - 每个单元格的内容不同（左上角是性别，其他是列标题）
+/// - 可以与普通行（天干/地支/纳音）互换位置
+/// - 性别标识随表头行移动
+class ColumnHeaderRowPayload extends RowInfoPayload {
+  /// Creates a column header row payload.
+  ///
+  /// Parameters:
+  /// - [gender]: Gender for the chart (male = 乾造, female = 坤造).
+  /// - [height]: Optional custom height for the header row.
+  const ColumnHeaderRowPayload({
+    required this.gender,
+    double? height,
+  }) : super(
+          rowType: RowType.columnHeaderRow,
+          rowLabel: null,  // Label will be derived from gender
+          rowHeight: height,
+        );
+
+  /// Gender identifier to display in the left-top corner cell.
+  final Gender gender;
+
+  /// Get the gender label text.
+  String get genderLabel => gender == Gender.male ? '乾造' : '坤造';
 }
 
 /// Payload for dragging a pillar (column) into a card.
@@ -280,8 +331,13 @@ class RowInfoPayload {
     double heavenlyAndEarthlyHeight = 48,
     double otherHeight = 32,
     double dividerHeight = 8,
+    double headerHeight = 24,  // 新增：表头行默认高度
   }) {
     if (rowHeight != null) return rowHeight!;
+    // 特殊处理：表头行
+    if (rowType == RowType.columnHeaderRow) {
+      return headerHeight;
+    }
     // 类型优先，其次按 label 语义兜底
     if (rowType == RowType.heavenlyStem || rowType == RowType.earthlyBranch) {
       return heavenlyAndEarthlyHeight;

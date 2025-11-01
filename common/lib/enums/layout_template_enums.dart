@@ -13,13 +13,15 @@ enum PillarType {
   monthly('流月'),
   daily('流日'),
   hourly('流刻'),
-  separator('ui分割线');
+  separator('ui分割线'),
+  rowTitleColumn('行标题列');
 
   final String name;
   const PillarType(this.name);
 }
 
 enum RowType {
+  columnHeaderRow,
   heavenlyStem,
   earthlyBranch,
   tenGod,

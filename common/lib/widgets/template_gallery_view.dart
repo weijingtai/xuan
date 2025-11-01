@@ -135,6 +135,8 @@ class TemplateGalleryView extends StatelessWidget {
               return '流时';
             case PillarType.separator:
               return '列分隔符';
+            case PillarType.rowTitleColumn:
+              return '行标题列';
           }
         }
 
