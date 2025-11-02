@@ -676,7 +676,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         midYs: midYs,
                         cardWidth:
                             size.width + extraColWidth + dragHandleColWidth,
-                        color: Colors.red.withOpacity(0.5),
+                        color: Colors.red.withOpacity(0.08),
                         hysteresisPx: _rowHysteresisPx,
                       ),
                     );
@@ -1504,7 +1504,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           color: Theme.of(context)
                               .colorScheme
                               .primary
-                              .withOpacity(0.45),
+                              .withOpacity(0.08),
                         ),
                       ),
                     ),
@@ -1524,13 +1524,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           color: Theme.of(context)
                               .colorScheme
                               .secondary
-                              .withOpacity(0.6),
+                              .withOpacity(0.08),
                           boxShadow: [
                             BoxShadow(
                               color: Theme.of(context)
                                   .colorScheme
                                   .secondary
-                                  .withOpacity(0.3),
+                                  .withOpacity(0.05),
                               blurRadius: 4,
                               spreadRadius: 1,
                             ),
@@ -1544,7 +1544,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 color: Theme.of(context)
                                     .colorScheme
                                     .secondary
-                                    .withOpacity(0.6),
+                                    .withOpacity(0.08),
                               ),
                             ),
                             Container(
@@ -1686,40 +1686,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final d = _draggingRowIndex;
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
-
-                // 表头行（索引 0）之前的幽灵行占位
-                children.add(AnimatedContainer(
-                  duration: (draggingRow && t == 0)
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: dragHandleColWidth,
-                  height: (draggingRow && t == 0)
-                      ? (() {
-                          final d = _draggingRowIndex;
-                          if (d != null && d < rows.length) {
-                            final draggedName = rows[d];
-                            final override = _rowHeightOverrides[d];
-                            final byName = _rowHeightByName(draggedName);
-                            final result = override ?? byName;
-                            print('🔍 [幽灵行-gripColumn] t=$t, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$result');
-                            return result;
-                          } else if (_hoveringExternalRow) {
-                            final result = _externalRowHoverHeight;
-                            print('🔍 [幽灵行-gripColumn] t=$t, d=$d, _hoveringExternalRow=true, _externalRowHoverHeight=$result, final=$result');
-                            return result;
-                          }
-                          print('🔍 [幽灵行-gripColumn] t=$t, d=$d, fallback to columnTitleHeight=$columnTitleHeight');
-                          return columnTitleHeight;
-                        })()
-                      : 0,
-                  color: (draggingRow && t == 0)
-                      ? Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.08)
-                      : Colors.transparent,
-                ));
 
                 // 第一个数据行（索引 1）之前的幽灵行占位
                 children.add(AnimatedContainer(
@@ -1896,40 +1862,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final List<Widget> children = [];
 
                 final bool draggingRow = d != null || _hoveringExternalRow;
-
-                // 表头行（索引 0）之前的幽灵行占位
-                children.add(AnimatedContainer(
-                  duration: (draggingRow && t == 0)
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: rowTitleWidth,
-                  height: (draggingRow && t == 0)
-                      ? (() {
-                          final dIdx = _draggingRowIndex;
-                          if (dIdx != null && dIdx < rows.length) {
-                            final draggedName = rows[dIdx];
-                            final override = _rowHeightOverrides[dIdx];
-                            final byName = _rowHeightByName(draggedName);
-                            final result = override ?? byName;
-                            print('🔍 [幽灵行-leftHeader] t=$t, d=$dIdx, draggedName=$draggedName, override=$override, byName=$byName, final=$result');
-                            return result;
-                          } else if (_hoveringExternalRow) {
-                            final result = _externalRowHoverHeight;
-                            print('🔍 [幽灵行-leftHeader] t=$t, d=$dIdx, _hoveringExternalRow=true, _externalRowHoverHeight=$result, final=$result');
-                            return result;
-                          }
-                          print('🔍 [幽灵行-leftHeader] t=$t, d=$dIdx, fallback to columnTitleHeight=$columnTitleHeight');
-                          return columnTitleHeight;
-                        })()
-                      : 0,
-                  color: (draggingRow && t == 0)
-                      ? Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.08)
-                      : Colors.transparent,
-                ));
 
                 // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
                 children.add(AnimatedContainer(
@@ -2336,7 +2268,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     color: Theme.of(context)
                         .colorScheme
                         .secondary
-                        .withOpacity(0.45),
+                        .withOpacity(0.08),
                   ),
                 ),
               ),
@@ -2462,43 +2394,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       );
                       final rowPayloads = widget.rowListNotifier.value;
 
-                      // 表头行（索引 0）之前的幽灵行占位
+                      // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
                       final bool isDraggingRow =
                           dRow != null || _hoveringExternalRow;
-                      rowChildren.add(AnimatedContainer(
-                        duration: (isDraggingRow && tRow == 0)
-                            ? const Duration(milliseconds: 180)
-                            : Duration.zero,
-                        curve: Curves.easeOut,
-                        width: colW,
-                        height: (isDraggingRow && tRow == 0)
-                            ? (() {
-                                final d = _draggingRowIndex;
-                                if (d != null && d < rows.length) {
-                                  final draggedName = rows[d];
-                                  final override = _rowHeightOverrides[d];
-                                  final byName = _rowHeightByName(draggedName);
-                                  final result = override ?? byName;
-                                  print('🔍 [幽灵行-dataGrid col=$i] t=$tRow, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$result');
-                                  return result;
-                                } else if (_hoveringExternalRow) {
-                                  final result = _externalRowHoverHeight;
-                                  print('🔍 [幽灵行-dataGrid col=$i] t=$tRow, d=$d, _hoveringExternalRow=true, _externalRowHoverHeight=$result, final=$result');
-                                  return result;
-                                }
-                                print('🔍 [幽灵行-dataGrid col=$i] t=$tRow, d=$d, fallback to columnTitleHeight=$columnTitleHeight');
-                                return columnTitleHeight;
-                              })()
-                            : 0,
-                        color: (isDraggingRow && tRow == 0)
-                            ? Theme.of(context)
-                                .colorScheme
-                                .secondary
-                                .withOpacity(0.08)
-                            : Colors.transparent,
-                      ));
-
-                      // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
                       rowChildren.add(AnimatedContainer(
                         duration: isDraggingRow
                             ? const Duration(milliseconds: 180)
@@ -2972,9 +2870,42 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
 
     // 使用方法开头定义的 hasRowTitleColumn 判断是否渲染独立的 leftHeader
+    final d = _draggingRowIndex;
+    final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+    final bool draggingRow = d != null || _hoveringExternalRow;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 表头行之前的幽灵行（t==0时显示）
+        AnimatedContainer(
+          duration: (draggingRow && t == 0)
+              ? const Duration(milliseconds: 180)
+              : Duration.zero,
+          curve: Curves.easeOut,
+          width: (hasRowTitleColumn ? 0 : rowTitleWidth) +
+              _totalColsWidth(pillars) +
+              dragHandleColWidth,
+          height: (draggingRow && t == 0)
+              ? (() {
+                  final dIdx = _draggingRowIndex;
+                  if (dIdx != null && dIdx < rows.length) {
+                    final draggedName = rows[dIdx];
+                    final override = _rowHeightOverrides[dIdx];
+                    final h = override ?? _rowHeightByName(draggedName);
+                    print('🎨 [表头前幽灵行] t=$t, d=$dIdx, draggedName=$draggedName, override=$override, byName=${_rowHeightByName(draggedName)}, final=$h');
+                    return h;
+                  } else if (_hoveringExternalRow) {
+                    print('🎨 [表头前幽灵行-外部] t=$t, external=true, height=$_externalRowHoverHeight');
+                    return _externalRowHoverHeight;
+                  }
+                  return columnTitleHeight;
+                })()
+              : 0,
+          color: (draggingRow && t == 0)
+              ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
+              : Colors.transparent,
+        ),
         headerRow,
         // 统一行拖拽目标：包裹整个数据行区域，确保在任意位置拖拽都能触发让位与插入提示
         Stack(
@@ -4270,6 +4201,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         (absRowIndex != null && _rowHeightOverrides[absRowIndex] != null)
             ? _rowHeightOverrides[absRowIndex]!
             : _rowHeightByName(rowName);
+    print('🎯 [反馈高度] rowName=$rowName, absRowIndex=$absRowIndex, override=${absRowIndex != null ? _rowHeightOverrides[absRowIndex] : 'N/A'}, byName=${_rowHeightByName(rowName)}, final=$rowH');
     final totalW = rowTitleWidth + _totalColsWidth(pillars);
 
     return Container(
@@ -4397,7 +4329,7 @@ class _ColumnHysteresisPainter extends CustomPainter {
       ..strokeWidth = _EditableFourZhuCardV3State._debugStroke
       ..style = PaintingStyle.stroke;
     final marginPaint = Paint()
-      ..color = color.withOpacity(0.6)
+      ..color = color.withOpacity(0.5)
       ..strokeWidth = _EditableFourZhuCardV3State._debugMarginStroke
       ..style = PaintingStyle.stroke;
 
@@ -4450,7 +4382,7 @@ class _RowHysteresisPainter extends CustomPainter {
       ..strokeWidth = _EditableFourZhuCardV3State._debugStroke
       ..style = PaintingStyle.stroke;
     final marginPaint = Paint()
-      ..color = color.withOpacity(0.6)
+      ..color = color.withOpacity(0.5)
       ..strokeWidth = _EditableFourZhuCardV3State._debugMarginStroke
       ..style = PaintingStyle.stroke;
 
@@ -4500,7 +4432,7 @@ class _RowBoundaryPainter extends CustomPainter {
     // 位置：中点**下方** hysteresisPx 像素（每行的下边缘附近）
     // 作用：向下拖拽时，越过行N的蓝线，触发插入到行N之前（行N向下让位）
     final downTriggerPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.7)
+      ..color = Colors.blue.withOpacity(0.08)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
@@ -4508,7 +4440,7 @@ class _RowBoundaryPainter extends CustomPainter {
     // 位置：中点**上方** hysteresisPx 像素（每行的上边缘附近）
     // 作用：向上拖拽时，越过行N的绿线，触发插入到行N之前（行N向下让位）
     final upTriggerPaint = Paint()
-      ..color = Colors.green.withOpacity(0.7)
+      ..color = Colors.green.withOpacity(0.08)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 
