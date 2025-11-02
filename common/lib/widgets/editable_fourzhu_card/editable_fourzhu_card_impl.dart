@@ -1735,10 +1735,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             if (d != null && d < rows.length) {
                               final draggedName = rows[d];
                               final override = _rowHeightOverrides[d];
-                              return override ?? _rowHeightByName(draggedName);
+                              final byName = _rowHeightByName(draggedName);
+                              final finalHeight = override ?? byName;
+                              print('🔍 [幽灵行-gripColumn] t=$t, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
+                              return finalHeight;
                             } else if (_hoveringExternalRow) {
+                              print('🔍 [幽灵行-gripColumn] t=$t, external row, height=$_externalRowHoverHeight');
                               return _externalRowHoverHeight;
                             }
+                            print('🔍 [幽灵行-gripColumn] t=$t, fallback to rowSize.height=${rowSize.height}');
                             return rowSize.height;
                           })()
                         : 0,
@@ -1913,11 +1918,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             if (dIdx != null && dIdx < rows.length) {
                               final draggedName = rows[dIdx];
                               final override = _rowHeightOverrides[dIdx];
-                              return override ?? _rowHeightByName(draggedName);
+                              final byName = _rowHeightByName(draggedName);
+                              final finalHeight = override ?? byName;
+                              print('🔍 [幽灵行-leftHeader] t=$t, d=$dIdx, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
+                              return finalHeight;
                             } else if (_hoveringExternalRow) {
                               // 外部行拖拽：使用外部载荷解析的悬停高度（分割线用有效高度）
+                              print('🔍 [幽灵行-leftHeader] t=$t, external row, height=$_externalRowHoverHeight');
                               return _externalRowHoverHeight;
                             }
+                            print('🔍 [幽灵行-leftHeader] t=$t, fallback to rowSize.height=${rowSize.height}');
                             return rowSize.height;
                           })()
                         : 0,
@@ -2447,12 +2457,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   if (d != null && d < rows.length) {
                                     final draggedName = rows[d];
                                     final override = _rowHeightOverrides[d];
-                                    return override ??
-                                        _rowHeightByName(draggedName);
+                                    final byName = _rowHeightByName(draggedName);
+                                    final finalHeight = override ?? byName;
+                                    print('🔍 [幽灵行-dataGrid] col=$i, t=$tRow, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
+                                    return finalHeight;
                                   } else if (_hoveringExternalRow) {
                                     // 外部行拖拽：使用外部载荷解析出的悬停高度（含分割线有效高度）
+                                    print('🔍 [幽灵行-dataGrid] col=$i, t=$tRow, external row, height=$_externalRowHoverHeight');
                                     return _externalRowHoverHeight;
                                   }
+                                  print('🔍 [幽灵行-dataGrid] col=$i, t=$tRow, fallback to rowSize.height=${rowSize.height}');
                                   return rowSize.height;
                                 })()
                               : 0,
@@ -2874,39 +2888,139 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
     final bool draggingRow = d != null || _hoveringExternalRow;
 
+    // 计算幽灵行+表头行的总高度
+    final ghostHeight = (draggingRow && t == 0)
+        ? (() {
+            final dIdx = _draggingRowIndex;
+            if (dIdx != null && dIdx < rows.length) {
+              final draggedName = rows[dIdx];
+              final override = _rowHeightOverrides[dIdx];
+              final byName = _rowHeightByName(draggedName);
+              final finalHeight = override ?? byName;
+              print('🔍 [幽灵行-表头区] t=0, d=$dIdx, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
+              return finalHeight;
+            } else if (_hoveringExternalRow) {
+              print('🔍 [幽灵行-表头区] t=0, external row, height=$_externalRowHoverHeight');
+              return _externalRowHoverHeight;
+            }
+            print('🔍 [幽灵行-表头区] t=0, fallback to columnTitleHeight=$columnTitleHeight');
+            return columnTitleHeight;
+          })()
+        : 0.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // 表头行之前的幽灵行（t==0时显示）
-        AnimatedContainer(
-          duration: (draggingRow && t == 0)
-              ? const Duration(milliseconds: 180)
-              : Duration.zero,
-          curve: Curves.easeOut,
-          width: (hasRowTitleColumn ? 0 : rowTitleWidth) +
-              _totalColsWidth(pillars) +
-              dragHandleColWidth,
-          height: (draggingRow && t == 0)
-              ? (() {
-                  final dIdx = _draggingRowIndex;
-                  if (dIdx != null && dIdx < rows.length) {
-                    final draggedName = rows[dIdx];
-                    final override = _rowHeightOverrides[dIdx];
-                    final h = override ?? _rowHeightByName(draggedName);
-                    print('🎨 [表头前幽灵行] t=$t, d=$dIdx, draggedName=$draggedName, override=$override, byName=${_rowHeightByName(draggedName)}, final=$h');
-                    return h;
-                  } else if (_hoveringExternalRow) {
-                    print('🎨 [表头前幽灵行-外部] t=$t, external=true, height=$_externalRowHoverHeight');
-                    return _externalRowHoverHeight;
+        // 表头行区域（包含幽灵行和headerRow，统一添加DragTarget）
+        Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 表头行之前的幽灵行（t==0时显示）
+                AnimatedContainer(
+                  duration: (draggingRow && t == 0)
+                      ? const Duration(milliseconds: 180)
+                      : Duration.zero,
+                  curve: Curves.easeOut,
+                  width: (hasRowTitleColumn ? 0 : rowTitleWidth) +
+                      _totalColsWidth(pillars) +
+                      dragHandleColWidth,
+                  height: ghostHeight,
+                  color: (draggingRow && t == 0)
+                      ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
+                      : Colors.transparent,
+                ),
+                headerRow,
+              ],
+            ),
+            // DragTarget覆盖整个区域（幽灵行+headerRow）
+            Positioned.fill(
+              child: DragTarget<Object>(
+                onWillAccept: (data) {
+                  final isRowData = (data is Tuple2 && data.item1 == _DragKind.row) ||
+                      data is RowInfoPayload ||
+                      data is TitleRowPayload;
+                  if (isRowData) {
+                    setState(() {
+                      _hoverColumnInsertIndex = null;
+                      _lastColInsertIndex = null;
+                      _hoveringExternalPillar = false;
+                    });
+                    if (data is RowInfoPayload) {
+                      setState(() {
+                        _hoveringExternalRow = true;
+                        _externalRowHoverHeight = _rowHeightByPayload(data);
+                      });
+                    }
                   }
-                  return columnTitleHeight;
-                })()
-              : 0,
-          color: (draggingRow && t == 0)
-              ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
-              : Colors.transparent,
+                  return isRowData;
+                },
+                onMove: (details) {
+                  final isRowData = (details.data is Tuple2 &&
+                          (details.data as Tuple2).item1 == _DragKind.row) ||
+                      details.data is RowInfoPayload ||
+                      details.data is TitleRowPayload;
+                  if (!isRowData) return;
+
+                  final box = context.findRenderObject() as RenderBox?;
+                  if (box == null) return;
+                  final local = box.globalToLocal(details.offset);
+                  final dy = local.dy;
+
+                  // dy 相对于幽灵行+headerRow的顶部
+                  // 计算总高度（幽灵行 + headerRow）
+                  final totalHeight = ghostHeight + columnTitleHeight;
+                  final midLine = totalHeight / 2;
+
+                  // 根据 dy 判断插入位置
+                  final candidate = dy < midLine ? 0 : 1;
+
+                  if (_hoverRowInsertIndex != candidate) {
+                    setState(() {
+                      _hoverRowInsertIndex = candidate;
+                      _lastRowInsertIndex = candidate;
+                    });
+                    _dragWantsInsert.value = true;
+                    _dragWantsDelete.value = false;
+                  }
+                },
+                onLeave: (_) {
+                  // 不清理状态，让数据行区域的DragTarget接管
+                },
+                onAccept: (payload) {
+                  if (_rowAccepting) return;
+                  _rowAccepting = true;
+                  final insertIndex = _hoverRowInsertIndex ?? 0;
+                  setState(() {
+                    _hoverRowInsertIndex = null;
+                    _lastRowInsertIndex = null;
+                    _draggingRowIndex = null;
+                    _hoveringExternalRow = false;
+                    _externalRowHoverHeight = 0.0;
+                  });
+                  if (payload is Tuple2) {
+                    final fromAbsIdx = payload.item2 as int;
+                    _reorderRows(fromAbsIdx, insertIndex);
+                  } else if (payload is RowInfoPayload) {
+                    _insertExternalRow(insertIndex, payload);
+                  } else if (payload is TitleRowPayload) {
+                    _reorderRowsByTitlePayload(payload, insertIndex);
+                  }
+                  Future.microtask(() {
+                    if (!mounted) return;
+                    setState(() {
+                      _rowAccepting = false;
+                    });
+                  });
+                  _dragWantsInsert.value = false;
+                  _dragWantsDelete.value = false;
+                },
+                builder: (context, _, __) => const SizedBox.expand(),
+              ),
+            ),
+          ],
         ),
-        headerRow,
         // 统一行拖拽目标：包裹整个数据行区域，确保在任意位置拖拽都能触发让位与插入提示
         Stack(
           children: [
