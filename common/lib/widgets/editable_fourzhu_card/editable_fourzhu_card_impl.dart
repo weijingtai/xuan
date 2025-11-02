@@ -4093,8 +4093,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // 当 idx == 0 时，检查是否为表头行
       if (idx == 0 && isRows0HeaderRow) {
         final h = columnTitleHeight;
-        final greenLine = acc + h / 2 - _rowHysteresisPx; // 绿线：中点上方
-        if (dy < greenLine) {
+        final midLine = acc + h / 2; // 红线：中点
+        if (dy < midLine) {
           insertIndex = 0; // 在表头行之前插入
           break;
         }
@@ -4104,13 +4104,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       }
 
       final h = _rowHeightByName(name);
-      final greenLine = acc + h / 2 - _rowHysteresisPx; // 绿线：中点上方
-      if (dy < greenLine) {
-        insertIndex = idx; // 绿线以上：插入到该行之前
+      final midLine = acc + h / 2; // 红线：中点
+      if (dy < midLine) {
+        insertIndex = idx; // 红线以上：插入到该行之前
         break;
       }
       acc += h;
-      insertIndex = idx + 1; // 绿线以下：默认插入到该行之后
+      insertIndex = idx + 1; // 红线以下：默认插入到该行之后
     }
     return insertIndex.clamp(0, rows.length);
   }
@@ -4422,57 +4422,15 @@ class _RowBoundaryPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 中点线（红色实线）- 每行中心
+    // 中点线（红色实线）- 每行中心，作为让位触发边界
     final midPaint = Paint()
       ..color = color
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    // 蓝色虚线（向下移动触发边界）
-    // 位置：中点**下方** hysteresisPx 像素（每行的下边缘附近）
-    // 作用：向下拖拽时，越过行N的蓝线，触发插入到行N之前（行N向下让位）
-    final downTriggerPaint = Paint()
-      ..color = Colors.blue.withOpacity(0.08)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
-    // 绿色虚线（向上移动触发边界）
-    // 位置：中点**上方** hysteresisPx 像素（每行的上边缘附近）
-    // 作用：向上拖拽时，越过行N的绿线，触发插入到行N之前（行N向下让位）
-    final upTriggerPaint = Paint()
-      ..color = Colors.green.withOpacity(0.08)
-      ..strokeWidth = 2.0
-      ..style = PaintingStyle.stroke;
-
     for (final midY in midYs) {
-      // 绘制中点参考线（红色）
+      // 绘制中点参考线（红色）- 直接作为插入位判定边界
       canvas.drawLine(Offset(0, midY), Offset(cardWidth, midY), midPaint);
-
-      // 绘制蓝色触发线（中点下方）- 向下移动的临界点
-      final downTriggerY = midY + hysteresisPx;
-      _drawDashedLine(canvas, Offset(0, downTriggerY),
-          Offset(cardWidth, downTriggerY), downTriggerPaint);
-
-      // 绘制绿色触发线（中点上方）- 向上移动的临界点
-      final upTriggerY = midY - hysteresisPx;
-      _drawDashedLine(canvas, Offset(0, upTriggerY),
-          Offset(cardWidth, upTriggerY), upTriggerPaint);
-    }
-  }
-
-  // 绘制虚线
-  void _drawDashedLine(Canvas canvas, Offset start, Offset end, Paint paint) {
-    const dashWidth = 5.0;
-    const dashSpace = 3.0;
-    final distance = (end - start).distance;
-    final dashCount = (distance / (dashWidth + dashSpace)).floor();
-
-    for (int i = 0; i < dashCount; i++) {
-      final t1 = (i * (dashWidth + dashSpace)) / distance;
-      final t2 = ((i * (dashWidth + dashSpace)) + dashWidth) / distance;
-      final p1 = Offset.lerp(start, end, t1)!;
-      final p2 = Offset.lerp(start, end, t2)!;
-      canvas.drawLine(p1, p2, paint);
     }
   }
 
