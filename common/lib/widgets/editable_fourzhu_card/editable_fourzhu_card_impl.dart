@@ -368,13 +368,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final width =
         rowTitleWidth + _totalColsWidth(pillars) + padding.left + padding.right;
 
-    // 标题行高度加上上下 padding
-    double height = columnTitleHeight + padding.top + padding.bottom;
+    // 检查 rows[0] 是否为表头行
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
+    // 计算高度
+    double height = padding.top + padding.bottom;
+
+    // 如果 rows[0] 是表头行，添加固定的 columnTitleHeight
+    if (isRows0HeaderRow) {
+      height += columnTitleHeight;
+    }
 
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
       final name = entry.value;
-      if (idx == 0) continue; // 跳过标题行
+      // 只有当 rows[0] 是表头行时才跳过它（已计入 columnTitleHeight）
+      if (idx == 0 && isRows0HeaderRow) continue;
       final override = _rowHeightOverrides[idx];
       height += override ?? _rowHeightByName(name);
     }
@@ -502,8 +513,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   if (box == null) return;
                   final local = box.globalToLocal(details.offset);
                   // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
-                  final hasRowTitleCol = widget.pillarsNotifier.value.any(
-                      (p) => p.pillarType == PillarType.rowTitleColumn);
+                  final hasRowTitleCol = widget.pillarsNotifier.value
+                      .any((p) => p.pillarType == PillarType.rowTitleColumn);
                   final dx = local.dx - (hasRowTitleCol ? 0 : rowTitleWidth);
                   final n = pillars.length;
                   final candidate = _computeColumnInsertIndexFromDx(dx, n);
@@ -608,8 +619,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               Builder(builder: (context) {
                 // 使用可变列宽累计，正确定位插入指示线
                 // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
-                final hasRowTitleCol = widget.pillarsNotifier.value.any(
-                    (p) => p.pillarType == PillarType.rowTitleColumn);
+                final hasRowTitleCol = widget.pillarsNotifier.value
+                    .any((p) => p.pillarType == PillarType.rowTitleColumn);
                 final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
@@ -648,8 +659,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final pillars = _effectivePillarsTuples();
     final rows = _currentRowLabels();
     // 检查是否存在行标题列（在方法开头统一定义，避免重复）
-    final hasRowTitleColumn = widget.pillarsNotifier.value.any(
-        (payload) => payload.pillarType == PillarType.rowTitleColumn);
+    final hasRowTitleColumn = widget.pillarsNotifier.value
+        .any((payload) => payload.pillarType == PillarType.rowTitleColumn);
     // 仅在外部柱悬停时，为插入位预留一列的宽度（内部重排不扩展卡片）
     // 行拖拽进行中时，强制屏蔽网格内的幽灵列
     final bool rowDraggingActive =
@@ -667,7 +678,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
     // 如果存在行标题列则不额外添加 rowTitleWidth（行标题列宽度已包含在 _totalColsWidth 中）
     final totalWidth = (hasRowTitleColumn ? 0 : rowTitleWidth) +
-        _totalColsWidth(pillars) + extraColWidth;
+        _totalColsWidth(pillars) +
+        extraColWidth;
 
     // Grip row: standalone handles for columns (no long-press required)
     final gripRow = SizedBox(
@@ -763,10 +775,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
 
     // Header row: gender + column titles; overlay a unified drag target for continuous index updates
+    // 动态检查 rows[0] 是否为表头行，只有当它是表头行时才渲染
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+    final isDraggingHeaderRow = _draggingRowIndex == 0;
+
+    // 只有当 rows[0] 是表头行且没有被拖拽时，才渲染 headerRow
+    final shouldRenderHeaderRow = isRows0HeaderRow && !isDraggingHeaderRow;
+
     final headerRow = SizedBox(
       width: dragHandleColWidth + totalWidth,
-      height: columnTitleHeight,
-      child: Stack(
+      height: shouldRenderHeaderRow ? columnTitleHeight : 0,
+      child: !shouldRenderHeaderRow
+          ? const SizedBox.shrink()
+          : Stack(
         clipBehavior: Clip.none,
         children: [
           Row(
@@ -777,15 +800,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               // 如果不存在，则渲染硬编码的性别单元格
               ...(() {
                 final payloads = widget.pillarsNotifier.value;
-                final hasRowTitleColumn = payloads.any(
-                    (payload) => payload.pillarType == PillarType.rowTitleColumn);
+                final hasRowTitleColumn = payloads.any((payload) =>
+                    payload.pillarType == PillarType.rowTitleColumn);
 
                 if (!hasRowTitleColumn) {
                   // 旧逻辑：没有行标题列，显示硬编码的性别
-                  return [
-                    _cell(Size(rowTitleWidth, columnTitleHeight),
-                        _genderText(widget.gender))
-                  ];
+                  // 检查表头行是否正在被拖拽
+                  final d = _draggingRowIndex;
+                  final isDraggingHeaderRow = d == 0;
+
+                  if (isDraggingHeaderRow) {
+                    // 表头行正在被拖拽，显示空占位（由幽灵占位处理）
+                    return <Widget>[];
+                  } else {
+                    // 显示性别单元格（不可拖拽，拖拽由右侧抓手处理）
+                    return [
+                      _cell(Size(rowTitleWidth, columnTitleHeight),
+                          Center(child: _genderText(widget.gender)))
+                    ];
+                  }
                 }
                 return <Widget>[]; // 存在行标题列，稍后在循环中处理
               })(),
@@ -830,8 +863,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           : pillarWidth);
 
                   final Widget headerInner = isRowTitleCol
-                      ? // 行标题列在表头行的位置：显示性别标识
-                      _genderText(widget.gender)
+                      ? Center(child: _genderText(widget.gender))
                       : (isSeparatorCol
                           ? SizedBox(
                               width: _colDividerWidthEffective,
@@ -1048,11 +1080,98 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ));
                 return children;
               })(),
-              // 为右侧的 gripColumn 预留空间
-              SizedBox(
-                width: dragHandleColWidth,
-                height: columnTitleHeight,
-              ),
+              // 右侧行抓手列占位：仅当 rows[0] 是表头行时渲染抓手
+              (() {
+                final rowPayloads = widget.rowListNotifier.value;
+                final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+                    rowPayloads[0].rowType == RowType.columnHeaderRow;
+
+                if (!isRows0HeaderRow) {
+                  // rows[0] 不是表头行，返回空占位以保持宽度
+                  return SizedBox(
+                    width: dragHandleColWidth,
+                    height: columnTitleHeight,
+                  );
+                }
+
+                // rows[0] 是表头行，渲染抓手
+                final d = _draggingRowIndex;
+                if (d == 0) {
+                  // 表头行正在被拖拽，返回空占位
+                  return SizedBox(
+                    width: dragHandleColWidth,
+                    height: columnTitleHeight,
+                  );
+                }
+
+                return SizedBox(
+                  width: dragHandleColWidth,
+                  height: columnTitleHeight,
+                  child: Center(
+                    child: Draggable<Tuple2<_DragKind, int>>(
+                      data: Tuple2(_DragKind.row, 0),
+                      onDragStarted: () {
+                        setState(() {
+                          _draggingRowIndex = 0;
+                          _hoverColumnInsertIndex = null;
+                          _lastColInsertIndex = null;
+                          _hoveringExternalPillar = false;
+                        });
+                        _dragWantsInsert.value = false;
+                        _dragWantsDelete.value = false;
+                      },
+                      onDraggableCanceled: (velocity, offset) {
+                        final outside = !_isGlobalPointInsideCard(offset);
+                        setState(() {
+                          _draggingRowIndex = null;
+                          _hoverRowInsertIndex = null;
+                          _lastRowInsertIndex = null;
+                          _hoveringExternalRow = false;
+                          _externalRowHoverHeight = 0.0;
+                        });
+                        _dragWantsInsert.value = false;
+                        _dragWantsDelete.value = false;
+                        if (outside) {
+                          _deleteRow(0);
+                        }
+                      },
+                      onDragCompleted: () {
+                        setState(() {
+                          _draggingRowIndex = null;
+                          _hoverRowInsertIndex = null;
+                          _lastRowInsertIndex = null;
+                          _hoveringExternalRow = false;
+                          _externalRowHoverHeight = 0.0;
+                        });
+                        _dragWantsInsert.value = false;
+                        _dragWantsDelete.value = false;
+                      },
+                      dragAnchorStrategy: pointerDragAnchorStrategy,
+                      feedback: _offsetFeedbackLeft(
+                        widget.dragFeedbackBuilder?.call(
+                              context,
+                              _buildFullRowFeedback(
+                                  rows[0],
+                                  _effectivePillarsTuples(),
+                                  absRowIndex: 0),
+                            ) ??
+                            _statusFeedback(
+                              _buildFullRowFeedback(
+                                  rows[0],
+                                  _effectivePillarsTuples(),
+                                  absRowIndex: 0),
+                            ),
+                        _rowFeedbackTotalWidth(_effectivePillarsTuples()),
+                      ),
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.grab,
+                        child: const Icon(Icons.drag_indicator,
+                            size: 14, color: Colors.black),
+                      ),
+                    ),
+                  ),
+                );
+              })(),
             ],
           ),
           // 统一 DragTarget：填充在列标题区域之上，持续计算 hover 插入索引
@@ -1120,8 +1239,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 if (box == null) return;
                 final local = box.globalToLocal(details.offset);
                 // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
-                final hasRowTitleCol = widget.pillarsNotifier.value.any(
-                    (p) => p.pillarType == PillarType.rowTitleColumn);
+                final hasRowTitleCol = widget.pillarsNotifier.value
+                    .any((p) => p.pillarType == PillarType.rowTitleColumn);
                 final dx = local.dx - (hasRowTitleCol ? 0 : rowTitleWidth);
                 final n = pillars.length;
                 // 支持内部列拖拽与外部柱载荷的插入索引计算（变动列宽）
@@ -1268,9 +1387,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               final local =
                                   box.globalToLocal(details.globalPosition);
                               // 当存在行标题列时，不需要减去 rowTitleWidth
-                              final hasRowTitleCol2 = widget.pillarsNotifier.value
-                                  .any((p) => p.pillarType == PillarType.rowTitleColumn);
-                              final dx = local.dx - (hasRowTitleCol2 ? 0 : rowTitleWidth);
+                              final hasRowTitleCol2 =
+                                  widget.pillarsNotifier.value.any((p) =>
+                                      p.pillarType ==
+                                      PillarType.rowTitleColumn);
+                              final dx = local.dx -
+                                  (hasRowTitleCol2 ? 0 : rowTitleWidth);
                               // 依据分割线序号，将目标位置换算为统一列宽（所有列同宽）
                               final computed = (dx / idx)
                                   .clamp(_minPillarWidth, _maxPillarWidth);
@@ -1313,7 +1435,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
 
-                // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
+                // 第一个数据行（索引 1）之前的幽灵行占位
                 children.add(AnimatedContainer(
                   duration: (_hoveringExternalRow && t == 1)
                       ? const Duration(milliseconds: 180)
@@ -1331,13 +1453,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       : Colors.transparent,
                 ));
 
+                // 处理数据行（条件跳过表头行索引 0）
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
                   final rowName = entry.value;
-                  // 跳过标题行（索引 0），因为标题行已在 headerRow 中独立渲染
-                  if (absRowIdx == 0) continue;
+
+                  // 只有当 rows[0] 是表头行时才跳过索引 0（表头行抓手已在 headerRow 中渲染）
+                  if (absRowIdx == 0) {
+                    final rowPayloads = widget.rowListNotifier.value;
+                    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+                        rowPayloads[0].rowType == RowType.columnHeaderRow;
+                    if (isRows0HeaderRow) continue;
+                    // rows[0] 不是表头行，继续渲染其抓手
+                  }
+
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
+
                   // 幽灵占位
                   children.add(AnimatedContainer(
                     duration: draggingRow
@@ -1608,8 +1740,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
                   final rowName = entry.value;
-                  // 跳过标题行（索引 0），因为标题行已在 headerRow 中独立渲染
-                  if (absRowIdx == 0) continue;
+
+                  // 只有当 rows[0] 是表头行时才跳过索引 0
+                  // 如果 rows[0] 不是表头行（被拖拽到其他位置了），需要渲染它
+                  if (absRowIdx == 0) {
+                    final rowPayloads = widget.rowListNotifier.value;
+                    final isHeaderRow = rowPayloads.isNotEmpty &&
+                        rowPayloads[0].rowType == RowType.columnHeaderRow;
+                    if (isHeaderRow) continue; // 跳过表头行
+                    // 否则继续渲染 rows[0]
+                  }
+
                   final rowSize = _rowCellSize(rowName);
 
                   // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
@@ -2166,15 +2307,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       : Colors.transparent,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    children: rows
-                        .asMap()
-                        .entries
-                        .skip(1)
-                        .map((r) => SizedBox(
-                              width: gridGhostWidth,
-                              height: _rowHeightByName(r.value),
-                            ))
-                        .toList(),
+                    children: (() {
+                      final rowPayloads = widget.rowListNotifier.value;
+                      final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+                          rowPayloads[0].rowType == RowType.columnHeaderRow;
+                      return rows
+                          .asMap()
+                          .entries
+                          .where((r) => !(r.key == 0 && isRows0HeaderRow))
+                          .map((r) => SizedBox(
+                                width: gridGhostWidth,
+                                height: _rowHeightByName(r.value),
+                              ))
+                          .toList();
+                    })(),
                   ),
                 ));
                 if (d == i) continue; // 拖拽中的列不占原位置
@@ -2241,9 +2387,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             : Colors.transparent,
                       ));
 
-                      for (final rEntry in rows.asMap().entries.skip(1)) {
+                      // 只有当 rows[0] 是表头行时才跳过索引 0
+                      // rowPayloads 已在外层声明（第 2357 行），直接使用
+                      final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+                          rowPayloads[0].rowType == RowType.columnHeaderRow;
+
+                      for (final rEntry in rows.asMap().entries) {
                         final absRowIdx = rEntry.key;
                         final rowName = rEntry.value;
+
+                        // 如果索引 0 是表头行，跳过它
+                        if (absRowIdx == 0 && isRows0HeaderRow) continue;
+
                         final rowSize = _rowCellSize(rowName);
                         // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
                         final bool draggingRow =
@@ -2291,6 +2446,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         // isRowTitleCol 和 colW 已在外层声明，直接使用
                         final bool isSeparatorColumn =
                             _isSeparatorTitle(tuple.item1);
+
+                        // 检测当前行是否为表头行（用于确定单元格高度）
+                        final rowPayloadsForHeight = widget.rowListNotifier.value;
+                        final isCurrentRowHeaderRow = absRowIdx >= 0 &&
+                            absRowIdx < rowPayloadsForHeight.length &&
+                            rowPayloadsForHeight[absRowIdx].rowType ==
+                                RowType.columnHeaderRow;
 
                         // 行标题列：显示行标签而非柱数据
                         if (isRowTitleCol) {
@@ -2457,7 +2619,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             ),
                           );
                         } else {
-                          cell = _cell(Size(colW, otherCellHeight),
+                          // 表头行的列标题单元格使用 columnTitleHeight，其他行使用 otherCellHeight
+                          final cellHeight = isCurrentRowHeaderRow
+                              ? columnTitleHeight
+                              : otherCellHeight;
+                          cell = _cell(Size(colW, cellHeight),
                               _columnTitleText(tuple.item1));
                         }
                         rowChildren.add(AnimatedSlide(
@@ -2600,15 +2766,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     : Colors.transparent,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
-                  children: rows
-                      .asMap()
-                      .entries
-                      .skip(1)
-                      .map((r) => SizedBox(
-                            width: endGhostWidth,
-                            height: _rowHeightByName(r.value),
-                          ))
-                      .toList(),
+                  children: (() {
+                    final rowPayloads = widget.rowListNotifier.value;
+                    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+                        rowPayloads[0].rowType == RowType.columnHeaderRow;
+                    return rows
+                        .asMap()
+                        .entries
+                        .where((r) => !(r.key == 0 && isRows0HeaderRow))
+                        .map((r) => SizedBox(
+                              width: endGhostWidth,
+                              height: _rowHeightByName(r.value),
+                            ))
+                        .toList();
+                  })(),
                 ),
               ));
               return children;
@@ -3140,9 +3311,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // Calculate full column feedback height: header + all row heights
   double _columnFeedbackTotalHeight(List<String> rows) {
-    double total = columnTitleHeight;
-    for (final name in rows.skip(1)) {
-      total += _rowHeightByName(name);
+    // 检查 rows[0] 是否为表头行
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
+    double total = 0.0;
+    for (int i = 0; i < rows.length; i++) {
+      if (i == 0) {
+        // 如果 rows[0] 是表头行，使用 columnTitleHeight，否则使用实际行高
+        total += isRows0HeaderRow
+            ? columnTitleHeight
+            : _rowHeightByName(rows[i]);
+      } else {
+        total += _rowHeightByName(rows[i]);
+      }
     }
     return total;
   }
@@ -3501,7 +3684,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         break;
       }
     }
-    if (fromAbsIdx <= 0) return; // 跳过标题行索引0或未找到
+    if (fromAbsIdx < 0) return; // 未找到，直接返回
     _reorderRows(fromAbsIdx, insertIndex);
   }
 
@@ -3603,21 +3786,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final bool isSeparatorColumn =
         title == '分隔符' || title == '列分隔符' || title == '|';
     if (isSeparatorColumn) {
-      double totalHeight = columnTitleHeight;
-      for (final rowName in rows.skip(1)) {
-        totalHeight += _rowHeightByName(rowName);
-      }
+      // 使用已修复的 _columnFeedbackTotalHeight
+      double totalHeight = _columnFeedbackTotalHeight(rows);
       return Container(
         width: _colDividerThickness,
         height: totalHeight,
         color: Theme.of(context).colorScheme.secondary.withOpacity(0.6),
       );
     }
+
+    // 检查 rows[0] 是否为表头行
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
     // Compute total height: header + sum of each row height
-    double totalHeight = columnTitleHeight;
-    for (final rowName in rows.skip(1)) {
-      totalHeight += _rowHeightByName(rowName);
-    }
+    double totalHeight = _columnFeedbackTotalHeight(rows);
 
     final double feedbackWidth = widthOverride ?? pillarWidth;
     return Container(
@@ -3626,9 +3810,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          _cell(Size(feedbackWidth, columnTitleHeight),
-              _dragHandle(_columnTitleText(title))),
-          ...rows.skip(1).map((rowName) {
+          // 只有当 rows[0] 是表头行时才渲染列标题
+          if (isRows0HeaderRow)
+            _cell(Size(feedbackWidth, columnTitleHeight),
+                _dragHandle(_columnTitleText(title))),
+          // 渲染所有行（如果 rows[0] 不是表头行，也包括它）
+          ...rows.asMap().entries.where((entry) {
+            // 如果 rows[0] 是表头行，跳过它（已在上面渲染为列标题）
+            return !(entry.key == 0 && isRows0HeaderRow);
+          }).map((entry) {
+            final rowName = entry.value;
             if (rowName == '天干') {
               return _cell(Size(feedbackWidth, ganZhiCellSize.height),
                   _tianGanText(jz.tianGan));
@@ -3686,8 +3877,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - int：插入索引（范围 [1..rows.length]）。
   int _computeRowInsertIndexFromDy(double dy, List<String> rows) {
     // 逐行累计高度，首行（索引0）为标题行，不参与重排
-    // 从标题行高度开始累积，因为dy是相对于整个组件的坐标
-    double acc = columnTitleHeight;
+    // 从 0 开始累积，因为 dy 是相对于不包含表头行的组件的局部坐标
+    double acc = 0.0;
     int insertIndex = 1; // 最小为 1
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
@@ -3717,8 +3908,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - double：分数插入位（范围 [1.0..rows.length]）。
   double _computeRowInsertFloatFromDy(double dy, List<String> rows) {
-    // 从标题行高度开始累积，因为dy是相对于整个组件的坐标
-    double acc = columnTitleHeight;
+    // 从 0 开始累积，因为 dy 是相对于不包含表头行的组件的局部坐标
+    double acc = 0.0;
     double floatPos = 1.0; // 最小为 1.0
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
@@ -3749,8 +3940,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - int：插入索引（范围 [1..rows.length]）。
   int _computeRowInsertIndexFromDyMidpoint(double dy, List<String> rows) {
-    // 从标题行高度开始累积，因为dy是相对于整个组件的坐标
-    double acc = columnTitleHeight;
+    // 从 0 开始累积，因为 dy 是相对于不包含表头行的组件（leftHeader/dataGrid/gripColumn）的局部坐标
+    double acc = 0.0;
     int insertIndex = 1; // 最小为 1
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
@@ -3778,8 +3969,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - double：该行中点的局部 y 值（像素）。
   double _rowBoundaryMidY(int idx, List<String> rows) {
-    // 从标题行高度开始累积，因为返回的是相对于整个组件的坐标
-    double acc = columnTitleHeight;
+    // 从 0 开始累积，因为返回的是相对于不包含表头行的组件的局部坐标
+    double acc = 0.0;
     for (final entry in rows.asMap().entries) {
       final i = entry.key;
       final name = entry.value;
