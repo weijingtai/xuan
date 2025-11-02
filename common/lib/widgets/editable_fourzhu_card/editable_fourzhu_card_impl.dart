@@ -1722,14 +1722,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
 
-                  // 幽灵占位
+                  // 幽灵占位（t==0 时由表头区统一渲染，这里跳过）
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
-                    height: draggingRow && t == absRowIdx
+                    height: draggingRow && t != 0 && t == absRowIdx
                         ? (() {
                             final d = _draggingRowIndex;
                             if (d != null && d < rows.length) {
@@ -1747,7 +1747,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             return rowSize.height;
                           })()
                         : 0,
-                    color: draggingRow && t == absRowIdx
+                    color: draggingRow && t != 0 && t == absRowIdx
                         ? Theme.of(context)
                             .colorScheme
                             .secondary
@@ -1903,6 +1903,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final rowSize = _rowCellSize(rowName);
 
                   // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
+                  // t==0 时由表头区统一渲染，这里跳过
                   // 特殊处理：当插入到第一行前（t == 1）且为外部拖拽时，第一行（absRowIdx == 1）不应该让位，避免双重让位
                   children.add(AnimatedContainer(
                     duration: draggingRow
@@ -1911,6 +1912,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     curve: Curves.easeOut,
                     width: rowTitleWidth,
                     height: draggingRow &&
+                            t != 0 &&
                             t == absRowIdx &&
                             !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
                         ? (() {
@@ -1932,6 +1934,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           })()
                         : 0,
                     color: draggingRow &&
+                            t != 0 &&
                             t == absRowIdx &&
                             !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
                         ? Theme.of(context)
@@ -2438,6 +2441,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                         final rowSize = _rowCellSize(rowName);
                         // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
+                        // t==0 时由表头区统一渲染，这里跳过
                         final bool draggingRow =
                             dRow != null || _hoveringExternalRow;
                         rowChildren.add(AnimatedContainer(
@@ -2448,6 +2452,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
                           width: colW,
                           height: draggingRow &&
+                                  tRow != 0 &&
                                   tRow == absRowIdx &&
                                   !(tRow == 1 &&
                                       absRowIdx == 1 &&
@@ -2471,6 +2476,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 })()
                               : 0,
                           color: draggingRow &&
+                                  tRow != 0 &&
                                   tRow == absRowIdx &&
                                   !(tRow == 1 &&
                                       absRowIdx == 1 &&
