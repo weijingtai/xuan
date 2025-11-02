@@ -9,6 +9,7 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
+import 'dimension_models.dart'; // 新增：尺寸管理模型
 
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
@@ -103,6 +104,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 显式列宽/行高覆盖映射：键为当前索引，值为覆盖尺寸
   final Map<int, double> _columnWidthOverrides = {};
   final Map<int, double> _rowHeightOverrides = {};
+
+  // ==================== 新尺寸管理系统（并行运行，不影响旧代码） ====================
+  // 新模型层：集中管理所有尺寸计算，自动处理索引重映射
+  late ValueNotifier<CardLayoutModel> _layoutNotifier;
+  late MeasurementContext _measurementContext;
+  late VoidCallback _layoutModelSyncListener; // 用于同步旧数据到新模型
+  bool _layoutSystemInitialized = false; // 标记新系统是否已初始化
+  // ==================== 新尺寸管理系统结束 ====================
 
   // --- Mapping helpers from payloads to UI tuples/labels ---
   String _pillarLabelFromPayload(PillarPayload p) {
@@ -338,6 +347,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   @override
   void initState() {
     super.initState();
+    // ====== 旧尺寸管理系统（保持不变） ======
     _sizeNotifier = ValueNotifier<Size>(_computeSize());
     _pillarsListener = () => _sizeNotifier.value = _computeSize();
     _rowsListener = () => _sizeNotifier.value = _computeSize();
@@ -345,16 +355,70 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     widget.pillarsNotifier.addListener(_pillarsListener);
     widget.rowListNotifier.addListener(_rowsListener);
     widget.paddingNotifier.addListener(_paddingListener);
+
+    // ====== 新尺寸管理系统（并行运行） ======
+    // 初始化测量上下文
+    _measurementContext = MeasurementContext.fromStateConfig(
+      pillarWidth: pillarWidth,
+      otherCellHeight: otherCellHeight,
+      ganZhiHeight: ganZhiCellSize.height,
+      columnTitleHeight: columnTitleHeight,
+      rowDividerHeightEffective: _rowDividerHeightEffective,
+      colDividerWidthEffective: _colDividerWidthEffective,
+      rowTitleWidth: rowTitleWidth,
+      minPillarWidth: _minPillarWidth,
+      maxPillarWidth: _maxPillarWidth,
+    );
+
+    // 从旧数据构建新模型（保留现有覆盖值）
+    _layoutNotifier = ValueNotifier(
+      CardLayoutModel.fromNotifiers(
+        pillars: widget.pillarsNotifier.value,
+        rows: widget.rowListNotifier.value,
+        padding: widget.paddingNotifier.value,
+        columnWidthOverrides: _columnWidthOverrides,
+        rowHeightOverrides: _rowHeightOverrides,
+        dragHandleRowHeight: dragHandleRowHeight,
+        dragHandleColWidth: dragHandleColWidth,
+      ),
+    );
+
+    // 监听旧数据变化，同步更新新模型
+    _layoutModelSyncListener = () {
+      _layoutNotifier.value = CardLayoutModel.fromNotifiers(
+        pillars: widget.pillarsNotifier.value,
+        rows: widget.rowListNotifier.value,
+        padding: widget.paddingNotifier.value,
+        columnWidthOverrides: _columnWidthOverrides,
+        rowHeightOverrides: _rowHeightOverrides,
+        dragHandleRowHeight: dragHandleRowHeight,
+        dragHandleColWidth: dragHandleColWidth,
+      );
+    };
+    widget.pillarsNotifier.addListener(_layoutModelSyncListener);
+    widget.rowListNotifier.addListener(_layoutModelSyncListener);
+    widget.paddingNotifier.addListener(_layoutModelSyncListener);
+
+    // 标记新系统已初始化
+    _layoutSystemInitialized = true;
   }
 
   @override
   void dispose() {
+    // ====== 旧系统清理 ======
     widget.pillarsNotifier.removeListener(_pillarsListener);
     widget.rowListNotifier.removeListener(_rowsListener);
     widget.paddingNotifier.removeListener(_paddingListener);
     _sizeNotifier.dispose();
     _dragWantsInsert.dispose();
     _dragWantsDelete.dispose();
+
+    // ====== 新系统清理 ======
+    widget.pillarsNotifier.removeListener(_layoutModelSyncListener);
+    widget.rowListNotifier.removeListener(_layoutModelSyncListener);
+    widget.paddingNotifier.removeListener(_layoutModelSyncListener);
+    _layoutNotifier.dispose();
+
     super.dispose();
   }
 
@@ -393,7 +457,34 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 添加独立抓手行的高度，确保Card尺寸计算的一致性
     height += dragHandleRowHeight;
 
-    return Size(width, height);
+    final oldSize = Size(width, height);
+
+    // ====== 新旧系统一致性验证（开发阶段） ======
+    // 只有在新系统已初始化后才进行验证
+    if (_layoutSystemInitialized) {
+      // 使用新模型系统计算尺寸，并对比是否与旧系统一致
+      final newSize = _layoutNotifier.value.computeSize(_measurementContext);
+
+      // 允许 0.1 像素的浮点误差
+      const tolerance = 0.1;
+      final widthDiff = (oldSize.width - newSize.width).abs();
+      final heightDiff = (oldSize.height - newSize.height).abs();
+
+      assert(
+        widthDiff < tolerance && heightDiff < tolerance,
+        '⚠️ 新旧尺寸系统计算不一致！\n'
+        '旧系统: ${oldSize.width.toStringAsFixed(2)} x ${oldSize.height.toStringAsFixed(2)}\n'
+        '新系统: ${newSize.width.toStringAsFixed(2)} x ${newSize.height.toStringAsFixed(2)}\n'
+        '差值: Δwidth=${widthDiff.toStringAsFixed(2)}, Δheight=${heightDiff.toStringAsFixed(2)}',
+      );
+
+      // 开发阶段输出对比信息（可选）
+      if (widthDiff > 0.01 || heightDiff > 0.01) {
+        debugPrint('📐 尺寸微小差异: Δwidth=$widthDiff, Δheight=$heightDiff');
+      }
+    }
+
+    return oldSize;
   }
 
   @override
