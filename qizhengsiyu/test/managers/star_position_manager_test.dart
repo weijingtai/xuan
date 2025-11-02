@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:common/enums.dart';
-import 'package:qizhengsiyu/domain/entities/models/gong_star_info.dart';
-import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart';
-import 'package:qizhengsiyu/domain/managers/star_position_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/managers/star_position_manager.dart';
+import 'package:qizhengsiyu/models/star_enter_info.dart';
+import 'package:qizhengsiyu/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/models/gong_star_info.dart';
 
 void main() {
   late StarPositionManager manager;

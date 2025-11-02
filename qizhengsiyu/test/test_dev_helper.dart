@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/models/star_inn_gong_degree.dart';
 import 'package:common/enums.dart';
-import 'package:qizhengsiyu/domain/entities/models/star_inn_gong_degree.dart';
 
 void main() {
   group('QiZhengSiYuConstantResources 数据序列化测试', () {

@@ -35,7 +35,6 @@ const _$EnumInfluenceTypeEnumMap = {
   EnumInfluenceType.triangle: '三方',
   EnumInfluenceType.square: '四正',
   EnumInfluenceType.luo: '同络',
-  EnumInfluenceType.other: '其他',
   EnumInfluenceType.jing: '同经',
 };
 
@@ -150,66 +149,4 @@ Map<String, dynamic> _$DingStarInfluenceModelToJson(
       'endTime': instance.endTime.toIso8601String(),
       'startAge': instance.startAge,
       'endAge': instance.endAge,
-    };
-
-StarGongInfluence _$StarGongInfluenceFromJson(Map<String, dynamic> json) =>
-    StarGongInfluence(
-      sameGongInfluence: (json['sameGongInfluence'] as List<dynamic>?)
-          ?.map((e) =>
-              PalaceStarInfluenceModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      oppositeGongInfluence: (json['oppositeGongInfluence'] as List<dynamic>?)
-          ?.map((e) =>
-              PalaceStarInfluenceModel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      triangleGongInfluence:
-          (json['triangleGongInfluence'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(
-            $enumDecode(_$EnumTwelveGongEnumMap, k),
-            (e as List<dynamic>)
-                .map((e) => PalaceStarInfluenceModel.fromJson(
-                    e as Map<String, dynamic>))
-                .toList()),
-      ),
-      squareGongInfluence:
-          (json['squareGongInfluence'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(
-            $enumDecode(_$EnumTwelveGongEnumMap, k),
-            (e as List<dynamic>)
-                .map((e) => PalaceStarInfluenceModel.fromJson(
-                    e as Map<String, dynamic>))
-                .toList()),
-      ),
-      sameLuoInfluence:
-          (json['sameLuoInfluence'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(
-            $enumDecode(_$EnumTwelveGongEnumMap, k),
-            (e as List<dynamic>)
-                .map((e) => PalaceStarInfluenceModel.fromJson(
-                    e as Map<String, dynamic>))
-                .toList()),
-      ),
-      otherGongInfluence:
-          (json['otherGongInfluence'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(
-            $enumDecode(_$EnumTwelveGongEnumMap, k),
-            (e as List<dynamic>)
-                .map((e) => PalaceStarInfluenceModel.fromJson(
-                    e as Map<String, dynamic>))
-                .toList()),
-      ),
-    );
-
-Map<String, dynamic> _$StarGongInfluenceToJson(StarGongInfluence instance) =>
-    <String, dynamic>{
-      'sameGongInfluence': instance.sameGongInfluence,
-      'oppositeGongInfluence': instance.oppositeGongInfluence,
-      'triangleGongInfluence': instance.triangleGongInfluence
-          ?.map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
-      'squareGongInfluence': instance.squareGongInfluence
-          ?.map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
-      'sameLuoInfluence': instance.sameLuoInfluence
-          ?.map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
-      'otherGongInfluence': instance.otherGongInfluence
-          ?.map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
     };

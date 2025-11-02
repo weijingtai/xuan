@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
-<<<<<<<< HEAD:qizhengsiyu/lib/domain/services/life_body_model_builder.dart
 import 'package:common/utils.dart';
 import 'package:tuple/tuple.dart';
 
@@ -14,19 +13,6 @@ import '../entities/models/body_life_model.dart';
 import '../entities/models/naming_degree_pair.dart';
 import '../entities/models/star_inn_gong_degree.dart';
 
-========
-import 'package:common/utils/collections_utils.dart';
-import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
-import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart';
-import 'package:tuple/tuple.dart';
-
-import '../enums/enum_settle_life_body.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
-import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
-import '../qi_zheng_si_yu_constant_resources.dart';
-import '../utils/star_degree_inn_gong_helper.dart';
->>>>>>>> refactor/74-integrated:qizhengsiyu/lib/services/life_body_model_builder.dart
 
 @Deprecated("使用 SettleLifeBodyService 代替")
 class LifeBodyModelBuilder {

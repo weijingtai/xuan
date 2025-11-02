@@ -4,9 +4,9 @@ import 'package:path/path.dart' as path;
 
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart';
-import 'package:qizhengsiyu/domain/managers/hua_yao_manager.dart';
+import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/models/hua_yao.dart';
 
 void main() {
   // final currentDir = Directory.current;
@@ -150,20 +150,19 @@ void main() {
     });
   });
 
-  // group("化曜 all", () {
-  //   final huaYaoManger = HuaYaoManager(
-  //     // tianGanHuaYao: tianGanHuaYao,
-  //     // diZhiHuaYao: diZhiHuaYao,
-  //     // othersHuaYao: othersHuaYao,
-  //     huaYaoService: null,
-  //   );
-  //   test("化曜总数 41 (多一个天官，即八字中的正官)", () {
-  //     final result = huaYaoManger.calculate(
-  //         mingGong: EnumTwelveGong.Zi,
-  //         yearJiaZi: JiaZi.JIA_CHEN,
-  //         monthJiaZi: JiaZi.WU_CHEN);
-  //     expect(result.length, equals(41),
-  //         reason: result.keys.map((k) => k.name).toList().toString());
-  //   });
-  // });
+  group("化曜 all", () {
+    final huaYaoManger = HuaYaoManager(
+      tianGanHuaYao: tianGanHuaYao,
+      diZhiHuaYao: diZhiHuaYao,
+      othersHuaYao: othersHuaYao,
+    );
+    test("化曜总数 41 (多一个天官，即八字中的正官)", () {
+      final result = huaYaoManger.calculate(
+          mingGong: EnumTwelveGong.Zi,
+          yearJiaZi: JiaZi.JIA_CHEN,
+          monthJiaZi: JiaZi.WU_CHEN);
+      expect(result.length, equals(41),
+          reason: result.keys.map((k) => k.name).toList().toString());
+    });
+  });
 }

@@ -1,10 +1,6 @@
 import 'package:common/datamodel/location.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
-<<<<<<<< HEAD:qizhengsiyu/lib/domain/entities/models/divination_model.dart
-========
-import 'package:qizhengsiyu/domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
->>>>>>>> refactor/74-integrated:qizhengsiyu/lib/models/divination_model.dart
 
 part 'divination_model.g.dart';
 

@@ -5,10 +5,6 @@ import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
-<<<<<<<< HEAD:qizhengsiyu/lib/domain/entities/models/eleven_stars_info.dart
-========
-import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层模型
->>>>>>>> refactor/74-integrated:qizhengsiyu/lib/models/eleven_stars_info.dart
 
 part 'eleven_stars_info.g.dart';
 

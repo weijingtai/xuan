@@ -1,5 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/utils.dart';
+import 'package:common/utils/collections_utils.dart';
 import 'package:flutter/material.dart';
 
 enum EnumGuoLaoHuaYao {
