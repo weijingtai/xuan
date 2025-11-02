@@ -3105,11 +3105,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - double：相对于左侧标题区域的顶部偏移量（像素）。
   double _computeRowInsertTopFromIndex(int insertIndex, List<String> rows) {
     // insertIndex 取值 [1..rows.length]；当为 1 时表示在第一数据行之前
+    // 检查 rows[0] 是否为表头行，决定是否跳过索引0
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
     double acc = 0.0;
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
       final name = entry.value;
-      if (idx == 0) continue; // 跳过标题行
+
+      // 条件跳过索引0：仅当 rows[0] 是表头行时跳过
+      if (idx == 0) {
+        if (isRows0HeaderRow) continue;
+        // rows[0] 不是表头行，继续累积其高度
+      }
+
       if (idx >= insertIndex) break;
       final h = _rowHeightByName(name);
       acc += h;
@@ -3127,11 +3138,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - double：相对于左侧标题区域的顶部偏移量（像素）。
   double _computeRowTopFromIndex(int index, List<String> rows) {
     // index 取值 [1..rows.length-1]；1 对应第一数据行，top=0
+    // 检查 rows[0] 是否为表头行，决定是否跳过索引0
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
     double acc = 0.0;
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
       final name = entry.value;
-      if (idx == 0) continue; // 跳过标题行
+
+      // 条件跳过索引0：仅当 rows[0] 是表头行时跳过
+      if (idx == 0) {
+        if (isRows0HeaderRow) continue;
+        // rows[0] 不是表头行，继续累积其高度
+      }
+
       if (idx == index) break;
       final h = _rowHeightOverrides[idx] ?? _rowHeightByName(name);
       acc += h;
@@ -3940,13 +3962,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - int：插入索引（范围 [1..rows.length]）。
   int _computeRowInsertIndexFromDyMidpoint(double dy, List<String> rows) {
-    // 从 0 开始累积，因为 dy 是相对于不包含表头行的组件（leftHeader/dataGrid/gripColumn）的局部坐标
+    // 从 0 开始累积，因为 dy 是相对于 gripColumn/leftHeader 的局部坐标
+    // 检查 rows[0] 是否为表头行，决定是否跳过索引0
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
     double acc = 0.0;
     int insertIndex = 1; // 最小为 1
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
       final name = entry.value;
-      if (idx == 0) continue; // 跳过标题行
+
+      // 条件跳过索引0：仅当 rows[0] 是表头行时跳过
+      if (idx == 0) {
+        if (isRows0HeaderRow) continue;
+        // rows[0] 不是表头行，继续累积其高度
+      }
+
       final h = _rowHeightByName(name);
       final mid = acc + h / 2;
       if (dy < mid) {
@@ -3969,12 +4002,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - double：该行中点的局部 y 值（像素）。
   double _rowBoundaryMidY(int idx, List<String> rows) {
-    // 从 0 开始累积，因为返回的是相对于不包含表头行的组件的局部坐标
+    // 从 0 开始累积，因为返回的是相对于 gripColumn/leftHeader 的局部坐标
+    // 检查 rows[0] 是否为表头行，决定是否跳过索引0
+    final rowPayloads = widget.rowListNotifier.value;
+    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
+        rowPayloads[0].rowType == RowType.columnHeaderRow;
+
     double acc = 0.0;
     for (final entry in rows.asMap().entries) {
       final i = entry.key;
       final name = entry.value;
-      if (i == 0) continue;
+
+      // 条件跳过索引0：仅当 rows[0] 是表头行时跳过
+      if (i == 0) {
+        if (isRows0HeaderRow) continue;
+        // rows[0] 不是表头行，继续累积其高度
+      }
+
       final h = _rowHeightByName(name);
       if (i == idx) {
         return acc + h / 2.0;
