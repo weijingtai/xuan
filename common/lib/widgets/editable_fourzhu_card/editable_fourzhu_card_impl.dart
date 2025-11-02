@@ -503,7 +503,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final bool hasColGhost = (_hoveringExternalPillar ||
                 (tCol != null && tCol == pillars.length)) &&
             !rowDraggingActive;
-        // 行幽灵判定：仅在“外部行载荷”悬停时扩展卡片高度；
+        // 行幽灵判定：仅在"外部行载荷"悬停时扩展卡片高度；
         // 内部重排不会改变行数，不应增加额外高度，否则会造成错判为插入场景。
         final bool hasRowGhost = _hoveringExternalRow;
         // 卡片外部悬停时，幽灵列宽度优先使用外部载荷提供值；分割柱使用有效分割宽度
@@ -514,7 +514,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         double extraRowHeight = 0.0;
         if (hasRowGhost) {
           // 外部行拖拽：使用载荷解析的行高作为预留高度
-          extraRowHeight = _externalRowHoverHeight;
+          // ⚠️ 特殊处理：如果插入位置是第一行（t==1），幽灵行已经在内容中占位，
+          // 不应该再扩展 Card 高度，否则会导致底部溢出
+          final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+          if (t != null && t == 1) {
+            extraRowHeight = 0.0;  // 第一行位置：幽灵行在内容中，不扩展容器
+          } else {
+            extraRowHeight = _externalRowHoverHeight;  // 其他位置：扩展容器
+          }
         }
         return Stack(
           children: [
@@ -1814,13 +1821,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
 
                   // 幽灵占位（t==0 时由表头区统一渲染，这里跳过）
+                  // 特殊处理：当插入到第一行前(t == 1)且为外部拖拽时，第一行(absRowIdx == 1)不应该让位，避免双重让位
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
-                    height: draggingRow && t != 0 && t == absRowIdx
+                    height: draggingRow &&
+                            t != 0 &&
+                            t == absRowIdx &&
+                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
                         ? (() {
                             final d = _draggingRowIndex;
                             if (d != null && d < rows.length) {
@@ -1838,7 +1849,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             return rowSize.height;
                           })()
                         : 0,
-                    color: draggingRow && t != 0 && t == absRowIdx
+                    color: draggingRow &&
+                            t != 0 &&
+                            t == absRowIdx &&
+                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
                         ? Theme.of(context)
                             .colorScheme
                             .secondary
