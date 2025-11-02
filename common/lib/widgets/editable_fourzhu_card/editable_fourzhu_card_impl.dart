@@ -4087,22 +4087,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           else
             _cell(
                 Size(rowTitleWidth, rowH), _dragHandle(_rowTitleText(rowName))),
-          ...pillars.map((tuple) {
+          ...pillars.asMap().entries.map((entry) {
+            final i = entry.key;
+            final tuple = entry.value;
             final jz = tuple.item2;
+            final colW = _colWidthAtIndex(i, pillars);
             if (isGan) {
-              return _cell(Size(pillarWidth, rowH), _tianGanText(jz.tianGan));
+              return _cell(Size(colW, rowH), _tianGanText(jz.tianGan));
             } else if (isZhi) {
-              return _cell(Size(pillarWidth, rowH), _diZhiText(jz.diZhi));
+              return _cell(Size(colW, rowH), _diZhiText(jz.diZhi));
             } else if (rowName == '纳音') {
-              return _cell(Size(pillarWidth, rowH), _naYinText(jz.naYinStr));
+              return _cell(Size(colW, rowH), _naYinText(jz.naYinStr));
             } else if (rowName == '空亡') {
               // 空亡行：显示空亡信息
               final kw = jz.getKongWang();
               final text = '${kw.item1.value}${kw.item2.value}';
-              return _cell(Size(pillarWidth, rowH), _naYinText(text));
+              return _cell(Size(colW, rowH), _naYinText(text));
             } else if (_isSeparatorRowLabel(rowName)) {
               return Container(
-                width: pillarWidth,
+                width: colW,
                 height: rowH,
                 decoration: BoxDecoration(
                   border: Border(
@@ -4115,7 +4118,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               );
             } else {
               return _cell(
-                  Size(pillarWidth, rowH), _columnTitleText(tuple.item1));
+                  Size(colW, rowH), _columnTitleText(tuple.item1));
             }
           }).toList(),
         ],
