@@ -503,9 +503,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final bool hasColGhost = (_hoveringExternalPillar ||
                 (tCol != null && tCol == pillars.length)) &&
             !rowDraggingActive;
-        // 行幽灵判定：仅在"外部行载荷"悬停时扩展卡片高度；
-        // 内部重排不会改变行数，不应增加额外高度，否则会造成错判为插入场景。
-        final bool hasRowGhost = _hoveringExternalRow;
+        // 行幽灵判定：外部行悬停 或 内部拖拽到表头之前(t=0)时需要扩展卡片高度
+        // 内部拖拽到t=0时，幽灵行在表头之前单独渲染，需要额外的容器高度
+        final bool hasRowGhost = _hoveringExternalRow ||
+            (_draggingRowIndex != null &&
+                (_hoverRowInsertIndex == 0 || _lastRowInsertIndex == 0));
         // 卡片外部悬停时，幽灵列宽度优先使用外部载荷提供值；分割柱使用有效分割宽度
         final double ghostWidth = hasColGhost && _externalColHoverWidth > 0
             ? _externalColHoverWidth
@@ -513,12 +515,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
         double extraRowHeight = 0.0;
         if (hasRowGhost) {
-          // 外部行拖拽：使用载荷解析的行高作为预留高度
-          // ⚠️ 特殊处理：如果插入位置是第一行（t==1），幽灵行已经在内容中占位，
-          // 不应该再扩展 Card 高度，否则会导致底部溢出
           final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
-          if (t != null && t == 1) {
-            extraRowHeight = 0.0;  // 第一行位置：幽灵行在内容中，不扩展容器
+          if (t != null && t == 0) {
+            // 插入到表头之前（t=0）：需要扩展容器高度
+            if (_hoveringExternalRow) {
+              extraRowHeight = _externalRowHoverHeight;  // 外部拖拽：使用外部行高
+            } else if (_draggingRowIndex != null && _draggingRowIndex! < rows.length) {
+              // 内部拖拽：使用被拖拽行的高度（考虑覆盖值）
+              final draggedName = rows[_draggingRowIndex!];
+              final override = _rowHeightOverrides[_draggingRowIndex!];
+              extraRowHeight = override ?? _rowHeightByName(draggedName);
+            }
+          } else if (t == 1) {
+            extraRowHeight = 0.0;  // 插入到首行：幽灵行在内容中，不扩展容器
           } else {
             extraRowHeight = _externalRowHoverHeight;  // 其他位置：扩展容器
           }
