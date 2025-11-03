@@ -422,36 +422,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final bool hasColGhost = (_hoveringExternalPillar ||
                 (tCol != null && tCol == pillars.length)) &&
             !rowDraggingActive;
-        // 行幽灵判定：外部行悬停 或 内部拖拽到表头之前(t=0)时需要扩展卡片高度
-        // 内部拖拽到t=0时，幽灵行在表头之前单独渲染，需要额外的容器高度
-        final bool hasRowGhost = _hoveringExternalRow ||
-            (_draggingRowIndex != null &&
-                (_hoverRowInsertIndex == 0 || _lastRowInsertIndex == 0));
+        // 行幽灵判定：统一使用内部让位逻辑，所有行（包括索引0）使用相同的让位机制
+        // 不再需要为 t=0 特殊扩展容器高度，所有幽灵行通过 AnimatedContainer 实现
+        final bool hasRowGhost = _hoveringExternalRow;
         // 卡片外部悬停时，幽灵列宽度优先使用外部载荷提供值；分割柱使用有效分割宽度
         final double ghostWidth = hasColGhost && _externalColHoverWidth > 0
             ? _externalColHoverWidth
             : pillarWidth;
         final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
-        double extraRowHeight = 0.0;
-        if (hasRowGhost) {
-          final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
-          if (t != null && t == 0) {
-            // 插入到表头之前（t=0）：需要扩展容器高度
-            if (_hoveringExternalRow) {
-              extraRowHeight = _externalRowHoverHeight; // 外部拖拽：使用外部行高
-            } else if (_draggingRowIndex != null &&
-                _draggingRowIndex! < rows.length) {
-              // 内部拖拽：使用被拖拽行的高度（考虑覆盖值）
-              final draggedName = rows[_draggingRowIndex!];
-              final override = _rowHeightOverrides[_draggingRowIndex!];
-              extraRowHeight = override ?? _rowHeightByName(draggedName);
-            }
-          } else if (t == 1) {
-            extraRowHeight = 0.0; // 插入到首行：幽灵行在内容中，不扩展容器
-          } else {
-            extraRowHeight = _externalRowHoverHeight; // 其他位置：扩展容器
-          }
-        }
+        // 所有行让位通过内部 AnimatedContainer 实现，容器高度不需要扩展
+        final double extraRowHeight = 0.0;
         return Stack(
           children: [
             AnimatedContainer(
@@ -977,18 +957,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
 
-                  // 幽灵占位（t==0 时由表头区统一渲染，这里跳过）
-                  // 特殊处理：当插入到第一行前(t == 1)且为外部拖拽时，第一行(absRowIdx == 1)不应该让位，避免双重让位
+                  // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
-                    height: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    height: draggingRow && t == absRowIdx
                         ? (() {
                             final d = _draggingRowIndex;
                             if (d != null && d < rows.length) {
@@ -1009,10 +985,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             return rowSize.height;
                           })()
                         : 0,
-                    color: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
                             .colorScheme
                             .secondary
@@ -1147,18 +1120,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   print(
                       '🔍 [gripColumn] absRowIdx=$absRowIdx, isSeparatorRow=$isSeparatorRow, d=$d');
 
-                  // 幽灵占位（t==0 时由表头区统一渲染，这里跳过）
-                  // 特殊处理：当插入到第一行前(t == 1)且为外部拖拽时，第一行(absRowIdx == 1)不应该让位，避免双重让位
+                  // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
-                    height: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    height: draggingRow && t == absRowIdx
                         ? (() {
                             final d = _draggingRowIndex;
                             if (d != null && d < rows.length) {
@@ -1179,10 +1148,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             return rowSize.height;
                           })()
                         : 0,
-                    color: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
                             .colorScheme
                             .secondary
@@ -1327,19 +1293,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                   final rowSize = _rowCellSize(rowName);
 
-                  // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
-                  // t==0 时由表头区统一渲染，这里跳过
-                  // 特殊处理：当插入到第一行前（t == 1）且为外部拖拽时，第一行（absRowIdx == 1）不应该让位，避免双重让位
+                  // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
                   children.add(AnimatedContainer(
                     duration: draggingRow
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
                     width: rowTitleWidth,
-                    height: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    height: draggingRow && t == absRowIdx
                         ? (() {
                             final dIdx = _draggingRowIndex;
                             if (dIdx != null && dIdx < rows.length) {
@@ -1361,10 +1322,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             return rowSize.height;
                           })()
                         : 0,
-                    color: draggingRow &&
-                            t != 0 &&
-                            t == absRowIdx &&
-                            !(t == 1 && absRowIdx == 1 && _hoveringExternalRow)
+                    color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
                             .colorScheme
                             .secondary
@@ -1656,8 +1614,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         final rowName = rEntry.value;
 
                         final rowSize = _rowCellSize(rowName);
-                        // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
-                        // t==0 时由表头区统一渲染，这里跳过
+                        // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
                         final bool draggingRow =
                             dRow != null || _hoveringExternalRow;
                         rowChildren.add(AnimatedContainer(
@@ -1667,12 +1624,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           curve: Curves.easeOut,
                           // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
                           width: colW,
-                          height: draggingRow &&
-                                  tRow != 0 &&
-                                  tRow == absRowIdx &&
-                                  !(tRow == 1 &&
-                                      absRowIdx == 1 &&
-                                      _hoveringExternalRow)
+                          height: draggingRow && tRow == absRowIdx
                               ? (() {
                                   final d = _draggingRowIndex;
                                   if (d != null && d < rows.length) {
@@ -1695,12 +1647,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   return rowSize.height;
                                 })()
                               : 0,
-                          color: draggingRow &&
-                                  tRow != 0 &&
-                                  tRow == absRowIdx &&
-                                  !(tRow == 1 &&
-                                      absRowIdx == 1 &&
-                                      _hoveringExternalRow)
+                          color: draggingRow && tRow == absRowIdx
                               ? Theme.of(context)
                                   .colorScheme
                                   .secondary
@@ -2035,34 +1982,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         ],
       ),
     );
-
-    // 使用方法开头定义的 hasRowTitleColumn 判断是否渲染独立的 leftHeader
-    final d = _draggingRowIndex;
-    final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
-    final bool draggingRow = d != null || _hoveringExternalRow;
-
-    // 计算幽灵行+表头行的总高度
-    final ghostHeight = (draggingRow && t == 0)
-        ? (() {
-            final dIdx = _draggingRowIndex;
-            if (dIdx != null && dIdx < rows.length) {
-              final draggedName = rows[dIdx];
-              final override = _rowHeightOverrides[dIdx];
-              final byName = _rowHeightByName(draggedName);
-              final finalHeight = override ?? byName;
-              print(
-                  '🔍 [幽灵行-表头区] t=0, d=$dIdx, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
-              return finalHeight;
-            } else if (_hoveringExternalRow) {
-              print(
-                  '🔍 [幽灵行-表头区] t=0, external row, height=$_externalRowHoverHeight');
-              return _externalRowHoverHeight;
-            }
-            print(
-                '🔍 [幽灵行-表头区] t=0, fallback to columnTitleHeight=$columnTitleHeight');
-            return columnTitleHeight;
-          })()
-        : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
