@@ -906,18 +906,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
 
     // Bottom Grip row: 底部抓手行，用于拖拽列
-    final gripRow = Container(
-      // color: Colors.red.withAlpha(50),
+    final gripRow = SizedBox(
       width: dragHandleColWidth + totalWidth,
       height: dragHandleRowHeight,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           // 只在没有行标题列时渲染左侧空白单元格
           if (!hasRowTitleColumn)
-            _cell(Size(rowTitleWidth, dragHandleRowHeight),
-                const SizedBox.shrink()),
+            SizedBox(
+              width: rowTitleWidth,
+              height: dragHandleRowHeight,
+            ),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
             // 使用可变列宽，与 totalWidth 计算保持一致
@@ -936,8 +936,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             final title = pillars[i].item1;
 
             print('🔍 [gripRow] 渲染列拖拽图标 i=$i, title=$title');
-            return Container(
-              // color: Colors.amber.withAlpha(100),
+            return SizedBox(
               width: colW,
               height: dragHandleRowHeight,
               child: Center(
@@ -1173,7 +1172,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // Right Grip column: 右侧抓手列，用于拖拽行
     // 叠加 DragTarget 覆盖整个抓手列区域，确保行拖拽经过此列也会持续更新插入索引，从而显示幽灵行
-    final gripColumn = SizedBox(
+    final gripColumn = Container(
+      color: Colors.red.withAlpha(50),
       width: dragHandleColWidth,
       child: Stack(
         children: [
