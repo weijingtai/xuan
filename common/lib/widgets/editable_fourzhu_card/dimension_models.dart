@@ -304,12 +304,12 @@ class CardLayoutModel {
   ///
   /// 这是整个系统的核心方法，确保尺寸计算永远不会遗漏任何元素。
   Size computeSize(MeasurementContext ctx) {
-    // 宽度 = 所有列宽之和 + padding
+    // 宽度 = leftGripColumn + 所有列宽之和 + rightGripColumn + padding
     final double totalColumnsWidth = columns.fold<double>(
       0.0,
       (sum, col) => sum + col.measure(ctx),
     );
-    final width = totalColumnsWidth + padding.left + padding.right;
+    final width = totalColumnsWidth + padding.left + padding.right + (dragHandleColWidth * 2);
 
     // 高度 = padding.top + topGripRow + 所有行高之和 + bottomGripRow + padding.bottom
     final double totalRowsHeight = rows.fold<double>(
