@@ -384,7 +384,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         dragHandleColWidth: dragHandleColWidth,
       );
       // 同步更新尺寸
-      _sizeNotifier.value = _layoutNotifier.value.computeSize(_measurementContext);
+      _sizeNotifier.value =
+          _layoutNotifier.value.computeSize(_measurementContext);
     };
     widget.pillarsNotifier.addListener(_layoutModelSyncListener);
     widget.rowListNotifier.addListener(_layoutModelSyncListener);
@@ -828,17 +829,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // Bottom Grip row: 底部抓手行，用于拖拽列
     final gripRow = SizedBox(
-      width: dragHandleColWidth + totalWidth,
+      width: dragHandleColWidth * 2 + totalWidth,
       height: dragHandleRowHeight,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 只在没有行标题列时渲染左侧空白单元格
-          if (!hasRowTitleColumn)
-            SizedBox(
-              width: rowTitleWidth,
-              height: dragHandleRowHeight,
-            ),
+          // 左侧空白单元格（对应 leftGripColumn）
+          SizedBox(
+            width: dragHandleColWidth,
+            height: dragHandleRowHeight,
+          ),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
             // 使用可变列宽，与 totalWidth 计算保持一致
@@ -1094,7 +1094,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // Right Grip column: 右侧抓手列，用于拖拽行
     // 叠加 DragTarget 覆盖整个抓手列区域，确保行拖拽经过此列也会持续更新插入索引，从而显示幽灵行
     final gripColumn = Container(
-      color: Colors.red.withAlpha(50),
+      // color: Colors.red.withAlpha(50),
       width: dragHandleColWidth,
       child: Stack(
         children: [
