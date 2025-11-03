@@ -259,8 +259,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   bool _rowAccepting = false;
 
   // Hysteresis margins to reduce jitter near boundaries
-  static const double _colHysteresisFrac = 0.12; // fraction of pillarWidth
-  static const double _rowHysteresisPx = 8.0; // pixels around row mid boundary
+  static const double _colHysteresisFrac = 0.12; // fraction of pillarWidth (12%)
+  static const double _rowHysteresisFrac = 0.15; // fraction of row height (15%)
 
   double _smooth(double? prev, double next, [double alpha = 0.25]) {
     if (prev == null) return next;
@@ -676,28 +676,36 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 child: IgnorePointer(
                   ignoring: true,
                   child: Builder(builder: (context) {
-                    // 计算所有行的中点Y坐标（包括表头行）
+                    // 计算所有行的中点Y坐标和高度（包括表头行）
                     final rowPayloads = widget.rowListNotifier.value;
                     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
                         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
                     final List<double> midYs = [];
+                    final List<double> rowHeights = [];
                     final padding = widget.paddingNotifier.value;
+
+                    // 坐标系对齐：从整个卡片顶部开始计算
+                    // acc 初始值 = padding.top + topGripRow 高度
                     double acc = padding.top + dragHandleRowHeight;
 
-                    // 添加所有行的中点，统一处理
+                    // 添加所有行的中点和高度，表头行使用 columnTitleHeight
                     for (int i = 0; i < rows.length; i++) {
-                      final h = _rowHeightByName(rows[i]);
+                      final h = (i == 0 && isRows0HeaderRow)
+                          ? columnTitleHeight
+                          : _rowHeightByName(rows[i]);
                       midYs.add(acc + h / 2);
+                      rowHeights.add(h);
                       acc += h;
                     }
 
                     return CustomPaint(
                       painter: _RowBoundaryPainter(
                         midYs: midYs,
+                        rowHeights: rowHeights,
                         cardWidth: size.width + extraColWidth,
                         color: Colors.red.withOpacity(0.08),
-                        hysteresisPx: _rowHysteresisPx,
+                        hysteresisFrac: _rowHysteresisFrac,
                       ),
                     );
                   }),
@@ -1488,8 +1496,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       rows.length - 1,
                       (i) => _rowBoundaryMidY(i + 1, rows),
                     ),
+                    rowHeights: List<double>.generate(
+                      rows.length - 1,
+                      (i) => _rowHeightByName(rows[i + 1]),
+                    ),
                     rowTitleWidth: rowTitleWidth,
-                    marginPx: _rowHysteresisPx,
+                    hysteresisFrac: _rowHysteresisFrac,
                     color: Theme.of(context)
                         .colorScheme
                         .secondary
@@ -2157,7 +2169,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     }
                     if (candidate == last) return;
 
-                    // candidate计算已经基于绿线，直接更新即可
+                    // 滞回判断：基于 last 行的高度计算 15% 缓冲区
+                    final lastRowHeight = _rowHeightByName(rows[last]);
+                    final margin = lastRowHeight * _rowHysteresisFrac;
+                    final midY = _rowBoundaryMidY(last, rows);
+
+                    bool allowUpdate = false;
+                    if (candidate > last) {
+                      // 向下拖拽：必须超过 last 行中点 + margin
+                      allowUpdate = dy > midY + margin;
+                    } else {
+                      // 向上拖拽：必须低于 last 行中点 - margin
+                      allowUpdate = dy < midY - margin;
+                    }
+
+                    if (!allowUpdate) return; // 在滞回缓冲区内，不触发切换
+
                     setState(() {
                       _hoverRowInsertIndex = candidate;
                       _lastRowInsertIndex = candidate;
@@ -2999,6 +3026,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         heavenlyAndEarthlyHeight: ganZhiCellSize.height,
         otherHeight: otherCellHeight,
         dividerHeight: _rowDividerHeightEffective,
+        headerHeight: columnTitleHeight, // 添加表头行高度参数
       );
     }
     // 兜底：按名称语义进行高度推断
@@ -3495,14 +3523,16 @@ class _ColumnHysteresisPainter extends CustomPainter {
 // Visualize row midpoint boundaries and hysteresis margins
 class _RowHysteresisPainter extends CustomPainter {
   final List<double> midYs; // authoritative midpoints for data rows (>=1)
+  final List<double> rowHeights; // heights for corresponding rows
   final double rowTitleWidth;
-  final double marginPx; // hysteresis margin in pixels
+  final double hysteresisFrac; // hysteresis fraction (e.g., 0.15)
   final Color color;
 
   const _RowHysteresisPainter({
     required this.midYs,
+    required this.rowHeights,
     required this.rowTitleWidth,
-    required this.marginPx,
+    required this.hysteresisFrac,
     required this.color,
   });
 
@@ -3513,26 +3543,49 @@ class _RowHysteresisPainter extends CustomPainter {
       ..strokeWidth = _EditableFourZhuCardV3State._debugStroke
       ..style = PaintingStyle.stroke;
     final marginPaint = Paint()
-      ..color = color.withOpacity(0.5)
+      ..color = Colors.orange.withOpacity(0.5)
       ..strokeWidth = _EditableFourZhuCardV3State._debugMarginStroke
       ..style = PaintingStyle.stroke;
 
-    for (final midY in midYs) {
+    for (int i = 0; i < midYs.length; i++) {
+      final midY = midYs[i];
+      final rowHeight = rowHeights[i];
+      final marginPx = rowHeight * hysteresisFrac;
+
       // Mid line across the left header width
       canvas.drawLine(Offset(0, midY), Offset(rowTitleWidth, midY), midPaint);
-      // Margin lines above and below midpoint
-      canvas.drawLine(Offset(0, midY - marginPx),
+      // Margin lines above and below midpoint (orange dashed)
+      _drawDashedLine(canvas, Offset(0, midY - marginPx),
           Offset(rowTitleWidth, midY - marginPx), marginPaint);
-      canvas.drawLine(Offset(0, midY + marginPx),
+      _drawDashedLine(canvas, Offset(0, midY + marginPx),
           Offset(rowTitleWidth, midY + marginPx), marginPaint);
+    }
+  }
+
+  // 绘制虚线辅助方法
+  void _drawDashedLine(Canvas canvas, Offset p1, Offset p2, Paint paint) {
+    const dashWidth = 5.0;
+    const dashSpace = 3.0;
+    final distance = (p2 - p1).distance;
+    final dashCount = (distance / (dashWidth + dashSpace)).floor();
+
+    for (int i = 0; i < dashCount; i++) {
+      final t1 = i * (dashWidth + dashSpace) / distance;
+      final t2 = (i * (dashWidth + dashSpace) + dashWidth) / distance;
+      canvas.drawLine(
+        Offset.lerp(p1, p2, t1)!,
+        Offset.lerp(p1, p2, t2)!,
+        paint,
+      );
     }
   }
 
   @override
   bool shouldRepaint(covariant _RowHysteresisPainter oldDelegate) {
     return midYs != oldDelegate.midYs ||
+        rowHeights != oldDelegate.rowHeights ||
         rowTitleWidth != oldDelegate.rowTitleWidth ||
-        marginPx != oldDelegate.marginPx ||
+        hysteresisFrac != oldDelegate.hysteresisFrac ||
         color != oldDelegate.color;
   }
 }
@@ -3540,36 +3593,73 @@ class _RowHysteresisPainter extends CustomPainter {
 // Visualize row boundaries across the entire card (including header row)
 class _RowBoundaryPainter extends CustomPainter {
   final List<double> midYs; // midpoints for all rows (including header)
+  final List<double> rowHeights; // heights for all rows
   final double cardWidth;
   final Color color;
-  final double hysteresisPx; // hysteresis margin for yielding trigger
+  final double hysteresisFrac; // hysteresis fraction for yielding trigger (e.g., 0.15)
 
   const _RowBoundaryPainter({
     required this.midYs,
+    required this.rowHeights,
     required this.cardWidth,
     required this.color,
-    this.hysteresisPx = 8.0,
+    this.hysteresisFrac = 0.15,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 中点线（红色实线）- 每行中心，作为让位触发边界
+    // 中点线（红色实线）- 每行中心，作为让位触发基准
     final midPaint = Paint()
       ..color = color
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
-    for (final midY in midYs) {
-      // 绘制中点参考线（红色）- 直接作为插入位判定边界
+    // 滞回边界虚线（橙色）- 标记 ±15% 缓冲区
+    final marginPaint = Paint()
+      ..color = Colors.orange.withOpacity(0.5)
+      ..strokeWidth = 1.0
+      ..style = PaintingStyle.stroke;
+
+    for (int i = 0; i < midYs.length; i++) {
+      final midY = midYs[i];
+      final rowHeight = rowHeights[i];
+      final margin = rowHeight * hysteresisFrac;
+
+      // 绘制中点参考线（红色实线）
       canvas.drawLine(Offset(0, midY), Offset(cardWidth, midY), midPaint);
+
+      // 绘制滞回边界虚线（橙色）
+      _drawDashedLine(canvas, Offset(0, midY - margin),
+          Offset(cardWidth, midY - margin), marginPaint);
+      _drawDashedLine(canvas, Offset(0, midY + margin),
+          Offset(cardWidth, midY + margin), marginPaint);
+    }
+  }
+
+  // 绘制虚线辅助方法
+  void _drawDashedLine(Canvas canvas, Offset p1, Offset p2, Paint paint) {
+    const dashWidth = 5.0;
+    const dashSpace = 3.0;
+    final distance = (p2 - p1).distance;
+    final dashCount = (distance / (dashWidth + dashSpace)).floor();
+
+    for (int i = 0; i < dashCount; i++) {
+      final t1 = i * (dashWidth + dashSpace) / distance;
+      final t2 = (i * (dashWidth + dashSpace) + dashWidth) / distance;
+      canvas.drawLine(
+        Offset.lerp(p1, p2, t1)!,
+        Offset.lerp(p1, p2, t2)!,
+        paint,
+      );
     }
   }
 
   @override
   bool shouldRepaint(covariant _RowBoundaryPainter oldDelegate) {
     return midYs != oldDelegate.midYs ||
+        rowHeights != oldDelegate.rowHeights ||
         cardWidth != oldDelegate.cardWidth ||
         color != oldDelegate.color ||
-        hysteresisPx != oldDelegate.hysteresisPx;
+        hysteresisFrac != oldDelegate.hysteresisFrac;
   }
 }
