@@ -311,12 +311,12 @@ class CardLayoutModel {
     );
     final width = totalColumnsWidth + padding.left + padding.right;
 
-    // 高度 = 所有行高之和 + padding + 抓手行
+    // 高度 = padding.top + topGripRow + 所有行高之和 + bottomGripRow + padding.bottom
     final double totalRowsHeight = rows.fold<double>(
       0.0,
       (sum, row) => sum + row.measure(ctx),
     );
-    final height = totalRowsHeight + padding.top + padding.bottom + dragHandleRowHeight;
+    final height = padding.top + dragHandleRowHeight + totalRowsHeight + dragHandleRowHeight + padding.bottom;
 
     return Size(width, height);
   }

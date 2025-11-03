@@ -77,7 +77,7 @@ class ColumnHeaderRowPayload extends RowInfoPayload {
     double? height,
   }) : super(
           rowType: RowType.columnHeaderRow,
-          rowLabel: null,  // Label will be derived from gender
+          rowLabel: null, // Label will be derived from gender
           rowHeight: height,
         );
 
@@ -331,7 +331,7 @@ class RowInfoPayload {
     double heavenlyAndEarthlyHeight = 48,
     double otherHeight = 32,
     double dividerHeight = 8,
-    double headerHeight = 24,  // 新增：表头行默认高度
+    double headerHeight = 24, // 新增：表头行默认高度
   }) {
     if (rowHeight != null) return rowHeight!;
     // 特殊处理：表头行

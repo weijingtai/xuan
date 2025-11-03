@@ -178,11 +178,16 @@ class _EditableFourZhuCardDemoPageState
       // 第一行：表头行（特殊行，包含性别标识和列标题）
       ColumnHeaderRowPayload(gender: Gender.male, height: 24),
       // 数据行
-      RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
-      RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
+      RowInfoPayload(
+          rowType: RowType.heavenlyStem, rowLabel: '天干', rowHeight: 48),
+      RowInfoPayload(
+          rowType: RowType.earthlyBranch, rowLabel: '地支', rowHeight: 48),
       // 纳音行：加入策略以便与 V3 的策略渲染路径对齐
       RowInfoPayload(
-          rowType: RowType.naYin, rowLabel: '纳音', strategy: NaYinRowStrategy()),
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          strategy: NaYinRowStrategy(),
+          rowHeight: 32),
     ]);
   }
 
