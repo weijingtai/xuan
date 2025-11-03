@@ -440,16 +440,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 计算高度
     double height = padding.top + padding.bottom;
 
-    // 如果 rows[0] 是表头行，添加固定的 columnTitleHeight
-    if (isRows0HeaderRow) {
-      height += columnTitleHeight;
-    }
-
+    // 遍历所有行，统一计算高度
     for (final entry in rows.asMap().entries) {
       final idx = entry.key;
       final name = entry.value;
-      // 只有当 rows[0] 是表头行时才跳过它（已计入 columnTitleHeight）
-      if (idx == 0 && isRows0HeaderRow) continue;
       final override = _rowHeightOverrides[idx];
       height += override ?? _rowHeightByName(name);
     }
@@ -764,15 +758,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     final List<double> midYs = [];
                     double acc = 0.0;
 
-                    // 如果 rows[0] 是表头行，添加表头行的中点
-                    if (isRows0HeaderRow) {
-                      midYs.add(acc + columnTitleHeight / 2);
-                      acc += columnTitleHeight;
-                    }
-
-                    // 添加所有数据行的中点
+                    // 添加所有行的中点，统一处理
                     for (int i = 0; i < rows.length; i++) {
-                      if (i == 0 && isRows0HeaderRow) continue; // 已处理
                       final h = _rowHeightByName(rows[i]);
                       midYs.add(acc + h / 2);
                       acc += h;
@@ -1954,20 +1941,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                   print('🔍 [gripColumn行循环] absRowIdx=$absRowIdx, rowName=$rowName');
 
-                  // 只有当 rows[0] 是表头行时才跳过索引 0（表头行抓手已在 headerRow 中渲染）
-                  if (absRowIdx == 0) {
-                    final rowPayloads = widget.rowListNotifier.value;
-                    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
-                        rowPayloads[0].rowType == RowType.columnHeaderRow;
-                    print('🔍 [gripColumn-索引0] isRows0HeaderRow=$isRows0HeaderRow');
-                    if (isRows0HeaderRow) {
-                      print('🔍 [gripColumn-索引0] 跳过表头行');
-                      continue;
-                    }
-                    // rows[0] 不是表头行，继续渲染其抓手
-                    print('🔍 [gripColumn-索引0] 不是表头行，继续渲染');
-                  }
-
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
 
@@ -2148,16 +2121,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final absRowIdx = entry.key;
                   final rowName = entry.value;
 
-                  // 只有当 rows[0] 是表头行时才跳过索引 0
-                  // 如果 rows[0] 不是表头行（被拖拽到其他位置了），需要渲染它
-                  if (absRowIdx == 0) {
-                    final rowPayloads = widget.rowListNotifier.value;
-                    final isHeaderRow = rowPayloads.isNotEmpty &&
-                        rowPayloads[0].rowType == RowType.columnHeaderRow;
-                    if (isHeaderRow) continue; // 跳过表头行
-                    // 否则继续渲染 rows[0]
-                  }
-
                   final rowSize = _rowCellSize(rowName);
 
                   // 在每个行前插入一个可动画的幽灵占位，高度在 0..rowSize.height 之间动画
@@ -2233,18 +2196,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           final isHeaderRow =
                               rPayload?.rowType == RowType.columnHeaderRow;
 
-                          // 表头行：显示性别文本（乾造/坤造），而非rowType名称
+                          // 表头行：显示性别文本（乾造/坤造），普通行：显示行名称
                           final titleWidget =
                               isHeaderRow && rPayload is ColumnHeaderRowPayload
                                   ? _genderText(rPayload.gender)
                                   : _rowTitleText(rowName);
 
-                          // 表头行：直接渲染性别文本，不允许拖拽
-                          if (isHeaderRow) {
-                            return _cell(rowSize, titleWidget);
-                          }
-
-                          // 普通行：只显示标题，不允许拖拽
+                          // 统一渲染：所有行使用相同的渲染逻辑
                           return _cell(rowSize, Center(child: titleWidget));
                         })(),
                       if (draggingRow && t == absRowIdx)
@@ -2482,17 +2440,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             : Colors.transparent,
                       ));
 
-                      // 只有当 rows[0] 是表头行时才跳过索引 0
-                      // rowPayloads 已在外层声明（第 2357 行），直接使用
-                      final isRows0HeaderRow = rowPayloads.isNotEmpty &&
-                          rowPayloads[0].rowType == RowType.columnHeaderRow;
-
                       for (final rEntry in rows.asMap().entries) {
                         final absRowIdx = rEntry.key;
                         final rowName = rEntry.value;
-
-                        // 如果索引 0 是表头行，跳过它
-                        if (absRowIdx == 0 && isRows0HeaderRow) continue;
 
                         final rowSize = _rowCellSize(rowName);
                         // 在每个数据行前插入一个可动画的幽灵行，占位高度 0..rowSize.height
@@ -3367,12 +3317,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final idx = entry.key;
       final name = entry.value;
 
-      // 条件跳过索引0：仅当 rows[0] 是表头行时跳过
-      if (idx == 0) {
-        if (isRows0HeaderRow) continue;
-        // rows[0] 不是表头行，继续累积其高度
-      }
-
       if (idx == index) break;
       final h = _rowHeightOverrides[idx] ?? _rowHeightByName(name);
       acc += h;
@@ -4050,15 +3994,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // 只有当 rows[0] 是表头行时才渲染列标题
-          if (isRows0HeaderRow)
-            _cell(Size(feedbackWidth, columnTitleHeight),
-                _dragHandle(_columnTitleText(title))),
-          // 渲染所有行（如果 rows[0] 不是表头行，也包括它）
-          ...rows.asMap().entries.where((entry) {
-            // 如果 rows[0] 是表头行，跳过它（已在上面渲染为列标题）
-            return !(entry.key == 0 && isRows0HeaderRow);
-          }).map((entry) {
+          // 渲染所有行，包括标题行
+          ...rows.asMap().entries.map((entry) {
             final rowName = entry.value;
             if (rowName == '天干') {
               return _cell(Size(feedbackWidth, ganZhiCellSize.height),
