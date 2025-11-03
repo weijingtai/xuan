@@ -542,7 +542,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
                   final hasRowTitleCol = widget.pillarsNotifier.value
                       .any((p) => p.pillarType == PillarType.rowTitleColumn);
-                  final dx = local.dx - (hasRowTitleCol ? 0 : rowTitleWidth);
+                  final dx = local.dx - dragHandleColWidth - (hasRowTitleCol ? 0 : rowTitleWidth);
                   final n = pillars.length;
                   final candidate = _computeColumnInsertIndexFromDx(dx, n);
                   final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
@@ -644,7 +644,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
                 final hasRowTitleCol = widget.pillarsNotifier.value
                     .any((p) => p.pillarType == PillarType.rowTitleColumn);
-                final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
+                final left = dragHandleColWidth + (hasRowTitleCol ? 0 : rowTitleWidth) +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
                 return Positioned(
@@ -682,7 +682,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
                     final List<double> midYs = [];
-                    double acc = 0.0;
+                    final padding = widget.paddingNotifier.value;
+                    double acc = padding.top + dragHandleRowHeight;
 
                     // 添加所有行的中点，统一处理
                     for (int i = 0; i < rows.length; i++) {
@@ -694,8 +695,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     return CustomPaint(
                       painter: _RowBoundaryPainter(
                         midYs: midYs,
-                        cardWidth:
-                            size.width + extraColWidth + dragHandleColWidth,
+                        cardWidth: size.width + extraColWidth,
                         color: Colors.red.withOpacity(0.08),
                         hysteresisPx: _rowHysteresisPx,
                       ),
@@ -2126,17 +2126,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       return;
                     }
                     final local = box.globalToLocal(details.offset);
-                    var dy = local.dy;
-
-                    // 关键修正：调整 dy 使其相对于整个卡片（包括 headerRow）
-                    // 因为统一 DragTarget 只覆盖数据行区域，dy=0 对应的是 headerRow 之后
-                    // 需要向上偏移 headerRow 的高度，才能支持插入到 headerRow 之前
-                    final rowPayloads = widget.rowListNotifier.value;
-                    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
-                        rowPayloads[0].rowType == RowType.columnHeaderRow;
-                    if (isRows0HeaderRow) {
-                      dy += columnTitleHeight; // 向上偏移表头行高度
-                    }
+                    final dy = local.dy;
+                    // DragTarget 的 local.dy = 0 对应 leftGripColumn 顶部（行内容开始）
+                    // _computeRowInsertIndexFromDyMidpoint 的 acc 也从 0 开始（行内容开始）
+                    // 两者坐标系一致，无需调整
 
                     final rows = _currentRowLabels();
                     final candidate =
