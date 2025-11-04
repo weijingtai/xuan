@@ -1555,6 +1555,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         gender: widget.gender,
                       );
                       final rowPayloads = widget.rowListNotifier.value;
+                      final bool draggingRow =
+                          dRow != null || _hoveringExternalRow;
 
                       for (final rEntry in rows.asMap().entries) {
                         final absRowIdx = rEntry.key;
@@ -1562,8 +1564,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                         final rowSize = _rowCellSize(rowName);
                         // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
-                        final bool draggingRow =
-                            dRow != null || _hoveringExternalRow;
                         rowChildren.add(AnimatedContainer(
                           duration: draggingRow
                               ? const Duration(milliseconds: 180)
@@ -1770,8 +1770,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               (_rowHeightOverrides[_draggingRowIndex!] ??
                                   _rowHeightByName(draggedRowName)))
                           : Size(colW, 0);
-                      final bool draggingRow =
-                          dRow != null || _hoveringExternalRow;
                       rowChildren.add(AnimatedContainer(
                         duration: draggingRow
                             ? const Duration(milliseconds: 180)
@@ -1930,13 +1928,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ),
     );
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    // 包裹整个网格的 Stack，使行 DragTarget 覆盖所有区域（包括 topGripRow 和 bottomGripRow）
+    return Stack(
       children: [
-        topGripRow, // 顶部抓手行
-        // 统一行拖拽目标：包裹整个数据行区域，确保在任意位置拖拽都能触发让位与插入提示
-        Stack(
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            topGripRow, // 顶部抓手行
+            // 行内容区域
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1946,9 +1945,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 gripColumn, // 右侧行拖拽列
               ],
             ),
-            // 统一的全宽 DragTarget：覆盖整个行区域，持续计算行插入索引
-            Positioned.fill(
-              child: Builder(
+            gripRow, // 底部抓手行
+          ],
+        ),
+        // 统一的全区域行拖拽 DragTarget：覆盖整个网格（包括 topGripRow 和 bottomGripRow）
+        Positioned.fill(
+          child: Builder(
                 builder: (builderContext) => DragTarget<Object>(
                   onWillAccept: (data) {
                     final ok =
@@ -2008,10 +2010,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       return;
                     }
                     final local = box.globalToLocal(details.offset);
-                    final dy = local.dy;
-                    // DragTarget 的 local.dy = 0 对应 leftGripColumn 顶部（行内容开始）
+                    // DragTarget 现在覆盖整个 Stack（包括 topGripRow），local.dy = 0 对应 topGripRow 顶部
+                    // 需要减去 topGripRow 的高度，使 dy 对应行内容区域的开始位置
+                    final dy = local.dy - dragHandleRowHeight;
+                    // 现在 dy = 0 对应 leftGripColumn 顶部（行内容开始）
                     // _computeRowInsertIndexFromDyMidpoint 的 acc 也从 0 开始（行内容开始）
-                    // 两者坐标系一致，无需调整
+                    // 两者坐标系一致
 
                     final rows = _currentRowLabels();
                     final candidate =
@@ -2106,10 +2110,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   builder: (context, _, __) => const SizedBox.expand(),
                 ),
               ),
-            )
-          ],
-        ),
-        gripRow,
+            ),
       ],
     );
   }
