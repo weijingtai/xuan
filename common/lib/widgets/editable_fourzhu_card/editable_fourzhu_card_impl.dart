@@ -547,8 +547,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final dx = local.dx -
                       dragHandleColWidth -
                       (hasRowTitleCol ? 0 : rowTitleWidth);
-                  final n = pillars.length;
-                  final candidate = _computeColumnInsertIndexFromDx(dx, n);
+                  final candidate = _computeColumnInsertIndexFromDxVariable(dx, pillars);
                   final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
 
                   if (last == null) {
@@ -562,14 +561,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   }
                   if (candidate == last) return;
 
-                  final margin = pillarWidth * _colHysteresisFrac;
-                  final rightBoundary = (last + 0.5) * pillarWidth;
-                  final leftBoundary = (last - 0.5) * pillarWidth;
+                  // 滞回判断：基于 last 列的实际宽度计算缓冲区
+                  final lastColWidth = _colWidthAtIndex(last, pillars);
+                  final margin = lastColWidth * _colHysteresisFrac;
+                  final midX = _columnBoundaryMidX(last, pillars);
+
                   bool allowUpdate = false;
                   if (candidate > last) {
-                    allowUpdate = dx > rightBoundary + margin;
+                    // 向右拖拽：必须超过 last 列中点 + margin
+                    allowUpdate = dx > midX + margin;
                   } else {
-                    allowUpdate = dx < leftBoundary - margin;
+                    // 向左拖拽：必须低于 last 列中点 - margin
+                    allowUpdate = dx < midX - margin;
                   }
                   if (!allowUpdate) return;
                   setState(() {
@@ -3202,6 +3205,37 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
 
     return acc; // fallback 到底部中点之外，理论上不应命中
+  }
+
+  /// 返回列索引 `idx` 的中点 X（局部坐标），用于边界滞回判断。
+  ///
+  /// 参数：
+  /// - idx: 列索引（>=0）。
+  /// - pillars: 列 (标题, JiaZi) 二元组列表。
+  /// 返回：
+  /// - double：该列中点的局部 x 值（像素），相对于数据列区域的起始位置。
+  double _columnBoundaryMidX(int idx, List<Tuple2<String, JiaZi>> pillars) {
+    // 返回的是相对于数据列区域起始位置的局部坐标
+    // （已减去 dragHandleColWidth 和 rowTitleWidth）
+    double acc = 0.0;
+
+    for (int i = 0; i < pillars.length; i++) {
+      final w = _colWidthAtIndex(i, pillars);
+      if (i == idx) {
+        return acc + w / 2.0; // 返回该列的中点
+      }
+      acc += w;
+    }
+
+    // 特殊处理：当 idx == pillars.length 时（表示在最后一列之后插入）
+    // 返回最后一列右边缘 + 幽灵占位宽度的一半作为虚拟中点
+    if (idx == pillars.length && pillars.isNotEmpty) {
+      final lastIdx = pillars.length - 1;
+      final lastColWidth = _colWidthAtIndex(lastIdx, pillars);
+      return acc + lastColWidth / 2.0; // 虚拟中点：右边缘 + 半个列宽
+    }
+
+    return acc; // fallback
   }
 
   // Build full row feedback (row title + cells across all columns)
