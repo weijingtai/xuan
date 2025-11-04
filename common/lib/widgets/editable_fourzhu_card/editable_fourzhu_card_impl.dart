@@ -419,9 +419,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // 行拖拽进行中时，强制屏蔽幽灵列，避免视觉干扰
         final bool rowDraggingActive =
             _draggingRowIndex != null || _hoveringExternalRow;
-        final bool hasColGhost = (_hoveringExternalPillar ||
-                (tCol != null && tCol == pillars.length)) &&
-            !rowDraggingActive;
+        // 列幽灵判定：仅外部柱悬停时扩展容器，内部拖拽统一使用网格内让位逻辑
+        // 不再为 tCol == pillars.length 特殊扩展容器宽度，所有幽灵列通过 AnimatedContainer 实现
+        final bool hasColGhost = _hoveringExternalPillar && !rowDraggingActive;
         // 行幽灵判定：统一使用内部让位逻辑，所有行（包括索引0）使用相同的让位机制
         // 不再需要为 t=0 特殊扩展容器高度，所有幽灵行通过 AnimatedContainer 实现
         final bool hasRowGhost = _hoveringExternalRow;
@@ -711,12 +711,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     double ghostWidth = hasColGhost && _externalColHoverWidth > 0
         ? _externalColHoverWidth
         : pillarWidth;
-    // 若内部拖拽且目标为末尾插入位，则在网格内的幽灵列使用被拖拽列的实际宽度
-    final int? dCol = _draggingColumnIndex;
-    final int? tCol = _hoverColumnInsertIndex ?? _lastColInsertIndex;
-    if (!hasColGhost && dCol != null && tCol == pillars.length) {
-      ghostWidth = _colWidthAtIndex(dCol, pillars);
-    }
+    // 统一列让位逻辑：内部拖拽（包括末尾）使用网格内 AnimatedContainer，不扩展容器
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
     // 如果存在行标题列则不额外添加 rowTitleWidth（行标题列宽度已包含在 _totalColsWidth 中）
     final totalWidth = (hasRowTitleColumn ? 0 : rowTitleWidth) +
