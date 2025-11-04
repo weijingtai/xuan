@@ -952,24 +952,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
 
-                // 第一个数据行（索引 1）之前的幽灵行占位
-                children.add(AnimatedContainer(
-                  duration: (_hoveringExternalRow && t == 1)
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: dragHandleColWidth,
-                  height: (_hoveringExternalRow && t == 1)
-                      ? _externalRowHoverHeight
-                      : 0,
-                  color: (_hoveringExternalRow && t == 1)
-                      ? Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.08)
-                      : Colors.transparent,
-                ));
-
                 // 处理数据行（条件跳过表头行索引 0）
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
@@ -1108,24 +1090,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final d = _draggingRowIndex;
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
-
-                // 第一个数据行（索引 1）之前的幽灵行占位
-                children.add(AnimatedContainer(
-                  duration: (_hoveringExternalRow && t == 1)
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: dragHandleColWidth,
-                  height: (_hoveringExternalRow && t == 1)
-                      ? _externalRowHoverHeight
-                      : 0,
-                  color: (_hoveringExternalRow && t == 1)
-                      ? Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.08)
-                      : Colors.transparent,
-                ));
 
                 // 处理数据行（条件跳过表头行索引 0）
                 for (final entry in rows.asMap().entries) {
@@ -1289,24 +1253,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final List<Widget> children = [];
 
                 final bool draggingRow = d != null || _hoveringExternalRow;
-
-                // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
-                children.add(AnimatedContainer(
-                  duration: (_hoveringExternalRow && t == 1)
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: rowTitleWidth,
-                  height: (_hoveringExternalRow && t == 1)
-                      ? _externalRowHoverHeight
-                      : 0,
-                  color: (_hoveringExternalRow && t == 1)
-                      ? Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.08)
-                      : Colors.transparent,
-                ));
 
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
@@ -1609,26 +1555,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         gender: widget.gender,
                       );
                       final rowPayloads = widget.rowListNotifier.value;
-
-                      // 第一行之前的幽灵行占位（当 _hoverRowInsertIndex == 1 时显示）
-                      final bool isDraggingRow =
-                          dRow != null || _hoveringExternalRow;
-                      rowChildren.add(AnimatedContainer(
-                        duration: isDraggingRow
-                            ? const Duration(milliseconds: 180)
-                            : Duration.zero,
-                        curve: Curves.easeOut,
-                        width: colW,
-                        height: (_hoveringExternalRow && tRow == 1)
-                            ? _externalRowHoverHeight
-                            : 0,
-                        color: isDraggingRow && tRow == 1
-                            ? Theme.of(context)
-                                .colorScheme
-                                .secondary
-                                .withOpacity(0.08)
-                            : Colors.transparent,
-                      ));
 
                       for (final rEntry in rows.asMap().entries) {
                         final absRowIdx = rEntry.key;
