@@ -431,8 +431,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             ? _externalColHoverWidth
             : pillarWidth;
         final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
-        // 所有行让位通过内部 AnimatedContainer 实现，容器高度不需要扩展
-        final double extraRowHeight = 0.0;
+        // 行幽灵高度：外部行悬停时使用载荷解析高度，确保容器扩展以容纳幽灵行
+        final double ghostHeight = hasRowGhost && _externalRowHoverHeight > 0
+            ? _externalRowHoverHeight
+            : otherCellHeight;
+        final double extraRowHeight = hasRowGhost ? ghostHeight : 0.0;
         return Stack(
           children: [
             AnimatedContainer(
@@ -470,6 +473,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     setState(() {
                       if (data is PillarPayload || data is PillarType) {
                         _hoveringExternalPillar = true;
+                        // 设置默认插入索引为末尾，onMove会更新为实际位置
+                        final pillars = _effectivePillarsTuples();
+                        _hoverColumnInsertIndex = pillars.length;
+                        _lastColInsertIndex = pillars.length;
+                        // 设置外部柱的宽度
+                        if (data is PillarPayload) {
+                          _externalColHoverWidth = (data.pillarType == PillarType.separator)
+                              ? _colDividerWidthEffective
+                              : data.resolveWidth(
+                                  defaultWidth: pillarWidth,
+                                  minWidth: _minPillarWidth,
+                                  maxWidth: _maxPillarWidth,
+                                );
+                        } else if (data is PillarType) {
+                          _externalColHoverWidth = (data == PillarType.separator)
+                              ? _colDividerWidthEffective
+                              : pillarWidth;
+                        }
                       }
                       // 进入列插入目标时，清理行插入提示状态，避免相互干扰
                       _hoverRowInsertIndex = null;
@@ -2016,9 +2037,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         _hoveringExternalPillar = false;
                       });
                       if (data is RowInfoPayload) {
+                        final rows = _currentRowLabels();
                         setState(() {
                           _hoveringExternalRow = true;
                           _externalRowHoverHeight = _rowHeightByPayload(data);
+                          // 设置默认插入索引为末尾，onMove会更新为实际位置
+                          _hoverRowInsertIndex = rows.length;
+                          _lastRowInsertIndex = rows.length;
                         });
                       }
                     }
