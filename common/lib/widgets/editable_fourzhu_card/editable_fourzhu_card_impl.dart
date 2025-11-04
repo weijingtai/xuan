@@ -259,7 +259,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   bool _rowAccepting = false;
 
   // Hysteresis margins to reduce jitter near boundaries
-  static const double _colHysteresisFrac = 0.12; // fraction of pillarWidth (12%)
+  static const double _colHysteresisFrac =
+      0.12; // fraction of pillarWidth (12%)
   static const double _rowHysteresisFrac = 0.15; // fraction of row height (15%)
 
   double _smooth(double? prev, double next, [double alpha = 0.25]) {
@@ -522,7 +523,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   // 当存在行标题列时，行标题列已在数据网格中，不需要减去 rowTitleWidth
                   final hasRowTitleCol = widget.pillarsNotifier.value
                       .any((p) => p.pillarType == PillarType.rowTitleColumn);
-                  final dx = local.dx - dragHandleColWidth - (hasRowTitleCol ? 0 : rowTitleWidth);
+                  final dx = local.dx -
+                      dragHandleColWidth -
+                      (hasRowTitleCol ? 0 : rowTitleWidth);
                   final n = pillars.length;
                   final candidate = _computeColumnInsertIndexFromDx(dx, n);
                   final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
@@ -624,7 +627,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
                 final hasRowTitleCol = widget.pillarsNotifier.value
                     .any((p) => p.pillarType == PillarType.rowTitleColumn);
-                final left = dragHandleColWidth + (hasRowTitleCol ? 0 : rowTitleWidth) +
+                final left = dragHandleColWidth +
+                    (hasRowTitleCol ? 0 : rowTitleWidth) +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
                 return Positioned(
@@ -774,7 +778,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _dragWantsDelete.value = false;
                   },
                   dragAnchorStrategy: pointerDragAnchorStrategy,
-                  feedback: _offsetFeedbackUp(
+                  feedback: _offsetFeedbackDown(
                     widget.dragFeedbackBuilder?.call(
                           context,
                           _buildFullColumnFeedback(
@@ -790,7 +794,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   ? null
                                   : _colWidthAtIndex(i, pillars)),
                         ),
-                    _columnFeedbackTotalHeight(rows),
+                    // 向下偏移握手行高度，使反馈紧邻光标下方
+                    dragHandleRowHeight,
                   ),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
@@ -890,7 +895,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   ? null
                                   : _colWidthAtIndex(i, pillars)),
                         ),
-                    // 以整列反馈高度向上偏移，使反馈位于光标上方
+                    // 向上偏移整列高度，使反馈完全显示在光标上方
                     _columnFeedbackTotalHeight(rows),
                   ),
                   child: MouseRegion(
@@ -1035,7 +1040,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 _dragWantsDelete.value = false;
                               },
                               dragAnchorStrategy: pointerDragAnchorStrategy,
-                              feedback: _offsetFeedbackLeft(
+                              feedback: _offsetFeedbackRight(
                                 widget.dragFeedbackBuilder?.call(
                                       context,
                                       _buildFullRowFeedback(rowName, pillars,
@@ -1045,8 +1050,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                       _buildFullRowFeedback(rowName, pillars,
                                           absRowIndex: absRowIdx),
                                     ),
-                                // 按整行反馈宽度左移，使内容整体位于光标左侧
-                                _rowFeedbackTotalWidth(pillars),
+                                // 向右偏移握手列宽度，使反馈紧邻光标右侧
+                                dragHandleColWidth,
                               ),
                               childWhenDragging: const SizedBox.shrink(),
                               child: MouseRegion(
@@ -1208,7 +1213,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                       _buildFullRowFeedback(rowName, pillars,
                                           absRowIndex: absRowIdx),
                                     ),
-                                // 按整行反馈宽度左移，使内容整体位于光标左侧
+                                // 向左偏移整行宽度，使反馈完全显示在光标左侧
                                 _rowFeedbackTotalWidth(pillars),
                               ),
                               child: MouseRegion(
@@ -2553,6 +2558,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
+  // Offset feedback down by a given height so content appears below cursor
+  Widget _offsetFeedbackDown(Widget child, double dy) {
+    if (dy == 0) return child;
+    return Transform.translate(
+      offset: Offset(0, dy),
+      child: child,
+    );
+  }
+
   // Status-aware feedback: overlay dynamic "插入" / "删除" prompts on the dragged piece itself
   Widget _statusFeedback(Widget child) {
     return Material(
@@ -3510,7 +3524,8 @@ class _RowBoundaryPainter extends CustomPainter {
   final List<double> rowHeights; // heights for all rows
   final double cardWidth;
   final Color color;
-  final double hysteresisFrac; // hysteresis fraction for yielding trigger (e.g., 0.15)
+  final double
+      hysteresisFrac; // hysteresis fraction for yielding trigger (e.g., 0.15)
 
   const _RowBoundaryPainter({
     required this.midYs,
