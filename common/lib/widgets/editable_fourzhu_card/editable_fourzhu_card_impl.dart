@@ -856,11 +856,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             // 使用可变列宽，与 totalWidth 计算保持一致
             final double colW = _colWidthAtIndex(i, pillars);
 
-            print(
-                '🔍 [gripRow列循环] i=$i, pillarLabel=${pillars[i].item1}, isSeparatorCol=$isSeparatorCol');
-
             if (isSeparatorCol) {
-              print('🔍 [gripRow] 跳过分隔列 i=$i');
               return SizedBox(
                 width: colW,
                 height: dragHandleRowHeight,
@@ -868,7 +864,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             }
             final title = pillars[i].item1;
 
-            print('🔍 [gripRow] 渲染列拖拽图标 i=$i, title=$title');
             return SizedBox(
               width: colW,
               height: dragHandleRowHeight,
@@ -1080,14 +1075,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   final absRowIdx = entry.key;
                   final rowName = entry.value;
 
-                  print(
-                      '🔍 [gripColumn行循环] absRowIdx=$absRowIdx, rowName=$rowName');
-
                   final rowSize = _rowCellSize(rowName);
                   final bool isSeparatorRow = _isSeparatorRowLabel(rowName);
-
-                  print(
-                      '🔍 [gripColumn] absRowIdx=$absRowIdx, isSeparatorRow=$isSeparatorRow, d=$d');
 
                   // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
                   children.add(AnimatedContainer(
@@ -1097,25 +1086,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
                     height: draggingRow && t == absRowIdx
-                        ? (() {
-                            final d = _draggingRowIndex;
-                            if (d != null && d < rows.length) {
-                              final draggedName = rows[d];
-                              final override = _rowHeightOverrides[d];
-                              final byName = _rowHeightByName(draggedName);
-                              final finalHeight = override ?? byName;
-                              print(
-                                  '🔍 [幽灵行-gripColumn] t=$t, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
-                              return finalHeight;
-                            } else if (_hoveringExternalRow) {
-                              print(
-                                  '🔍 [幽灵行-gripColumn] t=$t, external row, height=$_externalRowHoverHeight');
-                              return _externalRowHoverHeight;
-                            }
-                            print(
-                                '🔍 [幽灵行-gripColumn] t=$t, fallback to rowSize.height=${rowSize.height}');
-                            return rowSize.height;
-                          })()
+                        ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                         : 0,
                     color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
@@ -3235,8 +3206,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         (absRowIndex != null && _rowHeightOverrides[absRowIndex] != null)
             ? _rowHeightOverrides[absRowIndex]!
             : _rowHeightByName(rowName);
-    print(
-        '🎯 [反馈高度] rowName=$rowName, absRowIndex=$absRowIndex, override=${absRowIndex != null ? _rowHeightOverrides[absRowIndex] : 'N/A'}, byName=${_rowHeightByName(rowName)}, final=$rowH');
     final totalW = rowTitleWidth + _totalColsWidth(pillars);
 
     return Container(
