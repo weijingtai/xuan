@@ -10,6 +10,7 @@ import '../../models/drag_payloads.dart';
 import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
 import 'dimension_models.dart'; // 新增：尺寸管理模型
+import 'widgets/ghost_pillar_widget.dart'; // 幽灵柱占位 Widget
 
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
@@ -249,7 +250,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   bool _hoveringExternalRow = false;
   double _externalRowHoverHeight = 0.0;
   double _externalColHoverWidth = 0.0;
-  PillarDecoration? _externalPillarDecoration;  // External pillar decoration for ghost width calculation
 
   // Drag feedback status notifiers: control dynamic "插入"/"删除" prompts on the dragged piece itself
   // When hovering a valid insert target inside the card, set insert=true, delete=false
@@ -427,10 +427,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // 行幽灵判定：统一使用内部让位逻辑，所有行（包括索引0）使用相同的让位机制
         // 不再需要为 t=0 特殊扩展容器高度，所有幽灵行通过 AnimatedContainer 实现
         final bool hasRowGhost = _hoveringExternalRow;
-        // 卡片外部悬停时，幽灵列宽度优先使用外部载荷提供值；分割柱使用有效分割宽度
-        final double ghostWidth = hasColGhost && _externalColHoverWidth > 0
-            ? _externalColHoverWidth
-            : pillarWidth;
+        // 卡片外部悬停时，幽灵列宽度使用统一计算方法
+        final double ghostWidth = _getGhostColumnWidth();
         final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
         // 行幽灵高度：外部行悬停时使用载荷解析高度，确保容器扩展以容纳幽灵行
         final double ghostHeight = hasRowGhost && _externalRowHoverHeight > 0
@@ -740,9 +738,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final bool rowDraggingActive =
         _draggingRowIndex != null || _hoveringExternalRow;
     final bool hasColGhost = _hoveringExternalPillar && !rowDraggingActive;
-    double ghostWidth = hasColGhost && _externalColHoverWidth > 0
-        ? _externalColHoverWidth
-        : pillarWidth;
+    double ghostWidth = _getGhostColumnWidth();
     // 统一列让位逻辑：内部拖拽（包括末尾）使用网格内 AnimatedContainer，不扩展容器
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
     // 如果存在行标题列则不额外添加 rowTitleWidth（行标题列宽度已包含在 _totalColsWidth 中）
@@ -1491,33 +1487,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final bool dragging = (d != null || _hoveringExternalPillar) &&
                     !rowDraggingActive;
                 final double gridGhostWidth =
-                    (d != null) ? _colWidthAtIndex(d, pillars) : ghostWidth;
+                    (d != null) ? _colWidthAtIndex(d, pillars) : _getGhostColumnWidth();
                 children.add(AnimatedContainer(
                   duration: dragging
                       ? const Duration(milliseconds: 180)
                       : Duration.zero,
                   curve: Curves.easeOut,
                   width: dragging && t == i ? gridGhostWidth : 0,
-                  color: dragging && t == i
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
-                      : Colors.transparent,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: (() {
-                      final rowPayloads = widget.rowListNotifier.value;
-                      final isRows0HeaderRow = rowPayloads.isNotEmpty &&
-                          rowPayloads[0].rowType == RowType.columnHeaderRow;
-                      return rows
-                          .asMap()
-                          .entries
-                          .where((r) => !(r.key == 0 && isRows0HeaderRow))
-                          .map((r) => SizedBox(
-                                width: gridGhostWidth,
-                                height: _rowHeightByName(r.value),
-                              ))
-                          .toList();
-                    })(),
-                  ),
+                  child: dragging && t == i
+                      ? GhostPillarWidget.column(
+                          width: gridGhostWidth,
+                          height: _totalRowsHeight(),
+                        )
+                      : const SizedBox.shrink(),
                 ));
                 if (d == i) continue; // 拖拽中的列不占原位置
                 final tuple = pillars[i];
@@ -1862,33 +1844,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               final bool dragging =
                   (d != null || _hoveringExternalPillar) && !rowDraggingActive;
               final double endGhostWidth =
-                  (d != null) ? _colWidthAtIndex(d, pillars) : ghostWidth;
+                  (d != null) ? _colWidthAtIndex(d, pillars) : _getGhostColumnWidth();
               children.add(AnimatedContainer(
                 duration: dragging
                     ? const Duration(milliseconds: 180)
                     : Duration.zero,
                 curve: Curves.easeOut,
                 width: dragging && t == pillars.length ? endGhostWidth : 0,
-                color: dragging && t == pillars.length
-                    ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
-                    : Colors.transparent,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: (() {
-                    final rowPayloads = widget.rowListNotifier.value;
-                    final isRows0HeaderRow = rowPayloads.isNotEmpty &&
-                        rowPayloads[0].rowType == RowType.columnHeaderRow;
-                    return rows
-                        .asMap()
-                        .entries
-                        .where((r) => !(r.key == 0 && isRows0HeaderRow))
-                        .map((r) => SizedBox(
-                              width: endGhostWidth,
-                              height: _rowHeightByName(r.value),
-                            ))
-                        .toList();
-                  })(),
-                ),
+                child: dragging && t == pillars.length
+                    ? GhostPillarWidget.column(
+                        width: endGhostWidth,
+                        height: _totalRowsHeight(),
+                      )
+                    : const SizedBox.shrink(),
               ));
               return children;
             })(),
@@ -3258,18 +3226,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 获取幽灵列的宽度（统一计算逻辑）
   ///
   /// 优先级：
-  /// 1. 外部柱的 decoration.size.width（如果有）
-  /// 2. _externalColHoverWidth（如果 > 0）
-  /// 3. 默认 pillarWidth（兜底）
+  /// 1. _externalColHoverWidth（如果 > 0）
+  /// 2. 默认 pillarWidth（兜底）
   ///
   /// 返回：幽灵列的宽度（像素）
   double _getGhostColumnWidth() {
-    // 优先使用外部柱的 decoration
-    if (_hoveringExternalPillar && _externalPillarDecoration != null) {
-      return _externalPillarDecoration!.size.width;
-    }
-
-    // 否则使用 _externalColHoverWidth
+    // 优先使用 _externalColHoverWidth
     if (_externalColHoverWidth > 0) {
       return _externalColHoverWidth;
     }
