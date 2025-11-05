@@ -157,6 +157,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   double _colWidthAtIndex(int i, List<Tuple2<String, JiaZi>> pillars) {
+    // 装饰尺寸：margin(8*2) + padding(16*2) + border(2*2) = 52px
+    const double decorationWidth = 8 * 2 + 16 * 2 + 2 * 2;
+
     final payloads = widget.pillarsNotifier.value;
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
@@ -164,18 +167,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       if (p.pillarType == PillarType.rowTitleColumn) {
         final override = _columnWidthOverrides[i];
         if (override != null && override.isFinite && !override.isNaN) {
-          return override.clamp(_minPillarWidth, _maxPillarWidth);
+          return override.clamp(_minPillarWidth, _maxPillarWidth) + decorationWidth;
         }
-        return p.columnWidth ?? rowTitleWidth;
+        return (p.columnWidth ?? rowTitleWidth) + decorationWidth;
       }
     }
 
-    // 分隔列：统一使用分隔列的有效窄宽度
+    // 分隔列：统一使用分隔列的有效窄宽度（不添加装饰）
     if (_isSeparatorColumnIndex(i)) return _colDividerWidthEffective;
     final title = pillars[i].item1;
     final override = _columnWidthOverrides[i];
     if (override != null && override.isFinite && !override.isNaN) {
-      return override.clamp(_minPillarWidth, _maxPillarWidth);
+      return override.clamp(_minPillarWidth, _maxPillarWidth) + decorationWidth;
     }
     // 当未设置显式覆盖时，优先依据对应列的载荷信息解析列宽
     // 以保证宽度来源统一由 payload 控制（如拖入外部列或预设列宽）。
@@ -185,9 +188,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         defaultWidth: pillarWidth,
         minWidth: _minPillarWidth,
         maxWidth: _maxPillarWidth,
-      );
+      ) + decorationWidth;
     }
-    return pillarWidth;
+    return pillarWidth + decorationWidth;
   }
 
   double _sumColWidthsUpTo(int idx, List<Tuple2<String, JiaZi>> pillars) {
@@ -369,9 +372,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ),
     );
 
-    // 初始化尺寸通知器，使用布局模型计算
+    // 初始化尺寸通知器，使用包含装饰的尺寸计算
     _sizeNotifier = ValueNotifier<Size>(
-      _layoutNotifier.value.computeSize(_measurementContext),
+      _computeSizeWithDecorations(),
     );
 
     // 统一监听器：同步更新布局模型和尺寸
@@ -385,9 +388,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         dragHandleRowHeight: dragHandleRowHeight,
         dragHandleColWidth: dragHandleColWidth,
       );
-      // 同步更新尺寸
-      _sizeNotifier.value =
-          _layoutNotifier.value.computeSize(_measurementContext);
+      // 同步更新尺寸（包含装饰）
+      _sizeNotifier.value = _computeSizeWithDecorations();
     };
     widget.pillarsNotifier.addListener(_layoutModelSyncListener);
     widget.rowListNotifier.addListener(_layoutModelSyncListener);
@@ -3181,6 +3183,35 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 3. 兜底：使用传入的 fallback 或默认高度
     return fallbackHeight ?? otherCellHeight;
+  }
+
+  /// 计算包含装饰的 Card 尺寸
+  ///
+  /// 基于 CardLayoutModel 的基础尺寸，添加每列装饰的额外尺寸：
+  /// - 宽度：每个普通列添加装饰宽度 (margin 8*2 + padding 16*2 + border 2*2 = 52px)
+  /// - 高度：装饰包裹整列，需要添加一次垂直装饰尺寸 (margin 8*2 + padding 16*2 + border 2*2 = 52px)
+  Size _computeSizeWithDecorations() {
+    final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
+
+    // 装饰尺寸：margin(8*2) + padding(16*2) + border(2*2) = 52px
+    const double decorationWidth = 8 * 2 + 16 * 2 + 2 * 2;
+    const double decorationHeight = 8 * 2 + 16 * 2 + 2 * 2;
+
+    // 计算有装饰的列数量（排除分隔列）
+    final payloads = widget.pillarsNotifier.value;
+    int decoratedColumnCount = 0;
+    for (int i = 0; i < payloads.length; i++) {
+      if (!_isSeparatorColumnIndex(i)) {
+        decoratedColumnCount++;
+      }
+    }
+
+    // 宽度 = 基础宽度 + (装饰列数量 * 每列装饰宽度)
+    // 高度 = 基础高度 + 装饰高度
+    return Size(
+      baseSize.width + (decoratedColumnCount * decorationWidth),
+      baseSize.height + decorationHeight,
+    );
   }
 
   // Build full row feedback (row title + cells across all columns)
