@@ -73,6 +73,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double get _colDividerWidthEffective =>
       _colDividerPaddingLeft + _colDividerPaddingRight + _colDividerThickness;
 
+  // 柱装饰参数：margin, padding, border
+  static const double _pillarDecorationMargin = 8.0;
+  static const double _pillarDecorationPadding = 16.0;
+  static const double _pillarDecorationBorderWidth = 2.0;
+
+  // 装饰总尺寸（水平/垂直方向）
+  static const double _pillarDecorationWidth =
+      _pillarDecorationMargin * 2 + _pillarDecorationPadding * 2 + _pillarDecorationBorderWidth * 2;
+  static const double _pillarDecorationHeight =
+      _pillarDecorationMargin * 2 + _pillarDecorationPadding * 2 + _pillarDecorationBorderWidth * 2;
+
+  // 顶部装饰偏移（margin-top + padding-top + border-top）
+  static const double _pillarDecorationTopOffset =
+      _pillarDecorationMargin + _pillarDecorationPadding + _pillarDecorationBorderWidth;
+
+  // 底部装饰偏移（border-bottom + padding-bottom + margin-bottom）
+  static const double _pillarDecorationBottomOffset =
+      _pillarDecorationBorderWidth + _pillarDecorationPadding + _pillarDecorationMargin;
+
   // --- Column width helpers (support narrow separator columns) ---
   bool _isSeparatorTitle(String title) =>
       title == '分隔符' || title == '列分隔符' || title == '|';
@@ -157,9 +176,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   double _colWidthAtIndex(int i, List<Tuple2<String, JiaZi>> pillars) {
-    // 装饰尺寸：margin(8*2) + padding(16*2) + border(2*2) = 52px
-    const double decorationWidth = 8 * 2 + 16 * 2 + 2 * 2;
-
     final payloads = widget.pillarsNotifier.value;
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
@@ -167,9 +183,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       if (p.pillarType == PillarType.rowTitleColumn) {
         final override = _columnWidthOverrides[i];
         if (override != null && override.isFinite && !override.isNaN) {
-          return override.clamp(_minPillarWidth, _maxPillarWidth) + decorationWidth;
+          return override.clamp(_minPillarWidth, _maxPillarWidth) + _pillarDecorationWidth;
         }
-        return (p.columnWidth ?? rowTitleWidth) + decorationWidth;
+        return (p.columnWidth ?? rowTitleWidth) + _pillarDecorationWidth;
       }
     }
 
@@ -178,7 +194,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final title = pillars[i].item1;
     final override = _columnWidthOverrides[i];
     if (override != null && override.isFinite && !override.isNaN) {
-      return override.clamp(_minPillarWidth, _maxPillarWidth) + decorationWidth;
+      return override.clamp(_minPillarWidth, _maxPillarWidth) + _pillarDecorationWidth;
     }
     // 当未设置显式覆盖时，优先依据对应列的载荷信息解析列宽
     // 以保证宽度来源统一由 payload 控制（如拖入外部列或预设列宽）。
@@ -188,9 +204,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         defaultWidth: pillarWidth,
         minWidth: _minPillarWidth,
         maxWidth: _maxPillarWidth,
-      ) + decorationWidth;
+      ) + _pillarDecorationWidth;
     }
-    return pillarWidth + decorationWidth;
+    return pillarWidth + _pillarDecorationWidth;
   }
 
   double _sumColWidthsUpTo(int idx, List<Tuple2<String, JiaZi>> pillars) {
@@ -952,6 +968,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
 
+                // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
+                children.add(SizedBox(
+                  width: dragHandleColWidth,
+                  height: _pillarDecorationTopOffset,
+                ));
+
                 // 处理数据行（条件跳过表头行索引 0）
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
@@ -1049,6 +1071,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   ));
                 }
 
+                // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
+                children.add(SizedBox(
+                  width: dragHandleColWidth,
+                  height: _pillarDecorationBottomOffset,
+                ));
+
                 return children;
               })(),
             ],
@@ -1071,6 +1099,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final d = _draggingRowIndex;
                 final t = _hoverRowInsertIndex ?? _lastRowInsertIndex;
                 final bool draggingRow = d != null || _hoveringExternalRow;
+
+                // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
+                children.add(SizedBox(
+                  width: dragHandleColWidth,
+                  height: _pillarDecorationTopOffset,
+                ));
 
                 // 处理数据行（条件跳过表头行索引 0）
                 for (final entry in rows.asMap().entries) {
@@ -1187,6 +1221,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           .withOpacity(0.08)
                       : Colors.transparent,
                 ));
+
+                // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
+                children.add(SizedBox(
+                  width: dragHandleColWidth,
+                  height: _pillarDecorationBottomOffset,
+                ));
+
                 return children;
               })(),
             ],
@@ -1210,6 +1251,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final List<Widget> children = [];
 
                 final bool draggingRow = d != null || _hoveringExternalRow;
+
+                // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
+                children.add(SizedBox(
+                  width: rowTitleWidth,
+                  height: _pillarDecorationTopOffset,
+                ));
 
                 for (final entry in rows.asMap().entries) {
                   final absRowIdx = entry.key;
@@ -1344,6 +1391,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           .withOpacity(0.08)
                       : Colors.transparent,
                 ));
+
+                // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
+                children.add(SizedBox(
+                  width: rowTitleWidth,
+                  height: _pillarDecorationBottomOffset,
+                ));
+
                 return children;
               })(),
             ],
@@ -1723,13 +1777,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 ? 0.0
                                 : 1.0,
                         child: Container(
-                          margin: const EdgeInsets.all(8),
+                          margin: EdgeInsets.all(_pillarDecorationMargin),
                           child: Container(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(_pillarDecorationPadding),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: Colors.red,
-                                width: 2,
+                                width: _pillarDecorationBorderWidth,
                               ),
                             ),
                             child: SizedBox(
@@ -3204,10 +3258,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Size _computeSizeWithDecorations() {
     final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
 
-    // 装饰尺寸：margin(8*2) + padding(16*2) + border(2*2) = 52px
-    const double decorationWidth = 8 * 2 + 16 * 2 + 2 * 2;
-    const double decorationHeight = 8 * 2 + 16 * 2 + 2 * 2;
-
     // 计算有装饰的列数量（排除分隔列）
     final payloads = widget.pillarsNotifier.value;
     int decoratedColumnCount = 0;
@@ -3220,8 +3270,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 宽度 = 基础宽度 + (装饰列数量 * 每列装饰宽度)
     // 高度 = 基础高度 + 装饰高度
     return Size(
-      baseSize.width + (decoratedColumnCount * decorationWidth),
-      baseSize.height + decorationHeight,
+      baseSize.width + (decoratedColumnCount * _pillarDecorationWidth),
+      baseSize.height + _pillarDecorationHeight,
     );
   }
 
