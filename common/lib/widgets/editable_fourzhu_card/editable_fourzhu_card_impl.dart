@@ -249,6 +249,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   bool _hoveringExternalRow = false;
   double _externalRowHoverHeight = 0.0;
   double _externalColHoverWidth = 0.0;
+  PillarDecoration? _externalPillarDecoration;  // External pillar decoration for ghost width calculation
 
   // Drag feedback status notifiers: control dynamic "插入"/"删除" prompts on the dragged piece itself
   // When hovering a valid insert target inside the card, set insert=true, delete=false
@@ -3252,6 +3253,29 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
 
     return acc; // fallback
+  }
+
+  /// 获取幽灵列的宽度（统一计算逻辑）
+  ///
+  /// 优先级：
+  /// 1. 外部柱的 decoration.size.width（如果有）
+  /// 2. _externalColHoverWidth（如果 > 0）
+  /// 3. 默认 pillarWidth（兜底）
+  ///
+  /// 返回：幽灵列的宽度（像素）
+  double _getGhostColumnWidth() {
+    // 优先使用外部柱的 decoration
+    if (_hoveringExternalPillar && _externalPillarDecoration != null) {
+      return _externalPillarDecoration!.size.width;
+    }
+
+    // 否则使用 _externalColHoverWidth
+    if (_externalColHoverWidth > 0) {
+      return _externalColHoverWidth;
+    }
+
+    // 兜底：使用默认柱宽
+    return pillarWidth;
   }
 
   // Build full row feedback (row title + cells across all columns)
