@@ -11,6 +11,7 @@ import '../models/layout_template.dart' show CardStyle, RowConfig;
 import '../models/pillar_styles.dart';
 import '../utils/style_resolver.dart';
 import '../models/drag_payloads.dart';
+import '../models/pillar_data.dart';
 
 /// 允许列（柱）拖拽的四柱卡片
 /// 使用 ReorderableListView 实现列的拖拽重排
@@ -85,6 +86,44 @@ class _ColumnReorderableFourZhuCardState
   final Map<int, String> _rowLabelOverrides = {};
   int? _hoverInsertIndex;
   bool _hoveringExternalPillar = false;
+
+  /// 将 PillarData 转换为 PillarPayload
+  PillarPayload? _convertPillarDataToPayload(PillarData data) {
+    final pillarType = _mapPillarIdToType(data.pillarId);
+    if (pillarType == null) return null;
+
+    return PillarPayload(
+      pillarType: pillarType,
+      pillarLabel: data.label,
+      perRowValues: {
+        RowType.heavenlyStem: data.jiaZi.tianGan.value,
+        RowType.earthlyBranch: data.jiaZi.diZhi.value,
+        RowType.naYin: data.jiaZi.naYin.name,
+      },
+    );
+  }
+
+  /// 将 pillarId 字符串映射到 PillarType
+  PillarType? _mapPillarIdToType(String pillarId) {
+    switch (pillarId) {
+      case 'year':
+        return PillarType.year;
+      case 'month':
+        return PillarType.month;
+      case 'day':
+        return PillarType.day;
+      case 'time':
+        return PillarType.hour;
+      case 'taiyuan':
+        return PillarType.taiMeta;
+      case 'dayun':
+        return PillarType.luckCycle;
+      case 'liunian':
+        return PillarType.annual;
+      default:
+        return null;
+    }
+  }
 
   @override
   void initState() {
@@ -365,8 +404,8 @@ class _ColumnReorderableFourZhuCardState
                             if (widget.isEditable)
                               Positioned.fill(
                                 child: IgnorePointer(
-                                  // 始终参与命中，但只在边界窄条处作为投放点，不覆盖整列区域，避免阻挡列拖拽与鼠标指针。
-                                  ignoring: false,
+                                  // 让 DragTarget 窄条响应事件，但不影响其他区域
+                                  ignoring: true,
                                   child: LayoutBuilder(
                                     builder: (ctx, _) {
                                       final zoneWidth =
@@ -383,14 +422,29 @@ class _ColumnReorderableFourZhuCardState
                                             width: zoneWidth,
                                             top: 0,
                                             bottom: 0,
-                                            child: DragTarget<PillarPayload>(
+                                            child: IgnorePointer(
+                                              // 只让 DragTarget 响应事件
+                                              ignoring: false,
+                                              child: DragTarget<Object>(
                                               onWillAccept: (data) {
-                                                setState(() {
-                                                  _hoverInsertIndex = i;
-                                                  _hoveringExternalPillar =
-                                                      true;
-                                                });
-                                                return data != null;
+                                                print('🎯 [DragTarget] onWillAccept called: i=$i, data=$data');
+                                                if (data is PillarPayload) {
+                                                  print('   ✅ PillarPayload: ${data.pillarType}');
+                                                  setState(() {
+                                                    _hoverInsertIndex = i;
+                                                    _hoveringExternalPillar = true;
+                                                  });
+                                                  return true;
+                                                } else if (data is PillarData) {
+                                                  print('   ✅ PillarData: ${data.pillarId}');
+                                                  setState(() {
+                                                    _hoverInsertIndex = i;
+                                                    _hoveringExternalPillar = true;
+                                                  });
+                                                  return true;
+                                                }
+                                                print('   ❌ Unknown type: ${data.runtimeType}');
+                                                return false;
                                               },
                                               onLeave: (_) => setState(() {
                                                 if (_hoverInsertIndex == i) {
@@ -399,11 +453,19 @@ class _ColumnReorderableFourZhuCardState
                                                 _hoveringExternalPillar = false;
                                               }),
                                               onAccept: (data) {
-                                                _insertExternalPillar(i, data);
+                                                print('🎯 [DragTarget] onAccept called: i=$i, data type=${data.runtimeType}');
+                                                PillarPayload? payload;
+                                                if (data is PillarPayload) {
+                                                  payload = data;
+                                                } else if (data is PillarData) {
+                                                  payload = _convertPillarDataToPayload(data);
+                                                }
+                                                if (payload != null) {
+                                                  _insertExternalPillar(i, payload);
+                                                }
                                                 setState(() {
                                                   _hoverInsertIndex = null;
-                                                  _hoveringExternalPillar =
-                                                      false;
+                                                  _hoveringExternalPillar = false;
                                                 });
                                               },
                                               builder:
@@ -459,6 +521,7 @@ class _ColumnReorderableFourZhuCardState
                                                       : null,
                                                 );
                                               },
+                                            ),
                                             ),
                                           );
                                         }),

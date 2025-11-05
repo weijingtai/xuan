@@ -191,7 +191,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 分隔列：统一使用分隔列的有效窄宽度（不添加装饰）
     if (_isSeparatorColumnIndex(i)) return _colDividerWidthEffective;
-    final title = pillars[i].item1;
+
+    // 添加边界检查：避免访问幽灵列（i >= pillars.length）时发生索引越界
+    if (i < 0 || i >= pillars.length) {
+      // 幽灵列默认使用标准柱宽
+      return pillarWidth + _pillarDecorationWidth;
+    }
+
+    // 检查列宽度覆盖
     final override = _columnWidthOverrides[i];
     if (override != null && override.isFinite && !override.isNaN) {
       return override.clamp(_minPillarWidth, _maxPillarWidth) + _pillarDecorationWidth;
