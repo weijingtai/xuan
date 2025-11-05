@@ -1430,7 +1430,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   child: dragging && t == i
                       ? GhostPillarWidget.column(
                           width: gridGhostWidth,
-                          height: _totalRowsHeight(),
+                          height: _layoutNotifier.value.totalRowsHeight(_measurementContext),
                         )
                       : const SizedBox.shrink(),
                 ));
@@ -1753,7 +1753,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 child: dragging && t == pillars.length
                     ? GhostPillarWidget.column(
                         width: endGhostWidth,
-                        height: _totalRowsHeight(),
+                        height: _layoutNotifier.value.totalRowsHeight(_measurementContext),
                       )
                     : const SizedBox.shrink(),
               ));
