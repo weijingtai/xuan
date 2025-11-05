@@ -971,25 +971,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     curve: Curves.easeOut,
                     width: dragHandleColWidth,
                     height: draggingRow && t == absRowIdx
-                        ? (() {
-                            final d = _draggingRowIndex;
-                            if (d != null && d < rows.length) {
-                              final draggedName = rows[d];
-                              final override = _rowHeightOverrides[d];
-                              final byName = _rowHeightByName(draggedName);
-                              final finalHeight = override ?? byName;
-                              print(
-                                  '🔍 [幽灵行-leftGripColumn] t=$t, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
-                              return finalHeight;
-                            } else if (_hoveringExternalRow) {
-                              print(
-                                  '🔍 [幽灵行-leftGripColumn] t=$t, external row, height=$_externalRowHoverHeight');
-                              return _externalRowHoverHeight;
-                            }
-                            print(
-                                '🔍 [幽灵行-leftGripColumn] t=$t, fallback to rowSize.height=${rowSize.height}');
-                            return rowSize.height;
-                          })()
+                        ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                         : 0,
                     color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
@@ -1271,26 +1253,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     curve: Curves.easeOut,
                     width: rowTitleWidth,
                     height: draggingRow && t == absRowIdx
-                        ? (() {
-                            final dIdx = _draggingRowIndex;
-                            if (dIdx != null && dIdx < rows.length) {
-                              final draggedName = rows[dIdx];
-                              final override = _rowHeightOverrides[dIdx];
-                              final byName = _rowHeightByName(draggedName);
-                              final finalHeight = override ?? byName;
-                              print(
-                                  '🔍 [幽灵行-leftHeader] t=$t, d=$dIdx, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
-                              return finalHeight;
-                            } else if (_hoveringExternalRow) {
-                              // 外部行拖拽：使用外部载荷解析的悬停高度（分割线用有效高度）
-                              print(
-                                  '🔍 [幽灵行-leftHeader] t=$t, external row, height=$_externalRowHoverHeight');
-                              return _externalRowHoverHeight;
-                            }
-                            print(
-                                '🔍 [幽灵行-leftHeader] t=$t, fallback to rowSize.height=${rowSize.height}');
-                            return rowSize.height;
-                          })()
+                        ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                         : 0,
                     color: draggingRow && t == absRowIdx
                         ? Theme.of(context)
@@ -1561,27 +1524,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
                           width: colW,
                           height: draggingRow && tRow == absRowIdx
-                              ? (() {
-                                  final d = _draggingRowIndex;
-                                  if (d != null && d < rows.length) {
-                                    final draggedName = rows[d];
-                                    final override = _rowHeightOverrides[d];
-                                    final byName =
-                                        _rowHeightByName(draggedName);
-                                    final finalHeight = override ?? byName;
-                                    print(
-                                        '🔍 [幽灵行-dataGrid] col=$i, t=$tRow, d=$d, draggedName=$draggedName, override=$override, byName=$byName, final=$finalHeight');
-                                    return finalHeight;
-                                  } else if (_hoveringExternalRow) {
-                                    // 外部行拖拽：使用外部载荷解析出的悬停高度（含分割线有效高度）
-                                    print(
-                                        '🔍 [幽灵行-dataGrid] col=$i, t=$tRow, external row, height=$_externalRowHoverHeight');
-                                    return _externalRowHoverHeight;
-                                  }
-                                  print(
-                                      '🔍 [幽灵行-dataGrid] col=$i, t=$tRow, fallback to rowSize.height=${rowSize.height}');
-                                  return rowSize.height;
-                                })()
+                              ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                               : 0,
                           color: draggingRow && tRow == absRowIdx
                               ? Theme.of(context)
@@ -3238,6 +3181,38 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 兜底：使用默认柱宽
     return pillarWidth;
+  }
+
+  /// 获取幽灵行的高度（统一计算逻辑）
+  ///
+  /// 优先级：
+  /// 1. 内部行拖拽：使用 _rowHeightOverrides 或 _rowHeightByName
+  /// 2. 外部行拖拽：使用 _externalRowHoverHeight
+  /// 3. 兜底：使用 fallbackHeight 参数
+  ///
+  /// 参数：
+  /// - fallbackHeight: 兜底高度（默认为 otherCellHeight）
+  ///
+  /// 返回：幽灵行的高度（像素）
+  double _getGhostRowHeight({double? fallbackHeight}) {
+    final rows = _currentRowLabels();
+    final d = _draggingRowIndex;
+
+    // 1. 内部行拖拽：优先使用 override，否则根据行名称计算
+    if (d != null && d < rows.length) {
+      final draggedName = rows[d];
+      final override = _rowHeightOverrides[d];
+      final byName = _rowHeightByName(draggedName);
+      return override ?? byName;
+    }
+
+    // 2. 外部行拖拽：使用外部载荷解析的高度
+    if (_hoveringExternalRow && _externalRowHoverHeight > 0) {
+      return _externalRowHoverHeight;
+    }
+
+    // 3. 兜底：使用传入的 fallback 或默认高度
+    return fallbackHeight ?? otherCellHeight;
   }
 
   // Build full row feedback (row title + cells across all columns)
