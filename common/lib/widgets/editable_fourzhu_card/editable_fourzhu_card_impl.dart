@@ -1063,7 +1063,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // Right Grip column: 右侧抓手列，用于拖拽行
     // 叠加 DragTarget 覆盖整个抓手列区域，确保行拖拽经过此列也会持续更新插入索引，从而显示幽灵行
     final gripColumn = Container(
-      // color: Colors.red.withAlpha(50),
       width: dragHandleColWidth,
       child: Stack(
         children: [
@@ -1739,21 +1738,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             (_dropColFadeActive && _dropAnimatingColIndex == i)
                                 ? 0.0
                                 : 1.0,
-                        child: Container(
-                          margin:
-                              EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                          padding: EdgeInsets.symmetric(vertical: 6),
-                          decoration: BoxDecoration(
-                              color: Colors.red.withAlpha(10),
-                              border: Border.all(color: Colors.green, width: 2),
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                    offset: Offset(1, 1),
-                                    color: Colors.black.withAlpha(20),
-                                    blurRadius: 2,
-                                    spreadRadius: 2)
-                              ]),
+                        child: SizedBox(
                           width: colW,
                           child: columnContent,
                         ),
