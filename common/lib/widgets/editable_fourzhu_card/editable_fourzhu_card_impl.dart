@@ -1444,11 +1444,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 检查当前列是否为行标题列，确保外层宽度与内部单元格宽度一致
                 final isRowTitleCol = (i >= 0 && i < pillarPayloads.length) &&
                     pillarPayloads[i].pillarType == PillarType.rowTitleColumn;
-                final double colW = isRowTitleCol
-                    ? _colWidthAtIndex(i, pillars)
-                    : (isSeparatorColumn
-                        ? _colDividerWidthEffective
-                        : pillarWidth);
+
+                // colW 是内容宽度（不含装饰），装饰会在外层 Container 中添加
+                final double colW = (() {
+                  if (isSeparatorColumn) {
+                    return _colDividerWidthEffective;
+                  }
+                  if (isRowTitleCol) {
+                    final p = pillarPayloads[i];
+                    final override = _columnWidthOverrides[i];
+                    if (override != null && override.isFinite && !override.isNaN) {
+                      return override.clamp(_minPillarWidth, _maxPillarWidth);
+                    }
+                    return p.columnWidth ?? rowTitleWidth;  // 纯内容宽度，不含装饰
+                  }
+                  return pillarWidth;  // 普通列的内容宽度
+                })();
                 final columnContent = Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
