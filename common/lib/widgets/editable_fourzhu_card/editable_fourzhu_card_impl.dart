@@ -1709,9 +1709,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             (_dropColFadeActive && _dropAnimatingColIndex == i)
                                 ? 0.0
                                 : 1.0,
-                        child: SizedBox(
-                          width: colW,
-                          child: columnContent,
+                        child: Container(
+                          margin: const EdgeInsets.all(8),
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              border: Border.all(
+                                color: Colors.red,
+                                width: 2,
+                              ),
+                            ),
+                            child: SizedBox(
+                              width: colW,
+                              child: columnContent,
+                            ),
+                          ),
                         ),
                       ),
                       if (dragging && t == i)
