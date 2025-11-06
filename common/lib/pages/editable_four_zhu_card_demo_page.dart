@@ -19,6 +19,9 @@ import '../viewmodels/four_zhu_layout_controller.dart';
 import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
+import '../themes/editable_four_zhu_card_theme.dart';
+import '../viewmodels/editable_four_zhu_theme_controller.dart';
+import '../widgets/style_editor/editable_four_zhu_style_editor_panel.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -44,6 +47,8 @@ class _EditableFourZhuCardDemoPageState
   late EightChars _sample;
   late FourZhuLayoutController _controller;
   late CardStyle _cardStyle;
+  late EditableFourZhuCardTheme _theme;
+  EditableFourZhuThemeController? _themeController;
 
   ValueNotifier<EdgeInsets> _paddingNotifier = ValueNotifier<EdgeInsets>(
     EdgeInsets.zero,
@@ -118,6 +123,23 @@ class _EditableFourZhuCardDemoPageState
       globalFontSize: 16,
       globalFontColorHex: '#FF0F172A',
     );
+    // 初始化主题（用于样式编辑与预览）
+    _theme = const EditableFourZhuCardTheme(
+      card: CardSection(
+        cornerRadius: 8,
+        padding: EdgeInsets.only(left: 12, top: 12, right: 12, bottom: 12),
+      ),
+      pillar: PillarSection(
+        defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
+        borderWidth: 0,
+      ),
+      typography: TypographySection(
+        globalFontFamily: 'NotoSansSC-Regular',
+        globalFontSize: 16,
+        preferredFamilies: ['NotoSansSC-Regular', 'PingFang SC', 'Roboto'],
+      ),
+    );
+    _themeController = EditableFourZhuThemeController(_theme);
 
     // 初始化 V3 载荷型 Notifier
     _pillarsPayloadNotifier = ValueNotifier<List<PillarPayload>>([
@@ -212,6 +234,66 @@ class _EditableFourZhuCardDemoPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // 主题编辑与预览
+                Card(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Text(
+                          '主题编辑与预览',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w600),
+                        ),
+                        const SizedBox(height: 12),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isNarrow = constraints.maxWidth < 720;
+                            final editor = SizedBox(
+                              width: isNarrow ? constraints.maxWidth : 420,
+                              child: EditableFourZhuStyleEditorPanel(
+                                theme: _theme,
+                                onChanged: (next) {
+                                  setState(() {
+                                    _theme = next;
+                                    _themeController =
+                                        EditableFourZhuThemeController(next);
+                                  });
+                                },
+                              ),
+                            );
+                            final preview = _ThemePreview(
+                              controller: _themeController,
+                            );
+                            return isNarrow
+                                ? Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      editor,
+                                      const SizedBox(height: 12),
+                                      preview,
+                                    ],
+                                  )
+                                : Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      editor,
+                                      const SizedBox(width: 16),
+                                      Expanded(child: preview),
+                                    ],
+                                  );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 const Wrap(
                   spacing: 8,
                   runSpacing: 8,
@@ -628,5 +710,178 @@ class _EditableFourZhuCardDemoPageState
     _rowsPayloadNotifier.dispose();
     _paddingNotifier.dispose();
     super.dispose();
+  }
+}
+
+/// _ThemePreview
+/// Visualizes current theme effects without changing existing cards yet.
+/// Shows card-level decoration, per-pillar margins, and per-character text style demo.
+class _ThemePreview extends StatelessWidget {
+  const _ThemePreview({required this.controller});
+
+  /// Theme controller that resolves effective values.
+  final EditableFourZhuThemeController? controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = controller;
+    final cardPadding = c?.resolveCardPadding() ?? const EdgeInsets.all(12);
+    final cardMargin = c?.resolveCardMargin() ?? const EdgeInsets.all(0);
+    final cardRadius = c?.resolveCardCornerRadius() ?? 8.0;
+    final cardBg = c?.resolveCardBackgroundColor() ??
+        Theme.of(context).colorScheme.surface;
+
+    final pillarTypes = const [
+      PillarType.year,
+      PillarType.month,
+      PillarType.day,
+      PillarType.hour,
+      PillarType.luckCycle,
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          '预览',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          margin: cardMargin,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(cardRadius),
+            child: Container(
+              color: cardBg,
+              padding: cardPadding,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Pillar margin visualization
+                  Row(
+                    children: [
+                      for (final t in pillarTypes)
+                        Container(
+                          margin: c?.resolvePillarMargin(t) ?? EdgeInsets.zero,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: (c?.resolvePillarBorderColor() ??
+                                      Theme.of(context).dividerColor)
+                                  .withOpacity(0.6),
+                              width: c?.resolvePillarBorderWidth() ?? 0,
+                            ),
+                            color: Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(_pillarLabel(t, context)),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Per-character style demo
+                  _PerCharacterDemo(controller: c),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _pillarLabel(PillarType type, BuildContext context) {
+    switch (type) {
+      case PillarType.year:
+        return '年';
+      case PillarType.month:
+        return '月';
+      case PillarType.day:
+        return '日';
+      case PillarType.hour:
+        return '时';
+      case PillarType.luckCycle:
+        return '大运';
+      case PillarType.separator:
+        return '|';
+      case PillarType.ke:
+        return '克';
+      case PillarType.taiMeta:
+        return '太乙元';
+      case PillarType.taiMonth:
+        return '太乙月';
+      case PillarType.taiDay:
+        return '太乙日';
+      case PillarType.lifeHouse:
+        return '命宫';
+      case PillarType.annual:
+        return '流年';
+      case PillarType.monthly:
+        return '流月';
+      case PillarType.daily:
+        return '流日';
+      case PillarType.hourly:
+        return '流时';
+      case PillarType.rowTitleColumn:
+        return '行标题';
+      default:
+        return type.toString().split('.').last;
+    }
+  }
+}
+
+/// _PerCharacterDemo
+/// Demonstrates independent TextStyle per character using RichText.
+class _PerCharacterDemo extends StatelessWidget {
+  const _PerCharacterDemo({required this.controller});
+
+  final EditableFourZhuThemeController? controller;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = controller?.theme.typography;
+    final baseFamily = t?.globalFontFamily;
+    final size = t?.globalFontSize ?? 16;
+    final color = t?.globalFontColor ?? Theme.of(context).colorScheme.onSurface;
+
+    const sample = '甲子乙丑丙寅丁卯';
+    final spans = <TextSpan>[];
+    for (var i = 0; i < sample.length; i++) {
+      final ch = sample[i];
+      // Alternate styles: weight, color tint, italic
+      final isEven = i % 2 == 0;
+      final tinted = Color.alphaBlend(
+        Theme.of(context).colorScheme.primary.withOpacity(0.15),
+        color,
+      );
+      spans.add(
+        TextSpan(
+          text: ch,
+          style: TextStyle(
+            fontFamily: baseFamily,
+            fontSize: size,
+            color: isEven ? color : tinted,
+            fontWeight: isEven ? FontWeight.w600 : FontWeight.w400,
+            fontStyle: isEven ? FontStyle.normal : FontStyle.italic,
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '独立字符样式示例',
+          style: Theme.of(context).textTheme.labelMedium,
+        ),
+        const SizedBox(height: 4),
+        RichText(text: TextSpan(children: spans)),
+      ],
+    );
   }
 }
