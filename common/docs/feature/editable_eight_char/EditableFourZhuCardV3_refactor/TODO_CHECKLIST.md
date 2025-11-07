@@ -11,14 +11,16 @@ EditableFourZhuCardV3 重构原子任务清单（可勾选）
 
 阶段 1：文件拆分与组件统一（建议 2~3 天）
 1) 布局模型（card_layout_model.dart）
-- [ ] 创建文件骨架与基础类型/类定义
+- [x] 创建文件骨架与基础类型/类定义
+- [x] 分割线有效尺寸 API 与 EditableFourZhuCardV3 接入（已完成并通过分析与单测）
+- [x] 抓手有效高度 API（effectiveGripHeight）与单元测试补充（已通过）
 - [ ] 迁移测量逻辑（padding、抓手有效尺寸、装饰尺寸）
 - [ ] 提供更新通知接口（与 ValueNotifier/布局状态联动）
 - [ ] 补齐所有函数级注释
 - [ ] 编译通过与 Demo 页面回归验证
 
 2) 拖拽控制器（card_drag_controller.dart）
-- [ ] 创建文件骨架与控制器类
+- [x] 创建文件骨架与控制器类
 - [ ] 迁移插入/删除/幽灵列行/吸附阈值逻辑
 - [ ] 实现拖拽 onMove 节流窗口（8–16ms 可配置）
 - [ ] 仅跨单元/阈值变化时触发通知，减少重建
@@ -46,6 +48,7 @@ EditableFourZhuCardV3 重构原子任务清单（可勾选）
 
 6) 颜色映射策略（card_palette.dart）
 - [ ] 外置 _colorForTianGanChar/_colorForDiZhiChar 映射与策略注入
+- [ ] 使用类型安全键（TianGan/DiZhi），禁止字符串键；统一采用 Map<TianGan, Color> / Map<DiZhi, Color>，并同步更新调用方的签名与访问逻辑（如 ElementColorResolver/ColorfulCellWidget 等）
 - [ ] 支持主题化/国际化扩展（预留接口）
 - [ ] 补齐所有函数级注释
 - [ ] 编译通过与 Demo 页面回归验证
@@ -62,6 +65,18 @@ EditableFourZhuCardV3 重构原子任务清单（可勾选）
 - [ ] 校验 navigator.dart 指向最新 Demo 页面组件
 - [ ] 编译通过
 
+9) 行逻辑统一（RowType 驱动，移除字符串比较）
+- [ ] 全量清点：搜索并列出所有以字符串比较进行行类型判断的代码位置，例如 `rowName == '天干' / '地支' / '纳音' / '空亡'`
+- [ ] 签名改造：将相关函数/方法的参数从 `rowName: String` 改为 `rowType: RowType`（或从 payload 派生 RowType），显示标题仅在 UI 层通过映射函数生成
+- [ ] 逻辑迁移：将分支判断统一改为 `switch(rowType)` 或枚举映射，禁止任何基于中文标题字符串的逻辑分支
+- [ ] 标题生成统一：集中到 `_defaultRowLabel(RowType)` 或统一的 resolver；逻辑层不再依赖字符串标题
+- [ ] 调用方更新：EditableFourZhuCardV3、Demo 与相关组件按 RowType 传递；移除历史 `CardRow`/字符串路径上的逻辑判断（保留兼容性映射在显示/持久化层）
+- [ ] 验收与回归：
+  - 编译通过，Demo 页面交互与显示无回归异常
+  - 代码扫描验证：项目中不再存在上述字符串比较分支
+  - 单元/Widget 测试覆盖关键渲染路径与行类型识别（RowType → 内容）
+- [ ] 补齐所有函数级注释（功能、参数、返回、异常/边界）
+
 阶段 2：注释补齐与文档更新（建议 1~2 天）
 - [ ] 为阶段 1 新增的所有文件与函数补齐函数级注释（功能、参数、返回、异常/边界）
 - [ ] 可选：新增简易静态检查脚本，确保无注释函数数量为 0
@@ -69,7 +84,8 @@ EditableFourZhuCardV3 重构原子任务清单（可勾选）
 
 阶段 3：测试与性能优化（建议 2~3 天）
 1) 单元测试（common/test/）
-- [ ] card_layout_model_test.dart：抓手隐藏有效尺寸为 0；pillars/rows 变化同步
+- [x] card_layout_model_test.dart：抓手隐藏有效尺寸为 0；pillars/rows 变化同步（已新增并通过）
+- [x] card_drag_controller_test.dart：事件计数与 onMove 节流行为（已新增并通过）
 - [ ] theme_controller_test.dart：字体回退顺序与非负校验、异常参数处理
 
 2) Widget 测试（common/test/widgets/）

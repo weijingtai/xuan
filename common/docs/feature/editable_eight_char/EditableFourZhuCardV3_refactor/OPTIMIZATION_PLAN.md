@@ -23,6 +23,7 @@ EditableFourZhuCardV3 重构与优化方案（可执行版）
        d. card_grid_painter.dart（网格与单元绘制，独立的 CustomPainter 实现）
        e. card_debug_painters.dart（调试绘制器，按 debug-only 条件编译或常驻但默认关闭）
        f. card_palette.dart（颜色映射策略：天干/地支字符颜色映射，可按主题注入）
+       · 约束：采用类型安全键（TianGan/DiZhi），禁止字符串键；统一使用 Map<TianGan, Color> / Map<DiZhi, Color>，与现有 AppColors.zodiacGanColors/zodiacZhiColors 保持一致。
      - 输入契约：现有 EditableFourZhuCardV3 的逻辑划分与 HEALTH_REPORT 中的职责分析
      - 输出契约：上述 6 个文件及对 EditableFourZhuCardV3 的引用调整
      - 实现约束：保持现有对外 API 不变；内部私有方法迁移后需具备函数级注释

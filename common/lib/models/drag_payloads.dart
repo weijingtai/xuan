@@ -346,14 +346,11 @@ class RowInfoPayload {
     if (rowType == RowType.columnHeaderRow) {
       return headerHeight;
     }
-    // 类型优先，其次按 label 语义兜底
+    // 类型优先：统一由 RowType 驱动高度
     if (rowType == RowType.heavenlyStem || rowType == RowType.earthlyBranch) {
       return heavenlyAndEarthlyHeight;
     }
-    if (rowLabel == '天干' || rowLabel == '地支') {
-      return heavenlyAndEarthlyHeight;
-    }
-    if (rowLabel == '分割线' || rowLabel == '行分割符') {
+    if (rowType == RowType.separator) {
       return dividerHeight;
     }
     return otherHeight;

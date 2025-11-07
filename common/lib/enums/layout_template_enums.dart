@@ -38,6 +38,8 @@ enum RowType {
   hiddenStemsTertiaryGods,
   starYun,
   selfSiting,
+  /// UI 分隔行：仅用于渲染水平分割线，不包含数据内容
+  separator,
 }
 
 enum BorderType { solid, dashed, dotted, none }

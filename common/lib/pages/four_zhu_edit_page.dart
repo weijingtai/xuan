@@ -1128,6 +1128,8 @@ String _rowTypeLabel(RowType type) {
       return '命宫';
     case RowType.columnHeaderRow:
       return '表头行';
+    case RowType.separator:
+      return '分割线';
   }
 }
 

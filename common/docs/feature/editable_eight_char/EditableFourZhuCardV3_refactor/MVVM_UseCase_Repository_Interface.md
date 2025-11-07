@@ -72,10 +72,11 @@ graph TD
   - cardDecoration: { padding, margin, borderWidth, cornerRadius, elevation, bgColor }
   - perPillarMargin: Map<PillarType, EdgeInsetsSerializable>
   - colorfulMode: bool
-  - perCharColors: { tianGan: Map<char, color>, diZhi: Map<char, color> }
+  - perCharColors: { tianGan: Map<TianGan, Color>, diZhi: Map<DiZhi, Color> }
+    · 序列化约定：JSON 持久化时键写入为枚举名字符串（如 "JIA"/"ZI"），读取时反序列化为 TianGan/DiZhi 类型；运行时始终以类型安全 Map<TianGan, Color>/Map<DiZhi, Color> 进行访问。
 - 约束：
   - 非负：padding/margin/borderWidth/cornerRadius/elevation 不得为负。
-  - 枚举：TextGroup/PillarType 使用字符串枚举值。
+  - 枚举：TextGroup/PillarType/TianGan/DiZhi 使用字符串枚举值进行持久化；代码中使用对应类型枚举进行访问，保持类型安全。
   - 兼容：未知字段保留但忽略；未来版本通过 schemaVersion 做迁移。
 
 五、集成与使用指引（描述）
