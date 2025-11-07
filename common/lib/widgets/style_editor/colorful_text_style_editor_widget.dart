@@ -95,6 +95,9 @@ class _ColorfulTextStyleEditorWidgetState
     if (rgb == _kShadowFollowSentinelRGB) {
       _shadowFollowCharColor = true;
       _shadowOpacity = _shadowColor.alpha / 255.0;
+    } else {
+      // 非跟随模式下，透明度与当前阴影颜色的 alpha 同步
+      _shadowOpacity = _shadowColor.alpha / 255.0;
     }
   }
 
@@ -154,22 +157,6 @@ class _ColorfulTextStyleEditorWidgetState
             },
           ),
           if (!_shadowFollowCharColor) ...[
-            // Shadow color picker
-            ColorPicker(
-              color: _shadowColor,
-              onColorChanged: (c) {
-                setState(() => _shadowColor = c);
-                _emit();
-              },
-              width: 40,
-              height: 18,
-              borderRadius: 8,
-              wheelDiameter: 140,
-              enableShadesSelection: false,
-              showColorName: false,
-              showMaterialName: false,
-            ),
-            const SizedBox(height: 8),
             Row(
               children: [
                 const SizedBox(width: 100, child: Text('选择阴影颜色')),
@@ -186,7 +173,10 @@ class _ColorfulTextStyleEditorWidgetState
                         ColorPickerType.custom: false,
                       },
                     );
-                    setState(() => _shadowColor = picked);
+                    setState(() {
+                      // 保留当前透明度，更新阴影颜色
+                      _shadowColor = picked.withAlpha((_shadowOpacity * 255).round());
+                    });
                     _emit();
                   },
                   child: Container(
@@ -205,31 +195,36 @@ class _ColorfulTextStyleEditorWidgetState
                 ),
               ],
             ),
-          ] else ...[
-            // Shadow opacity when following char color
-            Row(
-              children: [
-                const SizedBox(width: 100, child: Text('阴影透明度')),
-                Expanded(
-                  child: Slider(
-                    value: _shadowOpacity,
-                    min: 0,
-                    max: 1,
-                    divisions: 20,
-                    label: (_shadowOpacity * 100).round().toString(),
-                    onChanged: (v) {
-                      setState(() => _shadowOpacity = v);
-                      _emit();
-                    },
-                  ),
-                ),
-                SizedBox(
-                    width: 48,
-                    child: Text('${(_shadowOpacity * 100).round()}%',
-                        textAlign: TextAlign.right)),
-              ],
-            ),
           ],
+          // 阴影透明度（始终可调）
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('阴影透明度')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOpacity,
+                  min: 0,
+                  max: 1,
+                  divisions: 20,
+                  label: (_shadowOpacity * 100).round().toString(),
+                  onChanged: (v) {
+                    setState(() {
+                      _shadowOpacity = v;
+                      if (!_shadowFollowCharColor) {
+                        // 非跟随模式下同步 alpha 到阴影颜色本身
+                        _shadowColor = _shadowColor.withAlpha((v * 255).round());
+                      }
+                    });
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text('${(_shadowOpacity * 100).round()}%',
+                      textAlign: TextAlign.right)),
+            ],
+          ),
           const SizedBox(height: 8),
           // Offset X slider
           Row(

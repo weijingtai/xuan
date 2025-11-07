@@ -22,7 +22,7 @@ import '../models/row_strategy.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../viewmodels/editable_four_zhu_theme_controller.dart';
 import '../widgets/style_editor/editable_four_zhu_style_editor_panel.dart';
-import '../widgets/style_editor/text_style_editor_widget.dart';
+import '../widgets/style_editor/colorful_text_style_editor_widget.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
@@ -364,11 +364,6 @@ class _EditableFourZhuCardDemoPageState
                         onChanged: (m) {
                           setState(() {
                             _groupTextStyles = Map<TextGroup, TextStyle>.of(m);
-                          });
-                        },
-                        onPerCharColorsChanged: (map) {
-                          setState(() {
-                            _perCharColors = Map<String, Color>.of(map);
                           });
                         },
                       ),

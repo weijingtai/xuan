@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../editable_fourzhu_card/text_groups.dart';
-import 'colorful_text_style_editor_widget.dart';
+
+// Sentinel RGB used to signal shadow follows character color
+const int _kShadowFollowSentinelRGB = 0x00FEED;
 
 // 颜色方案模式：纯色 / 色彩（顶层枚举，避免嵌套在类中）
 enum ColorPreviewMode { pure, colorful }
@@ -18,6 +20,10 @@ class TextStyleEditorWidget extends StatefulWidget {
   final String label;
   final TextStyle? initialStyle;
   final ValueChanged<TextStyle> onChanged;
+  // Which group this editor represents (used for per-character callbacks)
+  final TextGroup? group;
+  // Emit single-character pure color changes to parent for V3 overrides
+  final void Function(String char, Color color)? onPerCharPureColorChanged;
 
   /// 是否仅展示自由色轮（隐藏弹窗按钮与附加信息）。
   final bool onlyWheel;
@@ -35,6 +41,8 @@ class TextStyleEditorWidget extends StatefulWidget {
     required this.label,
     this.initialStyle,
     required this.onChanged,
+    this.group,
+    this.onPerCharPureColorChanged,
     this.onlyWheel = false,
     this.dialogEnablePrimaryAccent = true,
     this.showInlineWheel = true,
@@ -48,7 +56,19 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
   late String _fontFamily;
   late double _fontSize;
   late FontWeight _fontWeight;
-  late Color _color;
+  Color _color = Colors.black87;
+  // Key to access the child preview state when present (天干/地支).
+  final GlobalKey<_DualThemeColorPreviewState> _previewKey =
+      GlobalKey<_DualThemeColorPreviewState>();
+  // Shadow configuration state
+  bool _shadowEnabled = false;
+  Color _shadowColor = const Color(0x55000000);
+  double _shadowOffsetX = 0;
+  double _shadowOffsetY = 0;
+  double _shadowBlurRadius = 0;
+  // Shadow color follows character color
+  bool _shadowFollowCharColor = false;
+  double _shadowOpacity = 0.5;
 
   /// Initialize local editing state from `initialStyle`.
   @override
@@ -59,6 +79,24 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
     _fontSize = (s.fontSize ?? 14).clamp(8, 64).toDouble();
     _fontWeight = s.fontWeight ?? FontWeight.w400;
     _color = s.color ?? Colors.black87;
+    // Initialize shadow state from initialStyle.shadows (single-layer extraction)
+    final sh = s.shadows;
+    if (sh != null && sh.isNotEmpty) {
+      _shadowEnabled = true;
+      _shadowColor = sh.first.color;
+      _shadowOffsetX = sh.first.offset.dx;
+      _shadowOffsetY = sh.first.offset.dy;
+      _shadowBlurRadius = sh.first.blurRadius;
+    }
+    // Detect shadow follow-char sentinel
+    final int rgb = _shadowColor.value & 0x00FFFFFF;
+    if (rgb == _kShadowFollowSentinelRGB) {
+      _shadowFollowCharColor = true;
+      _shadowOpacity = _shadowColor.alpha / 255.0;
+    } else {
+      // 非跟随模式下，透明度与当前阴影颜色的 alpha 同步
+      _shadowOpacity = _shadowColor.alpha / 255.0;
+    }
   }
 
   /// Emit the latest edited `TextStyle` via `onChanged`.
@@ -68,7 +106,192 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
       fontSize: _fontSize,
       fontWeight: _fontWeight,
       color: _color,
+      shadows: _shadowEnabled
+          ? [
+              Shadow(
+                color: _shadowFollowCharColor
+                    ? Color((((_shadowOpacity * 255).round()) << 24) |
+                        _kShadowFollowSentinelRGB)
+                    : _shadowColor,
+                offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                blurRadius: _shadowBlurRadius,
+              ),
+            ]
+          : null,
     ));
+  }
+
+  /// 接收子纯色选择的通知，更新当前颜色并向外发射
+  void _onPreviewGlobalPureColorChanged(Color picked) {
+    setState(() => _color = picked);
+    _emit();
+  }
+
+  /// Build the shadow configuration section with enable toggle, color picker,
+  /// and sliders for offsetX/offsetY/blurRadius.
+  /// Returns a Widget tree rendering the shadow controls.
+  Widget _buildShadowSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          title: const Text('启用阴影'),
+          value: _shadowEnabled,
+          onChanged: (v) {
+            setState(() => _shadowEnabled = v);
+            _emit();
+          },
+        ),
+        if (_shadowEnabled) ...[
+          const SizedBox(height: 8),
+          // Follow character color for shadow
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('阴影颜色跟随字符颜色'),
+            value: _shadowFollowCharColor,
+            onChanged: (v) {
+              setState(() => _shadowFollowCharColor = v ?? false);
+              _emit();
+            },
+          ),
+          if (!_shadowFollowCharColor) ...[
+            Row(
+              children: [
+                const SizedBox(width: 100, child: Text('选择阴影颜色')),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showColorPickerDialog(
+                      context,
+                      _shadowColor,
+                      title: const Text('选择阴影颜色'),
+                      pickersEnabled: const {
+                        ColorPickerType.wheel: true,
+                        ColorPickerType.accent: false,
+                        ColorPickerType.primary: false,
+                        ColorPickerType.custom: false,
+                      },
+                    );
+                    setState(() {
+                      // 保留当前透明度，更新阴影颜色
+                      _shadowColor =
+                          picked.withAlpha((_shadowOpacity * 255).round());
+                    });
+                    _emit();
+                  },
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: _shadowColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+          // 阴影透明度（始终可调）
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('阴影透明度')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOpacity,
+                  min: 0,
+                  max: 1,
+                  divisions: 20,
+                  label: (_shadowOpacity * 100).round().toString(),
+                  onChanged: (v) {
+                    setState(() {
+                      _shadowOpacity = v;
+                      if (!_shadowFollowCharColor) {
+                        // 非跟随模式下同步 alpha 到阴影颜色本身
+                        _shadowColor =
+                            _shadowColor.withAlpha((v * 255).round());
+                      }
+                    });
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text('${(_shadowOpacity * 100).round()}%',
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // Offset X slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('位移 X')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOffsetX,
+                  min: -24,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowOffsetX = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowOffsetX.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+          // Offset Y slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('位移 Y')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOffsetY,
+                  min: -24,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowOffsetY = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowOffsetY.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+          // Blur radius slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('模糊半径')),
+              Expanded(
+                child: Slider(
+                  value: _shadowBlurRadius,
+                  min: 0,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowBlurRadius = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowBlurRadius.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+        ],
+      ],
+    );
   }
 
   /// Convert hex string like `#RRGGBB` or `#AARRGGBB` to `Color`.
@@ -219,37 +442,10 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
               children: [
                 Row(
                   children: [
-                    ColorIndicator(
-                      color: _color,
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                    ),
-                    if (!widget.onlyWheel) ...[
-                      const SizedBox(width: 12),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final Color newColor = await showColorPickerDialog(
-                            context,
-                            _color,
-                            title: Text(widget.label),
-                            pickersEnabled: <ColorPickerType, bool>{
-                              ColorPickerType.primary:
-                                  widget.dialogEnablePrimaryAccent,
-                              ColorPickerType.accent:
-                                  widget.dialogEnablePrimaryAccent,
-                              ColorPickerType.wheel: true,
-                              ColorPickerType.custom: false,
-                            },
-                          );
-                          setState(() => _color = newColor);
-                          _emit();
-                        },
-                        child: const Text('选择颜色'),
-                      ),
-                    ],
+                    // 父类色块已删除，其他逻辑不变
                   ],
                 ),
+                // 颜色跟随字符已改为阴影颜色跟随字符颜色（移除文本颜色跟随），此处不再显示文本颜色跟随开关
                 if (widget.showInlineWheel) ...[
                   const SizedBox(height: 8),
                   ColorPicker(
@@ -266,22 +462,85 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
                     showColorName: false,
                     showMaterialName: false,
                   ),
+                  // Preset color palette for quick selection
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final c in const [
+                        Colors.black,
+                        Colors.white,
+                        Colors.grey,
+                        Colors.red,
+                        Colors.orange,
+                        Colors.yellow,
+                        Colors.green,
+                        Colors.teal,
+                        Colors.blue,
+                        Colors.indigo,
+                        Colors.purple,
+                        Colors.pink,
+                        Colors.brown,
+                        Colors.cyan,
+                      ])
+                        InkWell(
+                          onTap: () {
+                            setState(() => _color = c);
+                            _emit();
+                          },
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: c,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withValues(alpha: 0.4),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ],
                 // 将 Light/Dark 预览嵌入对应字体设置卡片（仅天干/地支）
                 if (widget.label == '天干' || widget.label == '地支') ...[
                   const SizedBox(height: 12),
                   _DualThemeColorPreview(
-                    group: widget.label == '天干'
-                        ? TextGroup.tianGan
-                        : TextGroup.diZhi,
+                    key: _previewKey,
+                    group: widget.group ??
+                        (widget.label == '天干'
+                            ? TextGroup.tianGan
+                            : TextGroup.diZhi),
                     uniformStyle: TextStyle(
                       fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
                       fontSize: _fontSize,
                       fontWeight: _fontWeight,
                       color: _color,
+                      shadows: _shadowEnabled
+                          ? [
+                              Shadow(
+                                color: _shadowFollowCharColor
+                                    ? Color((((_shadowOpacity * 255).round()) <<
+                                            24) |
+                                        _kShadowFollowSentinelRGB)
+                                    : _shadowColor,
+                                offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                                blurRadius: _shadowBlurRadius,
+                              ),
+                            ]
+                          : null,
                     ),
+                    onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
+                    onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
                   ),
                 ],
+                const SizedBox(height: 12),
+                // Shadow configuration section
+                _buildShadowSection(),
               ],
             ),
           ],
@@ -303,11 +562,15 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
 class _DualThemeColorPreview extends StatefulWidget {
   final TextGroup group;
   final TextStyle uniformStyle;
+  final ValueChanged<Color>? onGlobalPureColorChanged;
+  final void Function(String char, Color color)? onPerCharPureColorChanged;
 
   const _DualThemeColorPreview({
     super.key,
     required this.group,
     required this.uniformStyle,
+    this.onGlobalPureColorChanged,
+    this.onPerCharPureColorChanged,
   });
 
   @override
@@ -354,6 +617,46 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
     _pureCharColorsDark = List<Color>.filled(
         _allChars.length, _pureGlobalColorDark,
         growable: false);
+  }
+
+  /// Apply a new global pure color from the parent control.
+  ///
+  /// This updates both Light and Dark sides' global pure colors and
+  /// batch-updates any character or block colors that currently match
+  /// the respective global color.
+  ///
+  /// Parameters:
+  /// - [picked]: The new color selected from the parent.
+  ///
+  /// Returns: void
+  void applyGlobalPureColorFromParent(Color picked) {
+    setState(() {
+      // Update Light side
+      final Color oldLight = _pureGlobalColorLight;
+      for (int i = 0; i < _allChars.length; i++) {
+        if (_pureCharColorsLight[i] == oldLight) {
+          _pureCharColorsLight[i] = picked;
+        }
+        if (_pureBlockColorsLight[i] == oldLight) {
+          _pureBlockColorsLight[i] = picked;
+          _pureSelectedLight.add(i);
+        }
+      }
+      _pureGlobalColorLight = picked;
+
+      // Update Dark side
+      final Color oldDark = _pureGlobalColorDark;
+      for (int i = 0; i < _allChars.length; i++) {
+        if (_pureCharColorsDark[i] == oldDark) {
+          _pureCharColorsDark[i] = picked;
+        }
+        if (_pureBlockColorsDark[i] == oldDark) {
+          _pureBlockColorsDark[i] = picked;
+          _pureSelectedDark.add(i);
+        }
+      }
+      _pureGlobalColorDark = picked;
+    });
   }
 
   /// Characters by group.
@@ -441,12 +744,32 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 2, vertical: 4),
                       child: Center(
-                        child: Text(
-                          _allChars[i],
-                          style: widget.uniformStyle.copyWith(
+                        child: Builder(builder: (context) {
+                          // Resolve per-character style with shadow color following character color when enabled.
+                          TextStyle st = widget.uniformStyle.copyWith(
                             color: colors[i],
-                          ),
-                        ),
+                          );
+                          if (widget.uniformStyle.shadows != null &&
+                              widget.uniformStyle.shadows!.isNotEmpty) {
+                            final Shadow sh =
+                                widget.uniformStyle.shadows!.first;
+                            final int rgb = sh.color.value & 0x00FFFFFF;
+                            if (rgb == _kShadowFollowSentinelRGB &&
+                                st.color != null) {
+                              final int alpha = sh.color.alpha;
+                              st = st.copyWith(
+                                shadows: [
+                                  Shadow(
+                                    color: st.color!.withAlpha(alpha),
+                                    offset: sh.offset,
+                                    blurRadius: sh.blurRadius,
+                                  ),
+                                ],
+                              );
+                            }
+                          }
+                          return Text(_allChars[i], style: st);
+                        }),
                       ),
                     ),
                 ],
@@ -479,6 +802,9 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                                 _perCharColorsLight[i] = picked;
                               }
                             });
+                            // 通知父层：彩色模式下某个字符颜色已更新
+                            widget.onPerCharPureColorChanged
+                                ?.call(_allChars[i], picked);
                           },
                           child: Container(
                             width: 22,
@@ -540,8 +866,15 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       ColorPickerType.custom: false,
                     },
                   );
+                  // 记录将被更新的索引（旧全局纯色匹配的项）
+                  final List<int> changed = <int>[];
+                  for (int i = 0; i < _allChars.length; i++) {
+                    if (charColors[i] == global || blockColors[i] == global) {
+                      changed.add(i);
+                    }
+                  }
                   setState(() {
-                    // 仅批量更新与“纯色”一致的项
+                    // 仅批量更新与当前“纯色”一致的项
                     for (int i = 0; i < _allChars.length; i++) {
                       if (charColors[i] == global) {
                         charColors[i] = picked;
@@ -557,6 +890,13 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       _pureGlobalColorLight = picked;
                     }
                   });
+                  // 通知父层同步更新统一颜色并触发 onChanged
+                  widget.onGlobalPureColorChanged?.call(picked);
+                  // 批量通知父层：所有匹配旧全局纯色的字符更新为新纯色
+                  for (final i in changed) {
+                    widget.onPerCharPureColorChanged
+                        ?.call(_allChars[i], picked);
+                  }
                 },
                 child: Container(
                   width: 22,
@@ -582,6 +922,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                             selected.add(i);
                           }
                         });
+                        // 批量通知父层：所有字符设为全局纯色
+                        for (int i = 0; i < _allChars.length; i++) {
+                          widget.onPerCharPureColorChanged
+                              ?.call(_allChars[i], global);
+                        }
                       }
                     : null,
                 child: const Text('强制设置'),
@@ -599,12 +944,32 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 2, vertical: 4),
                       child: Center(
-                        child: Text(
-                          _allChars[i],
-                          style: widget.uniformStyle.copyWith(
+                        child: Builder(builder: (context) {
+                          // Resolve per-character style with shadow color following character color when enabled.
+                          TextStyle st = widget.uniformStyle.copyWith(
                             color: charColors[i],
-                          ),
-                        ),
+                          );
+                          if (widget.uniformStyle.shadows != null &&
+                              widget.uniformStyle.shadows!.isNotEmpty) {
+                            final Shadow sh =
+                                widget.uniformStyle.shadows!.first;
+                            final int rgb = sh.color.value & 0x00FFFFFF;
+                            if (rgb == _kShadowFollowSentinelRGB &&
+                                st.color != null) {
+                              final int alpha = sh.color.alpha;
+                              st = st.copyWith(
+                                shadows: [
+                                  Shadow(
+                                    color: st.color!.withAlpha(alpha),
+                                    offset: sh.offset,
+                                    blurRadius: sh.blurRadius,
+                                  ),
+                                ],
+                              );
+                            }
+                          }
+                          return Text(_allChars[i], style: st);
+                        }),
                       ),
                     ),
                 ],
@@ -630,9 +995,14 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                               },
                             );
                             setState(() {
+                              // 更新该字符的色块与上行字符颜色
                               blockColors[i] = picked;
+                              charColors[i] = picked;
                               selected.add(i);
                             });
+                            // 通知父层：某个字符的纯色已更新
+                            widget.onPerCharPureColorChanged
+                                ?.call(_allChars[i], picked);
                           },
                           child: Container(
                             width: 22,
@@ -1043,14 +1413,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
 class GroupTextStyleEditorPanel extends StatefulWidget {
   final Map<TextGroup, TextStyle>? initial;
   final ValueChanged<Map<TextGroup, TextStyle>> onChanged;
-  // Emits accumulated per-character pure color overrides across groups
-  final ValueChanged<Map<String, Color>>? onPerCharColorsChanged;
 
   const GroupTextStyleEditorPanel({
     super.key,
     this.initial,
     required this.onChanged,
-    this.onPerCharColorsChanged,
   });
 
   @override
@@ -1060,7 +1427,6 @@ class GroupTextStyleEditorPanel extends StatefulWidget {
 
 class _GroupTextStyleEditorPanelState extends State<GroupTextStyleEditorPanel> {
   late Map<TextGroup, TextStyle> _styles;
-  final Map<String, Color> _perCharColors = <String, Color>{};
 
   @override
   void initState() {
@@ -1073,32 +1439,21 @@ class _GroupTextStyleEditorPanelState extends State<GroupTextStyleEditorPanel> {
     widget.onChanged(_styles);
   }
 
-  void _onPerCharChanged(String ch, Color color) {
-    setState(() {
-      _perCharColors[ch] = color;
-    });
-    widget.onPerCharColorsChanged?.call(_perCharColors);
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '天干',
-          group: TextGroup.tianGan,
           initialStyle: _styles[TextGroup.tianGan],
           onChanged: (s) => _update(TextGroup.tianGan, s),
-          onPerCharPureColorChanged: _onPerCharChanged,
           showInlineWheel: false,
         ),
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '地支',
-          group: TextGroup.diZhi,
           initialStyle: _styles[TextGroup.diZhi],
           onChanged: (s) => _update(TextGroup.diZhi, s),
-          onPerCharPureColorChanged: _onPerCharChanged,
           showInlineWheel: false,
         ),
         TextStyleEditorWidget(
