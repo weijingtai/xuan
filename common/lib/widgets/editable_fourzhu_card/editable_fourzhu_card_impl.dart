@@ -2191,18 +2191,72 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.showGripRows) topGripRow, // 顶部抓手行
+            // 顶部抓手行显示/隐藏动画（垂直尺寸过渡）
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              switchInCurve: Curves.easeInOutCubic,
+              switchOutCurve: Curves.easeInOutCubic,
+              transitionBuilder: (child, animation) => SizeTransition(
+                sizeFactor: animation,
+                axis: Axis.vertical,
+                child: child,
+              ),
+              child: widget.showGripRows ? topGripRow : const SizedBox.shrink(),
+            ),
             // 行内容区域
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (widget.showGripColumns) leftGripColumn, // 左侧行拖拽列
+                // 左侧抓手列显示/隐藏动画（水平尺寸过渡）
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 240),
+                  switchInCurve: Curves.easeInOutCubic,
+                  switchOutCurve: Curves.easeInOutCubic,
+                  transitionBuilder: (child, animation) => Align(
+                    alignment: Alignment.centerLeft,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axis: Axis.horizontal,
+                      child: child,
+                    ),
+                  ),
+                  child: widget.showGripColumns
+                      ? leftGripColumn
+                      : const SizedBox.shrink(),
+                ),
                 if (!hasRowTitleColumn) leftHeader, // 仅在无行标题列时渲染
                 dataGrid,
-                if (widget.showGripColumns) gripColumn, // 右侧行拖拽列
+                // 右侧抓手列显示/隐藏动画（水平尺寸过渡）
+                AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 240),
+                  switchInCurve: Curves.easeInOutCubic,
+                  switchOutCurve: Curves.easeInOutCubic,
+                  transitionBuilder: (child, animation) => Align(
+                    alignment: Alignment.centerRight,
+                    child: SizeTransition(
+                      sizeFactor: animation,
+                      axis: Axis.horizontal,
+                      child: child,
+                    ),
+                  ),
+                  child: widget.showGripColumns
+                      ? gripColumn
+                      : const SizedBox.shrink(),
+                ),
               ],
             ),
-            if (widget.showGripRows) gripRow, // 底部抓手行
+            // 底部抓手行显示/隐藏动画（垂直尺寸过渡）
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              switchInCurve: Curves.easeInOutCubic,
+              switchOutCurve: Curves.easeInOutCubic,
+              transitionBuilder: (child, animation) => SizeTransition(
+                sizeFactor: animation,
+                axis: Axis.vertical,
+                child: child,
+              ),
+              child: widget.showGripRows ? gripRow : const SizedBox.shrink(),
+            ),
           ],
         ),
         // 统一的全区域行拖拽 DragTarget：覆盖整个网格（包括 topGripRow 和 bottomGripRow）

@@ -295,28 +295,8 @@ class _EditableFourZhuCardDemoPageState
                                 },
                               ),
                             );
-                            final preview = _ThemePreview(
-                              controller: _themeController,
-                            );
-                            return isNarrow
-                                ? Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      editor,
-                                      const SizedBox(height: 12),
-                                      preview,
-                                    ],
-                                  )
-                                : Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      editor,
-                                      const SizedBox(width: 16),
-                                      Expanded(child: preview),
-                                    ],
-                                  );
+                            // 仅保留编辑面板，移除“预览”及其下方预览卡片
+                            return editor;
                           },
                         ),
                       ],
@@ -334,34 +314,17 @@ class _EditableFourZhuCardDemoPageState
                     TestPillarDraggable(type: PillarType.separator),
                   ],
                 ),
-                const SizedBox(height: 16),
-                // 外部“柱信息”拖拽源（仅用于列卡的插入演示）
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: const [
-                    TestPillarInfoDraggable(),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // 外部“行信息”拖拽源（仅用于行卡的插入演示）
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: const [
-                    TestRowInfoDraggable(),
-                    TestDividerRowDraggable(),
-                  ],
-                ),
                 const SizedBox(height: 24),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    // 分组字体编辑面板：允许天干/地支/纳音/空亡/柱标题/行标题分别调整
-                    SizedBox(
-                      width: 720,
-                      child: GroupTextStyleEditorPanel(
+                // 渲染设置（参考编辑页的分区样式）
+                _buildCardSection(
+                  title: '渲染设置',
+                  subtitle: _isEditable ? '编辑模式' : null,
+                  color: Colors.teal,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // 分组字体编辑面板：允许天干/地支/纳音/空亡/柱标题/行标题分别调整
+                      GroupTextStyleEditorPanel(
                         initial: _groupTextStyles,
                         onChanged: (m) {
                           setState(() {
@@ -369,337 +332,97 @@ class _EditableFourZhuCardDemoPageState
                           });
                         },
                       ),
-                    ),
-                    // 切换是否使用“独立映射渲染”模式
-                    SizedBox(
-                      width: 720,
-                      child: SwitchListTile(
+                      const SizedBox(height: 8),
+                      // 切换是否使用“独立映射渲染”模式
+                      SwitchListTile(
                         title: const Text('使用独立映射渲染'),
                         subtitle: const Text('禁用全局字体，仅按分组/行样式渲染'),
                         value: _useIndependentMapping,
                         onChanged: (v) =>
                             setState(() => _useIndependentMapping = v),
                       ),
-                    ),
-                    SizedBox(
-                      width: 720,
-                      child: SwitchListTile(
+                      // V3 彩色模式
+                      SwitchListTile(
                         title: const Text('V3 彩色默认模式（卡片级开关）'),
                         subtitle: const Text('天干/地支按字上色；支持明/暗两套调色盘'),
                         value: _v3ColorfulMode,
                         onChanged: (v) => setState(() => _v3ColorfulMode = v),
                       ),
-                    ),
-                    // 合并控制抓手显示的单个开关（同时控制行与列）
-                    SizedBox(
-                      width: 720,
-                      child: SwitchListTile(
+                      // 抓手显示开关（行与列）
+                      SwitchListTile(
                         title: const Text('显示抓手（行与列）'),
                         subtitle: const Text('单个开关同时控制顶部/底部抓手行与左右抓手列'),
                         value: _showGrips,
                         onChanged: (v) => setState(() => _showGrips = v),
                       ),
-                    ),
-                    // 仅展示 V3（独立抓手版），避免与旧版 V2 标题拖拽混淆
-                    // Padding(
-                    //   padding: const EdgeInsets.only(bottom: 8),
-                    //   child: Text(
-                    //     'V3（独立抓手版）：首行/首列仅通过抓手排序，标题不可拖拽',
-                    //     style: Theme.of(context)
-                    //         .textTheme
-                    //         .labelMedium
-                    //         ?.copyWith(fontWeight: FontWeight.w600),
-                    //   ),
-                    // ),
-                    // 单视图双轴拖拽的 V3 版本
-                    EditableFourZhuCardV3(
-                      pillarsNotifier: _pillarsPayloadNotifier,
-                      rowListNotifier: _rowsPayloadNotifier,
-                      paddingNotifier: _paddingNotifier,
-                      gender: Gender.male,
-                      colorfulMode: _v3ColorfulMode,
-                      showGripRows: _showGrips,
-                      showGripColumns: _showGrips,
-                      perCharColors: _perCharColors,
-                      // Bind global typography to V3
-                      globalFontFamily: _useIndependentMapping
-                          ? null
-                          : _themeController
-                              ?.theme.typography?.globalFontFamily,
-                      globalFontSize: _useIndependentMapping
-                          ? null
-                          : _themeController?.theme.typography?.globalFontSize,
-                      globalFontColor: _useIndependentMapping
-                          ? null
-                          : _themeController?.theme.typography?.globalFontColor,
-                      // Bind per-group typography to V3
-                      groupTextStyles: _groupTextStyles,
-                      // Bind theme-driven decoration to V3 card
-                      cardDecoration: BoxDecoration(
-                        color: _themeController?.resolveCardBackgroundColor() ??
-                            Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          _themeController?.resolveCardCornerRadius() ?? 12,
-                        ),
-                        boxShadow: _themeController?.resolveCardBoxShadow(),
-                        // Configurable card border from theme
-                        border: Border.all(
-                          color: _themeController?.resolveCardBorderColor() ??
-                              Theme.of(context).dividerColor.withOpacity(0.35),
-                          width:
-                              _themeController?.resolveCardBorderWidth() ?? 1,
-                        ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+                // 卡片示例（将 V3 卡片包裹在统一的 Section 卡片结构中）
+                _buildCardSection(
+                  title: '四柱卡片',
+                  subtitle: _isEditable ? '拖拽抓手重排' : null,
+                  color: Colors.indigo,
+                  child: EditableFourZhuCardV3(
+                    pillarsNotifier: _pillarsPayloadNotifier,
+                    rowListNotifier: _rowsPayloadNotifier,
+                    paddingNotifier: _paddingNotifier,
+                    gender: Gender.male,
+                    colorfulMode: _v3ColorfulMode,
+                    showGripRows: _showGrips,
+                    showGripColumns: _showGrips,
+                    perCharColors: _perCharColors,
+                    // Bind global typography to V3
+                    globalFontFamily: _useIndependentMapping
+                        ? null
+                        : _themeController?.theme.typography?.globalFontFamily,
+                    globalFontSize: _useIndependentMapping
+                        ? null
+                        : _themeController?.theme.typography?.globalFontSize,
+                    globalFontColor: _useIndependentMapping
+                        ? null
+                        : _themeController?.theme.typography?.globalFontColor,
+                    // Bind per-group typography to V3
+                    groupTextStyles: _groupTextStyles,
+                    // Bind theme-driven decoration to V3 card
+                    cardDecoration: BoxDecoration(
+                      color: _themeController?.resolveCardBackgroundColor() ??
+                          Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(
+                        _themeController?.resolveCardCornerRadius() ?? 12,
                       ),
-                      // Bind pillar decoration (margin/border) for dynamic sizing and offsets
-                      // Use THEME default margin as global fallback; per-column overrides come from payload.columnMargin
-                      pillarMargin: _theme.pillar?.defaultMargin ??
-                          const EdgeInsets.all(8),
-                      pillarPadding: _themeController?.resolvePillarPadding() ??
-                          const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
-                      pillarBorderWidth:
-                          _themeController?.resolvePillarBorderWidth() ?? 2,
-                      pillarBorderColor:
-                          _themeController?.resolvePillarBorderColor() ??
-                              Colors.red,
-                      pillarCornerRadius:
-                          _themeController?.resolvePillarCornerRadius() ?? 0,
-                      pillarBackgroundColor:
-                          _themeController?.resolvePillarBackgroundColor() ??
-                              Colors.transparent,
-                      pillarBoxShadow:
-                          _themeController?.resolvePillarBoxShadow(),
-                      // debugHysteresisOverlay: false,
-                    ),
-                  ],
-                ),
-                SizedBox(height: 18),
-                ValueListenableBuilder<CardMode>(
-                  valueListenable: _cardModeNotifier,
-                  builder: (context, value, child) {
-                    return Row(children: [
-                      ElevatedButton(
-                          onPressed: () {
-                            _cardModeNotifier.value = CardMode.normal;
-                          },
-                          child: Text(
-                            '普通模式',
-                            style: TextStyle(
-                                color: value == CardMode.normal
-                                    ? Colors.red
-                                    : Colors.black),
-                          )),
-                      ElevatedButton(
-                          onPressed: () {
-                            _cardModeNotifier.value = CardMode.column;
-                          },
-                          child: Text(
-                            '列模式',
-                            style: TextStyle(
-                                color: value == CardMode.column
-                                    ? Colors.red
-                                    : Colors.black),
-                          )),
-                      ElevatedButton(
-                          onPressed: () {
-                            _cardModeNotifier.value = CardMode.row;
-                          },
-                          child: Text(
-                            '行模式',
-                            style: TextStyle(
-                                color: value == CardMode.row
-                                    ? Colors.red
-                                    : Colors.black),
-                          )),
-                    ]);
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // 原始的 EditableFourZhuCard
-                _buildCardSection(
-                  title: '原始版本 (EditableFourZhuCard)',
-                  subtitle: _isEditable ? '拖拽列标题或底部👆重排列' : null,
-                  color: Colors.blue,
-                  child: EditableFourZhuCard(
-                    eightChars: _sample,
-                    isEditable: _isEditable,
-                    axis: Axis.horizontal,
-                    pillarOrder: _controller.pillars.value,
-                    rowConfigs: _controller.rows.value,
-                    cardStyle: _cardStyle,
-                    rowLabelResolver: _rowLabel,
-                    pillarLabelResolver: _pillarLabel,
-                    onPillarOrderChanged: _controller.setPillars,
-                    onRowConfigsChanged: _controller.setRows,
-                    onAddPillarRequested: () => _showAddMenu(context),
-                    // NEW: 传入控制器的覆盖数据
-                    columnOverrides: _controller.columnOverrides.value,
-                    pillarLabelOverrides:
-                        _controller.pillarLabelOverrides.value,
-                    rowOverrides: _controller.rowOverrides.value,
-                    rowLabelOverrides: _controller.rowLabelOverrides.value,
-                    // 使内层Card无视觉效果，与外层Card一致
-                    backgroundColor: Colors.transparent,
-                    padding: EdgeInsets.zero,
-                    elevation: 0,
-                    borderRadius: BorderRadius.zero,
-                  ),
-                  desiredWidth: _desiredColumnCardWidth,
-                ),
-
-                const SizedBox(height: 24),
-
-                // 列拖拽卡片
-                _buildCardSection(
-                  title: '列拖拽卡片 (ColumnReorderableFourZhuCard)',
-                  subtitle: _isEditable ? '拖拽列标题或底部👆重排列' : null,
-                  color: Colors.green,
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final maxW = constraints.maxWidth;
-                      final targetW = (_desiredColumnCardWidth ?? maxW)
-                          .clamp(0, maxW)
-                          .toDouble();
-                      return Align(
-                        alignment: Alignment.centerLeft,
-                        child: SizedBox(
-                          width: targetW,
-                          child: ColumnReorderableFourZhuCard(
-                            eightChars: _sample,
-                            isEditable: _isEditable,
-                            pillarOrder: _controller.pillars.value,
-                            rowConfigs: _controller.rows.value,
-                            cardStyle: _useIndependentMapping
-                                ? _cardStyle
-                                : (_themeController
-                                        ?.resolveCardStyle(_cardStyle) ??
-                                    _cardStyle),
-                            rowLabelResolver: _rowLabel,
-                            pillarLabelResolver: _pillarLabel,
-                            onPillarOrderChanged: _controller.setPillars,
-                            // Shared overrides wiring
-                            columnOverrides: _controller.columnOverrides.value,
-                            pillarLabelOverrides:
-                                _controller.pillarLabelOverrides.value,
-                            onColumnOverridesChanged:
-                                _controller.setColumnOverrides,
-                            onPillarLabelOverridesChanged:
-                                _controller.setPillarLabelOverrides,
-                            // New: read shared row-level overrides and labels
-                            rowOverrides: _controller.rowOverrides.value,
-                            rowLabelOverrides:
-                                _controller.rowLabelOverrides.value,
-                            // 缩放柱宽至当前宽度的50%
-                            pillarWidthScale: 0.5,
-                            // 接入内容驱动的期望卡片宽度回调
-                            onDesiredCardWidthChanged: (w) {
-                              if (_desiredColumnCardWidth != w) {
-                                WidgetsBinding.instance
-                                    .addPostFrameCallback((_) {
-                                  if (!mounted) return;
-                                  setState(() => _desiredColumnCardWidth = w);
-                                });
-                              }
-                            },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  desiredWidth: _desiredColumnCardWidth,
-                ),
-
-                const SizedBox(height: 24),
-
-                // 行拖拽卡片
-                _buildCardSection(
-                  title: '行拖拽卡片 (RowReorderableFourZhuCard)',
-                  subtitle: _isEditable ? '拖拽行右侧👆重排行' : null,
-                  color: Colors.orange,
-                  child: RowReorderableFourZhuCard(
-                    eightChars: _sample,
-                    isEditable: _isEditable,
-                    pillarOrder: _controller.pillars.value,
-                    rowConfigs: _controller.rows.value,
-                    cardStyle: _useIndependentMapping
-                        ? _cardStyle
-                        : (_themeController?.resolveCardStyle(_cardStyle) ??
-                            _cardStyle),
-                    rowLabelResolver: _rowLabel,
-                    pillarLabelResolver: _pillarLabel,
-                    // Shared overrides wiring
-                    rowOverrides: _controller.rowOverrides.value,
-                    rowLabelOverrides: _controller.rowLabelOverrides.value,
-                    onRowOverridesChanged: _controller.setRowOverrides,
-                    onRowLabelOverridesChanged:
-                        _controller.setRowLabelOverrides,
-                    // New: read-only column-level overrides and pillar label overrides
-                    columnOverrides: _controller.columnOverrides.value,
-                    pillarLabelOverrides:
-                        _controller.pillarLabelOverrides.value,
-                    // 新增：将行配置更新回传到控制器，保持单一数据源
-                    onRowConfigsChanged: _controller.setRows,
-                  ),
-                  desiredWidth: _desiredColumnCardWidth,
-                ),
-
-                const SizedBox(height: 24),
-
-                // 说明卡片
-                if (!_isEditable)
-                  Card(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.info_outline,
-                                size: 20,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                '使用说明',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
-                                    ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '点击右上角的编辑按钮进入编辑模式，即可拖拽调整列或行的顺序。',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            '• 原始版本：使用 LongPressDraggable 实现拖拽',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          Text(
-                            '• 列拖拽卡片：使用 ReorderableListView 实现列拖拽',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          Text(
-                            '• 行拖拽卡片：使用 ReorderableListView 实现行拖拽',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
+                      boxShadow: _themeController?.resolveCardBoxShadow(),
+                      // Configurable card border from theme
+                      border: Border.all(
+                        color: _themeController?.resolveCardBorderColor() ??
+                            Theme.of(context).dividerColor.withOpacity(0.35),
+                        width: _themeController?.resolveCardBorderWidth() ?? 1,
                       ),
                     ),
+                    // Bind pillar decoration (margin/border) for dynamic sizing and offsets
+                    // Use THEME default margin as global fallback; per-column overrides come from payload.columnMargin
+                    pillarMargin:
+                        _theme.pillar?.defaultMargin ?? const EdgeInsets.all(8),
+                    pillarPadding: _themeController?.resolvePillarPadding() ??
+                        const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 16),
+                    pillarBorderWidth:
+                        _themeController?.resolvePillarBorderWidth() ?? 2,
+                    pillarBorderColor:
+                        _themeController?.resolvePillarBorderColor() ??
+                            Colors.red,
+                    pillarCornerRadius:
+                        _themeController?.resolvePillarCornerRadius() ?? 0,
+                    pillarBackgroundColor:
+                        _themeController?.resolvePillarBackgroundColor() ??
+                            Colors.transparent,
+                    pillarBoxShadow: _themeController?.resolvePillarBoxShadow(),
+                    // debugHysteresisOverlay: false,
                   ),
+                ),
+                // 已移除：模式切换按钮与以下所有演示内容
               ],
             ),
           ),
