@@ -144,6 +144,7 @@ class CardSection {
     this.cornerRadius,
     this.padding,
     this.margin,
+    this.shadowColorFollowsBackground,
     this.shadowColor,
     this.shadowOffsetX,
     this.shadowOffsetY,
@@ -171,6 +172,10 @@ class CardSection {
   /// Outer margin; each component must be non-negative if provided.
   final EdgeInsets? margin;
 
+  /// When true, shadow color should follow the `backgroundColor`.
+  /// If no background color is set, shadow is considered not present.
+  final bool? shadowColorFollowsBackground;
+
   /// Box shadow color for the card surface.
   final Color? shadowColor;
 
@@ -196,6 +201,7 @@ class CardSection {
       'cornerRadius': cornerRadius,
       'padding': _edgeToJson(padding),
       'margin': _edgeToJson(margin),
+      'shadowColorFollowsBackground': shadowColorFollowsBackground,
       'shadowColor': shadowColor?.value,
       'shadowOffsetX': shadowOffsetX,
       'shadowOffsetY': shadowOffsetY,
@@ -221,6 +227,8 @@ class CardSection {
       cornerRadius: (json['cornerRadius'] as num?)?.toDouble(),
       padding: _edgeFromJson(json['padding']),
       margin: _edgeFromJson(json['margin']),
+      shadowColorFollowsBackground:
+          json['shadowColorFollowsBackground'] as bool?,
       shadowColor:
           json['shadowColor'] is int ? Color(json['shadowColor'] as int) : null,
       shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
@@ -275,6 +283,7 @@ class PillarSection {
     this.cornerRadius,
     this.backgroundColor,
     this.perPillarMargin,
+    this.shadowColorFollowsBackground,
     this.shadowColor,
     this.shadowOffsetX,
     this.shadowOffsetY,
@@ -303,6 +312,10 @@ class PillarSection {
   /// Only keys in {year, month, day, hour, luckCycle} are allowed.
   final Map<PillarType, EdgeInsets>? perPillarMargin;
 
+  /// When true, shadow color should follow the `backgroundColor`.
+  /// If no background color is set, shadow is considered not present.
+  final bool? shadowColorFollowsBackground;
+
   /// Box shadow color for pillar containers.
   final Color? shadowColor;
 
@@ -330,6 +343,7 @@ class PillarSection {
       'perPillarMargin': perPillarMargin?.map(
         (k, v) => MapEntry(k.name, _edgeToJson(v)),
       ),
+      'shadowColorFollowsBackground': shadowColorFollowsBackground,
       'shadowColor': shadowColor?.value,
       'shadowOffsetX': shadowOffsetX,
       'shadowOffsetY': shadowOffsetY,
@@ -370,6 +384,8 @@ class PillarSection {
           ? Color(json['backgroundColor'] as int)
           : null,
       perPillarMargin: ppm,
+      shadowColorFollowsBackground:
+          json['shadowColorFollowsBackground'] as bool?,
       shadowColor:
           json['shadowColor'] is int ? Color(json['shadowColor'] as int) : null,
       shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),

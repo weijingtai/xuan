@@ -155,7 +155,9 @@ class EditableFourZhuThemeController {
   List<BoxShadow>? resolveCardBoxShadow() {
     final c = theme.card;
     if (c == null) return null;
-    final color = c.shadowColor;
+    final Color? color = (c.shadowColorFollowsBackground == true)
+        ? c.backgroundColor
+        : c.shadowColor;
     if (color == null) return null;
     final dx = c.shadowOffsetX ?? 0;
     final dy = c.shadowOffsetY ?? 0;
@@ -170,7 +172,9 @@ class EditableFourZhuThemeController {
   List<BoxShadow>? resolvePillarBoxShadow() {
     final p = theme.pillar;
     if (p == null) return null;
-    final color = p.shadowColor;
+    final Color? color = (p.shadowColorFollowsBackground == true)
+        ? p.backgroundColor
+        : p.shadowColor;
     if (color == null) return null;
     final dx = p.shadowOffsetX ?? 0;
     final dy = p.shadowOffsetY ?? 0;
