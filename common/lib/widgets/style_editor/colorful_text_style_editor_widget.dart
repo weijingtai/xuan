@@ -515,6 +515,9 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                                 _perCharColorsLight[i] = picked;
                               }
                             });
+                            // 通知父层：彩色模式下某个字符颜色已更新
+                            widget.onPerCharPureColorChanged
+                                ?.call(_allChars[i], picked);
                           },
                           child: Container(
                             width: 22,
@@ -576,6 +579,13 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       ColorPickerType.custom: false,
                     },
                   );
+                  // 记录将被更新的索引（旧全局纯色匹配的项）
+                  final List<int> changed = <int>[];
+                  for (int i = 0; i < _allChars.length; i++) {
+                    if (charColors[i] == global || blockColors[i] == global) {
+                      changed.add(i);
+                    }
+                  }
                   setState(() {
                     // 仅批量更新与当前“纯色”一致的项
                     for (int i = 0; i < _allChars.length; i++) {
@@ -595,6 +605,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                   });
                   // 通知父层同步更新统一颜色并触发 onChanged
                   widget.onGlobalPureColorChanged?.call(picked);
+                  // 批量通知父层：所有匹配旧全局纯色的字符更新为新纯色
+                  for (final i in changed) {
+                    widget.onPerCharPureColorChanged
+                        ?.call(_allChars[i], picked);
+                  }
                 },
                 child: Container(
                   width: 22,
@@ -620,6 +635,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                             selected.add(i);
                           }
                         });
+                        // 批量通知父层：所有字符设为全局纯色
+                        for (int i = 0; i < _allChars.length; i++) {
+                          widget.onPerCharPureColorChanged
+                              ?.call(_allChars[i], global);
+                        }
                       }
                     : null,
                 child: const Text('强制设置'),

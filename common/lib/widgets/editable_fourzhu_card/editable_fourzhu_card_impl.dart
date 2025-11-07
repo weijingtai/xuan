@@ -3677,8 +3677,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final Color c = _colorForTianGanChar(t.name);
       base = base.copyWith(color: c);
     }
-    // In pure color mode, allow per-character color overrides
-    if (!widget.colorfulMode && widget.perCharColors != null) {
+    // Allow per-character overrides in both modes; overrides take precedence
+    if (widget.perCharColors != null) {
       final Color? override = widget.perCharColors![t.name];
       if (override != null) {
         base = base.copyWith(color: override);
@@ -3705,8 +3705,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final Color c = _colorForDiZhiChar(d.name);
       base = base.copyWith(color: c);
     }
-    // In pure color mode, allow per-character color overrides
-    if (!widget.colorfulMode && widget.perCharColors != null) {
+    // Allow per-character overrides in both modes; overrides take precedence
+    if (widget.perCharColors != null) {
       final Color? override = widget.perCharColors![d.name];
       if (override != null) {
         base = base.copyWith(color: override);
