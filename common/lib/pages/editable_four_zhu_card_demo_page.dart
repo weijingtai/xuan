@@ -48,6 +48,8 @@ class _EditableFourZhuCardDemoPageState
   bool _useIndependentMapping = true;
   // V3 卡片级彩色模式开关（使用按字调色盘，支持深/浅色）
   bool _v3ColorfulMode = false;
+  // V3 抓手显示开关（合并）：一个总开关同时控制抓手行与抓手列
+  bool _showGrips = true;
   double? _desiredColumnCardWidth;
 
   late EightChars _sample;
@@ -388,17 +390,27 @@ class _EditableFourZhuCardDemoPageState
                         onChanged: (v) => setState(() => _v3ColorfulMode = v),
                       ),
                     ),
-                    // 仅展示 V3（独立抓手版），避免与旧版 V2 标题拖拽混淆
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: Text(
-                        'V3（独立抓手版）：首行/首列仅通过抓手排序，标题不可拖拽',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelMedium
-                            ?.copyWith(fontWeight: FontWeight.w600),
+                    // 合并控制抓手显示的单个开关（同时控制行与列）
+                    SizedBox(
+                      width: 720,
+                      child: SwitchListTile(
+                        title: const Text('显示抓手（行与列）'),
+                        subtitle: const Text('单个开关同时控制顶部/底部抓手行与左右抓手列'),
+                        value: _showGrips,
+                        onChanged: (v) => setState(() => _showGrips = v),
                       ),
                     ),
+                    // 仅展示 V3（独立抓手版），避免与旧版 V2 标题拖拽混淆
+                    // Padding(
+                    //   padding: const EdgeInsets.only(bottom: 8),
+                    //   child: Text(
+                    //     'V3（独立抓手版）：首行/首列仅通过抓手排序，标题不可拖拽',
+                    //     style: Theme.of(context)
+                    //         .textTheme
+                    //         .labelMedium
+                    //         ?.copyWith(fontWeight: FontWeight.w600),
+                    //   ),
+                    // ),
                     // 单视图双轴拖拽的 V3 版本
                     EditableFourZhuCardV3(
                       pillarsNotifier: _pillarsPayloadNotifier,
@@ -406,6 +418,8 @@ class _EditableFourZhuCardDemoPageState
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
                       colorfulMode: _v3ColorfulMode,
+                      showGripRows: _showGrips,
+                      showGripColumns: _showGrips,
                       perCharColors: _perCharColors,
                       // Bind global typography to V3
                       globalFontFamily: _useIndependentMapping
@@ -427,14 +441,11 @@ class _EditableFourZhuCardDemoPageState
                         borderRadius: BorderRadius.circular(
                           _themeController?.resolveCardCornerRadius() ?? 12,
                         ),
-                        boxShadow:
-                            _themeController?.resolveCardBoxShadow(),
+                        boxShadow: _themeController?.resolveCardBoxShadow(),
                         // Configurable card border from theme
                         border: Border.all(
                           color: _themeController?.resolveCardBorderColor() ??
-                              Theme.of(context)
-                                  .dividerColor
-                                  .withOpacity(0.35),
+                              Theme.of(context).dividerColor.withOpacity(0.35),
                           width:
                               _themeController?.resolveCardBorderWidth() ?? 1,
                         ),
@@ -892,11 +903,10 @@ class _ThemePreview extends StatelessWidget {
                                   .withOpacity(0.6),
                               width: c?.resolvePillarBorderWidth() ?? 0,
                             ),
-                            color:
-                                c?.resolvePillarBackgroundColor() ??
-                                    Theme.of(context)
-                                        .colorScheme
-                                        .surfaceContainerHighest,
+                            color: c?.resolvePillarBackgroundColor() ??
+                                Theme.of(context)
+                                    .colorScheme
+                                    .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(_pillarLabel(t, context)),

@@ -44,6 +44,10 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   // Optional: per-character color overrides (applied in pure color mode)
   // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
   final Map<String, Color>? perCharColors;
+  // New: toggle visibility of end grip rows and columns
+  // When disabled, the visual grip rows/columns are hidden from the card.
+  final bool showGripRows;
+  final bool showGripColumns;
   // Optional: decorate drag feedback (overlay proxy)
   final Widget Function(BuildContext context, Widget child)?
       dragFeedbackBuilder;
@@ -84,6 +88,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.rowInsertDecorationBuilder,
     this.debugHysteresisOverlay = false,
     this.colorfulMode = false,
+    this.showGripRows = true,
+    this.showGripColumns = true,
   });
 
   @override
@@ -413,6 +419,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double _externalRowHoverHeight = 0.0;
   double _externalColHoverWidth = 0.0;
 
+  /// 当“抓手显示/隐藏”触发尺寸变化时，优先使用居中对齐以获得更顺滑的动画；
+  /// 其他情况（如外部柱/行悬停导致容器扩展）则使用顶部起始对齐。
+  bool _preferCenterAlignment = false;
+
   // Drag feedback status notifiers: control dynamic "插入"/"删除" prompts on the dragged piece itself
   // When hovering a valid insert target inside the card, set insert=true, delete=false
   // When leaving card targets (outside card), set delete=true, insert=false
@@ -526,8 +536,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         padding: widget.paddingNotifier.value,
         columnWidthOverrides: _columnWidthOverrides,
         rowHeightOverrides: _rowHeightOverrides,
-        dragHandleRowHeight: dragHandleRowHeight,
-        dragHandleColWidth: dragHandleColWidth,
+        // 抓手尺寸按可见性进行“有效尺寸”置零，确保尺寸实时变化
+        dragHandleRowHeight: widget.showGripRows ? dragHandleRowHeight : 0.0,
+        dragHandleColWidth: widget.showGripColumns ? dragHandleColWidth : 0.0,
       ),
     );
 
@@ -544,8 +555,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         padding: widget.paddingNotifier.value,
         columnWidthOverrides: _columnWidthOverrides,
         rowHeightOverrides: _rowHeightOverrides,
-        dragHandleRowHeight: dragHandleRowHeight,
-        dragHandleColWidth: dragHandleColWidth,
+        // 抓手尺寸按可见性进行“有效尺寸”置零，确保尺寸实时变化
+        dragHandleRowHeight: widget.showGripRows ? dragHandleRowHeight : 0.0,
+        dragHandleColWidth: widget.showGripColumns ? dragHandleColWidth : 0.0,
       );
       // 同步更新尺寸（包含装饰）
       _sizeNotifier.value = _computeSizeWithDecorations();
@@ -553,6 +565,43 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     widget.pillarsNotifier.addListener(_layoutModelSyncListener);
     widget.rowListNotifier.addListener(_layoutModelSyncListener);
     widget.paddingNotifier.addListener(_layoutModelSyncListener);
+  }
+
+  /// 在父组件传入的属性发生变化时同步更新布局模型与尺寸
+  ///
+  /// 功能描述：
+  /// - 当 `showGripRows` 或 `showGripColumns` 开关变化时，实时将抓手的“有效尺寸”置零或恢复，
+  ///   并刷新 `_layoutNotifier` 与 `_sizeNotifier`，使 Card 宽高与 UI 同步更新。
+  /// 参数说明：
+  /// - `oldWidget`: 旧的组件实例，用于对比属性变化。
+  /// 返回值：
+  /// - 无（方法用于触发内部状态与尺寸的同步更新）。
+  @override
+  void didUpdateWidget(covariant EditableFourZhuCardV3 oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final bool rowsVisibilityChanged =
+        oldWidget.showGripRows != widget.showGripRows;
+    final bool colsVisibilityChanged =
+        oldWidget.showGripColumns != widget.showGripColumns;
+
+    if (rowsVisibilityChanged || colsVisibilityChanged) {
+      // 抓手显示/隐藏时，切换为居中对齐以提升视觉过渡效果
+      _preferCenterAlignment = true;
+      // 重新构建布局模型，按可见性设置抓手“有效尺寸”
+      _layoutNotifier.value = CardLayoutModel.fromNotifiers(
+        pillars: widget.pillarsNotifier.value,
+        rows: widget.rowListNotifier.value,
+        padding: widget.paddingNotifier.value,
+        columnWidthOverrides: _columnWidthOverrides,
+        rowHeightOverrides: _rowHeightOverrides,
+        dragHandleRowHeight: widget.showGripRows ? dragHandleRowHeight : 0.0,
+        dragHandleColWidth: widget.showGripColumns ? dragHandleColWidth : 0.0,
+      );
+
+      // 刷新尺寸（包含装饰），确保父级约束与布局实时更新
+      _sizeNotifier.value = _computeSizeWithDecorations();
+    }
   }
 
   @override
@@ -599,11 +648,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         return Stack(
           children: [
             AnimatedContainer(
-              duration: const Duration(milliseconds: 80),
-              curve: Curves.easeOutCubic,
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeInOutCubic,
               key: _cardKey,
               width: size.width + extraColWidth,
               height: size.height + extraRowHeight,
+              alignment: _preferCenterAlignment
+                  ? Alignment.center
+                  : AlignmentDirectional.topStart,
               clipBehavior: Clip.hardEdge,
               decoration: widget.cardDecoration ??
                   BoxDecoration(
@@ -632,6 +684,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       (data is TitleColumnPayload);
                   if (ok) {
                     setState(() {
+                      // 外部悬停驱动的尺寸扩展：回到顶部起始对齐
+                      _preferCenterAlignment = false;
                       if (data is PillarPayload || data is PillarType) {
                         _hoveringExternalPillar = true;
                         // 设置默认插入索引为末尾，onMove会更新为实际位置
@@ -1202,7 +1256,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                           absRowIndex: absRowIdx),
                                     ),
                                 // 向右偏移握手列宽度，使反馈紧邻光标右侧
-                                dragHandleColWidth,
+                                (widget.showGripColumns
+                                    ? dragHandleColWidth
+                                    : 0.0),
                               ),
                               childWhenDragging: const SizedBox.shrink(),
                               child: MouseRegion(
@@ -2135,18 +2191,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            topGripRow, // 顶部抓手行
+            if (widget.showGripRows) topGripRow, // 顶部抓手行
             // 行内容区域
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                leftGripColumn, // 左侧行拖拽列
+                if (widget.showGripColumns) leftGripColumn, // 左侧行拖拽列
                 if (!hasRowTitleColumn) leftHeader, // 仅在无行标题列时渲染
                 dataGrid,
-                gripColumn, // 右侧行拖拽列
+                if (widget.showGripColumns) gripColumn, // 右侧行拖拽列
               ],
             ),
-            gripRow, // 底部抓手行
+            if (widget.showGripRows) gripRow, // 底部抓手行
           ],
         ),
         // 统一的全区域行拖拽 DragTarget：覆盖整个网格（包括 topGripRow 和 bottomGripRow）
@@ -2212,7 +2268,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final local = box.globalToLocal(details.offset);
                 // DragTarget 现在覆盖整个 Stack（包括 topGripRow），local.dy = 0 对应 topGripRow 顶部
                 // 需要减去 topGripRow 的高度，使 dy 对应行内容区域的开始位置
-                final dy = local.dy - dragHandleRowHeight;
+                final dy = local.dy -
+                    (widget.showGripRows ? dragHandleRowHeight : 0.0);
                 // 现在 dy = 0 对应 leftGripColumn 顶部（行内容开始）
                 // _computeRowInsertIndexFromDyMidpoint 的 acc 也从 0 开始（行内容开始）
                 // 两者坐标系一致

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../editable_fourzhu_card/text_groups.dart';
+import 'text_style_editor_widget.dart';
 
 // Sentinel RGB used to signal shadow follows character color
 const int _kShadowFollowSentinelRGB = 0x00FEED;
@@ -175,7 +176,8 @@ class _ColorfulTextStyleEditorWidgetState
                     );
                     setState(() {
                       // 保留当前透明度，更新阴影颜色
-                      _shadowColor = picked.withAlpha((_shadowOpacity * 255).round());
+                      _shadowColor =
+                          picked.withAlpha((_shadowOpacity * 255).round());
                     });
                     _emit();
                   },
@@ -212,7 +214,8 @@ class _ColorfulTextStyleEditorWidgetState
                       _shadowOpacity = v;
                       if (!_shadowFollowCharColor) {
                         // 非跟随模式下同步 alpha 到阴影颜色本身
-                        _shadowColor = _shadowColor.withAlpha((v * 255).round());
+                        _shadowColor =
+                            _shadowColor.withAlpha((v * 255).round());
                       }
                     });
                     _emit();
@@ -506,38 +509,50 @@ class _ColorfulTextStyleEditorWidgetState
                     ],
                   ),
                 ],
-                // 将 Light/Dark 预览嵌入对应字体设置卡片（仅天干/地支）
-                if (widget.label == '天干' || widget.label == '地支') ...[
-                  const SizedBox(height: 12),
-                  _DualThemeColorPreview(
-                    key: _previewKey,
-                    group: widget.group ??
-                        (widget.label == '天干'
-                            ? TextGroup.tianGan
-                            : TextGroup.diZhi),
-                    uniformStyle: TextStyle(
-                      fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
-                      fontSize: _fontSize,
-                      fontWeight: _fontWeight,
-                      color: _color,
-                      shadows: _shadowEnabled
-                          ? [
-                              Shadow(
-                                color: _shadowFollowCharColor
-                                    ? Color((((_shadowOpacity * 255).round()) <<
-                                            24) |
-                                        _kShadowFollowSentinelRGB)
-                                    : _shadowColor,
-                                offset: Offset(_shadowOffsetX, _shadowOffsetY),
-                                blurRadius: _shadowBlurRadius,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
-                    onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
+                // 将 Light/Dark 预览嵌入对应字体设置卡片（所有分组均显示）
+                const SizedBox(height: 12),
+                _DualThemeColorPreview(
+                  key: _previewKey,
+                  group: widget.group ??
+                      (() {
+                        switch (widget.label) {
+                          case '天干':
+                            return TextGroup.tianGan;
+                          case '地支':
+                            return TextGroup.diZhi;
+                          case '纳音':
+                            return TextGroup.naYin;
+                          case '空亡':
+                            return TextGroup.kongWang;
+                          case '柱标题':
+                            return TextGroup.columnTitle;
+                          case '行标题':
+                          default:
+                            return TextGroup.rowTitle;
+                        }
+                      })(),
+                  uniformStyle: TextStyle(
+                    fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
+                    fontSize: _fontSize,
+                    fontWeight: _fontWeight,
+                    color: _color,
+                    shadows: _shadowEnabled
+                        ? [
+                            Shadow(
+                              color: _shadowFollowCharColor
+                                  ? Color(
+                                      (((_shadowOpacity * 255).round()) << 24) |
+                                          _kShadowFollowSentinelRGB)
+                                  : _shadowColor,
+                              offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                              blurRadius: _shadowBlurRadius,
+                            ),
+                          ]
+                        : null,
                   ),
-                ],
+                  onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
+                  onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
+                ),
                 const SizedBox(height: 12),
                 // Shadow configuration section
                 _buildShadowSection(),
@@ -667,7 +682,20 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
     if (g == TextGroup.diZhi) {
       return const ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
     }
-    return const [];
+    // 为其他分组提供简短示例文本，避免空表导致 TableRow 异常
+    if (g == TextGroup.naYin) {
+      return const ['纳音'];
+    }
+    if (g == TextGroup.kongWang) {
+      return const ['空亡'];
+    }
+    if (g == TextGroup.columnTitle) {
+      return const ['柱标题'];
+    }
+    if (g == TextGroup.rowTitle) {
+      return const ['行标题'];
+    }
+    return const ['示例'];
   }
 
   /// Default demo color mapping per character（不随亮暗变化，颜色即为所见）。
@@ -1456,28 +1484,32 @@ class _GroupTextStyleEditorPanelState extends State<GroupTextStyleEditorPanel> {
           onChanged: (s) => _update(TextGroup.diZhi, s),
           showInlineWheel: false,
         ),
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '纳音',
           initialStyle: _styles[TextGroup.naYin],
           onChanged: (s) => _update(TextGroup.naYin, s),
+          group: TextGroup.naYin,
           showInlineWheel: false,
         ),
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '空亡',
           initialStyle: _styles[TextGroup.kongWang],
           onChanged: (s) => _update(TextGroup.kongWang, s),
+          group: TextGroup.kongWang,
           showInlineWheel: false,
         ),
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '柱标题',
           initialStyle: _styles[TextGroup.columnTitle],
           onChanged: (s) => _update(TextGroup.columnTitle, s),
+          group: TextGroup.columnTitle,
           showInlineWheel: false,
         ),
-        ColorfulTextStyleEditorWidget(
+        TextStyleEditorWidget(
           label: '行标题',
           initialStyle: _styles[TextGroup.rowTitle],
           onChanged: (s) => _update(TextGroup.rowTitle, s),
+          group: TextGroup.rowTitle,
           showInlineWheel: false,
         ),
       ],

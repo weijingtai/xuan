@@ -104,6 +104,7 @@ class MyApp extends StatelessWidget {
       darkTheme: AppThemes.darkTheme, // 设置深色主题
       themeMode: ThemeMode.system, // 跟随系统设置切换
       initialRoute: '/common/editable_card_demo',
+      // initialRoute: '/common/four_zhu_edit',
       onGenerateRoute: NavigatorGenerator.generateRoute,
     );
   }

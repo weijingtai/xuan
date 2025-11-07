@@ -5,8 +5,7 @@ import '../editable_fourzhu_card/text_groups.dart';
 // Sentinel RGB used to signal shadow follows character color
 const int _kShadowFollowSentinelRGB = 0x00FEED;
 
-// 颜色方案模式：纯色 / 色彩（顶层枚举，避免嵌套在类中）
-enum ColorPreviewMode { pure, colorful }
+// 颜色方案模式相关已移除，统一采用“纯色”模式展示
 
 /// TextStyleEditorWidget
 /// A reusable editor for adjusting a single `TextStyle` (font family, size,
@@ -506,38 +505,50 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
                     ],
                   ),
                 ],
-                // 将 Light/Dark 预览嵌入对应字体设置卡片（仅天干/地支）
-                if (widget.label == '天干' || widget.label == '地支') ...[
-                  const SizedBox(height: 12),
-                  _DualThemeColorPreview(
-                    key: _previewKey,
-                    group: widget.group ??
-                        (widget.label == '天干'
-                            ? TextGroup.tianGan
-                            : TextGroup.diZhi),
-                    uniformStyle: TextStyle(
-                      fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
-                      fontSize: _fontSize,
-                      fontWeight: _fontWeight,
-                      color: _color,
-                      shadows: _shadowEnabled
-                          ? [
-                              Shadow(
-                                color: _shadowFollowCharColor
-                                    ? Color((((_shadowOpacity * 255).round()) <<
-                                            24) |
-                                        _kShadowFollowSentinelRGB)
-                                    : _shadowColor,
-                                offset: Offset(_shadowOffsetX, _shadowOffsetY),
-                                blurRadius: _shadowBlurRadius,
-                              ),
-                            ]
-                          : null,
-                    ),
-                    onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
-                    onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
+                // 将 Light/Dark 预览嵌入对应字体设置卡片（所有分组均显示）
+                const SizedBox(height: 12),
+                _DualThemeColorPreview(
+                  key: _previewKey,
+                  group: widget.group ??
+                      (() {
+                        switch (widget.label) {
+                          case '天干':
+                            return TextGroup.tianGan;
+                          case '地支':
+                            return TextGroup.diZhi;
+                          case '纳音':
+                            return TextGroup.naYin;
+                          case '空亡':
+                            return TextGroup.kongWang;
+                          case '柱标题':
+                            return TextGroup.columnTitle;
+                          case '行标题':
+                          default:
+                            return TextGroup.rowTitle;
+                        }
+                      })(),
+                  uniformStyle: TextStyle(
+                    fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
+                    fontSize: _fontSize,
+                    fontWeight: _fontWeight,
+                    color: _color,
+                    shadows: _shadowEnabled
+                        ? [
+                            Shadow(
+                              color: _shadowFollowCharColor
+                                  ? Color(
+                                      (((_shadowOpacity * 255).round()) << 24) |
+                                          _kShadowFollowSentinelRGB)
+                                  : _shadowColor,
+                              offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                              blurRadius: _shadowBlurRadius,
+                            ),
+                          ]
+                        : null,
                   ),
-                ],
+                  onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
+                  onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
+                ),
                 const SizedBox(height: 12),
                 // Shadow configuration section
                 _buildShadowSection(),
@@ -578,12 +589,9 @@ class _DualThemeColorPreview extends StatefulWidget {
 }
 
 class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
-  ColorPreviewMode _mode = ColorPreviewMode.colorful;
+  // 仅保留“纯色”模式，移除色彩模式切换
   // 所有字符（根据分组）
   late final List<String> _allChars;
-  // 逐字颜色（分别维护 Light 与 Dark 的独立列表）
-  late List<Color> _perCharColorsLight;
-  late List<Color> _perCharColorsDark;
   // 纯色表格的选中状态（仅用于高亮显示，不改变纯色）
   final Set<int> _pureSelectedLight = <int>{};
   final Set<int> _pureSelectedDark = <int>{};
@@ -600,9 +608,6 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
   void initState() {
     super.initState();
     _allChars = _orderedChars(widget.group);
-    final defaults = _allChars.map((ch) => _defaultColorForChar(ch)).toList();
-    _perCharColorsLight = List<Color>.from(defaults);
-    _perCharColorsDark = List<Color>.from(defaults);
     _pureGlobalColorLight = Colors.black;
     _pureGlobalColorDark = Colors.white;
     _pureBlockColorsLight = List<Color>.filled(
@@ -667,7 +672,20 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
     if (g == TextGroup.diZhi) {
       return const ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
     }
-    return const [];
+    // 为非逐字分组提供示例文本，避免空表导致 TableRow 异常
+    if (g == TextGroup.naYin) {
+      return const ['纳音'];
+    }
+    if (g == TextGroup.kongWang) {
+      return const ['空亡'];
+    }
+    if (g == TextGroup.columnTitle) {
+      return const ['柱标题'];
+    }
+    if (g == TextGroup.rowTitle) {
+      return const ['行标题'];
+    }
+    return const ['示例'];
   }
 
   /// Default demo color mapping per character（不随亮暗变化，颜色即为所见）。
@@ -724,126 +742,13 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
     }
   }
 
-  /// 构建两行 N 列表格：上行为文字，下行为色块；每列对应一个字符。
-  Widget _twoRowTable(Brightness b) {
-    final List<Color> colors =
-        b == Brightness.dark ? _perCharColorsDark : _perCharColorsLight;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          // 使用 Table 保持两行 N 列，不随宽度折行。
-          return Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              // 上行：文字，颜色与下方色块一致，字体家族与粗细来自 uniformStyle
-              TableRow(
-                children: [
-                  for (int i = 0; i < _allChars.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 4),
-                      child: Center(
-                        child: Builder(builder: (context) {
-                          // Resolve per-character style with shadow color following character color when enabled.
-                          TextStyle st = widget.uniformStyle.copyWith(
-                            color: colors[i],
-                          );
-                          if (widget.uniformStyle.shadows != null &&
-                              widget.uniformStyle.shadows!.isNotEmpty) {
-                            final Shadow sh =
-                                widget.uniformStyle.shadows!.first;
-                            final int rgb = sh.color.value & 0x00FFFFFF;
-                            if (rgb == _kShadowFollowSentinelRGB &&
-                                st.color != null) {
-                              final int alpha = sh.color.alpha;
-                              st = st.copyWith(
-                                shadows: [
-                                  Shadow(
-                                    color: st.color!.withAlpha(alpha),
-                                    offset: sh.offset,
-                                    blurRadius: sh.blurRadius,
-                                  ),
-                                ],
-                              );
-                            }
-                          }
-                          return Text(_allChars[i], style: st);
-                        }),
-                      ),
-                    ),
-                ],
-              ),
-              // 下行：方形色块，可点击弹出颜色选择器，设置后文字与色块同步更新
-              TableRow(
-                children: [
-                  for (int i = 0; i < _allChars.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 4),
-                      child: Center(
-                        child: InkWell(
-                          onTap: () async {
-                            final picked = await showColorPickerDialog(
-                              context,
-                              colors[i],
-                              title: Text('选择颜色 - ${_allChars[i]}'),
-                              pickersEnabled: const {
-                                ColorPickerType.wheel: true,
-                                ColorPickerType.accent: true,
-                                ColorPickerType.primary: true,
-                                ColorPickerType.custom: false,
-                              },
-                            );
-                            setState(() {
-                              if (b == Brightness.dark) {
-                                _perCharColorsDark[i] = picked;
-                              } else {
-                                _perCharColorsLight[i] = picked;
-                              }
-                            });
-                            // 通知父层：彩色模式下某个字符颜色已更新
-                            widget.onPerCharPureColorChanged
-                                ?.call(_allChars[i], picked);
-                          },
-                          child: Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: colors[i],
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withValues(alpha: 0.4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
+  // 色彩模式表格已移除，仅保留纯色预览表格
 
   /// 纯色两行预览表格。支持“全部颜色”批量更新：仅更新当前与“全部色块”一致的字符与色块。
   /// 布局为：顶部“全部颜色”控制，其次上行字符、下行色块，两行 N 列。
   Widget _pureColorTable(Brightness b) {
-    final Set<int> selected =
-        b == Brightness.dark ? _pureSelectedDark : _pureSelectedLight;
-    final List<Color> charColors =
-        b == Brightness.dark ? _pureCharColorsDark : _pureCharColorsLight;
-    final List<Color> blockColors =
-        b == Brightness.dark ? _pureBlockColorsDark : _pureBlockColorsLight;
     final Color global =
         b == Brightness.dark ? _pureGlobalColorDark : _pureGlobalColorLight;
-    final bool hasMismatch = charColors.any((c) => c != global) ||
-        blockColors.any((c) => c != global);
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       child: Column(
@@ -866,24 +771,7 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       ColorPickerType.custom: false,
                     },
                   );
-                  // 记录将被更新的索引（旧全局纯色匹配的项）
-                  final List<int> changed = <int>[];
-                  for (int i = 0; i < _allChars.length; i++) {
-                    if (charColors[i] == global || blockColors[i] == global) {
-                      changed.add(i);
-                    }
-                  }
                   setState(() {
-                    // 仅批量更新与当前“纯色”一致的项
-                    for (int i = 0; i < _allChars.length; i++) {
-                      if (charColors[i] == global) {
-                        charColors[i] = picked;
-                      }
-                      if (blockColors[i] == global) {
-                        blockColors[i] = picked;
-                        selected.add(i);
-                      }
-                    }
                     if (b == Brightness.dark) {
                       _pureGlobalColorDark = picked;
                     } else {
@@ -892,11 +780,6 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                   });
                   // 通知父层同步更新统一颜色并触发 onChanged
                   widget.onGlobalPureColorChanged?.call(picked);
-                  // 批量通知父层：所有匹配旧全局纯色的字符更新为新纯色
-                  for (final i in changed) {
-                    widget.onPerCharPureColorChanged
-                        ?.call(_allChars[i], picked);
-                  }
                 },
                 child: Container(
                   width: 22,
@@ -910,120 +793,6 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              TextButton(
-                onPressed: hasMismatch
-                    ? () {
-                        setState(() {
-                          for (int i = 0; i < _allChars.length; i++) {
-                            charColors[i] = global;
-                            blockColors[i] = global;
-                            selected.add(i);
-                          }
-                        });
-                        // 批量通知父层：所有字符设为全局纯色
-                        for (int i = 0; i < _allChars.length; i++) {
-                          widget.onPerCharPureColorChanged
-                              ?.call(_allChars[i], global);
-                        }
-                      }
-                    : null,
-                child: const Text('强制设置'),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Table(
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              TableRow(
-                children: [
-                  for (int i = 0; i < _allChars.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 4),
-                      child: Center(
-                        child: Builder(builder: (context) {
-                          // Resolve per-character style with shadow color following character color when enabled.
-                          TextStyle st = widget.uniformStyle.copyWith(
-                            color: charColors[i],
-                          );
-                          if (widget.uniformStyle.shadows != null &&
-                              widget.uniformStyle.shadows!.isNotEmpty) {
-                            final Shadow sh =
-                                widget.uniformStyle.shadows!.first;
-                            final int rgb = sh.color.value & 0x00FFFFFF;
-                            if (rgb == _kShadowFollowSentinelRGB &&
-                                st.color != null) {
-                              final int alpha = sh.color.alpha;
-                              st = st.copyWith(
-                                shadows: [
-                                  Shadow(
-                                    color: st.color!.withAlpha(alpha),
-                                    offset: sh.offset,
-                                    blurRadius: sh.blurRadius,
-                                  ),
-                                ],
-                              );
-                            }
-                          }
-                          return Text(_allChars[i], style: st);
-                        }),
-                      ),
-                    ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  for (int i = 0; i < _allChars.length; i++)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 2, vertical: 4),
-                      child: Center(
-                        child: InkWell(
-                          onTap: () async {
-                            final picked = await showColorPickerDialog(
-                              context,
-                              blockColors[i],
-                              title: Text('选择颜色 - ${_allChars[i]}'),
-                              pickersEnabled: const {
-                                ColorPickerType.wheel: true,
-                                ColorPickerType.accent: true,
-                                ColorPickerType.primary: true,
-                                ColorPickerType.custom: false,
-                              },
-                            );
-                            setState(() {
-                              // 更新该字符的色块与上行字符颜色
-                              blockColors[i] = picked;
-                              charColors[i] = picked;
-                              selected.add(i);
-                            });
-                            // 通知父层：某个字符的纯色已更新
-                            widget.onPerCharPureColorChanged
-                                ?.call(_allChars[i], picked);
-                          },
-                          child: Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: blockColors[i],
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                width: selected.contains(i) ? 2 : 1,
-                                color: selected.contains(i)
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context)
-                                        .dividerColor
-                                        .withValues(alpha: 0.4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
               ),
             ],
           ),
@@ -1045,18 +814,6 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
               ?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 6),
-        // 顶部当前选择指示（移除滑块/Tab，采用并排展示）
-        Row(
-          children: [
-            Text(
-              '当前选择：${_mode == ColorPreviewMode.pure ? '纯色' : '色彩'}',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
         Row(
           children: [
             // Light 区域
@@ -1079,148 +836,25 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       Text('Light',
                           style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      // 上下展示两种模式（Light）
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 纯色区块（含边框与选中勾圈）
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (_mode != ColorPreviewMode.pure) {
-                                    setState(() {
-                                      _mode = ColorPreviewMode.pure;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _mode == ColorPreviewMode.pure
-                                          ? Colors.green
-                                          : Theme.of(context)
-                                              .dividerColor
-                                              .withValues(alpha: 0.4),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      _pureColorTable(Brightness.light),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 6,
-                                top: 6,
-                                child: (_mode == ColorPreviewMode.pure)
-                                    ? Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withValues(alpha: 0.4),
-                                            width: 2,
-                                          ),
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                              ),
-                            ],
+                      // 仅展示纯色表格（Light）
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withValues(alpha: 0.4),
+                            width: 2,
                           ),
-                          const SizedBox(height: 12),
-                          // 色彩区块（含边框与选中勾圈）
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (_mode != ColorPreviewMode.colorful) {
-                                    setState(() {
-                                      _mode = ColorPreviewMode.colorful;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _mode == ColorPreviewMode.colorful
-                                          ? Colors.green
-                                          : Theme.of(context)
-                                              .dividerColor
-                                              .withValues(alpha: 0.4),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      _twoRowTable(Brightness.light),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 6,
-                                top: 6,
-                                child: (_mode == ColorPreviewMode.colorful)
-                                    ? Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withValues(alpha: 0.4),
-                                            width: 2,
-                                          ),
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            _pureColorTable(Brightness.light),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -1248,148 +882,25 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       Text('Dark',
                           style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 8),
-                      // 上下展示两种模式（Dark）
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // 纯色区块（含边框与选中勾圈）
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (_mode != ColorPreviewMode.pure) {
-                                    setState(() {
-                                      _mode = ColorPreviewMode.pure;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _mode == ColorPreviewMode.pure
-                                          ? Colors.green
-                                          : Theme.of(context)
-                                              .dividerColor
-                                              .withValues(alpha: 0.4),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      _pureColorTable(Brightness.dark),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 6,
-                                top: 6,
-                                child: (_mode == ColorPreviewMode.pure)
-                                    ? Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withValues(alpha: 0.4),
-                                            width: 2,
-                                          ),
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                              ),
-                            ],
+                      // 仅展示纯色表格（Dark）
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withValues(alpha: 0.4),
+                            width: 2,
                           ),
-                          const SizedBox(height: 12),
-                          // 色彩区块（含边框与选中勾圈）
-                          Stack(
-                            children: [
-                              GestureDetector(
-                                onTap: () {
-                                  if (_mode != ColorPreviewMode.colorful) {
-                                    setState(() {
-                                      _mode = ColorPreviewMode.colorful;
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  padding: const EdgeInsets.all(8),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: _mode == ColorPreviewMode.colorful
-                                          ? Colors.green
-                                          : Theme.of(context)
-                                              .dividerColor
-                                              .withValues(alpha: 0.4),
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const SizedBox(height: 8),
-                                      _twoRowTable(Brightness.dark),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                              Positioned(
-                                right: 6,
-                                top: 6,
-                                child: (_mode == ColorPreviewMode.colorful)
-                                    ? Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.green,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.check,
-                                          size: 14,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : Container(
-                                        width: 18,
-                                        height: 18,
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .dividerColor
-                                                .withValues(alpha: 0.4),
-                                            width: 2,
-                                          ),
-                                          color: Colors.transparent,
-                                        ),
-                                      ),
-                              ),
-                            ],
-                          ),
-                        ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            _pureColorTable(Brightness.dark),
+                          ],
+                        ),
                       ),
                     ],
                   ),
