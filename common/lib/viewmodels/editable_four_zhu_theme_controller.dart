@@ -103,6 +103,16 @@ class EditableFourZhuThemeController {
   /// Returns: The configured border color or `null` when not set.
   Color? resolvePillarBorderColor() => theme.pillar?.borderColor;
 
+  /// Resolves pillar corner radius.
+  ///
+  /// Returns: The configured corner radius or `null` when not set.
+  double? resolvePillarCornerRadius() => theme.pillar?.cornerRadius;
+
+  /// Resolves pillar background color.
+  ///
+  /// Returns: The configured background color or `null` when not set.
+  Color? resolvePillarBackgroundColor() => theme.pillar?.backgroundColor;
+
   /// Resolves card-level padding override.
   ///
   /// Returns: The card-level padding override or `null`.

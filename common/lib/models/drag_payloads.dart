@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../enums/enum_gender.dart';
 import 'pillar_styles.dart';
@@ -95,6 +96,7 @@ class PillarPayload {
     this.pillarLabel,
     this.perRowValues = const {},
     this.columnWidth,
+    this.columnMargin,
     this.placeholderStyle,
     this.textAlign,
     this.orderIndex,
@@ -114,6 +116,10 @@ class PillarPayload {
   /// Optional explicit column width for UI rendering during external drag.
   /// If provided, UI can use this width to size the ghost column.
   final double? columnWidth;
+
+  /// Optional per-column margin override for UI decoration.
+  /// When provided, this overrides the global `pillarMargin` for this pillar.
+  final EdgeInsets? columnMargin;
 
   /// Optional placeholder style for drag-and-drop feedback.
   final PillarPlaceholderStyle? placeholderStyle;
@@ -146,6 +152,7 @@ class PillarPayload {
     String? pillarLabel,
     Map<RowType, String>? perRowValues,
     double? columnWidth,
+    EdgeInsets? columnMargin,
     PillarPlaceholderStyle? placeholderStyle,
     RowTextAlign? textAlign,
     int? orderIndex,
@@ -156,6 +163,7 @@ class PillarPayload {
       pillarLabel: pillarLabel ?? this.pillarLabel,
       perRowValues: perRowValues ?? this.perRowValues,
       columnWidth: columnWidth ?? this.columnWidth,
+      columnMargin: columnMargin ?? this.columnMargin,
       placeholderStyle: placeholderStyle ?? this.placeholderStyle,
       textAlign: textAlign ?? this.textAlign,
       orderIndex: orderIndex ?? this.orderIndex,

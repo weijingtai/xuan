@@ -11,6 +11,8 @@ import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
 import 'dimension_models.dart'; // 新增：尺寸管理模型
 import 'widgets/ghost_pillar_widget.dart'; // 幽灵柱占位 Widget
+import 'text_groups.dart';
+// Removed palette-based coloring; group font color applies when colorfulMode is enabled.
 
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
@@ -19,6 +21,26 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final ValueNotifier<List<RowInfoPayload>> rowListNotifier;
   final ValueNotifier<EdgeInsets> paddingNotifier;
   final Gender gender;
+  // Optional: override root card decoration (background, radius, etc.)
+  final BoxDecoration? cardDecoration;
+  // Optional: global pillar decoration: margin/padding/border style
+  // Used to compute dynamic decoration width/height and align grip/header columns
+  final EdgeInsets? pillarMargin;
+  final EdgeInsets? pillarPadding;
+  final double? pillarBorderWidth;
+  final Color? pillarBorderColor;
+  final double? pillarCornerRadius;
+  final Color? pillarBackgroundColor;
+  // Optional: global typography overrides for V3 rendering
+  // When provided, these values will override internal hard-coded TextStyles
+  // Optional: per-group text style overrides; takes precedence over global typography.
+  final Map<TextGroup, TextStyle>? groupTextStyles;
+  final String? globalFontFamily;
+  final double? globalFontSize;
+  final Color? globalFontColor;
+  // Optional: per-character color overrides (applied in pure color mode)
+  // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
+  final Map<String, Color>? perCharColors;
   // Optional: decorate drag feedback (overlay proxy)
   final Widget Function(BuildContext context, Widget child)?
       dragFeedbackBuilder;
@@ -29,6 +51,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
       rowInsertDecorationBuilder;
   // Optional: visualize hysteresis boundaries for debugging
   final bool debugHysteresisOverlay;
+  // Card-level colorful mode: when true, use per-token palette colors
+  final bool colorfulMode;
 
   const EditableFourZhuCardV3({
     super.key,
@@ -36,10 +60,23 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.rowListNotifier,
     required this.paddingNotifier,
     required this.gender,
+    this.cardDecoration,
+    this.pillarMargin,
+    this.pillarPadding,
+    this.pillarBorderWidth,
+    this.pillarBorderColor,
+    this.pillarCornerRadius,
+    this.pillarBackgroundColor,
+    this.groupTextStyles,
+    this.globalFontFamily,
+    this.globalFontSize,
+    this.globalFontColor,
+    this.perCharColors,
     this.dragFeedbackBuilder,
     this.columnInsertDecorationBuilder,
     this.rowInsertDecorationBuilder,
     this.debugHysteresisOverlay = false,
+    this.colorfulMode = false,
   });
 
   @override
@@ -73,24 +110,111 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double get _colDividerWidthEffective =>
       _colDividerPaddingLeft + _colDividerPaddingRight + _colDividerThickness;
 
-  // 柱装饰参数：margin, padding, border
-  static const double _pillarDecorationMargin = 8.0;
-  static const double _pillarDecorationPadding = 16.0;
-  static const double _pillarDecorationBorderWidth = 2.0;
+  // 动态柱装饰参数与派生尺寸
+  /// 有效柱边距（优先使用传入的值，默认 8 全向）
+  EdgeInsets get _pillarMarginEff =>
+      widget.pillarMargin ?? const EdgeInsets.all(8.0);
 
-  // 装饰总尺寸（水平/垂直方向）
-  static const double _pillarDecorationWidth =
-      _pillarDecorationMargin * 2 + _pillarDecorationPadding * 2 + _pillarDecorationBorderWidth * 2;
-  static const double _pillarDecorationHeight =
-      _pillarDecorationMargin * 2 + _pillarDecorationPadding * 2 + _pillarDecorationBorderWidth * 2;
+  /// 每列的有效边距：优先使用对应列的 `payload.columnMargin`，否则退回全局。
+  EdgeInsets _pillarMarginAtIndex(int i) {
+    final payloads = widget.pillarsNotifier.value;
+    if (i >= 0 && i < payloads.length) {
+      final m = payloads[i].columnMargin;
+      if (m != null) return m;
+    }
+    return _pillarMarginEff;
+  }
 
-  // 顶部装饰偏移（margin-top + padding-top + border-top）
-  static const double _pillarDecorationTopOffset =
-      _pillarDecorationMargin + _pillarDecorationPadding + _pillarDecorationBorderWidth;
+  /// 有效柱内边距（优先使用传入的值，默认 16 全向）
+  EdgeInsets get _pillarPaddingEff =>
+      widget.pillarPadding ?? const EdgeInsets.all(16.0);
 
-  // 底部装饰偏移（border-bottom + padding-bottom + margin-bottom）
-  static const double _pillarDecorationBottomOffset =
-      _pillarDecorationBorderWidth + _pillarDecorationPadding + _pillarDecorationMargin;
+  /// 有效柱边框宽度（优先使用传入的值，默认 2）
+  double get _pillarBorderWidthEff => widget.pillarBorderWidth ?? 2.0;
+
+  /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
+  Color get _pillarBorderColorEff => widget.pillarBorderColor ?? Colors.red;
+
+  /// 有效柱圆角（优先使用传入的值，默认 0）
+  double get _pillarCornerRadiusEff => widget.pillarCornerRadius ?? 0.0;
+
+  /// 有效柱背景色（优先使用传入的值，默认透明）
+  Color get _pillarBackgroundColorEff =>
+      widget.pillarBackgroundColor ?? Colors.transparent;
+
+  /// 装饰总宽度（左右 margin + padding + border）
+  double get _pillarDecorationWidthEff =>
+      _pillarMarginEff.left +
+      _pillarMarginEff.right +
+      _pillarPaddingEff.left +
+      _pillarPaddingEff.right +
+      _pillarBorderWidthEff * 2;
+
+  /// 指定列的装饰总宽度（使用每列边距覆盖）
+  double _pillarDecorationWidthAtIndex(int i) {
+    final m = _pillarMarginAtIndex(i);
+    return m.left +
+        m.right +
+        _pillarPaddingEff.left +
+        _pillarPaddingEff.right +
+        _pillarBorderWidthEff * 2;
+  }
+
+  /// 指定列的装饰总高度（使用每列边距覆盖）
+  double _pillarDecorationHeightAtIndex(int i) {
+    final m = _pillarMarginAtIndex(i);
+    return m.top +
+        m.bottom +
+        _pillarPaddingEff.top +
+        _pillarPaddingEff.bottom +
+        _pillarBorderWidthEff * 2;
+  }
+
+  /// 装饰总高度（上下 margin + padding + border）
+  double get _pillarDecorationHeightEff =>
+      _pillarMarginEff.top +
+      _pillarMarginEff.bottom +
+      _pillarPaddingEff.top +
+      _pillarPaddingEff.bottom +
+      _pillarBorderWidthEff * 2;
+
+  /// 顶部装饰偏移（margin-top + padding-top + border-top）
+  double get _pillarDecorationTopOffsetEff => _pixelFloor(
+      _pillarMarginEff.top + _pillarPaddingEff.top + _pillarBorderWidthEff);
+
+  /// 底部装饰偏移（border-bottom + padding-bottom + margin-bottom）
+  double get _pillarDecorationBottomOffsetEff =>
+      _pixelFloor(_pillarBorderWidthEff +
+          _pillarPaddingEff.bottom +
+          _pillarMarginEff.bottom);
+
+  // 卡片边框厚度（水平/垂直）合计，用于在整体尺寸中加上边框占用的空间，避免内容被裁剪或溢出。
+  double get _cardBorderHorizontalEff {
+    final border = widget.cardDecoration?.border;
+    if (border == null) return 0.0;
+    final dimsGeo = border.dimensions; // EdgeInsetsGeometry
+    final dims = dimsGeo is EdgeInsets
+        ? dimsGeo
+        : dimsGeo.resolve(Directionality.of(context));
+    return dims.left + dims.right;
+  }
+
+  double get _cardBorderVerticalEff {
+    final border = widget.cardDecoration?.border;
+    if (border == null) return 0.0;
+    final dimsGeo = border.dimensions; // EdgeInsetsGeometry
+    final dims = dimsGeo is EdgeInsets
+        ? dimsGeo
+        : dimsGeo.resolve(Directionality.of(context));
+    return dims.top + dims.bottom;
+  }
+
+  // 将逻辑尺寸向下对齐到物理像素，减少由于子像素导致的 RenderFlex 溢出告警
+  double _pixelFloor(double logical) {
+    final double dpr = ui.window.devicePixelRatio;
+    final double physical = (logical * dpr).floorToDouble();
+    return physical / dpr;
+  }
 
   // --- Column width helpers (support narrow separator columns) ---
   bool _isSeparatorTitle(String title) =>
@@ -183,37 +307,42 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       if (p.pillarType == PillarType.rowTitleColumn) {
         final override = _columnWidthOverrides[i];
         if (override != null && override.isFinite && !override.isNaN) {
-          return override.clamp(_minPillarWidth, _maxPillarWidth) + _pillarDecorationWidth;
+          return _pixelFloor(override.clamp(_minPillarWidth, _maxPillarWidth) +
+              _pillarDecorationWidthAtIndex(i));
         }
-        return (p.columnWidth ?? rowTitleWidth) + _pillarDecorationWidth;
+        return _pixelFloor((p.columnWidth ?? rowTitleWidth) +
+            _pillarDecorationWidthAtIndex(i));
       }
     }
 
     // 分隔列：统一使用分隔列的有效窄宽度（不添加装饰）
-    if (_isSeparatorColumnIndex(i)) return _colDividerWidthEffective;
+    if (_isSeparatorColumnIndex(i))
+      return _pixelFloor(_colDividerWidthEffective);
 
     // 添加边界检查：避免访问幽灵列（i >= pillars.length）时发生索引越界
     if (i < 0 || i >= pillars.length) {
       // 幽灵列默认使用标准柱宽
-      return pillarWidth + _pillarDecorationWidth;
+      return _pixelFloor(pillarWidth + _pillarDecorationWidthAtIndex(i));
     }
 
     // 检查列宽度覆盖
     final override = _columnWidthOverrides[i];
     if (override != null && override.isFinite && !override.isNaN) {
-      return override.clamp(_minPillarWidth, _maxPillarWidth) + _pillarDecorationWidth;
+      return _pixelFloor(override.clamp(_minPillarWidth, _maxPillarWidth) +
+          _pillarDecorationWidthAtIndex(i));
     }
     // 当未设置显式覆盖时，优先依据对应列的载荷信息解析列宽
     // 以保证宽度来源统一由 payload 控制（如拖入外部列或预设列宽）。
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
-      return p.resolveWidth(
-        defaultWidth: pillarWidth,
-        minWidth: _minPillarWidth,
-        maxWidth: _maxPillarWidth,
-      ) + _pillarDecorationWidth;
+      return _pixelFloor(p.resolveWidth(
+            defaultWidth: pillarWidth,
+            minWidth: _minPillarWidth,
+            maxWidth: _maxPillarWidth,
+          ) +
+          _pillarDecorationWidthAtIndex(i));
     }
-    return pillarWidth + _pillarDecorationWidth;
+    return _pixelFloor(pillarWidth + _pillarDecorationWidthAtIndex(i));
   }
 
   double _sumColWidthsUpTo(int idx, List<Tuple2<String, JiaZi>> pillars) {
@@ -229,7 +358,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     for (int i = 0; i < pillars.length; i++) {
       acc += _colWidthAtIndex(i, pillars);
     }
-    return acc;
+    return _pixelFloor(acc);
   }
 
   /// 列宽度拖拽的最小/最大范围（统一列宽策略）
@@ -469,10 +598,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               width: size.width + extraColWidth,
               height: size.height + extraRowHeight,
               clipBehavior: Clip.hardEdge,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: widget.cardDecoration ??
+                  BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
               child: ValueListenableBuilder<EdgeInsets>(
                 valueListenable: widget.paddingNotifier,
                 builder: (context, padding, child) {
@@ -978,7 +1108,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
                 children.add(SizedBox(
                   width: dragHandleColWidth,
-                  height: _pillarDecorationTopOffset,
+                  height: _pillarDecorationTopOffsetEff,
                 ));
 
                 // 处理数据行（条件跳过表头行索引 0）
@@ -1081,7 +1211,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
                 children.add(SizedBox(
                   width: dragHandleColWidth,
-                  height: _pillarDecorationBottomOffset,
+                  height: _pillarDecorationBottomOffsetEff,
                 ));
 
                 return children;
@@ -1110,7 +1240,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
                 children.add(SizedBox(
                   width: dragHandleColWidth,
-                  height: _pillarDecorationTopOffset,
+                  height: _pillarDecorationTopOffsetEff,
                 ));
 
                 // 处理数据行（条件跳过表头行索引 0）
@@ -1232,7 +1362,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
                 children.add(SizedBox(
                   width: dragHandleColWidth,
-                  height: _pillarDecorationBottomOffset,
+                  height: _pillarDecorationBottomOffsetEff,
                 ));
 
                 return children;
@@ -1262,7 +1392,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 顶部占位：对齐 dataGrid 列装饰的顶部偏移（margin-top + padding-top + border-top）
                 children.add(SizedBox(
                   width: rowTitleWidth,
-                  height: _pillarDecorationTopOffset,
+                  height: _pillarDecorationTopOffsetEff,
                 ));
 
                 for (final entry in rows.asMap().entries) {
@@ -1402,7 +1532,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 底部占位：对齐 dataGrid 列装饰的底部偏移（border-bottom + padding-bottom + margin-bottom）
                 children.add(SizedBox(
                   width: rowTitleWidth,
-                  height: _pillarDecorationBottomOffset,
+                  height: _pillarDecorationBottomOffsetEff,
                 ));
 
                 return children;
@@ -1466,8 +1596,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // Data grid: according to current row order
     final dataGrid = SizedBox(
-      // 数据网格总宽按可变列宽总和计算
-      width: _totalColsWidth(pillars) + extraColWidth,
+      // 数据网格总宽按可变列宽总和计算（像素对齐，避免子像素溢出）
+      width: _pixelFloor(_totalColsWidth(pillars) + extraColWidth),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1482,8 +1612,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 行拖拽进行中时，禁止显示列拖拽的幽灵占位
                 final bool dragging = (d != null || _hoveringExternalPillar) &&
                     !rowDraggingActive;
-                final double gridGhostWidth =
-                    (d != null) ? _colWidthAtIndex(d, pillars) : _getGhostColumnWidth();
+                final double gridGhostWidth = (d != null)
+                    ? _colWidthAtIndex(d, pillars)
+                    : _pixelFloor(_getGhostColumnWidth());
                 children.add(AnimatedContainer(
                   duration: dragging
                       ? const Duration(milliseconds: 180)
@@ -1493,7 +1624,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   child: dragging && t == i
                       ? GhostPillarWidget.column(
                           width: gridGhostWidth,
-                          height: _layoutNotifier.value.totalRowsHeight(_measurementContext),
+                          height: _layoutNotifier.value
+                              .totalRowsHeight(_measurementContext),
                         )
                       : const SizedBox.shrink(),
                 ));
@@ -1506,20 +1638,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final isRowTitleCol = (i >= 0 && i < pillarPayloads.length) &&
                     pillarPayloads[i].pillarType == PillarType.rowTitleColumn;
 
-                // colW 是内容宽度（不含装饰），装饰会在外层 Container 中添加
+                // colW 是内容宽度（不含装饰），装饰会在外层 Container 中添加。
+                // 为保持与顶/底部抓手行和总宽计算一致，这里统一通过 _colWidthAtIndex 获取“总列宽”（含装饰），
+                // 非分隔列再减去装饰宽度得到内容宽度。这样普通列也能正确应用每列的覆盖宽度。
                 final double colW = (() {
                   if (isSeparatorColumn) {
-                    return _colDividerWidthEffective;
+                    return _pixelFloor(_colDividerWidthEffective);
                   }
-                  if (isRowTitleCol) {
-                    final p = pillarPayloads[i];
-                    final override = _columnWidthOverrides[i];
-                    if (override != null && override.isFinite && !override.isNaN) {
-                      return override.clamp(_minPillarWidth, _maxPillarWidth);
-                    }
-                    return p.columnWidth ?? rowTitleWidth;  // 纯内容宽度，不含装饰
-                  }
-                  return pillarWidth;  // 普通列的内容宽度
+                  final totalColW = _colWidthAtIndex(i, pillars);
+                  // 内容宽度 = 总宽 - 装饰宽度；行标题列与普通列均统一处理。
+                  final contentW = totalColW - _pillarDecorationWidthAtIndex(i);
+                  // 防御式：避免极端装饰宽度导致内容宽度非正值
+                  return contentW > 0 ? _pixelFloor(contentW) : 0.0;
                 })();
                 final columnContent = Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1568,7 +1698,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
                           width: colW,
                           height: draggingRow && tRow == absRowIdx
-                              ? _getGhostRowHeight(fallbackHeight: rowSize.height)
+                              ? _getGhostRowHeight(
+                                  fallbackHeight: rowSize.height)
                               : 0,
                           color: draggingRow && tRow == absRowIdx
                               ? Theme.of(context)
@@ -1657,7 +1788,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 jz.naYinStr;
                           }
                           cell = _cell(
-                              Size(colW, otherCellHeight), _naYinText(text));
+                              Size(colW, otherCellHeight), _kongWangText(text));
                         } else if (rowName == '空亡') {
                           // 空亡行：使用嵌入策略计算，缺省退回 JiaZi.getKongWang()
                           final pillarContent = pillarPayloads[i].pillarContent;
@@ -1784,13 +1915,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 ? 0.0
                                 : 1.0,
                         child: Container(
-                          margin: EdgeInsets.all(_pillarDecorationMargin),
+                          margin: _pillarMarginAtIndex(i),
                           child: Container(
-                            padding: EdgeInsets.all(_pillarDecorationPadding),
+                            padding: _pillarPaddingEff,
                             decoration: BoxDecoration(
+                              color: _pillarBackgroundColorEff,
+                              borderRadius:
+                                  BorderRadius.circular(_pillarCornerRadiusEff),
                               border: Border.all(
-                                color: Colors.red,
-                                width: _pillarDecorationBorderWidth,
+                                color: _pillarBorderColorEff,
+                                width: _pillarBorderWidthEff,
                               ),
                             ),
                             child: SizedBox(
@@ -1828,8 +1962,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               // 行拖拽进行中时，禁止显示列拖拽的幽灵占位
               final bool dragging =
                   (d != null || _hoveringExternalPillar) && !rowDraggingActive;
-              final double endGhostWidth =
-                  (d != null) ? _colWidthAtIndex(d, pillars) : _getGhostColumnWidth();
+              final double endGhostWidth = (d != null)
+                  ? _colWidthAtIndex(d, pillars)
+                  : _getGhostColumnWidth();
               children.add(AnimatedContainer(
                 duration: dragging
                     ? const Duration(milliseconds: 180)
@@ -1839,7 +1974,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 child: dragging && t == pillars.length
                     ? GhostPillarWidget.column(
                         width: endGhostWidth,
-                        height: _layoutNotifier.value.totalRowsHeight(_measurementContext),
+                        height: _layoutNotifier.value
+                            .totalRowsHeight(_measurementContext),
                       )
                     : const SizedBox.shrink(),
               ));
@@ -1898,6 +2034,89 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               ),
             );
           }).toList(),
+
+          // 垂直分割线拖拽手柄：调整分割线左侧列的宽度覆盖（仅影响目标列）
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: false,
+              child: Stack(
+                children: [
+                  for (int i = 1; i < pillars.length; i++)
+                    Builder(builder: (context) {
+                      // 当存在行标题列时，分割线位置不额外叠加 rowTitleWidth
+                      final hasRowTitleCol = widget.pillarsNotifier.value.any(
+                          (p) => p.pillarType == PillarType.rowTitleColumn);
+                      final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
+                          _sumColWidthsUpTo(i, pillars) -
+                          4;
+                      return Positioned(
+                        left: left,
+                        top: columnTitleHeight,
+                        bottom: 0,
+                        width: 8,
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.resizeColumn,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onPanStart: (details) {
+                              setState(() {
+                                _resizingDividerIndex = i;
+                                _initialPillarWidth =
+                                    _colWidthAtIndex(i - 1, pillars) -
+                                        _pillarDecorationWidthAtIndex(i - 1);
+                              });
+                            },
+                            onPanUpdate: (details) {
+                              final box = _cardKey.currentContext
+                                  ?.findRenderObject() as RenderBox?;
+                              if (box == null) return;
+                              final idx = _resizingDividerIndex ?? i;
+                              if (idx <= 0) return;
+                              // 分割线左侧目标列索引
+                              final targetCol = idx - 1;
+                              // 分隔列不参与宽度调整
+                              if (_isSeparatorColumnIndex(targetCol)) return;
+
+                              // 统一基准：全局坐标转卡片局部坐标
+                              final local =
+                                  box.globalToLocal(details.globalPosition);
+                              final hasRowTitleCol2 =
+                                  widget.pillarsNotifier.value.any((p) =>
+                                      p.pillarType ==
+                                      PillarType.rowTitleColumn);
+                              final accLeft =
+                                  hasRowTitleCol2 ? 0 : rowTitleWidth;
+                              final dx = local.dx - accLeft;
+
+                              // 新总宽度 = 当前指针 x 减去左侧列之前所有列宽度累积
+                              final sumPrev =
+                                  _sumColWidthsUpTo(targetCol, pillars);
+                              double newTotalW = dx - sumPrev;
+
+                              // 转换为内容宽度覆盖（扣除装饰宽度），并夹紧到最小/最大内容宽度范围
+                              final decW =
+                                  _pillarDecorationWidthAtIndex(targetCol);
+                              double newContentW = (newTotalW - decW)
+                                  .clamp(_minPillarWidth, _maxPillarWidth);
+
+                              setState(() {
+                                _columnWidthOverrides[targetCol] = newContentW;
+                              });
+                            },
+                            onPanEnd: (_) {
+                              setState(() {
+                                _resizingDividerIndex = null;
+                                _initialPillarWidth = null;
+                              });
+                            },
+                          ),
+                        ),
+                      );
+                    }),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -3265,20 +3484,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Size _computeSizeWithDecorations() {
     final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
 
-    // 计算有装饰的列数量（排除分隔列）
+    // 计算所有非分隔列的装饰宽度总和（按列覆盖）
     final payloads = widget.pillarsNotifier.value;
-    int decoratedColumnCount = 0;
+    double totalDecorationWidth = 0.0;
+    double maxDecorationHeight = 0.0;
     for (int i = 0; i < payloads.length; i++) {
       if (!_isSeparatorColumnIndex(i)) {
-        decoratedColumnCount++;
+        totalDecorationWidth += _pillarDecorationWidthAtIndex(i);
+        final h = _pillarDecorationHeightAtIndex(i);
+        if (h > maxDecorationHeight) maxDecorationHeight = h;
       }
     }
 
-    // 宽度 = 基础宽度 + (装饰列数量 * 每列装饰宽度)
-    // 高度 = 基础高度 + 装饰高度
+    // 宽度 = 基础宽度 + 所有列装饰宽度之和
+    // 高度 = 基础高度 + 最大列装饰高度（按列覆盖）
     return Size(
-      baseSize.width + (decoratedColumnCount * _pillarDecorationWidth),
-      baseSize.height + _pillarDecorationHeight,
+      baseSize.width + totalDecorationWidth + _cardBorderHorizontalEff,
+      baseSize.height + maxDecorationHeight + _cardBorderVerticalEff,
     );
   }
 
@@ -3356,7 +3578,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               // 空亡行：显示空亡信息
               final kw = jz.getKongWang();
               final text = '${kw.item1.value}${kw.item2.value}';
-              return _cell(Size(colW, rowH), _naYinText(text));
+              return _cell(Size(colW, rowH), _kongWangText(text));
             } else if (_isSeparatorRowLabel(rowName)) {
               return Container(
                 width: colW,
@@ -3389,35 +3611,259 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
+  /// Builds gender label text with optional global typography overrides.
+  ///
+  /// Parameters:
+  /// - [gender]: The `Gender` enum to display.
+  ///
+  /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Text _genderText(Gender gender) => Text(
         gender == Gender.male ? '乾造' : '坤造',
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: _resolveTextStyle(
+          fontSize: 14,
+          weight: FontWeight.bold,
+          color: Colors.black87,
+        ),
       );
 
+  /// Builds row title text with optional global typography overrides.
+  ///
+  /// Parameters:
+  /// - [s]: The title string.
+  ///
+  /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Text _rowTitleText(String s) => Text(
         s,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: _resolveTextStyle(
+          fontSize: 14,
+          weight: FontWeight.bold,
+          color: Colors.black87,
+          group: TextGroup.rowTitle,
+        ),
       );
 
+  /// Builds column title text with optional global typography overrides.
+  ///
+  /// Parameters:
+  /// - [s]: The title string.
+  ///
+  /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Text _columnTitleText(String s) => Text(
         s,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+        style: _resolveTextStyle(
+          fontSize: 14,
+          weight: FontWeight.bold,
+          color: Colors.black87,
+          group: TextGroup.columnTitle,
+        ),
       );
 
-  Text _tianGanText(TianGan t) => Text(
-        t.name,
-        style: const TextStyle(fontSize: 24, color: Colors.black87),
-      );
+  /// Builds TianGan text.
+  ///
+  /// 参数：
+  /// - [t]: 要渲染的天干。
+  /// 返回：根据 `_resolveTextStyle` 样式渲染的 `Text` 组件。
+  Widget _tianGanText(TianGan t) {
+    // 当启用彩色模式时，天干按字符映射使用固定色彩方案；
+    // 关闭彩色模式时，使用纯色（受全局/分组字体设置影响）。
+    TextStyle base = _resolveTextStyle(
+      fontSize: 24,
+      // 颜色延后处理，避免被全局/分组覆盖（彩色模式下需要自定义颜色）
+      color: widget.colorfulMode ? null : Colors.black87,
+      weight: FontWeight.w400,
+      group: TextGroup.tianGan,
+    );
+    if (widget.colorfulMode) {
+      final Color c = _colorForTianGanChar(t.name);
+      base = base.copyWith(color: c);
+    }
+    // In pure color mode, allow per-character color overrides
+    if (!widget.colorfulMode && widget.perCharColors != null) {
+      final Color? override = widget.perCharColors![t.name];
+      if (override != null) {
+        base = base.copyWith(color: override);
+      }
+    }
+    return Text(t.name, style: base);
+  }
 
-  Text _diZhiText(DiZhi d) => Text(
-        d.name,
-        style: const TextStyle(fontSize: 24, color: Colors.black87),
-      );
+  /// Builds DiZhi text。
+  ///
+  /// 参数：
+  /// - [d]: 要渲染的地支。
+  /// 返回：根据 `_resolveTextStyle` 样式渲染的 `Text` 组件。
+  Widget _diZhiText(DiZhi d) {
+    // 当启用彩色模式时，地支按字符映射使用固定色彩方案；
+    // 关闭彩色模式时，使用纯色（受全局/分组字体设置影响）。
+    TextStyle base = _resolveTextStyle(
+      fontSize: 24,
+      color: widget.colorfulMode ? null : Colors.black87,
+      weight: FontWeight.w500,
+      group: TextGroup.diZhi,
+    );
+    if (widget.colorfulMode) {
+      final Color c = _colorForDiZhiChar(d.name);
+      base = base.copyWith(color: c);
+    }
+    // In pure color mode, allow per-character color overrides
+    if (!widget.colorfulMode && widget.perCharColors != null) {
+      final Color? override = widget.perCharColors![d.name];
+      if (override != null) {
+        base = base.copyWith(color: override);
+      }
+    }
+    return Text(d.name, style: base);
+  }
 
+  /// Builds NaYin text with optional global typography overrides.
+  ///
+  /// Parameters:
+  /// - [s]: The NaYin string to render.
+  ///
+  /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Text _naYinText(String s) => Text(
         s,
-        style: const TextStyle(fontSize: 14, color: Colors.amber),
+        style: _resolveTextStyle(
+          fontSize: 14,
+          color: Colors.amber,
+          weight: FontWeight.w400,
+          group: TextGroup.naYin,
+        ),
       );
+
+  /// Builds KongWang text with optional global/group typography overrides.
+  ///
+  /// 参数：
+  /// - [s]: 要渲染的空亡字符串。
+  /// 返回：带样式的 `Text` 组件。
+  Text _kongWangText(String s) => Text(
+        s,
+        style: _resolveTextStyle(
+          fontSize: 14,
+          color: Colors.black87,
+          weight: FontWeight.w400,
+          group: TextGroup.kongWang,
+        ),
+      );
+
+  /// Resolves a `TextStyle` applying optional global typography overrides.
+  ///
+  /// Parameters:
+  /// - [fontSize]: Base font size to start from; overridden by `globalFontSize` when provided.
+  /// - [weight]: Desired font weight.
+  /// - [color]: Fallback text color; overridden by `globalFontColor` when provided.
+  ///
+  /// Returns: A `TextStyle` merged with `globalFontFamily/globalFontSize/globalFontColor` if set.
+  TextStyle _resolveTextStyle({
+    double? fontSize,
+    FontWeight? weight,
+    Color? color,
+    TextGroup? group,
+  }) {
+    var style = TextStyle(
+      fontSize: fontSize,
+      fontWeight: weight,
+      color: color,
+    );
+    if (widget.globalFontFamily != null &&
+        widget.globalFontFamily!.isNotEmpty) {
+      style = style.copyWith(fontFamily: widget.globalFontFamily);
+    }
+    if (widget.globalFontSize != null && widget.globalFontSize! > 0) {
+      style = style.copyWith(fontSize: widget.globalFontSize);
+    }
+    // 彩色模式下的天干/地支不应用全局颜色，避免覆盖字符映射颜色。
+    final bool isGanZhi =
+        group == TextGroup.tianGan || group == TextGroup.diZhi;
+    final bool suppressGlobalColor = widget.colorfulMode && isGanZhi;
+    if (widget.globalFontColor != null && !suppressGlobalColor) {
+      style = style.copyWith(color: widget.globalFontColor);
+    }
+    if (group != null && widget.groupTextStyles != null) {
+      final override = widget.groupTextStyles![group];
+      if (override != null) {
+        // 按属性逐项合并：颜色仅在 colorfulMode 开启时应用；其他属性始终生效
+        var merged = style;
+        if (override.fontFamily != null && override.fontFamily!.isNotEmpty) {
+          merged = merged.copyWith(fontFamily: override.fontFamily);
+        }
+        if (override.fontSize != null && override.fontSize! > 0) {
+          merged = merged.copyWith(fontSize: override.fontSize);
+        }
+        if (override.fontWeight != null) {
+          merged = merged.copyWith(fontWeight: override.fontWeight);
+        }
+        // 彩色模式下的天干/地支不应用分组纯色，避免覆盖字符映射颜色。
+        if (!(widget.colorfulMode && isGanZhi) && override.color != null) {
+          merged = merged.copyWith(color: override.color);
+        }
+        style = merged;
+      }
+    }
+    return style;
+  }
+
+  /// Returns default color for a TianGan character under the colorful scheme.
+  ///
+  /// 参数：
+  /// - [ch]: 天干汉字字符。
+  /// 返回：彩色方案中的颜色，固定映射，不随亮暗变化。
+  Color _colorForTianGanChar(String ch) {
+    switch (ch) {
+      case '甲':
+      case '乙':
+        return Colors.green;
+      case '丙':
+      case '丁':
+        return Colors.red;
+      case '戊':
+      case '己':
+        return Colors.orange;
+      case '庚':
+      case '辛':
+        return Colors.blue;
+      case '壬':
+      case '癸':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  /// Returns default color for a DiZhi character under the colorful scheme.
+  ///
+  /// 参数：
+  /// - [ch]: 地支汉字字符。
+  /// 返回：彩色方案中的颜色，固定映射，不随亮暗变化。
+  Color _colorForDiZhiChar(String ch) {
+    switch (ch) {
+      case '子':
+        return Colors.indigo;
+      case '丑':
+      case '戌':
+        return Colors.brown;
+      case '寅':
+        return Colors.teal;
+      case '卯':
+        return Colors.green;
+      case '辰':
+        return Colors.orange;
+      case '巳':
+        return Colors.red;
+      case '午':
+        return Colors.redAccent;
+      case '未':
+        return Colors.orangeAccent;
+      case '申':
+        return Colors.blueGrey;
+      case '酉':
+        return Colors.blue;
+      case '亥':
+        return Colors.purple;
+      default:
+        return Colors.grey;
+    }
+  }
 }
 
 // --- Debug Painters (defined outside of State class) ---

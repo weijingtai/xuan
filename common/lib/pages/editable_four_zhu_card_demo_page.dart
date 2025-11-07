@@ -22,6 +22,8 @@ import '../models/row_strategy.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../viewmodels/editable_four_zhu_theme_controller.dart';
 import '../widgets/style_editor/editable_four_zhu_style_editor_panel.dart';
+import '../widgets/style_editor/text_style_editor_widget.dart';
+import '../widgets/editable_fourzhu_card/text_groups.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -42,6 +44,10 @@ class _EditableFourZhuCardDemoPageState
   final ValueNotifier<CardMode> _cardModeNotifier =
       ValueNotifier<CardMode>(CardMode.normal);
   bool _isEditable = false;
+  // 是否启用“独立映射渲染”（禁用全局字体，按分组/行配置渲染）
+  bool _useIndependentMapping = true;
+  // V3 卡片级彩色模式开关（使用按字调色盘，支持深/浅色）
+  bool _v3ColorfulMode = false;
   double? _desiredColumnCardWidth;
 
   late EightChars _sample;
@@ -80,6 +86,10 @@ class _EditableFourZhuCardDemoPageState
   // 新版 V3 载荷：柱与行都承载语义与数据
   late final ValueNotifier<List<PillarPayload>> _pillarsPayloadNotifier;
   late final ValueNotifier<List<RowInfoPayload>> _rowsPayloadNotifier;
+  // Per-group typography overrides for V3 preview
+  Map<TextGroup, TextStyle> _groupTextStyles = {};
+  // Per-character pure color overrides for V3 (applied when colorfulMode=false)
+  Map<String, Color> _perCharColors = {};
 
   @override
   void initState() {
@@ -262,6 +272,23 @@ class _EditableFourZhuCardDemoPageState
                                     _theme = next;
                                     _themeController =
                                         EditableFourZhuThemeController(next);
+                                    // Apply card padding directly to V3 card
+                                    final resolvedPadding = _themeController
+                                            ?.resolveCardPadding() ??
+                                        const EdgeInsets.all(12);
+                                    _paddingNotifier.value = resolvedPadding;
+
+                                    // Bind per-pillar margin to payloads so sliders only affect that pillar
+                                    final current =
+                                        _pillarsPayloadNotifier.value;
+                                    final mapped = current
+                                        .map((p) => p.copyWith(
+                                              columnMargin: _themeController
+                                                  ?.resolvePillarMargin(
+                                                      p.pillarType),
+                                            ))
+                                        .toList();
+                                    _pillarsPayloadNotifier.value = mapped;
                                   });
                                 },
                               ),
@@ -329,6 +356,43 @@ class _EditableFourZhuCardDemoPageState
                   spacing: 8,
                   runSpacing: 8,
                   children: [
+                    // 分组字体编辑面板：允许天干/地支/纳音/空亡/柱标题/行标题分别调整
+                    SizedBox(
+                      width: 720,
+                      child: GroupTextStyleEditorPanel(
+                        initial: _groupTextStyles,
+                        onChanged: (m) {
+                          setState(() {
+                            _groupTextStyles = Map<TextGroup, TextStyle>.of(m);
+                          });
+                        },
+                        onPerCharColorsChanged: (map) {
+                          setState(() {
+                            _perCharColors = Map<String, Color>.of(map);
+                          });
+                        },
+                      ),
+                    ),
+                    // 切换是否使用“独立映射渲染”模式
+                    SizedBox(
+                      width: 720,
+                      child: SwitchListTile(
+                        title: const Text('使用独立映射渲染'),
+                        subtitle: const Text('禁用全局字体，仅按分组/行样式渲染'),
+                        value: _useIndependentMapping,
+                        onChanged: (v) =>
+                            setState(() => _useIndependentMapping = v),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 720,
+                      child: SwitchListTile(
+                        title: const Text('V3 彩色默认模式（卡片级开关）'),
+                        subtitle: const Text('天干/地支按字上色；支持明/暗两套调色盘'),
+                        value: _v3ColorfulMode,
+                        onChanged: (v) => setState(() => _v3ColorfulMode = v),
+                      ),
+                    ),
                     // 仅展示 V3（独立抓手版），避免与旧版 V2 标题拖拽混淆
                     Padding(
                       padding: const EdgeInsets.only(bottom: 8),
@@ -346,6 +410,52 @@ class _EditableFourZhuCardDemoPageState
                       rowListNotifier: _rowsPayloadNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
+                      colorfulMode: _v3ColorfulMode,
+                      perCharColors: _perCharColors,
+                      // Bind global typography to V3
+                      globalFontFamily: _useIndependentMapping
+                          ? null
+                          : _themeController
+                              ?.theme.typography?.globalFontFamily,
+                      globalFontSize: _useIndependentMapping
+                          ? null
+                          : _themeController?.theme.typography?.globalFontSize,
+                      globalFontColor: _useIndependentMapping
+                          ? null
+                          : _themeController?.theme.typography?.globalFontColor,
+                      // Bind per-group typography to V3
+                      groupTextStyles: _groupTextStyles,
+                      // Bind theme-driven decoration to V3 card
+                      cardDecoration: BoxDecoration(
+                        color: _themeController?.resolveCardBackgroundColor() ??
+                            Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          _themeController?.resolveCardCornerRadius() ?? 12,
+                        ),
+                        // Add a subtle border to make the root card visually discernible
+                        border: Border.all(
+                          color:
+                              Theme.of(context).dividerColor.withOpacity(0.35),
+                          width: 1,
+                        ),
+                      ),
+                      // Bind pillar decoration (margin/border) for dynamic sizing and offsets
+                      // Use THEME default margin as global fallback; per-column overrides come from payload.columnMargin
+                      pillarMargin: _theme.pillar?.defaultMargin ??
+                          const EdgeInsets.all(8),
+                      pillarPadding: _themeController?.resolvePillarPadding() ??
+                          const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                      pillarBorderWidth:
+                          _themeController?.resolvePillarBorderWidth() ?? 2,
+                      pillarBorderColor:
+                          _themeController?.resolvePillarBorderColor() ??
+                              Colors.red,
+                      pillarCornerRadius:
+                          _themeController?.resolvePillarCornerRadius() ?? 0,
+                      pillarBackgroundColor:
+                          _themeController?.resolvePillarBackgroundColor() ??
+                              Colors.transparent,
                       // debugHysteresisOverlay: false,
                     ),
                   ],
@@ -448,7 +558,11 @@ class _EditableFourZhuCardDemoPageState
                             isEditable: _isEditable,
                             pillarOrder: _controller.pillars.value,
                             rowConfigs: _controller.rows.value,
-                            cardStyle: _cardStyle,
+                            cardStyle: _useIndependentMapping
+                                ? _cardStyle
+                                : (_themeController
+                                        ?.resolveCardStyle(_cardStyle) ??
+                                    _cardStyle),
                             rowLabelResolver: _rowLabel,
                             pillarLabelResolver: _pillarLabel,
                             onPillarOrderChanged: _controller.setPillars,
@@ -496,7 +610,10 @@ class _EditableFourZhuCardDemoPageState
                     isEditable: _isEditable,
                     pillarOrder: _controller.pillars.value,
                     rowConfigs: _controller.rows.value,
-                    cardStyle: _cardStyle,
+                    cardStyle: _useIndependentMapping
+                        ? _cardStyle
+                        : (_themeController?.resolveCardStyle(_cardStyle) ??
+                            _cardStyle),
                     rowLabelResolver: _rowLabel,
                     pillarLabelResolver: _pillarLabel,
                     // Shared overrides wiring

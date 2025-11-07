@@ -506,6 +506,19 @@ class _GlobalFontSection extends StatelessWidget {
             DropdownMenuItem(value: '系统默认', child: Text('系统默认')),
             DropdownMenuItem(
                 value: 'NotoSansSC-Regular', child: Text('NotoSansSC-Regular')),
+            DropdownMenuItem(value: 'PingFang SC', child: Text('PingFang SC')),
+            DropdownMenuItem(
+                value: 'Hiragino Sans GB', child: Text('Hiragino Sans GB')),
+            DropdownMenuItem(value: 'Noto Sans', child: Text('Noto Sans')),
+            DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+            DropdownMenuItem(value: 'Segoe UI', child: Text('Segoe UI')),
+            DropdownMenuItem(
+                value: 'Helvetica Neue', child: Text('Helvetica Neue')),
+            DropdownMenuItem(value: 'Arial', child: Text('Arial')),
+            DropdownMenuItem(
+                value: 'Microsoft YaHei', child: Text('Microsoft YaHei')),
+            DropdownMenuItem(value: 'Ubuntu', child: Text('Ubuntu')),
+            DropdownMenuItem(value: 'sans-serif', child: Text('sans-serif')),
           ],
           onChanged: (value) {
             if (value != null) onFontFamilyChanged(value);

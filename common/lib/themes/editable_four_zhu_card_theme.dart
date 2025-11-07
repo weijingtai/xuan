@@ -222,6 +222,8 @@ class PillarSection {
     this.defaultPadding,
     this.borderWidth,
     this.borderColor,
+    this.cornerRadius,
+    this.backgroundColor,
     this.perPillarMargin,
   });
 
@@ -237,6 +239,12 @@ class PillarSection {
   /// Pillar border color (nullable for Theme default).
   final Color? borderColor;
 
+  /// Corner radius in pixels; must be non-negative if provided.
+  final double? cornerRadius;
+
+  /// Background color (nullable for transparent/default when not set).
+  final Color? backgroundColor;
+
   /// Differentiated outer margins per pillar type.
   /// Only keys in {year, month, day, hour, luckCycle} are allowed.
   final Map<PillarType, EdgeInsets>? perPillarMargin;
@@ -251,6 +259,8 @@ class PillarSection {
       'defaultPadding': _edgeToJson(defaultPadding),
       'borderWidth': borderWidth,
       'borderColor': borderColor?.value,
+      'cornerRadius': cornerRadius,
+      'backgroundColor': backgroundColor?.value,
       'perPillarMargin': perPillarMargin?.map(
         (k, v) => MapEntry(k.name, _edgeToJson(v)),
       ),
@@ -285,6 +295,10 @@ class PillarSection {
       borderWidth: (json['borderWidth'] as num?)?.toDouble(),
       borderColor:
           json['borderColor'] is int ? Color(json['borderColor'] as int) : null,
+      cornerRadius: (json['cornerRadius'] as num?)?.toDouble(),
+      backgroundColor: json['backgroundColor'] is int
+          ? Color(json['backgroundColor'] as int)
+          : null,
       perPillarMargin: ppm,
     );
   }
@@ -302,6 +316,12 @@ class PillarSection {
       out.add(const ThemeValidationError(
         scope: 'pillar.borderWidth',
         message: 'Border width must be non-negative.',
+      ));
+    }
+    if (cornerRadius != null && cornerRadius! < 0) {
+      out.add(const ThemeValidationError(
+        scope: 'pillar.cornerRadius',
+        message: 'Corner radius must be non-negative.',
       ));
     }
     if (perPillarMargin != null) {
