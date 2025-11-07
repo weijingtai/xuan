@@ -12,7 +12,10 @@ import '../../models/row_strategy.dart';
 import 'dimension_models.dart'; // 新增：尺寸管理模型
 import 'widgets/ghost_pillar_widget.dart'; // 幽灵柱占位 Widget
 import 'text_groups.dart';
+
 // Removed palette-based coloring; group font color applies when colorfulMode is enabled.
+// Sentinel RGB used to indicate shadow follows the character color
+const int _kShadowFollowSentinelRGB = 0x00FEED;
 
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
@@ -3673,7 +3676,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       weight: FontWeight.w400,
       group: TextGroup.tianGan,
     );
-    if (widget.colorfulMode) {
+    if (widget.colorfulMode && base.color == null) {
       final Color c = _colorForTianGanChar(t.name);
       base = base.copyWith(color: c);
     }
@@ -3682,6 +3685,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final Color? override = widget.perCharColors![t.name];
       if (override != null) {
         base = base.copyWith(color: override);
+      }
+    }
+    // If shadow color signals follow-character, resolve it to final text color with opacity
+    if (base.shadows != null && base.shadows!.isNotEmpty) {
+      final Shadow sh = base.shadows!.first;
+      final int rgb = sh.color.value & 0x00FFFFFF;
+      if (rgb == _kShadowFollowSentinelRGB && base.color != null) {
+        final int alpha = sh.color.alpha;
+        final Color resolved = base.color!.withAlpha(alpha);
+        base = base.copyWith(
+          shadows: [
+            Shadow(
+                color: resolved, offset: sh.offset, blurRadius: sh.blurRadius),
+          ],
+        );
       }
     }
     return Text(t.name, style: base);
@@ -3701,7 +3719,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       weight: FontWeight.w500,
       group: TextGroup.diZhi,
     );
-    if (widget.colorfulMode) {
+    if (widget.colorfulMode && base.color == null) {
       final Color c = _colorForDiZhiChar(d.name);
       base = base.copyWith(color: c);
     }
@@ -3710,6 +3728,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final Color? override = widget.perCharColors![d.name];
       if (override != null) {
         base = base.copyWith(color: override);
+      }
+    }
+    // If shadow color signals follow-character, resolve it to final text color with opacity
+    if (base.shadows != null && base.shadows!.isNotEmpty) {
+      final Shadow sh = base.shadows!.first;
+      final int rgb = sh.color.value & 0x00FFFFFF;
+      if (rgb == _kShadowFollowSentinelRGB && base.color != null) {
+        final int alpha = sh.color.alpha;
+        final Color resolved = base.color!.withAlpha(alpha);
+        base = base.copyWith(
+          shadows: [
+            Shadow(
+                color: resolved, offset: sh.offset, blurRadius: sh.blurRadius),
+          ],
+        );
       }
     }
     return Text(d.name, style: base);
@@ -3793,8 +3826,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         if (override.fontWeight != null) {
           merged = merged.copyWith(fontWeight: override.fontWeight);
         }
-        // 彩色模式下的天干/地支不应用分组纯色，避免覆盖字符映射颜色。
-        if (!(widget.colorfulMode && isGanZhi) && override.color != null) {
+        // 阴影：始终允许按分组覆盖（不受彩色模式限制）。
+        if (override.shadows != null && override.shadows!.isNotEmpty) {
+          merged = merged.copyWith(shadows: override.shadows);
+        }
+        // 若分组设置了颜色（表示未勾选“跟随字符”），则优先使用该颜色。
+        if (override.color != null) {
           merged = merged.copyWith(color: override.color);
         }
         style = merged;

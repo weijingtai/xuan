@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../editable_fourzhu_card/text_groups.dart';
 
+// Sentinel RGB used to signal shadow follows character color
+const int _kShadowFollowSentinelRGB = 0x00FEED;
+
 // 颜色方案模式：纯色 / 色彩（顶层枚举，避免嵌套在类中）
 enum ColorPreviewMode { pure, colorful }
 
@@ -55,10 +58,19 @@ class _ColorfulTextStyleEditorWidgetState
   late String _fontFamily;
   late double _fontSize;
   late FontWeight _fontWeight;
-  late Color _color;
+  Color _color = Colors.black87;
   // Key to access the child preview state when present (天干/地支).
   final GlobalKey<_DualThemeColorPreviewState> _previewKey =
       GlobalKey<_DualThemeColorPreviewState>();
+  // Shadow configuration state
+  bool _shadowEnabled = false;
+  Color _shadowColor = const Color(0x55000000);
+  double _shadowOffsetX = 0;
+  double _shadowOffsetY = 0;
+  double _shadowBlurRadius = 0;
+  // Shadow color follows character color
+  bool _shadowFollowCharColor = false;
+  double _shadowOpacity = 0.5;
 
   /// Initialize local editing state from `initialStyle`.
   @override
@@ -69,6 +81,21 @@ class _ColorfulTextStyleEditorWidgetState
     _fontSize = (s.fontSize ?? 14).clamp(8, 64).toDouble();
     _fontWeight = s.fontWeight ?? FontWeight.w400;
     _color = s.color ?? Colors.black87;
+    // Initialize shadow state from initialStyle.shadows (single-layer extraction)
+    final sh = s.shadows;
+    if (sh != null && sh.isNotEmpty) {
+      _shadowEnabled = true;
+      _shadowColor = sh.first.color;
+      _shadowOffsetX = sh.first.offset.dx;
+      _shadowOffsetY = sh.first.offset.dy;
+      _shadowBlurRadius = sh.first.blurRadius;
+    }
+    // Detect shadow follow-char sentinel
+    final int rgb = _shadowColor.value & 0x00FFFFFF;
+    if (rgb == _kShadowFollowSentinelRGB) {
+      _shadowFollowCharColor = true;
+      _shadowOpacity = _shadowColor.alpha / 255.0;
+    }
   }
 
   /// Emit the latest edited `TextStyle` via `onChanged`.
@@ -78,6 +105,18 @@ class _ColorfulTextStyleEditorWidgetState
       fontSize: _fontSize,
       fontWeight: _fontWeight,
       color: _color,
+      shadows: _shadowEnabled
+          ? [
+              Shadow(
+                color: _shadowFollowCharColor
+                    ? Color((((_shadowOpacity * 255).round()) << 24) |
+                        _kShadowFollowSentinelRGB)
+                    : _shadowColor,
+                offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                blurRadius: _shadowBlurRadius,
+              ),
+            ]
+          : null,
     ));
   }
 
@@ -85,6 +124,179 @@ class _ColorfulTextStyleEditorWidgetState
   void _onPreviewGlobalPureColorChanged(Color picked) {
     setState(() => _color = picked);
     _emit();
+  }
+
+  /// Build the shadow configuration section with enable toggle, color picker,
+  /// and sliders for offsetX/offsetY/blurRadius.
+  /// Returns a Widget tree rendering the shadow controls.
+  Widget _buildShadowSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          title: const Text('启用阴影'),
+          value: _shadowEnabled,
+          onChanged: (v) {
+            setState(() => _shadowEnabled = v);
+            _emit();
+          },
+        ),
+        if (_shadowEnabled) ...[
+          const SizedBox(height: 8),
+          // Follow character color for shadow
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('阴影颜色跟随字符颜色'),
+            value: _shadowFollowCharColor,
+            onChanged: (v) {
+              setState(() => _shadowFollowCharColor = v ?? false);
+              _emit();
+            },
+          ),
+          if (!_shadowFollowCharColor) ...[
+            // Shadow color picker
+            ColorPicker(
+              color: _shadowColor,
+              onColorChanged: (c) {
+                setState(() => _shadowColor = c);
+                _emit();
+              },
+              width: 40,
+              height: 18,
+              borderRadius: 8,
+              wheelDiameter: 140,
+              enableShadesSelection: false,
+              showColorName: false,
+              showMaterialName: false,
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const SizedBox(width: 100, child: Text('选择阴阳颜色')),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showColorPickerDialog(
+                      context,
+                      _shadowColor,
+                      title: const Text('选择阴阳颜色'),
+                      pickersEnabled: const {
+                        ColorPickerType.wheel: true,
+                        ColorPickerType.accent: true,
+                        ColorPickerType.primary: true,
+                        ColorPickerType.custom: false,
+                      },
+                    );
+                    setState(() => _shadowColor = picked);
+                    _emit();
+                  },
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: _shadowColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.4),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
+            // Shadow opacity when following char color
+            Row(
+              children: [
+                const SizedBox(width: 100, child: Text('阴影透明度')),
+                Expanded(
+                  child: Slider(
+                    value: _shadowOpacity,
+                    min: 0,
+                    max: 1,
+                    divisions: 20,
+                    label: (_shadowOpacity * 100).round().toString(),
+                    onChanged: (v) {
+                      setState(() => _shadowOpacity = v);
+                      _emit();
+                    },
+                  ),
+                ),
+                SizedBox(
+                    width: 48,
+                    child: Text('${(_shadowOpacity * 100).round()}%',
+                        textAlign: TextAlign.right)),
+              ],
+            ),
+          ],
+          const SizedBox(height: 8),
+          // Offset X slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('位移 X')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOffsetX,
+                  min: -24,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowOffsetX = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowOffsetX.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+          // Offset Y slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('位移 Y')),
+              Expanded(
+                child: Slider(
+                  value: _shadowOffsetY,
+                  min: -24,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowOffsetY = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowOffsetY.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+          // Blur radius slider
+          Row(
+            children: [
+              const SizedBox(width: 100, child: Text('模糊半径')),
+              Expanded(
+                child: Slider(
+                  value: _shadowBlurRadius,
+                  min: 0,
+                  max: 24,
+                  onChanged: (v) {
+                    setState(() => _shadowBlurRadius = v);
+                    _emit();
+                  },
+                ),
+              ),
+              SizedBox(
+                  width: 48,
+                  child: Text(_shadowBlurRadius.toStringAsFixed(1),
+                      textAlign: TextAlign.right)),
+            ],
+          ),
+        ],
+      ],
+    );
   }
 
   /// Convert hex string like `#RRGGBB` or `#AARRGGBB` to `Color`.
@@ -238,6 +450,7 @@ class _ColorfulTextStyleEditorWidgetState
                     // 父类色块已删除，其他逻辑不变
                   ],
                 ),
+                // 颜色跟随字符已改为阴影颜色跟随字符颜色（移除文本颜色跟随），此处不再显示文本颜色跟随开关
                 if (widget.showInlineWheel) ...[
                   const SizedBox(height: 8),
                   ColorPicker(
@@ -254,6 +467,49 @@ class _ColorfulTextStyleEditorWidgetState
                     showColorName: false,
                     showMaterialName: false,
                   ),
+                  // Preset color palette for quick selection
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      for (final c in const [
+                        Colors.black,
+                        Colors.white,
+                        Colors.grey,
+                        Colors.red,
+                        Colors.orange,
+                        Colors.yellow,
+                        Colors.green,
+                        Colors.teal,
+                        Colors.blue,
+                        Colors.indigo,
+                        Colors.purple,
+                        Colors.pink,
+                        Colors.brown,
+                        Colors.cyan,
+                      ])
+                        InkWell(
+                          onTap: () {
+                            setState(() => _color = c);
+                            _emit();
+                          },
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: BoxDecoration(
+                              color: c,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: Theme.of(context)
+                                    .dividerColor
+                                    .withValues(alpha: 0.4),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ],
                 // 将 Light/Dark 预览嵌入对应字体设置卡片（仅天干/地支）
                 if (widget.label == '天干' || widget.label == '地支') ...[
@@ -269,11 +525,27 @@ class _ColorfulTextStyleEditorWidgetState
                       fontSize: _fontSize,
                       fontWeight: _fontWeight,
                       color: _color,
+                      shadows: _shadowEnabled
+                          ? [
+                              Shadow(
+                                color: _shadowFollowCharColor
+                                    ? Color((((_shadowOpacity * 255).round()) <<
+                                            24) |
+                                        _kShadowFollowSentinelRGB)
+                                    : _shadowColor,
+                                offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                                blurRadius: _shadowBlurRadius,
+                              ),
+                            ]
+                          : null,
                     ),
                     onGlobalPureColorChanged: _onPreviewGlobalPureColorChanged,
                     onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
                   ),
                 ],
+                const SizedBox(height: 12),
+                // Shadow configuration section
+                _buildShadowSection(),
               ],
             ),
           ],
@@ -477,12 +749,30 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 2, vertical: 4),
                       child: Center(
-                        child: Text(
-                          _allChars[i],
-                          style: widget.uniformStyle.copyWith(
+                        child: Builder(builder: (context) {
+                          // Resolve per-character style with shadow color following character color when enabled.
+                          TextStyle st = widget.uniformStyle.copyWith(
                             color: colors[i],
-                          ),
-                        ),
+                          );
+                          if (widget.uniformStyle.shadows != null &&
+                              widget.uniformStyle.shadows!.isNotEmpty) {
+                            final Shadow sh = widget.uniformStyle.shadows!.first;
+                            final int rgb = sh.color.value & 0x00FFFFFF;
+                            if (rgb == _kShadowFollowSentinelRGB && st.color != null) {
+                              final int alpha = sh.color.alpha;
+                              st = st.copyWith(
+                                shadows: [
+                                  Shadow(
+                                    color: st.color!.withAlpha(alpha),
+                                    offset: sh.offset,
+                                    blurRadius: sh.blurRadius,
+                                  ),
+                                ],
+                              );
+                            }
+                          }
+                          return Text(_allChars[i], style: st);
+                        }),
                       ),
                     ),
                 ],
@@ -657,12 +947,30 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 2, vertical: 4),
                       child: Center(
-                        child: Text(
-                          _allChars[i],
-                          style: widget.uniformStyle.copyWith(
+                        child: Builder(builder: (context) {
+                          // Resolve per-character style with shadow color following character color when enabled.
+                          TextStyle st = widget.uniformStyle.copyWith(
                             color: charColors[i],
-                          ),
-                        ),
+                          );
+                          if (widget.uniformStyle.shadows != null &&
+                              widget.uniformStyle.shadows!.isNotEmpty) {
+                            final Shadow sh = widget.uniformStyle.shadows!.first;
+                            final int rgb = sh.color.value & 0x00FFFFFF;
+                            if (rgb == _kShadowFollowSentinelRGB && st.color != null) {
+                              final int alpha = sh.color.alpha;
+                              st = st.copyWith(
+                                shadows: [
+                                  Shadow(
+                                    color: st.color!.withAlpha(alpha),
+                                    offset: sh.offset,
+                                    blurRadius: sh.blurRadius,
+                                  ),
+                                ],
+                              );
+                            }
+                          }
+                          return Text(_allChars[i], style: st);
+                        }),
                       ),
                     ),
                 ],
