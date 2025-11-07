@@ -172,17 +172,17 @@ class _ColorfulTextStyleEditorWidgetState
             const SizedBox(height: 8),
             Row(
               children: [
-                const SizedBox(width: 100, child: Text('选择阴阳颜色')),
+                const SizedBox(width: 100, child: Text('选择阴影颜色')),
                 InkWell(
                   onTap: () async {
                     final picked = await showColorPickerDialog(
                       context,
                       _shadowColor,
-                      title: const Text('选择阴阳颜色'),
+                      title: const Text('选择阴影颜色'),
                       pickersEnabled: const {
                         ColorPickerType.wheel: true,
-                        ColorPickerType.accent: true,
-                        ColorPickerType.primary: true,
+                        ColorPickerType.accent: false,
+                        ColorPickerType.primary: false,
                         ColorPickerType.custom: false,
                       },
                     );
@@ -756,9 +756,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                           );
                           if (widget.uniformStyle.shadows != null &&
                               widget.uniformStyle.shadows!.isNotEmpty) {
-                            final Shadow sh = widget.uniformStyle.shadows!.first;
+                            final Shadow sh =
+                                widget.uniformStyle.shadows!.first;
                             final int rgb = sh.color.value & 0x00FFFFFF;
-                            if (rgb == _kShadowFollowSentinelRGB && st.color != null) {
+                            if (rgb == _kShadowFollowSentinelRGB &&
+                                st.color != null) {
                               final int alpha = sh.color.alpha;
                               st = st.copyWith(
                                 shadows: [
@@ -954,9 +956,11 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                           );
                           if (widget.uniformStyle.shadows != null &&
                               widget.uniformStyle.shadows!.isNotEmpty) {
-                            final Shadow sh = widget.uniformStyle.shadows!.first;
+                            final Shadow sh =
+                                widget.uniformStyle.shadows!.first;
                             final int rgb = sh.color.value & 0x00FFFFFF;
-                            if (rgb == _kShadowFollowSentinelRGB && st.color != null) {
+                            if (rgb == _kShadowFollowSentinelRGB &&
+                                st.color != null) {
                               final int alpha = sh.color.alpha;
                               st = st.copyWith(
                                 shadows: [

@@ -138,14 +138,26 @@ class CardSection {
   /// Creates card decoration defaults.
   const CardSection({
     this.backgroundColor,
+    this.borderWidth,
+    this.borderColor,
     this.elevation,
     this.cornerRadius,
     this.padding,
     this.margin,
+    this.shadowColor,
+    this.shadowOffsetX,
+    this.shadowOffsetY,
+    this.shadowBlurRadius,
   });
 
   /// Background color of the card surface (nullable for Theme default).
   final Color? backgroundColor;
+
+  /// Card border width; must be non-negative if provided.
+  final double? borderWidth;
+
+  /// Card border color (nullable for Theme default).
+  final Color? borderColor;
 
   /// Material elevation (shadows); must be non-negative if provided.
   final double? elevation;
@@ -159,6 +171,18 @@ class CardSection {
   /// Outer margin; each component must be non-negative if provided.
   final EdgeInsets? margin;
 
+  /// Box shadow color for the card surface.
+  final Color? shadowColor;
+
+  /// Box shadow offset X (horizontal), in logical pixels.
+  final double? shadowOffsetX;
+
+  /// Box shadow offset Y (vertical), in logical pixels.
+  final double? shadowOffsetY;
+
+  /// Box shadow blur radius; must be non-negative if provided.
+  final double? shadowBlurRadius;
+
   /// Serializes this section to JSON.
   ///
   /// Returns: A `Map<String, dynamic>` with color/elevation/radius and
@@ -166,10 +190,16 @@ class CardSection {
   Map<String, dynamic> toJson() {
     return {
       'backgroundColor': backgroundColor?.value,
+      'borderWidth': borderWidth,
+      'borderColor': borderColor?.value,
       'elevation': elevation,
       'cornerRadius': cornerRadius,
       'padding': _edgeToJson(padding),
       'margin': _edgeToJson(margin),
+      'shadowColor': shadowColor?.value,
+      'shadowOffsetX': shadowOffsetX,
+      'shadowOffsetY': shadowOffsetY,
+      'shadowBlurRadius': shadowBlurRadius,
     };
   }
 
@@ -184,10 +214,18 @@ class CardSection {
       backgroundColor: json['backgroundColor'] is int
           ? Color(json['backgroundColor'] as int)
           : null,
+      borderWidth: (json['borderWidth'] as num?)?.toDouble(),
+      borderColor:
+          json['borderColor'] is int ? Color(json['borderColor'] as int) : null,
       elevation: (json['elevation'] as num?)?.toDouble(),
       cornerRadius: (json['cornerRadius'] as num?)?.toDouble(),
       padding: _edgeFromJson(json['padding']),
       margin: _edgeFromJson(json['margin']),
+      shadowColor:
+          json['shadowColor'] is int ? Color(json['shadowColor'] as int) : null,
+      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
+      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
+      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
     );
   }
 
@@ -197,6 +235,12 @@ class CardSection {
   /// - [out]: A mutable list to which discovered `ThemeValidationError`s are
   /// appended. No value is returned.
   void validateInto(List<ThemeValidationError> out) {
+    if (borderWidth != null && borderWidth! < 0) {
+      out.add(const ThemeValidationError(
+        scope: 'card.borderWidth',
+        message: 'Border width must be non-negative.',
+      ));
+    }
     if (elevation != null && elevation! < 0) {
       out.add(const ThemeValidationError(
         scope: 'card.elevation',
@@ -211,6 +255,12 @@ class CardSection {
     }
     _validateEdgeInsetsNonNegative('card.padding', padding, out);
     _validateEdgeInsetsNonNegative('card.margin', margin, out);
+    if (shadowBlurRadius != null && shadowBlurRadius! < 0) {
+      out.add(const ThemeValidationError(
+        scope: 'card.shadowBlurRadius',
+        message: 'Shadow blur radius must be non-negative.',
+      ));
+    }
   }
 }
 
@@ -225,6 +275,10 @@ class PillarSection {
     this.cornerRadius,
     this.backgroundColor,
     this.perPillarMargin,
+    this.shadowColor,
+    this.shadowOffsetX,
+    this.shadowOffsetY,
+    this.shadowBlurRadius,
   });
 
   /// Default outer margin applied to pillars unless overridden.
@@ -249,6 +303,18 @@ class PillarSection {
   /// Only keys in {year, month, day, hour, luckCycle} are allowed.
   final Map<PillarType, EdgeInsets>? perPillarMargin;
 
+  /// Box shadow color for pillar containers.
+  final Color? shadowColor;
+
+  /// Box shadow offset X (horizontal), in logical pixels.
+  final double? shadowOffsetX;
+
+  /// Box shadow offset Y (vertical), in logical pixels.
+  final double? shadowOffsetY;
+
+  /// Box shadow blur radius; must be non-negative if provided.
+  final double? shadowBlurRadius;
+
   /// Serializes this section to JSON.
   ///
   /// Returns: A `Map<String, dynamic>` including default decorations and
@@ -264,6 +330,10 @@ class PillarSection {
       'perPillarMargin': perPillarMargin?.map(
         (k, v) => MapEntry(k.name, _edgeToJson(v)),
       ),
+      'shadowColor': shadowColor?.value,
+      'shadowOffsetX': shadowOffsetX,
+      'shadowOffsetY': shadowOffsetY,
+      'shadowBlurRadius': shadowBlurRadius,
     };
   }
 
@@ -300,6 +370,11 @@ class PillarSection {
           ? Color(json['backgroundColor'] as int)
           : null,
       perPillarMargin: ppm,
+      shadowColor:
+          json['shadowColor'] is int ? Color(json['shadowColor'] as int) : null,
+      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
+      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
+      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
     );
   }
 
@@ -322,6 +397,12 @@ class PillarSection {
       out.add(const ThemeValidationError(
         scope: 'pillar.cornerRadius',
         message: 'Corner radius must be non-negative.',
+      ));
+    }
+    if (shadowBlurRadius != null && shadowBlurRadius! < 0) {
+      out.add(const ThemeValidationError(
+        scope: 'pillar.shadowBlurRadius',
+        message: 'Shadow blur radius must be non-negative.',
       ));
     }
     if (perPillarMargin != null) {

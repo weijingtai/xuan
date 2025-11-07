@@ -57,6 +57,9 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   // Card-level colorful mode: when true, use per-token palette colors
   final bool colorfulMode;
 
+  /// Optional pillar container box shadows.
+  final List<BoxShadow>? pillarBoxShadow;
+
   const EditableFourZhuCardV3({
     super.key,
     required this.pillarsNotifier,
@@ -70,6 +73,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.pillarBorderColor,
     this.pillarCornerRadius,
     this.pillarBackgroundColor,
+    this.pillarBoxShadow,
     this.groupTextStyles,
     this.globalFontFamily,
     this.globalFontSize,
@@ -1929,6 +1933,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 color: _pillarBorderColorEff,
                                 width: _pillarBorderWidthEff,
                               ),
+                              boxShadow: widget.pillarBoxShadow,
                             ),
                             child: SizedBox(
                               width: colW,

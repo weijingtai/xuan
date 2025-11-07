@@ -138,6 +138,46 @@ class EditableFourZhuThemeController {
   /// Returns: The background color override or `null`.
   Color? resolveCardBackgroundColor() => theme.card?.backgroundColor;
 
+  /// Resolves card-level border width.
+  ///
+  /// Returns: The configured card border width or `null` when not set.
+  double? resolveCardBorderWidth() => theme.card?.borderWidth;
+
+  /// Resolves card-level border color.
+  ///
+  /// Returns: The configured card border color or `null` when not set.
+  Color? resolveCardBorderColor() => theme.card?.borderColor;
+
+  /// Resolves card-level box shadow from theme.
+  ///
+  /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
+  /// otherwise `null`.
+  List<BoxShadow>? resolveCardBoxShadow() {
+    final c = theme.card;
+    if (c == null) return null;
+    final color = c.shadowColor;
+    if (color == null) return null;
+    final dx = c.shadowOffsetX ?? 0;
+    final dy = c.shadowOffsetY ?? 0;
+    final blur = c.shadowBlurRadius ?? 0;
+    return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
+  }
+
+  /// Resolves pillar-level box shadow from theme.
+  ///
+  /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
+  /// otherwise `null`.
+  List<BoxShadow>? resolvePillarBoxShadow() {
+    final p = theme.pillar;
+    if (p == null) return null;
+    final color = p.shadowColor;
+    if (color == null) return null;
+    final dx = p.shadowOffsetX ?? 0;
+    final dy = p.shadowOffsetY ?? 0;
+    final blur = p.shadowBlurRadius ?? 0;
+    return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
+  }
+
   /// Applies fallback policy to determine the best font family to use.
   ///
   /// Parameters:

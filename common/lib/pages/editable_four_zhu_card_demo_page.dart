@@ -432,11 +432,16 @@ class _EditableFourZhuCardDemoPageState
                         borderRadius: BorderRadius.circular(
                           _themeController?.resolveCardCornerRadius() ?? 12,
                         ),
-                        // Add a subtle border to make the root card visually discernible
+                        boxShadow:
+                            _themeController?.resolveCardBoxShadow(),
+                        // Configurable card border from theme
                         border: Border.all(
-                          color:
-                              Theme.of(context).dividerColor.withOpacity(0.35),
-                          width: 1,
+                          color: _themeController?.resolveCardBorderColor() ??
+                              Theme.of(context)
+                                  .dividerColor
+                                  .withOpacity(0.35),
+                          width:
+                              _themeController?.resolveCardBorderWidth() ?? 1,
                         ),
                       ),
                       // Bind pillar decoration (margin/border) for dynamic sizing and offsets
@@ -456,6 +461,8 @@ class _EditableFourZhuCardDemoPageState
                       pillarBackgroundColor:
                           _themeController?.resolvePillarBackgroundColor() ??
                               Colors.transparent,
+                      pillarBoxShadow:
+                          _themeController?.resolvePillarBoxShadow(),
                       // debugHysteresisOverlay: false,
                     ),
                   ],
@@ -890,9 +897,11 @@ class _ThemePreview extends StatelessWidget {
                                   .withOpacity(0.6),
                               width: c?.resolvePillarBorderWidth() ?? 0,
                             ),
-                            color: Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
+                            color:
+                                c?.resolvePillarBackgroundColor() ??
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(_pillarLabel(t, context)),

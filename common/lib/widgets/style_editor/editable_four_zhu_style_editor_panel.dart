@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 
 import '../../enums/layout_template_enums.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
@@ -38,13 +39,29 @@ class _EditableFourZhuStyleEditorPanelState
   // Cached scalar controls for convenience (uniform values)
   double _cardPadding = 0;
   double _cardCornerRadius = 8;
+  double _cardBorderWidth = 1;
+  String _cardBorderHex = '';
+  String _cardBackgroundHex = '';
+  // Card shadow controls
+  String _cardShadowHex = '';
+  double _cardShadowOffsetX = 0;
+  double _cardShadowOffsetY = 0;
+  double _cardShadowBlur = 0;
+  bool _cardShadowEnabled = false;
   double _pillarDefaultMarginH = 0;
   double _pillarDefaultMarginV = 0;
   double _pillarDefaultPaddingH = 0;
   double _pillarDefaultPaddingV = 0;
   double _pillarBorderWidth = 0;
   double _pillarCornerRadius = 0;
+  // Pillar shadow controls
+  String _pillarShadowHex = '';
+  double _pillarShadowOffsetX = 0;
+  double _pillarShadowOffsetY = 0;
+  double _pillarShadowBlur = 0;
+  bool _pillarShadowEnabled = false;
   String _pillarBackgroundHex = '';
+  String _pillarBorderHex = '';
   String _globalFontFamily = '';
   double _globalFontSize = 14;
   String _preferredFamiliesText = '';
@@ -70,6 +87,13 @@ class _EditableFourZhuStyleEditorPanelState
     _theme = theme;
     _cardPadding = (_theme.card?.padding?.left ?? 0).toDouble();
     _cardCornerRadius = (_theme.card?.cornerRadius ?? 8).toDouble();
+    _cardShadowHex = _theme.card?.shadowColor != null
+        ? '#${_theme.card!.shadowColor!.value.toRadixString(16).padLeft(8, '0').toUpperCase()}'
+        : '';
+    _cardShadowEnabled = _theme.card?.shadowColor != null;
+    _cardShadowOffsetX = (_theme.card?.shadowOffsetX ?? 0).toDouble();
+    _cardShadowOffsetY = (_theme.card?.shadowOffsetY ?? 0).toDouble();
+    _cardShadowBlur = (_theme.card?.shadowBlurRadius ?? 0).toDouble();
     _pillarDefaultMarginH =
         (_theme.pillar?.defaultMargin?.left ?? 0).toDouble();
     _pillarDefaultMarginV = (_theme.pillar?.defaultMargin?.top ?? 0).toDouble();
@@ -79,6 +103,13 @@ class _EditableFourZhuStyleEditorPanelState
         (_theme.pillar?.defaultPadding?.top ?? 0).toDouble();
     _pillarBorderWidth = (_theme.pillar?.borderWidth ?? 0).toDouble();
     _pillarCornerRadius = (_theme.pillar?.cornerRadius ?? 0).toDouble();
+    _pillarShadowHex = _theme.pillar?.shadowColor != null
+        ? '#${_theme.pillar!.shadowColor!.value.toRadixString(16).padLeft(8, '0').toUpperCase()}'
+        : '';
+    _pillarShadowEnabled = _theme.pillar?.shadowColor != null;
+    _pillarShadowOffsetX = (_theme.pillar?.shadowOffsetX ?? 0).toDouble();
+    _pillarShadowOffsetY = (_theme.pillar?.shadowOffsetY ?? 0).toDouble();
+    _pillarShadowBlur = (_theme.pillar?.shadowBlurRadius ?? 0).toDouble();
     _pillarBackgroundHex = _theme.pillar?.backgroundColor?.value
                 .toRadixString(16)
                 .padLeft(8, '0')
@@ -178,6 +209,12 @@ class _EditableFourZhuStyleEditorPanelState
                       elevation: _theme.card?.elevation,
                       backgroundColor: _theme.card?.backgroundColor,
                       margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
                     ),
                   ));
                 },
@@ -196,6 +233,417 @@ class _EditableFourZhuStyleEditorPanelState
                       elevation: _theme.card?.elevation,
                       backgroundColor: _theme.card?.backgroundColor,
                       margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              // 卡片背景色：色块 + 按钮
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Text('卡片背景色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_cardBackgroundHex) ??
+                            Theme.of(context).colorScheme.surface,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _cardBackgroundHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        card: CardSection(
+                          padding: _edgeAll(_cardPadding),
+                          cornerRadius: _cardCornerRadius,
+                          elevation: _theme.card?.elevation,
+                          backgroundColor: picked,
+                          margin: _theme.card?.margin,
+                          shadowColor: _cardShadowEnabled
+                              ? _parseHexColor(_cardShadowHex)
+                              : null,
+                          shadowOffsetX: _cardShadowOffsetX,
+                          shadowOffsetY: _cardShadowOffsetY,
+                          shadowBlurRadius: _cardShadowBlur,
+                          borderWidth: _cardBorderWidth,
+                          borderColor: _parseHexColor(_cardBorderHex),
+                        ),
+                      ));
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_cardBackgroundHex) ??
+                            Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_cardBackgroundHex) ??
+                            Theme.of(context).colorScheme.surface,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _cardBackgroundHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        card: CardSection(
+                          padding: _edgeAll(_cardPadding),
+                          cornerRadius: _cardCornerRadius,
+                          elevation: _theme.card?.elevation,
+                          backgroundColor: picked,
+                          margin: _theme.card?.margin,
+                          shadowColor: _cardShadowEnabled
+                              ? _parseHexColor(_cardShadowHex)
+                              : null,
+                          shadowOffsetX: _cardShadowOffsetX,
+                          shadowOffsetY: _cardShadowOffsetY,
+                          shadowBlurRadius: _cardShadowBlur,
+                          borderWidth: _cardBorderWidth,
+                          borderColor: _parseHexColor(_cardBorderHex),
+                        ),
+                      ));
+                    },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
+              ),
+              // 卡片边框宽度
+              _buildSlider(
+                label: '卡片边框宽度 (px)',
+                value: _cardBorderWidth,
+                min: 0,
+                max: 8,
+                onChanged: (v) {
+                  _cardBorderWidth = v;
+                  _emit(_theme.copyWith(
+                    card: CardSection(
+                      padding: _edgeAll(_cardPadding),
+                      cornerRadius: _cardCornerRadius,
+                      elevation: _theme.card?.elevation,
+                      backgroundColor: _parseHexColor(_cardBackgroundHex) ??
+                          _theme.card?.backgroundColor,
+                      margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
+                      borderWidth: _cardBorderWidth,
+                      borderColor: _parseHexColor(_cardBorderHex) ??
+                          _theme.card?.borderColor,
+                    ),
+                  ));
+                },
+              ),
+              // 卡片边框颜色：色块 + 按钮
+              Row(
+                children: [
+                  const Text('卡片边框颜色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_cardBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _cardBorderHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        card: CardSection(
+                          padding: _edgeAll(_cardPadding),
+                          cornerRadius: _cardCornerRadius,
+                          elevation: _theme.card?.elevation,
+                          backgroundColor: _parseHexColor(_cardBackgroundHex) ??
+                              _theme.card?.backgroundColor,
+                          margin: _theme.card?.margin,
+                          shadowColor: _cardShadowEnabled
+                              ? _parseHexColor(_cardShadowHex)
+                              : null,
+                          shadowOffsetX: _cardShadowOffsetX,
+                          shadowOffsetY: _cardShadowOffsetY,
+                          shadowBlurRadius: _cardShadowBlur,
+                          borderWidth: _cardBorderWidth,
+                          borderColor: picked,
+                        ),
+                      ));
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_cardBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_cardBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _cardBorderHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        card: CardSection(
+                          padding: _edgeAll(_cardPadding),
+                          cornerRadius: _cardCornerRadius,
+                          elevation: _theme.card?.elevation,
+                          backgroundColor: _parseHexColor(_cardBackgroundHex) ??
+                              _theme.card?.backgroundColor,
+                          margin: _theme.card?.margin,
+                          shadowColor: _cardShadowEnabled
+                              ? _parseHexColor(_cardShadowHex)
+                              : null,
+                          shadowOffsetX: _cardShadowOffsetX,
+                          shadowOffsetY: _cardShadowOffsetY,
+                          shadowBlurRadius: _cardShadowBlur,
+                          borderWidth: _cardBorderWidth,
+                          borderColor: picked,
+                        ),
+                      ));
+                    },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
+              ),
+              // 阴影启用开关
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('启用阴影'),
+                value: _cardShadowEnabled,
+                onChanged: (v) {
+                  _cardShadowEnabled = v ?? false;
+                  _emit(_theme.copyWith(
+                    card: CardSection(
+                      padding: _edgeAll(_cardPadding),
+                      cornerRadius: _cardCornerRadius,
+                      elevation: _theme.card?.elevation,
+                      backgroundColor: _theme.card?.backgroundColor,
+                      margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex.isEmpty
+                              ? '#55000000'
+                              : _cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              // 阴影颜色选择：色块 + 按钮，点击弹出颜色选择对话框
+              Row(
+                children: [
+                  const Text('阴影颜色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: !_cardShadowEnabled
+                        ? null
+                        : () async {
+                            final picked = await showColorPickerDialog(
+                              context,
+                              _parseHexColor(_cardShadowHex) ??
+                                  const Color(0x55000000),
+                              title: const Text('选择颜色'),
+                              pickersEnabled: const {
+                                ColorPickerType.wheel: true,
+                                ColorPickerType.accent: false,
+                                ColorPickerType.primary: false,
+                                ColorPickerType.custom: false,
+                              },
+                            );
+                            _cardShadowHex =
+                                '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                            _emit(_theme.copyWith(
+                              card: CardSection(
+                                padding: _edgeAll(_cardPadding),
+                                cornerRadius: _cardCornerRadius,
+                                elevation: _theme.card?.elevation,
+                                backgroundColor: _theme.card?.backgroundColor,
+                                margin: _theme.card?.margin,
+                                shadowColor: _cardShadowEnabled ? picked : null,
+                                shadowOffsetX: _cardShadowOffsetX,
+                                shadowOffsetY: _cardShadowOffsetY,
+                                shadowBlurRadius: _cardShadowBlur,
+                              ),
+                            ));
+                          },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_cardShadowHex) ??
+                            const Color(0x00000000),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: !_cardShadowEnabled
+                        ? null
+                        : () async {
+                            final picked = await showColorPickerDialog(
+                              context,
+                              _parseHexColor(_cardShadowHex) ??
+                                  const Color(0x55000000),
+                              title: const Text('选择颜色'),
+                              pickersEnabled: const {
+                                ColorPickerType.wheel: true,
+                                ColorPickerType.accent: false,
+                                ColorPickerType.primary: false,
+                                ColorPickerType.custom: false,
+                              },
+                            );
+                            _cardShadowHex =
+                                '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                            _emit(_theme.copyWith(
+                              card: CardSection(
+                                padding: _edgeAll(_cardPadding),
+                                cornerRadius: _cardCornerRadius,
+                                elevation: _theme.card?.elevation,
+                                backgroundColor: _theme.card?.backgroundColor,
+                                margin: _theme.card?.margin,
+                                shadowColor: _cardShadowEnabled ? picked : null,
+                                shadowOffsetX: _cardShadowOffsetX,
+                                shadowOffsetY: _cardShadowOffsetY,
+                                shadowBlurRadius: _cardShadowBlur,
+                              ),
+                            ));
+                          },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
+              ),
+              _buildSlider(
+                label: '阴影偏移X (px)',
+                value: _cardShadowOffsetX,
+                min: -32,
+                max: 32,
+                onChanged: (v) {
+                  _cardShadowOffsetX = v;
+                  _emit(_theme.copyWith(
+                    card: CardSection(
+                      padding: _edgeAll(_cardPadding),
+                      cornerRadius: _cardCornerRadius,
+                      elevation: _theme.card?.elevation,
+                      backgroundColor: _theme.card?.backgroundColor,
+                      margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              _buildSlider(
+                label: '阴影偏移Y (px)',
+                value: _cardShadowOffsetY,
+                min: -32,
+                max: 32,
+                onChanged: (v) {
+                  _cardShadowOffsetY = v;
+                  _emit(_theme.copyWith(
+                    card: CardSection(
+                      padding: _edgeAll(_cardPadding),
+                      cornerRadius: _cardCornerRadius,
+                      elevation: _theme.card?.elevation,
+                      backgroundColor: _theme.card?.backgroundColor,
+                      margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              _buildSlider(
+                label: '阴影模糊半径 (px)',
+                value: _cardShadowBlur,
+                min: 0,
+                max: 64,
+                onChanged: (v) {
+                  _cardShadowBlur = v;
+                  _emit(_theme.copyWith(
+                    card: CardSection(
+                      padding: _edgeAll(_cardPadding),
+                      cornerRadius: _cardCornerRadius,
+                      elevation: _theme.card?.elevation,
+                      backgroundColor: _theme.card?.backgroundColor,
+                      margin: _theme.card?.margin,
+                      shadowColor: _cardShadowEnabled
+                          ? _parseHexColor(_cardShadowHex)
+                          : null,
+                      shadowOffsetX: _cardShadowOffsetX,
+                      shadowOffsetY: _cardShadowOffsetY,
+                      shadowBlurRadius: _cardShadowBlur,
                     ),
                   ));
                 },
@@ -231,6 +679,10 @@ class _EditableFourZhuStyleEditorPanelState
                       cornerRadius: _pillarCornerRadius,
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: nextPer,
+                      shadowColor: _parseHexColor(_pillarShadowHex),
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
@@ -255,6 +707,10 @@ class _EditableFourZhuStyleEditorPanelState
                       cornerRadius: _pillarCornerRadius,
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: nextPer,
+                      shadowColor: _parseHexColor(_pillarShadowHex),
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
@@ -278,6 +734,10 @@ class _EditableFourZhuStyleEditorPanelState
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: Map<PillarType, EdgeInsets>.of(
                           _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _parseHexColor(_pillarShadowHex),
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
@@ -301,6 +761,10 @@ class _EditableFourZhuStyleEditorPanelState
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: Map<PillarType, EdgeInsets>.of(
                           _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _parseHexColor(_pillarShadowHex),
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
@@ -324,6 +788,12 @@ class _EditableFourZhuStyleEditorPanelState
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: Map<PillarType, EdgeInsets>.of(
                           _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
@@ -347,32 +817,226 @@ class _EditableFourZhuStyleEditorPanelState
                       backgroundColor: _parseHexColor(_pillarBackgroundHex),
                       perPillarMargin: Map<PillarType, EdgeInsets>.of(
                           _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
                     ),
                   ));
                 },
               ),
-              TextField(
-                decoration: const InputDecoration(
-                  labelText: '柱背景色 (#AARRGGBB 或 #RRGGBB，留空透明)',
-                ),
-                controller: TextEditingController(text: _pillarBackgroundHex),
-                onChanged: (v) {
-                  _pillarBackgroundHex = v;
-                  _emit(_theme.copyWith(
-                    pillar: PillarSection(
-                      defaultMargin:
-                          _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
-                      defaultPadding: _edgeHV(
-                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
-                      borderWidth: _pillarBorderWidth,
-                      borderColor: _theme.pillar?.borderColor,
-                      cornerRadius: _pillarCornerRadius,
-                      backgroundColor: _parseHexColor(_pillarBackgroundHex),
-                      perPillarMargin: Map<PillarType, EdgeInsets>.of(
-                          _theme.pillar?.perPillarMargin ?? {}),
+              // 柱背景色：色块 + 按钮
+              Row(
+                children: [
+                  const Text('柱背景色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_pillarBackgroundHex) ??
+                            Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _pillarBackgroundHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        pillar: PillarSection(
+                          defaultMargin: _edgeHV(
+                              _pillarDefaultMarginH, _pillarDefaultMarginV),
+                          defaultPadding: _edgeHV(
+                              _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                          borderWidth: _pillarBorderWidth,
+                          borderColor: _parseHexColor(_pillarBorderHex) ??
+                              _theme.pillar?.borderColor,
+                          cornerRadius: _pillarCornerRadius,
+                          backgroundColor: picked,
+                          perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                              _theme.pillar?.perPillarMargin ?? {}),
+                          shadowColor: _pillarShadowEnabled
+                              ? _parseHexColor(_pillarShadowHex)
+                              : null,
+                          shadowOffsetX: _pillarShadowOffsetX,
+                          shadowOffsetY: _pillarShadowOffsetY,
+                          shadowBlurRadius: _pillarShadowBlur,
+                        ),
+                      ));
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_pillarBackgroundHex) ??
+                            Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
-                  ));
-                },
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_pillarBackgroundHex) ??
+                            Theme.of(context)
+                                .colorScheme
+                                .surfaceContainerHighest,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _pillarBackgroundHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        pillar: PillarSection(
+                          defaultMargin: _edgeHV(
+                              _pillarDefaultMarginH, _pillarDefaultMarginV),
+                          defaultPadding: _edgeHV(
+                              _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                          borderWidth: _pillarBorderWidth,
+                          borderColor: _parseHexColor(_pillarBorderHex) ??
+                              _theme.pillar?.borderColor,
+                          cornerRadius: _pillarCornerRadius,
+                          backgroundColor: picked,
+                          perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                              _theme.pillar?.perPillarMargin ?? {}),
+                          shadowColor: _pillarShadowEnabled
+                              ? _parseHexColor(_pillarShadowHex)
+                              : null,
+                          shadowOffsetX: _pillarShadowOffsetX,
+                          shadowOffsetY: _pillarShadowOffsetY,
+                          shadowBlurRadius: _pillarShadowBlur,
+                        ),
+                      ));
+                    },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // 柱边框颜色：色块 + 按钮
+              Row(
+                children: [
+                  const Text('柱边框颜色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_pillarBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _pillarBorderHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        pillar: PillarSection(
+                          defaultMargin: _edgeHV(
+                              _pillarDefaultMarginH, _pillarDefaultMarginV),
+                          defaultPadding: _edgeHV(
+                              _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                          borderWidth: _pillarBorderWidth,
+                          borderColor: picked,
+                          cornerRadius: _pillarCornerRadius,
+                          backgroundColor:
+                              _parseHexColor(_pillarBackgroundHex) ??
+                                  _theme.pillar?.backgroundColor,
+                          perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                              _theme.pillar?.perPillarMargin ?? {}),
+                          shadowColor: _pillarShadowEnabled
+                              ? _parseHexColor(_pillarShadowHex)
+                              : null,
+                          shadowOffsetX: _pillarShadowOffsetX,
+                          shadowOffsetY: _pillarShadowOffsetY,
+                          shadowBlurRadius: _pillarShadowBlur,
+                        ),
+                      ));
+                    },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_pillarBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () async {
+                      final picked = await showColorPickerDialog(
+                        context,
+                        _parseHexColor(_pillarBorderHex) ??
+                            Theme.of(context).dividerColor,
+                        title: const Text('选择颜色'),
+                        pickersEnabled: const {
+                          ColorPickerType.wheel: true,
+                          ColorPickerType.accent: false,
+                          ColorPickerType.primary: false,
+                          ColorPickerType.custom: false,
+                        },
+                      );
+                      _pillarBorderHex =
+                          '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                      _emit(_theme.copyWith(
+                        pillar: PillarSection(
+                          defaultMargin: _edgeHV(
+                              _pillarDefaultMarginH, _pillarDefaultMarginV),
+                          defaultPadding: _edgeHV(
+                              _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                          borderWidth: _pillarBorderWidth,
+                          borderColor: picked,
+                          cornerRadius: _pillarCornerRadius,
+                          backgroundColor:
+                              _parseHexColor(_pillarBackgroundHex) ??
+                                  _theme.pillar?.backgroundColor,
+                          perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                              _theme.pillar?.perPillarMargin ?? {}),
+                          shadowColor: _pillarShadowEnabled
+                              ? _parseHexColor(_pillarShadowHex)
+                              : null,
+                          shadowOffsetX: _pillarShadowOffsetX,
+                          shadowOffsetY: _pillarShadowOffsetY,
+                          shadowBlurRadius: _pillarShadowBlur,
+                        ),
+                      ));
+                    },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -410,11 +1074,239 @@ class _EditableFourZhuStyleEditorPanelState
                             backgroundColor:
                                 _parseHexColor(_pillarBackgroundHex),
                             perPillarMargin: map,
+                            shadowColor: _pillarShadowEnabled
+                                ? _parseHexColor(_pillarShadowHex)
+                                : null,
+                            shadowOffsetX: _pillarShadowOffsetX,
+                            shadowOffsetY: _pillarShadowOffsetY,
+                            shadowBlurRadius: _pillarShadowBlur,
                           ),
                         ));
                       },
                     ),
                 ],
+              ),
+              const SizedBox(height: 8),
+              // 阴影启用开关（柱）
+              CheckboxListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('启用阴影'),
+                value: _pillarShadowEnabled,
+                onChanged: (v) {
+                  _pillarShadowEnabled = v ?? false;
+                  _emit(_theme.copyWith(
+                    pillar: PillarSection(
+                      defaultMargin:
+                          _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                      defaultPadding: _edgeHV(
+                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                      borderWidth: _pillarBorderWidth,
+                      borderColor: _theme.pillar?.borderColor,
+                      cornerRadius: _pillarCornerRadius,
+                      backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                      perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                          _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex.isEmpty
+                              ? '#55000000'
+                              : _pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              // 阴影颜色选择（柱）：色块 + 按钮，点击弹出颜色选择对话框
+              Row(
+                children: [
+                  const Text('阴影颜色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: !_pillarShadowEnabled
+                        ? null
+                        : () async {
+                            final picked = await showColorPickerDialog(
+                              context,
+                              _parseHexColor(_pillarShadowHex) ??
+                                  const Color(0x55000000),
+                              title: const Text('选择颜色'),
+                              pickersEnabled: const {
+                                ColorPickerType.wheel: true,
+                                ColorPickerType.accent: false,
+                                ColorPickerType.primary: false,
+                                ColorPickerType.custom: false,
+                              },
+                            );
+                            _pillarShadowHex =
+                                '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                            _emit(_theme.copyWith(
+                              pillar: PillarSection(
+                                defaultMargin: _edgeHV(_pillarDefaultMarginH,
+                                    _pillarDefaultMarginV),
+                                defaultPadding: _edgeHV(_pillarDefaultPaddingH,
+                                    _pillarDefaultPaddingV),
+                                borderWidth: _pillarBorderWidth,
+                                borderColor: _theme.pillar?.borderColor,
+                                cornerRadius: _pillarCornerRadius,
+                                backgroundColor:
+                                    _parseHexColor(_pillarBackgroundHex),
+                                perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                                    _theme.pillar?.perPillarMargin ?? {}),
+                                shadowColor:
+                                    _pillarShadowEnabled ? picked : null,
+                                shadowOffsetX: _pillarShadowOffsetX,
+                                shadowOffsetY: _pillarShadowOffsetY,
+                                shadowBlurRadius: _pillarShadowBlur,
+                              ),
+                            ));
+                          },
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: _parseHexColor(_pillarShadowHex) ??
+                            const Color(0x00000000),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: !_pillarShadowEnabled
+                        ? null
+                        : () async {
+                            final picked = await showColorPickerDialog(
+                              context,
+                              _parseHexColor(_pillarShadowHex) ??
+                                  const Color(0x55000000),
+                              title: const Text('选择颜色'),
+                              pickersEnabled: const {
+                                ColorPickerType.wheel: true,
+                                ColorPickerType.accent: false,
+                                ColorPickerType.primary: false,
+                                ColorPickerType.custom: false,
+                              },
+                            );
+                            _pillarShadowHex =
+                                '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                            _emit(_theme.copyWith(
+                              pillar: PillarSection(
+                                defaultMargin: _edgeHV(_pillarDefaultMarginH,
+                                    _pillarDefaultMarginV),
+                                defaultPadding: _edgeHV(_pillarDefaultPaddingH,
+                                    _pillarDefaultPaddingV),
+                                borderWidth: _pillarBorderWidth,
+                                borderColor: _theme.pillar?.borderColor,
+                                cornerRadius: _pillarCornerRadius,
+                                backgroundColor:
+                                    _parseHexColor(_pillarBackgroundHex),
+                                perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                                    _theme.pillar?.perPillarMargin ?? {}),
+                                shadowColor:
+                                    _pillarShadowEnabled ? picked : null,
+                                shadowOffsetX: _pillarShadowOffsetX,
+                                shadowOffsetY: _pillarShadowOffsetY,
+                                shadowBlurRadius: _pillarShadowBlur,
+                              ),
+                            ));
+                          },
+                    child: const Text('选择颜色'),
+                  ),
+                ],
+              ),
+              _buildSlider(
+                label: '柱阴影偏移X (px)',
+                value: _pillarShadowOffsetX,
+                min: -32,
+                max: 32,
+                onChanged: (v) {
+                  _pillarShadowOffsetX = v;
+                  _emit(_theme.copyWith(
+                    pillar: PillarSection(
+                      defaultMargin:
+                          _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                      defaultPadding: _edgeHV(
+                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                      borderWidth: _pillarBorderWidth,
+                      borderColor: _theme.pillar?.borderColor,
+                      cornerRadius: _pillarCornerRadius,
+                      backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                      perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                          _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              _buildSlider(
+                label: '柱阴影偏移Y (px)',
+                value: _pillarShadowOffsetY,
+                min: -32,
+                max: 32,
+                onChanged: (v) {
+                  _pillarShadowOffsetY = v;
+                  _emit(_theme.copyWith(
+                    pillar: PillarSection(
+                      defaultMargin:
+                          _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                      defaultPadding: _edgeHV(
+                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                      borderWidth: _pillarBorderWidth,
+                      borderColor: _theme.pillar?.borderColor,
+                      cornerRadius: _pillarCornerRadius,
+                      backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                      perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                          _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
+                    ),
+                  ));
+                },
+              ),
+              _buildSlider(
+                label: '柱阴影模糊半径 (px)',
+                value: _pillarShadowBlur,
+                min: 0,
+                max: 64,
+                onChanged: (v) {
+                  _pillarShadowBlur = v;
+                  _emit(_theme.copyWith(
+                    pillar: PillarSection(
+                      defaultMargin:
+                          _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                      defaultPadding: _edgeHV(
+                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                      borderWidth: _pillarBorderWidth,
+                      borderColor: _theme.pillar?.borderColor,
+                      cornerRadius: _pillarCornerRadius,
+                      backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                      perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                          _theme.pillar?.perPillarMargin ?? {}),
+                      shadowColor: _pillarShadowEnabled
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                      shadowOffsetX: _pillarShadowOffsetX,
+                      shadowOffsetY: _pillarShadowOffsetY,
+                      shadowBlurRadius: _pillarShadowBlur,
+                    ),
+                  ));
+                },
               ),
             ],
           ),
