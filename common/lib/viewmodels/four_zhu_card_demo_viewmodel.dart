@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../enums/enum_di_zhi.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_gender.dart';
+import '../enums/enum_tian_gan.dart';
 import '../enums/layout_template_enums.dart';
+import '../enums/enum_tian_gan.dart';
+import '../enums/enum_di_zhi.dart';
 import '../models/eight_chars.dart';
 import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
@@ -10,6 +14,7 @@ import '../enums/layout_template_enums.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../viewmodels/editable_four_zhu_theme_controller.dart';
+import '../themes/char_color_strategy.dart';
 
 /// FourZhuCardDemoViewModel
 /// 管理 EditableFourZhuCardDemoPage 的全部可配置状态与默认值，集中化更新接口，降低硬编码与重复。
@@ -33,6 +38,9 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   /// V3 彩色模式开关（按字调色盘，支持深/浅色）。
   bool _v3ColorfulMode = false;
 
+  /// Debug：滞回可视化开关（显示列/行中点及滞回边界）。
+  bool _debugHysteresisOverlay = false;
+
   /// 抓手显示开关（同时控制抓手行与抓手列）。
   bool _showGrips = true;
 
@@ -41,6 +49,15 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 按字符上色映射（在非彩色模式下应用）。
   Map<String, Color> _perCharColors = {};
+
+  /// 类型安全的天干颜色覆写（非彩色模式时外部策略生成）。
+  Map<TianGan, Color> _perGanColors = {};
+
+  /// 类型安全的地支颜色覆写（非彩色模式时外部策略生成）。
+  Map<DiZhi, Color> _perZhiColors = {};
+
+  /// 每字颜色策略（外置），随主题明暗生成稳定映射。
+  late CharColorStrategy _charColorStrategy;
 
   /// 当前主题配置与解析控制器。
   late EditableFourZhuCardTheme _theme;
@@ -53,6 +70,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 初始化默认数据与主题。
   void _initDefaults() {
+    // 默认颜色策略初始化。
+    _charColorStrategy = const DefaultCharColorStrategy();
     // 默认八字样例，仅用于构建柱内容展示；真实业务由上层提供。
     final sample = EightChars(
       year: JiaZi.JIA_ZI,
@@ -133,7 +152,12 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
         ),
       ),
     ]);
+    // 在 v3 卡片中默认显示“表头行”（列标题），位于索引 0。
+    // 后续数据行（天干、地支、纳音）依次排列在其后。
     rowListNotifier = ValueNotifier<List<RowInfoPayload>>([
+      const RowInfoPayload(
+        rowType: RowType.columnHeaderRow,
+      ),
       const RowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
@@ -171,6 +195,15 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   /// 返回按字符上色映射。
   Map<String, Color> get perCharColors => _perCharColors;
 
+  /// 返回按天干类型安全映射（TianGan → Color）。
+  Map<TianGan, Color> get perGanColors => _perGanColors;
+
+  /// 返回按地支类型安全映射（DiZhi → Color）。
+  Map<DiZhi, Color> get perZhiColors => _perZhiColors;
+
+  /// 返回是否开启调试滞回可视化。
+  bool get debugHysteresisOverlay => _debugHysteresisOverlay;
+
   /// 设置是否启用独立映射渲染。
   /// 参数：v 表示开关值。
   /// 返回：无。
@@ -185,6 +218,16 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   void setV3ColorfulMode(bool v) {
     _v3ColorfulMode = v;
     notifyListeners();
+  }
+
+  /// 设置彩色模式并根据传入亮度立即应用映射（可选）。
+  /// 参数：
+  /// - v：彩色模式开关值；
+  /// - brightness：可选的主题明暗，用于立即重建每字颜色映射。
+  /// 返回：无。
+  void setV3ColorfulModeWithBrightness(bool v, Brightness brightness) {
+    _v3ColorfulMode = v;
+    applyBrightness(brightness);
   }
 
   /// 设置抓手显示开关。
@@ -211,12 +254,56 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// 应用主题亮度到每字颜色映射：
+  /// - 非彩色模式：按策略生成映射；
+  /// - 彩色模式：清空外置映射，交由卡片内部调色。
+  /// 参数：brightness 当前主题明暗。
+  /// 返回：无。
+  void applyBrightness(Brightness brightness) {
+    if (!_v3ColorfulMode) {
+      // 构建字符串键映射（向后兼容），并同步生成类型安全的天干/地支映射。
+      final perChar =
+          _charColorStrategy.buildPerCharColors(brightness: brightness);
+      _perCharColors = perChar;
+      _perGanColors = {
+        for (final g in TianGan.values)
+          if (perChar.containsKey(g.name)) g: perChar[g.name]!
+      };
+      _perZhiColors = {
+        for (final z in DiZhi.values)
+          if (perChar.containsKey(z.name)) z: perChar[z.name]!
+      };
+    } else {
+      // 彩色模式交由卡片内部的 ElementColorResolver/Palette 处理；清空外置覆写。
+      _perCharColors = {};
+      _perGanColors = {};
+      _perZhiColors = {};
+    }
+    notifyListeners();
+  }
+
+  /// 设置颜色策略（可替换为自定义策略）。
+  /// 参数：strategy 新的颜色策略实现。
+  /// 返回：无。
+  void setColorStrategy(CharColorStrategy strategy) {
+    // 替换策略引用；不立即触发映射重建，需外部调用 applyBrightness。
+    _charColorStrategy = strategy;
+  }
+
   /// 设置并重建主题控制器。
   /// 参数：t 新主题。
   /// 返回：无。
   void setTheme(EditableFourZhuCardTheme t) {
     _theme = t;
     _themeController = EditableFourZhuThemeController(_theme);
+    notifyListeners();
+  }
+
+  /// 设置调试滞回可视化开关。
+  /// 参数：enable 是否开启。
+  /// 返回：无。
+  void setDebugHysteresisOverlay(bool enable) {
+    _debugHysteresisOverlay = enable;
     notifyListeners();
   }
 

@@ -5,33 +5,37 @@ import '../models/layout_template.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 
 /// EditableFourZhuThemeController
-/// Provides read-only resolution helpers that translate EditableFourZhuCardTheme
-/// into concrete values used by widgets and resolvers, obeying constraints:
-/// - Font fallback order: row → theme.global → theme.preferred → system
-/// - Pillar margin differentiation limited to {year, month, day, hour, luckCycle}
-/// - Non-negative numeric values are enforced via theme validation
+/// 主题解析控制器：将 `EditableFourZhuCardTheme` 解析为具体可用的样式与参数。
+///
+/// 职责与约束：
+/// - 字体回退顺序：`Row` 局部 → `theme.global` → `theme.preferred` → 系统默认；
+/// - 柱外边距差异化仅限 `{year, month, day, hour, luckCycle}` 范围；
+/// - 所有数值参数需为非负数，构造时会进行主题校验。
 class EditableFourZhuThemeController {
-  /// Creates a controller from a theme.
+  /// 构造主题解析控制器。
   ///
-  /// Parameters:
-  /// - [theme]: The `EditableFourZhuCardTheme` to be used for resolution.
+  /// 参数：
+  /// - [theme]：用于解析的 `EditableFourZhuCardTheme` 主题对象。
   ///
-  /// Behavior: Validates the theme on construction and throws `ArgumentError`
-  /// if any violation exists.
+  /// 行为：构造时调用 `ensureValidOrThrow()` 进行主题校验，若存在不合法参数将抛出
+  /// `ArgumentError` 异常。
   EditableFourZhuThemeController(this.theme) {
     theme.ensureValidOrThrow();
   }
 
-  /// The source theme. Immutable reference for resolution.
+  /// 主题源对象。用于解析的只读引用。
   final EditableFourZhuCardTheme theme;
 
-  /// Resolves the effective `CardStyle` by merging defaults from `theme.typography`.
+  /// 解析并返回有效的 `CardStyle`。
   ///
-  /// Parameters:
-  /// - [base]: The base `CardStyle` sourced from layout template.
+  /// 功能：在 `base` 的基础上应用 `theme.typography` 的默认值，包括字体家族、字号与颜色，
+  /// 遵循统一的字体回退策略。
   ///
-  /// Returns: A `CardStyle` copy with font family/size/color following the
-  /// fallback policy.
+  /// 参数：
+  /// - [base]：来自布局模板的基础 `CardStyle`。
+  ///
+  /// 返回：
+  /// - `CardStyle`：合并后的样式副本（已应用字体家族/字号/颜色的回退策略）。
   CardStyle resolveCardStyle(CardStyle base) {
     final t = theme.typography;
     final family = _fontFallback(
@@ -51,13 +55,16 @@ class EditableFourZhuThemeController {
     );
   }
 
-  /// Resolves effective row text style parameters (family/size/color) given `RowConfig`.
+  /// 解析行文本样式参数（字体家族/字号/颜色）。
   ///
-  /// Parameters:
-  /// - [row]: Optional `RowConfig` from the current layout.
+  /// 功能：根据 `RowConfig` 与主题排版设置，返回该行的有效文本样式参数。
   ///
-  /// Returns: A triple `(String?, double?, String?)` representing
-  /// `(fontFamily, fontSize, colorHex)`. Any field may be null indicating default usage.
+  /// 参数：
+  /// - [row]：当前布局中的可选 `RowConfig`。
+  ///
+  /// 返回：
+  /// - `(String?, double?, String?)`：依次为 `(fontFamily, fontSize, colorHex)`，
+  ///   任意字段为 `null` 表示使用默认值。
   (String?, double?, String?) resolveRowText(RowConfig? row) {
     final t = theme.typography;
     final family = _fontFallback(
@@ -73,14 +80,15 @@ class EditableFourZhuThemeController {
     return (family, size, colorHex);
   }
 
-  /// Resolves pillar outer margin for the given `PillarType`, applying
-  /// differentiation when present.
+  /// 解析给定 `PillarType` 的柱外边距。
   ///
-  /// Parameters:
-  /// - [pillarType]: The pillar type for which margin is queried.
+  /// 功能：返回柱的差异化外边距（若存在），否则返回默认外边距。
   ///
-  /// Returns: The specific margin when provided, else the default margin,
-  /// or `null` when not configured.
+  /// 参数：
+  /// - [pillarType]：查询的柱类型。
+  ///
+  /// 返回：
+  /// - `EdgeInsets?`：优先返回差异化配置，其次返回默认值；未配置时返回 `null`。
   EdgeInsets? resolvePillarMargin(PillarType pillarType) {
     final p = theme.pillar;
     if (p == null) return null;
@@ -88,70 +96,84 @@ class EditableFourZhuThemeController {
     return specific ?? p.defaultMargin;
   }
 
-  /// Resolves pillar inner padding.
+  /// 解析柱内边距。
   ///
-  /// Returns: The default pillar padding or `null` when not configured.
+  /// 返回：
+  /// - `EdgeInsets?`：默认柱内边距；未配置时返回 `null`。
   EdgeInsets? resolvePillarPadding() => theme.pillar?.defaultPadding;
 
-  /// Resolves pillar border width.
+  /// 解析柱边框宽度。
   ///
-  /// Returns: The configured border width or `null` when not set.
+  /// 返回：
+  /// - `double?`：已配置的边框宽度；未设置时返回 `null`。
   double? resolvePillarBorderWidth() => theme.pillar?.borderWidth;
 
-  /// Resolves pillar border color.
+  /// 解析柱边框颜色。
   ///
-  /// Returns: The configured border color or `null` when not set.
+  /// 返回：
+  /// - `Color?`：已配置的边框颜色；未设置时返回 `null`。
   Color? resolvePillarBorderColor() => theme.pillar?.borderColor;
 
-  /// Resolves pillar corner radius.
+  /// 解析柱圆角半径。
   ///
-  /// Returns: The configured corner radius or `null` when not set.
+  /// 返回：
+  /// - `double?`：已配置的圆角半径；未设置时返回 `null`。
   double? resolvePillarCornerRadius() => theme.pillar?.cornerRadius;
 
-  /// Resolves pillar background color.
+  /// 解析柱背景颜色。
   ///
-  /// Returns: The configured background color or `null` when not set.
+  /// 返回：
+  /// - `Color?`：已配置的背景颜色；未设置时返回 `null`。
   Color? resolvePillarBackgroundColor() => theme.pillar?.backgroundColor;
 
-  /// Resolves card-level padding override.
+  /// 解析卡片级别内边距覆盖值。
   ///
-  /// Returns: The card-level padding override or `null`.
+  /// 返回：
+  /// - `EdgeInsets?`：卡片级别的内边距覆盖；无覆盖返回 `null`。
   EdgeInsets? resolveCardPadding() => theme.card?.padding;
 
-  /// Resolves card-level margin override.
+  /// 解析卡片级别外边距覆盖值。
   ///
-  /// Returns: The card-level margin override or `null`.
+  /// 返回：
+  /// - `EdgeInsets?`：卡片级别的外边距覆盖；无覆盖返回 `null`。
   EdgeInsets? resolveCardMargin() => theme.card?.margin;
 
-  /// Resolves card-level corner radius override.
+  /// 解析卡片级别圆角半径覆盖值。
   ///
-  /// Returns: The corner radius override or `null`.
+  /// 返回：
+  /// - `double?`：圆角半径覆盖；无覆盖返回 `null`。
   double? resolveCardCornerRadius() => theme.card?.cornerRadius;
 
-  /// Resolves card-level elevation override.
+  /// 解析卡片级别阴影高度覆盖值。
   ///
-  /// Returns: The elevation override or `null`.
+  /// 返回：
+  /// - `double?`：阴影高度覆盖；无覆盖返回 `null`。
   double? resolveCardElevation() => theme.card?.elevation;
 
-  /// Resolves card-level background color override.
+  /// 解析卡片级别背景颜色覆盖值。
   ///
-  /// Returns: The background color override or `null`.
+  /// 返回：
+  /// - `Color?`：背景颜色覆盖；无覆盖返回 `null`。
   Color? resolveCardBackgroundColor() => theme.card?.backgroundColor;
 
-  /// Resolves card-level border width.
+  /// 解析卡片级别边框宽度。
   ///
-  /// Returns: The configured card border width or `null` when not set.
+  /// 返回：
+  /// - `double?`：已配置的边框宽度；未设置时返回 `null`。
   double? resolveCardBorderWidth() => theme.card?.borderWidth;
 
-  /// Resolves card-level border color.
+  /// 解析卡片级别边框颜色。
   ///
-  /// Returns: The configured card border color or `null` when not set.
+  /// 返回：
+  /// - `Color?`：已配置的边框颜色；未设置时返回 `null`。
   Color? resolveCardBorderColor() => theme.card?.borderColor;
 
-  /// Resolves card-level box shadow from theme.
+  /// 解析卡片级别阴影配置。
   ///
-  /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
-  /// otherwise `null`.
+  /// 功能：当 `shadowColor` 有值时返回包含一个 `BoxShadow` 的列表，否则返回 `null`。
+  ///
+  /// 返回：
+  /// - `List<BoxShadow>?`：已解析的阴影列表或 `null`。
   List<BoxShadow>? resolveCardBoxShadow() {
     final c = theme.card;
     if (c == null) return null;
@@ -165,10 +187,12 @@ class EditableFourZhuThemeController {
     return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
   }
 
-  /// Resolves pillar-level box shadow from theme.
+  /// 解析柱级别阴影配置。
   ///
-  /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
-  /// otherwise `null`.
+  /// 功能：当 `shadowColor` 有值时返回包含一个 `BoxShadow` 的列表，否则返回 `null`。
+  ///
+  /// 返回：
+  /// - `List<BoxShadow>?`：已解析的阴影列表或 `null`。
   List<BoxShadow>? resolvePillarBoxShadow() {
     final p = theme.pillar;
     if (p == null) return null;
@@ -182,14 +206,17 @@ class EditableFourZhuThemeController {
     return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
   }
 
-  /// Applies fallback policy to determine the best font family to use.
+  /// 字体家族回退策略的应用方法。
   ///
-  /// Parameters:
-  /// - [rowFamily]: The row-specific font family, highest priority when present.
-  /// - [themeFamily]: The theme-level default font family.
-  /// - [preferredFamilies]: An ordered list of preferred fallback families.
+  /// 功能：按照优先级（行局部 → 主题默认 → 主题偏好列表）选择最合适的字体家族。
   ///
-  /// Returns: A font family string or `null` to indicate system default should be used.
+  /// 参数：
+  /// - [rowFamily]：行局部的字体家族（最高优先级）。
+  /// - [themeFamily]：主题级默认字体家族。
+  /// - [preferredFamilies]：有序的备选字体列表。
+  ///
+  /// 返回：
+  /// - `String?`：选定的字体家族；若无可用值则返回 `null`（表示使用系统默认）。
   String? _fontFallback({
     String? rowFamily,
     String? themeFamily,
@@ -205,12 +232,13 @@ class EditableFourZhuThemeController {
     return null; // System default
   }
 
-  /// Converts a 32-bit ARGB integer color value into a `#AARRGGBB` hex string.
+  /// 将 32 位 ARGB 整型颜色值转换为 `#AARRGGBB` 十六进制字符串。
   ///
-  /// Parameters:
-  /// - [value]: A color integer in ARGB format.
+  /// 参数：
+  /// - [value]：ARGB 格式的整型颜色值。
   ///
-  /// Returns: A string formatted as `#AARRGGBB` in uppercase.
+  /// 返回：
+  /// - `String`：格式化为大写的 `#AARRGGBB` 字符串。
   String _intColorToHex(int value) {
     return '#${value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
   }

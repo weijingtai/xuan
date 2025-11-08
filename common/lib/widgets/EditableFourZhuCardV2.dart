@@ -18,6 +18,11 @@ class _InsertPayload {
   const _InsertPayload(this.title, {this.jiaZi});
 }
 
+/// Deprecated: 请使用 `EditableFourZhuCardV3`。
+///
+/// 该组件已被新版 V3 替换，后续所有 `TODO_CHECKLIST` 任务与验收
+/// 均聚焦于 `EditableFourZhuCardV3`，本组件不再演进，仅保留以防兼容需求。
+@Deprecated('Use EditableFourZhuCardV3 instead')
 class EditableFourZhuCardv2 extends StatefulWidget {
   final ValueNotifier<CardMode> cardModeNotifier;
   final ValueNotifier<List<Tuple2<String, JiaZi>>> jiaZiNotifier;
@@ -25,6 +30,14 @@ class EditableFourZhuCardv2 extends StatefulWidget {
   final ValueNotifier<EdgeInsets> paddingNotifier;
   final Gender gender;
 
+  /// 构造函数（废弃）：请改用 V3 版本。
+  ///
+  /// Parameters:
+  /// - [cardModeNotifier]: 卡片模式通知器（列模式/行模式）。
+  /// - [jiaZiNotifier]: 甲子数据通知器。
+  /// - [rowListNotifier]: 行标题列表通知器（V2 字符串驱动）。
+  /// - [paddingNotifier]: 内边距通知器。
+  /// - [gender]: 性别标识（乾造/坤造）。
   const EditableFourZhuCardv2(
       {super.key,
       required this.cardModeNotifier,
@@ -788,34 +801,55 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
         continue;
       }
 
-      if (rowName == "天干") {
-        children.add(cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
-      } else if (rowName == "地支") {
-        children.add(cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
-      } else if (rowName == '分割线' || rowName == '行分割符' || rowName == '行分隔符') {
-        children.add(
-          SizedBox(
-            width: ganZhiCellSize.width,
-            height: _rowDividerHeightEffective,
-            child: Center(
-              child: Divider(
-                height: _rowDividerHeightEffective,
-                thickness: _rowDividerThickness,
-                color: Theme.of(context).dividerColor,
+      final RowType? rtype = _rowTypeOf(rowName);
+      switch (rtype) {
+        case RowType.heavenlyStem:
+          children.add(
+              cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
+          break;
+        case RowType.earthlyBranch:
+          children.add(
+              cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
+          break;
+        case RowType.separator:
+          children.add(
+            SizedBox(
+              width: ganZhiCellSize.width,
+              height: _rowDividerHeightEffective,
+              child: Center(
+                child: Divider(
+                  height: _rowDividerHeightEffective,
+                  thickness: _rowDividerThickness,
+                  color: Theme.of(context).dividerColor,
+                ),
               ),
             ),
-          ),
-        );
-      } else if (rowName == "纳音") {
-        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
-            getNaYinText(jiaZi.naYinStr)));
-      } else if (rowName == "空亡") {
-        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
-            getKongWangText(jiaZi.getKongWang())));
-      } else {
-        // Fallback: show column title text for unknown row types
-        children.add(cell(Size(ganZhiCellSize.width, otherCellHeight),
-            getColumnTitleText(tuple.item1)));
+          );
+          break;
+        case RowType.naYin:
+          children.add(
+            cell(
+              Size(ganZhiCellSize.width, otherCellHeight),
+              getNaYinText(jiaZi.naYinStr),
+            ),
+          );
+          break;
+        case RowType.kongWang:
+          children.add(
+            cell(
+              Size(ganZhiCellSize.width, otherCellHeight),
+              getKongWangText(jiaZi.getKongWang()),
+            ),
+          );
+          break;
+        default:
+          // Fallback: show column title text for unknown row types
+          children.add(
+            cell(
+              Size(ganZhiCellSize.width, otherCellHeight),
+              getColumnTitleText(tuple.item1),
+            ),
+          );
       }
     }
 
@@ -833,13 +867,47 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
     );
   }
 
-  // 行高解析：按行名返回对应高度（含分隔行别名）
+  /// 行高解析：按名称映射至 `RowType` 决定高度（含分隔行别名）。
+  ///
+  /// Parameters:
+  /// - [name]: Row title text, possibly localized aliases.
+  ///
+  /// Returns: Effective row height derived from `RowType` mapping.
   double _rowHeightByName(String name) {
-    if (name == '天干' || name == '地支') return ganZhiCellSize.height;
-    if (name == '分割线' || name == '行分割符' || name == '行分隔符') {
+    final RowType? rtype = _rowTypeOf(name);
+    if (rtype == RowType.heavenlyStem || rtype == RowType.earthlyBranch) {
+      return ganZhiCellSize.height;
+    }
+    if (rtype == RowType.separator) {
       return _rowDividerHeightEffective;
     }
     return otherCellHeight;
+  }
+
+  /// 名称到 `RowType` 的兼容映射，统一行逻辑并移除字符串比较。
+  ///
+  /// Parameters:
+  /// - [name]: Row title text used historically (e.g., '天干').
+  ///
+  /// Returns: The mapped `RowType` or `null` if unknown.
+  RowType? _rowTypeOf(String name) {
+    switch (name) {
+      case '天干':
+        return RowType.heavenlyStem;
+      case '地支':
+        return RowType.earthlyBranch;
+      case '纳音':
+        return RowType.naYin;
+      case '空亡':
+        return RowType.kongWang;
+      case '分割线':
+      case '行分割线':
+      case '行分割符':
+      case '行分隔符':
+        return RowType.separator;
+      default:
+        return null;
+    }
   }
 
   Widget _pillarItemForRow(

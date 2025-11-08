@@ -7,6 +7,7 @@ import '../models/layout_template.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
+import '../palette/card_palette.dart';
 
 /// 演示页面：展示列拖拽和行拖拽的两个四柱卡片
 class ReorderableCardsDemo extends StatefulWidget {
@@ -162,6 +163,10 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
                                               _controller.pillars.value,
                                           rowConfigs: _controller.rows.value,
                                           cardStyle: _cardStyle,
+                                          elementColorResolver:
+                                              PaletteElementColorResolver(
+                                            CardPalette.defaultPalette(),
+                                          ),
                                           rowLabelResolver: _rowLabel,
                                           pillarLabelResolver: _pillarLabel,
                                           onPillarOrderChanged:
@@ -275,6 +280,10 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
                                   pillarOrder: _controller.pillars.value,
                                   rowConfigs: _controller.rows.value,
                                   cardStyle: _cardStyle,
+                                  elementColorResolver:
+                                      PaletteElementColorResolver(
+                                    CardPalette.defaultPalette(),
+                                  ),
                                   rowLabelResolver: _rowLabel,
                                   pillarLabelResolver: _pillarLabel,
                                   // Shared overrides wiring

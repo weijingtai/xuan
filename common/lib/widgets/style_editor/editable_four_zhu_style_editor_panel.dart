@@ -71,12 +71,25 @@ class _EditableFourZhuStyleEditorPanelState
   // 分组字符设计功能已移除
 
   @override
+
+  /// 初始化状态：从外部传入的主题加载控件值并建立本地缓存。
+  ///
+  /// 返回：
+  /// - `void`：完成初始加载并触发首帧渲染。
   void initState() {
     super.initState();
     _loadFromTheme(widget.theme);
   }
 
   @override
+
+  /// 响应父组件更新：当传入的主题对象发生变化时重新加载控件状态。
+  ///
+  /// 参数：
+  /// - [oldWidget]：旧的面板实例，用于比较变更。
+  ///
+  /// 返回：
+  /// - `void`：若主题变更则刷新内部缓存并触发重建。
   void didUpdateWidget(covariant EditableFourZhuStyleEditorPanel oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.theme != widget.theme) {
@@ -84,7 +97,16 @@ class _EditableFourZhuStyleEditorPanelState
     }
   }
 
-  /// Loads slider/textfield states from the theme.
+  /// 从主题加载滑块与文本控件的当前值。
+  ///
+  /// 功能：解析 `EditableFourZhuCardTheme` 中的 Card/Pillar/Typography 配置，
+  /// 将其转换为本地状态（数值、颜色十六进制字符串等），并更新界面。
+  ///
+  /// 参数：
+  /// - [theme]：当前编辑的主题对象。
+  ///
+  /// 返回：
+  /// - `void`：更新内部状态并通过 `setState` 刷新 UI。
   void _loadFromTheme(EditableFourZhuCardTheme theme) {
     _theme = theme;
     _cardPadding = (_theme.card?.padding?.left ?? 0).toDouble();
@@ -136,13 +158,31 @@ class _EditableFourZhuStyleEditorPanelState
     setState(() {});
   }
 
-  /// Emits new theme to the parent and updates local state.
+  /// 发出新主题并更新本地缓存。
+  ///
+  /// 功能：先更新 `_theme` 的本地副本，再调用 `widget.onChanged` 通知父组件绑定预览。
+  ///
+  /// 参数：
+  /// - [next]：合成后的下一版主题对象。
+  ///
+  /// 返回：
+  /// - `void`：触发回调与重建，无额外返回值。
   void _emit(EditableFourZhuCardTheme next) {
     setState(() => _theme = next);
     widget.onChanged(next);
   }
 
-  /// Builds a labeled slider with given range and handler.
+  /// 构建带标签的通用滑块组件。
+  ///
+  /// 参数：
+  /// - [label]：滑块标题文本。
+  /// - [value]：当前值。
+  /// - [min]：取值下限。
+  /// - [max]：取值上限。
+  /// - [onChanged]：值变更回调。
+  ///
+  /// 返回：
+  /// - `Widget`：包含标题、数值显示与 `Slider` 的纵向布局。
   Widget _buildSlider({
     required String label,
     required double value,
@@ -165,7 +205,13 @@ class _EditableFourZhuStyleEditorPanelState
     );
   }
 
-  /// Uniform EdgeInsets helper for sliders.
+  /// 统一内边距辅助方法：生成四边一致的 `EdgeInsets`。
+  ///
+  /// 参数：
+  /// - [v]：四边统一的像素值。
+  ///
+  /// 返回：
+  /// - `EdgeInsets`：`left/top/right/bottom` 均为 `v`。
   EdgeInsets _edgeAll(double v) => EdgeInsets.only(
         left: v,
         top: v,
@@ -173,10 +219,24 @@ class _EditableFourZhuStyleEditorPanelState
         bottom: v,
       );
 
+  /// 内外向对称内边距辅助方法。
+  ///
+  /// 参数：
+  /// - [h]：水平（左右）内边距像素值。
+  /// - [v]：垂直（上下）内边距像素值。
+  ///
+  /// 返回：
+  /// - `EdgeInsets`：对称的水平与垂直内边距。
   EdgeInsets _edgeHV(double h, double v) =>
       EdgeInsets.symmetric(horizontal: h, vertical: v);
 
-  /// Parses a hex color string like `#RRGGBB` or `#AARRGGBB`.
+  /// 解析十六进制颜色字符串（支持 `#RRGGBB` 与 `#AARRGGBB`）。
+  ///
+  /// 参数：
+  /// - [input]：形如 `#RRGGBB` 或 `#AARRGGBB` 的颜色字符串，前导 `#` 可选。
+  ///
+  /// 返回：
+  /// - `Color?`：解析成功返回 `Color`，非法字符串返回 `null`。
   Color? _parseHexColor(String input) {
     final s = input.trim();
     if (s.isEmpty) return null;
@@ -194,6 +254,14 @@ class _EditableFourZhuStyleEditorPanelState
   }
 
   @override
+
+  /// 构建样式编辑面板主体：包含卡片与柱样式等分区的控件集合。
+  ///
+  /// 参数：
+  /// - [context]：Flutter 构建上下文。
+  ///
+  /// 返回：
+  /// - `Widget`：由多个分区与控件组成的编辑界面。
   Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -637,8 +705,10 @@ class _EditableFourZhuStyleEditorPanelState
                   final newAlpha = v.clamp(0, 255).round();
                   // 若当前为跟随背景，调整透明度即视为手动设置颜色，关闭跟随
                   Color base = _cardShadowFollowBackground
-                      ? (_parseHexColor(_cardBackgroundHex) ?? const Color(0x00000000))
-                      : (_parseHexColor(_cardShadowHex) ?? const Color(0x55000000));
+                      ? (_parseHexColor(_cardBackgroundHex) ??
+                          const Color(0x00000000))
+                      : (_parseHexColor(_cardShadowHex) ??
+                          const Color(0x55000000));
                   final updated = base.withAlpha(newAlpha);
                   _cardShadowHex =
                       '#${updated.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
@@ -1365,8 +1435,10 @@ class _EditableFourZhuStyleEditorPanelState
                   if (!_pillarShadowEnabled) return;
                   final newAlpha = v.clamp(0, 255).round();
                   Color base = _pillarShadowFollowBackground
-                      ? (_parseHexColor(_pillarBackgroundHex) ?? const Color(0x00000000))
-                      : (_parseHexColor(_pillarShadowHex) ?? const Color(0x55000000));
+                      ? (_parseHexColor(_pillarBackgroundHex) ??
+                          const Color(0x00000000))
+                      : (_parseHexColor(_pillarShadowHex) ??
+                          const Color(0x55000000));
                   final updated = base.withAlpha(newAlpha);
                   _pillarShadowHex =
                       '#${updated.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
@@ -1375,8 +1447,8 @@ class _EditableFourZhuStyleEditorPanelState
                     pillar: PillarSection(
                       defaultMargin:
                           _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
-                      defaultPadding:
-                          _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                      defaultPadding: _edgeHV(
+                          _pillarDefaultPaddingH, _pillarDefaultPaddingV),
                       borderWidth: _pillarBorderWidth,
                       borderColor: _theme.pillar?.borderColor,
                       cornerRadius: _pillarCornerRadius,
