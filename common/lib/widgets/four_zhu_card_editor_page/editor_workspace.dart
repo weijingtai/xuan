@@ -7,11 +7,13 @@ import '../../enums/enum_gender.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/eight_chars.dart';
+import '../../models/layout_template.dart';
 import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
 import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../editable_fourzhu_card.dart';
+import '../editable_fourzhu_card/text_groups.dart';
 
 class EditorWorkspace extends StatefulWidget {
   /// 组件内部展示的八字数据，用于填充四柱内容。
@@ -37,6 +39,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
   late final ValueNotifier<List<RowInfoPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
+
+  /// V3 卡片分组样式：从 RowConfig 转换而来，用于覆盖全局样式。
+  Map<TextGroup, TextStyle>? _groupTextStyles;
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -103,9 +108,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
         final String? globalFamily = cardStyle?.globalFontFamily;
         final double? globalSize = cardStyle?.globalFontSize;
         final Color? globalColor = _parseHexColor(cardStyle?.globalFontColorHex);
-        // 从 ViewModel 读取分隔线颜色与厚度
+        // 从 ViewModel 读取分隔线颜色
         final Color? dividerColor = _parseHexColor(cardStyle?.dividerColorHex);
-        final double? dividerThickness = cardStyle?.dividerThickness;
         final ThemeData workspaceTheme = dividerColor != null
             ? localTheme.copyWith(dividerColor: dividerColor)
             : localTheme;
@@ -147,9 +151,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                           : null,
                       globalFontSize: globalSize,
                       globalFontColor: globalColor,
-                      // 绑定分隔线厚度到 V3 卡片（同时应用于行/列）
-                      rowDividerThickness: dividerThickness,
-                      colDividerThickness: dividerThickness,
+                      // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
+                      groupTextStyles: _groupTextStyles,
+                      // 🔧 修复：启用色彩模式，允许自定义颜色生效
+                      colorfulMode: true,
                     ),
                   ),
                 ),
@@ -242,8 +247,26 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     if (configs.isEmpty) {
       // 若无配置，保持默认行。
       _rowListNotifier.value = _buildDefaultRows();
+      _groupTextStyles = null;
       return;
     }
+
+    // 构建 groupTextStyles 映射：从 RowConfig 转换到 TextGroup -> TextStyle
+    final groupStyles = <TextGroup, TextStyle>{};
+    for (final config in configs) {
+      final textGroup = _rowTypeToTextGroup(config.type);
+      if (textGroup != null) {
+        groupStyles[textGroup] = TextStyle(
+          fontFamily: config.fontFamily,
+          fontSize: config.fontSize,
+          color: _parseHexColor(config.textColorHex),
+          fontWeight: _parseFontWeight(config.fontWeight),
+          // 构建阴影
+          shadows: _buildShadows(config),
+        );
+      }
+    }
+    _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
     final rows = <RowInfoPayload>[
       const RowInfoPayload(rowType: RowType.columnHeaderRow),
@@ -288,6 +311,65 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
   }
 
+  /// 将 RowType 映射到 TextGroup（用于 groupTextStyles）
+  ///
+  /// 参数：
+  /// - [type]：行类型
+  /// 返回：对应的 TextGroup，若无映射则返回 null
+  TextGroup? _rowTypeToTextGroup(RowType type) {
+    switch (type) {
+      case RowType.heavenlyStem:
+        return TextGroup.tianGan;
+      case RowType.earthlyBranch:
+        return TextGroup.diZhi;
+      case RowType.naYin:
+        return TextGroup.naYin;
+      case RowType.kongWang:
+        return TextGroup.kongWang;
+      case RowType.tenGod:
+        return TextGroup.tenGod;
+      case RowType.columnHeaderRow:
+        return TextGroup.columnTitle;
+      default:
+        return null; // 其他行类型暂不映射
+    }
+  }
+
+  /// 从字符串解析 FontWeight（如 'w400' -> FontWeight.w400）
+  ///
+  /// 参数：
+  /// - [str]：字体粗细字符串（格式：'w300', 'w400', 'w700' 等）
+  /// 返回：对应的 FontWeight，若解析失败返回 null
+  FontWeight? _parseFontWeight(String? str) {
+    if (str == null || str.isEmpty) return null;
+    final valueStr = str.replaceFirst('w', '');
+    final value = int.tryParse(valueStr);
+    if (value == null) return null;
+
+    switch (value) {
+      case 100:
+        return FontWeight.w100;
+      case 200:
+        return FontWeight.w200;
+      case 300:
+        return FontWeight.w300;
+      case 400:
+        return FontWeight.w400;
+      case 500:
+        return FontWeight.w500;
+      case 600:
+        return FontWeight.w600;
+      case 700:
+        return FontWeight.w700;
+      case 800:
+        return FontWeight.w800;
+      case 900:
+        return FontWeight.w900;
+      default:
+        return FontWeight.w400; // 默认 normal
+    }
+  }
+
   /// 解析 `#AARRGGBB` 或 `#RRGGBB` 形式的十六进制颜色字符串为 `Color`。
   ///
   /// 参数：
@@ -309,5 +391,27 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       return Color(0xFF000000 | value);
     }
     return null;
+  }
+
+  /// 从 RowConfig 构建阴影列表
+  ///
+  /// 参数：
+  /// - [config]：行配置对象，包含阴影相关字段
+  /// 返回：阴影列表，若未配置阴影则返回 null
+  List<Shadow>? _buildShadows(RowConfig config) {
+    if (config.shadowColorHex == null) return null;
+    final color = _parseHexColor(config.shadowColorHex);
+    if (color == null) return null;
+
+    return [
+      Shadow(
+        color: color,
+        offset: Offset(
+          config.shadowOffsetX ?? 0,
+          config.shadowOffsetY ?? 1,
+        ),
+        blurRadius: config.shadowBlurRadius ?? 2,
+      ),
+    ];
   }
 }

@@ -288,10 +288,16 @@ class RowConfig {
     this.fontFamily,
     this.fontSize,
     this.textColorHex,
+    this.fontWeight,
     this.textAlign,
     this.padding,
     this.borderType,
     this.borderColorHex,
+    // 阴影相关字段
+    this.shadowColorHex,
+    this.shadowOffsetX,
+    this.shadowOffsetY,
+    this.shadowBlurRadius,
   });
 
   final RowType type;
@@ -300,10 +306,16 @@ class RowConfig {
   final String? fontFamily;
   final double? fontSize;
   final String? textColorHex;
+  final String? fontWeight; // 字体粗细：'w300', 'w400', 'w500', 'w600', 'w700', 'w800', 'w900'
   final RowTextAlign? textAlign;
   final double? padding;
   final BorderType? borderType;
   final String? borderColorHex;
+  // 阴影配置
+  final String? shadowColorHex;    // 阴影颜色（#AARRGGBB 格式）
+  final double? shadowOffsetX;     // 阴影 X 轴偏移
+  final double? shadowOffsetY;     // 阴影 Y 轴偏移
+  final double? shadowBlurRadius;  // 阴影模糊半径
 
   RowConfig copyWith({
     RowType? type,
@@ -312,10 +324,16 @@ class RowConfig {
     String? fontFamily,
     double? fontSize,
     String? textColorHex,
+    String? fontWeight,
     RowTextAlign? textAlign,
     double? padding,
     BorderType? borderType,
     String? borderColorHex,
+    // 阴影参数
+    String? shadowColorHex,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+    double? shadowBlurRadius,
   }) {
     return RowConfig(
       type: type ?? this.type,
@@ -324,10 +342,16 @@ class RowConfig {
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
       textColorHex: textColorHex ?? this.textColorHex,
+      fontWeight: fontWeight ?? this.fontWeight,
       textAlign: textAlign ?? this.textAlign,
       padding: padding ?? this.padding,
       borderType: borderType ?? this.borderType,
       borderColorHex: borderColorHex ?? this.borderColorHex,
+      // 阴影字段
+      shadowColorHex: shadowColorHex ?? this.shadowColorHex,
+      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
+      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
+      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
     );
   }
 
@@ -339,10 +363,16 @@ class RowConfig {
       'fontFamily': fontFamily,
       'fontSize': fontSize,
       'textColorHex': textColorHex,
+      'fontWeight': fontWeight,
       'textAlign': textAlign?.name,
       'padding': padding,
       'borderType': borderType?.name,
       'borderColorHex': borderColorHex,
+      // 阴影字段
+      'shadowColorHex': shadowColorHex,
+      'shadowOffsetX': shadowOffsetX,
+      'shadowOffsetY': shadowOffsetY,
+      'shadowBlurRadius': shadowBlurRadius,
     };
   }
 
@@ -376,10 +406,16 @@ class RowConfig {
       fontFamily: json['fontFamily'] as String?,
       fontSize: (json['fontSize'] as num?)?.toDouble(),
       textColorHex: json['textColorHex'] as String?,
+      fontWeight: json['fontWeight'] as String?,
       textAlign: textAlign,
       padding: (json['padding'] as num?)?.toDouble(),
       borderType: borderType,
       borderColorHex: json['borderColorHex'] as String?,
+      // 阴影字段
+      shadowColorHex: json['shadowColorHex'] as String?,
+      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
+      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
+      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
     );
   }
 
@@ -394,10 +430,16 @@ class RowConfig {
         other.fontFamily == fontFamily &&
         other.fontSize == fontSize &&
         other.textColorHex == textColorHex &&
+        other.fontWeight == fontWeight &&
         other.textAlign == textAlign &&
         other.padding == padding &&
         other.borderType == borderType &&
-        other.borderColorHex == borderColorHex;
+        other.borderColorHex == borderColorHex &&
+        // 阴影字段
+        other.shadowColorHex == shadowColorHex &&
+        other.shadowOffsetX == shadowOffsetX &&
+        other.shadowOffsetY == shadowOffsetY &&
+        other.shadowBlurRadius == shadowBlurRadius;
   }
 
   @override
@@ -408,9 +450,12 @@ class RowConfig {
         fontFamily,
         fontSize,
         textColorHex,
+        fontWeight,
         textAlign,
         padding,
         borderType,
         borderColorHex,
+        // 阴影字段
+        Object.hash(shadowColorHex, shadowOffsetX, shadowOffsetY, shadowBlurRadius),
       );
 }

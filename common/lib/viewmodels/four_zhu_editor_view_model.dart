@@ -482,10 +482,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     String? fontFamily,
     double? fontSize,
     String? colorHex,
+    String? fontWeight,
     RowTextAlign? textAlign,
     double? padding,
     BorderType? borderType,
     String? borderColorHex,
+    // 阴影参数
+    String? shadowColorHex,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+    double? shadowBlurRadius,
   }) {
     final template = _currentTemplate;
     if (template == null) return;
@@ -495,10 +501,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
                 fontFamily: fontFamily ?? config.fontFamily,
                 fontSize: fontSize ?? config.fontSize,
                 textColorHex: colorHex ?? config.textColorHex,
+                fontWeight: fontWeight ?? config.fontWeight,
                 textAlign: textAlign ?? config.textAlign,
                 padding: padding ?? config.padding,
                 borderType: borderType ?? config.borderType,
                 borderColorHex: borderColorHex ?? config.borderColorHex,
+                // 阴影字段
+                shadowColorHex: shadowColorHex ?? config.shadowColorHex,
+                shadowOffsetX: shadowOffsetX ?? config.shadowOffsetX,
+                shadowOffsetY: shadowOffsetY ?? config.shadowOffsetY,
+                shadowBlurRadius: shadowBlurRadius ?? config.shadowBlurRadius,
               )
             : config)
         .toList(growable: false);

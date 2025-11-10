@@ -64,10 +64,16 @@ class EditorSidebarV2 extends StatelessWidget {
                     fontFamily: updatedConfig.fontFamily,
                     fontSize: updatedConfig.fontSize,
                     colorHex: updatedConfig.textColorHex,
+                    fontWeight: updatedConfig.fontWeight,
                     textAlign: updatedConfig.textAlign,
                     padding: updatedConfig.padding,
                     borderType: updatedConfig.borderType,
                     borderColorHex: updatedConfig.borderColorHex,
+                    // 阴影参数
+                    shadowColorHex: updatedConfig.shadowColorHex,
+                    shadowOffsetX: updatedConfig.shadowOffsetX,
+                    shadowOffsetY: updatedConfig.shadowOffsetY,
+                    shadowBlurRadius: updatedConfig.shadowBlurRadius,
                   );
                 },
               ),
@@ -453,15 +459,33 @@ class _CoreRowItemState extends State<_CoreRowItem> {
       fontFamily: config.fontFamily,
       fontSize: config.fontSize,
       color: _tryParseColor(config.textColorHex),
+      fontWeight: _stringToFontWeight(config.fontWeight),
     );
   }
 
   /// 应用 TextStyle 到 RowConfig
   RowConfig _applyTextStyleToConfig(RowConfig config, TextStyle style) {
+    // 提取阴影信息（如果存在）
+    String? shadowHex;
+    double? shadowX, shadowY, shadowBlur;
+    if (style.shadows != null && style.shadows!.isNotEmpty) {
+      final shadow = style.shadows!.first;
+      shadowHex = _colorToHex(shadow.color);
+      shadowX = shadow.offset.dx;
+      shadowY = shadow.offset.dy;
+      shadowBlur = shadow.blurRadius;
+    }
+
     return config.copyWith(
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
       textColorHex: _colorToHex(style.color),
+      fontWeight: _fontWeightToString(style.fontWeight),
+      // 阴影字段
+      shadowColorHex: shadowHex,
+      shadowOffsetX: shadowX,
+      shadowOffsetY: shadowY,
+      shadowBlurRadius: shadowBlur,
     );
   }
 
@@ -487,6 +511,36 @@ class _CoreRowItemState extends State<_CoreRowItem> {
     final g = c.green.toRadixString(16).padLeft(2, '0').toUpperCase();
     final b = c.blue.toRadixString(16).padLeft(2, '0').toUpperCase();
     return '#$a$r$g$b';
+  }
+
+  /// 将 FontWeight 转为字符串（如 'w400', 'w700'）
+  String? _fontWeightToString(FontWeight? weight) {
+    if (weight == null) return null;
+    // FontWeight.w400.value 返回 400
+    return 'w${weight.value}';
+  }
+
+  /// 从字符串解析 FontWeight（如 'w400' -> FontWeight.w400）
+  FontWeight? _stringToFontWeight(String? str) {
+    if (str == null || str.isEmpty) return null;
+    // 移除 'w' 前缀并解析数字
+    final valueStr = str.replaceFirst('w', '');
+    final value = int.tryParse(valueStr);
+    if (value == null) return null;
+
+    // 映射到对应的 FontWeight
+    switch (value) {
+      case 100: return FontWeight.w100;
+      case 200: return FontWeight.w200;
+      case 300: return FontWeight.w300;
+      case 400: return FontWeight.w400;
+      case 500: return FontWeight.w500;
+      case 600: return FontWeight.w600;
+      case 700: return FontWeight.w700;
+      case 800: return FontWeight.w800;
+      case 900: return FontWeight.w900;
+      default: return FontWeight.w400; // 默认 normal
+    }
   }
 }
 
@@ -661,15 +715,33 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
       fontFamily: config.fontFamily,
       fontSize: config.fontSize,
       color: _tryParseColor(config.textColorHex),
+      fontWeight: _stringToFontWeight(config.fontWeight),
     );
   }
 
   /// 应用 TextStyle 到 RowConfig
   RowConfig _applyTextStyleToConfig(RowConfig config, TextStyle style) {
+    // 提取阴影信息（如果存在）
+    String? shadowHex;
+    double? shadowX, shadowY, shadowBlur;
+    if (style.shadows != null && style.shadows!.isNotEmpty) {
+      final shadow = style.shadows!.first;
+      shadowHex = _colorToHex(shadow.color);
+      shadowX = shadow.offset.dx;
+      shadowY = shadow.offset.dy;
+      shadowBlur = shadow.blurRadius;
+    }
+
     return config.copyWith(
       fontFamily: style.fontFamily,
       fontSize: style.fontSize,
       textColorHex: _colorToHex(style.color),
+      fontWeight: _fontWeightToString(style.fontWeight),
+      // 阴影字段
+      shadowColorHex: shadowHex,
+      shadowOffsetX: shadowX,
+      shadowOffsetY: shadowY,
+      shadowBlurRadius: shadowBlur,
     );
   }
 
@@ -693,6 +765,33 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     final g = c.green.toRadixString(16).padLeft(2, '0').toUpperCase();
     final b = c.blue.toRadixString(16).padLeft(2, '0').toUpperCase();
     return '#$a$r$g$b';
+  }
+
+  /// 将 FontWeight 转为字符串（如 'w400', 'w700'）
+  String? _fontWeightToString(FontWeight? weight) {
+    if (weight == null) return null;
+    return 'w${weight.value}';
+  }
+
+  /// 从字符串解析 FontWeight（如 'w400' -> FontWeight.w400）
+  FontWeight? _stringToFontWeight(String? str) {
+    if (str == null || str.isEmpty) return null;
+    final valueStr = str.replaceFirst('w', '');
+    final value = int.tryParse(valueStr);
+    if (value == null) return null;
+
+    switch (value) {
+      case 100: return FontWeight.w100;
+      case 200: return FontWeight.w200;
+      case 300: return FontWeight.w300;
+      case 400: return FontWeight.w400;
+      case 500: return FontWeight.w500;
+      case 600: return FontWeight.w600;
+      case 700: return FontWeight.w700;
+      case 800: return FontWeight.w800;
+      case 900: return FontWeight.w900;
+      default: return FontWeight.w400;
+    }
   }
 }
 
