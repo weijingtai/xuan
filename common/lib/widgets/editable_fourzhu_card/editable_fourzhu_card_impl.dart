@@ -4419,6 +4419,27 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           fontWeight: FontWeight.w400,
           color: Colors.black87,
         );
+      case TextGroup.tenGod:
+        // 十神：保守默认（14sp / w400 / 黑色系），后续可根据视觉规范微调
+        return const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
+      case TextGroup.xunShou:
+        // 旬首：保守默认（14sp / w400 / 黑色系）
+        return const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
+      case TextGroup.hiddenStems:
+        // 藏干系列：统一使用保守默认（14sp / w400 / 黑色系）
+        return const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+          color: Colors.black87,
+        );
       case TextGroup.tianGan:
         // 注意：颜色在彩色模式下通过字符映射解析；在非彩色模式下使用黑色。
         return const TextStyle(

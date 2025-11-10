@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../enums/enum_gender.dart';
 import '../enums/layout_template_enums.dart';
-import '../models/eight_chars.dart';
-import '../enums/enum_jia_zi.dart';
 import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/four_zhu_add_palette.dart';
 import '../widgets/test_pillar_draggable.dart';
@@ -12,15 +10,9 @@ import '../widgets/test_pillar_draggable.dart';
 // - editable_four_zhu_card.dart（旧接口，不再使用）
 // - test_pillar_info_draggable.dart / test_row_info_draggable.dart / test_divider_row_draggable.dart（本页未用）
 // - column_reorderable_four_zhu_card.dart / row_reorderable_four_zhu_card.dart（旧演示控件）
-import '../models/drag_payloads.dart';
-import '../models/pillar_content.dart';
-import '../models/row_strategy.dart';
-import '../themes/editable_four_zhu_card_theme.dart';
-import '../viewmodels/editable_four_zhu_theme_controller.dart';
 import '../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../widgets/style_editor/editable_four_zhu_style_editor_panel.dart';
 import '../widgets/text_style/group_text_style_editor_panel.dart';
-import '../widgets/editable_fourzhu_card/text_groups.dart';
 
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
@@ -61,11 +53,11 @@ class _EditableFourZhuCardDemoPageState
         title: const Text('Editable Four Zhu Card Demo'),
         actions: [
           IconButton(
-                  icon: Icon(_vm.isEditable ? Icons.done : Icons.edit_outlined),
-                  tooltip: _vm.isEditable ? '完成' : '编辑',
-                  onPressed: () => setState(() {
-                    _vm.setEditable(!_vm.isEditable);
-                  }),
+            icon: Icon(_vm.isEditable ? Icons.done : Icons.edit_outlined),
+            tooltip: _vm.isEditable ? '完成' : '编辑',
+            onPressed: () => setState(() {
+              _vm.setEditable(!_vm.isEditable);
+            }),
           ),
         ],
       ),

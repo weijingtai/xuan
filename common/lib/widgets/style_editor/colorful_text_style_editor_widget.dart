@@ -311,10 +311,13 @@ class _ColorfulTextStyleEditorWidgetState
     return null;
   }
 
+  /// 构建彩色文本样式编辑器主界面。
+  /// 移除外层 Card 包裹，统一改为 Padding，
+  /// 保持垂直间距与内容内边距，避免 Card 带来的溢出与视觉边框。
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -448,7 +451,7 @@ class _ColorfulTextStyleEditorWidgetState
                     // 父类色块已删除，其他逻辑不变
                   ],
                 ),
-                // 颜色跟随字符已改为阴影颜色跟随字符颜色（移除文本颜色跟随），此处不再显示文本颜色跟随开关
+                // 当启用内联色盘时，显示内联色盘；禁用内联色盘时不再显示“文本颜色+选择颜色按钮”行
                 if (widget.showInlineWheel) ...[
                   const SizedBox(height: 8),
                   ColorPicker(

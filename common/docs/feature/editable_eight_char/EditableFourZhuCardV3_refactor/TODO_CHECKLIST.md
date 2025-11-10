@@ -93,6 +93,10 @@ EditableFourZhuCardV3 重构原子任务清单（可勾选）
 - [x] 重构 `_rowTitleText/_columnTitleText/_naYinText/_kongWangText` 使用集中化入口（依赖 `_resolveTextStyle(group: ...)`）
 - [x] 保留彩色模式与分组覆盖规则；`_resolveTextStyle` 中在非彩色模式为 Gan/Zhi 自动填充纯黑
 - [x] 验收：编译通过；定向测试通过（`editable_fourzhu_card_v3_pure_drag_test.dart` 与 `drag_controller_throttle_test.dart`）
+ 11) 更多行类型默认样式（旬首/十神/藏干系列）
+ - [x] 在 `TextGroup` 中新增 `tenGod/xunShou/hiddenStems` 三类枚举，统一为其提供保守默认样式（14sp / w400 / 黑色系）
+ - [x] 在 `_defaultTextStyleForGroup` 增加上述分支的集中默认；暂不调整渲染分支（避免引入 UI 变更），为后续接入做好准备
+ - [x] 验收：定向测试通过（拖拽与节流），`common/docs/说明文档.md` 已记录默认值来源与理由
 
 阶段 2：注释补齐与文档更新（建议 1~2 天）
 - [ ] 为阶段 1 新增的所有文件与函数补齐函数级注释（功能、参数、返回、异常/边界）

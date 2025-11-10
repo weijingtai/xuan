@@ -17,6 +17,12 @@ enum TextGroup {
   kongWang,
   columnTitle,
   rowTitle,
+  /// 十神内容文本（保守默认样式）
+  tenGod,
+  /// 旬首内容文本（保守默认样式）
+  xunShou,
+  /// 藏干系列内容文本（统一映射到一个分组，保守默认样式）
+  hiddenStems,
 }
 
 /// Utility to clone a `TextStyle` ensuring null-safety.

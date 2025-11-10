@@ -4,7 +4,10 @@ import 'package:provider/provider.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
 import '../viewmodels/four_zhu_editor_view_model.dart';
-import 'row_style_editor_dialog.dart';
+import 'row_style_editor_form.dart';
+import 'style_editor/theme_edit_preview_sidebar.dart';
+import 'style_editor/colorful_text_style_editor_widget.dart';
+import 'style_editor/text_style_editor_widget.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
 ///
@@ -32,81 +35,56 @@ class EditorSidebarV2 extends StatelessWidget {
               ),
             ),
           ),
-          child: SingleChildScrollView(
+          child: ListView(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // 柱间分隔线配置区
-                _DividerConfigSection(
-                  cardStyle: cardStyle,
-                  onDividerTypeChanged: viewModel.updateDividerType,
-                  onDividerColorChanged: viewModel.updateDividerColor,
-                  onDividerThicknessChanged: viewModel.updateDividerThickness,
-                ),
+            children: [
+              // 主题编辑与预览（替换原“全局字体设置部分”）
+              const ThemeEditPreviewSidebar(),
 
-                const Divider(height: 32),
+              const Divider(height: 32),
 
-                // 行信息管理区
-                _RowConfigSection(
-                  rowConfigs: rowConfigs,
-                  onRowVisibilityChanged: viewModel.updateRowVisibility,
-                  onRowTitleVisibilityChanged:
-                      viewModel.updateRowTitleVisibility,
-                  onRowOrderChanged: (oldIndex, newIndex) {
-                    viewModel.updateRowOrder(
-                        oldIndex: oldIndex, newIndex: newIndex);
-                  },
-                  onRowStyleEdit: (config) =>
-                      _showRowStyleDialog(context, config, viewModel),
-                ),
+              // 柱间分隔线配置区
+              _DividerConfigSection(
+                cardStyle: cardStyle,
+                onDividerTypeChanged: viewModel.updateDividerType,
+                onDividerColorChanged: viewModel.updateDividerColor,
+                onDividerThicknessChanged: viewModel.updateDividerThickness,
+              ),
 
-                const Divider(height: 32),
+              const Divider(height: 32),
 
-                // 全局字体设置区
-                _GlobalFontSection(
-                  cardStyle: cardStyle,
-                  onFontFamilyChanged: viewModel.updateGlobalFontFamily,
-                  onFontSizeChanged: viewModel.updateGlobalFontSize,
-                  onFontColorChanged: viewModel.updateGlobalFontColor,
-                ),
-              ],
-            ),
+              // 行信息管理区
+              _RowConfigSection(
+                rowConfigs: rowConfigs,
+                onRowVisibilityChanged: viewModel.updateRowVisibility,
+                onRowTitleVisibilityChanged: viewModel.updateRowTitleVisibility,
+                onInlineSave: (updatedConfig) {
+                  viewModel.updateRowStyle(
+                    updatedConfig.type,
+                    fontFamily: updatedConfig.fontFamily,
+                    fontSize: updatedConfig.fontSize,
+                    colorHex: updatedConfig.textColorHex,
+                    textAlign: updatedConfig.textAlign,
+                    padding: updatedConfig.padding,
+                    borderType: updatedConfig.borderType,
+                    borderColorHex: updatedConfig.borderColorHex,
+                  );
+                },
+              ),
+            ],
           ),
         );
       },
     );
   }
 
-  void _showRowStyleDialog(
-    BuildContext context,
-    RowConfig config,
-    FourZhuEditorViewModel viewModel,
-  ) {
-    showDialog(
-      context: context,
-      builder: (_) => RowStyleEditorDialog(
-        config: config,
-        onSave: (updatedConfig) {
-          // 调用 ViewModel 的 updateRowStyle 方法
-          viewModel.updateRowStyle(
-            updatedConfig.type,
-            fontFamily: updatedConfig.fontFamily,
-            fontSize: updatedConfig.fontSize,
-            colorHex: updatedConfig.textColorHex,
-            textAlign: updatedConfig.textAlign,
-            padding: updatedConfig.padding,
-            borderType: updatedConfig.borderType,
-            borderColorHex: updatedConfig.borderColorHex,
-          );
-        },
-      ),
-    );
-  }
+  // 弹窗编辑已移除：统一通过行卡片内的“下拉展开”进行样式编辑。
 }
 
-/// 柱间分隔线配置区域
-class _DividerConfigSection extends StatelessWidget {
+// 原全局“行样式编辑（内嵌）”模块已移除，按最新规范采用按行展开的交互。
+
+/// 柱间分隔线配置区域（支持下拉展开/收起）
+class _DividerConfigSection extends StatefulWidget {
   const _DividerConfigSection({
     required this.cardStyle,
     required this.onDividerTypeChanged,
@@ -120,20 +98,44 @@ class _DividerConfigSection extends StatelessWidget {
   final ValueChanged<double> onDividerThicknessChanged;
 
   @override
+  State<_DividerConfigSection> createState() => _DividerConfigSectionState();
+}
+
+class _DividerConfigSectionState extends State<_DividerConfigSection> {
+  bool _expanded = true;
+
+  /// 构建“柱间分隔线”配置区域
+  ///
+  /// 参数：
+  /// - context: BuildContext 上下文，用于读取主题与颜色配置。
+  /// 返回：
+  /// - Widget：包含标题、说明、以及在展开状态下的分隔线样式、颜色与粗细设置控件。
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final dividerType = cardStyle?.dividerType ?? BorderType.none;
-    final dividerColorHex = cardStyle?.dividerColorHex ?? '#D1D5DB';
-    final dividerThickness = cardStyle?.dividerThickness ?? 1.0;
+    final dividerType = widget.cardStyle?.dividerType ?? BorderType.none;
+    final dividerColorHex = widget.cardStyle?.dividerColorHex ?? '#D1D5DB';
+    final dividerThickness = widget.cardStyle?.dividerThickness ?? 1.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '柱间分隔线',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '柱间分隔线',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              tooltip: _expanded ? '收起' : '下拉展开',
+              onPressed: () => setState(() => _expanded = !_expanded),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -142,80 +144,87 @@ class _DividerConfigSection extends StatelessWidget {
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // 样式下拉框
-        DropdownButtonFormField<BorderType>(
-          value: dividerType,
-          decoration: const InputDecoration(
-            labelText: '样式',
-            border: OutlineInputBorder(),
-            isDense: true,
-          ),
-          items: BorderType.values.map((type) {
-            return DropdownMenuItem(
-              value: type,
-              child: Text(_getBorderTypeName(type)),
-            );
-          }).toList(),
-          onChanged: (value) {
-            if (value != null) onDividerTypeChanged(value);
-          },
-        ),
-
-        const SizedBox(height: 16),
-
-        // 颜色选择
-        Row(
-          children: [
-            const Text('颜色'),
-            const SizedBox(width: 12),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _parseColor(dividerColorHex),
-                border: Border.all(color: theme.dividerColor),
-                borderRadius: BorderRadius.circular(4),
-              ),
+        const SizedBox(height: 12),
+        if (_expanded) ...[
+          // 样式下拉框
+          DropdownButtonFormField<BorderType>(
+            value: dividerType,
+            decoration: const InputDecoration(
+              labelText: '样式',
+              border: OutlineInputBorder(),
+              isDense: true,
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: TextEditingController(text: dividerColorHex),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
+            items: BorderType.values.map((type) {
+              return DropdownMenuItem(
+                value: type,
+                child: Text(_getBorderTypeName(type)),
+              );
+            }).toList(),
+            onChanged: (value) {
+              if (value != null) widget.onDividerTypeChanged(value);
+            },
+          ),
+
+          const SizedBox(height: 16),
+
+          // 颜色选择
+          Row(
+            children: [
+              const Text('颜色'),
+              const SizedBox(width: 12),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: _parseColor(dividerColorHex),
+                  border: Border.all(color: theme.dividerColor),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                onSubmitted: onDividerColorChanged,
               ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 16),
-
-        // 粗细输入
-        TextField(
-          controller:
-              TextEditingController(text: dividerThickness.toStringAsFixed(0)),
-          decoration: const InputDecoration(
-            labelText: '粗细 (px)',
-            border: OutlineInputBorder(),
-            isDense: true,
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: TextEditingController(text: dividerColorHex),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onSubmitted: widget.onDividerColorChanged,
+                ),
+              ),
+            ],
           ),
-          keyboardType: TextInputType.number,
-          onSubmitted: (value) {
-            final thickness = double.tryParse(value);
-            if (thickness != null) {
-              onDividerThicknessChanged(thickness);
-            }
-          },
-        ),
+
+          const SizedBox(height: 16),
+
+          // 粗细输入
+          TextField(
+            controller: TextEditingController(
+                text: dividerThickness.toStringAsFixed(0)),
+            decoration: const InputDecoration(
+              labelText: '粗细 (px)',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            keyboardType: TextInputType.number,
+            onSubmitted: (value) {
+              final thickness = double.tryParse(value);
+              if (thickness != null) {
+                widget.onDividerThicknessChanged(thickness);
+              }
+            },
+          ),
+        ],
       ],
     );
   }
 
+  /// 获取分隔线样式中文名称
+  ///
+  /// 参数：
+  /// - type: BorderType 分隔线样式枚举。
+  /// 返回：
+  /// - String：中文样式名称（实线/虚线/点状/无）。
   String _getBorderTypeName(BorderType type) {
     switch (type) {
       case BorderType.solid:
@@ -229,6 +238,12 @@ class _DividerConfigSection extends StatelessWidget {
     }
   }
 
+  /// 解析十六进制颜色字符串为 Color
+  ///
+  /// 参数：
+  /// - hex: String 十六进制颜色字符串（支持 6 位或 8 位，含/不含 #）。
+  /// 返回：
+  /// - Color：解析成功返回颜色，否则返回默认灰色。
   Color _parseColor(String hex) {
     try {
       final hexColor = hex.replaceAll('#', '');
@@ -250,16 +265,14 @@ class _RowConfigSection extends StatelessWidget {
     required this.rowConfigs,
     required this.onRowVisibilityChanged,
     required this.onRowTitleVisibilityChanged,
-    required this.onRowOrderChanged,
-    required this.onRowStyleEdit,
+    required this.onInlineSave,
   });
 
   final List<RowConfig> rowConfigs;
   final void Function(RowType type, bool isVisible) onRowVisibilityChanged;
   final void Function(RowType type, bool isTitleVisible)
       onRowTitleVisibilityChanged;
-  final void Function(int oldIndex, int newIndex) onRowOrderChanged;
-  final ValueChanged<RowConfig> onRowStyleEdit;
+  final ValueChanged<RowConfig> onInlineSave;
 
   @override
   Widget build(BuildContext context) {
@@ -310,56 +323,98 @@ class _RowConfigSection extends StatelessWidget {
         const SizedBox(height: 16),
 
         // 核心行（锁定）- Task 1.1.3
-        ...coreRows.map((config) => _CoreRowItem(config: config)),
+        ...coreRows.map((config) => _CoreRowItem(
+              config: config,
+              onInlineSave: onInlineSave,
+            )),
 
         const SizedBox(height: 8),
 
-        // 可选行（可拖拽排序）- Task 1.1.4 + 1.1.5
+        // 可选行（不提供拖拽排序）
         if (optionalRows.isNotEmpty)
-          SizedBox(
-            height: 300,
-            child: ReorderableListView.builder(
-              itemCount: optionalRows.length,
-              onReorder: onRowOrderChanged,
-              itemBuilder: (context, index) {
-                final config = optionalRows[index];
-                return _OptionalRowItem(
-                  key: ValueKey(config.type),
-                  config: config,
-                  onVisibilityChanged: (value) =>
-                      onRowVisibilityChanged(config.type, value),
-                  onTitleVisibilityChanged: (value) =>
-                      onRowTitleVisibilityChanged(config.type, value),
-                  onEdit: () => onRowStyleEdit(config), // Task 1.1.6
-                );
-              },
-            ),
-          ),
+          ...optionalRows.map((config) => _OptionalRowItem(
+                key: ValueKey(config.type),
+                config: config,
+                onVisibilityChanged: (value) =>
+                    onRowVisibilityChanged(config.type, value),
+                onTitleVisibilityChanged: (value) =>
+                    onRowTitleVisibilityChanged(config.type, value),
+                onInlineSave: onInlineSave,
+              )),
       ],
     );
   }
 }
 
-/// 核心行 Item（锁定不可编辑）
-class _CoreRowItem extends StatelessWidget {
-  const _CoreRowItem({required this.config});
+/// 核心行 Item（锁定不可重排，但支持样式下拉编辑）
+///
+/// 说明：
+/// - 保留锁头图标，强调“不可重排”的核心属性；
+/// - 增加下拉展开编辑区（RowStyleEditorForm），支持样式编辑；
+/// - 与可选行卡片保持一致的边框风格，以形成统一视觉语言。
+class _CoreRowItem extends StatefulWidget {
+  const _CoreRowItem({
+    required this.config,
+    required this.onInlineSave,
+  });
 
   final RowConfig config;
+  final ValueChanged<RowConfig> onInlineSave;
+
+  @override
+  State<_CoreRowItem> createState() => _CoreRowItemState();
+}
+
+class _CoreRowItemState extends State<_CoreRowItem> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListTile(
-      dense: true,
-      leading: Icon(Icons.lock, size: 18, color: theme.disabledColor),
-      title: Text(
-        _getRowTypeName(config.type),
-        style: theme.textTheme.bodyMedium,
-      ),
-      subtitle: const Text('核心', style: TextStyle(fontSize: 11)),
-      tileColor:
-          theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ListTile(
+          dense: true,
+          leading: Icon(Icons.lock, size: 18, color: theme.disabledColor),
+          title: Text(
+            _getRowTypeName(widget.config.type),
+            style: theme.textTheme.bodyMedium,
+          ),
+          subtitle: const Text('核心', style: TextStyle(fontSize: 11)),
+          tileColor:
+              theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(6),
+            side: BorderSide(
+              color: theme.colorScheme.primary.withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+          ),
+          trailing: IconButton(
+            icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18),
+            onPressed: () => setState(() => _expanded = !_expanded),
+            tooltip: _expanded ? '收起' : '下拉展开',
+          ),
+        ),
+        if (_expanded)
+          Container(
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerHighest
+                  .withValues(alpha: 0.06),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(6),
+              ),
+              border: Border.all(
+                color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                width: 1.2,
+              ),
+            ),
+            padding: const EdgeInsets.all(12),
+            child: _buildCoreRowEditor(),
+          ),
+      ],
     );
   }
 
@@ -373,22 +428,89 @@ class _CoreRowItem extends StatelessWidget {
         return type.name;
     }
   }
+
+  /// 构建核心行样式编辑器：天干/地支使用彩色文本样式编辑器
+  Widget _buildCoreRowEditor() {
+    final label = _getRowTypeName(widget.config.type);
+    final initial = _configToTextStyle(widget.config);
+    return ColorfulTextStyleEditorWidget(
+      label: label,
+      initialStyle: initial,
+      onChanged: (style) {
+        final updated = _applyTextStyleToConfig(widget.config, style);
+        widget.onInlineSave(updated);
+      },
+      // 按需改为“选择颜色”按钮弹窗：禁用内联色盘
+      showInlineWheel: false,
+      // 对话框启用 Primary/Accent 选项
+      dialogEnablePrimaryAccent: true,
+    );
+  }
+
+  /// 将 RowConfig 转换为 TextStyle
+  TextStyle _configToTextStyle(RowConfig config) {
+    return TextStyle(
+      fontFamily: config.fontFamily,
+      fontSize: config.fontSize,
+      color: _tryParseColor(config.textColorHex),
+    );
+  }
+
+  /// 应用 TextStyle 到 RowConfig
+  RowConfig _applyTextStyleToConfig(RowConfig config, TextStyle style) {
+    return config.copyWith(
+      fontFamily: style.fontFamily,
+      fontSize: style.fontSize,
+      textColorHex: _colorToHex(style.color),
+    );
+  }
+
+  /// 解析颜色字符串为 Color
+  Color? _tryParseColor(String? hex) {
+    if (hex == null) return null;
+    try {
+      final h = hex.replaceAll('#', '');
+      if (h.length == 6) {
+        return Color(int.parse('FF$h', radix: 16));
+      } else if (h.length == 8) {
+        return Color(int.parse(h, radix: 16));
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  /// 将 Color 转为 #AARRGGBB 字符串
+  String? _colorToHex(Color? c) {
+    if (c == null) return null;
+    final a = c.alpha.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final r = c.red.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final g = c.green.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final b = c.blue.toRadixString(16).padLeft(2, '0').toUpperCase();
+    return '#$a$r$g$b';
+  }
 }
 
 /// 可选行 Item（可见性开关 + 编辑按钮 + 拖拽句柄）
-class _OptionalRowItem extends StatelessWidget {
+class _OptionalRowItem extends StatefulWidget {
   const _OptionalRowItem({
     super.key,
     required this.config,
     required this.onVisibilityChanged,
     required this.onTitleVisibilityChanged,
-    required this.onEdit,
+    required this.onInlineSave,
   });
 
   final RowConfig config;
   final ValueChanged<bool> onVisibilityChanged;
   final ValueChanged<bool> onTitleVisibilityChanged;
-  final VoidCallback onEdit;
+  final ValueChanged<RowConfig> onInlineSave;
+
+  @override
+  State<_OptionalRowItem> createState() => _OptionalRowItemState();
+}
+
+class _OptionalRowItemState extends State<_OptionalRowItem> {
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
@@ -397,40 +519,55 @@ class _OptionalRowItem extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 4),
       elevation: 0,
-      color: config.isVisible
+      color: widget.config.isVisible
           ? theme.colorScheme.surface
           : theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-      child: ListTile(
-        dense: true,
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.drag_indicator, size: 18, color: theme.hintColor),
-            const SizedBox(width: 4),
-            Checkbox(
-              value: config.isVisible,
-              onChanged: (value) => onVisibilityChanged(value ?? false),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: theme.colorScheme.primary.withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          ListTile(
+            dense: true,
+            // 需求：在「十神」「地支藏干」中添加可被拖拽的抓手 icon；同时移除第一个复选框（非“显示标题”）
+            leading: _buildLeadingIcon(context, widget.config),
+            // 标题行同时展示“显示标题”开关（仅在行可见时生效）
+            title: _buildTitleWithSwitcher(widget.config),
+            subtitle: null,
+            // 仅保留下拉展开按钮，移除“编辑样式（弹窗）”铅笔图标。
+            trailing: IconButton(
+              icon: Icon(
+                _expanded ? Icons.expand_less : Icons.expand_more,
+                size: 18,
+              ),
+              onPressed: widget.config.isVisible
+                  ? () => setState(() => _expanded = !_expanded)
+                  : null,
+              tooltip: _expanded ? '收起' : '下拉展开',
             ),
-          ],
-        ),
-        title: Text(_getRowTypeName(config.type)),
-        subtitle: config.isVisible
-            ? Row(
-                children: [
-                  Checkbox(
-                    value: config.isTitleVisible,
-                    onChanged: (value) =>
-                        onTitleVisibilityChanged(value ?? false),
-                  ),
-                  const Text('显示标题', style: TextStyle(fontSize: 11)),
-                ],
-              )
-            : null,
-        trailing: IconButton(
-          icon: const Icon(Icons.edit_outlined, size: 18),
-          onPressed: config.isVisible ? onEdit : null,
-          tooltip: '编辑样式',
-        ),
+          ),
+          if (_expanded && widget.config.isVisible)
+            Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surfaceContainerHighest
+                    .withValues(alpha: 0.06),
+                borderRadius: const BorderRadius.vertical(
+                  bottom: Radius.circular(8),
+                ),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: _buildOptionalRowEditor(),
+            ),
+        ],
       ),
     );
   }
@@ -453,10 +590,114 @@ class _OptionalRowItem extends StatelessWidget {
         return type.name;
     }
   }
+
+  /// 构建标题区域（与“显示标题”开关同一行）
+  ///
+  /// 行为说明：
+  /// - 当该行处于可见状态（config.isVisible == true）时，标题右侧显示“显示标题”文案与 Switch；
+  /// - 当该行不可见时，仅展示标题文本，不显示开关（避免无效交互）。
+  /// - Switch 的状态绑定到 `config.isTitleVisible`，回调转发到 `onTitleVisibilityChanged`。
+  Widget _buildTitleWithSwitcher(RowConfig config) {
+    final titleWidget = Text(_getRowTypeName(config.type));
+    if (!config.isVisible) return titleWidget;
+
+    return Row(
+      children: [
+        Expanded(child: titleWidget),
+        const SizedBox(width: 8),
+        const Text('显示标题', style: TextStyle(fontSize: 12)),
+        const SizedBox(width: 6),
+        Switch.adaptive(
+          value: config.isTitleVisible,
+          onChanged: (value) => widget.onTitleVisibilityChanged(value),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ],
+    );
+  }
+
+  /// 构建可选行的 leading 区域
+  ///
+  /// - 十神、地支藏干：展示可拖拽抓手 icon（视觉引导，后续可接入排序）
+  /// - 其他：保留可见性复选框
+  Widget _buildLeadingIcon(BuildContext context, RowConfig config) {
+    final type = config.type;
+    if (type == RowType.tenGod || type == RowType.hiddenStems) {
+      return const Icon(Icons.drag_handle);
+    }
+    return Checkbox(
+      value: config.isVisible,
+      onChanged: (value) => widget.onVisibilityChanged(value ?? false),
+    );
+  }
+
+  /// 构建可选行样式编辑器：藏干/十神使用纯文本样式编辑器
+  Widget _buildOptionalRowEditor() {
+    final type = widget.config.type;
+    final label = _getRowTypeName(type);
+    if (type == RowType.hiddenStems ||
+        type == RowType.hiddenStemsTenGod ||
+        type == RowType.tenGod) {
+      final initial = _configToTextStyle(widget.config);
+      return TextStyleEditorWidget(
+        label: label,
+        initialStyle: initial,
+        onChanged: (style) {
+          final updated = _applyTextStyleToConfig(widget.config, style);
+          widget.onInlineSave(updated);
+        },
+        showInlineWheel: true,
+      );
+    }
+    return RowStyleEditorForm(
+      config: widget.config,
+      onSave: widget.onInlineSave,
+    );
+  }
+
+  /// RowConfig -> TextStyle
+  TextStyle _configToTextStyle(RowConfig config) {
+    return TextStyle(
+      fontFamily: config.fontFamily,
+      fontSize: config.fontSize,
+      color: _tryParseColor(config.textColorHex),
+    );
+  }
+
+  /// 应用 TextStyle 到 RowConfig
+  RowConfig _applyTextStyleToConfig(RowConfig config, TextStyle style) {
+    return config.copyWith(
+      fontFamily: style.fontFamily,
+      fontSize: style.fontSize,
+      textColorHex: _colorToHex(style.color),
+    );
+  }
+
+  Color? _tryParseColor(String? hex) {
+    if (hex == null) return null;
+    try {
+      final h = hex.replaceAll('#', '');
+      if (h.length == 6) {
+        return Color(int.parse('FF$h', radix: 16));
+      } else if (h.length == 8) {
+        return Color(int.parse(h, radix: 16));
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  String? _colorToHex(Color? c) {
+    if (c == null) return null;
+    final a = c.alpha.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final r = c.red.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final g = c.green.toRadixString(16).padLeft(2, '0').toUpperCase();
+    final b = c.blue.toRadixString(16).padLeft(2, '0').toUpperCase();
+    return '#$a$r$g$b';
+  }
 }
 
-/// 全局字体设置区域
-class _GlobalFontSection extends StatelessWidget {
+/// 全局字体设置区域（支持下拉展开/收起）
+class _GlobalFontSection extends StatefulWidget {
   const _GlobalFontSection({
     required this.cardStyle,
     required this.onFontFamilyChanged,
@@ -470,20 +711,45 @@ class _GlobalFontSection extends StatelessWidget {
   final ValueChanged<String> onFontColorChanged;
 
   @override
+  State<_GlobalFontSection> createState() => _GlobalFontSectionState();
+}
+
+class _GlobalFontSectionState extends State<_GlobalFontSection> {
+  bool _expanded = true;
+
+  /// 构建“全局字体设置”区域
+  ///
+  /// 参数：
+  /// - context: BuildContext 上下文，用于读取主题。
+  /// 返回：
+  /// - Widget：包含标题、说明、以及在展开状态下的字体家族、字号与颜色配置控件。
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final fontFamily = cardStyle?.globalFontFamily ?? 'NotoSansSC-Regular';
-    final fontSize = cardStyle?.globalFontSize ?? 14.0;
-    final fontColorHex = cardStyle?.globalFontColorHex ?? '#FF000000';
+    final fontFamily =
+        widget.cardStyle?.globalFontFamily ?? 'NotoSansSC-Regular';
+    final fontSize = widget.cardStyle?.globalFontSize ?? 14.0;
+    final fontColorHex = widget.cardStyle?.globalFontColorHex ?? '#FF000000';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          '全局字体设置',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                '全局字体设置',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            IconButton(
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              tooltip: _expanded ? '收起' : '下拉展开',
+              onPressed: () => setState(() => _expanded = !_expanded),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
@@ -492,88 +758,91 @@ class _GlobalFontSection extends StatelessWidget {
             color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
           ),
         ),
-        const SizedBox(height: 16),
-
-        // 字体选择
-        DropdownButtonFormField<String>(
-          value: fontFamily == 'NotoSans' ? 'NotoSansSC-Regular' : fontFamily,
-          decoration: const InputDecoration(
-            labelText: '字体',
-            border: OutlineInputBorder(),
-            isDense: true,
+        const SizedBox(height: 12),
+        if (_expanded) ...[
+          // 字体选择
+          DropdownButtonFormField<String>(
+            value: fontFamily == 'NotoSans' ? 'NotoSansSC-Regular' : fontFamily,
+            decoration: const InputDecoration(
+              labelText: '字体',
+              border: OutlineInputBorder(),
+              isDense: true,
+            ),
+            items: const [
+              DropdownMenuItem(value: '系统默认', child: Text('系统默认')),
+              DropdownMenuItem(
+                  value: 'NotoSansSC-Regular',
+                  child: Text('NotoSansSC-Regular')),
+              DropdownMenuItem(
+                  value: 'PingFang SC', child: Text('PingFang SC')),
+              DropdownMenuItem(
+                  value: 'Hiragino Sans GB', child: Text('Hiragino Sans GB')),
+              DropdownMenuItem(value: 'Noto Sans', child: Text('Noto Sans')),
+              DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
+              DropdownMenuItem(value: 'Segoe UI', child: Text('Segoe UI')),
+              DropdownMenuItem(
+                  value: 'Helvetica Neue', child: Text('Helvetica Neue')),
+              DropdownMenuItem(value: 'Arial', child: Text('Arial')),
+              DropdownMenuItem(
+                  value: 'Microsoft YaHei', child: Text('Microsoft YaHei')),
+              DropdownMenuItem(value: 'Ubuntu', child: Text('Ubuntu')),
+              DropdownMenuItem(value: 'sans-serif', child: Text('sans-serif')),
+            ],
+            onChanged: (value) {
+              if (value != null) widget.onFontFamilyChanged(value);
+            },
           ),
-          items: const [
-            DropdownMenuItem(value: '系统默认', child: Text('系统默认')),
-            DropdownMenuItem(
-                value: 'NotoSansSC-Regular', child: Text('NotoSansSC-Regular')),
-            DropdownMenuItem(value: 'PingFang SC', child: Text('PingFang SC')),
-            DropdownMenuItem(
-                value: 'Hiragino Sans GB', child: Text('Hiragino Sans GB')),
-            DropdownMenuItem(value: 'Noto Sans', child: Text('Noto Sans')),
-            DropdownMenuItem(value: 'Roboto', child: Text('Roboto')),
-            DropdownMenuItem(value: 'Segoe UI', child: Text('Segoe UI')),
-            DropdownMenuItem(
-                value: 'Helvetica Neue', child: Text('Helvetica Neue')),
-            DropdownMenuItem(value: 'Arial', child: Text('Arial')),
-            DropdownMenuItem(
-                value: 'Microsoft YaHei', child: Text('Microsoft YaHei')),
-            DropdownMenuItem(value: 'Ubuntu', child: Text('Ubuntu')),
-            DropdownMenuItem(value: 'sans-serif', child: Text('sans-serif')),
-          ],
-          onChanged: (value) {
-            if (value != null) onFontFamilyChanged(value);
-          },
-        ),
 
-        const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-        // 字号滑块
-        Row(
-          children: [
-            Expanded(
-              child: Text('字号', style: theme.textTheme.bodyMedium),
-            ),
-            Text('${fontSize.toInt()}', style: theme.textTheme.bodySmall),
-          ],
-        ),
-        Slider(
-          value: fontSize,
-          min: 10,
-          max: 24,
-          divisions: 14,
-          label: fontSize.toInt().toString(),
-          onChanged: onFontSizeChanged,
-        ),
-
-        const SizedBox(height: 8),
-
-        // 颜色选择
-        Row(
-          children: [
-            const Text('颜色'),
-            const SizedBox(width: 12),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: _parseColor(fontColorHex),
-                border: Border.all(color: theme.dividerColor),
-                borderRadius: BorderRadius.circular(4),
+          // 字号滑块
+          Row(
+            children: [
+              Expanded(
+                child: Text('字号', style: theme.textTheme.bodyMedium),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: TextField(
-                controller: TextEditingController(text: fontColorHex),
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  isDense: true,
+              Text('${fontSize.toInt()}', style: theme.textTheme.bodySmall),
+            ],
+          ),
+          Slider(
+            value: fontSize,
+            min: 10,
+            max: 24,
+            divisions: 14,
+            label: fontSize.toInt().toString(),
+            onChanged: widget.onFontSizeChanged,
+          ),
+
+          const SizedBox(height: 8),
+
+          // 颜色选择
+          Row(
+            children: [
+              const Text('颜色'),
+              const SizedBox(width: 12),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: _parseColor(fontColorHex),
+                  border: Border.all(color: theme.dividerColor),
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                onSubmitted: onFontColorChanged,
               ),
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextField(
+                  controller: TextEditingController(text: fontColorHex),
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  onSubmitted: widget.onFontColorChanged,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

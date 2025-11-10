@@ -272,7 +272,7 @@ class _EditableFourZhuStyleEditorPanelState
           child: Column(
             children: [
               _buildSlider(
-                label: '内边距 (uniform)',
+                label: '内边距',
                 value: _cardPadding,
                 min: 0,
                 max: 48,
@@ -296,7 +296,7 @@ class _EditableFourZhuStyleEditorPanelState
                 },
               ),
               _buildSlider(
-                label: '圆角 (px)',
+                label: '圆角',
                 value: _cardCornerRadius,
                 min: 0,
                 max: 32,
@@ -413,9 +413,18 @@ class _EditableFourZhuStyleEditorPanelState
                   ),
                 ],
               ),
-              // 卡片边框宽度
+              // 边框分区标题
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerLeft,
+                child:
+                    Text('边框', style: Theme.of(context).textTheme.titleMedium),
+              ),
+              const SizedBox(height: 8),
+              const Divider(),
+              // 边框粗细
               _buildSlider(
-                label: '卡片边框宽度 (px)',
+                label: '边框粗细',
                 value: _cardBorderWidth,
                 min: 0,
                 max: 8,
@@ -533,14 +542,15 @@ class _EditableFourZhuStyleEditorPanelState
                         ),
                       ));
                     },
-                    child: const Text('选择颜色'),
+                    child: const Text('选择'),
                   ),
                 ],
               ),
+              const Divider(),
               // 阴影启用开关
-              CheckboxListTile(
+              SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('启用阴影'),
+                title: const Text('阴影'),
                 value: _cardShadowEnabled,
                 onChanged: (v) {
                   _cardShadowEnabled = v ?? false;
@@ -599,7 +609,7 @@ class _EditableFourZhuStyleEditorPanelState
               // 阴影颜色选择：色块 + 按钮，点击弹出颜色选择对话框
               Row(
                 children: [
-                  const Text('阴影颜色'),
+                  const Text('颜色'),
                   const SizedBox(width: 8),
                   InkWell(
                     onTap: () async {
@@ -687,50 +697,62 @@ class _EditableFourZhuStyleEditorPanelState
                         ),
                       ));
                     },
-                    child: const Text('选择颜色'),
+                    child: const Text('选择'),
                   ),
                 ],
               ),
-              // 阴影颜色透明度 (0-255)
-              _buildSlider(
-                label: '阴影颜色透明度 (0-255)',
-                value: (() {
-                  final c = _parseHexColor(_cardShadowHex);
-                  return (c?.alpha ?? 0x55).toDouble();
-                })(),
-                min: 0,
-                max: 255,
-                onChanged: (v) {
-                  if (!_cardShadowEnabled) return;
-                  final newAlpha = v.clamp(0, 255).round();
-                  // 若当前为跟随背景，调整透明度即视为手动设置颜色，关闭跟随
-                  Color base = _cardShadowFollowBackground
-                      ? (_parseHexColor(_cardBackgroundHex) ??
-                          const Color(0x00000000))
-                      : (_parseHexColor(_cardShadowHex) ??
-                          const Color(0x55000000));
-                  final updated = base.withAlpha(newAlpha);
-                  _cardShadowHex =
-                      '#${updated.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
-                  _cardShadowFollowBackground = false;
-                  _emit(_theme.copyWith(
-                    card: CardSection(
-                      padding: _edgeAll(_cardPadding),
-                      cornerRadius: _cardCornerRadius,
-                      elevation: _theme.card?.elevation,
-                      backgroundColor: _theme.card?.backgroundColor,
-                      margin: _theme.card?.margin,
-                      shadowColorFollowsBackground: false,
-                      shadowColor: _cardShadowEnabled ? updated : null,
-                      shadowOffsetX: _cardShadowOffsetX,
-                      shadowOffsetY: _cardShadowOffsetY,
-                      shadowBlurRadius: _cardShadowBlur,
+              // 不透明度 (%)
+              Builder(builder: (context) {
+                final alpha =
+                    (_parseHexColor(_cardShadowHex)?.alpha ?? 0x55).toDouble();
+                final percent = ((alpha / 255.0) * 100).round();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Expanded(child: Text('不透明度')),
+                        Text('$percent%'),
+                      ],
                     ),
-                  ));
-                },
-              ),
+                    Slider(
+                      value: alpha,
+                      min: 0,
+                      max: 255,
+                      onChanged: (v) {
+                        if (!_cardShadowEnabled) return;
+                        final newAlpha = v.clamp(0, 255).round();
+                        Color base = _cardShadowFollowBackground
+                            ? (_parseHexColor(_cardBackgroundHex) ??
+                                const Color(0x00000000))
+                            : (_parseHexColor(_cardShadowHex) ??
+                                const Color(0x55000000));
+                        final updated = base.withAlpha(newAlpha);
+                        _cardShadowHex =
+                            '#${updated.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                        _cardShadowFollowBackground = false;
+                        _emit(_theme.copyWith(
+                          card: CardSection(
+                            padding: _edgeAll(_cardPadding),
+                            cornerRadius: _cardCornerRadius,
+                            elevation: _theme.card?.elevation,
+                            backgroundColor: _theme.card?.backgroundColor,
+                            margin: _theme.card?.margin,
+                            shadowColorFollowsBackground: false,
+                            shadowColor: _cardShadowEnabled ? updated : null,
+                            shadowOffsetX: _cardShadowOffsetX,
+                            shadowOffsetY: _cardShadowOffsetY,
+                            shadowBlurRadius: _cardShadowBlur,
+                          ),
+                        ));
+                      },
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                );
+              }),
               _buildSlider(
-                label: '阴影偏移X (px)',
+                label: '水平偏移 (px)',
                 value: _cardShadowOffsetX,
                 min: -32,
                 max: 32,
@@ -757,7 +779,7 @@ class _EditableFourZhuStyleEditorPanelState
                 },
               ),
               _buildSlider(
-                label: '阴影偏移Y (px)',
+                label: '垂直偏移 (px)',
                 value: _cardShadowOffsetY,
                 min: -32,
                 max: 32,
@@ -784,7 +806,7 @@ class _EditableFourZhuStyleEditorPanelState
                 },
               ),
               _buildSlider(
-                label: '阴影模糊半径 (px)',
+                label: '模糊半径 (px)',
                 value: _cardShadowBlur,
                 min: 0,
                 max: 64,

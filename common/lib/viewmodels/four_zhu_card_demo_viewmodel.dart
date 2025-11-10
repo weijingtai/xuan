@@ -10,6 +10,7 @@ import '../enums/enum_di_zhi.dart';
 import '../models/eight_chars.dart';
 import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
+import '../models/row_strategy.dart';
 import '../enums/layout_template_enums.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
@@ -169,6 +170,11 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       const RowInfoPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
+      ),
+      // 新增：空亡信息行，使用策略驱动按需计算每柱值
+      RowInfoPayload.kongWang(
+        label: '空亡',
+        strategy: KongWangRowStrategy(),
       ),
     ]);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);

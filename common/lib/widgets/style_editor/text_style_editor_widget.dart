@@ -307,10 +307,13 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
     return null;
   }
 
+  /// 构建文本样式编辑器主界面。
+  /// 移除外层 Card 包裹，改用 Padding 保持垂直间距与内容内边距，
+  /// 以减少不必要的边框与约束导致的溢出风险。
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -444,8 +447,70 @@ class _TextStyleEditorWidgetState extends State<TextStyleEditorWidget> {
                     // 父类色块已删除，其他逻辑不变
                   ],
                 ),
+                // 颜色选择：当禁用内联色盘时，改为“选择颜色”按钮弹窗（含 Primary/Accent/调色盘）
+                if (!widget.showInlineWheel) ...[
+                  Row(
+                    children: [
+                      const Text('文本颜色'),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () async {
+                          final picked = await showColorPickerDialog(
+                            context,
+                            _color,
+                            title: const Text('选择颜色'),
+                            pickersEnabled: {
+                              ColorPickerType.wheel: true,
+                              ColorPickerType.accent:
+                                  widget.dialogEnablePrimaryAccent,
+                              ColorPickerType.primary:
+                                  widget.dialogEnablePrimaryAccent,
+                              ColorPickerType.custom: false,
+                            },
+                          );
+                          setState(() => _color = picked);
+                          _emit();
+                        },
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: _color,
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .dividerColor
+                                  .withValues(alpha: 0.4),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      TextButton(
+                        onPressed: () async {
+                          final picked = await showColorPickerDialog(
+                            context,
+                            _color,
+                            title: const Text('选择颜色'),
+                            pickersEnabled: {
+                              ColorPickerType.wheel: true,
+                              ColorPickerType.accent:
+                                  widget.dialogEnablePrimaryAccent,
+                              ColorPickerType.primary:
+                                  widget.dialogEnablePrimaryAccent,
+                              ColorPickerType.custom: false,
+                            },
+                          );
+                          setState(() => _color = picked);
+                          _emit();
+                        },
+                        child: const Text('选择颜色'),
+                      ),
+                    ],
+                  ),
+                ]
                 // 颜色跟随字符已改为阴影颜色跟随字符颜色（移除文本颜色跟随），此处不再显示文本颜色跟随开关
-                if (widget.showInlineWheel) ...[
+                else ...[
                   const SizedBox(height: 8),
                   ColorPicker(
                     color: _color,

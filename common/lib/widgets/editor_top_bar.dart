@@ -26,7 +26,7 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
   final ValueChanged<String> onNameChanged;
 
   @override
-  Size get preferredSize => const Size.fromHeight(148);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
   Widget build(BuildContext context) {
@@ -55,17 +55,17 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
           const _CommandRedoIntent(),
       LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyY):
           const _CommandRedoIntent(),
-      LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyZ):
-          const _CommandRedoIntent(),
-      LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.shift, LogicalKeyboardKey.keyZ):
-          const _CommandRedoIntent(),
+      LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.shift,
+          LogicalKeyboardKey.keyZ): const _CommandRedoIntent(),
+      LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.shift,
+          LogicalKeyboardKey.keyZ): const _CommandRedoIntent(),
       // 原有的撤销所有未保存修改 (Ctrl+R)
       LogicalKeySet(LogicalKeyboardKey.control, LogicalKeyboardKey.keyR):
           const _RevertIntent(),
       LogicalKeySet(LogicalKeyboardKey.meta, LogicalKeyboardKey.keyR):
           const _RevertIntent(),
-      const SingleActivator(LogicalKeyboardKey.keyN, control: true, shift: true):
-          const _CreateTemplateIntent(),
+      const SingleActivator(LogicalKeyboardKey.keyN,
+          control: true, shift: true): const _CreateTemplateIntent(),
       const SingleActivator(LogicalKeyboardKey.keyN, meta: true, shift: true):
           const _CreateTemplateIntent(),
     };
@@ -81,14 +81,16 @@ class EditorTopBar extends StatelessWidget implements PreferredSizeWidget {
             return null;
           }),
           // M4.3.3 - 命令级撤销/重做
-          _CommandUndoIntent: CallbackAction<_CommandUndoIntent>(onInvoke: (intent) {
+          _CommandUndoIntent:
+              CallbackAction<_CommandUndoIntent>(onInvoke: (intent) {
             final vm = context.read<FourZhuEditorViewModel>();
             if (vm.canUndo) {
               vm.undoLastChange();
             }
             return null;
           }),
-          _CommandRedoIntent: CallbackAction<_CommandRedoIntent>(onInvoke: (intent) {
+          _CommandRedoIntent:
+              CallbackAction<_CommandRedoIntent>(onInvoke: (intent) {
             final vm = context.read<FourZhuEditorViewModel>();
             if (vm.canRedo) {
               vm.redoLastChange();
@@ -227,156 +229,143 @@ class _TopBarControls extends StatelessWidget {
     final theme = Theme.of(context);
     final isBusy = uiState.isLoading;
     final viewModel = context.read<FourZhuEditorViewModel>();
+    final currentName = currentTemplate?.name ?? '未命名模板';
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // 左侧：当前模板名称（只读标签）
         Expanded(
-          child: Row(
-            children: [
-              const Icon(Icons.space_dashboard_outlined, size: 24),
-              const SizedBox(width: 16),
-              // Task 2.2.1 - 模板下拉选择器
-              _TemplateDropdownSelector(
-                templates: templates,
-                currentTemplate: currentTemplate,
-                isEnabled: !isBusy,
-                onChanged: (templateId) {
-                  if (templateId != null) {
-                    viewModel.selectTemplate(templateId);
-                  }
-                },
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: FocusTraversalOrder(
-                  order: const NumericFocusOrder(2),
-                  child: Semantics(
-                    label: '模板名称输入',
-                    textField: true,
-                    child: TextField(
-                      controller: nameController,
-                      enabled: !isBusy,
-                      onChanged: onNameChanged,
-                      decoration: const InputDecoration(
-                        labelText: '模板名称',
-                        border: OutlineInputBorder(borderSide: BorderSide.none),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ],
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              currentName,
+              style: theme.textTheme.titleMedium,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
           ),
         ),
-        const SizedBox(width: 24),
+        // 右侧：主操作 + 溢出菜单
         Flexible(
           child: FocusTraversalOrder(
             order: const NumericFocusOrder(3),
-            child: Wrap(
-              alignment: WrapAlignment.end,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: 12,
-              runSpacing: 8,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-              // 移除ViewModeSelector - 视图模式已合并
-              Tooltip(
-                message: '切换深色模式',
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('夜间', style: TextStyle(fontSize: 12)),
-                    Switch.adaptive(
-                      value: uiState.isDarkMode,
-                      onChanged: isBusy
-                          ? null
-                          : (value) => viewModel.toggleTheme(value),
+                Tooltip(
+                  message: '保存模板 (Ctrl+S)',
+                  child: FilledButton.icon(
+                    onPressed:
+                        uiState.canSave && !isBusy ? onSaveTemplate : null,
+                    icon: isBusy
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.save_outlined, size: 16),
+                    label: const Text('保存'),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                PopupMenuButton<String>(
+                  tooltip: '更多',
+                  icon: const Icon(Icons.more_horiz),
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'revert':
+                        if (uiState.canRevert && !isBusy) onUndoChanges();
+                        break;
+                      case 'copy':
+                        if (!isBusy) onDuplicateTemplate();
+                        break;
+                      case 'saveAs':
+                        if (!isBusy) _showSaveAsDialog(context, viewModel);
+                        break;
+                      case 'delete':
+                        if (!isBusy) onDeleteTemplate();
+                        break;
+                      case 'toggleDark':
+                        if (!isBusy) viewModel.toggleTheme(!uiState.isDarkMode);
+                        break;
+                      case 'undo':
+                        if (viewModel.canUndo && !isBusy) {
+                          viewModel.undoLastChange();
+                        }
+                        break;
+                      case 'redo':
+                        if (viewModel.canRedo && !isBusy) {
+                          viewModel.redoLastChange();
+                        }
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem<String>(
+                      value: 'revert',
+                      enabled: uiState.canRevert && !isBusy,
+                      child: const ListTile(
+                        leading: Icon(Icons.restore),
+                        title: Text('还原'),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'copy',
+                      enabled: !isBusy,
+                      child: const ListTile(
+                        leading: Icon(Icons.copy_all),
+                        title: Text('复制'),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'saveAs',
+                      enabled: !isBusy,
+                      child: const ListTile(
+                        leading: Icon(Icons.save_as),
+                        title: Text('另存为'),
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'undo',
+                      enabled: viewModel.canUndo && !isBusy,
+                      child: const ListTile(
+                        leading: Icon(Icons.undo),
+                        title: Text('撤销'),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'redo',
+                      enabled: viewModel.canRedo && !isBusy,
+                      child: const ListTile(
+                        leading: Icon(Icons.redo),
+                        title: Text('重做'),
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem<String>(
+                      value: 'toggleDark',
+                      enabled: !isBusy,
+                      child: ListTile(
+                        leading: const Icon(Icons.dark_mode),
+                        title: Text(uiState.isDarkMode ? '切换到浅色' : '切换到深色'),
+                      ),
+                    ),
+                    PopupMenuItem<String>(
+                      value: 'delete',
+                      enabled: !isBusy,
+                      child: ListTile(
+                        leading: Icon(Icons.delete_outline,
+                            color: theme.colorScheme.error),
+                        title: const Text('删除'),
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // M4.3.3 - 命令级撤销按钮
-              Selector<FourZhuEditorViewModel, bool>(
-                selector: (_, vm) => vm.canUndo,
-                builder: (context, canUndo, _) {
-                  return Tooltip(
-                    message: '撤销上一步操作 (Ctrl+Z)',
-                    child: IconButton(
-                      onPressed: canUndo && !isBusy
-                          ? () => viewModel.undoLastChange()
-                          : null,
-                      icon: const Icon(Icons.undo, size: 20),
-                    ),
-                  );
-                },
-              ),
-              // M4.3.3 - 命令级重做按钮
-              Selector<FourZhuEditorViewModel, bool>(
-                selector: (_, vm) => vm.canRedo,
-                builder: (context, canRedo, _) {
-                  return Tooltip(
-                    message: '重做 (Ctrl+Y 或 Ctrl+Shift+Z)',
-                    child: IconButton(
-                      onPressed: canRedo && !isBusy
-                          ? () => viewModel.redoLastChange()
-                          : null,
-                      icon: const Icon(Icons.redo, size: 20),
-                    ),
-                  );
-                },
-              ),
-              Tooltip(
-                message: '放弃所有未保存修改 (Ctrl+R)',
-                child: FilledButton.icon(
-                  onPressed: uiState.canRevert && !isBusy ? onUndoChanges : null,
-                  icon: const Icon(Icons.restore, size: 16),
-                  label: const Text('还原'),
-                ),
-              ),
-              Tooltip(
-                message: '保存模板 (Ctrl+S)',
-                child: FilledButton.icon(
-                  onPressed: uiState.canSave && !isBusy ? onSaveTemplate : null,
-                  icon: isBusy
-                      ? const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Icon(Icons.save_outlined, size: 16),
-                  label: const Text('保存'),
-                ),
-              ),
-              Tooltip(
-                message: '复制模板',
-                child: OutlinedButton.icon(
-                  onPressed: isBusy ? null : onDuplicateTemplate,
-                  icon: const Icon(Icons.copy, size: 16),
-                  label: const Text('复制'),
-                ),
-              ),
-              // Task 2.2.2 - 另存为按钮
-              Tooltip(
-                message: '另存为新模板',
-                child: OutlinedButton.icon(
-                  onPressed: isBusy
-                      ? null
-                      : () => _showSaveAsDialog(context, viewModel),
-                  icon: const Icon(Icons.save_as, size: 16),
-                  label: const Text('另存为'),
-                ),
-              ),
-              Tooltip(
-                message: '删除模板',
-                child: IconButton(
-                  onPressed: isBusy ? null : onDeleteTemplate,
-                  icon: Icon(Icons.delete_outline,
-                      color: theme.colorScheme.error),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
         ),
       ],
     );

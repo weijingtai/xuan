@@ -1,7 +1,7 @@
 import 'package:common/models/pillar_data.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/layout_editor_sidebar.dart';
-import 'package:common/widgets/pillar_palette.dart';
+import 'package:common/widgets/pillar_tag_bar.dart';
 import 'package:common/widgets/pillar_card.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +27,11 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
         appBar: AppBar(
           title: Row(
             children: [
-              Icon(Icons.space_dashboard_outlined, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)),
+              Icon(Icons.space_dashboard_outlined,
+                  color: Theme.of(context)
+                      .colorScheme
+                      .onSurface
+                      .withValues(alpha: 0.6)),
               const SizedBox(width: 8),
               // Dropdown
               DropdownButton<String>(
@@ -37,7 +41,8 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                     .map<DropdownMenuItem<String>>((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
-                    child: Text(value, style: Theme.of(context).textTheme.titleMedium),
+                    child: Text(value,
+                        style: Theme.of(context).textTheme.titleMedium),
                   );
                 }).toList(),
                 onChanged: (String? newValue) {},
@@ -104,55 +109,63 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
             Expanded(
               child: Column(
                 children: [
+                  // 画布区域：占 80%
                   Expanded(
-              child: DragTarget<Object>(
-                builder: (context, candidateData, rejectedData) {
-                  return Container(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    child: ReorderableListView(
-                      scrollDirection: Axis.horizontal,
-                      children: <Widget>[
-                        for (int index = 0; index < _canvasPillars.length; index += 1)
-                          PillarCard(
-                            key: Key(_canvasPillars[index].pillarId),
-                            pillar: _canvasPillars[index],
-                            onDelete: () {
+                    child: DragTarget<Object>(
+                      builder: (context, candidateData, rejectedData) {
+                        return Container(
+                          color: Theme.of(context).scaffoldBackgroundColor,
+                          child: ReorderableListView(
+                            scrollDirection: Axis.horizontal,
+                            children: <Widget>[
+                              for (int index = 0;
+                                  index < _canvasPillars.length;
+                                  index += 1)
+                                PillarCard(
+                                  key: Key(_canvasPillars[index].pillarId),
+                                  pillar: _canvasPillars[index],
+                                  onDelete: () {
+                                    setState(() {
+                                      _canvasPillars.removeAt(index);
+                                    });
+                                  },
+                                ),
+                            ],
+                            onReorder: (int oldIndex, int newIndex) {
                               setState(() {
-                                _canvasPillars.removeAt(index);
+                                if (oldIndex < newIndex) {
+                                  newIndex -= 1;
+                                }
+                                final PillarData item =
+                                    _canvasPillars.removeAt(oldIndex);
+                                _canvasPillars.insert(newIndex, item);
                               });
                             },
                           ),
-                      ],
-                      onReorder: (int oldIndex, int newIndex) {
+                        );
+                      },
+                      onAccept: (Object data) {
                         setState(() {
-                          if (oldIndex < newIndex) {
-                            newIndex -= 1;
+                          if (data is PillarData) {
+                            _canvasPillars.add(data);
+                          } else if (data is PillarPreset) {
+                            for (final id in (data as PillarPreset).pillarIds) {
+                              _canvasPillars.add(PillarData(
+                                pillarId: id,
+                                label: id, // 或适当标签
+                                jiaZi: JiaZi.JIA_ZI, // 默认值，根据需要调整
+                              ));
+                            }
                           }
-                          final PillarData item = _canvasPillars.removeAt(oldIndex);
-                          _canvasPillars.insert(newIndex, item);
                         });
                       },
                     ),
-                  );
-                },
-                onAccept: (Object data) {
-                  setState(() {
-                    if (data is PillarData) {
-                      _canvasPillars.add(data);
-                    } else if (data is PillarPreset) {
-                      for (final id in (data as PillarPreset).pillarIds) {
-                        _canvasPillars.add(PillarData(
-                          pillarId: id,
-                          label: id, // 或适当标签
-                          jiaZi: JiaZi.JIA_ZI, // 默认值，根据需要调整
-                        ));
-                      }
-                    }
-                  });
-                },
-              ),
-            ),
-                  const PillarPalette(),
+                  ),
+                  // 底部 TagBar：占用剩余 20% 高度（通过 Flexible 实现相对比例）
+                  const Flexible(
+                    flex: 1,
+                    child: PillarTagBar(),
+                  ),
                 ],
               ),
             ),
