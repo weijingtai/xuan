@@ -11,6 +11,21 @@ import '../themes/gan_zhi_gua_colors.dart';
 abstract class StyleResolver {
   const StyleResolver();
 
+  /// 解析指定行的最终文本样式。
+  ///
+  /// 参数说明：
+  /// - `context`：Flutter 上下文，用于访问主题与配色方案。
+  /// - `rowType`：行类型语义键（如天干、地支、纳音等）。
+  /// - `cardStyle`：卡片级别的全局样式（字体家族、字号、颜色等）。
+  /// - `rowConfig`：当前行的样式配置，包含旧字段与新型 `TextStyleConfig`。
+  /// - `overrideColor`：可选的强制颜色覆盖（优先级最高）。
+  /// - `fontWeight`：可选的强制字重覆盖（优先级最高）。
+  ///
+  /// 行为说明：
+  /// - 优先使用 `rowConfig.textStyleConfig` 的值（通过 `toTextStyle()`）进行覆盖；
+  /// - 若 `textStyleConfig` 缺失，则回退到旧字段（`fontFamily`、`fontSize`、`textColorHex`）；
+  /// - 若行与卡片均未提供值，则回退到主题的默认正文样式；
+  /// - `overrideColor` 和 `fontWeight` 参数具有最高优先级，最后应用。
   TextStyle resolveTextStyle({
     required BuildContext context,
     required RowType rowType,
@@ -60,8 +75,11 @@ class DefaultElementColorResolver extends ElementColorResolver {
 abstract class LayoutMetricsResolver {
   const LayoutMetricsResolver();
 
+  /// 计算卡片单元的目标宽度。
   double tileWidth(BuildContext context, {CardStyle? cardStyle});
+  /// 计算列头高度，随全局字号缩放。
   double headerHeight(BuildContext context, {CardStyle? cardStyle});
+  /// 计算行高：优先使用 `rowConfig.textStyleConfig.fontSize`，回退到旧字段与主题。
   double rowHeight(BuildContext context, {RowConfig? rowConfig, CardStyle? cardStyle});
   double slotWidth(BuildContext context);
   double cornerRadius(BuildContext context);
@@ -91,7 +109,9 @@ class DefaultLayoutMetricsResolver extends LayoutMetricsResolver {
 
   @override
   double rowHeight(BuildContext context, {RowConfig? rowConfig, CardStyle? cardStyle}) {
-    final fs = rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    // 优先从 TextStyleConfig 读取字号，兼容旧字段并回退到主题
+    final cfgFs = rowConfig?.textStyleConfig?.fontSize;
+    final fs = cfgFs ?? rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
     return (fs * 2).clamp(24, 36);
   }
 
@@ -130,18 +150,23 @@ class DefaultStyleResolver extends StyleResolver {
     FontWeight? fontWeight,
   }) {
     final theme = Theme.of(context);
-    final baseColor = overrideColor ?? _parseColor(
-      rowConfig?.textColorHex ?? cardStyle?.globalFontColorHex,
-    ) ?? theme.textTheme.bodyMedium?.color ?? Colors.black87;
 
-    final family = rowConfig?.fontFamily ?? cardStyle?.globalFontFamily;
-    final size = rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? theme.textTheme.bodyMedium?.fontSize ?? 14;
+    // 从 TextStyleConfig 派生基础样式（若存在）
+    final fromCfg = rowConfig?.textStyleConfig?.toTextStyle();
+
+    // 计算最终各字段，优先级：override 参数 > TextStyleConfig > 旧字段 > cardStyle > theme
+    final family = fromCfg?.fontFamily ?? rowConfig?.fontFamily ?? cardStyle?.globalFontFamily;
+    final size = fromCfg?.fontSize ?? rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? theme.textTheme.bodyMedium?.fontSize ?? 14;
+    final parsedRowColor = _parseColor(rowConfig?.textColorHex);
+    final parsedGlobalColor = _parseColor(cardStyle?.globalFontColorHex);
+    final color = overrideColor ?? fromCfg?.color ?? parsedRowColor ?? parsedGlobalColor ?? theme.textTheme.bodyMedium?.color ?? Colors.black87;
+    final weight = fontWeight ?? fromCfg?.fontWeight ?? FontWeight.w400;
 
     return TextStyle(
       fontFamily: family,
       fontSize: size,
-      color: baseColor,
-      fontWeight: fontWeight ?? FontWeight.w400,
+      color: color,
+      fontWeight: weight,
       height: 1.0,
     );
   }

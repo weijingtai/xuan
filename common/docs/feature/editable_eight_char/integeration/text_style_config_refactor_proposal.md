@@ -53,12 +53,23 @@
 - Day 5: 更新 Sidebar UI（使用 TextStyleConfig）
 
 **Week 2 (Day 1-2): EditorWorkspace 重构**
-- Day 1: 简化 groupTextStyles 构建逻辑
-- Day 2: 移除旧的转换辅助方法
+- Day 1: 简化 groupTextStyles 构建逻辑（已完成）
+  - EditorWorkspace 读取 `RowConfig.textStyleConfig.toTextStyle()` 优先构建 `groupTextStyles`，仅在缺失时回退旧字段（fontFamily/fontSize/textColorHex/fontWeight/shadows）。
+  - 验收说明：分组样式在存在 `TextStyleConfig` 时优先生效，全局设置仅在分组未设定时覆盖。
+- Day 2: 移除旧的转换辅助方法（保留必要最小回退路径，待最终清理）
 
 **Week 2 (Day 3-5): 验证与清理**
 - Day 3-4: 完整回归测试（手动 + 自动化）
 - Day 5: 清理遗留代码，更新文档
+
+### 全局字体路径核查与对齐（新增并已完成）
+- 目标：对齐“主题侧栏 → ViewModel → Workspace → V3 渲染”的全局字体链路与优先级。
+- 结果：
+  - ThemeSidebar：`_onThemeChanged` 将 `TypographySection.globalFont*` 同步到 ViewModel。
+  - ViewModel：`updateGlobalFontFamily/Size/Color` 更新 `cardStyle`，新增函数注释明确优先级与行为。
+  - Workspace：将 `cardStyle.globalFont*` 绑定到 `EditableFourZhuCardV3`，`groupTextStyles` 由 `TextStyleConfig` 优先构建。
+  - V3：`_resolveTextStyle` 合并顺序为“分组默认 → 全局设置 → 分组覆写 → 入参临时覆写”，彩色模式下对天干/地支抑制全局颜色。
+- 验收：演示页与编辑页行为一致，分组优先覆盖，全局设置在未配置分组时生效。
 
 **风险等级**: 🟡 中等
 - 单次大规模修改，影响面广
@@ -1251,12 +1262,12 @@ void main() {
 
 #### Day 1: TextStyleConfig 创建 + 测试
 **上午**:
-- [ ] 创建 `lib/models/text_style_config.dart`
-- [ ] 实现完整类定义（所有字段、方法）
-- [ ] 添加 `part 'text_style_config.g.dart';`
+- [x] 创建 `lib/models/text_style_config.dart`
+- [x] 实现完整类定义（所有字段、方法）
+- [x] 添加 `part 'text_style_config.g.dart';`
 
 **下午**:
-- [ ] 运行 `dart run build_runner build --delete-conflicting-outputs`
+- [x] 运行 `dart run build_runner build --delete-conflicting-outputs`
 - [ ] 编写完整单元测试（覆盖率 100%）
 - [ ] 验证所有测试通过
 
@@ -1269,10 +1280,10 @@ void main() {
 
 #### Day 2: RowConfig 模型更新
 **上午**:
-- [ ] 修改 `lib/models/layout_template.dart`
-- [ ] 添加 `textStyleConfig` 字段
-- [ ] **保留旧字段**（作为临时 Feature Flag）
-- [ ] 实现向后兼容的 `fromJson` 逻辑
+- [x] 修改 `lib/models/layout_template.dart`
+- [x] 添加 `textStyleConfig` 字段
+- [x] **保留旧字段**（作为临时 Feature Flag）
+- [x] 实现向后兼容的 `fromJson` 逻辑
 
 **下午**:
 - [ ] 编写 RowConfig 集成测试
@@ -1289,9 +1300,9 @@ void main() {
 
 #### Day 3: ViewModel 层重构
 **上午**:
-- [ ] 修改 `lib/viewmodels/four_zhu_editor_view_model.dart`
-- [ ] 简化 `updateRowStyle` 方法签名
-- [ ] 实现智能合并逻辑
+- [x] 修改 `lib/viewmodels/four_zhu_editor_view_model.dart`
+- [x] 简化 `updateRowStyle` 方法签名
+- [x] 实现智能合并逻辑
 
 **下午**:
 - [ ] 添加 ViewModel 单元测试
@@ -1307,18 +1318,18 @@ void main() {
 
 #### Day 4-5: UI 层重构
 **Day 4 上午**: Sidebar
-- [ ] 修改 `lib/widgets/editor_sidebar_v2.dart`
-- [ ] 简化 `_applyTextStyleToConfig` 方法
-- [ ] 更新 `onInlineSave` 回调
+- [x] 修改 `lib/widgets/editor_sidebar_v2.dart`
+- [x] 简化 `_applyTextStyleToConfig` 方法
+- [x] 更新 `onInlineSave` 回调
 
 **Day 4 下午**: Sidebar 测试
 - [ ] Widget 测试（可选）
 - [ ] 手动测试编辑流程
 
 **Day 5 上午**: EditorWorkspace
-- [ ] 修改 `lib/widgets/four_zhu_card_editor_page/editor_workspace.dart`
-- [ ] 简化 `_applyViewModelToNotifiers` 方法
-- [ ] 移除旧的辅助方法（_parseHexColor, _parseFontWeight, _buildShadows）
+- [x] 修改 `lib/widgets/four_zhu_card_editor_page/editor_workspace.dart`
+- [x] 简化 `_applyViewModelToNotifiers` 方法
+- [x] 移除旧的辅助方法（已移除 `_parseFontWeight`, `_buildShadows`；保留 `_parseHexColor` 供全局颜色/分隔线解析使用）
 
 **Day 5 下午**: 集成测试
 - [ ] 端到端测试：Sidebar → ViewModel → EditorWorkspace → V3Card
@@ -1379,7 +1390,7 @@ void main() {
 - [ ] 移除 RowConfig 中的旧字段（fontFamily, fontSize, textColorHex, fontWeight, shadow* 等）
 - [ ] 移除 ViewModel 中的旧参数（如果保留了 Feature Flag）
 - [ ] 移除所有重复的转换辅助方法
-- [ ] 运行 `flutter analyze` 确保无警告
+- [x] 运行 `flutter analyze` 确保无警告
 - [ ] 运行 `dart format .` 格式化代码
 
 **代码审查**:

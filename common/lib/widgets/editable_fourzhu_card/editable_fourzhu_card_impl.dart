@@ -55,13 +55,15 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
   /// Optional per-Gan color overrides (type-safe): applies in colorful mode.
   ///
+  ///
   /// Key: `TianGan` enum; Value: `Color` to use for that token.
-  final Map<TianGan, Color>? perGanColors;
+  // final Map<TianGan, Color>? perGanColors;
 
   /// Optional per-Zhi color overrides (type-safe): applies in colorful mode.
   ///
   /// Key: `DiZhi` enum; Value: `Color` to use for that token.
-  final Map<DiZhi, Color>? perZhiColors;
+  // final Map<DiZhi, Color>? perZhiColors;
+
   // New: toggle visibility of end grip rows and columns
   // When disabled, the visual grip rows/columns are hidden from the card.
   final bool showGripRows;
@@ -109,8 +111,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.globalFontFamily,
     this.globalFontSize,
     this.globalFontColor,
-    this.perGanColors,
-    this.perZhiColors,
+    // this.perGanColors,
+    // this.perZhiColors,
     this.dragFeedbackBuilder,
     this.columnInsertDecorationBuilder,
     this.rowInsertDecorationBuilder,
@@ -4293,10 +4295,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       base = base.copyWith(color: c);
     }
     // 在彩色模式下允许“逐项覆写”：使用类型安全映射（TianGan → Color）。
-    if (widget.colorfulMode && widget.perGanColors != null) {
+    // 允许类型安全的逐项覆写（TianGan → Color）：
+    // - 彩色模式：覆写优先、直接替换（用于外部策略强制指定颜色）。
+    // - 非彩色模式：仅当当前颜色为默认黑色（表示未设置分组/全局颜色）时应用，避免覆盖分组/全局显式颜色。
+    print("----${widget.perGanColors}");
+    if (widget.perGanColors != null) {
       final Color? override = widget.perGanColors![t];
       if (override != null) {
-        base = base.copyWith(color: override);
+        final Color? current = base.color;
+        final bool isDefaultBlack =
+            current != null && current.value == Colors.black87.value;
+        if (widget.colorfulMode || isDefaultBlack) {
+          base = base.copyWith(color: override);
+        }
       }
     }
     // If shadow color signals follow-character, resolve it to final text color with opacity
@@ -4336,10 +4347,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       base = base.copyWith(color: c);
     }
     // 在彩色模式下允许“逐项覆写”：使用类型安全映射（DiZhi → Color）。
-    if (widget.colorfulMode && widget.perZhiColors != null) {
+    // 允许类型安全的逐项覆写（DiZhi → Color）：
+    // - 彩色模式：覆写优先、直接替换（用于外部策略强制指定颜色）。
+    // - 非彩色模式：仅当当前颜色为默认黑色（表示未设置分组/全局颜色）时应用，避免覆盖分组/全局显式颜色。
+    if (widget.perZhiColors != null) {
       final Color? override = widget.perZhiColors![d];
       if (override != null) {
-        base = base.copyWith(color: override);
+        final Color? current = base.color;
+        final bool isDefaultBlack =
+            current != null && current.value == Colors.black87.value;
+        if (widget.colorfulMode || isDefaultBlack) {
+          base = base.copyWith(color: override);
+        }
       }
     }
     // If shadow color signals follow-character, resolve it to final text color with opacity
@@ -4457,14 +4476,28 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
   }
 
-  /// Resolves a `TextStyle` applying optional global typography overrides.
+  /// 解析并合并最终文本样式（分组覆盖 + 全局设置 + 入参覆写）。
   ///
-  /// Parameters:
-  /// - [fontSize]: Base font size to start from; overridden by `globalFontSize` when provided.
-  /// - [weight]: Desired font weight.
-  /// - [color]: Fallback text color; overridden by `globalFontColor` when provided.
+  /// 参数说明：
+  /// - `fontSize`：入参字号（可选），用于临时覆写；
+  /// - `weight`：入参字重（可选），用于临时覆写；
+  /// - `color`：入参颜色（可选），用于临时覆写；
+  /// - `group`：文本分组（行标题、列标题、天干、地支、纳音等），用于选择默认样式与分组覆写。
   ///
-  /// Returns: A `TextStyle` merged with `globalFontFamily/globalFontSize/globalFontColor` if set.
+  /// 优先级规则：
+  /// 1) 分组默认样式 `_defaultTextStyleForGroup(group)` 作为基线；
+  /// 2) 应用全局设置：`globalFontFamily/globalFontSize/globalFontColor`；
+  ///    - 彩色模式（`colorfulMode`）下的天干/地支抑制全局颜色，避免覆盖字符映射颜色；
+  /// 3) 应用分组覆写 `groupTextStyles[group]`：
+  ///    - 若分组设置了颜色（表示不跟随字符颜色），则优先使用该颜色；
+  ///    - 字体家族、字号、字重与阴影均按分组配置覆盖；
+  /// 4) 最后应用入参覆写 `fontSize/weight/color`（若提供），用于在调用端进行临时强化覆写。
+  ///
+  /// 兼容说明：
+  /// - 当前组件使用 `Map<TextGroup, TextStyle>` 作为分组覆盖；在项目其他渲染路径采用 `TextStyleConfig` 优先策略的背景下，分组覆盖在本组件中等同于“配置优先”，确保一致的优先级语义。
+  /// - 天干/地支的颜色由彩色模式下的字符映射解析；当分组显式指定颜色或入参提供颜色时，按上述优先级覆盖。
+  ///
+  /// 返回值：最终合并后的 `TextStyle`。
   TextStyle _resolveTextStyle({
     double? fontSize,
     FontWeight? weight,
@@ -4473,16 +4506,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }) {
     // 以分组默认样式为起点，避免在调用处硬编码常量
     var style = _defaultTextStyleForGroup(group);
-    // 按入参进行局部覆写（若提供）
-    if (fontSize != null) {
-      style = style.copyWith(fontSize: fontSize);
-    }
-    if (weight != null) {
-      style = style.copyWith(fontWeight: weight);
-    }
-    if (color != null) {
-      style = style.copyWith(color: color);
-    }
+    // 先应用全局设置（分组覆写在后，确保分组优先）
     if (widget.globalFontFamily != null &&
         widget.globalFontFamily!.isNotEmpty) {
       style = style.copyWith(fontFamily: widget.globalFontFamily);
@@ -4504,7 +4528,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (group != null && widget.groupTextStyles != null) {
       final override = widget.groupTextStyles![group];
       if (override != null) {
-        // 按属性逐项合并：颜色仅在 colorfulMode 开启时应用；其他属性始终生效
+        // 按属性逐项合并：颜色遵循“彩色模式下字符映射优先”的规则，其余属性分组优先
         var merged = style;
         if (override.fontFamily != null && override.fontFamily!.isNotEmpty) {
           merged = merged.copyWith(fontFamily: override.fontFamily);

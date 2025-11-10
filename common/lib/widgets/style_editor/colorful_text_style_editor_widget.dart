@@ -103,12 +103,32 @@ class _ColorfulTextStyleEditorWidgetState
   }
 
   /// Emit the latest edited `TextStyle` via `onChanged`.
+  ///
+  /// 当用户在 _DualThemeColorPreview 中选择"色彩"模式时，发送 `color: null`，
+  /// 以便 V3 Card 使用内置的彩色模式（天干/地支五行颜色）。
+  /// 当用户选择"纯色"模式时，发送具体的 `_color` 值。
   void _emit() {
+    // 检查 preview 状态是否处于"色彩"模式
+    // 注意：如果 previewState 是 null（初始化阶段），根据 initialStyle.color 判断
+    // - 如果 initialStyle.color 是 null，默认为彩色模式
+    // - 否则使用 _color
+    final previewState = _previewKey.currentState;
+    final bool isColorfulMode;
+    if (previewState != null) {
+      isColorfulMode = previewState.mode == ColorPreviewMode.colorful;
+    } else {
+      // 初始化阶段：如果 _color 是默认值（黑色）且没有明确设置，视为彩色模式
+      // 这里我们检查 initialStyle 是否有 color
+      final initialColor = widget.initialStyle?.color;
+      isColorfulMode = initialColor == null;
+    }
+
     widget.onChanged(TextStyle(
       fontFamily: _fontFamily.isEmpty ? null : _fontFamily,
       fontSize: _fontSize,
       fontWeight: _fontWeight,
-      color: _color,
+      // 🔧 修复：色彩模式时发送 null，让 V3 Card 使用五行颜色
+      color: isColorfulMode ? null : _color,
       shadows: _shadowEnabled
           ? [
               Shadow(
@@ -613,6 +633,9 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
   late List<Color> _pureCharColorsDark;
   late Color _pureGlobalColorLight;
   late Color _pureGlobalColorDark;
+
+  /// 公开当前颜色模式（纯色/色彩），供父组件访问
+  ColorPreviewMode get mode => _mode;
 
   @override
   void initState() {

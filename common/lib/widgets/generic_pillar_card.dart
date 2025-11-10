@@ -177,20 +177,36 @@ class _GenericPillarCardState extends State<GenericPillarCard>
     }
   }
 
+  /// 根据指定行类型将 `RowConfig` 的样式覆盖应用到基础 `TextStyle`。
+  ///
+  /// 参数说明：
+  /// - `rowType`：行类型键，用于查找对应的 `RowConfig`。
+  /// - `base`：基础文本样式。
+  ///
+  /// 行为说明：
+  /// - 优先从 `cfg.textStyleConfig` 中读取覆盖：`fontFamily`、`fontSize`、`color`、`fontWeight`；
+  /// - 若 `textStyleConfig` 缺失，回退使用旧字段 `fontFamily`、`fontSize`、`textColorHex`；
+  /// - 其他字段保持不变，确保兼容历史数据与现有 UI 渲染路径。
   TextStyle _applyOverrides(String rowType, TextStyle base) {
     final cfg = _cfg(rowType);
     if (cfg == null) return base;
-    var style = base;
-    if (cfg.fontFamily != null) {
-      style = style.copyWith(fontFamily: cfg.fontFamily);
-    }
-    if (cfg.fontSize != null) {
-      style = style.copyWith(fontSize: cfg.fontSize);
-    }
-    if (cfg.textColorHex != null && cfg.textColorHex!.isNotEmpty) {
-      style = style.copyWith(color: _hexToColor(cfg.textColorHex!));
-    }
-    return style;
+
+    // 优先用 TextStyleConfig 转换出的样式做覆盖来源
+    final fromCfg = cfg.textStyleConfig?.toTextStyle();
+    final overrideFamily = fromCfg?.fontFamily ?? cfg.fontFamily;
+    final overrideSize = fromCfg?.fontSize ?? cfg.fontSize;
+    final overrideColor = fromCfg?.color ??
+        (cfg.textColorHex != null && cfg.textColorHex!.isNotEmpty
+            ? _hexToColor(cfg.textColorHex!)
+            : null);
+    final overrideWeight = fromCfg?.fontWeight;
+
+    return base.copyWith(
+      fontFamily: overrideFamily ?? base.fontFamily,
+      fontSize: overrideSize ?? base.fontSize,
+      color: overrideColor ?? base.color,
+      fontWeight: overrideWeight ?? base.fontWeight,
+    );
   }
 
   RowConfig? _cfg(String rowType) => widget.rowStyles?[rowType];

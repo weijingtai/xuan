@@ -9,8 +9,11 @@ import '../domain/usecases/layout_templates/delete_template_use_case.dart';
 import '../domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import '../domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import '../domain/usecases/layout_templates/save_template_use_case.dart';
+import '../enums/enum_tian_gan.dart';
+import '../enums/enum_di_zhi.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
+import '../models/text_style_config.dart';
 import '../models/eight_chars.dart';
 import '../models/template_preset.dart';
 import '../features/tai_yuan/tai_yuan_model.dart';
@@ -144,6 +147,12 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   TaiYuanModel? _previewTaiYuan;
   EightChars? get previewEightChars => _previewEightChars;
   TaiYuanModel? get previewTaiYuan => _previewTaiYuan;
+
+  // 临时逐字颜色覆盖（不持久化）：用于在编辑器中实时预览用户修改的单个字符颜色
+  Map<TianGan, Color>? _perGanColorOverrides;
+  Map<DiZhi, Color>? _perZhiColorOverrides;
+  Map<TianGan, Color>? get perGanColorOverrides => _perGanColorOverrides;
+  Map<DiZhi, Color>? get perZhiColorOverrides => _perZhiColorOverrides;
 
   void updatePreviewData({EightChars? eightChars, TaiYuanModel? taiYuan}) {
     var changed = false;
@@ -395,11 +404,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       await saveTemplateUseCase(template: newTemplate);
 
       // 刷新模板列表
-      final refreshed = await getAllTemplatesUseCase(collectionId: _collectionId);
+      final refreshed =
+          await getAllTemplatesUseCase(collectionId: _collectionId);
       _templates = refreshed;
 
       // 切换到新模板
-      _currentTemplate = _findTemplateInList(refreshed, newTemplate.id) ?? newTemplate;
+      _currentTemplate =
+          _findTemplateInList(refreshed, newTemplate.id) ?? newTemplate;
       _hasUnsavedChanges = false;
       _markRecent(newTemplate.id);
     });
@@ -477,8 +488,28 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     _applyCurrentTemplate(template.copyWith(rowConfigs: configs));
   }
 
+  /// 更新指定 `RowType` 的文本样式与相关展示属性。
+  ///
+  /// 参数说明：
+  /// - `type`：要更新的行类型。
+  /// - `textStyleConfig`：统一的文本样式配置对象，若提供将优先于旧字段。
+  /// - `fontFamily`：字体族名称，兼容旧字段更新。
+  /// - `fontSize`：字号，兼容旧字段更新。
+  /// - `colorHex`：文本颜色的十六进制字符串（如 `#RRGGBB`）。
+  /// - `fontWeight`：字体粗细（如 `w400`），兼容旧字段更新。
+  /// - `textAlign`：文本对齐方式。
+  /// - `padding`：行内容的内边距。
+  /// - `borderType`：边框类型。
+  /// - `borderColorHex`：边框颜色的十六进制字符串。
+  /// - `shadowColorHex`：阴影颜色十六进制字符串。
+  /// - `shadowOffsetX`：阴影 X 轴偏移量。
+  /// - `shadowOffsetY`：阴影 Y 轴偏移量。
+  /// - `shadowBlurRadius`：阴影模糊半径。
+  ///
+  /// 返回值：无。会将更新后的模板应用到当前视图模型。
   void updateRowStyle(
     RowType type, {
+    TextStyleConfig? textStyleConfig,
     String? fontFamily,
     double? fontSize,
     String? colorHex,
@@ -498,22 +529,37 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final updated = template.rowConfigs
         .map((config) => config.type == type
             ? config.copyWith(
-                fontFamily: fontFamily ?? config.fontFamily,
-                fontSize: fontSize ?? config.fontSize,
-                textColorHex: colorHex ?? config.textColorHex,
-                fontWeight: fontWeight ?? config.fontWeight,
+                // 新版样式优先：同步 TextStyleConfig
+                textStyleConfig: textStyleConfig ?? config.textStyleConfig,
+                // 同步旧字段，确保向后兼容
+                fontFamily: fontFamily ??
+                    (textStyleConfig?.fontFamily ?? config.fontFamily),
+                fontSize:
+                    fontSize ?? (textStyleConfig?.fontSize ?? config.fontSize),
+                textColorHex: colorHex ??
+                    (textStyleConfig?.colorHex ?? config.textColorHex),
+                fontWeight: fontWeight ??
+                    (textStyleConfig?.fontWeightValue != null
+                        ? 'w${textStyleConfig!.fontWeightValue}'
+                        : config.fontWeight),
                 textAlign: textAlign ?? config.textAlign,
                 padding: padding ?? config.padding,
                 borderType: borderType ?? config.borderType,
                 borderColorHex: borderColorHex ?? config.borderColorHex,
-                // 阴影字段
-                shadowColorHex: shadowColorHex ?? config.shadowColorHex,
-                shadowOffsetX: shadowOffsetX ?? config.shadowOffsetX,
-                shadowOffsetY: shadowOffsetY ?? config.shadowOffsetY,
-                shadowBlurRadius: shadowBlurRadius ?? config.shadowBlurRadius,
+                // 阴影字段（优先 TextStyleConfig）
+                shadowColorHex: shadowColorHex ??
+                    (textStyleConfig?.shadowColorHex ?? config.shadowColorHex),
+                shadowOffsetX: shadowOffsetX ??
+                    (textStyleConfig?.shadowOffsetX ?? config.shadowOffsetX),
+                shadowOffsetY: shadowOffsetY ??
+                    (textStyleConfig?.shadowOffsetY ?? config.shadowOffsetY),
+                shadowBlurRadius: shadowBlurRadius ??
+                    (textStyleConfig?.shadowBlurRadius ??
+                        config.shadowBlurRadius),
               )
             : config)
         .toList(growable: false);
+
     _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
   }
 
@@ -526,6 +572,15 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   // Task 1.3.2 - 全局字体方法
+  /// 更新当前模板的全局字体家族。
+  ///
+  /// 参数：
+  /// - [family]：字体家族名称（例如 `NotoSansSC-Regular`）。
+  ///
+  /// 行为：
+  /// - 基于当前模板的 `cardStyle` 生成新副本并替换 `globalFontFamily` 字段；
+  /// - 通过 `_applyCurrentTemplate` 通知视图层刷新；
+  /// - 与分组/行级样式的优先级：分组/行样式优先于全局字体家族。
   void updateGlobalFontFamily(String family) {
     final template = _currentTemplate;
     if (template == null) return;
@@ -533,17 +588,38 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
   }
 
+  /// 更新当前模板的全局字号。
+  ///
+  /// 参数：
+  /// - [size]：字号（逻辑像素）。
+  ///
+  /// 行为：
+  /// - 将传入字号按 [10, 32] 进行约束（clamp），避免异常值；
+  /// - 基于当前模板的 `cardStyle` 生成新副本并替换 `globalFontSize`；
+  /// - 通过 `_applyCurrentTemplate` 通知视图层刷新；
+  /// - 与分组/行级样式的优先级：分组/行样式优先于全局字号。
   void updateGlobalFontSize(double size) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle = template.cardStyle.copyWith(globalFontSize: size.clamp(10, 32));
+    final updatedStyle =
+        template.cardStyle.copyWith(globalFontSize: size.clamp(10, 32));
     _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
   }
 
+  /// 更新当前模板的全局字体颜色（十六进制字符串）。
+  ///
+  /// 参数：
+  /// - [colorHex]：颜色字符串（格式 `#AARRGGBB`，大写），例如 `#FF112233`。
+  ///
+  /// 行为：
+  /// - 基于当前模板的 `cardStyle` 生成新副本并替换 `globalFontColorHex`；
+  /// - 通过 `_applyCurrentTemplate` 通知视图层刷新；
+  /// - 优先级：在彩色模式下对天干/地支会抑制全局颜色；分组/行级颜色覆写优先于全局颜色。
   void updateGlobalFontColor(String colorHex) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle = template.cardStyle.copyWith(globalFontColorHex: colorHex);
+    final updatedStyle =
+        template.cardStyle.copyWith(globalFontColorHex: colorHex);
     _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
   }
 
@@ -681,9 +757,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         pillarOrder: const [],
       ),
     );
-    if (group.id.isEmpty ||
-        index < 0 ||
-        index >= group.pillarOrder.length) return;
+    if (group.id.isEmpty || index < 0 || index >= group.pillarOrder.length)
+      return;
 
     final removedPillar = group.pillarOrder[index];
 
@@ -725,9 +800,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template == null) return;
     final updated = template.chartGroups
-        .map((group) => group.id == groupId
-            ? group.copyWith(locked: locked)
-            : group)
+        .map((group) =>
+            group.id == groupId ? group.copyWith(locked: locked) : group)
         .toList(growable: false);
     _applyCurrentTemplate(template.copyWith(chartGroups: updated));
   }
@@ -812,9 +886,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template == null) return;
     final updated = template.chartGroups
-        .map((group) => group.id == groupId
-            ? group.copyWith(colorHex: colorHex)
-            : group)
+        .map((group) =>
+            group.id == groupId ? group.copyWith(colorHex: colorHex) : group)
         .toList(growable: false);
     _applyCurrentTemplate(template.copyWith(chartGroups: updated));
   }
@@ -825,9 +898,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template == null) return;
     final updated = template.chartGroups
-        .map((group) => group.id == groupId
-            ? group.copyWith(pillarOrder: const [])
-            : group)
+        .map((group) =>
+            group.id == groupId ? group.copyWith(pillarOrder: const []) : group)
         .toList(growable: false);
     _applyCurrentTemplate(template.copyWith(chartGroups: updated));
   }
@@ -874,7 +946,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (sourceGroup == null || targetGroup == null) return;
 
     // 验证源索引
-    if (sourceIndex < 0 || sourceIndex >= sourceGroup.pillarOrder.length) return;
+    if (sourceIndex < 0 || sourceIndex >= sourceGroup.pillarOrder.length)
+      return;
 
     // 获取要移动的柱位
     final pillar = sourceGroup.pillarOrder[sourceIndex];
@@ -925,9 +998,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
   String _generateGroupName(String base) {
     final prefix = base.isNotEmpty ? base : '新分组';
-    final existing = (_currentTemplate?.chartGroups ?? const [])
-        .map((g) => g.title)
-        .toSet();
+    final existing =
+        (_currentTemplate?.chartGroups ?? const []).map((g) => g.title).toSet();
     if (!existing.contains('$prefix (副本)')) return '$prefix (副本)';
     var i = 2;
     while (existing.contains('$prefix (副本 $i)')) {
@@ -1227,6 +1299,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates.add(template);
     }
     _markRecent(template.id);
+    print('apply template: ${template.toJson()}');
     notifyListeners();
   }
 

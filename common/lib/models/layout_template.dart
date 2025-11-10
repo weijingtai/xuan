@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'text_style_config.dart';
 
 import '../enums/layout_template_enums.dart';
 
@@ -285,6 +286,7 @@ class RowConfig {
     required this.type,
     required this.isVisible,
     required this.isTitleVisible,
+    this.textStyleConfig,
     this.fontFamily,
     this.fontSize,
     this.textColorHex,
@@ -303,6 +305,8 @@ class RowConfig {
   final RowType type;
   final bool isVisible;
   final bool isTitleVisible;
+  /// 新版文本样式配置（优先于旧的离散字段）。
+  final TextStyleConfig? textStyleConfig;
   final String? fontFamily;
   final double? fontSize;
   final String? textColorHex;
@@ -321,6 +325,7 @@ class RowConfig {
     RowType? type,
     bool? isVisible,
     bool? isTitleVisible,
+    TextStyleConfig? textStyleConfig,
     String? fontFamily,
     double? fontSize,
     String? textColorHex,
@@ -339,6 +344,7 @@ class RowConfig {
       type: type ?? this.type,
       isVisible: isVisible ?? this.isVisible,
       isTitleVisible: isTitleVisible ?? this.isTitleVisible,
+      textStyleConfig: textStyleConfig ?? this.textStyleConfig,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
       textColorHex: textColorHex ?? this.textColorHex,
@@ -360,6 +366,8 @@ class RowConfig {
       'type': type.name,
       'isVisible': isVisible,
       'isTitleVisible': isTitleVisible,
+      // 新版样式字段（优先写入）
+      'textStyleConfig': textStyleConfig?.toJson(),
       'fontFamily': fontFamily,
       'fontSize': fontSize,
       'textColorHex': textColorHex,
@@ -399,10 +407,27 @@ class RowConfig {
           )
         : null;
 
+    // 读取新版 TextStyleConfig；若不存在则从旧字段构建以保证向后兼容。
+    final Map<String, dynamic>? styleJson =
+        json['textStyleConfig'] as Map<String, dynamic>?;
+    final TextStyleConfig? styleConfig = styleJson != null
+        ? TextStyleConfig.fromJson(styleJson)
+        : TextStyleConfig.fromLegacyRowConfig(
+            fontFamily: json['fontFamily'] as String?,
+            fontSize: (json['fontSize'] as num?)?.toDouble(),
+            textColorHex: json['textColorHex'] as String?,
+            fontWeight: json['fontWeight'] as String?,
+            shadowColorHex: json['shadowColorHex'] as String?,
+            shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
+            shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
+            shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
+          );
+
     return RowConfig(
       type: rowType,
       isVisible: json['isVisible'] as bool? ?? true,
       isTitleVisible: json['isTitleVisible'] as bool? ?? true,
+      textStyleConfig: styleConfig,
       fontFamily: json['fontFamily'] as String?,
       fontSize: (json['fontSize'] as num?)?.toDouble(),
       textColorHex: json['textColorHex'] as String?,
@@ -427,6 +452,7 @@ class RowConfig {
         other.type == type &&
         other.isVisible == isVisible &&
         other.isTitleVisible == isTitleVisible &&
+        other.textStyleConfig == textStyleConfig &&
         other.fontFamily == fontFamily &&
         other.fontSize == fontSize &&
         other.textColorHex == textColorHex &&
@@ -447,6 +473,7 @@ class RowConfig {
         type,
         isVisible,
         isTitleVisible,
+        textStyleConfig,
         fontFamily,
         fontSize,
         textColorHex,
