@@ -7,7 +7,7 @@ import '../models/text_style_config.dart';
 import '../viewmodels/four_zhu_editor_view_model.dart';
 import 'row_style_editor_form.dart';
 import 'style_editor/theme_edit_preview_sidebar.dart';
-import 'style_editor/colorful_text_style_editor_widget.dart';
+import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
 import 'style_editor/text_style_editor_widget.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
@@ -441,17 +441,14 @@ class _CoreRowItemState extends State<_CoreRowItem> {
   Widget _buildCoreRowEditor() {
     final label = _getRowTypeName(widget.config.type);
     final initial = _configToTextStyle(widget.config);
-    return ColorfulTextStyleEditorWidget(
-      label: label,
+    return ColorfulTextStyleEditorV2Enhanced(
+      label: '$label - 字体和阴影设置',
       initialStyle: initial,
+      initialConfig: widget.config.textStyleConfig,
       onChanged: (style) {
         final updated = _applyTextStyleToConfig(widget.config, style);
         widget.onInlineSave(updated);
       },
-      // 按需改为“选择颜色”按钮弹窗：禁用内联色盘
-      showInlineWheel: false,
-      // 对话框启用 Primary/Accent 选项
-      dialogEnablePrimaryAccent: true,
     );
   }
 

@@ -162,10 +162,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       globalFontColor: globalColor,
                       // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
                       groupTextStyles: _groupTextStyles,
-                      // 绑定逐字颜色覆盖（临时预览，不持久化）
-                      perGanColors: _perGanColorOverrides,
-                      perZhiColors: _perZhiColorOverrides,
-                      // 🔧 修复：启用色彩模式，允许自定义颜色生效
+                      // 🔧 修复：启用色彩模式，允许字符映射生效
                       colorfulMode: true,
                     ),
                   ),
@@ -257,27 +254,15 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   void _applyViewModelToNotifiers(FourZhuEditorViewModel viewModel) {
     final configs = viewModel.rowConfigs;
     if (configs.isEmpty) {
-      // 若无配置，保持默认行。
       _rowListNotifier.value = _buildDefaultRows();
       _groupTextStyles = null;
-      _perGanColorOverrides = null;
-      _perZhiColorOverrides = null;
       return;
     }
 
-    // 构建 groupTextStyles 映射：从 RowConfig 转换到 TextGroup -> TextStyle
     final groupStyles = <TextGroup, TextStyle>{};
     for (final config in configs) {
       final textGroup = _rowTypeToTextGroup(config.type);
-      if (config.type == RowType.heavenlyStem) {
-        _perGanColorOverrides =
-            config.textStyleConfig?.perCharColorsLight as Map<TianGan, Color>?;
-      } else if (config.type == RowType.earthlyBranch) {
-        _perZhiColorOverrides =
-            config.textStyleConfig?.perCharColorsLight as Map<DiZhi, Color>?;
-      }
       if (textGroup != null) {
-        // 优先使用 TextStyleConfig（若存在）；否则使用新版工厂从旧字段构造
         final style = config.textStyleConfig?.toTextStyle() ??
             TextStyleConfig.fromLegacyRowConfig(
               fontFamily: config.fontFamily,
@@ -294,15 +279,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
     _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
-    print(_perGanColorOverrides?[TianGan.JIA]);
-
-    // 🆕 同步逐字颜色覆盖（从 ViewModel 读取临时预览状态）
-    // _perGanColorOverrides = viewModel.perGanColorOverrides;
-    // _perZhiColorOverrides = viewModel.perZhiColorOverrides;
-
     final rows = <RowInfoPayload>[
       const RowInfoPayload(rowType: RowType.columnHeaderRow),
-      // 逐项映射可见行；标题隐藏时将 `rowLabel` 置空。
       for (final c in configs)
         if (c.isVisible)
           RowInfoPayload(

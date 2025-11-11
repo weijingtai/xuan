@@ -55,15 +55,13 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
   /// Optional per-Gan color overrides (type-safe): applies in colorful mode.
   ///
-  ///
   /// Key: `TianGan` enum; Value: `Color` to use for that token.
-  // final Map<TianGan, Color>? perGanColors;
+  final Map<TianGan, Color>? perGanColors;
 
   /// Optional per-Zhi color overrides (type-safe): applies in colorful mode.
   ///
   /// Key: `DiZhi` enum; Value: `Color` to use for that token.
-  // final Map<DiZhi, Color>? perZhiColors;
-
+  final Map<DiZhi, Color>? perZhiColors;
   // New: toggle visibility of end grip rows and columns
   // When disabled, the visual grip rows/columns are hidden from the card.
   final bool showGripRows;
@@ -111,8 +109,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.globalFontFamily,
     this.globalFontSize,
     this.globalFontColor,
-    // this.perGanColors,
-    // this.perZhiColors,
+    this.perGanColors,
+    this.perZhiColors,
     this.dragFeedbackBuilder,
     this.columnInsertDecorationBuilder,
     this.rowInsertDecorationBuilder,
@@ -4298,7 +4296,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 允许类型安全的逐项覆写（TianGan → Color）：
     // - 彩色模式：覆写优先、直接替换（用于外部策略强制指定颜色）。
     // - 非彩色模式：仅当当前颜色为默认黑色（表示未设置分组/全局颜色）时应用，避免覆盖分组/全局显式颜色。
-    print("----${widget.perGanColors}");
     if (widget.perGanColors != null) {
       final Color? override = widget.perGanColors![t];
       if (override != null) {

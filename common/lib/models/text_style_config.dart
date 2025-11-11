@@ -11,6 +11,16 @@ part 'text_style_config.g.dart';
 /// 1. 所有字段可选（nullable），默认值由 TextStyle 提供
 /// 2. 使用可序列化类型（String, double, int）而非 Flutter 类型
 /// 3. 向后兼容：可从旧的 RowConfig 离散字段构造
+/// 颜色预览模式（用于样式编辑场景的模式持久化）
+/// - pure：纯色预览（不按五行元素着色）
+/// - colorful：彩色预览（按元素或策略着色）
+enum ColorPreviewMode {
+  @JsonValue("pure")
+  pure,
+  @JsonValue("colorful")
+  colorful
+}
+
 @JsonSerializable()
 class TextStyleConfig {
   /// 构造函数
@@ -40,6 +50,11 @@ class TextStyleConfig {
     // 彩色模式逐字颜色
     this.perCharColorsLight,
     this.perCharColorsDark,
+
+    // 预览模式与纯色逐字颜色（新增）
+    this.colorMode,
+    this.purePerCharColorsLight,
+    this.purePerCharColorsDark,
   });
 
   // ==================== 基础属性 ====================
@@ -107,6 +122,21 @@ class TextStyleConfig {
   /// 例如：{'甲': '#FFFFFFFF', '乙': '#FFFFFFFF'}
   /// 用于 ColorfulTextStyleEditorWidget 恢复用户自定义的字符颜色
   final Map<String, String>? perCharColorsDark;
+
+  // ==================== 预览模式与纯色逐字颜色（新增） ====================
+
+  /// 预览模式：
+  /// - pure：纯色预览（按纯色策略/用户纯色映射显示）
+  /// - colorful：彩色预览（按元素调色/用户彩色映射显示）
+  final ColorPreviewMode? colorMode;
+
+  /// 亮色主题下的逐字纯色映射（纯色模式）
+  /// 例如：{'甲': '#FF000000', '乙': '#FF111111'}
+  final Map<String, String>? purePerCharColorsLight;
+
+  /// 暗色主题下的逐字纯色映射（纯色模式）
+  /// 例如：{'甲': '#FFFFFFFF', '乙': '#EEEEEE'}
+  final Map<String, String>? purePerCharColorsDark;
 
   // ==================== JSON 序列化 ====================
 
@@ -234,6 +264,10 @@ class TextStyleConfig {
     String? backgroundColor,
     Map<String, String>? perCharColorsLight,
     Map<String, String>? perCharColorsDark,
+    // 新增：预览模式与纯色逐字颜色
+    ColorPreviewMode? colorMode,
+    Map<String, String>? purePerCharColorsLight,
+    Map<String, String>? purePerCharColorsDark,
   }) {
     return TextStyleConfig(
       fontFamily: fontFamily ?? this.fontFamily,
@@ -254,6 +288,12 @@ class TextStyleConfig {
       backgroundColor: backgroundColor ?? this.backgroundColor,
       perCharColorsLight: perCharColorsLight ?? this.perCharColorsLight,
       perCharColorsDark: perCharColorsDark ?? this.perCharColorsDark,
+      // 新增：预览模式与纯色逐字颜色
+      colorMode: colorMode ?? this.colorMode,
+      purePerCharColorsLight:
+          purePerCharColorsLight ?? this.purePerCharColorsLight,
+      purePerCharColorsDark:
+          purePerCharColorsDark ?? this.purePerCharColorsDark,
     );
   }
 
@@ -399,7 +439,13 @@ class TextStyleConfig {
         other.decorationColorHex == decorationColorHex &&
         other.decorationThickness == decorationThickness &&
         other.fontStyle == fontStyle &&
-        other.backgroundColor == backgroundColor;
+        other.backgroundColor == backgroundColor &&
+        // 新增字段参与比较
+        other.colorMode == colorMode &&
+        _mapEquals(other.purePerCharColorsLight, purePerCharColorsLight) &&
+        _mapEquals(other.purePerCharColorsDark, purePerCharColorsDark) &&
+        _mapEquals(other.perCharColorsLight, perCharColorsLight) &&
+        _mapEquals(other.perCharColorsDark, perCharColorsDark);
   }
 
   @override
@@ -422,5 +468,40 @@ class TextStyleConfig {
           fontStyle,
           backgroundColor,
         ),
+        // 新增字段参与 hash
+        colorMode,
+        _mapHash(purePerCharColorsLight),
+        _mapHash(purePerCharColorsDark),
+        _mapHash(perCharColorsLight),
+        _mapHash(perCharColorsDark),
       );
+
+  /// Map 比较（键值都为 String）
+  ///
+  /// 参数：
+  /// - a：第一个映射
+  /// - b：第二个映射
+  /// 返回：是否相等（按键值对逐项比较）
+  static bool _mapEquals(Map<String, String>? a, Map<String, String>? b) {
+    if (identical(a, b)) return true;
+    if (a == null || b == null) return a == b;
+    if (a.length != b.length) return false;
+    for (final key in a.keys) {
+      if (!b.containsKey(key)) return false;
+      if (a[key] != b[key]) return false;
+    }
+    return true;
+  }
+
+  /// Map 生成哈希
+  ///
+  /// 参数：
+  /// - m：映射（字符串键值）
+  /// 返回：稳定哈希值（与字段参与对象哈希一致）
+  static int _mapHash(Map<String, String>? m) {
+    if (m == null) return 0;
+    return Object.hashAll(
+      m.entries.map((e) => Object.hash(e.key, e.value)),
+    );
+  }
 }

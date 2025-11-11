@@ -246,7 +246,6 @@ class _EditableFourZhuCardDemoPageState
                           ),
                           boxShadow:
                               _vm.themeController?.resolveCardBoxShadow(),
-                          // Configurable card border from theme
                           border: Border.all(
                             color:
                                 _vm.themeController?.resolveCardBorderColor() ??

@@ -1299,7 +1299,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates.add(template);
     }
     _markRecent(template.id);
-    print('apply template: ${template.toJson()}');
     notifyListeners();
   }
 
