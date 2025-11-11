@@ -1023,13 +1023,13 @@ class _ColorfulTextStyleEditorV2EnhancedState
           children: [
             // 浅色卡片
             Expanded(
-              child: _buildThemeCard(
+              child: _buildThemeCardV2(
                 title: '浅色',
                 isLight: true,
                 isCurrentTheme: currentTheme == Brightness.light,
                 mode: mode,
-                onModeChanged: (mode) {
-                  charPreviewNotifier.value = Tuple2(Brightness.light, mode);
+                onModeChanged: (m) {
+                  charPreviewNotifier.value = Tuple2(Brightness.light, m);
                 },
               ),
             ),
@@ -1037,20 +1037,19 @@ class _ColorfulTextStyleEditorV2EnhancedState
 
             // 深色卡片
             Expanded(
-              child: _buildThemeCard(
+              child: _buildThemeCardV2(
                 title: '深色',
                 isLight: false,
                 isCurrentTheme: currentTheme == Brightness.dark,
                 mode: mode,
-                onModeChanged: (mode) {
-                  charPreviewNotifier.value = Tuple2(Brightness.dark, mode);
+                onModeChanged: (m) {
+                  charPreviewNotifier.value = Tuple2(Brightness.dark, m);
                 },
               ),
             ),
           ],
         ),
-        const SizedBox(height: 20),
-
+        // const SizedBox(height: 20),
         // 天干地支颜色选择
         _buildGanZhiColorPicker(currentTheme),
       ],
@@ -1140,6 +1139,44 @@ class _ColorfulTextStyleEditorV2EnhancedState
             onTap: () => onModeChanged(ColorPreviewMode.colorful),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 构建卡片样式的主题选择项（包装版）。
+  /// 功能：为原有的 `_buildThemeCard` 增加 Card 外观（圆角、描边、阴影）
+  /// 参数：
+  /// - [title] 标题文案（如“浅色”、“深色”）
+  /// - [isLight] 是否浅色主题预览
+  /// - [isCurrentTheme] 是否为当前选中的主题，用于高亮
+  /// - [mode] 当前颜色预览模式
+  /// - [onModeChanged] 切换预览模式时的回调
+  /// 返回：卡片样式的主题选择 Widget
+  Widget _buildThemeCardV2({
+    required String title,
+    required bool isLight,
+    required bool isCurrentTheme,
+    required ColorPreviewMode mode,
+    required ValueChanged<ColorPreviewMode> onModeChanged,
+  }) {
+    return Container(
+      // elevation: isCurrentTheme ? 3 : 0,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        // border: BorderSide(
+        //   color: isCurrentTheme
+        //       ? Colors.blue.shade600
+        //       : Theme.of(context).colorScheme.outlineVariant,
+        //   width: isCurrentTheme ? 2 : 1,
+        // ),
+      ),
+      child: _buildThemeCard(
+        title: title,
+        isLight: isLight,
+        isCurrentTheme: isCurrentTheme,
+        mode: mode,
+        onModeChanged: onModeChanged,
       ),
     );
   }
