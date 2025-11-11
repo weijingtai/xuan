@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -441,9 +442,13 @@ class _CoreRowItemState extends State<_CoreRowItem> {
     final label = _getRowTypeName(widget.config.type);
     final initial = _configToTextStyle(widget.config);
     return ColorfulTextStyleEditorV2Enhanced(
-      label: '$label - 字体和阴影设置',
+      // label: '$label - 字体和阴影设置',
+      type: widget.config.type,
       initialStyle: initial,
       initialConfig: widget.config.textStyleConfig,
+      values: widget.config.type == RowType.heavenlyStem
+          ? TianGan.values.take(10).map((e) => e.name).toList()
+          : DiZhi.values.take(12).map((e) => e.name).toList(),
       onChanged: (style) {
         final updated = _applyTextStyleToConfig(widget.config, style);
         widget.onInlineSave(updated);

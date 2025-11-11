@@ -1,7 +1,7 @@
-import 'package:common/enums/enum_tian_gan.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
+import '../../enums/layout_template_enums.dart';
 import '../../models/text_style_config.dart';
 import '../../const_resources_mapper.dart';
 
@@ -14,17 +14,21 @@ import '../../const_resources_mapper.dart';
 /// - 清晰的主题切换（浅色/深色分列显示）
 /// - 统一的天干地支颜色管理
 class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
-  final String label;
+  // final String label;
+  final RowType type;
+  final List<String> values;
   final TextStyle? initialStyle;
   final ValueChanged<TextStyle> onChanged;
   final TextStyleConfig? initialConfig;
 
   const ColorfulTextStyleEditorV2Enhanced({
     super.key,
-    required this.label,
+    // required this.label,
+    required this.type,
     this.initialStyle,
     required this.onChanged,
     this.initialConfig,
+    required this.values,
   });
 
   @override
@@ -99,6 +103,44 @@ class ColorMapperDataModel {
   }
 }
 
+class TextShadowDataModel {
+  bool shadowEnabled = false;
+  bool followTextColor = false;
+  double shadowBlurRadius = 10;
+  Color shadowColor = Colors.black;
+  double shadowOpacity = 0.65;
+  double shadowOffsetX = 5.0; // 默认 X 轴偏移
+  double shadowOffsetY = 5.0; // 默认 Y 轴偏移
+  TextShadowDataModel({
+    this.shadowEnabled = false,
+    this.followTextColor = false,
+    this.shadowBlurRadius = 10,
+    this.shadowColor = Colors.black,
+    this.shadowOpacity = 0.65,
+    this.shadowOffsetX = 5.0,
+    this.shadowOffsetY = 5.0,
+  });
+  TextShadowDataModel copyWith({
+    bool? shadowEnabled,
+    bool? followTextColor,
+    double? shadowBlurRadius,
+    Color? shadowColor,
+    double? shadowOpacity,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+  }) {
+    return TextShadowDataModel(
+      shadowEnabled: shadowEnabled ?? this.shadowEnabled,
+      followTextColor: followTextColor ?? this.followTextColor,
+      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
+      shadowColor: shadowColor ?? this.shadowColor,
+      shadowOpacity: shadowOpacity ?? this.shadowOpacity,
+      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
+      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
+    );
+  }
+}
+
 class _ColorfulTextStyleEditorV2EnhancedState
     extends State<ColorfulTextStyleEditorV2Enhanced> {
   // 字体属性
@@ -115,6 +157,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
   double _shadowOffsetX = 5.0; // 默认 X 轴偏移
   double _shadowOffsetY = 5.0; // 默认 Y 轴偏移
 
+  // 预览字符索引（用于切换显示不同的字符）
+  ValueNotifier<int> _previewCharIndexNotifier = ValueNotifier(0);
+  // int _previewCharIndex = 0;
+  late final ValueNotifier<TextShadowDataModel> shadowDataModelNotifier;
   final ValueNotifier<Tuple2<Brightness, ColorPreviewMode>>
       charPreviewNotifier =
       ValueNotifier(Tuple2(Brightness.light, ColorPreviewMode.colorful));
@@ -122,6 +168,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
   ColorPreviewMode _lightMode = ColorPreviewMode.colorful;
   ColorPreviewMode _darkMode = ColorPreviewMode.colorful;
   Brightness _currentTheme = Brightness.light; // 改为可变，用于控制下方显示区域的主题
+
+  Color darkBackground = Colors.blueGrey.shade800;
+  Color lightBackground = Colors.white;
 
   // 天干颜色映射（亮色/暗色）
   // late Map<String, Color> _perCharColorsLight;
@@ -132,6 +181,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
   @override
   void dispose() {
     charPreviewNotifier.dispose();
+    shadowDataModelNotifier.dispose();
+    _previewCharIndexNotifier.dispose();
     super.dispose();
   }
 
@@ -140,48 +191,69 @@ class _ColorfulTextStyleEditorV2EnhancedState
   // late final ValueNotifier<Map<String, Color>> pureDarkMapperNotifier;
   // late final ValueNotifier<Map<String, Color>> colorfulDarkMapperNotifier;
 
+  TextShadowDataModel get defaultShadow => TextShadowDataModel(
+        shadowEnabled: false,
+        followTextColor: false,
+        shadowBlurRadius: 10,
+        shadowColor: Colors.black,
+        shadowOpacity: 0.65,
+        shadowOffsetX: 5.0,
+        shadowOffsetY: 5.0,
+      );
+
   /// 纯色模式 - 亮色主题：所有天干都使用黑色
   Map<String, Color> get pureLightMapper {
-    final ganList = TianGan.values
-        .where((g) => g != TianGan.KONG_WANG)
-        .map((g) => g.value)
-        .toList();
-    return Map.fromEntries(
-      ganList.map((char) => MapEntry(char, Colors.black87)),
-    );
+    return Map.fromEntries(List.generate(
+      widget.values.length,
+      (i) => MapEntry(widget.values[i], Colors.black87),
+    ));
   }
 
   /// 彩色模式 - 亮色主题：从 ConstResourcesMapper 获取天干颜色
   Map<String, Color> get colorfulLightMapper {
-    return ConstResourcesMapper.zodiacGanColors.map(
-      (key, value) => MapEntry(key.value, value),
-    );
+    switch (widget.type) {
+      case RowType.heavenlyStem:
+        return ConstResourcesMapper.zodiacGanColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+      case RowType.earthlyBranch:
+        return ConstResourcesMapper.zodiacZhiColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+      default:
+        return pureLightMapper;
+    }
   }
 
   /// 纯色模式 - 暗色主题：所有天干都使用浅灰色
   Map<String, Color> get pureDarkMapper {
-    final ganList = TianGan.values
-        .where((g) => g != TianGan.KONG_WANG)
-        .map((g) => g.value)
-        .toList();
-    return Map.fromEntries(
-      ganList.map((char) => MapEntry(char, Colors.black12)),
-    );
+    return Map.fromEntries(List.generate(
+      widget.values.length,
+      (i) => MapEntry(widget.values[i], Colors.white70),
+    ));
   }
 
   /// 彩色模式 - 暗色主题：从 ConstResourcesMapper 获取天干颜色（与亮色相同）
   Map<String, Color> get colorfulDarkMapper {
-    // 暗色主题下也使用相同的五行颜色
-    return ConstResourcesMapper.zodiacGanColors.map(
-      (key, value) => MapEntry(key.value, value),
-    );
+    switch (widget.type) {
+      case RowType.heavenlyStem:
+        return ConstResourcesMapper.zodiacGanColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+      case RowType.earthlyBranch:
+        return ConstResourcesMapper.zodiacZhiColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+      default:
+        return pureDarkMapper;
+    }
   }
 
   @override
   void initState() {
     super.initState();
     _initializeFromStyle();
-
+    shadowDataModelNotifier = ValueNotifier(defaultShadow);
     colorMapperDataModelNotifier = ValueNotifier(
       ColorMapperDataModel(
         pureLightMapper: pureLightMapper,
@@ -259,25 +331,30 @@ class _ColorfulTextStyleEditorV2EnhancedState
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 标题
-            Center(
-              child: Text(
-                widget.label,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-            ),
-            const SizedBox(height: 32),
+            // // 标题
+            // Center(
+            //   child: Text(
+            //     widget.label,
+            //     style: const TextStyle(
+            //       fontSize: 24,
+            //       fontWeight: FontWeight.bold,
+            //       color: Colors.black87,
+            //     ),
+            //   ),
+            // ),
+            // const SizedBox(height: 32),
 
             // 字体 Section
             _buildFontSection(),
             const SizedBox(height: 32),
 
             // 阴影 Section
-            _buildShadowSection(),
+            ValueListenableBuilder<TextShadowDataModel>(
+              valueListenable: shadowDataModelNotifier,
+              builder: (context, value, child) {
+                return _buildShadowSection(value);
+              },
+            ),
             const SizedBox(height: 32),
 
             // 主题 Section
@@ -412,8 +489,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
             Expanded(
               child: SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  activeTrackColor: Colors.blue.shade600,
+                  activeTrackColor: Colors.grey.shade300,
                   thumbColor: Colors.blue.shade600,
+                  inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
                   value: _fontSize,
@@ -462,7 +540,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
   /// 构建“阴影”设置区。
   /// 功能：开关阴影、展示预览、选择颜色与不透明度。
   /// 返回：用于渲染阴影设置的 Widget。
-  Widget _buildShadowSection() {
+  Widget _buildShadowSection(TextShadowDataModel shadowDataModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -481,11 +559,13 @@ class _ColorfulTextStyleEditorV2EnhancedState
             Transform.scale(
               scale: 1.2,
               child: Switch(
-                value: _shadowEnabled,
+                value: shadowDataModel.shadowEnabled,
                 activeTrackColor: Colors.blue.shade600,
                 onChanged: (value) {
-                  setState(() => _shadowEnabled = value);
-                  _emit();
+                  // shadowDataModel.shadowEnabled = value;
+                  shadowDataModelNotifier.value =
+                      shadowDataModel.copyWith(shadowEnabled: value);
+                  // _emit();
                 },
               ),
             ),
@@ -493,9 +573,17 @@ class _ColorfulTextStyleEditorV2EnhancedState
         ),
         const SizedBox(height: 16),
 
-        if (_shadowEnabled) ...[
+        if (shadowDataModel.shadowEnabled) ...[
           // 阴影预览框（简洁布局）
-          _buildShadowPreview(),
+          ValueListenableBuilder(
+              valueListenable: charPreviewNotifier,
+              builder: (ctx, tuple2, _) {
+                return ValueListenableBuilder(
+                    valueListenable: colorMapperDataModelNotifier,
+                    builder: (ctx, map, _) {
+                      return _buildShadowPreview(shadowDataModel, map, tuple2);
+                    });
+              }),
           // 收紧间距，减少布局压力
           const SizedBox(height: 16),
 
@@ -508,15 +596,38 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
               GestureDetector(
-                onTap: () => _pickShadowColor(),
+                onTap: () => _pickShadowColor(shadowDataModel.shadowColor),
                 child: Container(
                   width: 60,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: _shadowColor,
+                    color: shadowDataModel.shadowColor,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.grey.shade400, width: 2),
                   ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              const Text(
+                '与字体颜色同步',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: shadowDataModelNotifier,
+                builder: (ctx, model, _) => Checkbox(
+                  value: model.followTextColor,
+                  onChanged: (value) {
+                    shadowDataModelNotifier.value =
+                        model.copyWith(followTextColor: value);
+                  },
                 ),
               ),
             ],
@@ -533,17 +644,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
               Expanded(
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: Colors.blue.shade600,
+                    activeTrackColor: Colors.grey.shade300,
                     thumbColor: Colors.blue.shade600,
+                    inactiveTrackColor: Colors.grey.shade300,
                   ),
                   child: Slider(
-                    value: _shadowOpacity,
+                    value: shadowDataModel.shadowOpacity,
                     min: 0,
                     max: 1,
                     divisions: 100,
                     onChanged: (value) {
-                      setState(() => _shadowOpacity = value);
-                      _emit();
+                      shadowDataModelNotifier.value =
+                          shadowDataModel.copyWith(shadowOpacity: value);
+                      // setState(() => _shadowOpacity = value);
+                      // _emit();
                     },
                   ),
                 ),
@@ -557,7 +671,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: Text(
-                  '${(_shadowOpacity * 100).toInt()}%',
+                  '${(shadowDataModel.shadowOpacity * 100).toInt()}%',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                       fontSize: 16, fontWeight: FontWeight.w600),
@@ -573,7 +687,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
   /// 阴影预览与 X/Y 轴控制区（简洁版）。
   /// 功能：顶部 X 轴滑块，中间大预览区域，右侧 Y 轴垂直滑块，底部模糊半径控制。
   /// 返回：用于渲染阴影预览的 Widget。
-  Widget _buildShadowPreview() {
+  Widget _buildShadowPreview(
+      TextShadowDataModel shadowDataModel,
+      ColorMapperDataModel colorMapperDataModel,
+      Tuple2<Brightness, ColorPreviewMode> previewInfo) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -587,18 +704,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 10,
                   ),
-                  activeTrackColor: Colors.blue.shade600,
+                  activeTrackColor: Colors.grey.shade300,
                   thumbColor: Colors.blue.shade600,
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: _shadowOffsetX.clamp(-15.0, 15.0),
+                  value: shadowDataModel.shadowOffsetX.clamp(-15.0, 15.0),
                   min: -15,
                   max: 15,
                   divisions: 60,
                   onChanged: (value) {
-                    setState(() => _shadowOffsetX = value);
-                    _emit();
+                    shadowDataModelNotifier.value =
+                        shadowDataModel.copyWith(shadowOffsetX: value);
+                    // setState(() => _shadowOffsetX = value);
+                    // _emit();
                   },
                 ),
               ),
@@ -613,39 +732,144 @@ class _ColorfulTextStyleEditorV2EnhancedState
           children: [
             // 中间：大预览区域
             Expanded(
-              child: Container(
-                height: 200,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      Colors.grey.shade100,
-                      Colors.grey.shade50,
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade300, width: 2),
-                ),
-                child: Center(
-                  child: Text(
-                    '甲',
-                    style: TextStyle(
-                      fontSize: 56,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                      shadows: [
-                        Shadow(
-                          color: _shadowColor.withValues(alpha: _shadowOpacity),
-                          offset: Offset(_shadowOffsetX, _shadowOffsetY),
-                          blurRadius: _shadowBlurRadius,
-                        ),
-                      ],
+                child: AnimatedContainer(
+                    duration: Duration(milliseconds: 300),
+                    height: 180,
+                    width: 180,
+                    decoration: BoxDecoration(
+                      color: previewInfo.item1 == Brightness.light
+                          ? lightBackground
+                          : darkBackground,
+                      // gradient: LinearGradient(
+                      //   begin: Alignment.topLeft,
+                      //   end: Alignment.bottomRight,
+                      //   colors: [
+                      //     Colors.grey.shade100,
+                      //     Colors.grey.shade50,
+                      //   ],
+                      // ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.grey.shade300, width: 2),
                     ),
-                  ),
-                ),
-              ),
-            ),
+                    child: ValueListenableBuilder(
+                        valueListenable: _previewCharIndexNotifier,
+                        builder: (ctx, index, _) {
+                          Color shadowColor = shadowDataModel.shadowColor;
+                          String char = widget.values.isNotEmpty
+                              ? widget.values[index]
+                              : '甲';
+                          Color textColor = colorMapperDataModel.getBy(
+                                  theme: previewInfo.item1,
+                                  mode: previewInfo.item2)[char] ??
+                              Colors.black87;
+                          if (shadowDataModel.followTextColor) {
+                            shadowColor = textColor;
+                          }
+                          shadowColor = shadowColor.withAlpha(
+                              (shadowDataModel.shadowOpacity * 255).toInt());
+                          return Stack(
+                            children: [
+                              // 中间：预览文字
+                              Center(
+                                child: Text(
+                                  widget.values.isNotEmpty
+                                      ? widget.values[index]
+                                      : '甲',
+                                  style: TextStyle(
+                                    fontSize: 32,
+                                    // fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                    shadows: [
+                                      Shadow(
+                                        color: shadowColor,
+                                        offset: Offset(
+                                            shadowDataModel.shadowOffsetX,
+                                            shadowDataModel.shadowOffsetY),
+                                        blurRadius:
+                                            shadowDataModel.shadowBlurRadius,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              // 左侧箭头按钮
+                              if (widget.values.isNotEmpty &&
+                                  widget.values.length > 1)
+                                Positioned(
+                                  left: 8,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: InkWell(
+                                      child: Icon(
+                                        Icons.chevron_left,
+                                        color: textColor,
+                                        size: 28,
+                                      ),
+                                      onTap: () {
+                                        _previewCharIndexNotifier.value =
+                                            (index - 1) % widget.values.length;
+                                        if (_previewCharIndexNotifier.value <
+                                            0) {
+                                          _previewCharIndexNotifier.value =
+                                              widget.values.length;
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+                              // 右侧箭头按钮
+                              if (widget.values.isNotEmpty &&
+                                  widget.values.length > 1)
+                                Positioned(
+                                  right: 8,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: Center(
+                                    child: InkWell(
+                                      child: Icon(
+                                        Icons.chevron_right,
+                                        color: textColor,
+                                        size: 28,
+                                      ),
+                                      onTap: () {
+                                        _previewCharIndexNotifier.value =
+                                            (index + 1) % widget.values.length;
+                                      },
+                                    ),
+                                  ),
+                                ),
+
+                              // 底部：页码指示器
+                              if (widget.values.isNotEmpty &&
+                                  widget.values.length > 1)
+                                Positioned(
+                                  bottom: 8,
+                                  left: 0,
+                                  right: 0,
+                                  child: Center(
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: textColor.withValues(alpha: 0.8),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        '${index + 1} / ${widget.values.length}',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          );
+                        }))),
 
             const SizedBox(width: 16),
 
@@ -660,18 +884,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     thumbShape: const RoundSliderThumbShape(
                       enabledThumbRadius: 10,
                     ),
-                    activeTrackColor: Colors.blue.shade600,
+                    activeTrackColor: Colors.grey.shade300,
                     thumbColor: Colors.blue.shade600,
                     inactiveTrackColor: Colors.grey.shade300,
                   ),
                   child: Slider(
-                    value: _shadowOffsetY.clamp(-15.0, 15.0),
+                    value: shadowDataModel.shadowOffsetY.clamp(-15.0, 15.0),
                     min: -15,
                     max: 15,
                     divisions: 60,
                     onChanged: (value) {
-                      setState(() => _shadowOffsetY = value);
-                      _emit();
+                      shadowDataModelNotifier.value =
+                          shadowDataModel.copyWith(shadowOffsetY: value);
+                      // setState(() => _shadowOffsetY = value);
+                      // _emit();
                     },
                   ),
                 ),
@@ -699,18 +925,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   thumbShape: const RoundSliderThumbShape(
                     enabledThumbRadius: 8,
                   ),
-                  activeTrackColor: Colors.blue.shade600,
+                  activeTrackColor: Colors.grey.shade300,
                   thumbColor: Colors.blue.shade600,
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: _shadowBlurRadius.clamp(0.0, 30.0),
+                  value: shadowDataModel.shadowBlurRadius.clamp(0.0, 30.0),
                   min: 0,
                   max: 30,
                   divisions: 60,
                   onChanged: (value) {
-                    setState(() => _shadowBlurRadius = value);
-                    _emit();
+                    shadowDataModelNotifier.value =
+                        shadowDataModel.copyWith(shadowBlurRadius: value);
+                    // setState(() => _shadowBlurRadius = value);
+                    // _emit();
                   },
                 ),
               ),
@@ -724,7 +952,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: Text(
-                _shadowBlurRadius.toInt().toString(),
+                shadowDataModel.shadowBlurRadius.toInt().toString(),
                 textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 14,
@@ -738,52 +966,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  void _pickShadowColor() async {
-    // 简化版颜色选择器
-    final result = await showDialog<Color>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('选择阴影颜色'),
-        content: SingleChildScrollView(
-          child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              Colors.black,
-              Colors.grey,
-              Colors.red,
-              Colors.orange,
-              Colors.yellow,
-              Colors.green,
-              Colors.blue,
-              Colors.purple,
-            ]
-                .map((color) => GestureDetector(
-                      onTap: () => Navigator.pop(context, color),
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: BoxDecoration(
-                          color: color,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: color == _shadowColor
-                                ? Colors.blue
-                                : Colors.grey,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ))
-                .toList(),
-          ),
-        ),
-      ),
+  void _pickShadowColor(Color color) async {
+    final result = await showColorPickerDialog(
+      context,
+      color,
+      title: const Text('选择颜色'),
+      pickersEnabled: {
+        ColorPickerType.wheel: true,
+        // ColorPickerType.accent: widget,
+        // ColorPickerType.primary: widget.dialogEnablePrimaryAccent,
+        ColorPickerType.custom: false,
+      },
     );
-    if (result != null) {
-      setState(() => _shadowColor = result);
-      _emit();
-    }
+    shadowDataModelNotifier.value =
+        shadowDataModelNotifier.value.copyWith(shadowColor: result);
   }
 
   Widget _buildThemeSection(Brightness currentTheme, ColorPreviewMode mode) {
@@ -834,11 +1030,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 mode: mode,
                 onModeChanged: (mode) {
                   charPreviewNotifier.value = Tuple2(Brightness.light, mode);
-                  // setState(() {
-                  //   _lightMode = mode;
-                  //   _currentTheme = Brightness.light; // 切换到浅色主题
-                  // });
-                  // _emit();
                 },
               ),
             ),
@@ -853,11 +1044,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 mode: mode,
                 onModeChanged: (mode) {
                   charPreviewNotifier.value = Tuple2(Brightness.dark, mode);
-                  // setState(() {
-                  //   _darkMode = mode;
-                  //   _currentTheme = Brightness.dark; // 切换到深色主题
-                  // });
-                  // _emit();
                 },
               ),
             ),
@@ -866,7 +1052,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
         const SizedBox(height: 20),
 
         // 天干地支颜色选择
-        _buildGanZhiColorPicker(),
+        _buildGanZhiColorPicker(currentTheme),
       ],
     );
   }
@@ -883,7 +1069,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     required ColorPreviewMode mode,
     required ValueChanged<ColorPreviewMode> onModeChanged,
   }) {
-    final bgColor = isLight ? Colors.white : Colors.grey[850]!;
+    final bgColor = isLight ? lightBackground : darkBackground;
     final textColor = isLight ? Colors.black87 : Colors.white;
     // 当前选中的主题卡片使用蓝色边框，否则使用灰色边框
     final borderColor = isCurrentTheme
@@ -946,11 +1132,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
             label: '彩色',
             isSelected: mode == ColorPreviewMode.colorful,
             textColor: isLight
-                ? colorfulLightMapper['甲']! // 浅色主题使用"甲"的颜色
-                : colorfulDarkMapper['甲']!, // 深色主题使用"甲"的颜色
+                ? colorfulLightMapper.entries.first.value // 浅色主题使用"甲"的颜色
+                : colorfulDarkMapper.entries.first.value, // 深色主题使用"甲"的颜色
             circleColor: isLight
-                ? colorfulLightMapper['甲']! // 浅色主题使用"甲"的颜色
-                : colorfulDarkMapper['甲']!, // 深色主题使用"甲"的颜色
+                ? colorfulLightMapper.entries.first.value // 浅色主题使用"甲"的颜色
+                : colorfulDarkMapper.entries.first.value, // 深色主题使用"甲"的颜色
             onTap: () => onModeChanged(ColorPreviewMode.colorful),
           ),
         ],
@@ -1009,19 +1195,14 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  Widget _buildGanZhiColorPicker() {
-    final ganList = TianGan.values
-        .where((g) => g != TianGan.KONG_WANG)
-        .map((g) => g.value)
-        .toList();
-
-    // 根据当前主题设置背景色和文字颜色
+  Widget _buildGanZhiColorPicker(Brightness currentTheme) {
+    List<String> list = widget.values;
 
     final textColor =
-        _currentTheme == Brightness.light ? Colors.black87 : Colors.white;
-    final borderColor = _currentTheme == Brightness.light
-        ? Colors.grey.shade300
-        : Colors.grey.shade700;
+        currentTheme == Brightness.light ? Colors.black87 : Colors.white;
+    final borderColor = currentTheme == Brightness.light
+        ? Colors.grey.shade700
+        : Colors.grey.shade300;
 
     return ValueListenableBuilder(
         valueListenable: colorMapperDataModelNotifier,
@@ -1030,8 +1211,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
               valueListenable: charPreviewNotifier,
               builder: (ctx, tuple2, _) {
                 final bgColor = tuple2.item1 == Brightness.light
-                    ? Colors.grey[50]!
-                    : Colors.grey[850]!;
+                    ? lightBackground
+                    : darkBackground;
                 Map<String, Color> textColorMapper =
                     mapper.getBy(theme: tuple2.item1, mode: tuple2.item2);
                 return Container(
@@ -1045,7 +1226,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     spacing: 8,
                     runSpacing: 12,
                     alignment: WrapAlignment.start,
-                    children: ganList
+                    children: list
                         .map((char) => Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
