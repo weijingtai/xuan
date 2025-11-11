@@ -39,21 +39,6 @@ class EditorSidebarV2 extends StatelessWidget {
           child: ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              // 主题编辑与预览（替换原“全局字体设置部分”）
-              const ThemeEditPreviewSidebar(),
-
-              const Divider(height: 32),
-
-              // 柱间分隔线配置区
-              _DividerConfigSection(
-                cardStyle: cardStyle,
-                onDividerTypeChanged: viewModel.updateDividerType,
-                onDividerColorChanged: viewModel.updateDividerColor,
-                onDividerThicknessChanged: viewModel.updateDividerThickness,
-              ),
-
-              const Divider(height: 32),
-
               // 行信息管理区
               _RowConfigSection(
                 rowConfigs: rowConfigs,
@@ -78,6 +63,20 @@ class EditorSidebarV2 extends StatelessWidget {
                     shadowBlurRadius: updatedConfig.shadowBlurRadius,
                   );
                 },
+              ),
+              const Divider(height: 32),
+
+              // 主题编辑与预览（替换原“全局字体设置部分”）
+              const ThemeEditPreviewSidebar(),
+
+              const Divider(height: 32),
+
+              // 柱间分隔线配置区
+              _DividerConfigSection(
+                cardStyle: cardStyle,
+                onDividerTypeChanged: viewModel.updateDividerType,
+                onDividerColorChanged: viewModel.updateDividerColor,
+                onDividerThicknessChanged: viewModel.updateDividerThickness,
               ),
             ],
           ),

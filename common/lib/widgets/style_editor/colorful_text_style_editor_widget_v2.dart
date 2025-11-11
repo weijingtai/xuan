@@ -2,7 +2,6 @@ import 'package:common/enums/enum_tian_gan.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
-import 'dart:math' as math;
 import '../../models/text_style_config.dart';
 import '../../const_resources_mapper.dart';
 
@@ -113,7 +112,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
   double _shadowBlurRadius = 10;
   Color _shadowColor = Colors.black;
   double _shadowOpacity = 0.65;
-  double _shadowAngle = math.pi / 4; // 默认 45 度
+  double _shadowOffsetX = 5.0; // 默认 X 轴偏移
+  double _shadowOffsetY = 5.0; // 默认 Y 轴偏移
 
   final ValueNotifier<Tuple2<Brightness, ColorPreviewMode>>
       charPreviewNotifier =
@@ -181,7 +181,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
   void initState() {
     super.initState();
     _initializeFromStyle();
-    _initializePerCharColors();
 
     colorMapperDataModelNotifier = ValueNotifier(
       ColorMapperDataModel(
@@ -208,56 +207,13 @@ class _ColorfulTextStyleEditorV2EnhancedState
       _shadowColor = shadow.color;
       _shadowBlurRadius = shadow.blurRadius;
       _shadowOpacity = shadow.color.a;
-      // 计算阴影角度
-      _shadowAngle = math.atan2(shadow.offset.dy, shadow.offset.dx);
+      // 直接提取 X/Y 偏移
+      _shadowOffsetX = shadow.offset.dx;
+      _shadowOffsetY = shadow.offset.dy;
     }
-  }
-
-  void _initializePerCharColors() {
-    // 从 initialConfig 恢复，或使用默认 mapper
-    final config = widget.initialConfig;
-
-    // if (config?.perCharColorsLight != null) {
-    //   _perCharColorsLight = config!.perCharColorsLight!.map(
-    //     (k, v) => MapEntry(k, _parseColor(v) ?? colorfulLightMapper[k]!),
-    //   );
-    // } else {
-    //   // 默认使用彩色模式的颜色映射
-    //   _perCharColorsLight = Map.from(colorfulLightMapper);
-    // }
-
-    // if (config?.perCharColorsDark != null) {
-    //   _perCharColorsDark = config!.perCharColorsDark!.map(
-    //     (k, v) => MapEntry(k, _parseColor(v) ?? colorfulDarkMapper[k]!),
-    //   );
-    // } else {
-    //   // 默认使用彩色模式的颜色映射
-    //   _perCharColorsDark = Map.from(colorfulDarkMapper);
-    // }
-  }
-
-  Color? _parseColor(String hex) {
-    if (hex.isEmpty) return null;
-    final normalized = hex.replaceAll('#', '');
-    if (normalized.length == 8) {
-      final value = int.tryParse(normalized, radix: 16);
-      if (value == null) return null;
-      return Color(value);
-    }
-    if (normalized.length == 6) {
-      final value = int.tryParse(normalized, radix: 16);
-      if (value == null) return null;
-      return Color(0xFF000000 | value);
-    }
-    return null;
   }
 
   void _emit() {
-    // 计算阴影偏移
-    final shadowDistance = _shadowBlurRadius;
-    final offsetX = shadowDistance * math.cos(_shadowAngle);
-    final offsetY = shadowDistance * math.sin(_shadowAngle);
-
     final style = TextStyle(
       fontFamily: _fontFamily == 'System' ? null : _fontFamily,
       fontSize: _fontSize,
@@ -273,7 +229,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ? [
               Shadow(
                 color: _shadowColor.withValues(alpha: _shadowOpacity),
-                offset: Offset(offsetX, offsetY),
+                offset: Offset(_shadowOffsetX, _shadowOffsetY),
                 blurRadius: _shadowBlurRadius,
               ),
             ]
@@ -454,16 +410,21 @@ class _ColorfulTextStyleEditorV2EnhancedState
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
             Expanded(
-              child: Slider(
-                value: _fontSize,
-                min: 8,
-                max: 64,
-                divisions: 56,
-                activeColor: Colors.blue.shade600,
-                onChanged: (value) {
-                  setState(() => _fontSize = value);
-                  _emit();
-                },
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Colors.blue.shade600,
+                  thumbColor: Colors.blue.shade600,
+                ),
+                child: Slider(
+                  value: _fontSize,
+                  min: 8,
+                  max: 64,
+                  divisions: 56,
+                  onChanged: (value) {
+                    setState(() => _fontSize = value);
+                    _emit();
+                  },
+                ),
               ),
             ),
             Container(
@@ -498,6 +459,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
     return labels[weight] ?? 'Regular';
   }
 
+  /// 构建“阴影”设置区。
+  /// 功能：开关阴影、展示预览、选择颜色与不透明度。
+  /// 返回：用于渲染阴影设置的 Widget。
   Widget _buildShadowSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -518,7 +482,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
               scale: 1.2,
               child: Switch(
                 value: _shadowEnabled,
-                activeColor: Colors.blue.shade600,
+                activeTrackColor: Colors.blue.shade600,
                 onChanged: (value) {
                   setState(() => _shadowEnabled = value);
                   _emit();
@@ -530,47 +494,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
         const SizedBox(height: 16),
 
         if (_shadowEnabled) ...[
-          // 阴影预览框
+          // 阴影预览框（简洁布局）
           _buildShadowPreview(),
-          const SizedBox(height: 20),
-
-          // 模糊半径
-          Row(
-            children: [
-              const Text(
-                '模糊半径',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              Expanded(
-                child: Slider(
-                  value: _shadowBlurRadius,
-                  min: 0,
-                  max: 30,
-                  divisions: 30,
-                  activeColor: Colors.blue.shade600,
-                  onChanged: (value) {
-                    setState(() => _shadowBlurRadius = value);
-                    _emit();
-                  },
-                ),
-              ),
-              Container(
-                width: 50,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Text(
-                  _shadowBlurRadius.toInt().toString(),
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
+          // 收紧间距，减少布局压力
           const SizedBox(height: 16),
 
           // 阴影颜色
@@ -605,16 +531,21 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
               Expanded(
-                child: Slider(
-                  value: _shadowOpacity,
-                  min: 0,
-                  max: 1,
-                  divisions: 100,
-                  activeColor: Colors.blue.shade600,
-                  onChanged: (value) {
-                    setState(() => _shadowOpacity = value);
-                    _emit();
-                  },
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    activeTrackColor: Colors.blue.shade600,
+                    thumbColor: Colors.blue.shade600,
+                  ),
+                  child: Slider(
+                    value: _shadowOpacity,
+                    min: 0,
+                    max: 1,
+                    divisions: 100,
+                    onChanged: (value) {
+                      setState(() => _shadowOpacity = value);
+                      _emit();
+                    },
+                  ),
                 ),
               ),
               Container(
@@ -639,103 +570,171 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
+  /// 阴影预览与 X/Y 轴控制区（简洁版）。
+  /// 功能：顶部 X 轴滑块，中间大预览区域，右侧 Y 轴垂直滑块，底部模糊半径控制。
+  /// 返回：用于渲染阴影预览的 Widget。
   Widget _buildShadowPreview() {
-    return Container(
-      height: 220,
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300, width: 2),
-        boxShadow: const [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // 预览文字
-          Center(
-            child: Text(
-              '效果',
-              style: TextStyle(
-                fontSize: 56,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                shadows: [
-                  Shadow(
-                    color: _shadowColor.withValues(alpha: _shadowOpacity),
-                    offset: Offset(
-                      _shadowBlurRadius * math.cos(_shadowAngle),
-                      _shadowBlurRadius * math.sin(_shadowAngle),
-                    ),
-                    blurRadius: _shadowBlurRadius,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 顶部：X 轴滑块
+        Row(
+          children: [
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 6,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 10,
                   ),
-                ],
+                  activeTrackColor: Colors.blue.shade600,
+                  thumbColor: Colors.blue.shade600,
+                  inactiveTrackColor: Colors.grey.shade300,
+                ),
+                child: Slider(
+                  value: _shadowOffsetX.clamp(-15.0, 15.0),
+                  min: -15,
+                  max: 15,
+                  divisions: 60,
+                  onChanged: (value) {
+                    setState(() => _shadowOffsetX = value);
+                    _emit();
+                  },
+                ),
               ),
             ),
-          ),
+          ],
+        ),
+        const SizedBox(height: 12),
 
-          // 角度控制滑块（右侧）
-          Positioned(
-            right: 20,
-            top: 10,
-            bottom: 10,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.blue.shade300, width: 2),
+        // 中部：预览区域 + Y 轴滑块
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            // 中间：大预览区域
+            Expanded(
+              child: Container(
+                height: 200,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Colors.grey.shade100,
+                      Colors.grey.shade50,
+                    ],
                   ),
-                  child: RotatedBox(
-                    quarterTurns: 3,
-                    child: SizedBox(
-                      width: 160,
-                      child: Slider(
-                        value: _shadowAngle,
-                        min: 0,
-                        max: 2 * math.pi,
-                        activeColor: Colors.blue.shade600,
-                        onChanged: (value) {
-                          setState(() => _shadowAngle = value);
-                          _emit();
-                        },
-                      ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade300, width: 2),
+                ),
+                child: Center(
+                  child: Text(
+                    '甲',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      shadows: [
+                        Shadow(
+                          color: _shadowColor.withValues(alpha: _shadowOpacity),
+                          offset: Offset(_shadowOffsetX, _shadowOffsetY),
+                          blurRadius: _shadowBlurRadius,
+                        ),
+                      ],
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
 
-          // 角度指示器（顶部提示）
-          Positioned(
-            top: 12,
-            left: 12,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            const SizedBox(width: 16),
+
+            // 右侧：Y 轴垂直滑块
+            SizedBox(
+              height: 200,
+              child: RotatedBox(
+                quarterTurns: 3,
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 6,
+                    thumbShape: const RoundSliderThumbShape(
+                      enabledThumbRadius: 10,
+                    ),
+                    activeTrackColor: Colors.blue.shade600,
+                    thumbColor: Colors.blue.shade600,
+                    inactiveTrackColor: Colors.grey.shade300,
+                  ),
+                  child: Slider(
+                    value: _shadowOffsetY.clamp(-15.0, 15.0),
+                    min: -15,
+                    max: 15,
+                    divisions: 60,
+                    onChanged: (value) {
+                      setState(() => _shadowOffsetY = value);
+                      _emit();
+                    },
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // 底部：模糊半径控制
+        Row(
+          children: [
+            const Text(
+              '模糊半径',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Colors.black87,
+              ),
+            ),
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  trackHeight: 4,
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 8,
+                  ),
+                  activeTrackColor: Colors.blue.shade600,
+                  thumbColor: Colors.blue.shade600,
+                  inactiveTrackColor: Colors.grey.shade300,
+                ),
+                child: Slider(
+                  value: _shadowBlurRadius.clamp(0.0, 30.0),
+                  min: 0,
+                  max: 30,
+                  divisions: 60,
+                  onChanged: (value) {
+                    setState(() => _shadowBlurRadius = value);
+                    _emit();
+                  },
+                ),
+              ),
+            ),
+            Container(
+              width: 50,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.shade200),
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade300),
               ),
               child: Text(
-                '角度: ${(_shadowAngle * 180 / math.pi).toInt()}°',
-                style: TextStyle(
-                  fontSize: 12,
+                _shadowBlurRadius.toInt().toString(),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
                 ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -787,7 +786,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     }
   }
 
-  Widget _buildThemeSection(Brightness _currentTheme, ColorPreviewMode mode) {
+  Widget _buildThemeSection(Brightness currentTheme, ColorPreviewMode mode) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -811,7 +810,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 border: Border.all(color: Colors.blue.shade300),
               ),
               child: Text(
-                '当前: ${_getCurrentModeLabel(_currentTheme, mode)}',
+                '当前: ${_getCurrentModeLabel(currentTheme, mode)}',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -831,7 +830,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
               child: _buildThemeCard(
                 title: '浅色',
                 isLight: true,
-                isCurrentTheme: _currentTheme == Brightness.light,
+                isCurrentTheme: currentTheme == Brightness.light,
                 mode: mode,
                 onModeChanged: (mode) {
                   charPreviewNotifier.value = Tuple2(Brightness.light, mode);
@@ -850,7 +849,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
               child: _buildThemeCard(
                 title: '深色',
                 isLight: false,
-                isCurrentTheme: _currentTheme == Brightness.dark,
+                isCurrentTheme: currentTheme == Brightness.dark,
                 mode: mode,
                 onModeChanged: (mode) {
                   charPreviewNotifier.value = Tuple2(Brightness.dark, mode);
@@ -872,8 +871,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  String _getCurrentModeLabel(Brightness _currentTheme, ColorPreviewMode mode) {
-    // final mode = _currentTheme == Brightness.light ? mode : mode;
+  String _getCurrentModeLabel(Brightness currentTheme, ColorPreviewMode mode) {
+    // final mode = currentTheme == Brightness.light ? mode : mode;
     return mode == ColorPreviewMode.pure ? '纯色' : '彩色';
   }
 
@@ -901,8 +900,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
         boxShadow: [
           BoxShadow(
             color: isCurrentTheme
-                ? Colors.blue.withOpacity(0.2)
-                : Colors.black.withOpacity(0.1),
+                ? Colors.blue.withValues(alpha: 0.2)
+                : Colors.black.withValues(alpha: 0.1),
             blurRadius: isCurrentTheme ? 8 : 6,
             offset: const Offset(0, 2),
           ),
@@ -978,7 +977,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ),
           borderRadius: BorderRadius.circular(8),
           color: isSelected
-              ? Colors.blue.shade50.withOpacity(0.3)
+              ? Colors.blue.shade50.withValues(alpha: 0.3)
               : Colors.transparent,
         ),
         child: Row(
@@ -1017,9 +1016,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
         .toList();
 
     // 根据当前主题设置背景色和文字颜色
-    final bgColor = _currentTheme == Brightness.light
-        ? Colors.grey[50]!
-        : Colors.grey[850]!;
+
     final textColor =
         _currentTheme == Brightness.light ? Colors.black87 : Colors.white;
     final borderColor = _currentTheme == Brightness.light
@@ -1032,6 +1029,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
           return ValueListenableBuilder(
               valueListenable: charPreviewNotifier,
               builder: (ctx, tuple2, _) {
+                final bgColor = tuple2.item1 == Brightness.light
+                    ? Colors.grey[50]!
+                    : Colors.grey[850]!;
                 Map<String, Color> textColorMapper =
                     mapper.getBy(theme: tuple2.item1, mode: tuple2.item2);
                 return Container(
@@ -1119,16 +1119,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
     colorMapperDataModelNotifier.value = colorMapperDataModelNotifier.value
         .update(
             brightness: theme, mode: previewMode, char: char, color: result);
-    if (result != null) {
-      // setState(() {
-      //   if (_currentTheme == Brightness.light) {
-      //     _perCharColorsLight[char] = result;
-      //   } else {
-      //     _perCharColorsDark[char] = result;
-      //   }
-      // });
-      // _emit();
-    }
   }
 }
 

@@ -1311,66 +1311,6 @@ class _ColorfulTextStyleEditorWidgetV2State
                 onPerCharPureColorChanged: widget.onPerCharPureColorChanged,
               ),
               const SizedBox(height: 12),
-              Row(
-                children: [
-                  const Text('纯色'),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () async {
-                      final picked = await showColorPickerDialog(
-                        context,
-                        _color,
-                        title: const Text('选择颜色'),
-                        pickersEnabled: {
-                          ColorPickerType.wheel: true,
-                          ColorPickerType.accent:
-                              widget.dialogEnablePrimaryAccent,
-                          ColorPickerType.primary:
-                              widget.dialogEnablePrimaryAccent,
-                          ColorPickerType.custom: false,
-                        },
-                      );
-                      setState(() => _color = picked);
-                      _emit();
-                    },
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: _color,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .dividerColor
-                              .withValues(alpha: 0.4),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: () async {
-                      final picked = await showColorPickerDialog(
-                        context,
-                        _color,
-                        title: const Text('选择颜色'),
-                        pickersEnabled: {
-                          ColorPickerType.wheel: true,
-                          ColorPickerType.accent:
-                              widget.dialogEnablePrimaryAccent,
-                          ColorPickerType.primary:
-                              widget.dialogEnablePrimaryAccent,
-                          ColorPickerType.custom: false,
-                        },
-                      );
-                      setState(() => _color = picked);
-                      _emit();
-                    },
-                    child: const Text('选择颜色'),
-                  ),
-                ],
-              ),
-
               // 将颜色预设调色板移动到主题区域下方
               // Wrap(
               //   spacing: 8,
@@ -1413,6 +1353,7 @@ class _ColorfulTextStyleEditorWidgetV2State
               //       ),
               //   ],
               // ),
+            
             ],
           ),
         ),
