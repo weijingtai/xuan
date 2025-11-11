@@ -1,3 +1,4 @@
+import 'package:common/models/text_style_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import '../editable_fourzhu_card/text_groups.dart';
@@ -17,7 +18,7 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 /// - [onChanged]: Callback invoked with updated `TextStyle` on any change.
 class TextStyleEditorWidget extends StatefulWidget {
   final String label;
-  final TextStyle? initialStyle;
+  final FontStyleDataModel initialFontStyle;
   final ValueChanged<TextStyle> onChanged;
   // Which group this editor represents (used for per-character callbacks)
   final TextGroup? group;
@@ -38,7 +39,7 @@ class TextStyleEditorWidget extends StatefulWidget {
   const TextStyleEditorWidget({
     super.key,
     required this.label,
-    this.initialStyle,
+    required this.initialFontStyle,
     required this.onChanged,
     this.group,
     this.onPerCharPureColorChanged,

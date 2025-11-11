@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/drag_payloads.dart';
 import '../models/row_strategy.dart';
+import '../models/text_style_config.dart';
 
 /// 四柱卡片添加面板
 ///
@@ -107,11 +108,12 @@ class _KongWangRowDraggable extends StatelessWidget {
   /// 返回：携带 `RowInfoPayload.kongWang` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    final payload = RowInfoPayload.kongWang(
-      label: '空亡',
+    final payload = RowInfoPayload(
+      rowType: RowType.kongWang,
+      rowLabel: '空亡',
       // 在没有明确 perPillarValues 覆盖的情况下，使用策略计算各柱的空亡。
-      values: const {},
       strategy: KongWangRowStrategy(),
+      config: TextStyleConfig.defaultConfig,
     );
     return Draggable<RowInfoPayload>(
       data: payload,
@@ -138,9 +140,10 @@ class _RowSeparatorDraggable extends StatelessWidget {
   /// 返回：携带 `RowInfoPayload(rowType: RowType.separator)` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    const payload = RowInfoPayload(
+    var payload = RowInfoPayload(
       rowType: RowType.separator,
       rowLabel: '分割线',
+      config: TextStyleConfig.defaultConfig,
     );
     return Draggable<RowInfoPayload>(
       data: payload,

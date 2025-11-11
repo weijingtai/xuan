@@ -17,15 +17,15 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
   // final String label;
   final RowType type;
   final List<String> values;
-  final TextStyle? initialStyle;
-  final ValueChanged<TextStyle> onChanged;
+  // final TextStyle? initialStyle;
+  final ValueChanged<TextStyleConfig> onChanged;
   final TextStyleConfig? initialConfig;
 
   const ColorfulTextStyleEditorV2Enhanced({
     super.key,
     // required this.label,
     required this.type,
-    this.initialStyle,
+    // this.initialStyle,
     required this.onChanged,
     this.initialConfig,
     required this.values,
@@ -39,12 +39,10 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
 class _ColorfulTextStyleEditorV2EnhancedState
     extends State<ColorfulTextStyleEditorV2Enhanced> {
   late final ValueNotifier<FontStyleDataModel> fontStyleDataModelNotifier;
-  late String _fontFamily;
-  late double _fontSize;
-  late FontWeight _fontWeight;
+  late final ValueNotifier<ColorMapperDataModel> colorMapperDataModelNotifier;
 
   // 预览字符索引（用于切换显示不同的字符）
-  ValueNotifier<int> _previewCharIndexNotifier = ValueNotifier(0);
+  final ValueNotifier<int> _previewCharIndexNotifier = ValueNotifier(0);
   // int _previewCharIndex = 0;
   late final ValueNotifier<TextShadowDataModel> shadowDataModelNotifier;
   final ValueNotifier<Tuple2<Brightness, ColorPreviewMode>>
@@ -62,8 +60,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
 
     super.dispose();
   }
-
-  late final ValueNotifier<ColorMapperDataModel> colorMapperDataModelNotifier;
 
   TextShadowDataModel get defaultShadow => TextShadowDataModel(
         shadowEnabled: false,
@@ -130,14 +126,26 @@ class _ColorfulTextStyleEditorV2EnhancedState
       fontFamily: 'sans-serif',
       fontSize: 16,
       fontWeight: FontWeight.normal,
-    ));
-    shadowDataModelNotifier = ValueNotifier(defaultShadow);
+    ))
+      ..addListener(() => onFontChanged());
+    shadowDataModelNotifier = ValueNotifier(defaultShadow)
+      ..addListener(() => onFontChanged());
     colorMapperDataModelNotifier = ValueNotifier(
       ColorMapperDataModel(
         pureLightMapper: pureLightMapper,
         colorfulLightMapper: colorfulLightMapper,
         pureDarkMapper: pureDarkMapper,
         colorfulDarkMapper: colorfulDarkMapper,
+      ),
+    )..addListener(() => onFontChanged());
+  }
+
+  void onFontChanged() {
+    widget.onChanged(
+      TextStyleConfig(
+        colorMapperDataModel: colorMapperDataModelNotifier.value,
+        textShadowDataModel: shadowDataModelNotifier.value,
+        fontStyleDataModel: fontStyleDataModelNotifier.value,
       ),
     );
   }
@@ -242,10 +250,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: DropdownButton<String>(
-                      value: _fontFamily,
+                      value: fontStyleDataModel.fontFamily,
                       isExpanded: true,
                       underline: const SizedBox(),
-                      items: ['System', 'NotoSansSC-Regular', 'PingFang SC']
+                      items: [
+                        'System',
+                        'NotoSansSC-Regular',
+                        'PingFang SC',
+                        'sans-serif'
+                      ]
                           .map((font) => DropdownMenuItem(
                                 value: font,
                                 child: Text(font,
@@ -284,7 +297,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                       border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: DropdownButton<FontWeight>(
-                      value: _fontWeight,
+                      value: fontStyleDataModel.fontWeight,
                       isExpanded: true,
                       underline: const SizedBox(),
                       items: [
@@ -724,7 +737,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
             SizedBox(
               height: 200,
               child: RotatedBox(
-                quarterTurns: 3,
+                quarterTurns: 1,
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
                     trackHeight: 6,

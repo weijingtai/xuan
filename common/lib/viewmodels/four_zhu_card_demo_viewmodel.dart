@@ -12,6 +12,7 @@ import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
 import '../enums/layout_template_enums.dart';
+import '../models/text_style_config.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../viewmodels/editable_four_zhu_theme_controller.dart';
@@ -156,25 +157,31 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     // 在 v3 卡片中默认显示“表头行”（列标题），位于索引 0。
     // 后续数据行（天干、地支、纳音）依次排列在其后。
     rowListNotifier = ValueNotifier<List<RowInfoPayload>>([
-      const RowInfoPayload(
+      RowInfoPayload(
         rowType: RowType.columnHeaderRow,
+        config: TextStyleConfig.defaultConfig,
       ),
-      const RowInfoPayload(
+      RowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
+        config: TextStyleConfig.defaultConfig,
       ),
-      const RowInfoPayload(
+      RowInfoPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
+        config: TextStyleConfig.defaultConfig,
       ),
-      const RowInfoPayload(
+      RowInfoPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
+        config: TextStyleConfig.defaultConfig,
       ),
       // 新增：空亡信息行，使用策略驱动按需计算每柱值
-      RowInfoPayload.kongWang(
-        label: '空亡',
+      RowInfoPayload(
+        rowType: RowType.kongWang,
+        rowLabel: '空亡',
         strategy: KongWangRowStrategy(),
+        config: TextStyleConfig.defaultConfig,
       ),
     ]);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);

@@ -8,6 +8,7 @@ import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
 import '../../models/eight_chars.dart';
 import '../../enums/enum_jia_zi.dart';
+import '../../models/text_style_config.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../viewmodels/editable_four_zhu_theme_controller.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
@@ -134,11 +135,26 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
     ]);
 
     _rowListNotifier = ValueNotifier<List<RowInfoPayload>>([
-      const RowInfoPayload(rowType: RowType.columnHeaderRow),
-      const RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
-      const RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
-      const RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音'),
-      RowInfoPayload.kongWang(label: '空亡', strategy: KongWangRowStrategy()),
+      RowInfoPayload(
+          rowType: RowType.columnHeaderRow,
+          config: TextStyleConfig.defaultConfig),
+      RowInfoPayload(
+          rowType: RowType.heavenlyStem,
+          rowLabel: '天干',
+          config: TextStyleConfig.defaultConfig),
+      RowInfoPayload(
+          rowType: RowType.earthlyBranch,
+          rowLabel: '地支',
+          config: TextStyleConfig.defaultConfig),
+      RowInfoPayload(
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          config: TextStyleConfig.defaultConfig),
+      RowInfoPayload(
+          rowType: RowType.kongWang,
+          rowLabel: '空亡',
+          config: TextStyleConfig.defaultConfig),
+      // RowInfoPayload.kongWang(label: '空亡', strategy: KongWangRowStrategy()),
     ]);
 
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);

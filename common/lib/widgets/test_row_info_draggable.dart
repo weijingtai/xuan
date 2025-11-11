@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/drag_payloads.dart';
 import '../models/row_strategy.dart';
+import '../models/text_style_config.dart';
 
 /// Demo-only draggable for inserting a row info (e.g., 空亡) with values.
 class TestRowInfoDraggable extends StatelessWidget {
@@ -17,6 +18,7 @@ class TestRowInfoDraggable extends StatelessWidget {
       // In demo context without concrete pillar ids, keep empty and let strategy compute.
       perPillarValues: {},
       strategy: KongWangRowStrategy(),
+      config: TextStyleConfig.defaultConfig,
     );
 
     return Draggable<RowInfoPayload>(

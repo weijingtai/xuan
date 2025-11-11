@@ -4,7 +4,6 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../../const_resources_mapper.dart';
 import '../../models/text_style_config.dart';
 import '../editable_fourzhu_card/text_groups.dart';
-import 'text_style_editor_widget.dart';
 
 // Sentinel RGB used to signal shadow follows character color
 const int _kShadowFollowSentinelRGB = 0x00FEED;

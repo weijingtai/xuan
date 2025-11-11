@@ -9,7 +9,6 @@ import '../viewmodels/four_zhu_editor_view_model.dart';
 import 'row_style_editor_form.dart';
 import 'style_editor/theme_edit_preview_sidebar.dart';
 import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
-import 'style_editor/text_style_editor_widget.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
 ///
@@ -49,19 +48,15 @@ class EditorSidebarV2 extends StatelessWidget {
                   viewModel.updateRowStyle(
                     updatedConfig.type,
                     textStyleConfig: updatedConfig.textStyleConfig,
-                    fontFamily: updatedConfig.fontFamily,
-                    fontSize: updatedConfig.fontSize,
-                    colorHex: updatedConfig.textColorHex,
-                    fontWeight: updatedConfig.fontWeight,
                     textAlign: updatedConfig.textAlign,
                     padding: updatedConfig.padding,
                     borderType: updatedConfig.borderType,
                     borderColorHex: updatedConfig.borderColorHex,
                     // 阴影参数
-                    shadowColorHex: updatedConfig.shadowColorHex,
-                    shadowOffsetX: updatedConfig.shadowOffsetX,
-                    shadowOffsetY: updatedConfig.shadowOffsetY,
-                    shadowBlurRadius: updatedConfig.shadowBlurRadius,
+                    // shadowColorHex: updatedConfig.shadowColorHex,
+                    // shadowOffsetX: updatedConfig.shadowOffsetX,
+                    // shadowOffsetY: updatedConfig.shadowOffsetY,
+                    // shadowBlurRadius: updatedConfig.shadowBlurRadius,
                   );
                 },
               ),
@@ -440,65 +435,72 @@ class _CoreRowItemState extends State<_CoreRowItem> {
   /// 构建核心行样式编辑器：天干/地支使用彩色文本样式编辑器
   Widget _buildCoreRowEditor() {
     final label = _getRowTypeName(widget.config.type);
-    final initial = _configToTextStyle(widget.config);
+    // final initial = _configToTextStyle(widget.config);
     return ColorfulTextStyleEditorV2Enhanced(
       // label: '$label - 字体和阴影设置',
       type: widget.config.type,
-      initialStyle: initial,
+
+      // initialStyle: initial,
       initialConfig: widget.config.textStyleConfig,
       values: widget.config.type == RowType.heavenlyStem
           ? TianGan.values.take(10).map((e) => e.name).toList()
           : DiZhi.values.take(12).map((e) => e.name).toList(),
-      onChanged: (style) {
-        final updated = _applyTextStyleToConfig(widget.config, style);
-        widget.onInlineSave(updated);
+      onChanged: (TextStyleConfig style) {
+        // final updated = _applyTextStyleToConfig(widget.config, style);
+        // widget.onInlineSave(updated);
+        widget.onInlineSave(
+          widget.config.copyWith(
+            textStyleConfig: style,
+          ),
+        );
       },
     );
   }
 
-  /// 将 `RowConfig` 转换为 `TextStyle`。
-  ///
-  /// 优先使用 `config.textStyleConfig.toTextStyle()`，若不存在则回退到旧字段
-  ///（`fontFamily`、`fontSize`、`textColorHex`、`fontWeight`）的组合。该方法
-  /// 保证新旧样式存储结构均可编辑和展示。
-  ///
-  /// 特殊处理：对于天干/地支行，不传递颜色（保持 null），以便默认使用五行颜色。
-  TextStyle _configToTextStyle(RowConfig config) {
-    // 检查是否为天干/地支行（应该使用五行颜色）
-    final isGanZhiRow = config.type == RowType.heavenlyStem ||
-        config.type == RowType.earthlyBranch;
+  // /// 将 `RowConfig` 转换为 `TextStyle`。
+  // ///
+  // /// 优先使用 `config.textStyleConfig.toTextStyle()`，若不存在则回退到旧字段
+  // ///（`fontFamily`、`fontSize`、`textColorHex`、`fontWeight`）的组合。该方法
+  // /// 保证新旧样式存储结构均可编辑和展示。
+  // ///
+  // /// 特殊处理：对于天干/地支行，不传递颜色（保持 null），以便默认使用五行颜色。
+  // TextStyle _configToTextStyle(RowConfig config) {
+  //   // 检查是否为天干/地支行（应该使用五行颜色）
+  //   final isGanZhiRow = config.type == RowType.heavenlyStem ||
+  //       config.type == RowType.earthlyBranch;
 
-    if (config.textStyleConfig != null) {
-      final style = config.textStyleConfig!.toTextStyle();
-      // 如果是天干/地支行，去除颜色信息，让 V3 Card 使用五行颜色
-      // 注意：copyWith(color: null) 不会真正设置为 null，需要创建新的 TextStyle
-      if (isGanZhiRow) {
-        return TextStyle(
-          fontFamily: style.fontFamily,
-          fontSize: style.fontSize,
-          fontWeight: style.fontWeight,
-          fontStyle: style.fontStyle,
-          letterSpacing: style.letterSpacing,
-          wordSpacing: style.wordSpacing,
-          height: style.height,
-          shadows: style.shadows,
-          decoration: style.decoration,
-          decorationColor: style.decorationColor,
-          decorationThickness: style.decorationThickness,
-          // color 明确不传递，保持 null
-        );
-      }
-      return style;
-    }
+  //   if (config.textStyleConfig != null) {
+  //     final style = config.textStyleConfig!.toTextStyle();
+  //     // 如果是天干/地支行，去除颜色信息，让 V3 Card 使用五行颜色
+  //     // 注意：copyWith(color: null) 不会真正设置为 null，需要创建新的 TextStyle
+  //     if (isGanZhiRow) {
+  //       return TextStyle(
+  //         fontFamily: style.fontFamily,
+  //         fontSize: style.fontSize,
+  //         fontWeight: style.fontWeight,
+  //         fontStyle: style.fontStyle,
+  //         letterSpacing: style.letterSpacing,
+  //         wordSpacing: style.wordSpacing,
+  //         height: style.height,
+  //         shadows: style.shadows,
+  //         decoration: style.decoration,
+  //         decorationColor: style.decorationColor,
+  //         decorationThickness: style.decorationThickness,
+  //         // color 明确不传递，保持 null
+  //       );
+  //     }
+  //     return style;
+  //   }
 
-    // 从旧字段构造，天干/地支行不传递颜色
-    return TextStyle(
-      fontFamily: config.fontFamily,
-      fontSize: config.fontSize,
-      color: isGanZhiRow ? null : _tryParseColor(config.textColorHex),
-      fontWeight: _stringToFontWeight(config.fontWeight),
-    );
-  }
+  //   // 从旧字段构造，天干/地支行不传递颜色
+  //   return config.textStyleConfig!.toTextStyle();
+  //   // return TextStyle(
+  //   //   fontFamily: config.textStyleConfig!.fontStyleDataModel.fontFamily,
+  //   //   fontSize: config.textStyleConfig!.fontStyleDataModel.fontSize,
+  //   //   color: isGanZhiRow ? null : config.textStyleConfig!,
+  //   //   fontWeight: config.textStyleConfig!.fontStyleDataModel.fontWeight,
+  //   // );
+  // }
 
   /// 将 `TextStyle` 应用到 `RowConfig` 并保持向后兼容。
   ///
@@ -506,6 +508,7 @@ class _CoreRowItemState extends State<_CoreRowItem> {
   /// - 始终写入 `textStyleConfig`（通过 `TextStyleConfig.fromTextStyle`）。
   /// - 同步旧字段（字体、字号、颜色、字重、阴影相关），以兼容历史数据和 UI。
   /// - 若提供了阴影，提取首个阴影并写回旧阴影字段。
+  @Deprecated("Use TextStyleConfig instead")
   RowConfig _applyTextStyleToConfig(RowConfig config, TextStyle style) {
     // 提取阴影信息（如果存在）
     String? shadowHex;
@@ -521,16 +524,11 @@ class _CoreRowItemState extends State<_CoreRowItem> {
     return config.copyWith(
       // 同步新版 TextStyleConfig
       textStyleConfig: TextStyleConfig.fromTextStyle(style),
-      // 同步旧字段，保持向后兼容
-      fontFamily: style.fontFamily,
-      fontSize: style.fontSize,
-      textColorHex: _colorToHex(style.color),
-      fontWeight: _fontWeightToString(style.fontWeight),
       // 阴影字段
-      shadowColorHex: shadowHex,
-      shadowOffsetX: shadowX,
-      shadowOffsetY: shadowY,
-      shadowBlurRadius: shadowBlur,
+      // shadowColorHex: shadowHex,
+      // shadowOffsetX: shadowX,
+      // shadowOffsetY: shadowY,
+      // shadowBlurRadius: shadowBlur,
     );
   }
 
@@ -747,15 +745,33 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     if (type == RowType.hiddenStems ||
         type == RowType.hiddenStemsTenGod ||
         type == RowType.tenGod) {
-      final initial = _configToTextStyle(widget.config);
-      return TextStyleEditorWidget(
-        label: label,
-        initialStyle: initial,
+      final valuse = [
+        "正印",
+        "偏印",
+        "正官",
+        "七杀",
+        "食神",
+        "伤官",
+        "比肩",
+        "劫财",
+        "正财",
+        "偏财"
+      ];
+
+      // final initial = _configToTextStyle(widget.config);
+      return ColorfulTextStyleEditorV2Enhanced(
+        type: type,
+        values: valuse,
+        // label: label,
+        // initialFontStyle: widget.config.fontStyleDataModel,
         onChanged: (style) {
-          final updated = _applyTextStyleToConfig(widget.config, style);
-          widget.onInlineSave(updated);
+          // final updated = _applyTextStyleToConfig(widget.config, style);
+
+          widget.onInlineSave(widget.config.copyWith(
+            textStyleConfig: style,
+          ));
         },
-        showInlineWheel: true,
+        // showInlineWheel: true,
       );
     }
     return RowStyleEditorForm(
@@ -768,15 +784,15 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
   ///
   /// 与前文逻辑保持一致：优先使用 `textStyleConfig` 转换，若为空则回退到
   /// 旧字段组合，确保新旧数据结构的编辑与展示一致性。
-  TextStyle _configToTextStyle(RowConfig config) {
-    return config.textStyleConfig?.toTextStyle() ??
-        TextStyle(
-          fontFamily: config.fontFamily,
-          fontSize: config.fontSize,
-          color: _tryParseColor(config.textColorHex),
-          fontWeight: _stringToFontWeight(config.fontWeight),
-        );
-  }
+  // TextStyle _configToTextStyle(RowConfig config) {
+  //   return config.textStyleConfig?.toTextStyle() ??
+  //       TextStyle(
+  //         fontFamily: config.fontFamily,
+  //         fontSize: config.fontSize,
+  //         color: _tryParseColor(config.textColorHex),
+  //         fontWeight: _stringToFontWeight(config.fontWeight),
+  //       );
+  // }
 
   /// 将 `TextStyle` 应用到 `RowConfig` 并保持向后兼容（第二处）。
   ///
@@ -797,16 +813,11 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     return config.copyWith(
       // 同步新版 TextStyleConfig
       textStyleConfig: TextStyleConfig.fromTextStyle(style),
-      // 同步旧字段，保持向后兼容
-      fontFamily: style.fontFamily,
-      fontSize: style.fontSize,
-      textColorHex: _colorToHex(style.color),
-      fontWeight: _fontWeightToString(style.fontWeight),
-      // 阴影字段
-      shadowColorHex: shadowHex,
-      shadowOffsetX: shadowX,
-      shadowOffsetY: shadowY,
-      shadowBlurRadius: shadowBlur,
+      // // 阴影字段
+      // shadowColorHex: shadowHex,
+      // shadowOffsetX: shadowX,
+      // shadowOffsetY: shadowY,
+      // shadowBlurRadius: shadowBlur,
     );
   }
 

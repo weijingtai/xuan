@@ -33,7 +33,15 @@ class EditorWorkspace extends StatefulWidget {
 
 class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 本地主题开关：true 为 Dark，false 为 Light。
-  bool _isDarkLocal = false;
+
+  final ValueNotifier<Brightness> _brightnessNotifier =
+      ValueNotifier<Brightness>(Brightness.light);
+  final ValueNotifier<ColorPreviewMode> _colorPreviewModeNotifier =
+      ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
+  // bool _isDarkLocal = false;
+
+  /// 启用色彩模式开关：true 为启用，false 为禁用。
+  // bool _enableColorfulMode = false;
 
   /// 亮度初始化标记：保证只在首轮依赖变更时读取外层主题亮度一次。
   bool _initializedBrightness = false;
@@ -70,7 +78,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initializedBrightness) {
-      _isDarkLocal = Theme.of(context).brightness == Brightness.dark;
+      _brightnessNotifier.value = Theme.of(context).brightness;
       _initializedBrightness = true;
     }
   }
@@ -91,6 +99,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 返回：无
   @override
   void dispose() {
+    // 释放 Notifier 资源
+    _brightnessNotifier.dispose();
+    _colorPreviewModeNotifier.dispose();
     _pillarsNotifier.dispose();
     _rowListNotifier.dispose();
     _paddingNotifier.dispose();
@@ -102,8 +113,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 返回：组件树
   @override
   Widget build(BuildContext context) {
-    final ThemeData localTheme =
-        _isDarkLocal ? EditorTheme.darkTheme : EditorTheme.lightTheme;
+    final ThemeData localTheme = _brightnessNotifier.value == Brightness.dark
+        ? EditorTheme.darkTheme
+        : EditorTheme.lightTheme;
 
     return Consumer<FourZhuEditorViewModel>(
       builder: (context, viewModel, _) {
@@ -137,8 +149,30 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 ),
                 // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
                 Switch(
-                  value: _isDarkLocal,
-                  onChanged: (dark) => setState(() => _isDarkLocal = dark),
+                  value: _brightnessNotifier.value == Brightness.dark,
+                  onChanged: (dark) => setState(() => _brightnessNotifier
+                      .value = dark ? Brightness.dark : Brightness.light),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.invert_colors),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '启用色彩模式',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
+                Switch(
+                  value: _colorPreviewModeNotifier.value ==
+                      ColorPreviewMode.colorful,
+                  onChanged: (dark) => setState(() => _colorPreviewModeNotifier
+                          .value =
+                      dark ? ColorPreviewMode.colorful : ColorPreviewMode.pure),
                 ),
               ],
             ),
@@ -149,6 +183,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 child: Container(
                   child: Center(
                     child: EditableFourZhuCardV3(
+                      brightnessNotifier: _brightnessNotifier,
+                      colorPreviewModeNotifier: _colorPreviewModeNotifier,
                       pillarsNotifier: _pillarsNotifier,
                       rowListNotifier: _rowListNotifier,
                       paddingNotifier: _paddingNotifier,
@@ -161,7 +197,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       globalFontSize: globalSize,
                       globalFontColor: globalColor,
                       // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
-                      groupTextStyles: _groupTextStyles,
+                      // groupTextStyles: _groupTextStyles,
                       // 🔧 修复：启用色彩模式，允许字符映射生效
                       colorfulMode: true,
                     ),
@@ -236,12 +272,37 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 参数：无
   /// 返回：行载荷列表
   List<RowInfoPayload> _buildDefaultRows() {
+    // var defaultTextStyleConfig =
     return [
-      const RowInfoPayload(rowType: RowType.columnHeaderRow),
-      const RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干'),
-      const RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支'),
-      const RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音'),
-      RowInfoPayload.kongWang(label: '空亡', strategy: KongWangRowStrategy()),
+      RowInfoPayload(
+        rowType: RowType.columnHeaderRow,
+        config: TextStyleConfig.defaultConfig,
+      ),
+      RowInfoPayload(
+        rowType: RowType.heavenlyStem,
+        rowLabel: '天干',
+        config: TextStyleConfig.defaultConfig,
+      ),
+      RowInfoPayload(
+        rowType: RowType.earthlyBranch,
+        rowLabel: '地支',
+        config: TextStyleConfig.defaultConfig,
+      ),
+      RowInfoPayload(
+        rowType: RowType.naYin,
+        rowLabel: '纳音',
+        config: TextStyleConfig.defaultConfig,
+      ),
+      RowInfoPayload(
+        rowType: RowType.kongWang,
+        rowLabel: '空亡',
+        config: TextStyleConfig.defaultConfig,
+      ),
+      // RowInfoPayload.kongWang(
+      //   label: '空亡',
+      //   strategy: KongWangRowStrategy(),
+      //   config: defaultTextStyleConfig,
+      // ),
     ];
   }
 
@@ -255,38 +316,35 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     final configs = viewModel.rowConfigs;
     if (configs.isEmpty) {
       _rowListNotifier.value = _buildDefaultRows();
-      _groupTextStyles = null;
+      // _groupTextStyles = null;
       return;
     }
 
-    final groupStyles = <TextGroup, TextStyle>{};
+    // final groupStyles = <TextGroup, TextStyle>{};
     for (final config in configs) {
       final textGroup = _rowTypeToTextGroup(config.type);
       if (textGroup != null) {
-        final style = config.textStyleConfig?.toTextStyle() ??
-            TextStyleConfig.fromLegacyRowConfig(
-              fontFamily: config.fontFamily,
-              fontSize: config.fontSize,
-              textColorHex: config.textColorHex,
-              fontWeight: config.fontWeight,
-              shadowColorHex: config.shadowColorHex,
-              shadowOffsetX: config.shadowOffsetX,
-              shadowOffsetY: config.shadowOffsetY,
-              shadowBlurRadius: config.shadowBlurRadius,
-            ).toTextStyle();
-        groupStyles[textGroup] = style;
+        // final style = config.textStyleConfig?.toTextStyle() ??
+        //     TextStyleConfig.fromLegacyRowConfig(
+        //       shadowColorHex: config.shadowColorHex,
+        //       shadowOffsetX: config.shadowOffsetX,
+        //       shadowOffsetY: config.shadowOffsetY,
+        //       shadowBlurRadius: config.shadowBlurRadius,
+        //     ).toTextStyle();
+        // groupStyles[textGroup] = style;
       }
     }
-    _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
+    // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
     final rows = <RowInfoPayload>[
-      const RowInfoPayload(rowType: RowType.columnHeaderRow),
+      RowInfoPayload(rowType: RowType.columnHeaderRow, config: null),
       for (final c in configs)
         if (c.isVisible)
           RowInfoPayload(
             rowType: c.type,
             rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
             textAlign: c.textAlign,
+            config: c.textStyleConfig,
           ),
     ];
 

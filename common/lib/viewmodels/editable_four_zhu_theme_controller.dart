@@ -58,20 +58,20 @@ class EditableFourZhuThemeController {
   ///
   /// Returns: A triple `(String?, double?, String?)` representing
   /// `(fontFamily, fontSize, colorHex)`. Any field may be null indicating default usage.
-  (String?, double?, String?) resolveRowText(RowConfig? row) {
-    final t = theme.typography;
-    final family = _fontFallback(
-      rowFamily: row?.fontFamily,
-      themeFamily: t?.globalFontFamily,
-      preferredFamilies: t?.preferredFamilies,
-    );
-    final size = row?.fontSize ?? t?.globalFontSize;
-    final colorHex = row?.textColorHex ??
-        (t?.globalFontColor?.value != null
-            ? _intColorToHex(t!.globalFontColor!.value)
-            : null);
-    return (family, size, colorHex);
-  }
+  // (String?, double?, String?) resolveRowText(RowConfig? row) {
+  //   final t = theme.typography;
+  //   final family = _fontFallback(
+  //     rowFamily: row?.textStyleConfig?.fontStyleDataModel.fontFamily,
+  //     themeFamily: t?.globalFontFamily,
+  //     preferredFamilies: t?.preferredFamilies,
+  //   );
+  //   final size = row?.textStyleConfig?.fontStyleDataModel.fontSize ?? t?.globalFontSize;
+  //   final colorHex = row?.textStyleConfig?.fontStyleDataModel.textColorHex ??
+  //       (t?.globalFontColor?.value != null
+  //           ? _intColorToHex(t!.globalFontColor!.value)
+  //           : null);
+  //   return (family, size, colorHex);
+  // }
 
   /// Resolves pillar outer margin for the given `PillarType`, applying
   /// differentiation when present.

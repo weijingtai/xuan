@@ -1,3 +1,4 @@
+import 'package:common/models/text_style_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:tuple/tuple.dart';
@@ -30,6 +31,9 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 /// EditableFourZhuCardV3
 /// 单视图、双轴拖拽：在同一个网格视图中完成行与列的重排，不再依赖两个 ReorderableListView。
 class EditableFourZhuCardV3 extends StatefulWidget {
+  final ValueNotifier<Brightness> brightnessNotifier;
+  final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
+
   final ValueNotifier<List<PillarPayload>> pillarsNotifier;
   final ValueNotifier<List<RowInfoPayload>> rowListNotifier;
   final ValueNotifier<EdgeInsets> paddingNotifier;
@@ -92,6 +96,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
 
   EditableFourZhuCardV3({
     super.key,
+    required this.brightnessNotifier,
+    required this.colorPreviewModeNotifier,
     required this.pillarsNotifier,
     required this.rowListNotifier,
     required this.paddingNotifier,
@@ -4281,7 +4287,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _tianGanText(TianGan t) {
     // 当启用彩色模式时，天干按字符映射使用固定色彩方案；
     // 关闭彩色模式时，使用纯色（受全局/分组字体设置影响）。
-    TextStyle base = _resolveTextStyle(
+    TextStyle base = _resolveCellTextStyle(
+      rowType: RowType.heavenlyStem,
+      text: t.name,
       fontSize: 24,
       // 颜色延后处理，避免被全局/分组覆盖（彩色模式下需要自定义颜色）
       color: widget.colorfulMode ? null : Colors.black87,
@@ -4322,7 +4330,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         );
       }
     }
-    return Text(t.name, style: base);
+
+    final rowInfo = widget.rowListNotifier.value.firstWhere(
+      (element) => element.rowType == RowType.heavenlyStem,
+    );
+    var style = rowInfo.config?.toTextStyle(
+          char: t.name,
+          brightness: widget.brightnessNotifier.value,
+          colorPreviewMode: widget.colorPreviewModeNotifier.value,
+        ) ??
+        _defaultTextStyleForGroup(TextGroup.tianGan);
+    return Text(t.name, style: style);
   }
 
   /// Builds DiZhi text。
@@ -4333,7 +4351,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _diZhiText(DiZhi d) {
     // 当启用彩色模式时，地支按字符映射使用固定色彩方案；
     // 关闭彩色模式时，使用纯色（受全局/分组字体设置影响）。
-    TextStyle base = _resolveTextStyle(
+    TextStyle base = _resolveCellTextStyle(
+      rowType: RowType.earthlyBranch,
+      text: d.name,
       fontSize: 24,
       color: widget.colorfulMode ? null : Colors.black87,
       weight: FontWeight.w500,
@@ -4373,7 +4393,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         );
       }
     }
-    return Text(d.name, style: base);
+
+    final rowInfo = widget.rowListNotifier.value.firstWhere(
+      (element) => element.rowType == RowType.earthlyBranch,
+    );
+    var style = rowInfo.config?.toTextStyle(
+          char: d.name,
+          brightness: widget.brightnessNotifier.value,
+          colorPreviewMode: widget.colorPreviewModeNotifier.value,
+        ) ??
+        _defaultTextStyleForGroup(TextGroup.diZhi);
+    return Text(d.name, style: style);
   }
 
   /// Builds NaYin text with optional global typography overrides.
@@ -4460,12 +4490,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // 注意：颜色在彩色模式下通过字符映射解析；在非彩色模式下使用黑色。
         return const TextStyle(
           fontSize: 24,
+          color: Colors.red,
           fontWeight: FontWeight.w400,
           // 颜色按逻辑在 _resolveTextStyle 中处理
         );
       case TextGroup.diZhi:
         return const TextStyle(
           fontSize: 24,
+          color: Colors.yellow,
           fontWeight: FontWeight.w500,
         );
       default:
@@ -4503,6 +4535,69 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }) {
     // 以分组默认样式为起点，避免在调用处硬编码常量
     var style = _defaultTextStyleForGroup(group);
+    // 先应用全局设置（分组覆写在后，确保分组优先）
+    if (widget.globalFontFamily != null &&
+        widget.globalFontFamily!.isNotEmpty) {
+      style = style.copyWith(fontFamily: widget.globalFontFamily);
+    }
+    if (widget.globalFontSize != null && widget.globalFontSize! > 0) {
+      style = style.copyWith(fontSize: widget.globalFontSize);
+    }
+    // 彩色模式下的天干/地支不应用全局颜色，避免覆盖字符映射颜色。
+    final bool isGanZhi =
+        group == TextGroup.tianGan || group == TextGroup.diZhi;
+    final bool suppressGlobalColor = widget.colorfulMode && isGanZhi;
+    if (widget.globalFontColor != null && !suppressGlobalColor) {
+      style = style.copyWith(color: widget.globalFontColor);
+    }
+    // Gan/Zhi 在非彩色模式下需要默认黑色；若当前未设置颜色且不在彩色模式，则填充黑色
+    if (isGanZhi && !widget.colorfulMode && style.color == null) {
+      style = style.copyWith(color: Colors.black87);
+    }
+    if (group != null && widget.groupTextStyles != null) {
+      final override = widget.groupTextStyles![group];
+      if (override != null) {
+        // 按属性逐项合并：颜色遵循“彩色模式下字符映射优先”的规则，其余属性分组优先
+        var merged = style;
+        if (override.fontFamily != null && override.fontFamily!.isNotEmpty) {
+          merged = merged.copyWith(fontFamily: override.fontFamily);
+        }
+        if (override.fontSize != null && override.fontSize! > 0) {
+          merged = merged.copyWith(fontSize: override.fontSize);
+        }
+        if (override.fontWeight != null) {
+          merged = merged.copyWith(fontWeight: override.fontWeight);
+        }
+        // 阴影：始终允许按分组覆盖（不受彩色模式限制）。
+        if (override.shadows != null && override.shadows!.isNotEmpty) {
+          merged = merged.copyWith(shadows: override.shadows);
+        }
+        // 若分组设置了颜色（表示未勾选“跟随字符”），则优先使用该颜色。
+        if (override.color != null) {
+          merged = merged.copyWith(color: override.color);
+        }
+        style = merged;
+      }
+    }
+    return style;
+  }
+
+  TextStyle _resolveCellTextStyle({
+    required RowType rowType,
+    required String text,
+    double? fontSize,
+    FontWeight? weight,
+    Color? color,
+    TextGroup? group,
+  }) {
+    final rowInfo = widget.rowListNotifier.value.firstWhere(
+      (element) => element.rowType == rowType,
+    );
+    var style = rowInfo.config?.toTextStyle(char: text) ??
+        _defaultTextStyleForGroup(group);
+
+    // 以分组默认样式为起点，避免在调用处硬编码常量
+    // var style = _defaultTextStyleForGroup(group);
     // 先应用全局设置（分组覆写在后，确保分组优先）
     if (widget.globalFontFamily != null &&
         widget.globalFontFamily!.isNotEmpty) {

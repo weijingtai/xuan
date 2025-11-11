@@ -1,3 +1,4 @@
+import 'package:common/models/text_style_config.dart';
 import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../enums/enum_gender.dart';
@@ -17,10 +18,39 @@ class TitleRowPayload extends RowInfoPayload {
   /// Parameters:
   /// - [rowType]: The associated `RowType` of the title row（如天干/地支）。
   /// - [titleLabel]: Optional display label for the title row（如“天干”）。
-  const TitleRowPayload({
+  TitleRowPayload({
     required RowType rowType,
     String? titleLabel,
-  }) : super(rowType: rowType, rowLabel: titleLabel);
+  }) : super(
+          rowType: rowType,
+          rowLabel: titleLabel,
+          config: TextStyleConfig(
+            colorMapperDataModel: ColorMapperDataModel(
+              pureLightMapper: {
+                "乾造": Colors.black87,
+                "坤造": Colors.black87,
+              },
+              colorfulLightMapper: {
+                "乾造": Colors.black87,
+                "坤造": Colors.black87,
+              },
+              pureDarkMapper: {
+                "乾造": Colors.white,
+                "坤造": Colors.white,
+              },
+              colorfulDarkMapper: {
+                "乾造": Colors.white,
+                "坤造": Colors.white,
+              },
+            ),
+            textShadowDataModel: TextShadowDataModel(),
+            fontStyleDataModel: FontStyleDataModel(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontFamily: 'NotoSansSC',
+            ),
+          ),
+        );
 }
 
 /// Title column payload: a special pillar payload used when dragging column titles.
@@ -73,10 +103,36 @@ class ColumnHeaderRowPayload extends RowInfoPayload {
   /// Parameters:
   /// - [gender]: Gender for the chart (male = 乾造, female = 坤造).
   /// - [height]: Optional custom height for the header row.
-  const ColumnHeaderRowPayload({
+  ColumnHeaderRowPayload({
     required this.gender,
     double? height,
   }) : super(
+          config: TextStyleConfig(
+            colorMapperDataModel: ColorMapperDataModel(
+              pureLightMapper: {
+                "乾造": Colors.black87,
+                "坤造": Colors.black87,
+              },
+              colorfulLightMapper: {
+                "乾造": Colors.black87,
+                "坤造": Colors.black87,
+              },
+              pureDarkMapper: {
+                "乾造": Colors.white,
+                "坤造": Colors.white,
+              },
+              colorfulDarkMapper: {
+                "乾造": Colors.white,
+                "坤造": Colors.white,
+              },
+            ),
+            textShadowDataModel: TextShadowDataModel(),
+            fontStyleDataModel: FontStyleDataModel(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              fontFamily: 'NotoSansSC',
+            ),
+          ),
           rowType: RowType.columnHeaderRow,
           rowLabel: null, // Label will be derived from gender
           rowHeight: height,
@@ -216,12 +272,15 @@ class PillarPayload {
 class RowInfoPayload {
   const RowInfoPayload({
     required this.rowType,
+    required this.config,
     this.rowLabel,
     this.perPillarValues = const {},
     this.rowHeight,
     this.textAlign,
     this.strategy,
   });
+
+  final TextStyleConfig? config;
 
   /// The type of row to insert (e.g., RowType.kongWang for 空亡).
   final RowType rowType;
@@ -254,22 +313,23 @@ class RowInfoPayload {
   /// - [textAlign]: Optional text alignment for UI rendering.
   ///
   /// Returns: A `RowInfoPayload` representing an 空亡信息行。
-  static RowInfoPayload kongWang({
-    String label = '空亡',
-    Map<String, String> values = const {},
-    double? rowHeight,
-    RowTextAlign? textAlign,
-    RowComputationStrategy? strategy,
-  }) {
-    return RowInfoPayload(
-      rowType: RowType.kongWang,
-      rowLabel: label,
-      perPillarValues: values,
-      rowHeight: rowHeight,
-      textAlign: textAlign,
-      strategy: strategy,
-    );
-  }
+  // static RowInfoPayload kongWang({
+  //   String label = '空亡',
+  //   Map<String, String> values = const {},
+  //   double? rowHeight,
+  //   RowTextAlign? textAlign,
+  //   RowComputationStrategy? strategy,
+  // }) {
+  //   return RowInfoPayload(
+  //     // config: TextStyleConfig(),
+  //     rowType: RowType.kongWang,
+  //     rowLabel: label,
+  //     perPillarValues: values,
+  //     rowHeight: rowHeight,
+  //     textAlign: textAlign,
+  //     strategy: strategy,
+  //   );
+  // }
 
   /// Returns a new `RowInfoPayload` with selected fields updated.
   ///
@@ -282,6 +342,7 @@ class RowInfoPayload {
   ///
   /// Returns: A copied payload reflecting the specified updates.
   RowInfoPayload copyWith({
+    TextStyleConfig? config,
     RowType? rowType,
     String? rowLabel,
     Map<String, String>? perPillarValues,
@@ -290,6 +351,7 @@ class RowInfoPayload {
     RowComputationStrategy? strategy,
   }) {
     return RowInfoPayload(
+      config: config ?? this.config,
       rowType: rowType ?? this.rowType,
       rowLabel: rowLabel ?? this.rowLabel,
       perPillarValues: perPillarValues ?? this.perPillarValues,

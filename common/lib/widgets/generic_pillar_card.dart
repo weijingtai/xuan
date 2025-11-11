@@ -193,19 +193,26 @@ class _GenericPillarCardState extends State<GenericPillarCard>
 
     // 优先用 TextStyleConfig 转换出的样式做覆盖来源
     final fromCfg = cfg.textStyleConfig?.toTextStyle();
-    final overrideFamily = fromCfg?.fontFamily ?? cfg.fontFamily;
-    final overrideSize = fromCfg?.fontSize ?? cfg.fontSize;
-    final overrideColor = fromCfg?.color ??
-        (cfg.textColorHex != null && cfg.textColorHex!.isNotEmpty
-            ? _hexToColor(cfg.textColorHex!)
-            : null);
-    final overrideWeight = fromCfg?.fontWeight;
+    // final overrideFamily = fromCfg?.fontFamily ?? cfg.fontFamily;
+    // final overrideSize = fromCfg?.fontSize ?? cfg.fontSize;
+    // final overrideColor = fromCfg?.color ??
+    //     (cfg.textColorHex != null && cfg.textColorHex!.isNotEmpty
+    //         ? _hexToColor(cfg.textColorHex!)
+    //         : null);
+    // final overrideWeight = fromCfg?.fontWeight;
+
+    // return base.copyWith(
+    //   fontFamily: overrideFamily ?? base.fontFamily,
+    //   fontSize: overrideSize ?? base.fontSize,
+    //   color: overrideColor ?? base.color,
+    //   fontWeight: overrideWeight ?? base.fontWeight,
+    // );
 
     return base.copyWith(
-      fontFamily: overrideFamily ?? base.fontFamily,
-      fontSize: overrideSize ?? base.fontSize,
-      color: overrideColor ?? base.color,
-      fontWeight: overrideWeight ?? base.fontWeight,
+      fontFamily: base.fontFamily,
+      fontSize: base.fontSize,
+      color: base.color,
+      fontWeight: base.fontWeight,
     );
   }
 
@@ -457,10 +464,10 @@ class _GenericPillarCardState extends State<GenericPillarCard>
         var style = _applyOverrides(
             CardRow.tianGan, _resolveTextStyle(CardRow.tianGan));
         // 如果未自定义颜色，保持按五行色彩
-        if (widget.rowStyles?[CardRow.tianGan]?.textColorHex == null) {
-          style =
-              style.copyWith(color: AppColors.zodiacGanColors[jiaZi.tianGan]);
-        }
+        // if (widget.rowStyles?[CardRow.tianGan]?.textColorHex == null) {
+        //   style =
+        //       style.copyWith(color: AppColors.zodiacGanColors[jiaZi.tianGan]);
+        // }
         return Text(jiaZi.tianGan.value,
             style: style, textAlign: _resolveAlign(CardRow.tianGan));
       }).toList(),
@@ -482,9 +489,9 @@ class _GenericPillarCardState extends State<GenericPillarCard>
         if (jiaZi == null) return const SizedBox.shrink();
         var style =
             _applyOverrides(CardRow.diZhi, _resolveTextStyle(CardRow.diZhi));
-        if (widget.rowStyles?[CardRow.diZhi]?.textColorHex == null) {
-          style = style.copyWith(color: AppColors.zodiacZhiColors[jiaZi.diZhi]);
-        }
+        // if (widget.rowStyles?[CardRow.diZhi]?.textStyleConfig?. == null) {
+        //   style = style.copyWith(color: AppColors.zodiacZhiColors[jiaZi.diZhi]);
+        // }
         return Text(jiaZi.diZhi.value,
             style: style, textAlign: _resolveAlign(CardRow.diZhi));
       }).toList(),

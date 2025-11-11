@@ -62,12 +62,14 @@ class DefaultElementColorResolver extends ElementColorResolver {
 
   @override
   Color colorForGan(TianGan gan, BuildContext context) {
-    return AppColors.zodiacGanColors[gan] ?? Theme.of(context).colorScheme.primary;
+    return AppColors.zodiacGanColors[gan] ??
+        Theme.of(context).colorScheme.primary;
   }
 
   @override
   Color colorForZhi(DiZhi zhi, BuildContext context) {
-    return AppColors.zodiacZhiColors[zhi] ?? Theme.of(context).colorScheme.secondary;
+    return AppColors.zodiacZhiColors[zhi] ??
+        Theme.of(context).colorScheme.secondary;
   }
 }
 
@@ -77,10 +79,13 @@ abstract class LayoutMetricsResolver {
 
   /// 计算卡片单元的目标宽度。
   double tileWidth(BuildContext context, {CardStyle? cardStyle});
+
   /// 计算列头高度，随全局字号缩放。
   double headerHeight(BuildContext context, {CardStyle? cardStyle});
+
   /// 计算行高：优先使用 `rowConfig.textStyleConfig.fontSize`，回退到旧字段与主题。
-  double rowHeight(BuildContext context, {RowConfig? rowConfig, CardStyle? cardStyle});
+  double rowHeight(BuildContext context,
+      {RowConfig? rowConfig, CardStyle? cardStyle});
   double slotWidth(BuildContext context);
   double cornerRadius(BuildContext context);
   EdgeInsets tilePadding(BuildContext context);
@@ -96,22 +101,32 @@ class DefaultLayoutMetricsResolver extends LayoutMetricsResolver {
   @override
   double tileWidth(BuildContext context, {CardStyle? cardStyle}) {
     // Base width scalable with global font size for accessibility
-    final base = (cardStyle?.globalFontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14) * 10;
+    final base = (cardStyle?.globalFontSize ??
+            Theme.of(context).textTheme.bodyMedium?.fontSize ??
+            14) *
+        10;
     // Make pillars slightly narrower by lowering the minimum width bound.
     return base.clamp(120, 220);
   }
 
   @override
   double headerHeight(BuildContext context, {CardStyle? cardStyle}) {
-    final fs = cardStyle?.globalFontSize ?? Theme.of(context).textTheme.titleMedium?.fontSize ?? 16;
+    final fs = cardStyle?.globalFontSize ??
+        Theme.of(context).textTheme.titleMedium?.fontSize ??
+        16;
     return (fs * 2).clamp(28, 40);
   }
 
   @override
-  double rowHeight(BuildContext context, {RowConfig? rowConfig, CardStyle? cardStyle}) {
+  double rowHeight(BuildContext context,
+      {RowConfig? rowConfig, CardStyle? cardStyle}) {
     // 优先从 TextStyleConfig 读取字号，兼容旧字段并回退到主题
-    final cfgFs = rowConfig?.textStyleConfig?.fontSize;
-    final fs = cfgFs ?? rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? Theme.of(context).textTheme.bodyMedium?.fontSize ?? 14;
+    final cfgFs = rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize;
+    final fs = cfgFs ??
+        rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize ??
+        cardStyle?.globalFontSize ??
+        Theme.of(context).textTheme.bodyMedium?.fontSize ??
+        14;
     return (fs * 2).clamp(24, 36);
   }
 
@@ -122,13 +137,16 @@ class DefaultLayoutMetricsResolver extends LayoutMetricsResolver {
   double cornerRadius(BuildContext context) => 8.0;
 
   @override
-  EdgeInsets tilePadding(BuildContext context) => const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
+  EdgeInsets tilePadding(BuildContext context) =>
+      const EdgeInsets.symmetric(horizontal: 12, vertical: 8);
 
   @override
-  EdgeInsets tileMargin(BuildContext context) => const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
+  EdgeInsets tileMargin(BuildContext context) =>
+      const EdgeInsets.symmetric(horizontal: 6, vertical: 6);
 
   @override
-  Duration animationDuration(BuildContext context) => const Duration(milliseconds: 120);
+  Duration animationDuration(BuildContext context) =>
+      const Duration(milliseconds: 120);
 
   @override
   double ghostFillAlpha(BuildContext context) => 0.10;
@@ -155,11 +173,22 @@ class DefaultStyleResolver extends StyleResolver {
     final fromCfg = rowConfig?.textStyleConfig?.toTextStyle();
 
     // 计算最终各字段，优先级：override 参数 > TextStyleConfig > 旧字段 > cardStyle > theme
-    final family = fromCfg?.fontFamily ?? rowConfig?.fontFamily ?? cardStyle?.globalFontFamily;
-    final size = fromCfg?.fontSize ?? rowConfig?.fontSize ?? cardStyle?.globalFontSize ?? theme.textTheme.bodyMedium?.fontSize ?? 14;
-    final parsedRowColor = _parseColor(rowConfig?.textColorHex);
+    final family = fromCfg?.fontFamily ??
+        rowConfig?.textStyleConfig?.fontStyleDataModel.fontFamily ??
+        cardStyle?.globalFontFamily;
+    final size = fromCfg?.fontSize ??
+        rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize ??
+        cardStyle?.globalFontSize ??
+        theme.textTheme.bodyMedium?.fontSize ??
+        14;
+    // final parsedRowColor = _parseColor(rowConfig?.textColorHex);
     final parsedGlobalColor = _parseColor(cardStyle?.globalFontColorHex);
-    final color = overrideColor ?? fromCfg?.color ?? parsedRowColor ?? parsedGlobalColor ?? theme.textTheme.bodyMedium?.color ?? Colors.black87;
+    final color = overrideColor ??
+        fromCfg?.color ??
+        // parsedRowColor ??
+        parsedGlobalColor ??
+        theme.textTheme.bodyMedium?.color ??
+        Colors.black87;
     final weight = fontWeight ?? fromCfg?.fontWeight ?? FontWeight.w400;
 
     return TextStyle(
@@ -190,10 +219,14 @@ class DefaultStyleResolver extends StyleResolver {
     required RowConfig? rowConfig,
   }) {
     final theme = Theme.of(context);
-    final borderType = rowConfig?.borderType ?? cardStyle?.dividerType ?? BorderType.solid;
-    final color = _parseColor(rowConfig?.borderColorHex ?? cardStyle?.dividerColorHex) ?? theme.dividerColor;
+    final borderType =
+        rowConfig?.borderType ?? cardStyle?.dividerType ?? BorderType.solid;
+    final color =
+        _parseColor(rowConfig?.borderColorHex ?? cardStyle?.dividerColorHex) ??
+            theme.dividerColor;
     final thickness = cardStyle?.dividerThickness ?? 1.0;
-    return Divider(color: color, thickness: borderType == BorderType.none ? 0 : thickness);
+    return Divider(
+        color: color, thickness: borderType == BorderType.none ? 0 : thickness);
   }
 
   Color? _parseColor(String? hex) {

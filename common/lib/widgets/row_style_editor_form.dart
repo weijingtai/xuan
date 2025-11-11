@@ -48,13 +48,6 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
   @override
   void initState() {
     super.initState();
-    // 优先从 TextStyleConfig 读取初始值，回退到旧字段
-    _selectedFontFamily =
-        widget.config.textStyleConfig?.fontFamily ?? widget.config.fontFamily;
-    _selectedFontSize =
-        widget.config.textStyleConfig?.fontSize ?? widget.config.fontSize;
-    _selectedTextColor =
-        widget.config.textStyleConfig?.colorHex ?? widget.config.textColorHex;
     _selectedTextAlign = widget.config.textAlign;
     _selectedBorderType = widget.config.borderType;
     _selectedBorderColor = widget.config.borderColorHex;
@@ -338,29 +331,25 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
   void _handleSave() {
     // 构造 TextStyleConfig（优先采用当前选择，缺省时回退到已有配置）
     final existing = widget.config.textStyleConfig;
-    final newTextStyleConfig = TextStyleConfig.fromLegacyRowConfig(
-      fontFamily: _selectedFontFamily ?? existing?.fontFamily,
-      fontSize: _selectedFontSize ?? existing?.fontSize,
-      textColorHex: _selectedTextColor ?? existing?.colorHex,
-      // 表单暂不编辑字重与阴影，保持原值或旧字段
-      fontWeight: widget.config.fontWeight ??
-          (existing?.fontWeightValue != null
-              ? 'w${existing!.fontWeightValue}'
-              : null),
-      shadowColorHex: widget.config.shadowColorHex ?? existing?.shadowColorHex,
-      shadowOffsetX: widget.config.shadowOffsetX ?? existing?.shadowOffsetX,
-      shadowOffsetY: widget.config.shadowOffsetY ?? existing?.shadowOffsetY,
-      shadowBlurRadius:
-          widget.config.shadowBlurRadius ?? existing?.shadowBlurRadius,
-    );
+    // final newTextStyleConfig = TextStyleConfig.fromLegacyRowConfig(
+    //   fontFamily: _selectedFontFamily ?? existing?.fontFamily,
+    //   fontSize: _selectedFontSize ?? existing?.fontSize,
+    //   textColorHex: _selectedTextColor ?? existing?.colorHex,
+    //   // 表单暂不编辑字重与阴影，保持原值或旧字段
+    //   fontWeight: widget.config.fontWeight ??
+    //       (existing?.fontWeightValue != null
+    //           ? 'w${existing!.fontWeightValue}'
+    //           : null),
+    //   shadowColorHex: widget.config.shadowColorHex ?? existing?.shadowColorHex,
+    //   shadowOffsetX: widget.config.shadowOffsetX ?? existing?.shadowOffsetX,
+    //   shadowOffsetY: widget.config.shadowOffsetY ?? existing?.shadowOffsetY,
+    //   shadowBlurRadius:
+    //       widget.config.shadowBlurRadius ?? existing?.shadowBlurRadius,
+    // );
 
     final updated = widget.config.copyWith(
       // 同步新版集中样式
-      textStyleConfig: newTextStyleConfig,
-      // 同步旧字段（保持向后兼容）
-      fontFamily: _selectedFontFamily,
-      fontSize: _selectedFontSize,
-      textColorHex: _selectedTextColor,
+      textStyleConfig: existing,
       textAlign: _selectedTextAlign,
       borderType: _selectedBorderType,
       borderColorHex: _selectedBorderColor,

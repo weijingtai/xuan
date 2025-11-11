@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../enums/enum_gender.dart';
 import '../enums/layout_template_enums.dart';
+import '../models/text_style_config.dart';
 import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/four_zhu_add_palette.dart';
 import '../widgets/test_pillar_draggable.dart';
@@ -32,6 +33,11 @@ class _EditableFourZhuCardDemoPageState
     extends State<EditableFourZhuCardDemoPage> {
   // 使用集中式 ViewModel 管理页面状态与通知。
   late final FourZhuCardDemoViewModel _vm;
+
+  final ValueNotifier<Brightness> _brightnessNotifier =
+      ValueNotifier<Brightness>(Brightness.light);
+  final ValueNotifier<ColorPreviewMode> _colorPreviewModeNotifier =
+      ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
 
   @override
   void initState() {
@@ -210,6 +216,8 @@ class _EditableFourZhuCardDemoPageState
                       FourZhuAddPalette(),
                       const SizedBox(height: 12),
                       EditableFourZhuCardV3(
+                        brightnessNotifier: _brightnessNotifier,
+                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
                         pillarsNotifier: _vm.pillarsNotifier,
                         rowListNotifier: _vm.rowListNotifier,
                         paddingNotifier: _vm.paddingNotifier,

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../editable_fourzhu_card/text_groups.dart';
-import '../style_editor/text_style_editor_widget.dart';
-import '../style_editor/colorful_text_style_editor_widget.dart';
+import '../style_editor/colorful_text_style_editor_widget.dart.bakv1';
 
 /// 分组文本样式编辑面板（统一导出组件）
 ///
@@ -92,34 +91,34 @@ class _GroupTextStyleEditorPanelState extends State<GroupTextStyleEditorPanel> {
           onChanged: (s) => _update(TextGroup.diZhi, s),
           showInlineWheel: false,
         ),
-        // 纳音
-        TextStyleEditorWidget(
-          label: '纳音',
-          initialStyle: _styles[TextGroup.naYin],
-          onChanged: (s) => _update(TextGroup.naYin, s),
-          showInlineWheel: false,
-        ),
-        // 空亡
-        TextStyleEditorWidget(
-          label: '空亡',
-          initialStyle: _styles[TextGroup.kongWang],
-          onChanged: (s) => _update(TextGroup.kongWang, s),
-          showInlineWheel: false,
-        ),
-        // 柱标题
-        TextStyleEditorWidget(
-          label: '柱标题',
-          initialStyle: _styles[TextGroup.columnTitle],
-          onChanged: (s) => _update(TextGroup.columnTitle, s),
-          showInlineWheel: false,
-        ),
-        // 行标题
-        TextStyleEditorWidget(
-          label: '行标题',
-          initialStyle: _styles[TextGroup.rowTitle],
-          onChanged: (s) => _update(TextGroup.rowTitle, s),
-          showInlineWheel: false,
-        ),
+        // // 纳音
+        // TextStyleEditorWidget(
+        //   label: '纳音',
+        //   initialStyle: _styles[TextGroup.naYin],
+        //   onChanged: (s) => _update(TextGroup.naYin, s),
+        //   showInlineWheel: false,
+        // ),
+        // // 空亡
+        // TextStyleEditorWidget(
+        //   label: '空亡',
+        //   initialStyle: _styles[TextGroup.kongWang],
+        //   onChanged: (s) => _update(TextGroup.kongWang, s),
+        //   showInlineWheel: false,
+        // ),
+        // // 柱标题
+        // TextStyleEditorWidget(
+        //   label: '柱标题',
+        //   initialStyle: _styles[TextGroup.columnTitle],
+        //   onChanged: (s) => _update(TextGroup.columnTitle, s),
+        //   showInlineWheel: false,
+        // ),
+        // // 行标题
+        // TextStyleEditorWidget(
+        //   label: '行标题',
+        //   initialStyle: _styles[TextGroup.rowTitle],
+        //   onChanged: (s) => _update(TextGroup.rowTitle, s),
+        //   showInlineWheel: false,
+        // ),
       ],
     );
   }

@@ -532,30 +532,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
                 // 新版样式优先：同步 TextStyleConfig
                 textStyleConfig: textStyleConfig ?? config.textStyleConfig,
                 // 同步旧字段，确保向后兼容
-                fontFamily: fontFamily ??
-                    (textStyleConfig?.fontFamily ?? config.fontFamily),
-                fontSize:
-                    fontSize ?? (textStyleConfig?.fontSize ?? config.fontSize),
-                textColorHex: colorHex ??
-                    (textStyleConfig?.colorHex ?? config.textColorHex),
-                fontWeight: fontWeight ??
-                    (textStyleConfig?.fontWeightValue != null
-                        ? 'w${textStyleConfig!.fontWeightValue}'
-                        : config.fontWeight),
                 textAlign: textAlign ?? config.textAlign,
                 padding: padding ?? config.padding,
                 borderType: borderType ?? config.borderType,
                 borderColorHex: borderColorHex ?? config.borderColorHex,
-                // 阴影字段（优先 TextStyleConfig）
-                shadowColorHex: shadowColorHex ??
-                    (textStyleConfig?.shadowColorHex ?? config.shadowColorHex),
-                shadowOffsetX: shadowOffsetX ??
-                    (textStyleConfig?.shadowOffsetX ?? config.shadowOffsetX),
-                shadowOffsetY: shadowOffsetY ??
-                    (textStyleConfig?.shadowOffsetY ?? config.shadowOffsetY),
-                shadowBlurRadius: shadowBlurRadius ??
-                    (textStyleConfig?.shadowBlurRadius ??
-                        config.shadowBlurRadius),
               )
             : config)
         .toList(growable: false);
