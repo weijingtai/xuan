@@ -8,50 +8,41 @@ part of 'text_style_config.dart';
 
 TextStyleConfig _$TextStyleConfigFromJson(Map<String, dynamic> json) =>
     TextStyleConfig(
-      fontFamily: json['fontFamily'] as String?,
-      fontSize: (json['fontSize'] as num?)?.toDouble(),
-      colorHex: json['colorHex'] as String?,
-      fontWeightValue: (json['fontWeightValue'] as num?)?.toInt(),
-      shadowColorHex: json['shadowColorHex'] as String?,
-      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
-      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
-      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
-      letterSpacing: (json['letterSpacing'] as num?)?.toDouble(),
-      wordSpacing: (json['wordSpacing'] as num?)?.toDouble(),
-      height: (json['height'] as num?)?.toDouble(),
-      decorationStyle: json['decorationStyle'] as String?,
-      decorationColorHex: json['decorationColorHex'] as String?,
-      decorationThickness: (json['decorationThickness'] as num?)?.toDouble(),
-      fontStyle: json['fontStyle'] as String?,
-      backgroundColor: json['backgroundColor'] as String?,
-      perCharColorsLight:
-          (json['perCharColorsLight'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(k, e as String),
-      ),
-      perCharColorsDark:
-          (json['perCharColorsDark'] as Map<String, dynamic>?)?.map(
-        (k, e) => MapEntry(k, e as String),
-      ),
+      colorMapperDataModel: ColorMapperDataModel.fromJson(
+          json['colorMapperDataModel'] as Map<String, dynamic>),
+      textShadowDataModel: TextShadowDataModel.fromJson(
+          json['textShadowDataModel'] as Map<String, dynamic>),
+      fontStyleDataModel: FontStyleDataModel.fromJson(
+          json['fontStyleDataModel'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$TextStyleConfigToJson(TextStyleConfig instance) =>
     <String, dynamic>{
-      'fontFamily': instance.fontFamily,
-      'fontSize': instance.fontSize,
-      'colorHex': instance.colorHex,
-      'fontWeightValue': instance.fontWeightValue,
-      'shadowColorHex': instance.shadowColorHex,
-      'shadowOffsetX': instance.shadowOffsetX,
-      'shadowOffsetY': instance.shadowOffsetY,
-      'shadowBlurRadius': instance.shadowBlurRadius,
-      'letterSpacing': instance.letterSpacing,
-      'wordSpacing': instance.wordSpacing,
-      'height': instance.height,
-      'decorationStyle': instance.decorationStyle,
-      'decorationColorHex': instance.decorationColorHex,
-      'decorationThickness': instance.decorationThickness,
-      'fontStyle': instance.fontStyle,
-      'backgroundColor': instance.backgroundColor,
-      'perCharColorsLight': instance.perCharColorsLight,
-      'perCharColorsDark': instance.perCharColorsDark,
+      'colorMapperDataModel': instance.colorMapperDataModel,
+      'textShadowDataModel': instance.textShadowDataModel,
+      'fontStyleDataModel': instance.fontStyleDataModel,
+    };
+
+ColorMapperDataModel _$ColorMapperDataModelFromJson(
+        Map<String, dynamic> json) =>
+    ColorMapperDataModel(
+      pureLightMapper: ColorAhexConverter.mapFromJson(
+          json['pureLightMapper'] as Map<String, dynamic>),
+      colorfulLightMapper: ColorAhexConverter.mapFromJson(
+          json['colorfulLightMapper'] as Map<String, dynamic>),
+      pureDarkMapper: ColorAhexConverter.mapFromJson(
+          json['pureDarkMapper'] as Map<String, dynamic>),
+      colorfulDarkMapper: ColorAhexConverter.mapFromJson(
+          json['colorfulDarkMapper'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$ColorMapperDataModelToJson(
+        ColorMapperDataModel instance) =>
+    <String, dynamic>{
+      'pureLightMapper': ColorAhexConverter.mapToJson(instance.pureLightMapper),
+      'colorfulLightMapper':
+          ColorAhexConverter.mapToJson(instance.colorfulLightMapper),
+      'pureDarkMapper': ColorAhexConverter.mapToJson(instance.pureDarkMapper),
+      'colorfulDarkMapper':
+          ColorAhexConverter.mapToJson(instance.colorfulDarkMapper),
     };

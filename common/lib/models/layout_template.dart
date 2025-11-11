@@ -175,7 +175,8 @@ class ChartGroup {
     return other is ChartGroup &&
         other.id == id &&
         other.title == title &&
-        const ListEquality<PillarType>().equals(other.pillarOrder, pillarOrder) &&
+        const ListEquality<PillarType>()
+            .equals(other.pillarOrder, pillarOrder) &&
         other.locked == locked &&
         other.colorHex == colorHex &&
         other.expanded == expanded;
@@ -305,21 +306,23 @@ class RowConfig {
   final RowType type;
   final bool isVisible;
   final bool isTitleVisible;
+
   /// 新版文本样式配置（优先于旧的离散字段）。
   final TextStyleConfig? textStyleConfig;
   final String? fontFamily;
   final double? fontSize;
   final String? textColorHex;
-  final String? fontWeight; // 字体粗细：'w300', 'w400', 'w500', 'w600', 'w700', 'w800', 'w900'
+  final String?
+      fontWeight; // 字体粗细：'w300', 'w400', 'w500', 'w600', 'w700', 'w800', 'w900'
   final RowTextAlign? textAlign;
   final double? padding;
   final BorderType? borderType;
   final String? borderColorHex;
   // 阴影配置
-  final String? shadowColorHex;    // 阴影颜色（#AARRGGBB 格式）
-  final double? shadowOffsetX;     // 阴影 X 轴偏移
-  final double? shadowOffsetY;     // 阴影 Y 轴偏移
-  final double? shadowBlurRadius;  // 阴影模糊半径
+  final String? shadowColorHex; // 阴影颜色（#AARRGGBB 格式）
+  final double? shadowOffsetX; // 阴影 X 轴偏移
+  final double? shadowOffsetY; // 阴影 Y 轴偏移
+  final double? shadowBlurRadius; // 阴影模糊半径
 
   RowConfig copyWith({
     RowType? type,
@@ -483,6 +486,7 @@ class RowConfig {
         borderType,
         borderColorHex,
         // 阴影字段
-        Object.hash(shadowColorHex, shadowOffsetX, shadowOffsetY, shadowBlurRadius),
+        Object.hash(
+            shadowColorHex, shadowOffsetX, shadowOffsetY, shadowBlurRadius),
       );
 }

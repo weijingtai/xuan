@@ -23,120 +23,19 @@ enum ColorPreviewMode {
 
 @JsonSerializable()
 class TextStyleConfig {
+  final ColorMapperDataModel colorMapperDataModel;
+
+  final TextShadowDataModel textShadowDataModel;
+
+  final FontStyleDataModel fontStyleDataModel;
+
   /// 构造函数
-  const TextStyleConfig({
+  TextStyleConfig({
+    required this.colorMapperDataModel,
+    required this.textShadowDataModel,
+    required this.fontStyleDataModel,
     // 基础属性（当前已支持）
-    this.fontFamily,
-    this.fontSize,
-    this.colorHex,
-    this.fontWeightValue, // 100-900
-
-    // 阴影属性（当前已支持）
-    this.shadowColorHex,
-    this.shadowOffsetX,
-    this.shadowOffsetY,
-    this.shadowBlurRadius,
-
-    // 扩展属性（未来支持）
-    this.letterSpacing,
-    this.wordSpacing,
-    this.height, // 行高倍数
-    this.decorationStyle, // 'none', 'underline', 'overline', 'lineThrough'
-    this.decorationColorHex,
-    this.decorationThickness,
-    this.fontStyle, // 'normal', 'italic'
-    this.backgroundColor,
-
-    // 彩色模式逐字颜色
-    this.perCharColorsLight,
-    this.perCharColorsDark,
-
-    // 预览模式与纯色逐字颜色（新增）
-    this.colorMode,
-    this.purePerCharColorsLight,
-    this.purePerCharColorsDark,
   });
-
-  // ==================== 基础属性 ====================
-
-  /// 字体家族（如 'NotoSansSC-Regular', 'PingFang SC'）
-  final String? fontFamily;
-
-  /// 字体大小（逻辑像素）
-  final double? fontSize;
-
-  /// 文本颜色（#AARRGGBB 格式）
-  final String? colorHex;
-
-  /// 字体粗细（100-900，对应 FontWeight.w100 到 w900）
-  final int? fontWeightValue;
-
-  // ==================== 阴影属性 ====================
-
-  /// 阴影颜色（#AARRGGBB 格式）
-  final String? shadowColorHex;
-
-  /// 阴影 X 轴偏移
-  final double? shadowOffsetX;
-
-  /// 阴影 Y 轴偏移
-  final double? shadowOffsetY;
-
-  /// 阴影模糊半径
-  final double? shadowBlurRadius;
-
-  // ==================== 扩展属性 ====================
-
-  /// 字符间距
-  final double? letterSpacing;
-
-  /// 单词间距
-  final double? wordSpacing;
-
-  /// 行高倍数（如 1.5 表示 1.5 倍行高）
-  final double? height;
-
-  /// 文本装饰样式（'none', 'underline', 'overline', 'lineThrough'）
-  final String? decorationStyle;
-
-  /// 装饰线颜色（#AARRGGBB 格式）
-  final String? decorationColorHex;
-
-  /// 装饰线粗细
-  final double? decorationThickness;
-
-  /// 字体样式（'normal', 'italic'）
-  final String? fontStyle;
-
-  /// 背景颜色（#AARRGGBB 格式）
-  final String? backgroundColor;
-
-  // ==================== 彩色模式逐字颜色 ====================
-
-  /// 亮色主题下的逐字颜色映射（彩色模式）
-  /// 例如：{'甲': '#FF00FF00', '乙': '#FF00FF00'}
-  /// 用于 ColorfulTextStyleEditorWidget 恢复用户自定义的字符颜色
-  final Map<String, String>? perCharColorsLight;
-
-  /// 暗色主题下的逐字颜色映射（彩色模式）
-  /// 例如：{'甲': '#FFFFFFFF', '乙': '#FFFFFFFF'}
-  /// 用于 ColorfulTextStyleEditorWidget 恢复用户自定义的字符颜色
-  final Map<String, String>? perCharColorsDark;
-
-  // ==================== 预览模式与纯色逐字颜色（新增） ====================
-
-  /// 预览模式：
-  /// - pure：纯色预览（按纯色策略/用户纯色映射显示）
-  /// - colorful：彩色预览（按元素调色/用户彩色映射显示）
-  final ColorPreviewMode? colorMode;
-
-  /// 亮色主题下的逐字纯色映射（纯色模式）
-  /// 例如：{'甲': '#FF000000', '乙': '#FF111111'}
-  final Map<String, String>? purePerCharColorsLight;
-
-  /// 暗色主题下的逐字纯色映射（纯色模式）
-  /// 例如：{'甲': '#FFFFFFFF', '乙': '#EEEEEE'}
-  final Map<String, String>? purePerCharColorsDark;
 
   // ==================== JSON 序列化 ====================
 
@@ -151,22 +50,38 @@ class TextStyleConfig {
 
   /// 转换为 Flutter TextStyle
   ///
-  /// 所有 null 字段将使用 TextStyle 的默认值
-  TextStyle toTextStyle() {
+  /// 可选传入 `char`、`colorPreviewMode`、`brightness` 用于按映射取色；
+  /// 若未提供，颜色保持为 null，由上层渲染决定。
+  TextStyle toTextStyle({
+    String? char,
+    ColorPreviewMode? colorPreviewMode,
+    Brightness? brightness,
+  }) {
+    Color? textColor;
+    if (char != null && colorPreviewMode != null && brightness != null) {
+      textColor = colorMapperDataModel.getBy(
+          theme: brightness, mode: colorPreviewMode)[char];
+    }
+
     return TextStyle(
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      color: _parseColor(colorHex),
-      fontWeight: _parseFontWeight(fontWeightValue),
-      shadows: _buildShadows(),
-      letterSpacing: letterSpacing,
-      wordSpacing: wordSpacing,
-      height: height,
-      decoration: _parseDecoration(decorationStyle),
-      decorationColor: _parseColor(decorationColorHex),
-      decorationThickness: decorationThickness,
-      fontStyle: _parseFontStyle(fontStyle),
-      backgroundColor: _parseColor(backgroundColor),
+      fontFamily: fontStyleDataModel.fontFamily,
+      fontSize: fontStyleDataModel.fontSize,
+      color: textColor,
+      fontWeight: fontStyleDataModel.fontWeight,
+      shadows: textShadowDataModel.shadowEnabled
+          ? [
+              Shadow(
+                color: textShadowDataModel.followTextColor
+                    ? textColor ?? textShadowDataModel.shadowColor
+                    : textShadowDataModel.shadowColor,
+                blurRadius: textShadowDataModel.shadowBlurRadius,
+                offset: Offset(
+                  textShadowDataModel.shadowOffsetX,
+                  textShadowDataModel.shadowOffsetY,
+                ),
+              )
+            ]
+          : null,
     );
   }
 
@@ -183,33 +98,40 @@ class TextStyleConfig {
     Map<String, String>? perCharColorsLight,
     Map<String, String>? perCharColorsDark,
   }) {
+    Map<String, Color> _toColorMap(Map<String, String>? m) {
+      if (m == null) return const {};
+      final out = <String, Color>{};
+      m.forEach((k, v) {
+        final c = _parseColor(v);
+        if (c != null) out[k] = c;
+      });
+      return out;
+    }
+
+    final hasShadow = style.shadows?.isNotEmpty == true;
+    final shadow = hasShadow ? style.shadows!.first : null;
+
     return TextStyleConfig(
-      fontFamily: style.fontFamily,
-      fontSize: style.fontSize,
-      colorHex: _colorToHex(style.color),
-      fontWeightValue: style.fontWeight?.value,
-      shadowColorHex: style.shadows?.isNotEmpty == true
-          ? _colorToHex(style.shadows!.first.color)
-          : null,
-      shadowOffsetX: style.shadows?.isNotEmpty == true
-          ? style.shadows!.first.offset.dx
-          : null,
-      shadowOffsetY: style.shadows?.isNotEmpty == true
-          ? style.shadows!.first.offset.dy
-          : null,
-      shadowBlurRadius: style.shadows?.isNotEmpty == true
-          ? style.shadows!.first.blurRadius
-          : null,
-      letterSpacing: style.letterSpacing,
-      wordSpacing: style.wordSpacing,
-      height: style.height,
-      decorationStyle: _decorationToString(style.decoration),
-      decorationColorHex: _colorToHex(style.decorationColor),
-      decorationThickness: style.decorationThickness,
-      fontStyle: style.fontStyle?.name,
-      backgroundColor: _colorToHex(style.backgroundColor),
-      perCharColorsLight: perCharColorsLight,
-      perCharColorsDark: perCharColorsDark,
+      colorMapperDataModel: ColorMapperDataModel(
+        pureLightMapper: _toColorMap(perCharColorsLight),
+        colorfulLightMapper: const {},
+        pureDarkMapper: _toColorMap(perCharColorsDark),
+        colorfulDarkMapper: const {},
+      ),
+      textShadowDataModel: TextShadowDataModel(
+        shadowEnabled: hasShadow,
+        followTextColor: false,
+        shadowBlurRadius: shadow?.blurRadius ?? 10,
+        shadowColor: shadow?.color ?? (style.color ?? Colors.black),
+        shadowOpacity: 0.65,
+        shadowOffsetX: shadow?.offset.dx ?? 5.0,
+        shadowOffsetY: shadow?.offset.dy ?? 5.0,
+      ),
+      fontStyleDataModel: FontStyleDataModel(
+        fontFamily: style.fontFamily ?? 'System',
+        fontSize: style.fontSize ?? 14.0,
+        fontWeight: style.fontWeight ?? FontWeight.w400,
+      ),
     );
   }
 
@@ -231,90 +153,50 @@ class TextStyleConfig {
     double? shadowOffsetY,
     double? shadowBlurRadius,
   }) {
+    // 兼容旧字段：将离散字段映射到三大子模型
+    final shadowColor = _parseColor(shadowColorHex) ?? Colors.black;
+    final weight =
+        _parseFontWeight(_parseFontWeightString(fontWeight)) ?? FontWeight.w400;
     return TextStyleConfig(
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      colorHex: textColorHex,
-      fontWeightValue: _parseFontWeightString(fontWeight),
-      shadowColorHex: shadowColorHex,
-      shadowOffsetX: shadowOffsetX,
-      shadowOffsetY: shadowOffsetY,
-      shadowBlurRadius: shadowBlurRadius,
+      colorMapperDataModel: ColorMapperDataModel(
+        // 旧版没有逐字颜色映射，初始化为空映射
+        pureLightMapper: const {},
+        colorfulLightMapper: const {},
+        pureDarkMapper: const {},
+        colorfulDarkMapper: const {},
+      ),
+      textShadowDataModel: TextShadowDataModel(
+        shadowEnabled: (shadowColorHex != null) ||
+            (shadowOffsetX != null) ||
+            (shadowOffsetY != null) ||
+            (shadowBlurRadius != null),
+        followTextColor: false,
+        shadowBlurRadius: shadowBlurRadius ?? 10,
+        shadowColor: shadowColor,
+        shadowOpacity: 0.65,
+        shadowOffsetX: shadowOffsetX ?? 5.0,
+        shadowOffsetY: shadowOffsetY ?? 5.0,
+      ),
+      fontStyleDataModel: FontStyleDataModel(
+        fontFamily: fontFamily ?? 'System',
+        fontSize: fontSize ?? 14.0,
+        fontWeight: weight,
+      ),
     );
   }
 
   // ==================== copyWith ====================
 
   TextStyleConfig copyWith({
-    String? fontFamily,
-    double? fontSize,
-    String? colorHex,
-    int? fontWeightValue,
-    String? shadowColorHex,
-    double? shadowOffsetX,
-    double? shadowOffsetY,
-    double? shadowBlurRadius,
-    double? letterSpacing,
-    double? wordSpacing,
-    double? height,
-    String? decorationStyle,
-    String? decorationColorHex,
-    double? decorationThickness,
-    String? fontStyle,
-    String? backgroundColor,
-    Map<String, String>? perCharColorsLight,
-    Map<String, String>? perCharColorsDark,
-    // 新增：预览模式与纯色逐字颜色
-    ColorPreviewMode? colorMode,
-    Map<String, String>? purePerCharColorsLight,
-    Map<String, String>? purePerCharColorsDark,
+    ColorMapperDataModel? colorMapperDataModel,
+    TextShadowDataModel? textShadowDataModel,
+    FontStyleDataModel? fontStyleDataModel,
   }) {
     return TextStyleConfig(
-      fontFamily: fontFamily ?? this.fontFamily,
-      fontSize: fontSize ?? this.fontSize,
-      colorHex: colorHex ?? this.colorHex,
-      fontWeightValue: fontWeightValue ?? this.fontWeightValue,
-      shadowColorHex: shadowColorHex ?? this.shadowColorHex,
-      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
-      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
-      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
-      letterSpacing: letterSpacing ?? this.letterSpacing,
-      wordSpacing: wordSpacing ?? this.wordSpacing,
-      height: height ?? this.height,
-      decorationStyle: decorationStyle ?? this.decorationStyle,
-      decorationColorHex: decorationColorHex ?? this.decorationColorHex,
-      decorationThickness: decorationThickness ?? this.decorationThickness,
-      fontStyle: fontStyle ?? this.fontStyle,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
-      perCharColorsLight: perCharColorsLight ?? this.perCharColorsLight,
-      perCharColorsDark: perCharColorsDark ?? this.perCharColorsDark,
-      // 新增：预览模式与纯色逐字颜色
-      colorMode: colorMode ?? this.colorMode,
-      purePerCharColorsLight:
-          purePerCharColorsLight ?? this.purePerCharColorsLight,
-      purePerCharColorsDark:
-          purePerCharColorsDark ?? this.purePerCharColorsDark,
+      colorMapperDataModel: colorMapperDataModel ?? this.colorMapperDataModel,
+      textShadowDataModel: textShadowDataModel ?? this.textShadowDataModel,
+      fontStyleDataModel: fontStyleDataModel ?? this.fontStyleDataModel,
     );
-  }
-
-  // ==================== 私有辅助方法 ====================
-
-  /// 构建阴影列表
-  List<Shadow>? _buildShadows() {
-    if (shadowColorHex == null) return null;
-    final color = _parseColor(shadowColorHex);
-    if (color == null) return null;
-
-    return [
-      Shadow(
-        color: color,
-        offset: Offset(
-          shadowOffsetX ?? 0,
-          shadowOffsetY ?? 1,
-        ),
-        blurRadius: shadowBlurRadius ?? 2,
-      ),
-    ];
   }
 
   /// 解析颜色字符串为 Color
@@ -417,65 +299,6 @@ class TextStyleConfig {
     }
   }
 
-  // ==================== 相等性比较 ====================
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other.runtimeType != runtimeType) return false;
-    return other is TextStyleConfig &&
-        other.fontFamily == fontFamily &&
-        other.fontSize == fontSize &&
-        other.colorHex == colorHex &&
-        other.fontWeightValue == fontWeightValue &&
-        other.shadowColorHex == shadowColorHex &&
-        other.shadowOffsetX == shadowOffsetX &&
-        other.shadowOffsetY == shadowOffsetY &&
-        other.shadowBlurRadius == shadowBlurRadius &&
-        other.letterSpacing == letterSpacing &&
-        other.wordSpacing == wordSpacing &&
-        other.height == height &&
-        other.decorationStyle == decorationStyle &&
-        other.decorationColorHex == decorationColorHex &&
-        other.decorationThickness == decorationThickness &&
-        other.fontStyle == fontStyle &&
-        other.backgroundColor == backgroundColor &&
-        // 新增字段参与比较
-        other.colorMode == colorMode &&
-        _mapEquals(other.purePerCharColorsLight, purePerCharColorsLight) &&
-        _mapEquals(other.purePerCharColorsDark, purePerCharColorsDark) &&
-        _mapEquals(other.perCharColorsLight, perCharColorsLight) &&
-        _mapEquals(other.perCharColorsDark, perCharColorsDark);
-  }
-
-  @override
-  int get hashCode => Object.hash(
-        fontFamily,
-        fontSize,
-        colorHex,
-        fontWeightValue,
-        shadowColorHex,
-        shadowOffsetX,
-        shadowOffsetY,
-        shadowBlurRadius,
-        Object.hash(
-          letterSpacing,
-          wordSpacing,
-          height,
-          decorationStyle,
-          decorationColorHex,
-          decorationThickness,
-          fontStyle,
-          backgroundColor,
-        ),
-        // 新增字段参与 hash
-        colorMode,
-        _mapHash(purePerCharColorsLight),
-        _mapHash(purePerCharColorsDark),
-        _mapHash(perCharColorsLight),
-        _mapHash(perCharColorsDark),
-      );
-
   /// Map 比较（键值都为 String）
   ///
   /// 参数：
@@ -503,5 +326,288 @@ class TextStyleConfig {
     return Object.hashAll(
       m.entries.map((e) => Object.hash(e.key, e.value)),
     );
+  }
+}
+
+/// 将 `Color` 按 AHEX（AARRGGBB）字符串进行 JSON 序列化/反序列化的转换器。
+///
+/// 说明：
+/// - 序列化输出形如 `#AARRGGBB`（例如 `#FF112233`）。
+/// - 反序列化支持 `#AARRGGBB` 或 `0xAARRGGBB`，若提供 `RRGGBB` 则默认补全不透明 Alpha（`FF`）。
+class ColorAhexConverter implements JsonConverter<Color, String> {
+  const ColorAhexConverter();
+
+  /// 反序列化：将 AHEX 字符串转为 `Color`。
+  ///
+  /// 参数：
+  /// - [json] AHEX 字符串（支持 `#` 或 `0x` 前缀）。
+  /// 返回：
+  /// - `Color` 对象（若输入为 `RRGGBB` 则补全 Alpha 为 `FF`）。
+  @override
+  Color fromJson(String json) {
+    final s = json.trim();
+    String hex = s.startsWith('#')
+        ? s.substring(1)
+        : (s.startsWith('0x') || s.startsWith('0X'))
+            ? s.substring(2)
+            : s;
+    if (hex.length == 6) {
+      // 若仅提供 RRGGBB，则默认 Alpha=FF。
+      hex = 'FF$hex';
+    }
+    if (hex.length != 8) {
+      throw FormatException('Invalid ahex color: "$json"');
+    }
+    final value = int.parse(hex, radix: 16);
+    return Color(value);
+  }
+
+  /// 序列化：将 `Color` 转为 AHEX 字符串（`#AARRGGBB`）。
+  ///
+  /// 参数：
+  /// - [color] 需要被序列化的 `Color`。
+  /// 返回：
+  /// - AHEX 字符串（大写，带 `#` 前缀）。
+  @override
+  String toJson(Color color) {
+    final hex = color.value.toRadixString(16).padLeft(8, '0').toUpperCase();
+    return '#$hex';
+  }
+
+  /// Map 反序列化：`Map<String, String>` (AHEX) → `Map<String, Color>`。
+  ///
+  /// 参数：
+  /// - [json] JSON 中的字符串颜色映射。
+  /// 返回：
+  /// - `Map<String, Color>`（每个值按 AHEX 转换）。
+  static Map<String, Color> mapFromJson(Map<String, dynamic> json) {
+    const c = ColorAhexConverter();
+    return json.map((key, value) => MapEntry(key, c.fromJson(value as String)));
+  }
+
+  /// Map 序列化：`Map<String, Color>` → `Map<String, String>` (AHEX)。
+  ///
+  /// 参数：
+  /// - [value] 运行时的颜色映射。
+  /// 返回：
+  /// - `Map<String, String>`（每个值序列化为 AHEX）。
+  static Map<String, String> mapToJson(Map<String, Color> value) {
+    const c = ColorAhexConverter();
+    return value.map((key, color) => MapEntry(key, c.toJson(color)));
+  }
+}
+
+class ColorMapperDataModel {
+  @JsonKey(
+      fromJson: ColorAhexConverter.mapFromJson,
+      toJson: ColorAhexConverter.mapToJson)
+  late final Map<String, Color> pureLightMapper;
+  @JsonKey(
+      fromJson: ColorAhexConverter.mapFromJson,
+      toJson: ColorAhexConverter.mapToJson)
+  late final Map<String, Color> colorfulLightMapper;
+  @JsonKey(
+      fromJson: ColorAhexConverter.mapFromJson,
+      toJson: ColorAhexConverter.mapToJson)
+  late final Map<String, Color> pureDarkMapper;
+  @JsonKey(
+      fromJson: ColorAhexConverter.mapFromJson,
+      toJson: ColorAhexConverter.mapToJson)
+  late final Map<String, Color> colorfulDarkMapper;
+
+  ColorMapperDataModel({
+    required this.pureLightMapper,
+    required this.colorfulLightMapper,
+    required this.pureDarkMapper,
+    required this.colorfulDarkMapper,
+  });
+  Map<String, Color> getBy({
+    required Brightness theme,
+    required ColorPreviewMode mode,
+  }) {
+    switch (theme) {
+      case Brightness.light:
+        return mode == ColorPreviewMode.colorful
+            ? colorfulLightMapper
+            : pureLightMapper;
+      case Brightness.dark:
+        return mode == ColorPreviewMode.colorful
+            ? colorfulDarkMapper
+            : pureDarkMapper;
+    }
+  }
+
+  ColorMapperDataModel update({
+    required Brightness brightness,
+    required ColorPreviewMode mode,
+    required String char,
+    required Color color,
+  }) {
+    // 根据 theme 和 mode 定位对应的 mapper
+    final mapper = getBy(theme: brightness, mode: mode);
+    // 创建新的 mapper 副本并更新指定 char 的颜色
+    final updatedMapper = Map<String, Color>.from(mapper);
+    updatedMapper[char] = color;
+
+    // 根据 brightness 和 mode 决定返回哪个字段的新值
+    final pureLight =
+        brightness == Brightness.light && mode == ColorPreviewMode.pure
+            ? updatedMapper
+            : pureLightMapper;
+    final colorfulLight =
+        brightness == Brightness.light && mode == ColorPreviewMode.colorful
+            ? updatedMapper
+            : colorfulLightMapper;
+    final pureDark =
+        brightness == Brightness.dark && mode == ColorPreviewMode.pure
+            ? updatedMapper
+            : pureDarkMapper;
+    final colorfulDark =
+        brightness == Brightness.dark && mode == ColorPreviewMode.colorful
+            ? updatedMapper
+            : colorfulDarkMapper;
+
+    return ColorMapperDataModel(
+      pureLightMapper: pureLight,
+      colorfulLightMapper: colorfulLight,
+      pureDarkMapper: pureDark,
+      colorfulDarkMapper: colorfulDark,
+    );
+  }
+
+  factory ColorMapperDataModel.fromJson(Map<String, dynamic> json) {
+    final pureLight = json['pureLightMapper'] as Map<String, dynamic>?;
+    final colorfulLight = json['colorfulLightMapper'] as Map<String, dynamic>?;
+    final pureDark = json['pureDarkMapper'] as Map<String, dynamic>?;
+    final colorfulDark = json['colorfulDarkMapper'] as Map<String, dynamic>?;
+    return ColorMapperDataModel(
+      pureLightMapper:
+          pureLight == null ? {} : ColorAhexConverter.mapFromJson(pureLight),
+      colorfulLightMapper: colorfulLight == null
+          ? {}
+          : ColorAhexConverter.mapFromJson(colorfulLight),
+      pureDarkMapper:
+          pureDark == null ? {} : ColorAhexConverter.mapFromJson(pureDark),
+      colorfulDarkMapper: colorfulDark == null
+          ? {}
+          : ColorAhexConverter.mapFromJson(colorfulDark),
+    );
+  }
+  Map<String, dynamic> toJson() => {
+        'pureLightMapper': ColorAhexConverter.mapToJson(pureLightMapper),
+        'colorfulLightMapper':
+            ColorAhexConverter.mapToJson(colorfulLightMapper),
+        'pureDarkMapper': ColorAhexConverter.mapToJson(pureDarkMapper),
+        'colorfulDarkMapper': ColorAhexConverter.mapToJson(colorfulDarkMapper),
+      };
+}
+
+class TextShadowDataModel {
+  bool shadowEnabled = false;
+  bool followTextColor = false;
+  double shadowBlurRadius = 10;
+  Color shadowColor = Colors.black;
+  double shadowOpacity = 0.65;
+  double shadowOffsetX = 5.0; // 默认 X 轴偏移
+  double shadowOffsetY = 5.0; // 默认 Y 轴偏移
+  TextShadowDataModel({
+    this.shadowEnabled = false,
+    this.followTextColor = false,
+    this.shadowBlurRadius = 10,
+    this.shadowColor = Colors.black,
+    this.shadowOpacity = 0.65,
+    this.shadowOffsetX = 5.0,
+    this.shadowOffsetY = 5.0,
+  });
+  TextShadowDataModel copyWith({
+    bool? shadowEnabled,
+    bool? followTextColor,
+    double? shadowBlurRadius,
+    Color? shadowColor,
+    double? shadowOpacity,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+  }) {
+    return TextShadowDataModel(
+      shadowEnabled: shadowEnabled ?? this.shadowEnabled,
+      followTextColor: followTextColor ?? this.followTextColor,
+      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
+      shadowColor: shadowColor ?? this.shadowColor,
+      shadowOpacity: shadowOpacity ?? this.shadowOpacity,
+      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
+      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
+    );
+  }
+
+  factory TextShadowDataModel.fromJson(Map<String, dynamic> json) {
+    const c = ColorAhexConverter();
+    return TextShadowDataModel(
+      shadowEnabled: json['shadowEnabled'] as bool? ?? false,
+      followTextColor: json['followTextColor'] as bool? ?? false,
+      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble() ?? 10,
+      shadowColor: c.fromJson((json['shadowColor'] as String?) ?? '#FF000000'),
+      shadowOpacity: (json['shadowOpacity'] as num?)?.toDouble() ?? 0.65,
+      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble() ?? 5.0,
+      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble() ?? 5.0,
+    );
+  }
+  Map<String, dynamic> toJson() {
+    const c = ColorAhexConverter();
+    return {
+      'shadowEnabled': shadowEnabled,
+      'followTextColor': followTextColor,
+      'shadowBlurRadius': shadowBlurRadius,
+      'shadowColor': c.toJson(shadowColor),
+      'shadowOpacity': shadowOpacity,
+      'shadowOffsetX': shadowOffsetX,
+      'shadowOffsetY': shadowOffsetY,
+    };
+  }
+}
+
+class FontStyleDataModel {
+  final String fontFamily;
+  final double fontSize;
+  final FontWeight fontWeight;
+
+  FontStyleDataModel({
+    required this.fontFamily,
+    required this.fontSize,
+    required this.fontWeight,
+  });
+
+  FontStyleDataModel copyWith({
+    String? fontFamily,
+    double? fontSize,
+    FontWeight? fontWeight,
+  }) {
+    return FontStyleDataModel(
+      fontFamily: fontFamily ?? this.fontFamily,
+      fontSize: fontSize ?? this.fontSize,
+      fontWeight: fontWeight ?? this.fontWeight,
+    );
+  }
+
+  /// 使用数字 100–900 进行 `fontWeight` 的 JSON 读写
+  factory FontStyleDataModel.fromJson(Map<String, dynamic> json) {
+    final family = (json['fontFamily'] as String?) ?? 'System';
+    final size = (json['fontSize'] as num?)?.toDouble() ?? 14.0;
+    final weightNum = (json['fontWeight'] as num?)?.toInt();
+    final weight =
+        TextStyleConfig._parseFontWeight(weightNum) ?? FontWeight.w400;
+    return FontStyleDataModel(
+      fontFamily: family,
+      fontSize: size,
+      fontWeight: weight,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'fontFamily': fontFamily,
+      'fontSize': fontSize,
+      // 序列化为 100、200、…、900 的数字
+      'fontWeight': fontWeight.value,
+    };
   }
 }

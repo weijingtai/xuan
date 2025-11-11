@@ -36,126 +36,12 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
       _ColorfulTextStyleEditorV2EnhancedState();
 }
 
-class ColorMapperDataModel {
-  late final Map<String, Color> pureLightMapper;
-  late final Map<String, Color> colorfulLightMapper;
-  late final Map<String, Color> pureDarkMapper;
-  late final Map<String, Color> colorfulDarkMapper;
-
-  ColorMapperDataModel({
-    required this.pureLightMapper,
-    required this.colorfulLightMapper,
-    required this.pureDarkMapper,
-    required this.colorfulDarkMapper,
-  });
-  Map<String, Color> getBy({
-    required Brightness theme,
-    required ColorPreviewMode mode,
-  }) {
-    switch (theme) {
-      case Brightness.light:
-        return mode == ColorPreviewMode.colorful
-            ? colorfulLightMapper
-            : pureLightMapper;
-      case Brightness.dark:
-        return mode == ColorPreviewMode.colorful
-            ? colorfulDarkMapper
-            : pureDarkMapper;
-    }
-  }
-
-  ColorMapperDataModel update({
-    required Brightness brightness,
-    required ColorPreviewMode mode,
-    required String char,
-    required Color color,
-  }) {
-    // 根据 theme 和 mode 定位对应的 mapper
-    final mapper = getBy(theme: brightness, mode: mode);
-    // 创建新的 mapper 副本并更新指定 char 的颜色
-    final updatedMapper = Map<String, Color>.from(mapper);
-    updatedMapper[char] = color;
-
-    // 根据 brightness 和 mode 决定返回哪个字段的新值
-    final pureLight =
-        brightness == Brightness.light && mode == ColorPreviewMode.pure
-            ? updatedMapper
-            : pureLightMapper;
-    final colorfulLight =
-        brightness == Brightness.light && mode == ColorPreviewMode.colorful
-            ? updatedMapper
-            : colorfulLightMapper;
-    final pureDark =
-        brightness == Brightness.dark && mode == ColorPreviewMode.pure
-            ? updatedMapper
-            : pureDarkMapper;
-    final colorfulDark =
-        brightness == Brightness.dark && mode == ColorPreviewMode.colorful
-            ? updatedMapper
-            : colorfulDarkMapper;
-
-    return ColorMapperDataModel(
-      pureLightMapper: pureLight,
-      colorfulLightMapper: colorfulLight,
-      pureDarkMapper: pureDark,
-      colorfulDarkMapper: colorfulDark,
-    );
-  }
-}
-
-class TextShadowDataModel {
-  bool shadowEnabled = false;
-  bool followTextColor = false;
-  double shadowBlurRadius = 10;
-  Color shadowColor = Colors.black;
-  double shadowOpacity = 0.65;
-  double shadowOffsetX = 5.0; // 默认 X 轴偏移
-  double shadowOffsetY = 5.0; // 默认 Y 轴偏移
-  TextShadowDataModel({
-    this.shadowEnabled = false,
-    this.followTextColor = false,
-    this.shadowBlurRadius = 10,
-    this.shadowColor = Colors.black,
-    this.shadowOpacity = 0.65,
-    this.shadowOffsetX = 5.0,
-    this.shadowOffsetY = 5.0,
-  });
-  TextShadowDataModel copyWith({
-    bool? shadowEnabled,
-    bool? followTextColor,
-    double? shadowBlurRadius,
-    Color? shadowColor,
-    double? shadowOpacity,
-    double? shadowOffsetX,
-    double? shadowOffsetY,
-  }) {
-    return TextShadowDataModel(
-      shadowEnabled: shadowEnabled ?? this.shadowEnabled,
-      followTextColor: followTextColor ?? this.followTextColor,
-      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
-      shadowColor: shadowColor ?? this.shadowColor,
-      shadowOpacity: shadowOpacity ?? this.shadowOpacity,
-      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
-      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
-    );
-  }
-}
-
 class _ColorfulTextStyleEditorV2EnhancedState
     extends State<ColorfulTextStyleEditorV2Enhanced> {
-  // 字体属性
+  late final ValueNotifier<FontStyleDataModel> fontStyleDataModelNotifier;
   late String _fontFamily;
   late double _fontSize;
   late FontWeight _fontWeight;
-  Color _color = Colors.black87;
-
-  // 阴影属性
-  bool _shadowEnabled = false;
-  double _shadowBlurRadius = 10;
-  Color _shadowColor = Colors.black;
-  double _shadowOpacity = 0.65;
-  double _shadowOffsetX = 5.0; // 默认 X 轴偏移
-  double _shadowOffsetY = 5.0; // 默认 Y 轴偏移
 
   // 预览字符索引（用于切换显示不同的字符）
   ValueNotifier<int> _previewCharIndexNotifier = ValueNotifier(0);
@@ -164,32 +50,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
   final ValueNotifier<Tuple2<Brightness, ColorPreviewMode>>
       charPreviewNotifier =
       ValueNotifier(Tuple2(Brightness.light, ColorPreviewMode.colorful));
-  // 主题模式
-  ColorPreviewMode _lightMode = ColorPreviewMode.colorful;
-  ColorPreviewMode _darkMode = ColorPreviewMode.colorful;
-  Brightness _currentTheme = Brightness.light; // 改为可变，用于控制下方显示区域的主题
-
   Color darkBackground = Colors.blueGrey.shade800;
   Color lightBackground = Colors.white;
-
-  // 天干颜色映射（亮色/暗色）
-  // late Map<String, Color> _perCharColorsLight;
-  // late Map<String, Color> _perCharColorsDark;
-
-  // ==================== 颜色映射 Getters ====================
 
   @override
   void dispose() {
     charPreviewNotifier.dispose();
     shadowDataModelNotifier.dispose();
     _previewCharIndexNotifier.dispose();
+    fontStyleDataModelNotifier.dispose();
+
     super.dispose();
   }
 
   late final ValueNotifier<ColorMapperDataModel> colorMapperDataModelNotifier;
-  // late final ValueNotifier<Map<String, Color>> colorfulLightMapperNotifier;
-  // late final ValueNotifier<Map<String, Color>> pureDarkMapperNotifier;
-  // late final ValueNotifier<Map<String, Color>> colorfulDarkMapperNotifier;
 
   TextShadowDataModel get defaultShadow => TextShadowDataModel(
         shadowEnabled: false,
@@ -252,7 +126,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
   @override
   void initState() {
     super.initState();
-    _initializeFromStyle();
+    fontStyleDataModelNotifier = ValueNotifier(FontStyleDataModel(
+      fontFamily: 'sans-serif',
+      fontSize: 16,
+      fontWeight: FontWeight.normal,
+    ));
     shadowDataModelNotifier = ValueNotifier(defaultShadow);
     colorMapperDataModelNotifier = ValueNotifier(
       ColorMapperDataModel(
@@ -262,53 +140,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
         colorfulDarkMapper: colorfulDarkMapper,
       ),
     );
-  }
-
-  void _initializeFromStyle() {
-    final s = widget.initialStyle ?? const TextStyle();
-    _fontFamily = s.fontFamily ?? 'System';
-    _fontSize = (s.fontSize ?? 21).clamp(8.0, 64.0);
-    _fontWeight = s.fontWeight ?? FontWeight.w400;
-    _color = s.color ?? Colors.black87;
-
-    // 初始化阴影
-    final sh = s.shadows;
-    if (sh != null && sh.isNotEmpty) {
-      _shadowEnabled = true;
-      final shadow = sh.first;
-      _shadowColor = shadow.color;
-      _shadowBlurRadius = shadow.blurRadius;
-      _shadowOpacity = shadow.color.a;
-      // 直接提取 X/Y 偏移
-      _shadowOffsetX = shadow.offset.dx;
-      _shadowOffsetY = shadow.offset.dy;
-    }
-  }
-
-  void _emit() {
-    final style = TextStyle(
-      fontFamily: _fontFamily == 'System' ? null : _fontFamily,
-      fontSize: _fontSize,
-      fontWeight: _fontWeight,
-      color: _currentTheme == Brightness.light &&
-              _lightMode == ColorPreviewMode.colorful
-          ? null
-          : (_currentTheme == Brightness.dark &&
-                  _darkMode == ColorPreviewMode.colorful
-              ? null
-              : _color),
-      shadows: _shadowEnabled
-          ? [
-              Shadow(
-                color: _shadowColor.withValues(alpha: _shadowOpacity),
-                offset: Offset(_shadowOffsetX, _shadowOffsetY),
-                blurRadius: _shadowBlurRadius,
-              ),
-            ]
-          : null,
-    );
-
-    widget.onChanged(style);
   }
 
   @override
@@ -345,7 +176,12 @@ class _ColorfulTextStyleEditorV2EnhancedState
             // const SizedBox(height: 32),
 
             // 字体 Section
-            _buildFontSection(),
+            ValueListenableBuilder<FontStyleDataModel>(
+              valueListenable: fontStyleDataModelNotifier,
+              builder: (context, fontStyleDataModel, child) {
+                return _buildFontSection(fontStyleDataModel);
+              },
+            ),
             const SizedBox(height: 32),
 
             // 阴影 Section
@@ -370,7 +206,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  Widget _buildFontSection() {
+  Widget _buildFontSection(FontStyleDataModel fontStyleDataModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -417,10 +253,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
                               ))
                           .toList(),
                       onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _fontFamily = value);
-                          _emit();
-                        }
+                        fontStyleDataModelNotifier.value =
+                            fontStyleDataModel.copyWith(
+                          fontFamily: value,
+                        );
                       },
                     ),
                   ),
@@ -436,7 +272,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 children: [
                   const Text(
                     '字重',
-                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                   const SizedBox(height: 8),
                   Container(
@@ -452,11 +288,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
                       isExpanded: true,
                       underline: const SizedBox(),
                       items: [
+                        FontWeight.w100,
+                        FontWeight.w200,
                         FontWeight.w300,
                         FontWeight.w400,
                         FontWeight.w500,
                         FontWeight.w600,
                         FontWeight.w700,
+                        FontWeight.w800,
+                        FontWeight.w900,
                       ]
                           .map((weight) => DropdownMenuItem(
                                 value: weight,
@@ -465,10 +305,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
                               ))
                           .toList(),
                       onChanged: (value) {
-                        if (value != null) {
-                          setState(() => _fontWeight = value);
-                          _emit();
-                        }
+                        fontStyleDataModelNotifier.value =
+                            fontStyleDataModel.copyWith(
+                          fontWeight: value,
+                        );
                       },
                     ),
                   ),
@@ -484,7 +324,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
           children: [
             const Text(
               '字号',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
             ),
             Expanded(
               child: SliderTheme(
@@ -494,13 +334,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: _fontSize,
+                  value: fontStyleDataModel.fontSize,
                   min: 8,
                   max: 64,
                   divisions: 56,
                   onChanged: (value) {
-                    setState(() => _fontSize = value);
-                    _emit();
+                    fontStyleDataModelNotifier.value =
+                        fontStyleDataModel.copyWith(
+                      fontSize: value,
+                    );
                   },
                 ),
               ),
@@ -514,7 +356,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 border: Border.all(color: Colors.grey.shade300),
               ),
               child: Text(
-                _fontSize.toInt().toString(),
+                fontStyleDataModel.fontSize.toInt().toString(),
                 textAlign: TextAlign.center,
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -528,11 +370,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
 
   String _fontWeightLabel(FontWeight weight) {
     final labels = {
+      FontWeight.w100: 'Thin',
+      FontWeight.w200: 'ExtraLight',
       FontWeight.w300: 'Light',
       FontWeight.w400: 'Regular',
       FontWeight.w500: 'Medium',
       FontWeight.w600: 'SemiBold',
       FontWeight.w700: 'Bold',
+      FontWeight.w800: 'ExtraBold',
+      FontWeight.w900: 'Black',
     };
     return labels[weight] ?? 'Regular';
   }
@@ -562,10 +408,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 value: shadowDataModel.shadowEnabled,
                 activeTrackColor: Colors.blue.shade600,
                 onChanged: (value) {
-                  // shadowDataModel.shadowEnabled = value;
                   shadowDataModelNotifier.value =
                       shadowDataModel.copyWith(shadowEnabled: value);
-                  // _emit();
                 },
               ),
             ),
@@ -581,7 +425,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 return ValueListenableBuilder(
                     valueListenable: colorMapperDataModelNotifier,
                     builder: (ctx, map, _) {
-                      return _buildShadowPreview(shadowDataModel, map, tuple2);
+                      return ValueListenableBuilder(
+                        valueListenable: fontStyleDataModelNotifier,
+                        builder: (ctx, style, _) => _buildShadowPreview(
+                            shadowDataModel, map, tuple2, style),
+                      );
                     });
               }),
           // 收紧间距，减少布局压力
@@ -656,8 +504,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     onChanged: (value) {
                       shadowDataModelNotifier.value =
                           shadowDataModel.copyWith(shadowOpacity: value);
-                      // setState(() => _shadowOpacity = value);
-                      // _emit();
                     },
                   ),
                 ),
@@ -690,7 +536,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
   Widget _buildShadowPreview(
       TextShadowDataModel shadowDataModel,
       ColorMapperDataModel colorMapperDataModel,
-      Tuple2<Brightness, ColorPreviewMode> previewInfo) {
+      Tuple2<Brightness, ColorPreviewMode> previewInfo,
+      FontStyleDataModel fontStyleDataModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -716,8 +563,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   onChanged: (value) {
                     shadowDataModelNotifier.value =
                         shadowDataModel.copyWith(shadowOffsetX: value);
-                    // setState(() => _shadowOffsetX = value);
-                    // _emit();
                   },
                 ),
               ),
@@ -776,8 +621,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                       ? widget.values[index]
                                       : '甲',
                                   style: TextStyle(
-                                    fontSize: 32,
+                                    fontSize: fontStyleDataModel.fontSize,
                                     // fontWeight: FontWeight.bold,
+                                    fontWeight: fontStyleDataModel.fontWeight,
+                                    fontFamily: fontStyleDataModel.fontFamily,
                                     color: textColor,
                                     shadows: [
                                       Shadow(
@@ -896,8 +743,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     onChanged: (value) {
                       shadowDataModelNotifier.value =
                           shadowDataModel.copyWith(shadowOffsetY: value);
-                      // setState(() => _shadowOffsetY = value);
-                      // _emit();
                     },
                   ),
                 ),
@@ -937,8 +782,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   onChanged: (value) {
                     shadowDataModelNotifier.value =
                         shadowDataModel.copyWith(shadowBlurRadius: value);
-                    // setState(() => _shadowBlurRadius = value);
-                    // _emit();
                   },
                 ),
               ),
@@ -978,8 +821,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
         ColorPickerType.custom: false,
       },
     );
-    shadowDataModelNotifier.value =
-        shadowDataModelNotifier.value.copyWith(shadowColor: result);
+    shadowDataModelNotifier.value = shadowDataModelNotifier.value
+        .copyWith(shadowColor: result, followTextColor: false);
   }
 
   Widget _buildThemeSection(Brightness currentTheme, ColorPreviewMode mode) {
@@ -1018,11 +861,14 @@ class _ColorfulTextStyleEditorV2EnhancedState
         ),
         const SizedBox(height: 16),
 
-        // 浅色/深色主题卡片
-        Row(
+        // 浅色/深色主题卡片（使用 Wrap 保证在窄屏下自动换行，避免 Row 溢出）
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          alignment: WrapAlignment.spaceBetween,
           children: [
-            // 浅色卡片
-            Expanded(
+            SizedBox(
+              width: 320,
               child: _buildThemeCardV2(
                 title: '浅色',
                 isLight: true,
@@ -1033,10 +879,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 },
               ),
             ),
-            const SizedBox(width: 12),
-
-            // 深色卡片
-            Expanded(
+            SizedBox(
+              width: 320,
               child: _buildThemeCardV2(
                 title: '深色',
                 isLight: false,
@@ -1049,7 +893,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
             ),
           ],
         ),
-        // const SizedBox(height: 20),
+        const SizedBox(height: 20),
         // 天干地支颜色选择
         _buildGanZhiColorPicker(currentTheme),
       ],
@@ -1073,7 +917,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     // 当前选中的主题卡片使用蓝色边框，否则使用灰色边框
     final borderColor = isCurrentTheme
         ? Colors.blue.shade600
-        : (isLight ? Colors.grey.shade300 : Colors.grey.shade700);
+        : Theme.of(context).colorScheme.outlineVariant;
     final borderWidth = isCurrentTheme ? 3.0 : 2.0;
 
     return Container(
@@ -1120,8 +964,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
           _buildModeOption(
             label: '纯色',
             isSelected: mode == ColorPreviewMode.pure,
-            textColor: isLight ? Colors.black87 : Colors.black12, // 纯色选项文字
-            circleColor: isLight ? Colors.black87 : Colors.black12, // 纯色选项色块
+            textColor: isLight ? Colors.black87 : Colors.white, // 纯色选项文字
+            circleColor: isLight ? Colors.black87 : Colors.white, // 纯色选项色块
             onTap: () => onModeChanged(ColorPreviewMode.pure),
           ),
           const SizedBox(height: 10),
@@ -1159,17 +1003,17 @@ class _ColorfulTextStyleEditorV2EnhancedState
     required ColorPreviewMode mode,
     required ValueChanged<ColorPreviewMode> onModeChanged,
   }) {
+    // 包装为卡片外观：圆角与主题描边，选中态提升层次
     return Container(
-      // elevation: isCurrentTheme ? 3 : 0,
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        // border: BorderSide(
-        //   color: isCurrentTheme
-        //       ? Colors.blue.shade600
-        //       : Theme.of(context).colorScheme.outlineVariant,
-        //   width: isCurrentTheme ? 2 : 1,
-        // ),
+        border: Border.all(
+          color: isCurrentTheme
+              ? Colors.blue.shade600
+              : Theme.of(context).colorScheme.outlineVariant,
+          width: isCurrentTheme ? 2 : 1,
+        ),
       ),
       child: _buildThemeCard(
         title: title,
@@ -1203,30 +1047,38 @@ class _ColorfulTextStyleEditorV2EnhancedState
               ? Colors.blue.shade50.withValues(alpha: 0.3)
               : Colors.transparent,
         ),
-        child: Row(
-          children: [
-            Container(
-              width: 18,
-              height: 18,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: circleColor,
+        // 防溢出：当父约束过窄时整体按比例缩放；常规宽度保持原样
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: circleColor,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              const SizedBox(width: 10),
+              Text(
+                label,
+                overflow: TextOverflow.fade,
+                softWrap: false,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                ),
               ),
-            ),
-            if (isSelected) ...[
-              const Spacer(),
-              Icon(Icons.check_circle, color: Colors.blue.shade600, size: 18),
+              if (isSelected) ...[
+                const SizedBox(width: 6),
+                Icon(Icons.check_circle, color: Colors.blue.shade600, size: 18),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -1338,10 +1190,4 @@ class _ColorfulTextStyleEditorV2EnhancedState
         .update(
             brightness: theme, mode: previewMode, char: char, color: result);
   }
-}
-
-/// 颜色预览模式
-enum ColorPreviewMode {
-  pure, // 纯色
-  colorful, // 彩色（五行颜色）
 }
