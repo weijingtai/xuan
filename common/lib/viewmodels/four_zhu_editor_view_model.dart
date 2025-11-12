@@ -463,6 +463,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         type: type,
         isVisible: !isVisible,
         isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       ),
     );
 
@@ -524,6 +525,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     double? shadowOffsetY,
     double? shadowBlurRadius,
   }) {
+    print('🔍 [ViewModel.updateRowStyle] 更新行样式: type=$type');
+    if (textStyleConfig != null) {
+      print('🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色');
+      print('🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
+    }
     final template = _currentTemplate;
     if (template == null) return;
     final updated = template.rowConfigs
@@ -531,7 +537,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
             ? config.copyWith(
                 // 新版样式优先：同步 TextStyleConfig
                 textStyleConfig: textStyleConfig ?? config.textStyleConfig,
-                // 同步旧字段，确保向后兼容
+                // 同步旧字段,确保向后兼容
                 textAlign: textAlign ?? config.textAlign,
                 padding: padding ?? config.padding,
                 borderType: borderType ?? config.borderType,
@@ -540,6 +546,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
             : config)
         .toList(growable: false);
 
+    print('🔍 [ViewModel.updateRowStyle] 调用 _applyCurrentTemplate');
     _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
   }
 
@@ -1241,26 +1248,30 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           ],
         ),
       ],
-      rowConfigs: const [
+      rowConfigs: [
         RowConfig(
           type: RowType.heavenlyStem,
           isVisible: true,
           isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
         ),
         RowConfig(
           type: RowType.earthlyBranch,
           isVisible: true,
           isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
         ),
         RowConfig(
           type: RowType.tenGod,
           isVisible: true,
           isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
         ),
         RowConfig(
           type: RowType.hiddenStems,
           isVisible: true,
           isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
         ),
       ],
       version: 1,
@@ -1280,6 +1291,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     }
     _markRecent(template.id);
     notifyListeners();
+  }
+
+  /// 更新卡片内容区内边距（统一作用于卡片容器的 Padding）。
+  /// 参数：insets 四向内边距。
+  /// 返回：无；通过 _applyCurrentTemplate 触发刷新。
+  void updateCardContentInsets(EdgeInsets insets) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    final style = template.cardStyle.copyWith(contentPadding: insets);
+    _applyCurrentTemplate(template.copyWith(cardStyle: style));
   }
 
   LayoutTemplate? _findTemplateById(String templateId) {

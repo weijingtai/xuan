@@ -763,7 +763,7 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
         type: type,
         values: valuse,
         // label: label,
-        // initialFontStyle: widget.config.fontStyleDataModel,
+        initialConfig: widget.config.textStyleConfig,
         onChanged: (style) {
           // final updated = _applyTextStyleToConfig(widget.config, style);
 

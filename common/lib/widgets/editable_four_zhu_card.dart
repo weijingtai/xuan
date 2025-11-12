@@ -7,6 +7,7 @@ import '../enums/enum_ten_gods.dart' as gods;
 import '../enums/enum_jia_zi.dart' as jz;
 import '../models/eight_chars.dart';
 import '../models/layout_template.dart' show CardStyle, RowConfig;
+import '../models/text_style_config.dart';
 import '../utils/style_resolver.dart';
 
 typedef RowCellBuilder = Widget Function(
@@ -117,19 +118,27 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
     );
     _rows = List<RowConfig>.of(
       widget.rowConfigs ??
-          const [
+          [
             RowConfig(
                 type: RowType.heavenlyStem,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
                 type: RowType.earthlyBranch,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
-                type: RowType.tenGod, isVisible: true, isTitleVisible: true),
+                type: RowType.tenGod,
+                isVisible: true,
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
-                type: RowType.naYin, isVisible: true, isTitleVisible: true),
+                type: RowType.naYin,
+                isVisible: true,
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
           ],
     );
     // NEW: initialize overrides

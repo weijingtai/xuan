@@ -1,6 +1,10 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
 import 'text_style_config.dart';
 
+import '../const_resources_mapper.dart';
+import '../enums/enum_tian_gan.dart';
+import '../enums/enum_di_zhi.dart';
 import '../enums/layout_template_enums.dart';
 
 class LayoutTemplate {
@@ -201,6 +205,7 @@ class CardStyle {
     required this.globalFontFamily,
     required this.globalFontSize,
     required this.globalFontColorHex,
+    this.contentPadding = const EdgeInsets.all(0),
   });
 
   final BorderType dividerType;
@@ -209,6 +214,7 @@ class CardStyle {
   final String globalFontFamily;
   final double globalFontSize;
   final String globalFontColorHex;
+  final EdgeInsets contentPadding;
 
   CardStyle copyWith({
     BorderType? dividerType,
@@ -217,6 +223,7 @@ class CardStyle {
     String? globalFontFamily,
     double? globalFontSize,
     String? globalFontColorHex,
+    EdgeInsets? contentPadding,
   }) {
     return CardStyle(
       dividerType: dividerType ?? this.dividerType,
@@ -225,6 +232,7 @@ class CardStyle {
       globalFontFamily: globalFontFamily ?? this.globalFontFamily,
       globalFontSize: globalFontSize ?? this.globalFontSize,
       globalFontColorHex: globalFontColorHex ?? this.globalFontColorHex,
+      contentPadding: contentPadding ?? this.contentPadding,
     );
   }
 
@@ -236,6 +244,12 @@ class CardStyle {
       'globalFontFamily': globalFontFamily,
       'globalFontSize': globalFontSize,
       'globalFontColorHex': globalFontColorHex,
+      'contentPadding': {
+        'left': contentPadding.left,
+        'top': contentPadding.top,
+        'right': contentPadding.right,
+        'bottom': contentPadding.bottom,
+      },
     };
   }
 
@@ -255,6 +269,17 @@ class CardStyle {
       globalFontFamily: json['globalFontFamily'] as String? ?? 'NotoSans',
       globalFontSize: (json['globalFontSize'] as num?)?.toDouble() ?? 14,
       globalFontColorHex: json['globalFontColorHex'] as String? ?? '#FF000000',
+      contentPadding: () {
+        final m = json['contentPadding'] as Map<String, dynamic>?;
+        if (m == null) return const EdgeInsets.all(0);
+        double pick(String k) => (m[k] as num?)?.toDouble() ?? 0.0;
+        return EdgeInsets.fromLTRB(
+          pick('left'),
+          pick('top'),
+          pick('right'),
+          pick('bottom'),
+        );
+      }(),
     );
   }
 
@@ -268,7 +293,8 @@ class CardStyle {
         other.dividerThickness == dividerThickness &&
         other.globalFontFamily == globalFontFamily &&
         other.globalFontSize == globalFontSize &&
-        other.globalFontColorHex == globalFontColorHex;
+        other.globalFontColorHex == globalFontColorHex &&
+        other.contentPadding == contentPadding;
   }
 
   @override
@@ -279,6 +305,7 @@ class CardStyle {
         globalFontFamily,
         globalFontSize,
         globalFontColorHex,
+        contentPadding,
       );
 }
 
@@ -287,7 +314,7 @@ class RowConfig {
     required this.type,
     required this.isVisible,
     required this.isTitleVisible,
-    this.textStyleConfig,
+    required this.textStyleConfig,
     this.textAlign,
     this.padding,
     this.borderType,
@@ -299,7 +326,7 @@ class RowConfig {
   final bool isTitleVisible;
 
   /// 新版文本样式配置（优先于旧的离散字段）。
-  final TextStyleConfig? textStyleConfig;
+  final TextStyleConfig textStyleConfig;
   final RowTextAlign? textAlign;
   final double? padding;
   final BorderType? borderType;
@@ -333,12 +360,69 @@ class RowConfig {
       'isVisible': isVisible,
       'isTitleVisible': isTitleVisible,
       // 新版样式字段（优先写入）
-      'textStyleConfig': textStyleConfig?.toJson(),
+      'textStyleConfig': textStyleConfig.toJson(),
       'textAlign': textAlign?.name,
       'padding': padding,
       'borderType': borderType?.name,
       'borderColorHex': borderColorHex,
     };
+  }
+
+  /// 根据 RowType 生成带有完整颜色映射的默认 TextStyleConfig
+  static TextStyleConfig _generateDefaultTextStyleConfig(RowType rowType) {
+    Map<String, Color> pureLightMapper;
+    Map<String, Color> colorfulLightMapper;
+    Map<String, Color> pureDarkMapper;
+    Map<String, Color> colorfulDarkMapper;
+
+    switch (rowType) {
+      case RowType.heavenlyStem:
+        // 天干：10 个颜色映射
+        pureLightMapper = Map.fromEntries(
+          TianGan.values.take(10).map((g) => MapEntry(g.name, Colors.black87)),
+        );
+        colorfulLightMapper = ConstResourcesMapper.zodiacGanColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+        pureDarkMapper = Map.fromEntries(
+          TianGan.values.take(10).map((g) => MapEntry(g.name, Colors.white70)),
+        );
+        colorfulDarkMapper = colorfulLightMapper;
+        break;
+
+      case RowType.earthlyBranch:
+        // 地支：12 个颜色映射
+        pureLightMapper = Map.fromEntries(
+          DiZhi.values.take(12).map((z) => MapEntry(z.name, Colors.black87)),
+        );
+        colorfulLightMapper = ConstResourcesMapper.zodiacZhiColors.map(
+          (key, value) => MapEntry(key.name, value),
+        );
+        pureDarkMapper = Map.fromEntries(
+          DiZhi.values.take(12).map((z) => MapEntry(z.name, Colors.white70)),
+        );
+        colorfulDarkMapper = colorfulLightMapper;
+        break;
+
+      default:
+        // 其他行类型使用现有的默认配置
+        return TextStyleConfig.defaultConfig;
+    }
+
+    return TextStyleConfig(
+      colorMapperDataModel: ColorMapperDataModel(
+        pureLightMapper: pureLightMapper,
+        colorfulLightMapper: colorfulLightMapper,
+        pureDarkMapper: pureDarkMapper,
+        colorfulDarkMapper: colorfulDarkMapper,
+      ),
+      textShadowDataModel: TextShadowDataModel(),
+      fontStyleDataModel: FontStyleDataModel(
+        fontWeight: FontWeight.bold,
+        fontSize: 16,
+        fontFamily: 'NotoSansSC',
+      ),
+    );
   }
 
   factory RowConfig.fromJson(Map<String, dynamic> json) {
@@ -364,15 +448,24 @@ class RowConfig {
           )
         : null;
 
-    // 读取新版 TextStyleConfig；若不存在则从旧字段构建以保证向后兼容。
+    // 读取新版 TextStyleConfig；若不存在则使用默认配置以保证向后兼容。
     final Map<String, dynamic>? styleJson =
         json['textStyleConfig'] as Map<String, dynamic>?;
+
+    final textStyleConfig = styleJson != null
+        ? TextStyleConfig.fromJson(styleJson)
+        : _generateDefaultTextStyleConfig(rowType);
+
+    // 调试日志：验证颜色映射数量
+    print('🔍 [RowConfig.fromJson] type=$rowType, '
+        'pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色, '
+        'colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
 
     return RowConfig(
       type: rowType,
       isVisible: json['isVisible'] as bool? ?? true,
       isTitleVisible: json['isTitleVisible'] as bool? ?? true,
-      textStyleConfig: TextStyleConfig.fromJson(styleJson!),
+      textStyleConfig: textStyleConfig,
       textAlign: textAlign,
       padding: (json['padding'] as num?)?.toDouble(),
       borderType: borderType,

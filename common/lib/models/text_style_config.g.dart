@@ -22,27 +22,3 @@ Map<String, dynamic> _$TextStyleConfigToJson(TextStyleConfig instance) =>
       'textShadowDataModel': instance.textShadowDataModel,
       'fontStyleDataModel': instance.fontStyleDataModel,
     };
-
-ColorMapperDataModel _$ColorMapperDataModelFromJson(
-        Map<String, dynamic> json) =>
-    ColorMapperDataModel(
-      pureLightMapper: ColorAhexConverter.mapFromJson(
-          json['pureLightMapper'] as Map<String, dynamic>),
-      colorfulLightMapper: ColorAhexConverter.mapFromJson(
-          json['colorfulLightMapper'] as Map<String, dynamic>),
-      pureDarkMapper: ColorAhexConverter.mapFromJson(
-          json['pureDarkMapper'] as Map<String, dynamic>),
-      colorfulDarkMapper: ColorAhexConverter.mapFromJson(
-          json['colorfulDarkMapper'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$ColorMapperDataModelToJson(
-        ColorMapperDataModel instance) =>
-    <String, dynamic>{
-      'pureLightMapper': ColorAhexConverter.mapToJson(instance.pureLightMapper),
-      'colorfulLightMapper':
-          ColorAhexConverter.mapToJson(instance.colorfulLightMapper),
-      'pureDarkMapper': ColorAhexConverter.mapToJson(instance.pureDarkMapper),
-      'colorfulDarkMapper':
-          ColorAhexConverter.mapToJson(instance.colorfulDarkMapper),
-    };

@@ -5,6 +5,7 @@ import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/layout_template.dart';
 import 'package:common/models/layout_template_dto.dart';
+import 'package:common/models/text_style_config.dart';
 
 void main() {
   const dataSource = LayoutTemplateLocalDataSource();
@@ -39,6 +40,7 @@ void main() {
           type: RowType.heavenlyStem,
           isVisible: true,
           isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
         ),
       ],
       version: 1,

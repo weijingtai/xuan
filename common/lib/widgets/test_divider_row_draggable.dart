@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/drag_payloads.dart';
+import '../models/text_style_config.dart';
 
 /// 分割线演示拖拽源组件。
 ///
@@ -17,13 +18,14 @@ class TestDividerRowDraggable extends StatelessWidget {
   /// - Widget：可拖拽的 Chip，用于向卡片投递 RowInfoPayload。
   @override
   Widget build(BuildContext context) {
-    const payload = RowInfoPayload(
+    var payload = TextRowInfoPayload(
+      config: TextStyleConfig.defaultConfig,
       // 在 V3 中，当提供 rowLabel 时，rowType 仅作占位，不参与具体渲染逻辑。
       rowType: RowType.naYin,
       rowLabel: '行分割符',
     );
 
-    return Draggable<RowInfoPayload>(
+    return Draggable<TextRowInfoPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,

@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:common/commands/commands.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/layout_template.dart';
+import 'package:common/models/text_style_config.dart';
 
 void main() {
   group('CommandHistory', () {
@@ -403,16 +404,18 @@ LayoutTemplate _createTestTemplate() {
         expanded: true,
       ),
     ],
-    rowConfigs: const [
+    rowConfigs: [
       RowConfig(
         type: RowType.heavenlyStem,
         isVisible: true,
         isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       ),
       RowConfig(
         type: RowType.earthlyBranch,
         isVisible: true,
         isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       ),
     ],
     version: 1,
@@ -446,11 +449,12 @@ LayoutTemplate _createTestTemplateWithPillars() {
         expanded: true,
       ),
     ],
-    rowConfigs: const [
+    rowConfigs: [
       RowConfig(
         type: RowType.heavenlyStem,
         isVisible: true,
         isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       ),
     ],
     version: 1,

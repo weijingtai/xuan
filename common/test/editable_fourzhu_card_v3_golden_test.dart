@@ -48,22 +48,26 @@ List<PillarPayload> _buildPillars() {
     PillarPayload(
       pillarType: PillarType.year,
       pillarLabel: '年',
-      pillarContent: _pillarContent(id: 'year#1', pillarType: PillarType.year, label: '年'),
+      pillarContent:
+          _pillarContent(id: 'year#1', pillarType: PillarType.year, label: '年'),
     ),
     PillarPayload(
       pillarType: PillarType.month,
       pillarLabel: '月',
-      pillarContent: _pillarContent(id: 'month#1', pillarType: PillarType.month, label: '月'),
+      pillarContent: _pillarContent(
+          id: 'month#1', pillarType: PillarType.month, label: '月'),
     ),
     PillarPayload(
       pillarType: PillarType.day,
       pillarLabel: '日',
-      pillarContent: _pillarContent(id: 'day#1', pillarType: PillarType.day, label: '日'),
+      pillarContent:
+          _pillarContent(id: 'day#1', pillarType: PillarType.day, label: '日'),
     ),
     PillarPayload(
       pillarType: PillarType.hour,
       pillarLabel: '时',
-      pillarContent: _pillarContent(id: 'hour#1', pillarType: PillarType.hour, label: '时'),
+      pillarContent:
+          _pillarContent(id: 'hour#1', pillarType: PillarType.hour, label: '时'),
     ),
   ];
 }
@@ -75,7 +79,7 @@ List<PillarPayload> _buildPillars() {
 /// - [pillars]：用于构建每行值的柱列表（包含 `pillarContent`）。
 ///
 /// 返回：用于渲染网格的 `RowInfoPayload` 列表。
-List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
+List<TextRowInfoPayload> _buildRows(List<PillarPayload> pillars) {
   // 构造每行的 perPillarValues 映射（键为 pillarContent.id）。
   final stemValues = <String, String>{};
   final branchValues = <String, String>{};
@@ -96,11 +100,21 @@ List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 
   return [
     const ColumnHeaderRowPayload(gender: Gender.male),
-    RowInfoPayload(rowType: RowType.heavenlyStem, rowLabel: '天干', perPillarValues: stemValues),
-    RowInfoPayload(rowType: RowType.earthlyBranch, rowLabel: '地支', perPillarValues: branchValues),
-    const RowInfoPayload(rowType: RowType.separator, rowLabel: '分隔符'),
-    RowInfoPayload(rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
-    RowInfoPayload(rowType: RowType.kongWang, rowLabel: '空亡', perPillarValues: kongWangValues),
+    TextRowInfoPayload(
+        rowType: RowType.heavenlyStem,
+        rowLabel: '天干',
+        perPillarValues: stemValues),
+    TextRowInfoPayload(
+        rowType: RowType.earthlyBranch,
+        rowLabel: '地支',
+        perPillarValues: branchValues),
+    const TextRowInfoPayload(rowType: RowType.separator, rowLabel: '分隔符'),
+    TextRowInfoPayload(
+        rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
+    TextRowInfoPayload(
+        rowType: RowType.kongWang,
+        rowLabel: '空亡',
+        perPillarValues: kongWangValues),
   ];
 }
 
@@ -125,13 +139,13 @@ List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 Future<void> _pumpCard(
   WidgetTester tester, {
   required List<PillarPayload> pillars,
-  required List<RowInfoPayload> rows,
+  required List<TextRowInfoPayload> rows,
   Size size = const Size(420, 280),
 }) async {
   // 设定固定画布尺寸，避免设备不同导致快照不一致。
   await tester.binding.setSurfaceSize(size);
   final pillarsNotifier = ValueNotifier<List<PillarPayload>>(pillars);
-  final rowsNotifier = ValueNotifier<List<RowInfoPayload>>(rows);
+  final rowsNotifier = ValueNotifier<List<TextRowInfoPayload>>(rows);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
 
   await tester.pumpWidget(
@@ -164,7 +178,8 @@ Future<void> _pumpCard(
 /// 验收：生成 `goldens/editable_fourzhu_card_v3_default.png`，用于后续回归对比。
 void main() {
   // 仅网格画笔 Golden：确保分隔线绘制基线稳定
-  testWidgets('CardGridPainter golden: default grid/separators baseline', (tester) async {
+  testWidgets('CardGridPainter golden: default grid/separators baseline',
+      (tester) async {
     await tester.binding.setSurfaceSize(const Size(420, 280));
     // 构造示例坐标：左侧标题列 52 宽，数据列统一 64 宽
     const double leftInset = 8;
@@ -225,7 +240,8 @@ void main() {
     );
   });
 
-  testWidgets('EditableFourZhuCardV3 golden: default grid and separators', (tester) async {
+  testWidgets('EditableFourZhuCardV3 golden: default grid and separators',
+      (tester) async {
     final pillars = _buildPillars();
     await _pumpCard(
       tester,

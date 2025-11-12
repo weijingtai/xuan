@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../enums/layout_template_enums.dart';
+import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
 
 /// EditableFourZhuCardTheme
 /// Encapsulates styling configuration for EditableFourZhuCard V3.
@@ -8,18 +9,19 @@ import '../enums/layout_template_enums.dart';
 /// - Non-negative values for margins, padding, borderWidth, cornerRadius
 /// - `perPillarMargin` keys limited to {year, month, day, hour, luckCycle}
 /// - Font fallback order: user-specified → theme default → system default
+@deprecated
 class EditableFourZhuCardTheme {
   /// Creates a theme with optional sections for card, pillar, cell, and typography.
   /// All numeric values are interpreted in logical pixels.
   const EditableFourZhuCardTheme({
-    this.card,
+    required this.card,
     this.pillar,
     this.cell,
     this.typography,
   });
 
   /// Card-level decoration and background.
-  final CardSection? card;
+  final CardStyleConfig card;
 
   /// Pillar-level decoration (outer margin differentiation is supported).
   final PillarSection? pillar;
@@ -40,7 +42,7 @@ class EditableFourZhuCardTheme {
   ///
   /// Returns: A new `EditableFourZhuCardTheme` with provided overrides applied.
   EditableFourZhuCardTheme copyWith({
-    CardSection? card,
+    CardStyleConfig? card,
     PillarSection? pillar,
     CellSection? cell,
     TypographySection? typography,
@@ -74,9 +76,7 @@ class EditableFourZhuCardTheme {
   /// Returns: An `EditableFourZhuCardTheme` with all available sections parsed.
   factory EditableFourZhuCardTheme.fromJson(Map<String, dynamic> json) {
     return EditableFourZhuCardTheme(
-      card: json['card'] is Map<String, dynamic>
-          ? CardSection.fromJson(json['card'] as Map<String, dynamic>)
-          : null,
+      card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),
       pillar: json['pillar'] is Map<String, dynamic>
           ? PillarSection.fromJson(json['pillar'] as Map<String, dynamic>)
           : null,
@@ -99,7 +99,7 @@ class EditableFourZhuCardTheme {
     final errors = <ThemeValidationError>[];
 
     // Validate card section
-    card?.validateInto(errors);
+    // card?.validateInto(errors);
     // Validate pillar section
     pillar?.validateInto(errors);
     // Validate cell section
@@ -134,6 +134,8 @@ class ThemeValidationError {
 }
 
 /// Card-level decoration section: padding, margin, radius, shadow, and backdrop.
+///
+@Deprecated('Use CardStyleConfig instead')
 class CardSection {
   /// Creates card decoration defaults.
   const CardSection({
@@ -269,6 +271,35 @@ class CardSection {
         message: 'Shadow blur radius must be non-negative.',
       ));
     }
+  }
+
+  CardSection copyWith({
+    Color? backgroundColor,
+    double? borderWidth,
+    Color? borderColor,
+    double? cornerRadius,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    bool? shadowColorFollowsBackground,
+    Color? shadowColor,
+    double? shadowOffsetX,
+    double? shadowOffsetY,
+    double? shadowBlurRadius,
+  }) {
+    return CardSection(
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      borderWidth: borderWidth ?? this.borderWidth,
+      borderColor: borderColor ?? this.borderColor,
+      cornerRadius: cornerRadius ?? this.cornerRadius,
+      padding: padding ?? this.padding,
+      margin: margin ?? this.margin,
+      shadowColorFollowsBackground:
+          shadowColorFollowsBackground ?? this.shadowColorFollowsBackground,
+      shadowColor: shadowColor ?? this.shadowColor,
+      shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
+      shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
+      shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
+    );
   }
 }
 

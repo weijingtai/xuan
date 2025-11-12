@@ -12,7 +12,7 @@ import 'row_strategy.dart';
 ///
 /// 语义：作为“标题行”的拖拽载荷，但继承 `RowInfoPayload`，以便与现有行插入/重排逻辑对齐。
 /// 注意：该载荷仅用于标题行的排序，不代表插入新的数据行。
-class TitleRowPayload extends RowInfoPayload {
+class TitleRowPayload extends TextRowInfoPayload {
   /// Creates a title row payload for drag interactions.
   ///
   /// Parameters:
@@ -97,7 +97,7 @@ class RowTitleColumnPayload extends PillarPayload {
 /// - 每个单元格的内容不同（左上角是性别，其他是列标题）
 /// - 可以与普通行（天干/地支/纳音）互换位置
 /// - 性别标识随表头行移动
-class ColumnHeaderRowPayload extends RowInfoPayload {
+class ColumnHeaderRowPayload extends TextRowInfoPayload {
   /// Creates a column header row payload.
   ///
   /// Parameters:
@@ -269,8 +269,8 @@ class PillarPayload {
 }
 
 /// Payload for dragging a row info into a card (to insert a new row).
-class RowInfoPayload {
-  const RowInfoPayload({
+class TextRowInfoPayload {
+  const TextRowInfoPayload({
     required this.rowType,
     required this.config,
     this.rowLabel,
@@ -341,7 +341,7 @@ class RowInfoPayload {
   /// - [textAlign]: Text alignment override; set `null` to clear.
   ///
   /// Returns: A copied payload reflecting the specified updates.
-  RowInfoPayload copyWith({
+  TextRowInfoPayload copyWith({
     TextStyleConfig? config,
     RowType? rowType,
     String? rowLabel,
@@ -350,7 +350,7 @@ class RowInfoPayload {
     RowTextAlign? textAlign,
     RowComputationStrategy? strategy,
   }) {
-    return RowInfoPayload(
+    return TextRowInfoPayload(
       config: config ?? this.config,
       rowType: rowType ?? this.rowType,
       rowLabel: rowLabel ?? this.rowLabel,

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
+import '../models/text_style_config.dart';
 
 /// Shared controller for FourZhu layout (pillars and rows).
 /// Holds a single source of truth so multiple cards stay in sync.
@@ -42,17 +43,22 @@ class FourZhuLayoutController {
         ),
         rows = ValueNotifier<List<RowConfig>>(
           List<RowConfig>.of(rows ??
-              const [
+              [
                 RowConfig(
                     type: RowType.heavenlyStem,
                     isVisible: true,
-                    isTitleVisible: true),
+                    isTitleVisible: true,
+                    textStyleConfig: TextStyleConfig.defaultConfig),
                 RowConfig(
                     type: RowType.earthlyBranch,
                     isVisible: true,
-                    isTitleVisible: true),
+                    isTitleVisible: true,
+                    textStyleConfig: TextStyleConfig.defaultConfig),
                 RowConfig(
-                    type: RowType.naYin, isVisible: true, isTitleVisible: true),
+                    type: RowType.naYin,
+                    isVisible: true,
+                    isTitleVisible: true,
+                    textStyleConfig: TextStyleConfig.defaultConfig),
               ]),
         ),
         columnOverrides = ValueNotifier<Map<int, Map<RowType, String>>>(

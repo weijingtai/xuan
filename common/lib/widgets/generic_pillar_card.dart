@@ -192,7 +192,7 @@ class _GenericPillarCardState extends State<GenericPillarCard>
     if (cfg == null) return base;
 
     // 优先用 TextStyleConfig 转换出的样式做覆盖来源
-    final fromCfg = cfg.textStyleConfig?.toTextStyle();
+    final fromCfg = cfg.textStyleConfig.toTextStyle();
     // final overrideFamily = fromCfg?.fontFamily ?? cfg.fontFamily;
     // final overrideSize = fromCfg?.fontSize ?? cfg.fontSize;
     // final overrideColor = fromCfg?.color ??

@@ -14,6 +14,7 @@ import 'enums/layout_template_enums.dart';
 import 'enums/enum_jia_zi.dart';
 import 'models/eight_chars.dart';
 import 'models/layout_template.dart';
+import 'models/text_style_config.dart';
 
 class DevEnterPage extends StatefulWidget {
   const DevEnterPage({super.key});
@@ -56,15 +57,39 @@ class _DevEnterPageState extends State<DevEnterPage> {
     );
     _columnPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
     _rowPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
-    _columnRows = const [
-      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+    _columnRows = [
+      RowConfig(
+          type: RowType.heavenlyStem,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
+      RowConfig(
+          type: RowType.earthlyBranch,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
+      RowConfig(
+          type: RowType.naYin,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
     ];
-    _rowRows = const [
-      RowConfig(type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-      RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+    _rowRows = [
+      RowConfig(
+          type: RowType.heavenlyStem,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
+      RowConfig(
+          type: RowType.earthlyBranch,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
+      RowConfig(
+          type: RowType.naYin,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig),
     ];
     _cardStyle = const CardStyle(
       dividerType: BorderType.solid,

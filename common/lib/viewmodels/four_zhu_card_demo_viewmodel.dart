@@ -1,3 +1,4 @@
+import 'package:common/widgets/editable_fourzhu_card/models/card_style_config.dart';
 import 'package:flutter/material.dart';
 
 import '../enums/enum_di_zhi.dart';
@@ -31,6 +32,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     _initDefaults();
   }
 
+  // late CardStyleConfig currentCardStyleConfig;
+
   /// 是否处于可编辑模式（预留，当前页面主要用于开关演示）。
   bool _isEditable = false;
 
@@ -63,11 +66,13 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 当前主题配置与解析控制器。
   late EditableFourZhuCardTheme _theme;
+  EditableFourZhuCardTheme get theme => _theme;
+
   EditableFourZhuThemeController? _themeController;
 
   /// V3 载荷型 Notifier：柱/行/内边距。
   late final ValueNotifier<List<PillarPayload>> pillarsNotifier;
-  late final ValueNotifier<List<RowInfoPayload>> rowListNotifier;
+  late final ValueNotifier<List<TextRowInfoPayload>> rowListNotifier;
   late final ValueNotifier<EdgeInsets> paddingNotifier;
 
   /// 初始化默认数据与主题。
@@ -83,11 +88,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     );
 
     // 默认主题：卡片边角与排版参数。
-    _theme = const EditableFourZhuCardTheme(
-      card: CardSection(
-        cornerRadius: 8,
-        padding: EdgeInsets.only(left: 12, top: 12, right: 12, bottom: 12),
-      ),
+    _theme = EditableFourZhuCardTheme(
+      card: CardStyleConfig.defaultCardStyleConfig,
       pillar: PillarSection(
         defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
         borderWidth: 0,
@@ -156,28 +158,28 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     ]);
     // 在 v3 卡片中默认显示“表头行”（列标题），位于索引 0。
     // 后续数据行（天干、地支、纳音）依次排列在其后。
-    rowListNotifier = ValueNotifier<List<RowInfoPayload>>([
-      RowInfoPayload(
+    rowListNotifier = ValueNotifier<List<TextRowInfoPayload>>([
+      TextRowInfoPayload(
         rowType: RowType.columnHeaderRow,
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
         config: TextStyleConfig.defaultConfig,
       ),
       // 新增：空亡信息行，使用策略驱动按需计算每柱值
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
         strategy: KongWangRowStrategy(),
@@ -188,7 +190,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   }
 
   /// 返回当前主题。
-  EditableFourZhuCardTheme get theme => _theme;
+  // EditableFourZhuCardTheme get theme => _theme;
 
   /// 返回当前主题控制器（可能为 null）。
   EditableFourZhuThemeController? get themeController => _themeController;
@@ -216,6 +218,14 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 返回是否开启调试滞回可视化。
   bool get debugHysteresisOverlay => _debugHysteresisOverlay;
+
+  void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
+    _theme = newTheme;
+    _themeController = EditableFourZhuThemeController(_theme);
+    // 主动同步内边距以触发 V3 的重算链，避免等值短路导致监听未触发
+    paddingNotifier.value = newTheme.card.padding;
+    notifyListeners();
+  }
 
   /// 设置是否启用独立映射渲染。
   /// 参数：v 表示开关值。

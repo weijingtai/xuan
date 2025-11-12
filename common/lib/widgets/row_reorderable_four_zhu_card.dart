@@ -7,6 +7,7 @@ import '../enums/enum_di_zhi.dart' as dz;
 import '../enums/enum_jia_zi.dart' as jz;
 import '../models/eight_chars.dart';
 import '../models/layout_template.dart' show CardStyle, RowConfig;
+import '../models/text_style_config.dart';
 import '../utils/style_resolver.dart';
 import '../models/drag_payloads.dart';
 
@@ -86,17 +87,22 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     );
     _rows = List<RowConfig>.of(
       widget.rowConfigs ??
-          const [
+          [
             RowConfig(
                 type: RowType.heavenlyStem,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
                 type: RowType.earthlyBranch,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
-                type: RowType.naYin, isVisible: true, isTitleVisible: true),
+                type: RowType.naYin,
+                isVisible: true,
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
           ],
     );
     // Initialize overrides from incoming shared state if provided
@@ -359,11 +365,12 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                       // 在“空隙”区域也允许投递，确保插入发生在提示位置
                       DragTarget<Object>(
                         onWillAccept: (data) {
-                          final accept = data is RowInfoPayload || data is int;
+                          final accept =
+                              data is TextRowInfoPayload || data is int;
                           if (accept) {
                             setState(() {
                               _hoverRowInsertIndex = insertIndex;
-                              _hoveringExternalRow = data is RowInfoPayload;
+                              _hoveringExternalRow = data is TextRowInfoPayload;
                               _isInternalDragging = data is int;
                             });
                           }
@@ -375,7 +382,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                           _isInternalDragging = false;
                         }),
                         onAccept: (data) {
-                          if (data is RowInfoPayload) {
+                          if (data is TextRowInfoPayload) {
                             // 外部拖拽：在当前“空隙”索引插入
                             _insertExternalRow(insertIndex, data);
                           } else if (data is int) {
@@ -441,11 +448,12 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                             onWillAccept: (data) {
                               // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
                               final accept =
-                                  data is RowInfoPayload || data is int;
+                                  data is TextRowInfoPayload || data is int;
                               if (accept) {
                                 setState(() {
                                   _hoverRowInsertIndex = insertIndex;
-                                  _hoveringExternalRow = data is RowInfoPayload;
+                                  _hoveringExternalRow =
+                                      data is TextRowInfoPayload;
                                 });
                               }
                               return accept;
@@ -455,7 +463,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                               _hoveringExternalRow = false;
                             }),
                             onAccept: (data) {
-                              if (data is RowInfoPayload) {
+                              if (data is TextRowInfoPayload) {
                                 // 外部拖拽：插入新行到当前索引（与空隙提示一致）
                                 _insertExternalRow(insertIndex, data);
                               } else if (data is int) {
@@ -488,11 +496,11 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             child: DragTarget<Object>(
               onWillAccept: (data) {
                 // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
-                final accept = data is RowInfoPayload || data is int;
+                final accept = data is TextRowInfoPayload || data is int;
                 if (accept) {
                   setState(() {
                     _hoverRowInsertIndex = 0;
-                    _hoveringExternalRow = data is RowInfoPayload;
+                    _hoveringExternalRow = data is TextRowInfoPayload;
                   });
                 }
                 return accept;
@@ -502,7 +510,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 _hoveringExternalRow = false;
               }),
               onAccept: (data) {
-                if (data is RowInfoPayload) {
+                if (data is TextRowInfoPayload) {
                   // 外部拖拽：插入新行
                   _insertExternalRow(0, data);
                 } else if (data is int) {
@@ -847,7 +855,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         ?.call(Map<int, String>.of(_rowLabelOverrides));
   }
 
-  void _insertExternalRow(int index, RowInfoPayload payload) {
+  void _insertExternalRow(int index, TextRowInfoPayload payload) {
     setState(() {
       final absIndex = _computeAbsoluteInsertIndex(
           index, _rows.where((r) => r.isVisible).toList());
@@ -857,6 +865,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         type: payload.rowType,
         isVisible: true,
         isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       );
       _rows.insert(absIndex, newCfg);
 

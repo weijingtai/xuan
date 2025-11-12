@@ -4,6 +4,7 @@ import '../enums/layout_template_enums.dart';
 import '../models/eight_chars.dart';
 import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
+import '../models/text_style_config.dart';
 import '../widgets/column_reorderable_four_zhu_card.dart';
 import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
@@ -41,12 +42,22 @@ class _ReorderableCardsDemoState extends State<ReorderableCardsDemo> {
         PillarType.day,
         PillarType.hour
       ],
-      rows: const [
+      rows: [
         RowConfig(
-            type: RowType.heavenlyStem, isVisible: true, isTitleVisible: true),
+            type: RowType.heavenlyStem,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig),
         RowConfig(
-            type: RowType.earthlyBranch, isVisible: true, isTitleVisible: true),
-        RowConfig(type: RowType.naYin, isVisible: true, isTitleVisible: true),
+            type: RowType.earthlyBranch,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig),
+        RowConfig(
+            type: RowType.naYin,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig),
       ],
     );
     _controller.pillars.addListener(() => setState(() {}));

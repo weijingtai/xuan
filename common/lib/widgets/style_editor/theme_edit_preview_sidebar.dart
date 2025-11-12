@@ -1,3 +1,4 @@
+import 'package:common/widgets/editable_fourzhu_card/models/card_style_config.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -43,7 +44,7 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
 
   /// 预览用的载荷 ValueNotifier（柱/行/内边距）。
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<RowInfoPayload>> _rowListNotifier;
+  late final ValueNotifier<List<TextRowInfoPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
 
   /// 是否启用 V3 彩色模式（与 Demo 一致）；侧栏默认关闭，保证对比度与信息清晰。
@@ -57,11 +58,8 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
   void initState() {
     super.initState();
     _theme = widget.initialTheme ??
-        const EditableFourZhuCardTheme(
-          card: CardSection(
-            cornerRadius: 8,
-            padding: EdgeInsets.only(left: 12, top: 12, right: 12, bottom: 12),
-          ),
+        EditableFourZhuCardTheme(
+          card: CardStyleConfig.defaultCardStyleConfig,
           pillar: PillarSection(
             defaultMargin:
                 EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
@@ -134,23 +132,23 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
       ),
     ]);
 
-    _rowListNotifier = ValueNotifier<List<RowInfoPayload>>([
-      RowInfoPayload(
+    _rowListNotifier = ValueNotifier<List<TextRowInfoPayload>>([
+      TextRowInfoPayload(
           rowType: RowType.columnHeaderRow,
           config: TextStyleConfig.defaultConfig),
-      RowInfoPayload(
+      TextRowInfoPayload(
           rowType: RowType.heavenlyStem,
           rowLabel: '天干',
           config: TextStyleConfig.defaultConfig),
-      RowInfoPayload(
+      TextRowInfoPayload(
           rowType: RowType.earthlyBranch,
           rowLabel: '地支',
           config: TextStyleConfig.defaultConfig),
-      RowInfoPayload(
+      TextRowInfoPayload(
           rowType: RowType.naYin,
           rowLabel: '纳音',
           config: TextStyleConfig.defaultConfig),
-      RowInfoPayload(
+      TextRowInfoPayload(
           rowType: RowType.kongWang,
           rowLabel: '空亡',
           config: TextStyleConfig.defaultConfig),
@@ -230,9 +228,9 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: EditableFourZhuStyleEditorPanel(
-              theme: _theme,
-              onChanged: _onThemeChanged,
-            ),
+                // theme: _theme,
+                // onChanged: _onThemeChanged,
+                ),
           ),
         ),
 

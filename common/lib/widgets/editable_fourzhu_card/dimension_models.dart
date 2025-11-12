@@ -192,7 +192,7 @@ class RowDimension implements Measurable {
   final int index;
 
   /// 数据载荷（包含行类型、策略等）
-  final RowInfoPayload payload;
+  final TextRowInfoPayload payload;
 
   /// 用户自定义的高度覆盖值
   ///
@@ -309,14 +309,21 @@ class CardLayoutModel {
       0.0,
       (sum, col) => sum + col.measure(ctx),
     );
-    final width = totalColumnsWidth + padding.left + padding.right + (dragHandleColWidth * 2);
+    final width = totalColumnsWidth +
+        padding.left +
+        padding.right +
+        (dragHandleColWidth * 2);
 
     // 高度 = padding.top + topGripRow + 所有行高之和 + bottomGripRow + padding.bottom
     final double totalRowsHeight = rows.fold<double>(
       0.0,
       (sum, row) => sum + row.measure(ctx),
     );
-    final height = padding.top + dragHandleRowHeight + totalRowsHeight + dragHandleRowHeight + padding.bottom;
+    final height = padding.top +
+        dragHandleRowHeight +
+        totalRowsHeight +
+        dragHandleRowHeight +
+        padding.bottom;
 
     return Size(width, height);
   }
@@ -593,7 +600,7 @@ class CardLayoutModel {
   /// 这是新旧系统的桥接方法，允许从现有数据无缝构建新模型。
   static CardLayoutModel fromNotifiers({
     required List<PillarPayload> pillars,
-    required List<RowInfoPayload> rows,
+    required List<TextRowInfoPayload> rows,
     required EdgeInsets padding,
     Map<int, double>? columnWidthOverrides,
     Map<int, double>? rowHeightOverrides,

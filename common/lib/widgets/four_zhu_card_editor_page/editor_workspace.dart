@@ -15,6 +15,7 @@ import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
 import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
+import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../editable_fourzhu_card.dart';
 import '../editable_fourzhu_card/text_groups.dart';
 
@@ -48,8 +49,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
 
   /// V3 卡片数据源：柱/行/内边距。
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<RowInfoPayload>> _rowListNotifier;
+  late final ValueNotifier<List<TextRowInfoPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
+  final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
+  final ValueNotifier<bool> _showGripColumnsNotifier =
+      ValueNotifier<bool>(true);
 
   /// V3 卡片分组样式：从 RowConfig 转换而来，用于覆盖全局样式。
   Map<TextGroup, TextStyle>? _groupTextStyles;
@@ -66,7 +70,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     super.initState();
     _pillarsNotifier =
         ValueNotifier<List<PillarPayload>>(_buildPillars(widget.eightChars));
-    _rowListNotifier = ValueNotifier<List<RowInfoPayload>>(_buildDefaultRows());
+    _rowListNotifier =
+        ValueNotifier<List<TextRowInfoPayload>>(_buildDefaultRows());
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
@@ -105,6 +110,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     _pillarsNotifier.dispose();
     _rowListNotifier.dispose();
     _paddingNotifier.dispose();
+    _showGripRowsNotifier.dispose();
+    _showGripColumnsNotifier.dispose();
     super.dispose();
   }
 
@@ -177,6 +184,42 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
               ],
             ),
             const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.view_day),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '显示上下抓手行',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                Switch(
+                  value: _showGripRowsNotifier.value,
+                  onChanged: (v) =>
+                      setState(() => _showGripRowsNotifier.value = v),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.view_column),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '显示左右抓手列',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                ),
+                Switch(
+                  value: _showGripColumnsNotifier.value,
+                  onChanged: (v) =>
+                      setState(() => _showGripColumnsNotifier.value = v),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
             Expanded(
               child: Theme(
                 data: workspaceTheme,
@@ -189,6 +232,39 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       rowListNotifier: _rowListNotifier,
                       paddingNotifier: _paddingNotifier,
                       gender: Gender.male,
+                      showGripRows: _showGripRowsNotifier.value,
+                      showGripColumns: _showGripColumnsNotifier.value,
+                      cardDecoration: BoxDecoration(
+                        color: Provider.of<FourZhuCardDemoViewModel>(context,
+                                    listen: true)
+                                .themeController
+                                ?.resolveCardBackgroundColor() ??
+                            Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(
+                          Provider.of<FourZhuCardDemoViewModel>(context,
+                                      listen: false)
+                                  .themeController
+                                  ?.resolveCardCornerRadius() ??
+                              12,
+                        ),
+                        boxShadow: Provider.of<FourZhuCardDemoViewModel>(
+                                context,
+                                listen: false)
+                            .themeController
+                            ?.resolveCardBoxShadow(),
+                        border: Border.all(
+                          color: Provider.of<FourZhuCardDemoViewModel>(context,
+                                      listen: false)
+                                  .themeController
+                                  ?.resolveCardBorderColor() ??
+                              Theme.of(context).dividerColor.withOpacity(0.35),
+                          width: Provider.of<FourZhuCardDemoViewModel>(context,
+                                      listen: false)
+                                  .themeController
+                                  ?.resolveCardEffectiveBorderWidth() ??
+                              1,
+                        ),
+                      ),
                       // 绑定全局排版到 V3 卡片
                       globalFontFamily:
                           (globalFamily != null && globalFamily.isNotEmpty)
@@ -271,29 +347,29 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 构建默认行：表头、天干、地支、纳音、空亡
   /// 参数：无
   /// 返回：行载荷列表
-  List<RowInfoPayload> _buildDefaultRows() {
+  List<TextRowInfoPayload> _buildDefaultRows() {
     // var defaultTextStyleConfig =
     return [
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.columnHeaderRow,
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
         config: TextStyleConfig.defaultConfig,
       ),
-      RowInfoPayload(
+      TextRowInfoPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
         config: TextStyleConfig.defaultConfig,
@@ -336,11 +412,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
     // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
-    final rows = <RowInfoPayload>[
-      RowInfoPayload(rowType: RowType.columnHeaderRow, config: null),
+    final rows = <TextRowInfoPayload>[
+      TextRowInfoPayload(rowType: RowType.columnHeaderRow, config: null),
       for (final c in configs)
         if (c.isVisible)
-          RowInfoPayload(
+          TextRowInfoPayload(
             rowType: c.type,
             rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
             textAlign: c.textAlign,
@@ -349,6 +425,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     ];
 
     _rowListNotifier.value = rows;
+
+    final insets = viewModel.cardStyle?.contentPadding;
+    if (insets != null) {
+      _paddingNotifier.value = insets;
+    }
   }
 
   /// 根据行类型返回默认标题文案。

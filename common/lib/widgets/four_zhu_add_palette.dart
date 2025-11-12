@@ -108,14 +108,14 @@ class _KongWangRowDraggable extends StatelessWidget {
   /// 返回：携带 `RowInfoPayload.kongWang` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    final payload = RowInfoPayload(
+    final payload = TextRowInfoPayload(
       rowType: RowType.kongWang,
       rowLabel: '空亡',
       // 在没有明确 perPillarValues 覆盖的情况下，使用策略计算各柱的空亡。
       strategy: KongWangRowStrategy(),
       config: TextStyleConfig.defaultConfig,
     );
-    return Draggable<RowInfoPayload>(
+    return Draggable<TextRowInfoPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,
@@ -140,12 +140,12 @@ class _RowSeparatorDraggable extends StatelessWidget {
   /// 返回：携带 `RowInfoPayload(rowType: RowType.separator)` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    var payload = RowInfoPayload(
+    var payload = TextRowInfoPayload(
       rowType: RowType.separator,
       rowLabel: '分割线',
       config: TextStyleConfig.defaultConfig,
     );
-    return Draggable<RowInfoPayload>(
+    return Draggable<TextRowInfoPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,

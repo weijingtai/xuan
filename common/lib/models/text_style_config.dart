@@ -85,8 +85,13 @@ class TextStyleConfig {
   }) {
     Color? textColor;
     if (char != null && colorPreviewMode != null && brightness != null) {
-      textColor = colorMapperDataModel.getBy(
-          theme: brightness, mode: colorPreviewMode)[char];
+      final mapper =
+          colorMapperDataModel.getBy(theme: brightness, mode: colorPreviewMode);
+      textColor = mapper[char];
+      print(
+          '🔍 [toTextStyle] 字符="$char", mode=$colorPreviewMode, brightness=$brightness');
+      print('🔍 [toTextStyle] mapper 包含 ${mapper.length} 个颜色映射');
+      print('🔍 [toTextStyle] 该字符颜色: $textColor');
     }
 
     return TextStyle(
@@ -98,8 +103,8 @@ class TextStyleConfig {
           ? [
               Shadow(
                 color: textShadowDataModel.followTextColor
-                    ? textColor ?? textShadowDataModel.shadowColor
-                    : textShadowDataModel.shadowColor,
+                    ? textColor ?? textShadowDataModel.lightShadowColor
+                    : textShadowDataModel.lightShadowColor,
                 blurRadius: textShadowDataModel.shadowBlurRadius,
                 offset: Offset(
                   textShadowDataModel.shadowOffsetX,
@@ -148,7 +153,7 @@ class TextStyleConfig {
         shadowEnabled: hasShadow,
         followTextColor: false,
         shadowBlurRadius: shadow?.blurRadius ?? 10,
-        shadowColor: shadow?.color ?? (style.color ?? Colors.black),
+        lightShadowColor: shadow?.color ?? (style.color ?? Colors.black),
         shadowOpacity: 0.65,
         shadowOffsetX: shadow?.offset.dx ?? 5.0,
         shadowOffsetY: shadow?.offset.dy ?? 5.0,
@@ -198,7 +203,7 @@ class TextStyleConfig {
             (shadowBlurRadius != null),
         followTextColor: false,
         shadowBlurRadius: shadowBlurRadius ?? 10,
-        shadowColor: shadowColor,
+        lightShadowColor: shadowColor,
         shadowOpacity: 0.65,
         shadowOffsetX: shadowOffsetX ?? 5.0,
         shadowOffsetY: shadowOffsetY ?? 5.0,
@@ -532,7 +537,8 @@ class TextShadowDataModel {
   bool shadowEnabled = false;
   bool followTextColor = false;
   double shadowBlurRadius = 10;
-  Color shadowColor = Colors.black;
+  Color lightShadowColor = Colors.black;
+  Color darkShadowColor = Colors.white;
   double shadowOpacity = 0.65;
   double shadowOffsetX = 5.0; // 默认 X 轴偏移
   double shadowOffsetY = 5.0; // 默认 Y 轴偏移
@@ -540,7 +546,8 @@ class TextShadowDataModel {
     this.shadowEnabled = false,
     this.followTextColor = false,
     this.shadowBlurRadius = 10,
-    this.shadowColor = Colors.black,
+    this.lightShadowColor = Colors.black,
+    this.darkShadowColor = Colors.white,
     this.shadowOpacity = 0.65,
     this.shadowOffsetX = 5.0,
     this.shadowOffsetY = 5.0,
@@ -549,7 +556,8 @@ class TextShadowDataModel {
     bool? shadowEnabled,
     bool? followTextColor,
     double? shadowBlurRadius,
-    Color? shadowColor,
+    Color? lightShadowColor,
+    Color? darkShadowColor,
     double? shadowOpacity,
     double? shadowOffsetX,
     double? shadowOffsetY,
@@ -558,7 +566,8 @@ class TextShadowDataModel {
       shadowEnabled: shadowEnabled ?? this.shadowEnabled,
       followTextColor: followTextColor ?? this.followTextColor,
       shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
-      shadowColor: shadowColor ?? this.shadowColor,
+      lightShadowColor: lightShadowColor ?? this.lightShadowColor,
+      darkShadowColor: darkShadowColor ?? this.darkShadowColor,
       shadowOpacity: shadowOpacity ?? this.shadowOpacity,
       shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
       shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
@@ -571,7 +580,8 @@ class TextShadowDataModel {
       shadowEnabled: json['shadowEnabled'] as bool? ?? false,
       followTextColor: json['followTextColor'] as bool? ?? false,
       shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble() ?? 10,
-      shadowColor: c.fromJson((json['shadowColor'] as String?) ?? '#FF000000'),
+      lightShadowColor:
+          c.fromJson((json['shadowColor'] as String?) ?? '#FF000000'),
       shadowOpacity: (json['shadowOpacity'] as num?)?.toDouble() ?? 0.65,
       shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble() ?? 5.0,
       shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble() ?? 5.0,
@@ -583,7 +593,7 @@ class TextShadowDataModel {
       'shadowEnabled': shadowEnabled,
       'followTextColor': followTextColor,
       'shadowBlurRadius': shadowBlurRadius,
-      'shadowColor': c.toJson(shadowColor),
+      'shadowColor': c.toJson(lightShadowColor),
       'shadowOpacity': shadowOpacity,
       'shadowOffsetX': shadowOffsetX,
       'shadowOffsetY': shadowOffsetY,

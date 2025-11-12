@@ -1,3 +1,4 @@
+import 'package:common/models/text_style_config.dart';
 import 'package:flutter/material.dart';
 
 import '../enums/layout_template_enums.dart';
@@ -121,48 +122,73 @@ class EditableFourZhuThemeController {
   /// Resolves card-level margin override.
   ///
   /// Returns: The card-level margin override or `null`.
-  EdgeInsets? resolveCardMargin() => theme.card?.margin;
+  // EdgeInsets? resolveCardMargin() => theme.card?.;
 
   /// Resolves card-level corner radius override.
   ///
   /// Returns: The corner radius override or `null`.
-  double? resolveCardCornerRadius() => theme.card?.cornerRadius;
+  double? resolveCardCornerRadius() => theme.card?.border?.radius ?? 0;
 
   /// Resolves card-level elevation override.
   ///
   /// Returns: The elevation override or `null`.
-  double? resolveCardElevation() => theme.card?.elevation;
+  // double? resolveCardElevation() => theme.card?.elevation;
 
   /// Resolves card-level background color override.
   ///
   /// Returns: The background color override or `null`.
-  Color? resolveCardBackgroundColor() => theme.card?.backgroundColor;
+  Color? resolveCardBackgroundColor() => theme.card?.lightBackgroundColor;
 
   /// Resolves card-level border width.
   ///
   /// Returns: The configured card border width or `null` when not set.
-  double? resolveCardBorderWidth() => theme.card?.borderWidth;
+  double? resolveCardBorderWidth() => theme.card?.border?.width ?? 0;
+  double? resolveCardEffectiveBorderWidth() {
+    final b = theme.card?.border;
+    if (b == null) return 0;
+    if (b.enabled != true) return 0;
+    return b.width;
+  }
 
   /// Resolves card-level border color.
   ///
   /// Returns: The configured card border color or `null` when not set.
-  Color? resolveCardBorderColor() => theme.card?.borderColor;
+  Color? resolveCardBorderColor() => theme.card?.border?.lightColor;
 
   /// Resolves card-level box shadow from theme.
   ///
   /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
   /// otherwise `null`.
-  List<BoxShadow>? resolveCardBoxShadow() {
+  List<BoxShadow>? resolveCardBoxShadow({
+    Brightness? brightness = Brightness.light,
+    ColorPreviewMode? colorMode,
+  }) {
     final c = theme.card;
     if (c == null) return null;
-    final Color? color = (c.shadowColorFollowsBackground == true)
-        ? c.backgroundColor
-        : c.shadowColor;
+    if (c.shadow?.withShadow != true) return null;
+    if (c.shadow?.withShadow != true) return null;
+    Color? color;
+    if (c.shadow?.followCardBackgroundColor ?? false) {
+      color = (brightness == Brightness.light)
+          ? c.lightBackgroundColor
+          : c.darkBackgroundColor;
+    } else {
+      color = (brightness == Brightness.light)
+          ? c.shadow?.lightThemeColor
+          : c.shadow?.darkThemeColor;
+    }
     if (color == null) return null;
-    final dx = c.shadowOffsetX ?? 0;
-    final dy = c.shadowOffsetY ?? 0;
-    final blur = c.shadowBlurRadius ?? 0;
-    return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
+    final dx = c.shadow?.offset.dx ?? 0;
+    final dy = c.shadow?.offset.dy ?? 0;
+    final blur = c.shadow?.blurRadius ?? 0;
+    final spread = c.shadow?.spreadRadius ?? 0;
+    return [
+      BoxShadow(
+          color: color,
+          offset: Offset(dx, dy),
+          blurRadius: blur,
+          spreadRadius: spread)
+    ];
   }
 
   /// Resolves pillar-level box shadow from theme.

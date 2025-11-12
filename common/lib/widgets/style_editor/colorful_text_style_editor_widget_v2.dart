@@ -65,7 +65,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
         shadowEnabled: false,
         followTextColor: false,
         shadowBlurRadius: 10,
-        shadowColor: Colors.black,
+        lightShadowColor: Colors.black,
         shadowOpacity: 0.65,
         shadowOffsetX: 5.0,
         shadowOffsetY: 5.0,
@@ -122,32 +122,43 @@ class _ColorfulTextStyleEditorV2EnhancedState
   @override
   void initState() {
     super.initState();
-    fontStyleDataModelNotifier = ValueNotifier(FontStyleDataModel(
-      fontFamily: 'sans-serif',
-      fontSize: 16,
-      fontWeight: FontWeight.normal,
-    ))
-      ..addListener(() => onFontChanged());
-    shadowDataModelNotifier = ValueNotifier(defaultShadow)
-      ..addListener(() => onFontChanged());
+    // 优先使用 initialConfig，如果不存在则使用默认值
+    fontStyleDataModelNotifier = ValueNotifier(
+      widget.initialConfig?.fontStyleDataModel ??
+          FontStyleDataModel(
+            fontFamily: 'sans-serif',
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+          ),
+    )..addListener(() => onFontChanged());
+
+    shadowDataModelNotifier = ValueNotifier(
+      widget.initialConfig?.textShadowDataModel ?? defaultShadow,
+    )..addListener(() => onFontChanged());
+
     colorMapperDataModelNotifier = ValueNotifier(
-      ColorMapperDataModel(
-        pureLightMapper: pureLightMapper,
-        colorfulLightMapper: colorfulLightMapper,
-        pureDarkMapper: pureDarkMapper,
-        colorfulDarkMapper: colorfulDarkMapper,
-      ),
+      widget.initialConfig?.colorMapperDataModel ??
+          ColorMapperDataModel(
+            pureLightMapper: pureLightMapper,
+            colorfulLightMapper: colorfulLightMapper,
+            pureDarkMapper: pureDarkMapper,
+            colorfulDarkMapper: colorfulDarkMapper,
+          ),
     )..addListener(() => onFontChanged());
   }
 
   void onFontChanged() {
-    widget.onChanged(
-      TextStyleConfig(
-        colorMapperDataModel: colorMapperDataModelNotifier.value,
-        textShadowDataModel: shadowDataModelNotifier.value,
-        fontStyleDataModel: fontStyleDataModelNotifier.value,
-      ),
+    print('🔍 [onFontChanged] 开始传播样式变更到父组件');
+    final config = TextStyleConfig(
+      colorMapperDataModel: colorMapperDataModelNotifier.value,
+      textShadowDataModel: shadowDataModelNotifier.value,
+      fontStyleDataModel: fontStyleDataModelNotifier.value,
     );
+    print(
+        '🔍 [onFontChanged] 新 colorMapperDataModel.pureLightMapper 包含 ${config.colorMapperDataModel.pureLightMapper.length} 个颜色');
+    print(
+        '🔍 [onFontChanged] 新 colorMapperDataModel.colorfulLightMapper 包含 ${config.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
+    widget.onChanged(config);
   }
 
   @override
@@ -257,7 +268,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
                         'System',
                         'NotoSansSC-Regular',
                         'PingFang SC',
-                        'sans-serif'
+                        'sans-serif',
+                        'NotoSansSC'
                       ]
                           .map((font) => DropdownMenuItem(
                                 value: font,
@@ -453,16 +465,40 @@ class _ColorfulTextStyleEditorV2EnhancedState
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                '阴影颜色',
+                'Light 阴影颜色',
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
               ),
               GestureDetector(
-                onTap: () => _pickShadowColor(shadowDataModel.shadowColor),
+                onTap: () =>
+                    _pickLightShadowColor(shadowDataModel.lightShadowColor),
                 child: Container(
                   width: 60,
                   height: 36,
                   decoration: BoxDecoration(
-                    color: shadowDataModel.shadowColor,
+                    color: shadowDataModel.lightShadowColor,
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.grey.shade400, width: 2),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Dark 阴影颜色',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+              ),
+              GestureDetector(
+                onTap: () =>
+                    _pickDarkShadowColor(shadowDataModel.darkShadowColor),
+                child: Container(
+                  width: 60,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: shadowDataModel.darkShadowColor,
                     borderRadius: BorderRadius.circular(6),
                     border: Border.all(color: Colors.grey.shade400, width: 2),
                   ),
@@ -612,7 +648,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     child: ValueListenableBuilder(
                         valueListenable: _previewCharIndexNotifier,
                         builder: (ctx, index, _) {
-                          Color shadowColor = shadowDataModel.shadowColor;
+                          Color shadowColor = shadowDataModel.lightShadowColor;
                           String char = widget.values.isNotEmpty
                               ? widget.values[index]
                               : '甲';
@@ -822,7 +858,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  void _pickShadowColor(Color color) async {
+  void _pickLightShadowColor(Color color) async {
     final result = await showColorPickerDialog(
       context,
       color,
@@ -835,7 +871,23 @@ class _ColorfulTextStyleEditorV2EnhancedState
       },
     );
     shadowDataModelNotifier.value = shadowDataModelNotifier.value
-        .copyWith(shadowColor: result, followTextColor: false);
+        .copyWith(lightShadowColor: result, followTextColor: false);
+  }
+
+  void _pickDarkShadowColor(Color color) async {
+    final result = await showColorPickerDialog(
+      context,
+      color,
+      title: const Text('选择颜色'),
+      pickersEnabled: {
+        ColorPickerType.wheel: true,
+        // ColorPickerType.accent: widget,
+        // ColorPickerType.primary: widget.dialogEnablePrimaryAccent,
+        ColorPickerType.custom: false,
+      },
+    );
+    shadowDataModelNotifier.value = shadowDataModelNotifier.value
+        .copyWith(darkShadowColor: result, followTextColor: false);
   }
 
   Widget _buildThemeSection(Brightness currentTheme, ColorPreviewMode mode) {
@@ -1199,8 +1251,18 @@ class _ColorfulTextStyleEditorV2EnhancedState
         ColorPickerType.custom: false,
       },
     );
+
+    // 用户取消选择时不更新颜色
+    if (result == null) {
+      print('🔍 [颜色选择器] 用户取消了颜色选择');
+      return;
+    }
+
+    print(
+        '🔍 [颜色选择器] 更新字符 "$char" 颜色: $result (theme: $theme, mode: $previewMode)');
     colorMapperDataModelNotifier.value = colorMapperDataModelNotifier.value
         .update(
             brightness: theme, mode: previewMode, char: char, color: result);
+    print('🔍 [颜色选择器] 颜色已更新到 ValueNotifier');
   }
 }

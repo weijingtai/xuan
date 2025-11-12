@@ -5,6 +5,8 @@ import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as db;
 import 'package:common/themes/app_themes.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
+import 'package:common/viewmodels/four_zhu_card_demo_viewmodel.dart';
+import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -71,6 +73,10 @@ void main() async {
             create: (ctx) =>
                 DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
                   ..initState(),
+          ),
+          ListenableProvider<FourZhuCardDemoViewModel>(
+            create: (ctx) => FourZhuCardDemoViewModel(),
+            dispose: (ctx, mapper) => mapper.dispose(),
           ),
           ListenableProvider<TimezoneLocationViewModel>(
               create: (ctx) => TimezoneLocationViewModel(

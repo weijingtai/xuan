@@ -121,9 +121,9 @@ class DefaultLayoutMetricsResolver extends LayoutMetricsResolver {
   double rowHeight(BuildContext context,
       {RowConfig? rowConfig, CardStyle? cardStyle}) {
     // 优先从 TextStyleConfig 读取字号，兼容旧字段并回退到主题
-    final cfgFs = rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize;
+    final cfgFs = rowConfig?.textStyleConfig.fontStyleDataModel.fontSize;
     final fs = cfgFs ??
-        rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize ??
+        rowConfig?.textStyleConfig.fontStyleDataModel.fontSize ??
         cardStyle?.globalFontSize ??
         Theme.of(context).textTheme.bodyMedium?.fontSize ??
         14;
@@ -170,14 +170,14 @@ class DefaultStyleResolver extends StyleResolver {
     final theme = Theme.of(context);
 
     // 从 TextStyleConfig 派生基础样式（若存在）
-    final fromCfg = rowConfig?.textStyleConfig?.toTextStyle();
+    final fromCfg = rowConfig?.textStyleConfig.toTextStyle();
 
     // 计算最终各字段，优先级：override 参数 > TextStyleConfig > 旧字段 > cardStyle > theme
     final family = fromCfg?.fontFamily ??
-        rowConfig?.textStyleConfig?.fontStyleDataModel.fontFamily ??
+        rowConfig?.textStyleConfig.fontStyleDataModel.fontFamily ??
         cardStyle?.globalFontFamily;
     final size = fromCfg?.fontSize ??
-        rowConfig?.textStyleConfig?.fontStyleDataModel.fontSize ??
+        rowConfig?.textStyleConfig.fontStyleDataModel.fontSize ??
         cardStyle?.globalFontSize ??
         theme.textTheme.bodyMedium?.fontSize ??
         14;

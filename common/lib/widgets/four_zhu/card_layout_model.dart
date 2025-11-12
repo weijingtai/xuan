@@ -139,7 +139,7 @@ class CardLayoutModel {
   /// 返回：`double` 该行的渲染高度。
   double resolveRowHeight(
     RowType rowType, {
-    RowInfoPayload? payload,
+    TextRowInfoPayload? payload,
     double defaultCellHeight = 28.0,
   }) {
     if (rowType == RowType.separator) return _dividerHeight;

@@ -1,25 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'text_style_config.g.dart';
+import 'theme_color_mode.dart';
 
-/// 文本样式配置数据类
-///
-/// 封装所有字体样式属性，支持 JSON 序列化和与 Flutter TextStyle 的双向转换。
-///
-/// 设计原则：
-/// 1. 所有字段可选（nullable），默认值由 TextStyle 提供
-/// 2. 使用可序列化类型（String, double, int）而非 Flutter 类型
-/// 3. 向后兼容：可从旧的 RowConfig 离散字段构造
-/// 颜色预览模式（用于样式编辑场景的模式持久化）
-/// - pure：纯色预览（不按五行元素着色）
-/// - colorful：彩色预览（按元素或策略着色）
-enum ColorPreviewMode {
-  @JsonValue("pure")
-  pure,
-  @JsonValue("colorful")
-  colorful
-}
+part 'text_style_config.g.dart';
 
 @JsonSerializable()
 class TextStyleConfig {
@@ -80,7 +64,7 @@ class TextStyleConfig {
   /// 若未提供，颜色保持为 null，由上层渲染决定。
   TextStyle toTextStyle({
     String? char,
-    ColorPreviewMode? colorPreviewMode,
+    TextColorMode? colorPreviewMode,
     Brightness? brightness,
   }) {
     Color? textColor;
@@ -449,15 +433,15 @@ class ColorMapperDataModel {
   });
   Map<String, Color> getBy({
     required Brightness theme,
-    required ColorPreviewMode mode,
+    required TextColorMode mode,
   }) {
     switch (theme) {
       case Brightness.light:
-        return mode == ColorPreviewMode.colorful
+        return mode == TextColorMode.colorful
             ? colorfulLightMapper
             : pureLightMapper;
       case Brightness.dark:
-        return mode == ColorPreviewMode.colorful
+        return mode == TextColorMode.colorful
             ? colorfulDarkMapper
             : pureDarkMapper;
     }
@@ -465,7 +449,7 @@ class ColorMapperDataModel {
 
   ColorMapperDataModel update({
     required Brightness brightness,
-    required ColorPreviewMode mode,
+    required TextColorMode mode,
     required String char,
     required Color color,
   }) {
@@ -477,19 +461,18 @@ class ColorMapperDataModel {
 
     // 根据 brightness 和 mode 决定返回哪个字段的新值
     final pureLight =
-        brightness == Brightness.light && mode == ColorPreviewMode.pure
+        brightness == Brightness.light && mode == TextColorMode.pure
             ? updatedMapper
             : pureLightMapper;
     final colorfulLight =
-        brightness == Brightness.light && mode == ColorPreviewMode.colorful
+        brightness == Brightness.light && mode == TextColorMode.colorful
             ? updatedMapper
             : colorfulLightMapper;
-    final pureDark =
-        brightness == Brightness.dark && mode == ColorPreviewMode.pure
-            ? updatedMapper
-            : pureDarkMapper;
+    final pureDark = brightness == Brightness.dark && mode == TextColorMode.pure
+        ? updatedMapper
+        : pureDarkMapper;
     final colorfulDark =
-        brightness == Brightness.dark && mode == ColorPreviewMode.colorful
+        brightness == Brightness.dark && mode == TextColorMode.colorful
             ? updatedMapper
             : colorfulDarkMapper;
 

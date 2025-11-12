@@ -74,7 +74,7 @@ List<PillarPayload> _buildPillars() {
 /// - `pillars`：列集合，用于填充每行 `perPillarValues`。
 ///
 /// 返回：`RowInfoPayload` 列表用于渲染网格。
-List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
+List<TextRowInfoPayload> _buildRows(List<PillarPayload> pillars) {
   final stemValues = <String, String>{};
   final branchValues = <String, String>{};
   final naYinValues = <String, String>{};
@@ -94,18 +94,18 @@ List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 
   return [
     const ColumnHeaderRowPayload(gender: Gender.male),
-    RowInfoPayload(
+    TextRowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
         perPillarValues: stemValues),
-    RowInfoPayload(
+    TextRowInfoPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
         perPillarValues: branchValues),
-    const RowInfoPayload(rowType: RowType.separator, rowLabel: '分隔符'),
-    RowInfoPayload(
+    const TextRowInfoPayload(rowType: RowType.separator, rowLabel: '分隔符'),
+    TextRowInfoPayload(
         rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
-    RowInfoPayload(
+    TextRowInfoPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
         perPillarValues: kongWangValues),
@@ -127,15 +127,15 @@ List<RowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 Future<void> _pumpCard(
   WidgetTester tester, {
   required List<PillarPayload> pillars,
-  required List<RowInfoPayload> rows,
+  required List<TextRowInfoPayload> rows,
   Size size = const Size(720, 420),
   bool showGripRows = false,
   bool showGripColumns = true,
-  void Function(List<RowInfoPayload> rows)? onRowsReordered,
+  void Function(List<TextRowInfoPayload> rows)? onRowsReordered,
 }) async {
   await tester.binding.setSurfaceSize(size);
   final pillarsNotifier = ValueNotifier<List<PillarPayload>>(pillars);
-  final rowsNotifier = ValueNotifier<List<RowInfoPayload>>(rows);
+  final rowsNotifier = ValueNotifier<List<TextRowInfoPayload>>(rows);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
 
   await tester.pumpWidget(
@@ -196,7 +196,7 @@ void main() {
     final pillars = _buildPillars();
     final rows = _buildRows(pillars);
     bool reordered = false;
-    List<RowInfoPayload> latestRows = rows;
+    List<TextRowInfoPayload> latestRows = rows;
 
     await _pumpCard(
       tester,

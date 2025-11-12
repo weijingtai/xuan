@@ -124,9 +124,9 @@ void main() {
 
   group('RowDimension', () {
     late MeasurementContext ctx;
-    late RowInfoPayload normalRow;
-    late RowInfoPayload headerRow;
-    late RowInfoPayload separatorRow;
+    late TextRowInfoPayload normalRow;
+    late TextRowInfoPayload headerRow;
+    late TextRowInfoPayload separatorRow;
 
     setUp(() {
       ctx = MeasurementContext(
@@ -138,17 +138,17 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      normalRow = RowInfoPayload(
+      normalRow = TextRowInfoPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0, // 直接指定高度，不使用策略
       );
 
-      headerRow = RowInfoPayload(
+      headerRow = TextRowInfoPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
 
-      separatorRow = RowInfoPayload(
+      separatorRow = TextRowInfoPayload(
         rowType: RowType.naYin, // 使用现有枚举值
         rowHeight: 8.8,
       );
@@ -192,7 +192,7 @@ void main() {
 
   group('CardLayoutModel - 基本功能', () {
     late PillarPayload pillar0, pillar1, pillar2;
-    late RowInfoPayload row0, row1, row2;
+    late TextRowInfoPayload row0, row1, row2;
     late MeasurementContext ctx;
 
     setUp(() {
@@ -209,15 +209,15 @@ void main() {
       pillar1 = PillarPayload(pillarType: PillarType.month, perRowValues: {});
       pillar2 = PillarPayload(pillarType: PillarType.day, perRowValues: {});
 
-      row0 = RowInfoPayload(
+      row0 = TextRowInfoPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
-      row1 = RowInfoPayload(
+      row1 = TextRowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowHeight: 48.0,
       );
-      row2 = RowInfoPayload(
+      row2 = TextRowInfoPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0,
       );
@@ -370,7 +370,7 @@ void main() {
 
   group('CardLayoutModel - 行操作', () {
     late CardLayoutModel model;
-    late RowInfoPayload row0, row1, row2;
+    late TextRowInfoPayload row0, row1, row2;
     late MeasurementContext ctx;
 
     setUp(() {
@@ -383,15 +383,15 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      row0 = RowInfoPayload(
+      row0 = TextRowInfoPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
-      row1 = RowInfoPayload(
+      row1 = TextRowInfoPayload(
         rowType: RowType.heavenlyStem,
         rowHeight: 48.0,
       );
-      row2 = RowInfoPayload(
+      row2 = TextRowInfoPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0,
       );
@@ -459,7 +459,7 @@ void main() {
       ];
 
       final rows = [
-        RowInfoPayload(
+        TextRowInfoPayload(
           rowType: RowType.columnHeaderRow,
           rowHeight: 24.0,
         ),
@@ -485,16 +485,19 @@ void main() {
         columns: [
           ColumnDimension(
             index: 0,
-            payload: PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+            payload:
+                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
             widthOverride: 100.0,
           ),
           ColumnDimension(
             index: 1,
-            payload: PillarPayload(pillarType: PillarType.month, perRowValues: {}),
+            payload:
+                PillarPayload(pillarType: PillarType.month, perRowValues: {}),
           ),
           ColumnDimension(
             index: 2,
-            payload: PillarPayload(pillarType: PillarType.day, perRowValues: {}),
+            payload:
+                PillarPayload(pillarType: PillarType.day, perRowValues: {}),
             widthOverride: 120.0,
           ),
         ],
@@ -540,7 +543,8 @@ void main() {
         columns: [
           ColumnDimension(
             index: 0,
-            payload: PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+            payload:
+                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
           ),
         ],
         rows: [],
@@ -558,7 +562,8 @@ void main() {
         columns: [
           ColumnDimension(
             index: 0,
-            payload: PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+            payload:
+                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
           ),
         ],
         rows: [],

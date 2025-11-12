@@ -317,14 +317,14 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                               return (data is Tuple2<_DragKind,
                                           _InsertPayload> &&
                                       data.item1 == _DragKind.row) ||
-                                  (data is RowInfoPayload);
+                                  (data is TextRowInfoPayload);
                             },
                             onAccept: (payload) {
                               final insertIndex = globalIndex; // 在该行之前插入
                               if (payload
                                   is Tuple2<_DragKind, _InsertPayload>) {
                                 _addRowAt(insertIndex, payload.item2);
-                              } else if (payload is RowInfoPayload) {
+                              } else if (payload is TextRowInfoPayload) {
                                 final title =
                                     payload.rowLabel ?? payload.rowType.name;
                                 _addRowAt(insertIndex, _InsertPayload(title));
@@ -354,7 +354,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                                 return (data is Tuple2<_DragKind,
                                             _InsertPayload> &&
                                         data.item1 == _DragKind.row) ||
-                                    (data is RowInfoPayload);
+                                    (data is TextRowInfoPayload);
                               },
                               onAccept: (payload) {
                                 final insertIndex =
@@ -362,7 +362,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                                 if (payload
                                     is Tuple2<_DragKind, _InsertPayload>) {
                                   _addRowAt(insertIndex, payload.item2);
-                                } else if (payload is RowInfoPayload) {
+                                } else if (payload is TextRowInfoPayload) {
                                   final title =
                                       payload.rowLabel ?? payload.rowType.name;
                                   _addRowAt(insertIndex, _InsertPayload(title));
@@ -534,7 +534,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                     // 接受内部行插入 Tuple2<_DragKind,row> 或外部 RowInfoPayload
                     final ok = (data is Tuple2<_DragKind, _InsertPayload> &&
                             data.item1 == _DragKind.row) ||
-                        (data is RowInfoPayload);
+                        (data is TextRowInfoPayload);
                     return ok;
                   },
                   onMove: (details) {
@@ -558,7 +558,7 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
                         'Row DragTarget(title col) onAccept: insertIndex=$insertIndex, payload=$payload');
                     if (payload is Tuple2<_DragKind, _InsertPayload>) {
                       _addRowAt(insertIndex, payload.item2);
-                    } else if (payload is RowInfoPayload) {
+                    } else if (payload is TextRowInfoPayload) {
                       final title = payload.rowLabel ?? payload.rowType.name;
                       _addRowAt(insertIndex, _InsertPayload(title));
                     }
@@ -804,12 +804,10 @@ class _EditableFourZhuCardv2State extends State<EditableFourZhuCardv2> {
       final RowType? rtype = _rowTypeOf(rowName);
       switch (rtype) {
         case RowType.heavenlyStem:
-          children.add(
-              cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
+          children.add(cell(ganZhiCellSize, getTianGanText(jiaZi.tianGan)));
           break;
         case RowType.earthlyBranch:
-          children.add(
-              cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
+          children.add(cell(ganZhiCellSize, getDiZhiText(jiaZi.diZhi)));
           break;
         case RowType.separator:
           children.add(

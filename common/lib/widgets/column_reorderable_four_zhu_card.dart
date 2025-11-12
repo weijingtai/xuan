@@ -8,6 +8,7 @@ import '../enums/enum_di_zhi.dart' as dz;
 import '../enums/enum_jia_zi.dart' as jz;
 import '../models/eight_chars.dart';
 import '../models/layout_template.dart' show CardStyle, RowConfig;
+import '../models/text_style_config.dart';
 import '../models/pillar_styles.dart';
 import '../utils/style_resolver.dart';
 import '../models/drag_payloads.dart';
@@ -139,17 +140,22 @@ class _ColumnReorderableFourZhuCardState
     );
     _rows = List<RowConfig>.of(
       widget.rowConfigs ??
-          const [
+          [
             RowConfig(
                 type: RowType.heavenlyStem,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
                 type: RowType.earthlyBranch,
                 isVisible: true,
-                isTitleVisible: true),
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
             RowConfig(
-                type: RowType.naYin, isVisible: true, isTitleVisible: true),
+                type: RowType.naYin,
+                isVisible: true,
+                isTitleVisible: true,
+                textStyleConfig: TextStyleConfig.defaultConfig),
           ],
     );
     // Initialize overrides from incoming shared state if provided
