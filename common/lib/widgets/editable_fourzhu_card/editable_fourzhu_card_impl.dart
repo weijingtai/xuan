@@ -845,6 +845,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return ValueListenableBuilder<Size>(
       valueListenable: _sizeNotifier,
       builder: (context, size, child) {
+        final double minW = 64.0;
+        final double minH = 64.0;
+        final double safeW = size.width < minW ? minW : size.width;
+        final double safeH = size.height < minH ? minH : size.height;
         // Expand card size dynamically only when hovering an external pillar/row
         final pillars = _effectivePillarsTuples();
         final rows = _currentRowLabels();
@@ -896,8 +900,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               duration: const Duration(milliseconds: 240),
               curve: Curves.easeInOutCubic,
               key: _cardKey,
-              width: size.width + extraColWidth,
-              height: size.height + extraRowHeight,
+              width: safeW + extraColWidth,
+              height: safeH + extraRowHeight,
               alignment: _preferCenterAlignment
                   ? Alignment.center
                   : AlignmentDirectional.topStart,

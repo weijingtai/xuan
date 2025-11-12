@@ -16,6 +16,8 @@ import '../../models/row_strategy.dart';
 import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../widgets/style_editor/four_zhu_pillar_style_editor_panel.dart';
+import '../../widgets/pillar_tag_bar.dart';
 import '../editable_fourzhu_card.dart';
 import '../editable_fourzhu_card/text_groups.dart';
 
@@ -234,6 +236,49 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       gender: Gender.male,
                       showGripRows: _showGripRowsNotifier.value,
                       showGripColumns: _showGripColumnsNotifier.value,
+                      pillarMargin: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .theme
+                              .pillar
+                              ?.defaultMargin ??
+                          const EdgeInsets.all(8),
+                      pillarPadding: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .themeController
+                              ?.resolvePillarPadding() ??
+                          const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 16),
+                      pillarBorderWidth: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .themeController
+                              ?.resolvePillarBorderWidth() ??
+                          2,
+                      pillarBorderColor: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .themeController
+                              ?.resolvePillarBorderColor() ??
+                          Colors.red,
+                      pillarCornerRadius: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .themeController
+                              ?.resolvePillarCornerRadius() ??
+                          0,
+                      pillarBackgroundColor:
+                          Provider.of<FourZhuCardDemoViewModel>(context,
+                                      listen: false)
+                                  .themeController
+                                  ?.resolvePillarBackgroundColor() ??
+                              Colors.transparent,
+                      pillarBoxShadow: Provider.of<FourZhuCardDemoViewModel>(
+                              context,
+                              listen: false)
+                          .themeController
+                          ?.resolvePillarBoxShadow(),
                       cardDecoration: BoxDecoration(
                         color: Provider.of<FourZhuCardDemoViewModel>(context,
                                     listen: true)

@@ -20,11 +20,12 @@ class FourZhuPillarStyleEditorPanel extends StatefulWidget {
   const FourZhuPillarStyleEditorPanel({
     super.key,
     required this.theme,
-    // required this.onChanged,
+    this.compact = true,
   });
 
   /// 当前编辑的主题状态
   final EditableFourZhuCardTheme theme;
+  final bool compact;
 
   /// 变更处理器，在任何编辑操作时调用
   // final ValueChanged<EditableFourZhuCardTheme> onChanged;

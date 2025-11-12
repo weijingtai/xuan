@@ -29,9 +29,11 @@ import '../features/tai_yuan/enum_calculate_strategy.dart';
 import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
+import '../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../widgets/card_row.dart';
 import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/four_zhu_card_editor_page/editor_workspace.dart';
+import '../widgets/style_editor/four_zhu_pillar_style_editor_panel.dart';
 
 const _defaultCollectionId = 'four_zhu_templates';
 
@@ -156,8 +158,45 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                         Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            // 将底部入口改为小型可拖拽 Tag（带抓手图标）
-                            const PillarTagBar(),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 240),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: themeData
+                                      .colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: themeData.dividerColor
+                                        .withOpacity(0.12),
+                                  ),
+                                ),
+                                padding: const EdgeInsets.all(12),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: const PillarTagBar(),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    SizedBox(
+                                      width: 320,
+                                      child: SingleChildScrollView(
+                                        child: FourZhuPillarStyleEditorPanel(
+                                          theme: Provider.of<
+                                                      FourZhuCardDemoViewModel>(
+                                                  context,
+                                                  listen: true)
+                                              .theme,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 12),
                             Row(
                               children: [
