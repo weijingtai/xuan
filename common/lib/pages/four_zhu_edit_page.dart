@@ -8,7 +8,8 @@ import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/editor_top_bar.dart';
-import 'package:common/widgets/editor_sidebar_v2.dart'; // 使用新的 Sidebar
+// import 'package:common/widgets/editor_sidebar_v2.dart';
+import 'package:common/widgets/style_editor/sidebar_explorer.dart';
 import 'package:common/widgets/template_board_view.dart';
 import 'package:common/widgets/template_gallery_view.dart';
 import 'package:common/widgets/pillar_tag_bar.dart';
@@ -125,8 +126,13 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                 children: [
                   Container(
                     width: 320,
-                    color: Colors.yellow,
-                    child: const EditorSidebarV2(),
+                    decoration: BoxDecoration(
+                      color:
+                          themeData.colorScheme.surfaceContainerHighest,
+                      border: Border.all(
+                          color: themeData.dividerColor.withOpacity(0.12)),
+                    ),
+                    child: const SidebarExplorer(),
                   ),
                   Expanded(
                     child: Column(
@@ -180,19 +186,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                         child: const PillarTagBar(),
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    SizedBox(
-                                      width: 320,
-                                      child: SingleChildScrollView(
-                                        child: FourZhuPillarStyleEditorPanel(
-                                          theme: Provider.of<
-                                                      FourZhuCardDemoViewModel>(
-                                                  context,
-                                                  listen: true)
-                                              .theme,
-                                        ),
-                                      ),
-                                    ),
+                                    // 右侧柱样式面板已移除，避免挤压卡片区域
                                   ],
                                 ),
                               ),

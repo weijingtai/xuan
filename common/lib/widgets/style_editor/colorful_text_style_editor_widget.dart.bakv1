@@ -368,6 +368,8 @@ class _ColorfulTextStyleEditorWidgetState
                           value: 'NotoSansSC-Regular',
                           child: Text('NotoSansSC-Regular')),
                       const DropdownMenuItem(
+                          value: 'NotoSansSC', child: Text('NotoSansSC')),
+                      const DropdownMenuItem(
                           value: 'PingFang SC', child: Text('PingFang SC')),
                       const DropdownMenuItem(
                           value: 'Hiragino Sans GB',
@@ -968,6 +970,10 @@ class _ColorfulTextStyleEditorWidgetV2State
                   DropdownMenuItem(
                     value: 'NotoSansSC-Regular',
                     child: Text('NotoSansSC-Regular'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'NotoSansSC',
+                    child: Text('NotoSansSC'),
                   ),
                   DropdownMenuItem(
                       value: 'PingFang SC', child: Text('PingFang SC')),
