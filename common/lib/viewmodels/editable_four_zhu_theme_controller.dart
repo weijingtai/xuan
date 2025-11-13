@@ -198,14 +198,33 @@ class EditableFourZhuThemeController {
   List<BoxShadow>? resolvePillarBoxShadow() {
     final p = theme.pillar;
     if (p == null) return null;
-    final Color? color = (p.shadowColorFollowsBackground == true)
+    // 开关优先：未启用则不渲染阴影
+    if (p.withShadow == false) return null;
+    final Color? baseColor = (p.shadowColorFollowsBackground == true)
         ? p.backgroundColor
         : p.shadowColor;
-    if (color == null) return null;
+    if (baseColor == null) {
+      // 若未提供颜色，但显式启用且要求跟随背景色时，没有背景色则不生效
+      if (p.withShadow == true && p.shadowColorFollowsBackground == true) {
+        return null;
+      }
+      return null;
+    }
+    // 透明度
+    final double op = (p.shadowOpacity ?? 0.35).clamp(0.0, 1.0);
+    final Color color = baseColor.withOpacity(op);
     final dx = p.shadowOffsetX ?? 0;
     final dy = p.shadowOffsetY ?? 0;
     final blur = p.shadowBlurRadius ?? 0;
-    return [BoxShadow(color: color, offset: Offset(dx, dy), blurRadius: blur)];
+    final spread = p.shadowSpreadRadius ?? 0;
+    return [
+      BoxShadow(
+        color: color,
+        offset: Offset(dx, dy),
+        blurRadius: blur,
+        spreadRadius: spread,
+      )
+    ];
   }
 
   /// Applies fallback policy to determine the best font family to use.

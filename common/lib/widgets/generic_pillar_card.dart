@@ -160,7 +160,7 @@ class _GenericPillarCardState extends State<GenericPillarCard>
 
   EdgeInsets _resolvePadding(String rowType) {
     final cfg = _cfg(rowType);
-    final double p = (cfg?.padding ?? 4).clamp(0, 24);
+    final double p = (cfg?.paddingVertical ?? 4).clamp(0, 24);
     return EdgeInsets.symmetric(vertical: p);
   }
 

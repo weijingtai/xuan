@@ -46,20 +46,12 @@ class _RowItem extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.08)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
-      padding: const EdgeInsets.all(12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: ExpansionTile(
+        title: Text(cfg.type.name, style: theme.textTheme.titleSmall),
+        childrenPadding: const EdgeInsets.all(12),
         children: [
-          Text(cfg.type.name, style: theme.textTheme.titleSmall),
-          const SizedBox(height: 8),
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('显示该行'),
-            value: cfg.isVisible,
-            onChanged: (v) => vm.updateRowVisibility(cfg.type, v),
-          ),
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('显示标题'),
@@ -68,15 +60,54 @@ class _RowItem extends StatelessWidget {
           ),
           Row(
             children: [
-              const Expanded(child: Text('内边距 (px)')),
-              Text('${cfg.padding?.toStringAsFixed(0) ?? 0}'),
+              const Expanded(child: Text('上下内边距 (px)')),
+              Text('${cfg.paddingVertical?.toStringAsFixed(0) ?? 0}'),
             ],
           ),
           Slider(
-            value: (cfg.padding ?? 0).toDouble(),
+            value: (cfg.paddingVertical ?? 0).toDouble(),
             min: 0,
             max: 32,
             onChanged: (v) => vm.updateRowStyle(cfg.type, padding: v),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Expanded(child: Text('上下外边距 (px)')),
+              Text('${cfg.marginVertical?.toStringAsFixed(0) ?? 0}'),
+            ],
+          ),
+          Slider(
+            value: (cfg.marginVertical ?? 0).toDouble(),
+            min: 0,
+            max: 32,
+            onChanged: (v) => vm.updateRowStyle(cfg.type, marginVertical: v),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Expanded(child: Text('左右外边距 (px)')),
+              Text('${cfg.marginHorizontal?.toStringAsFixed(0) ?? 0}'),
+            ],
+          ),
+          Slider(
+            value: (cfg.marginHorizontal ?? 0).toDouble(),
+            min: 0,
+            max: 32,
+            onChanged: (v) => vm.updateRowStyle(cfg.type, marginHorizontal: v),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              const Expanded(child: Text('左右内边距 (px)')),
+              Text('${cfg.paddingHorizontal?.toStringAsFixed(0) ?? 0}'),
+            ],
+          ),
+          Slider(
+            value: (cfg.paddingHorizontal ?? 0).toDouble(),
+            min: 0,
+            max: 32,
+            onChanged: (v) => vm.updateRowStyle(cfg.type, paddingHorizontal: v),
           ),
           const SizedBox(height: 8),
           ColorfulTextStyleEditorV2Enhanced(

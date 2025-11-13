@@ -17,13 +17,14 @@ class TitleRowPayload extends TextRowInfoPayload {
   ///
   /// Parameters:
   /// - [rowType]: The associated `RowType` of the title row（如天干/地支）。
-  /// - [titleLabel]: Optional display label for the title row（如“天干”）。
+  /// - [titleLabel]: Optional display label for the title row（如"天干"）。
   TitleRowPayload({
     required RowType rowType,
     String? titleLabel,
   }) : super(
           rowType: rowType,
           rowLabel: titleLabel,
+          padding: null,
           config: TextStyleConfig(
             colorMapperDataModel: ColorMapperDataModel(
               pureLightMapper: {
@@ -136,6 +137,7 @@ class ColumnHeaderRowPayload extends TextRowInfoPayload {
           rowType: RowType.columnHeaderRow,
           rowLabel: null, // Label will be derived from gender
           rowHeight: height,
+          padding: null,
         );
 
   /// Gender identifier to display in the left-top corner cell.
@@ -278,6 +280,10 @@ class TextRowInfoPayload {
     this.rowHeight,
     this.textAlign,
     this.strategy,
+    this.padding,
+    this.marginVertical,
+    this.marginHorizontal,
+    this.paddingHorizontal,
   });
 
   final TextStyleConfig? config;
@@ -303,6 +309,13 @@ class TextRowInfoPayload {
   /// Optional embedded computation strategy producing or owning this row.
   /// Embedding allows late recomputation or context-aware updates by the UI.
   final RowComputationStrategy? strategy;
+
+  /// Optional vertical padding (top and bottom) for this row.
+  /// When provided, the UI should apply this padding to the row content.
+  final double? padding;
+  final double? marginVertical;
+  final double? marginHorizontal;
+  final double? paddingHorizontal;
 
   /// Creates a standard 空亡 row payload.
   ///
@@ -339,6 +352,7 @@ class TextRowInfoPayload {
   /// - [perPillarValues]: New per-pillar override values.
   /// - [rowHeight]: Explicit height override; set `null` to clear.
   /// - [textAlign]: Text alignment override; set `null` to clear.
+  /// - [padding]: Vertical padding override; set `null` to clear.
   ///
   /// Returns: A copied payload reflecting the specified updates.
   TextRowInfoPayload copyWith({
@@ -349,6 +363,10 @@ class TextRowInfoPayload {
     double? rowHeight,
     RowTextAlign? textAlign,
     RowComputationStrategy? strategy,
+    double? padding,
+    double? marginVertical,
+    double? marginHorizontal,
+    double? paddingHorizontal,
   }) {
     return TextRowInfoPayload(
       config: config ?? this.config,
@@ -358,6 +376,10 @@ class TextRowInfoPayload {
       rowHeight: rowHeight ?? this.rowHeight,
       textAlign: textAlign ?? this.textAlign,
       strategy: strategy ?? this.strategy,
+      padding: padding ?? this.padding,
+      marginVertical: marginVertical ?? this.marginVertical,
+      marginHorizontal: marginHorizontal ?? this.marginHorizontal,
+      paddingHorizontal: paddingHorizontal ?? this.paddingHorizontal,
     );
   }
 

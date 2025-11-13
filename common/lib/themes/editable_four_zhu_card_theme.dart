@@ -314,11 +314,14 @@ class PillarSection {
     this.cornerRadius,
     this.backgroundColor,
     this.perPillarMargin,
+    this.withShadow,
     this.shadowColorFollowsBackground,
     this.shadowColor,
     this.shadowOffsetX,
     this.shadowOffsetY,
     this.shadowBlurRadius,
+    this.shadowSpreadRadius,
+    this.shadowOpacity,
   });
 
   /// Default outer margin applied to pillars unless overridden.
@@ -343,6 +346,10 @@ class PillarSection {
   /// Only keys in {year, month, day, hour, luckCycle} are allowed.
   final Map<PillarType, EdgeInsets>? perPillarMargin;
 
+  /// Whether pillar shadow is enabled explicitly.
+  /// When null, legacy behavior applies: enabled if follow-background or color provided.
+  final bool? withShadow;
+
   /// When true, shadow color should follow the `backgroundColor`.
   /// If no background color is set, shadow is considered not present.
   final bool? shadowColorFollowsBackground;
@@ -359,6 +366,12 @@ class PillarSection {
   /// Box shadow blur radius; must be non-negative if provided.
   final double? shadowBlurRadius;
 
+  /// Box shadow spread radius; must be non-negative if provided.
+  final double? shadowSpreadRadius;
+
+  /// Shadow opacity in [0, 1]. When null, a sensible default is used.
+  final double? shadowOpacity;
+
   /// Serializes this section to JSON.
   ///
   /// Returns: A `Map<String, dynamic>` including default decorations and
@@ -374,11 +387,14 @@ class PillarSection {
       'perPillarMargin': perPillarMargin?.map(
         (k, v) => MapEntry(k.name, _edgeToJson(v)),
       ),
+      'withShadow': withShadow,
       'shadowColorFollowsBackground': shadowColorFollowsBackground,
       'shadowColor': shadowColor?.value,
       'shadowOffsetX': shadowOffsetX,
       'shadowOffsetY': shadowOffsetY,
       'shadowBlurRadius': shadowBlurRadius,
+      'shadowSpreadRadius': shadowSpreadRadius,
+      'shadowOpacity': shadowOpacity,
     };
   }
 
@@ -415,6 +431,7 @@ class PillarSection {
           ? Color(json['backgroundColor'] as int)
           : null,
       perPillarMargin: ppm,
+      withShadow: json['withShadow'] as bool?,
       shadowColorFollowsBackground:
           json['shadowColorFollowsBackground'] as bool?,
       shadowColor:
@@ -422,6 +439,8 @@ class PillarSection {
       shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
       shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
       shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
+      shadowSpreadRadius: (json['shadowSpreadRadius'] as num?)?.toDouble(),
+      shadowOpacity: (json['shadowOpacity'] as num?)?.toDouble(),
     );
   }
 
@@ -450,6 +469,18 @@ class PillarSection {
       out.add(const ThemeValidationError(
         scope: 'pillar.shadowBlurRadius',
         message: 'Shadow blur radius must be non-negative.',
+      ));
+    }
+    if (shadowSpreadRadius != null && shadowSpreadRadius! < 0) {
+      out.add(const ThemeValidationError(
+        scope: 'pillar.shadowSpreadRadius',
+        message: 'Shadow spread radius must be non-negative.',
+      ));
+    }
+    if (shadowOpacity != null && (shadowOpacity! < 0 || shadowOpacity! > 1)) {
+      out.add(const ThemeValidationError(
+        scope: 'pillar.shadowOpacity',
+        message: 'Shadow opacity must be within [0, 1].',
       ));
     }
     if (perPillarMargin != null) {

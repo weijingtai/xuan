@@ -316,7 +316,10 @@ class RowConfig {
     required this.isTitleVisible,
     required this.textStyleConfig,
     this.textAlign,
-    this.padding,
+    this.paddingVertical,
+    this.paddingHorizontal,
+    this.marginVertical,
+    this.marginHorizontal,
     this.borderType,
     this.borderColorHex,
   });
@@ -328,7 +331,14 @@ class RowConfig {
   /// 新版文本样式配置（优先于旧的离散字段）。
   final TextStyleConfig textStyleConfig;
   final RowTextAlign? textAlign;
-  final double? padding;
+  final double? paddingVertical;
+  // New: per-row spacing controls
+  // marginVertical: extra top/bottom outside space per row (px)
+  // marginHorizontal: extra left/right outside space per row (px)
+  // paddingHorizontal: extra left/right inside padding per row (px)
+  final double? marginVertical;
+  final double? marginHorizontal;
+  final double? paddingHorizontal;
   final BorderType? borderType;
   final String? borderColorHex;
 
@@ -339,6 +349,9 @@ class RowConfig {
     TextStyleConfig? textStyleConfig,
     RowTextAlign? textAlign,
     double? padding,
+    double? marginVertical,
+    double? marginHorizontal,
+    double? paddingHorizontal,
     BorderType? borderType,
     String? borderColorHex,
   }) {
@@ -348,7 +361,10 @@ class RowConfig {
       isTitleVisible: isTitleVisible ?? this.isTitleVisible,
       textStyleConfig: textStyleConfig ?? this.textStyleConfig,
       textAlign: textAlign ?? this.textAlign,
-      padding: padding ?? this.padding,
+      paddingVertical: padding ?? this.paddingVertical,
+      marginVertical: marginVertical ?? this.marginVertical,
+      marginHorizontal: marginHorizontal ?? this.marginHorizontal,
+      paddingHorizontal: paddingHorizontal ?? this.paddingHorizontal,
       borderType: borderType ?? this.borderType,
       borderColorHex: borderColorHex ?? this.borderColorHex,
     );
@@ -362,7 +378,10 @@ class RowConfig {
       // 新版样式字段（优先写入）
       'textStyleConfig': textStyleConfig.toJson(),
       'textAlign': textAlign?.name,
-      'padding': padding,
+      'padding': paddingVertical,
+      'marginVertical': marginVertical,
+      'marginHorizontal': marginHorizontal,
+      'paddingHorizontal': paddingHorizontal,
       'borderType': borderType?.name,
       'borderColorHex': borderColorHex,
     };
@@ -467,7 +486,10 @@ class RowConfig {
       isTitleVisible: json['isTitleVisible'] as bool? ?? true,
       textStyleConfig: textStyleConfig,
       textAlign: textAlign,
-      padding: (json['padding'] as num?)?.toDouble(),
+      paddingVertical: (json['padding'] as num?)?.toDouble(),
+      marginVertical: (json['marginVertical'] as num?)?.toDouble(),
+      marginHorizontal: (json['marginHorizontal'] as num?)?.toDouble(),
+      paddingHorizontal: (json['paddingHorizontal'] as num?)?.toDouble(),
       borderType: borderType,
       borderColorHex: json['borderColorHex'] as String?,
     );
@@ -483,7 +505,10 @@ class RowConfig {
         other.isTitleVisible == isTitleVisible &&
         other.textStyleConfig == textStyleConfig &&
         other.textAlign == textAlign &&
-        other.padding == padding &&
+        other.paddingVertical == paddingVertical &&
+        other.marginVertical == marginVertical &&
+        other.marginHorizontal == marginHorizontal &&
+        other.paddingHorizontal == paddingHorizontal &&
         other.borderType == borderType &&
         other.borderColorHex == borderColorHex;
   }
@@ -495,7 +520,10 @@ class RowConfig {
         isTitleVisible,
         textStyleConfig,
         textAlign,
-        padding,
+        paddingVertical,
+        marginVertical,
+        marginHorizontal,
+        paddingHorizontal,
         borderType,
         borderColorHex,
         // 阴影字段

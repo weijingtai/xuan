@@ -207,7 +207,7 @@ class DefaultStyleResolver extends StyleResolver {
     required CardStyle? cardStyle,
     required RowConfig? rowConfig,
   }) {
-    final p = rowConfig?.padding;
+    final p = rowConfig?.paddingVertical;
     final v = p ?? 4.0;
     return EdgeInsets.symmetric(vertical: v);
   }

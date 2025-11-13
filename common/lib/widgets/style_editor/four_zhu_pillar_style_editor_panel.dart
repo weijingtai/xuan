@@ -53,8 +53,37 @@ class _FourZhuPillarStyleEditorPanelState
   double _pillarShadowBlur = 0;
   bool _pillarShadowEnabled = false;
   bool _pillarShadowFollowBackground = false;
+  double _pillarShadowSpread = 0;
+  double _pillarShadowOpacity = 0.35;
   String _pillarBackgroundHex = '';
   String _pillarBorderHex = '';
+
+  PillarSection _composePillarSection() {
+    final background = _parseHexColor(_pillarBackgroundHex);
+    final borderColor =
+        _parseHexColor(_pillarBorderHex) ?? widget.theme.pillar?.borderColor;
+    final shadowColor = _pillarShadowEnabled && !_pillarShadowFollowBackground
+        ? (_parseHexColor(_pillarShadowHex) ?? Colors.black54)
+        : null;
+    return PillarSection(
+      defaultMargin: _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+      defaultPadding: _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+      borderWidth: _pillarBorderWidth,
+      borderColor: borderColor,
+      cornerRadius: _pillarCornerRadius,
+      backgroundColor: background,
+      perPillarMargin: Map<PillarType, EdgeInsets>.of(
+          widget.theme.pillar?.perPillarMargin ?? {}),
+      withShadow: _pillarShadowEnabled,
+      shadowColorFollowsBackground: _pillarShadowFollowBackground,
+      shadowColor: shadowColor,
+      shadowOffsetX: _pillarShadowOffsetX,
+      shadowOffsetY: _pillarShadowOffsetY,
+      shadowBlurRadius: _pillarShadowBlur,
+      shadowSpreadRadius: _pillarShadowSpread,
+      shadowOpacity: _pillarShadowOpacity,
+    );
+  }
 
   @override
   void initState() {
@@ -73,25 +102,29 @@ class _FourZhuPillarStyleEditorPanelState
   /// 从主题加载控件值
   void _loadFromTheme(EditableFourZhuCardTheme theme) {
     _theme = theme;
+    // 使用与工作区一致的默认值：当主题未设置时采用 Margin=8 / Padding=16 / Border=2
     _pillarDefaultMarginH =
-        (_theme.pillar?.defaultMargin?.left ?? 0).toDouble();
-    _pillarDefaultMarginV = (_theme.pillar?.defaultMargin?.top ?? 0).toDouble();
+        (_theme.pillar?.defaultMargin?.left ?? 8).toDouble();
+    _pillarDefaultMarginV = (_theme.pillar?.defaultMargin?.top ?? 8).toDouble();
     _pillarDefaultPaddingH =
-        (_theme.pillar?.defaultPadding?.left ?? 0).toDouble();
+        (_theme.pillar?.defaultPadding?.left ?? 16).toDouble();
     _pillarDefaultPaddingV =
-        (_theme.pillar?.defaultPadding?.top ?? 0).toDouble();
-    _pillarBorderWidth = (_theme.pillar?.borderWidth ?? 0).toDouble();
+        (_theme.pillar?.defaultPadding?.top ?? 16).toDouble();
+    _pillarBorderWidth = (_theme.pillar?.borderWidth ?? 2).toDouble();
     _pillarCornerRadius = (_theme.pillar?.cornerRadius ?? 0).toDouble();
     _pillarShadowHex = _theme.pillar?.shadowColor != null
         ? '#${_theme.pillar!.shadowColor!.value.toRadixString(16).padLeft(8, '0').toUpperCase()}'
         : '';
-    _pillarShadowEnabled = (_theme.pillar?.shadowColor != null) ||
-        (_theme.pillar?.shadowColorFollowsBackground == true);
+    _pillarShadowEnabled = _theme.pillar?.withShadow ??
+        (_theme.pillar?.shadowColor != null ||
+            _theme.pillar?.shadowColorFollowsBackground == true);
     _pillarShadowFollowBackground =
         _theme.pillar?.shadowColorFollowsBackground == true;
     _pillarShadowOffsetX = (_theme.pillar?.shadowOffsetX ?? 0).toDouble();
     _pillarShadowOffsetY = (_theme.pillar?.shadowOffsetY ?? 0).toDouble();
     _pillarShadowBlur = (_theme.pillar?.shadowBlurRadius ?? 0).toDouble();
+    _pillarShadowSpread = (_theme.pillar?.shadowSpreadRadius ?? 0).toDouble();
+    _pillarShadowOpacity = (_theme.pillar?.shadowOpacity ?? 0.35).toDouble();
     _pillarBackgroundHex = _theme.pillar?.backgroundColor?.value
                 .toRadixString(16)
                 .padLeft(8, '0')
@@ -238,6 +271,74 @@ class _FourZhuPillarStyleEditorPanelState
           },
         ),
         // 内边距控制
+        // 阴影启用
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('启用柱阴影'),
+          value: _pillarShadowEnabled,
+          onChanged: (v) {
+            setState(() {
+              _pillarShadowEnabled = v;
+            });
+            _emit(_theme.copyWith(pillar: _composePillarSection()));
+          },
+        ),
+        // 阴影跟随背景色
+        if (_pillarShadowEnabled)
+          CheckboxListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('阴影颜色跟随柱背景色'),
+            value: _pillarShadowFollowBackground,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowFollowBackground = v ?? false;
+              });
+              _emit(_theme.copyWith(pillar: _composePillarSection()));
+            },
+          ),
+        // 阴影颜色选择（仅当不跟随背景色时显示）
+        if (_pillarShadowEnabled && !_pillarShadowFollowBackground)
+          Row(
+            children: [
+              const Text('阴影颜色'),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () async {
+                  final picked = await showColorPickerDialog(
+                    context,
+                    _parseHexColor(_pillarShadowHex) ?? Colors.black54,
+                    title: const Text('选择阴影颜色'),
+                    pickersEnabled: const {
+                      ColorPickerType.wheel: true,
+                      ColorPickerType.accent: false,
+                      ColorPickerType.primary: false,
+                      ColorPickerType.custom: false,
+                    },
+                  );
+                  setState(() {
+                    _pillarShadowHex =
+                        '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+                  });
+                  _emit(_theme.copyWith(pillar: _composePillarSection()));
+                },
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _parseHexColor(_pillarShadowHex) ?? Colors.black54,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text('选择颜色'),
+            ],
+          ),
+        // 偏移/模糊/扩散/透明度
         _buildSlider(
           label: '默认内边距-水平 (px)',
           value: _pillarDefaultPaddingH,
@@ -292,6 +393,167 @@ class _FourZhuPillarStyleEditorPanelState
             ));
           },
         ),
+        if (_pillarShadowEnabled)
+          _buildSlider(
+            label: '阴影 Offset X (px)',
+            value: _pillarShadowOffsetX,
+            min: -24,
+            max: 24,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowOffsetX = v;
+              });
+              _emit(_theme.copyWith(pillar: _composePillarSection()));
+            },
+          ),
+        if (_pillarShadowEnabled)
+          _buildSlider(
+            label: '阴影 Offset Y (px)',
+            value: _pillarShadowOffsetY,
+            min: -24,
+            max: 24,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowOffsetY = v;
+              });
+              _emit(_theme.copyWith(
+                pillar: PillarSection(
+                  defaultMargin:
+                      _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                  defaultPadding:
+                      _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                  borderWidth: _pillarBorderWidth,
+                  borderColor: _theme.pillar?.borderColor,
+                  cornerRadius: _pillarCornerRadius,
+                  backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                  perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                      _theme.pillar?.perPillarMargin ?? {}),
+                  withShadow: _pillarShadowEnabled,
+                  shadowColorFollowsBackground: _pillarShadowFollowBackground,
+                  shadowColor:
+                      _pillarShadowEnabled && !_pillarShadowFollowBackground
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                  shadowOffsetX: _pillarShadowOffsetX,
+                  shadowOffsetY: _pillarShadowOffsetY,
+                  shadowBlurRadius: _pillarShadowBlur,
+                  shadowSpreadRadius: _pillarShadowSpread,
+                  shadowOpacity: _pillarShadowOpacity,
+                ),
+              ));
+            },
+          ),
+        if (_pillarShadowEnabled)
+          _buildSlider(
+            label: '阴影模糊 (px)',
+            value: _pillarShadowBlur,
+            min: 0,
+            max: 48,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowBlur = v;
+              });
+              _emit(_theme.copyWith(
+                pillar: PillarSection(
+                  defaultMargin:
+                      _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                  defaultPadding:
+                      _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                  borderWidth: _pillarBorderWidth,
+                  borderColor: _theme.pillar?.borderColor,
+                  cornerRadius: _pillarCornerRadius,
+                  backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                  perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                      _theme.pillar?.perPillarMargin ?? {}),
+                  withShadow: _pillarShadowEnabled,
+                  shadowColorFollowsBackground: _pillarShadowFollowBackground,
+                  shadowColor:
+                      _pillarShadowEnabled && !_pillarShadowFollowBackground
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                  shadowOffsetX: _pillarShadowOffsetX,
+                  shadowOffsetY: _pillarShadowOffsetY,
+                  shadowBlurRadius: _pillarShadowBlur,
+                  shadowSpreadRadius: _pillarShadowSpread,
+                  shadowOpacity: _pillarShadowOpacity,
+                ),
+              ));
+            },
+          ),
+        if (_pillarShadowEnabled)
+          _buildSlider(
+            label: '阴影扩散 (px)',
+            value: _pillarShadowSpread,
+            min: 0,
+            max: 48,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowSpread = v;
+              });
+              _emit(_theme.copyWith(
+                pillar: PillarSection(
+                  defaultMargin:
+                      _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                  defaultPadding:
+                      _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                  borderWidth: _pillarBorderWidth,
+                  borderColor: _theme.pillar?.borderColor,
+                  cornerRadius: _pillarCornerRadius,
+                  backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                  perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                      _theme.pillar?.perPillarMargin ?? {}),
+                  withShadow: _pillarShadowEnabled,
+                  shadowColorFollowsBackground: _pillarShadowFollowBackground,
+                  shadowColor:
+                      _pillarShadowEnabled && !_pillarShadowFollowBackground
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                  shadowOffsetX: _pillarShadowOffsetX,
+                  shadowOffsetY: _pillarShadowOffsetY,
+                  shadowBlurRadius: _pillarShadowBlur,
+                  shadowSpreadRadius: _pillarShadowSpread,
+                  shadowOpacity: _pillarShadowOpacity,
+                ),
+              ));
+            },
+          ),
+        if (_pillarShadowEnabled)
+          _buildSlider(
+            label: '阴影透明度',
+            value: _pillarShadowOpacity,
+            min: 0,
+            max: 1,
+            onChanged: (v) {
+              setState(() {
+                _pillarShadowOpacity = v;
+              });
+              _emit(_theme.copyWith(
+                pillar: PillarSection(
+                  defaultMargin:
+                      _edgeHV(_pillarDefaultMarginH, _pillarDefaultMarginV),
+                  defaultPadding:
+                      _edgeHV(_pillarDefaultPaddingH, _pillarDefaultPaddingV),
+                  borderWidth: _pillarBorderWidth,
+                  borderColor: _theme.pillar?.borderColor,
+                  cornerRadius: _pillarCornerRadius,
+                  backgroundColor: _parseHexColor(_pillarBackgroundHex),
+                  perPillarMargin: Map<PillarType, EdgeInsets>.of(
+                      _theme.pillar?.perPillarMargin ?? {}),
+                  withShadow: _pillarShadowEnabled,
+                  shadowColorFollowsBackground: _pillarShadowFollowBackground,
+                  shadowColor:
+                      _pillarShadowEnabled && !_pillarShadowFollowBackground
+                          ? _parseHexColor(_pillarShadowHex)
+                          : null,
+                  shadowOffsetX: _pillarShadowOffsetX,
+                  shadowOffsetY: _pillarShadowOffsetY,
+                  shadowBlurRadius: _pillarShadowBlur,
+                  shadowSpreadRadius: _pillarShadowSpread,
+                  shadowOpacity: _pillarShadowOpacity,
+                ),
+              ));
+            },
+          ),
         // 边框控制
         _buildSlider(
           label: '边框宽度 (px)',

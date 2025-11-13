@@ -276,7 +276,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                               Colors.transparent,
                       pillarBoxShadow: Provider.of<FourZhuCardDemoViewModel>(
                               context,
-                              listen: false)
+                              listen: true)
                           .themeController
                           ?.resolvePillarBoxShadow(),
                       cardDecoration: BoxDecoration(
@@ -466,8 +466,20 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
             textAlign: c.textAlign,
             config: c.textStyleConfig,
+            padding: c.paddingVertical,
+            marginVertical: c.marginVertical,
+            marginHorizontal: c.marginHorizontal,
+            paddingHorizontal: c.paddingHorizontal,
           ),
     ];
+
+    // 打印调试信息：确认 padding 是否传递
+    for (final row in rows) {
+      if (row.padding != null) {
+        print(
+            '🔍 [EditorWorkspace._applyViewModelToNotifiers] ${row.rowType.name} padding=${row.padding}');
+      }
+    }
 
     _rowListNotifier.value = rows;
 

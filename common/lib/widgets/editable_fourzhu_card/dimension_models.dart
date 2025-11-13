@@ -214,13 +214,17 @@ class RowDimension implements Measurable {
       return heightOverride!;
     }
 
-    // 2️⃣ 使用 payload 解析高度
-    return payload.resolveHeight(
+    // 2️⃣ 使用 payload 解析高度，并叠加行内的上下内边距（padding * 2）
+    final base = payload.resolveHeight(
       heavenlyAndEarthlyHeight: ctx.ganZhiCellHeight,
       otherHeight: ctx.defaultOtherCellHeight,
       dividerHeight: ctx.rowDividerHeightEffective,
       headerHeight: ctx.columnTitleHeight,
     );
+    final vp = (payload.padding ?? 0.0).clamp(0.0, double.infinity);
+    final mv = (payload.marginVertical ?? 0.0).clamp(0.0, double.infinity);
+    // 行总高度：内容基准 + 内边距上下 + 外边距上下（占位用）
+    return base + (vp * 2) + (mv * 2);
   }
 
   /// 创建覆盖了高度的副本

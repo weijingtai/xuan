@@ -273,7 +273,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       widget.pillarPadding ?? const EdgeInsets.all(16.0);
 
   /// 有效柱边框宽度（优先使用传入的值，默认 2）
-  double get _pillarBorderWidthEff => widget.pillarBorderWidth ?? 2.0;
+  double get _pillarBorderWidthEff => widget.pillarBorderWidth ?? 0;
 
   /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
   Color get _pillarBorderColorEff => widget.pillarBorderColor ?? Colors.red;
@@ -623,12 +623,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 依据外部行载荷推断行高：优先使用 rowType，其次使用 rowLabel
   double _rowHeightByPayload(TextRowInfoPayload payload) {
     // 使用模型的统一解析方法，确保行为与外部载荷约定一致
-    return payload.resolveHeight(
+    final baseHeight = payload.resolveHeight(
       heavenlyAndEarthlyHeight: ganZhiCellSize.height,
       otherHeight: otherCellHeight,
       dividerHeight: _rowDividerHeightEffective,
       headerHeight: columnTitleHeight, // 传递表头行高度
     );
+    // 如果行有 padding 配置，则加上上下内边距（padding * 2）
+    final rowPadding = payload.padding ?? 0.0;
+    // 外边距由外层 Padding 承载，这里仅返回内容高度 + 内边距
+    final finalHeight = baseHeight + (rowPadding * 2);
+
+    if (rowPadding > 0) {
+      print(
+          '🔍 [V3._rowHeightByPayload] ${payload.rowType.name} baseHeight=$baseHeight, padding=$rowPadding, finalHeight=$finalHeight');
+    }
+
+    return finalHeight;
   }
 
   int _commitColInsert(double eff, int draggingIdx, int n,
@@ -1777,7 +1788,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   : _rowTitleText(rowName);
 
                           // 统一渲染：所有行使用相同的渲染逻辑
-                          return _cell(rowSize, Center(child: titleWidget));
+                          final rp = rPayload;
+                          return _cell(rowSize, Center(child: titleWidget),
+                              verticalPadding: _getRowPadding(rowName),
+                              horizontalPadding:
+                                  rp != null ? rp.paddingHorizontal : null);
                         })(),
                       if (draggingRow && t == absRowIdx)
                         Positioned.fill(
@@ -2015,7 +2030,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   return contentW > 0 ? _pixelFloor(contentW) : 0.0;
                 })();
                 final columnContent = Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  // crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     ...(() {
                       final dRow = _draggingRowIndex;
@@ -2129,6 +2144,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             cell = _cell(
                               Size(colW, rowSize.height),
                               Center(child: titleWidget),
+                              verticalPadding: _getRowPaddingByIndex(absRowIdx),
+                              horizontalPadding:
+                                  rowPayloads[absRowIdx].paddingHorizontal,
                             );
                             // 始终将单元格加入当前列的行子组件列表（标题列）
                             rowChildren.add(AnimatedSlide(
@@ -2240,11 +2258,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   : null;
 
                           if (rowType == RowType.heavenlyStem) {
-                            cell = _cell(Size(colW, ganZhiCellSize.height),
-                                _tianGanText(jz.tianGan));
+                            // 使用当前行的最终高度（包含 row padding）
+                            cell = _cell(Size(colW, rowSize.height),
+                                _tianGanText(jz.tianGan),
+                                verticalPadding:
+                                    _getRowPaddingByIndex(absRowIdx),
+                                horizontalPadding:
+                                    rowPayloads[absRowIdx].paddingHorizontal);
                           } else if (rowType == RowType.earthlyBranch) {
-                            cell = _cell(Size(colW, ganZhiCellSize.height),
-                                _diZhiText(jz.diZhi));
+                            cell = _cell(Size(colW, rowSize.height),
+                                _diZhiText(jz.diZhi),
+                                verticalPadding:
+                                    _getRowPaddingByIndex(absRowIdx),
+                                horizontalPadding:
+                                    rowPayloads[absRowIdx].paddingHorizontal);
                           } else if (rowType == RowType.naYin) {
                             // 使用 RowInfoPayload 策略优先解析；缺省退回 JiaZi.naYinStr
                             final pillarContent =
@@ -2257,7 +2284,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   jz.naYinStr;
                             }
                             cell = _cell(
-                                Size(colW, otherCellHeight), _naYinText(text));
+                                Size(colW, rowSize.height), _naYinText(text),
+                                verticalPadding:
+                                    _getRowPaddingByIndex(absRowIdx),
+                                horizontalPadding:
+                                    rowPayloads[absRowIdx].paddingHorizontal);
                           } else if (rowType == RowType.kongWang) {
                             // 空亡行：使用嵌入策略计算，缺省退回 JiaZi.getKongWang()
                             final pillarContent =
@@ -2270,8 +2301,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                       pillarContent, computationInput) ??
                                   '${fallbackKw.item1.value}${fallbackKw.item2.value}';
                             }
-                            cell = _cell(Size(colW, otherCellHeight),
-                                _kongWangText(text));
+                            cell = _cell(
+                                Size(colW, rowSize.height), _kongWangText(text),
+                                verticalPadding:
+                                    _getRowPaddingByIndex(absRowIdx),
+                                horizontalPadding:
+                                    rowPayloads[absRowIdx].paddingHorizontal);
                           } else if (_isSeparatorRowAtIndex(absRowIdx)) {
                             // 分隔行：不在单元格内绘制横线，由数据网格叠加层统一绘制
                             cell = SizedBox(
@@ -2280,11 +2315,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             );
                           } else {
                             // 表头行的列标题单元格使用 columnTitleHeight，其他行使用 otherCellHeight
-                            final cellHeight = isCurrentRowHeaderRow
-                                ? columnTitleHeight
-                                : otherCellHeight;
+                            final cellHeight = rowSize.height;
                             cell = _cell(Size(colW, cellHeight),
-                                _columnTitleText(tuple.item1));
+                                _columnTitleText(tuple.item1),
+                                verticalPadding:
+                                    _getRowPaddingByIndex(absRowIdx),
+                                horizontalPadding:
+                                    rowPayloads[absRowIdx].paddingHorizontal,
+                                verticalMargin:
+                                    rowPayloads[absRowIdx].marginVertical);
                           }
                           rowChildren.add(AnimatedSlide(
                             duration: const Duration(milliseconds: 240),
@@ -2355,22 +2394,34 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 : 1.0,
                         child: Container(
                           margin: _pillarMarginAtIndex(i),
-                          child: Container(
-                            padding: _pillarPaddingEff,
-                            decoration: BoxDecoration(
-                              color: _pillarBackgroundColorEff,
-                              borderRadius:
-                                  BorderRadius.circular(_pillarCornerRadiusEff),
-                              border: Border.all(
-                                color: _pillarBorderColorEff,
-                                width: _pillarBorderWidthEff,
-                              ),
-                              boxShadow: widget.pillarBoxShadow,
-                            ),
-                            child: SizedBox(
-                              width: colW,
-                              child: columnContent,
-                            ),
+                          padding: _pillarPaddingEff,
+                          // width: colW,
+                          decoration: BoxDecoration(
+                            color: _pillarBackgroundColorEff ==
+                                    Colors.transparent
+                                ? widget.cardDecoration?.color ?? Colors.white
+                                : _pillarBackgroundColorEff,
+                            // color: Colors.white,
+                            borderRadius:
+                                BorderRadius.circular(_pillarCornerRadiusEff),
+                            border: _pillarBorderWidthEff == 0
+                                ? null
+                                : Border.all(
+                                    color: _pillarBorderColorEff,
+                                    width: _pillarBorderWidthEff,
+                                  ),
+                            boxShadow: widget.pillarBoxShadow,
+                            // boxShadow: [
+                            //   BoxShadow(
+                            //       color: Colors.black.withAlpha(50),
+                            //       offset: Offset(1, 1),
+                            //       blurRadius: 6,
+                            //       spreadRadius: 7)
+                            // ]),
+                          ),
+                          child: SizedBox(
+                            width: colW,
+                            child: columnContent,
                           ),
                         ),
                       ),
@@ -3220,12 +3271,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         continue;
       }
       if (payload != null) {
-        total += payload.resolveHeight(
+        final base = payload.resolveHeight(
           heavenlyAndEarthlyHeight: ganZhiCellSize.height,
           otherHeight: otherCellHeight,
           dividerHeight: _rowDividerHeightEffective,
           headerHeight: columnTitleHeight,
         );
+        final vp = (payload.padding ?? 0.0).clamp(0.0, double.infinity);
+        total += base + (vp * 2);
       } else {
         total += _rowHeightByName(rows[i]);
       }
@@ -3643,12 +3696,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 优先通过对应行的 payload 解析高度（行类型/label 有歧义时以 payload 行为为准）
     final payload = _findRowPayloadByName(name);
     if (payload != null) {
-      return payload.resolveHeight(
+      final baseHeight = payload.resolveHeight(
         heavenlyAndEarthlyHeight: ganZhiCellSize.height,
         otherHeight: otherCellHeight,
         dividerHeight: _rowDividerHeightEffective,
         headerHeight: columnTitleHeight, // 添加表头行高度参数
       );
+      // 如果行有 padding 配置，则加上上下内边距（padding * 2）
+      final rowPadding = payload.padding ?? 0.0;
+      // 外边距由外层 Padding 承载，这里仅返回内容高度 + 内边距
+      return baseHeight + (rowPadding * 2);
     }
     // 兜底：不再使用中文标题字符串分支，统一返回通用行高
     return otherCellHeight;
@@ -3664,21 +3721,62 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return null;
   }
 
+  /// 获取指定行的垂直内边距值
+  double? _getRowPadding(String rowName) {
+    final payload = _findRowPayloadByName(rowName);
+    return payload?.padding;
+  }
+
+  /// 通过行索引获取行的垂直内边距值
+  double? _getRowPaddingByIndex(int absRowIdx) {
+    final rowPayloads = widget.rowListNotifier.value;
+    if (absRowIdx >= 0 && absRowIdx < rowPayloads.length) {
+      final padding = rowPayloads[absRowIdx].padding;
+      if (padding != null && padding > 0) {
+        print(
+            '🔍 [V3._getRowPaddingByIndex] absRowIdx=$absRowIdx, ${rowPayloads[absRowIdx].rowType.name}, padding=$padding');
+      }
+      return padding;
+    }
+    return null;
+  }
+
   Size _rowCellSize(String rowName) {
     final h = _rowHeightByName(rowName);
     return Size(rowTitleWidth, h);
   }
 
-  Widget _cell(Size size, Widget child) {
+  Widget _cell(Size size, Widget child,
+      {double? verticalPadding,
+      double? horizontalPadding,
+      double? verticalMargin}) {
+    if (verticalPadding != null && verticalPadding > 0) {
+      print(
+          '🔍 [V3._cell] size.height=${size.height}, verticalPadding=$verticalPadding');
+    }
+
     return Container(
       width: size.width,
       height: size.height,
+      // margin: verticalMargin != null
+      //     ? EdgeInsets.symmetric(vertical: verticalMargin)
+      //     : null,
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(0.03),
         border: Border.all(color: Colors.black12, width: 0.5),
         borderRadius: BorderRadius.zero, // 移除圆角，消除单元格间的视觉间隙
       ),
-      child: Center(child: child),
+      child: (verticalPadding != null && verticalPadding > 0) ||
+              (horizontalPadding != null && horizontalPadding > 0)
+          ? Padding(
+              padding: EdgeInsets.symmetric(
+                vertical: (verticalPadding ?? 0).clamp(0.0, double.infinity),
+                horizontal:
+                    (horizontalPadding ?? 0).clamp(0.0, double.infinity),
+              ),
+              child: Center(child: child),
+            )
+          : Center(child: child),
     );
   }
 
@@ -3741,21 +3839,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
             if (rowType == RowType.heavenlyStem) {
               return _cell(Size(feedbackWidth, ganZhiCellSize.height),
-                  _tianGanText(jz.tianGan));
+                  _tianGanText(jz.tianGan),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             } else if (rowType == RowType.earthlyBranch) {
               return _cell(Size(feedbackWidth, ganZhiCellSize.height),
-                  _diZhiText(jz.diZhi));
+                  _diZhiText(jz.diZhi),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             } else if (rowType == RowType.naYin) {
-              return _cell(Size(feedbackWidth, otherCellHeight),
-                  _naYinText(jz.naYinStr));
+              return _cell(
+                  Size(feedbackWidth, otherCellHeight), _naYinText(jz.naYinStr),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             } else if (rowType == RowType.kongWang) {
               final kw = jz.getKongWang();
               final text = '${kw.item1.value}${kw.item2.value}';
               return _cell(
-                  Size(feedbackWidth, otherCellHeight), _kongWangText(text));
+                  Size(feedbackWidth, otherCellHeight), _kongWangText(text),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             } else if (rowType == RowType.columnHeaderRow) {
               return _cell(Size(feedbackWidth, columnTitleHeight),
-                  _columnTitleText(title));
+                  _columnTitleText(title),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             } else if (_isSeparatorRowAtIndex(absRowIdx)) {
               return Container(
                 width: feedbackWidth,
@@ -3766,8 +3869,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ),
               );
             } else {
-              return _cell(Size(feedbackWidth, otherCellHeight),
-                  _columnTitleText(title));
+              return _cell(
+                  Size(feedbackWidth, otherCellHeight), _columnTitleText(title),
+                  verticalPadding: _getRowPaddingByIndex(absRowIdx));
             }
           }).toList(),
         ],
@@ -4151,16 +4255,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
 
     // 行高：优先使用覆盖 > payload 解析 > 名称兜底
+    // 统一行高计算：当存在 payload 时，使用 `_rowHeightByPayload`，其中包含 padding * 2；
+    // 否则回退到 `_rowHeightByName(rowName)`（同样包含 padding）。
     final double rowH =
         (absRowIndex != null && _rowHeightOverrides[absRowIndex] != null)
             ? _rowHeightOverrides[absRowIndex]!
             : (payload != null
-                ? payload.resolveHeight(
-                    heavenlyAndEarthlyHeight: ganZhiCellSize.height,
-                    otherHeight: otherCellHeight,
-                    dividerHeight: _rowDividerHeightEffective,
-                    headerHeight: columnTitleHeight,
-                  )
+                ? _rowHeightByPayload(payload)
                 : _rowHeightByName(rowName));
 
     final totalW = rowTitleWidth + _totalColsWidth(pillars);
@@ -4169,56 +4270,74 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final String titleStr = payload?.rowLabel ??
         (rowType != null ? _labelForRowType(rowType) : rowName);
 
-    return Container(
-      width: totalW,
-      height: rowH,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          if (isRowSeparator)
-            Container(
-              width: rowTitleWidth,
-              height: rowH,
-              decoration: CardDecorators.buildRowSeparatorDecoration(
-                context,
-                thickness: _rowDividerThickness,
-              ),
-            )
-          else
-            _cell(Size(rowTitleWidth, rowH),
-                _dragHandle(_rowTitleText(titleStr))),
-          ...pillars.asMap().entries.map((entry) {
-            final i = entry.key;
-            final tuple = entry.value;
-            final jz = tuple.item2;
-            final colW = _colWidthAtIndex(i, pillars);
-
-            if (rowType == RowType.heavenlyStem) {
-              return _cell(Size(colW, rowH), _tianGanText(jz.tianGan));
-            } else if (rowType == RowType.earthlyBranch) {
-              return _cell(Size(colW, rowH), _diZhiText(jz.diZhi));
-            } else if (rowType == RowType.naYin) {
-              return _cell(Size(colW, rowH), _naYinText(jz.naYinStr));
-            } else if (rowType == RowType.kongWang) {
-              final kw = jz.getKongWang();
-              final text = '${kw.item1.value}${kw.item2.value}';
-              return _cell(Size(colW, rowH), _kongWangText(text));
-            } else if (rowType == RowType.columnHeaderRow) {
-              return _cell(Size(colW, rowH), _columnTitleText(tuple.item1));
-            } else if (isRowSeparator) {
-              return Container(
-                width: colW,
+    // 外层占位：应用行的上下外边距（仅占位，不影响内部内容测量）
+    final double marginV = payload?.marginVertical ?? 0.0;
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: marginV),
+      child: SizedBox(
+        width: totalW,
+        height: rowH,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            if (isRowSeparator)
+              Container(
+                width: rowTitleWidth,
                 height: rowH,
                 decoration: CardDecorators.buildRowSeparatorDecoration(
                   context,
                   thickness: _rowDividerThickness,
                 ),
-              );
-            } else {
-              return _cell(Size(colW, rowH), _columnTitleText(tuple.item1));
-            }
-          }).toList(),
-        ],
+              )
+            else
+              _cell(Size(rowTitleWidth, rowH),
+                  _dragHandle(_rowTitleText(titleStr)),
+                  verticalPadding: payload?.padding,
+                  horizontalPadding: payload?.paddingHorizontal),
+            ...pillars.asMap().entries.map((entry) {
+              final i = entry.key;
+              final tuple = entry.value;
+              final jz = tuple.item2;
+              final colW = _colWidthAtIndex(i, pillars);
+
+              if (rowType == RowType.heavenlyStem) {
+                return _cell(Size(colW, rowH), _tianGanText(jz.tianGan),
+                    verticalPadding: payload?.padding,
+                    horizontalPadding: payload?.paddingHorizontal);
+              } else if (rowType == RowType.earthlyBranch) {
+                return _cell(Size(colW, rowH), _diZhiText(jz.diZhi),
+                    verticalPadding: payload?.padding,
+                    horizontalPadding: payload?.paddingHorizontal);
+              } else if (rowType == RowType.naYin) {
+                return _cell(Size(colW, rowH), _naYinText(jz.naYinStr),
+                    verticalPadding: payload?.padding,
+                    horizontalPadding: payload?.paddingHorizontal);
+              } else if (rowType == RowType.kongWang) {
+                final kw = jz.getKongWang();
+                final text = '${kw.item1.value}${kw.item2.value}';
+                return _cell(Size(colW, rowH), _kongWangText(text),
+                    verticalPadding: payload?.padding,
+                    horizontalPadding: payload?.paddingHorizontal);
+              } else if (rowType == RowType.columnHeaderRow) {
+                return _cell(Size(colW, rowH), _columnTitleText(tuple.item1),
+                    verticalPadding: payload?.padding,
+                    horizontalPadding: payload?.paddingHorizontal);
+              } else if (isRowSeparator) {
+                return Container(
+                  width: colW,
+                  height: rowH,
+                  decoration: CardDecorators.buildRowSeparatorDecoration(
+                    context,
+                    thickness: _rowDividerThickness,
+                  ),
+                );
+              } else {
+                return _cell(Size(colW, rowH), _columnTitleText(tuple.item1),
+                    verticalPadding: payload?.padding);
+              }
+            }).toList(),
+          ],
+        ),
       ),
     );
   }

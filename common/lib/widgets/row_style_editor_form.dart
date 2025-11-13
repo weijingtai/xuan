@@ -51,7 +51,7 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
     _selectedTextAlign = widget.config.textAlign;
     _selectedBorderType = widget.config.borderType;
     _selectedBorderColor = widget.config.borderColorHex;
-    _selectedPadding = widget.config.padding;
+    _selectedPadding = widget.config.paddingVertical;
   }
 
   @override

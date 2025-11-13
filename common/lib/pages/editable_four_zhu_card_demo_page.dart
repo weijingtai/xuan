@@ -97,29 +97,29 @@ class _EditableFourZhuCardDemoPageState
                             final editor = SizedBox(
                               width: isNarrow ? constraints.maxWidth : 420,
                               child: EditableFourZhuStyleEditorPanel(
-                                // theme: _vm.theme,
-                                // onChanged: (next) {
-                                //   setState(() {
-                                //     _vm.setTheme(next);
-                                //     // Apply card padding directly to V3 card
-                                //     final resolvedPadding = _vm.themeController
-                                //             ?.resolveCardPadding() ??
-                                //         const EdgeInsets.all(12);
-                                //     _vm.paddingNotifier.value = resolvedPadding;
+                                  // theme: _vm.theme,
+                                  // onChanged: (next) {
+                                  //   setState(() {
+                                  //     _vm.setTheme(next);
+                                  //     // Apply card padding directly to V3 card
+                                  //     final resolvedPadding = _vm.themeController
+                                  //             ?.resolveCardPadding() ??
+                                  //         const EdgeInsets.all(12);
+                                  //     _vm.paddingNotifier.value = resolvedPadding;
 
-                                //     // Bind per-pillar margin to payloads so sliders only affect that pillar
-                                //     final current = _vm.pillarsNotifier.value;
-                                //     final mapped = current
-                                //         .map((p) => p.copyWith(
-                                //               columnMargin: _vm.themeController
-                                //                   ?.resolvePillarMargin(
-                                //                       p.pillarType),
-                                //             ))
-                                //         .toList();
-                                //     _vm.pillarsNotifier.value = mapped;
-                                //   });
-                                // },
-                              ),
+                                  //     // Bind per-pillar margin to payloads so sliders only affect that pillar
+                                  //     final current = _vm.pillarsNotifier.value;
+                                  //     final mapped = current
+                                  //         .map((p) => p.copyWith(
+                                  //               columnMargin: _vm.themeController
+                                  //                   ?.resolvePillarMargin(
+                                  //                       p.pillarType),
+                                  //             ))
+                                  //         .toList();
+                                  //     _vm.pillarsNotifier.value = mapped;
+                                  //   });
+                                  // },
+                                  ),
                             );
                             // 仅保留编辑面板，移除“预览”及其下方预览卡片
                             return editor;
@@ -275,7 +275,7 @@ class _EditableFourZhuCardDemoPageState
                                     horizontal: 16, vertical: 16),
                         pillarBorderWidth:
                             _vm.themeController?.resolvePillarBorderWidth() ??
-                                2,
+                                0,
                         pillarBorderColor:
                             _vm.themeController?.resolvePillarBorderColor() ??
                                 Colors.red,

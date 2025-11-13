@@ -49,7 +49,7 @@ class EditorSidebarV2 extends StatelessWidget {
                     updatedConfig.type,
                     textStyleConfig: updatedConfig.textStyleConfig,
                     textAlign: updatedConfig.textAlign,
-                    padding: updatedConfig.padding,
+                    padding: updatedConfig.paddingVertical,
                     borderType: updatedConfig.borderType,
                     borderColorHex: updatedConfig.borderColorHex,
                     // 阴影参数

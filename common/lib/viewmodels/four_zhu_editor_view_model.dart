@@ -517,6 +517,9 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     String? fontWeight,
     RowTextAlign? textAlign,
     double? padding,
+    double? marginVertical,
+    double? marginHorizontal,
+    double? paddingHorizontal,
     BorderType? borderType,
     String? borderColorHex,
     // 阴影参数
@@ -526,9 +529,14 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     double? shadowBlurRadius,
   }) {
     print('🔍 [ViewModel.updateRowStyle] 更新行样式: type=$type');
+    if (padding != null) {
+      print('🔍 [ViewModel.updateRowStyle] padding=$padding');
+    }
     if (textStyleConfig != null) {
-      print('🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色');
-      print('🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
+      print(
+          '🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色');
+      print(
+          '🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
     }
     final template = _currentTemplate;
     if (template == null) return;
@@ -539,12 +547,21 @@ class FourZhuEditorViewModel extends ChangeNotifier {
                 textStyleConfig: textStyleConfig ?? config.textStyleConfig,
                 // 同步旧字段,确保向后兼容
                 textAlign: textAlign ?? config.textAlign,
-                padding: padding ?? config.padding,
+                padding: padding ?? config.paddingVertical,
+                marginVertical: marginVertical ?? config.marginVertical,
+                marginHorizontal: marginHorizontal ?? config.marginHorizontal,
+                paddingHorizontal:
+                    paddingHorizontal ?? config.paddingHorizontal,
                 borderType: borderType ?? config.borderType,
                 borderColorHex: borderColorHex ?? config.borderColorHex,
               )
             : config)
         .toList(growable: false);
+
+    // 打印更新后的 padding 值
+    final updatedConfig = updated.firstWhere((c) => c.type == type);
+    print(
+        '🔍 [ViewModel.updateRowStyle] 更新后的 config.padding=${updatedConfig.paddingVertical}');
 
     print('🔍 [ViewModel.updateRowStyle] 调用 _applyCurrentTemplate');
     _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
