@@ -3,14 +3,23 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'base_style_config.dart';
 
-part 'card_style_config.g.dart';
+part 'pillar_style_config.g.dart';
 
-/// CardStyleConfig
-/// 封装卡片（容器）的视觉样式配置，尽可能复用已有的 `BaseBoxStyleConfig` 数据结构。
+/// PillarStyleConfig
+/// 封装柱（列容器）的视觉样式配置，尽可能复用已有的 `CardStyleConfig` 数据结构。
 /// 功能描述：
+/// - 通过组合 `CardStyleConfig` 承载边框/背景/圆角/内边距/阴影；
+/// - 仅在柱层级新增 `margin: EdgeInsets` 字段以控制列间距；
+/// - 提供 `toBoxDecoration()` 与 JSON 序列化/反序列化；
+/// - 提供派生 getter（borderWidth/borderColor/cornerRadius/backgroundColor/padding）便于测量与渲染使用。
+/// 参数说明：
+/// - [baseStyle]：复用卡片样式数据类承载柱的装饰；
+/// - [margin]：柱外边距（列间距）；
+/// - [boxShadowOverride]：柱层级的阴影覆盖（可选，未提供时使用 `baseStyle.toBoxDecoration().boxShadow`）。
+/// 返回值：不可变配置对象。
 @JsonSerializable()
-class CardStyleConfig extends BaseBoxStyleConfig {
-  const CardStyleConfig({
+class PillarStyleConfig extends BaseBoxStyleConfig {
+  const PillarStyleConfig({
     super.border,
     super.lightBackgroundColor,
     super.darkBackgroundColor,
@@ -18,9 +27,6 @@ class CardStyleConfig extends BaseBoxStyleConfig {
     super.margin = EdgeInsets.zero,
     super.shadow,
   });
-  Map<String, dynamic> toJson() => _$CardStyleConfigToJson(this);
-  factory CardStyleConfig.fromJson(Map<String, dynamic> json) =>
-      _$CardStyleConfigFromJson(json);
 
   @override
   List<Object?> get props => [
@@ -32,7 +38,7 @@ class CardStyleConfig extends BaseBoxStyleConfig {
         shadow,
       ];
   @override
-  CardStyleConfig copyWith({
+  PillarStyleConfig copyWith({
     BoxBorderStyle? border,
     Color? lightBackgroundColor,
     Color? darkBackgroundColor,
@@ -40,7 +46,7 @@ class CardStyleConfig extends BaseBoxStyleConfig {
     EdgeInsets? margin,
     BoxShadowStyle? shadow,
   }) {
-    return CardStyleConfig(
+    return PillarStyleConfig(
       border: border ?? this.border,
       lightBackgroundColor: lightBackgroundColor ?? this.lightBackgroundColor,
       darkBackgroundColor: darkBackgroundColor ?? this.darkBackgroundColor,
@@ -51,9 +57,14 @@ class CardStyleConfig extends BaseBoxStyleConfig {
     );
   }
 
+  /// 将对象序列化为 JSON。仅写入非空字段，减少冗余。
+  Map<String, dynamic> toJson() => _$PillarStyleConfigToJson(this);
+  factory PillarStyleConfig.fromJson(Map<String, dynamic> json) =>
+      _$PillarStyleConfigFromJson(json);
+
   /// 创建默认的 CardStyleConfig
-  static CardStyleConfig get defaultCardStyleConfig {
-    return CardStyleConfig(
+  static PillarStyleConfig get defaultPillarStyleConfig {
+    return PillarStyleConfig(
       border: BoxBorderStyle(
         enabled: true,
         width: 1.0,
@@ -63,7 +74,7 @@ class CardStyleConfig extends BaseBoxStyleConfig {
       ),
       lightBackgroundColor: Colors.white,
       darkBackgroundColor: Colors.grey.shade900,
-      padding: const EdgeInsets.all(16.0),
+      padding: EdgeInsets.zero,
       shadow: BoxShadowStyle.defaultShadow,
       margin: EdgeInsets.zero,
       // size: null,

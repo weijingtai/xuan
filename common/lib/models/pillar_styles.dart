@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 /// Border rendering style for a pillar card.
 enum PillarBorderType { none, solid, dashed, dotted }
 
+@Deprecated("Use PillarStyleConfig instead.")
+
 /// Controls visual appearance of a single pillar tile (card-like).
 class PillarCardStyle {
   const PillarCardStyle({

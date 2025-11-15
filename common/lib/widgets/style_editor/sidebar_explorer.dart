@@ -4,7 +4,7 @@ import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import 'editable_four_zhu_style_editor_panel.dart';
 import 'row_style_editor_panel.dart';
 import 'cell_style_editor_panel.dart';
-import 'four_zhu_pillar_style_editor_panel.dart';
+import 'four_zhu_pillar_style_editor.dart';
 
 class SidebarExplorer extends StatelessWidget {
   const SidebarExplorer({super.key});
@@ -32,11 +32,11 @@ class SidebarExplorer extends StatelessWidget {
               child: const RowStyleEditorPanel(),
             ),
             const SizedBox(height: 12),
-            _section(
+            _pillarSecion(
               context,
               icon: Icons.view_column,
               title: '柱样式',
-              child: FourZhuPillarStyleEditorPanel(theme: demoVm.theme),
+              child: FourZhuPillarStyleEditor(theme: demoVm.theme),
             ),
             const SizedBox(height: 12),
             _section(
@@ -47,6 +47,24 @@ class SidebarExplorer extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _pillarSecion(BuildContext context,
+      {required IconData icon, required String title, required Widget child}) {
+    final theme = Theme.of(context);
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: theme.dividerColor.withOpacity(0.12)),
+      ),
+      child: ExpansionTile(
+        leading: Icon(icon),
+        title: Text(title, style: theme.textTheme.titleMedium),
+        childrenPadding: const EdgeInsets.all(12),
+        children: [child, child],
       ),
     );
   }

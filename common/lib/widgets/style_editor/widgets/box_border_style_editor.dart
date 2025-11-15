@@ -1,0 +1,145 @@
+import 'package:common/widgets/style_editor/widgets/title_slider_widget.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:flutter/material.dart';
+
+import '../../editable_fourzhu_card/models/base_style_config.dart';
+import '../../editable_fourzhu_card/models/pillar_style_config.dart';
+
+class BoxBorderStyleEditor extends StatelessWidget {
+  final ValueNotifier<BoxBorderStyle> borderNotifier;
+  final ValueNotifier<PillarStyleConfig> styleConfigNotifier;
+  const BoxBorderStyleEditor(
+      {super.key,
+      required this.borderNotifier,
+      required this.styleConfigNotifier});
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<BoxBorderStyle>(
+      valueListenable: borderNotifier,
+      builder: (context, value, child) => border(context, value),
+    );
+  }
+
+  Widget border(BuildContext context, BoxBorderStyle border) {
+    final _pillarBorderWidth = (border.width ?? 2).toDouble();
+    final _pillarCornerRadius = (border.radius ?? 0).toDouble();
+    final _pillarBorderColorLight = border.lightColor;
+    final _pillarBorderColorDark = border.darkColor;
+    return Column(
+      children: [
+        // 边框控制
+        TitleSliderWidget(
+          label: '边框宽度 (px)',
+          value: _pillarBorderWidth,
+          min: 0,
+          max: 8,
+          onChanged: (v) {
+            borderNotifier.value = border.copyWith(width: v);
+          },
+        ),
+        TitleSliderWidget(
+          label: '柱圆角 (px)',
+          value: _pillarCornerRadius,
+          min: 0,
+          max: 32,
+          onChanged: (v) {
+            borderNotifier.value = border.copyWith(radius: v);
+          },
+        ),
+
+        // 柱边框颜色控制
+        Row(
+          children: [
+            const Text('Light柱边框颜色'),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () => updateLightBorderColor(context, border),
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: _pillarBorderColorLight,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () => updateLightBorderColor(context, border),
+              child: const Text('选择颜色'),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        // 柱边框颜色控制
+        Row(
+          children: [
+            const Text('Dark 柱边框颜色'),
+            const SizedBox(width: 8),
+            InkWell(
+              onTap: () => updateDarkBorderColor(context, border),
+              child: Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  color: _pillarBorderColorDark,
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color:
+                        Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            TextButton(
+              onPressed: () => updateDarkBorderColor(context, border),
+              child: const Text('选择颜色'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void updateDarkBorderColor(
+      BuildContext context, BoxBorderStyle border) async {
+    final picked = await showColorPickerDialog(
+      context,
+      border.darkColor,
+      title: const Text('选择颜色'),
+      pickersEnabled: const {
+        ColorPickerType.wheel: true,
+        ColorPickerType.accent: false,
+        ColorPickerType.primary: false,
+        ColorPickerType.custom: false,
+      },
+    );
+    borderNotifier.value = border.copyWith(
+      darkColor: picked,
+    );
+  }
+
+  void updateLightBorderColor(
+      BuildContext context, BoxBorderStyle border) async {
+    final picked = await showColorPickerDialog(
+      context,
+      border.lightColor,
+      title: const Text('选择颜色'),
+      pickersEnabled: const {
+        ColorPickerType.wheel: true,
+        ColorPickerType.accent: false,
+        ColorPickerType.primary: false,
+        ColorPickerType.custom: false,
+      },
+    );
+    borderNotifier.value = border.copyWith(
+      darkColor: picked,
+    );
+  }
+}

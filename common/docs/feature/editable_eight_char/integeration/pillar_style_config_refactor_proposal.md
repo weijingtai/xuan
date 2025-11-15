@@ -1,403 +1,173 @@
 # PillarStyleConfig 重构方案 - 原子化任务清单
 
-**创建日期**: 2025-11-10
-**状态**: 待审阅
-**迁移周期**: 1.5-2 周（激进模式）
-**依赖**: TextStyleConfig 和 CardStyleConfig 重构完成后启动
-
----
-
-## 📋 方案概述
-
-### 核心问题
-- **柱样式硬编码**：每柱（年/月/日/时）的 border、radius、shadow、padding、**margin** 等样式硬编码在 V3Card 中
-- **无法独立配置**：当前仅支持 `perPillarMargin`，其他柱样式无法为每柱单独设置
-- **扩展困难**：新增柱样式属性需要修改多处硬编码
-
-### 解决方案
-创建 `PillarStyleConfig` 数据类，封装**每柱容器**的所有视觉样式：
-- 边框：width, colorHex, style
-- 背景：backgroundColorHex
-- 圆角：borderRadius（统一）或 topLeft/topRight/bottomLeft/bottomRight（独立）
-- **内边距**：paddingTop/Bottom/Left/Right
-- **外边距**：marginTop/Bottom/Left/Right ⚠️ **新增关键属性**
-- 阴影：shadowColorHex, offsetX/Y, blurRadius, spreadRadius
-- 尺寸：width, height（可选）
-
-### 核心差异：Margin vs Padding
-
-**Padding（内边距）**：
-- 柱容器内部的空白
-- 影响柱内内容的位置
-- 在 CardStyleConfig 中已支持
-
-**Margin（外边距）** ⚠️ **关键新增**：
-- 柱容器外部的空白
-- 控制柱与柱之间的间距
-- 当前仅有 `perPillarMargin: [8, 8, 8, 8]`（硬编码）
-- **新方案**：每柱独立配置 4 方向 margin
-
-### 集成方案
-
-```dart
-// LayoutTemplate 新增字段
-class LayoutTemplate {
-  final CardStyle cardStyle;  // 全局字体+分隔线
-  final CardStyleConfig? cardContainerStyle;  // 卡片容器样式
-  final PillarStyleConfig? globalPillarStyle;  // 🆕 全局柱样式（默认）
-  final Map<PillarType, PillarStyleConfig>? perPillarStyles;  // 🆕 每柱独立样式（覆盖）
-}
-
-// 优先级：perPillarStyles > globalPillarStyle > 默认值
-
-// ViewModel 新增方法
-void updateGlobalPillarStyle(PillarStyleConfig? config);
-void updatePillarStyle(PillarType type, PillarStyleConfig? config);
-
-// V3Card 应用样式
-Container(
-  margin: pillarStyle?.margin,  // ⚠️ 外边距
-  decoration: pillarStyle?.toBoxDecoration(),
-  padding: pillarStyle?.padding,
-  child: /* 柱内容 */,
-)
-```
-
-### 与 CardStyleConfig 的对比
-
-| 属性 | CardStyleConfig | PillarStyleConfig | 差异 |
-|-----|----------------|------------------|-----|
-| 边框 | ✅ 3 个 | ✅ 3 个 | 相同 |
-| 背景 | ✅ 1 个 | ✅ 1 个 | 相同 |
-| 圆角 | ✅ 5 个 | ✅ 5 个 | 相同 |
-| 内边距 | ✅ 4 个 | ✅ 4 个 | 相同 |
-| **外边距** | ❌ 无 | ✅ **4 个** | **新增** |
-| 阴影 | ✅ 5 个 | ✅ 5 个 | 相同 |
-| 尺寸 | ✅ 6 个 | ✅ 2 个 | 简化 |
-| **总计** | 24 个 | **28 个** | **+4** |
-
-**代码复用**：83% 属性相同，建议抽取 `StyleConfigUtils` 工具类
-
----
-
-## ✅ 原子化 Todo List（50 项任务）
-
-### Week 1 Day 1: PillarStyleConfig 类创建（5 项）
-
-1. **创建 PillarStyleConfig 类骨架**
-   - 文件：`lib/models/pillar_style_config.dart`
-   - 28 个字段（border 3, background 1, radius 5, padding 4, **margin 4**, shadow 5, size 2）
-   - 验收：编译通过
-
-2. **实现类型转换方法**
-   - `BoxDecoration toBoxDecoration()`
-   - `EdgeInsets? get padding`
-   - `EdgeInsets? get margin` ⚠️ 新增
-   - 验收：转换正确
-
-3. **实现工厂方法**
-   - `fromBoxDecoration(...)`
-   - `fromLegacy(...)`
-   - `fromCardStyleConfig(CardStyleConfig, {margin})` ⚠️ 复用
-   - 验收：双向转换一致
-
-4. **运行 build_runner**
-   - `dart run build_runner build --delete-conflicting-outputs`
-   - 验收：生成 .g.dart
-
-5. **抽取公共工具类 StyleConfigUtils（可选）**
-   - 文件：`lib/utils/style_config_utils.dart`
-   - 提取颜色解析、阴影构建等公共方法
-   - 验收：代码重复减少 80%
-
----
-
-### Week 1 Day 2: 单元测试（4 项）
-
-6. **测试类型转换**
-   - toBoxDecoration, padding, **margin**
-   - 验收：测试通过
-
-7. **测试 JSON 序列化**
-   - toJson/fromJson 往返
-   - 验收：一致
-
-8. **测试向后兼容**
-   - fromLegacy, fromCardStyleConfig
-   - 验收：覆盖率 >90%
-
-9. **测试 margin vs padding 差异**
-   - 验收：行为符合预期
-
----
-
-### Week 1 Day 3: LayoutTemplate 集成（4 项）
-
-10. **添加柱样式字段**
-    - `globalPillarStyle`, `perPillarStyles`
-    - 验收：编译通过
-
-11. **更新 JSON 序列化**
-    - 处理 Map<PillarType, PillarStyleConfig>
-    - 验收：JSON 正确
-
-12. **集成测试**
-    - 旧/新 JSON 加载
-    - 验收：向后兼容
-
-13. **测试样式优先级**
-    - perPillarStyles > globalPillarStyle > 默认
-    - 验收：优先级正确
-
----
-
-### Week 1 Day 4: ViewModel 更新（4 项）
-
-14. **添加 updateGlobalPillarStyle**
-    - 验收：功能正确
-
-15. **添加 updatePillarStyle（每柱）**
-    - 验收：独立更新
-
-16. **ViewModel 单元测试**
-    - 验收：测试通过
-
-17. **回归测试**
-    - 验收：无现有测试失败
-
----
-
-### Week 1 Day 5-6: Sidebar UI（8 项）
-
-18. **创建 _PillarStyleSection 组件**
-    - 柱选择器（全局/年/月/日/时）
-    - 验收：UI 正常
-
-19. **边框编辑 UI**
-    - 验收：编辑触发回调
-
-20. **背景和圆角 UI**
-    - 验收：实时更新
-
-21. **内边距 UI**
-    - 4 个输入框
-    - 验收：独立编辑
-
-22. **外边距 UI** ⚠️ 新增
-    - 4 个输入框，标签："外边距（柱间距）"
-    - 验收：与 padding 区分
-
-23. **阴影编辑 UI**
-    - 验收：实时预览
-
-24. **柱类型切换逻辑**
-    - 验收：切换正常
-
-25. **集成到 EditorSidebarV2**
-    - 验收：显示新区域
-
----
-
-### Week 2 Day 1: EditorWorkspace 集成（5 项）
-
-26. **获取有效柱样式**
-    - 考虑优先级
-    - 验收：逻辑正确
-
-27. **传递配置到 V3Card**
-    - 验收：正确传递
-
-28. **更新 V3Card 参数**
-    - 验收：接收正确
-
-29. **应用 margin**
-    - 验收：柱间距可调
-
-30. **移除硬编码**
-    - 验收：无残留
-
----
-
-### Week 2 Day 2: 回归测试（6 项）
-
-31. **旧模板加载**
-    - 验收：默认样式
-
-32. **全局柱样式编辑**
-    - 验收：统一生效
-
-33. **每柱独立编辑**
-    - 年柱红边框、月柱0圆角、日柱大margin、时柱浅蓝背景
-    - 验收：独立持久化
-
-34. **margin vs padding 视觉差异**
-    - 验收：明确区分
-
-35. **边界值测试**
-    - 验收：正确处理
-
-36. **完整回归**
-    - 验收：无回归
-
----
-
-### Week 2 Day 3: 文档与清理（5 项）
-
-37. **迁移指南**
-    - 解释 margin vs padding
-    - 验收：清晰
-
-38. **架构文档**
-    - 优先级图表
-    - 验收：准确
-
-39. **对比文档**
-    - PillarStyleConfig vs CardStyleConfig
-    - 验收：差异清晰
-
-40. **代码审查**
-    - flutter analyze
-    - 验收：0 errors
-
-41. **清理代码**
-    - 验收：整洁
-
----
-
-### Week 2 Day 4-5: 最终验证（9 项）
-
-42. **所有单元测试**
-43. **所有集成测试**
-44. **全局柱样式验证**
-45. **每柱独立样式验证**
-46. **margin 实时预览验证**
-47. **性能基准**
-48. **Commit message**
-49. **Git Tag**: `pillarstyle-config-v1`
-50. **合并主分支**
-
----
-
-## 📊 预期收益
-
-| 指标 | 当前 | 重构后 | 改进 |
-|------|------|--------|------|
-| 可编辑性 | ❌ 仅 margin 部分可配 | ✅ 全部 28 属性 | 🆕 |
-| 每柱独立 | ❌ 仅 margin | ✅ 全部属性 | 🆕 |
-| 代码重复 | 4 处 | 1 处 | -75% |
-| 扩展成本 | 20+ 处 | 3 处 | -85% |
-
----
-
-## 🎯 关键设计决策
-
-1. **Margin 实现**：通过外层 Container 的 margin 属性（推荐）
-2. **配置策略**：全局 + 每柱覆盖（推荐）
-3. **代码复用**：抽取 StyleConfigUtils（推荐）
-4. **UI 设计**：柱选择器切换（推荐）
-
----
-
-## 📋 验收标准
-
-### 功能性
-- ✅ 28 个字段（含 margin）
-- ✅ 样式优先级正确
-- ✅ Margin vs Padding 明确区分
-- ✅ 每柱独立配置
-- ✅ 向后兼容
-
-### 非功能性
-- ✅ 覆盖率 >90%
-- ✅ 0 errors
-- ✅ <100ms 响应
-- ✅ 文档完整
-
----
-
-## 📐 核心类定义
-
-```dart
-@JsonSerializable()
-class PillarStyleConfig {
-  const PillarStyleConfig({
-    // 边框
-    this.borderWidth,
-    this.borderColorHex,
-    this.borderStyle,
-
-    // 背景
-    this.backgroundColorHex,
-
-    // 圆角（5个）
-    this.borderRadius,
-    this.borderRadiusTopLeft,
-    this.borderRadiusTopRight,
-    this.borderRadiusBottomLeft,
-    this.borderRadiusBottomRight,
-
-    // 内边距（4个）
-    this.paddingTop,
-    this.paddingBottom,
-    this.paddingLeft,
-    this.paddingRight,
-
-    // 外边距（4个）⚠️ 新增
-    this.marginTop,
-    this.marginBottom,
-    this.marginLeft,
-    this.marginRight,
-
-    // 阴影（5个）
-    this.shadowColorHex,
-    this.shadowOffsetX,
-    this.shadowOffsetY,
-    this.shadowBlurRadius,
-    this.shadowSpreadRadius,
-
-    // 尺寸（2个）
-    this.width,
-    this.height,
-  });
-
-  final double? borderWidth;
-  final String? borderColorHex;
-  final String? borderStyle;
-  final String? backgroundColorHex;
-  final double? borderRadius;
-  final double? borderRadiusTopLeft;
-  final double? borderRadiusTopRight;
-  final double? borderRadiusBottomLeft;
-  final double? borderRadiusBottomRight;
-  final double? paddingTop;
-  final double? paddingBottom;
-  final double? paddingLeft;
-  final double? paddingRight;
-  final double? marginTop;      // ⚠️ 新增
-  final double? marginBottom;   // ⚠️ 新增
-  final double? marginLeft;     // ⚠️ 新增
-  final double? marginRight;    // ⚠️ 新增
-  final String? shadowColorHex;
-  final double? shadowOffsetX;
-  final double? shadowOffsetY;
-  final double? shadowBlurRadius;
-  final double? shadowSpreadRadius;
-  final double? width;
-  final double? height;
-
-  // 类型转换
-  BoxDecoration toBoxDecoration() => BoxDecoration(
-    border: _buildBorder(),
-    borderRadius: _buildBorderRadius(),
-    color: _parseColor(backgroundColorHex),
-    boxShadow: _buildShadows(),
-  );
-
-  EdgeInsets? get padding => _buildEdgeInsets(
-    paddingTop, paddingBottom, paddingLeft, paddingRight,
-  );
-
-  EdgeInsets? get margin => _buildEdgeInsets(
+## 1. 概述与目标
+- 目标：以 `PillarStyleConfig` 聚合柱样式，替代 V3 中分散的参数传递，降低构造参数数量并提升语义清晰度。
+- 收益：
+  - 简化 `EditableFourZhuCardV3` 的参数与渲染逻辑；
+  - 提升 Sidebar → ThemeController → Workspace → V3 的联动一致性；
+  - 统一序列化与持久化，便于主题预置与导入导出。
+
+## 2. 范围与不改动
+- 范围：模型定义、主题解析、工作区与 V3 卡片集成、编辑器输出、测试与文档。
+- 不改动：
+  - 保持 `pillarsNotifier/rowListNotifier/paddingNotifier` 与统一监听器的联动；
+  - 保持测量与尺寸计算主链路（含装饰参与测量）；
+  - 现有行样式、文本分组映射与字体解析逻辑不在本次调整范围。
+
+## 3. 前置假设与约束
+- `CardStyleConfig` 已具备边框/背景/内边距/阴影等转换与序列化能力，可复用方法与结构约定。
+- `EditableFourZhuThemeController` 目前提供柱相关解析方法（margin/padding/border/...），可在其上聚合为对象输出。
+- 非负约束：`margin/padding/borderWidth/cornerRadius` 均需校验为非负数；颜色与阴影需可解析。
+
+## 4. 交付物
+- 新的 `PillarStyleConfig` 模型与 `toBoxDecoration()/toJson/fromJson/copyWith`。
+- 主题解析方法：`resolveGlobalPillarStyle()` 与可选 `resolvePillarStyle(PillarType)`。
+- 工作区与 V3 的对象化传参与渲染/测量使用。
+- Sidebar 编辑器输出 `PillarStyleConfig` 并写回 ViewModel。
+- 单元测试与集成测试覆盖；迁移与弃用说明。
+
+## 5. 执行顺序（建议）
+- 阶段1：模型与解析（引入不影响现有调用）
+- 阶段2：V3 双栈支持（旧参数 + 新对象并存，旧参数标记为 deprecated）
+- 阶段3：Workspace/Sidebar 切换为对象化传参
+- 阶段4：清理收敛（移除旧参数），完成测试与验收
+
+## 6. 原子化任务清单
+
+### 6.1 数据模型与序列化
+1. 定义 PillarStyleConfig 类
+   - 输入契约：样式字段需求（margin/padding/border/背景/阴影/圆角）
+   - 输出契约：`class PillarStyleConfig { margin, padding, borderWidth, borderColor, cornerRadius, backgroundColor, boxShadow }`
+   - 验收标准：编译通过，字段齐全，文档注释完整
+
+2. 实现 copyWith 与 equals/hashCode
+   - 输入契约：不可变对象更新需求
+   - 输出契约：`copyWith(...)`、`==/hashCode`
+   - 验收标准：单测覆盖对象等价与拷贝语义
+
+3. 实现 toBoxDecoration 与 getters
+   - 输入契约：渲染层需要 `BoxDecoration` 与 `EdgeInsets`
+   - 输出契约：`toBoxDecoration()`、`EdgeInsets? get margin/padding`
+   - 验收标准：装饰转换正确，空值保持兼容
+
+4. 实现 toJson/fromJson
+   - 输入契约：持久化与预置主题需求
+   - 输出契约：JSON 序列化/反序列化（嵌套与可选字段）
+   - 验收标准：单测验证 round-trip 一致性
+
+### 6.2 主题解析与聚合
+5. 在 EditableFourZhuThemeController 聚合解析（全局）
+   - 输入契约：现有 `resolvePillar*` 方法与 `EditableFourZhuCardTheme.pillar`
+   - 输出契约：`PillarStyleConfig resolveGlobalPillarStyle()`
+   - 验收标准：返回对象字段与现有解析一致
+
+6. 提供按柱类型解析（可选差异化）
+   - 输入契约：`perPillarMargin` 等差异化需求
+   - 输出契约：`PillarStyleConfig resolvePillarStyle(PillarType type)`（至少支持 margin 差异）
+   - 验收标准：优先级 `perPillar > global > 默认` 正确
+
+### 6.3 Workspace 集成（对象化传参）
+7. 在 EditorWorkspace 构造 PillarStyleConfig
+   - 输入契约：ThemeController 解析方法
+   - 输出契约：`final pillarStyle = controller.resolveGlobalPillarStyle()`
+   - 验收标准：构造逻辑清晰，未引入循环依赖
+
+8. 改造传参为对象
+   - 输入契约：当前 V3 多字段传参路径
+   - 输出契约：`EditableFourZhuCardV3(pillarStyle: pillarStyle, perPillarStyles: ...)`
+   - 验收标准：编译通过，预览正常，旧字段仍保留（双栈期）
+
+### 6.4 V3 卡片渲染与测量
+9. 在 V3 新增参数并应用对象
+   - 输入契约：Widget API 与内部状态
+   - 输出契约：`final PillarStyleConfig? pillarStyle; final Map<PillarType, PillarStyleConfig>? perPillarStyles;`
+   - 验收标准：热重载与属性更新能触发重算链
+
+10. 替换散列字段使用 PillarStyleConfig
+   - 输入契约：当前 `pillarMargin/padding/borderWidth/...`
+   - 输出契约：统一从 `pillarStyle` 读取并应用到列容器与装饰
+   - 验收标准：视觉一致，不丢失功能
+
+11. 更新尺寸计算使用对象字段
+   - 输入契约：`_computeSizeWithDecorations()` 叠加逻辑
+   - 输出契约：读取 `margin/padding/borderWidth` 叠加
+   - 验收标准：总尺寸与列间距/列高度符合预期，边界值稳定
+
+### 6.5 Sidebar 编辑器与 ViewModel
+12. 编辑器输出 PillarStyleConfig
+   - 输入契约：`FourZhuPillarStyleEditorPanel` 控件值
+   - 输出契约：组合为 `PillarStyleConfig` 并写回 VM
+   - 验收标准：交互与预览即时联动
+
+13. ViewModel API 增加更新方法
+   - 输入契约：主题对象更新需求
+   - 输出契约：`updateGlobalPillarStyle(PillarStyleConfig)`、`updatePillarStyle(PillarType, PillarStyleConfig)`
+   - 验收标准：调用后 `notifyListeners()` 生效，Workspace 重建读取到新对象
+
+### 6.6 兼容与收敛
+14. 标记 V3 旧柱参数为 deprecated
+   - 输入契约：现有 API
+   - 输出契约：`@deprecated` 注解与迁移说明
+   - 验收标准：编译告警可控，调用方不被破坏
+
+15. 双栈过渡验证与回退策略
+   - 输入契约：同时存在新旧参数的运行态
+   - 输出契约：以对象为主，旧参数为兜底，确保一致性
+   - 验收标准：在故障时可快速回退到旧参数路径
+
+16. 清理收敛移除旧参数
+   - 输入契约：所有调用方已迁移
+   - 输出契约：移除旧字段与路径
+   - 验收标准：测试通过，无编译错误与运行回归
+
+### 6.7 测试与质量保障
+17. 单元测试：模型与序列化
+   - 输入契约：toJson/fromJson、copyWith、equals
+   - 输出契约：覆盖典型与边界用例
+   - 验收标准：100% 通过，round-trip 一致
+
+18. 单元测试：装饰转换
+   - 输入契约：toBoxDecoration 与阴影/圆角/边框
+   - 输出契约：断言 `BoxDecoration` 与约束值
+   - 验收标准：非负约束与空值兼容均通过
+
+19. 集成测试：Sidebar → V3 联动
+   - 输入契约：拖动 margin/padding/border/圆角/背景/阴影
+   - 输出契约：预览即时更新与尺寸联动
+   - 验收标准：用户可见的行为符合预期，无抖动
+
+20. 性能与稳定验证
+   - 输入契约：频繁编辑与拖拽场景
+   - 输出契约：节流/冻结策略评估（必要时）
+   - 验收标准：无明显卡顿；拖拽期间尺寸稳定
+
+### 6.8 文档与迁移说明
+21. 更新开发文档与示例
+   - 输入契约：新 API 与使用场景
+   - 输出契约：示例代码与迁移指南
+   - 验收标准：文档完整、可操作
+
+22. 变更日志与弃用时间线
+   - 输入契约：版本规划与影响面
+   - 输出契约：明确弃用窗口与回退路径
+   - 验收标准：团队知悉并遵循
+
+## 7. 验收标准（汇总）
+- V3 构造参数由分散字段收敛为 `pillarStyle`（可选 `perPillarStyles`）。
+- Sidebar 柱样式编辑的全部项（外/内边距、边框宽度/颜色、圆角、背景、阴影）即时联动 V3，尺寸计算正确。
+- 单元测试与集成测试通过；文档与迁移指南齐全。
+- 旧参数在收敛阶段移除前标记为 deprecated，移除后无回归。
+
+## 8. 风险与缓解
+- 向后兼容风险：通过双栈过渡与 `@deprecated` 降低影响；提供回退策略。
+- 测量抖动风险：必要时对编辑交互进行节流/冻结，保持尺寸稳定；装饰参与测量的逻辑保持与现有一致。
+- 性能风险：缩小监听范围（仅必要位置 `listen: true`），减少不必要的构建与重算；缓存不可变对象。
+
+## 9. 依赖关系（简要）
+- 6.1 → 6.2 → 6.3 → 6.4（模型→解析→集成→应用）
+- 6.5 依赖 6.2 与 6.3（编辑器与 VM 输出对象）
+- 6.6 依赖 6.3/6.4/6.5 完成后进行收敛
+- 6.7/6.8 全程伴随，里程碑回归与文档同步
     marginTop, marginBottom, marginLeft, marginRight,
   );
 

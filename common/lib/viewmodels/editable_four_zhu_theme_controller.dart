@@ -4,6 +4,9 @@ import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
+import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/pillar_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
 
 /// EditableFourZhuThemeController
 /// Provides read-only resolution helpers that translate EditableFourZhuCardTheme
@@ -85,8 +88,8 @@ class EditableFourZhuThemeController {
   EdgeInsets? resolvePillarMargin(PillarType pillarType) {
     final p = theme.pillar;
     if (p == null) return null;
-    final specific = p.perPillarMargin?[pillarType];
-    return specific ?? p.defaultMargin;
+    final specific = p.getBy(pillarType);
+    return specific?.margin ?? p.defaultMargin;
   }
 
   /// Resolves pillar inner padding.
@@ -113,6 +116,48 @@ class EditableFourZhuThemeController {
   ///
   /// Returns: The configured background color or `null` when not set.
   Color? resolvePillarBackgroundColor() => theme.pillar?.backgroundColor;
+
+  /// 解析并聚合为全局柱样式配置对象。
+  ///
+  /// 功能描述：
+  /// - 将主题中的柱相关字段（margin/padding/border/background/shadow/cornerRadius）转换为 `PillarStyleConfig`；
+  /// - 用于在工作区与 V3 之间进行对象化传参，减少分散参数数量；
+  /// 参数说明：无。
+  /// 返回值：`PillarStyleConfig`（字段可能为 null 以保持兼容）。
+  PillarStyleConfig resolveGlobalPillarStyle() {
+    return theme.pillar.global;
+    // final p = theme.pillar;
+    // final EdgeInsets? margin = p?.defaultMargin;
+    // final double bw =
+    //     (p?.borderWidth ?? 0).clamp(0.0, double.infinity).toDouble();
+    // final BoxBorderStyle? borderny = (bw > 0)
+    //     ? BoxBorderStyle(
+    //         enabled: true,
+    //         width: bw,
+    //         lightColor: p?.borderColor ?? Colors.transparent,
+    //         darkColor: p?.borderColor ?? Colors.transparent,
+    //         radius:
+    //             (p?.cornerRadius ?? 0).clamp(0.0, double.infinity).toDouble(),
+    //       )
+    //     : BoxBorderStyle(
+    //         enabled: false,
+    //         width: 0,
+    //         lightColor: Colors.transparent,
+    //         darkColor: Colors.transparent,
+    //         radius:
+    //             (p?.cornerRadius ?? 0).clamp(0.0, double.infinity).toDouble(),
+    //       );
+    // final PillarStyleConfig base = PillarStyleConfig(
+    //   border: border,
+    //   lightBackgroundColor: p?.backgroundColor,
+    //   darkBackgroundColor: p?.backgroundColor,
+    //   padding: p?.defaultPadding ?? EdgeInsets.zero,
+    //   shadow: null,
+    // );
+
+    // final List<BoxShadow>? shadows = resolvePillarBoxShadow();
+    // return base;
+  }
 
   /// Resolves card-level padding override.
   ///

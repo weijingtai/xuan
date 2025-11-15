@@ -226,8 +226,8 @@ class _EditableFourZhuCardDemoPageState
                         debugHysteresisOverlay: _vm.debugHysteresisOverlay,
                         showGripRows: _vm.showGrips,
                         showGripColumns: _vm.showGrips,
-                        perGanColors: _vm.perGanColors,
-                        perZhiColors: _vm.perZhiColors,
+                        // perGanColors: _vm.perGanColors,
+                        // perZhiColors: _vm.perZhiColors,
                         // Bind global typography to V3
                         globalFontFamily: _vm.useIndependentMapping
                             ? null
@@ -265,28 +265,8 @@ class _EditableFourZhuCardDemoPageState
                                     1,
                           ),
                         ),
-                        // Bind pillar decoration (margin/border) for dynamic sizing and offsets
-                        // Use THEME default margin as global fallback; per-column overrides come from payload.columnMargin
-                        pillarMargin: _vm.theme.pillar?.defaultMargin ??
-                            const EdgeInsets.all(8),
-                        pillarPadding:
-                            _vm.themeController?.resolvePillarPadding() ??
-                                const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 16),
-                        pillarBorderWidth:
-                            _vm.themeController?.resolvePillarBorderWidth() ??
-                                0,
-                        pillarBorderColor:
-                            _vm.themeController?.resolvePillarBorderColor() ??
-                                Colors.red,
-                        pillarCornerRadius:
-                            _vm.themeController?.resolvePillarCornerRadius() ??
-                                0,
-                        pillarBackgroundColor: _vm.themeController
-                                ?.resolvePillarBackgroundColor() ??
-                            Colors.transparent,
-                        pillarBoxShadow:
-                            _vm.themeController?.resolvePillarBoxShadow(),
+                        pillarStyle:
+                            _vm.themeController?.resolveGlobalPillarStyle(),
                         // debugHysteresisOverlay: false,
                       ),
                     ],

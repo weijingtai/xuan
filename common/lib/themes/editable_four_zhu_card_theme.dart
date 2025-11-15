@@ -1,7 +1,13 @@
+import 'package:common/models/pillar_styles.dart';
+import 'package:common/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/layout_template_enums.dart';
+import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
 import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
+
+part 'editable_four_zhu_card_theme.g.dart';
 
 /// EditableFourZhuCardTheme
 /// Encapsulates styling configuration for EditableFourZhuCard V3.
@@ -15,7 +21,7 @@ class EditableFourZhuCardTheme {
   /// All numeric values are interpreted in logical pixels.
   const EditableFourZhuCardTheme({
     required this.card,
-    this.pillar,
+    required this.pillar,
     this.cell,
     this.typography,
   });
@@ -24,7 +30,7 @@ class EditableFourZhuCardTheme {
   final CardStyleConfig card;
 
   /// Pillar-level decoration (outer margin differentiation is supported).
-  final PillarSection? pillar;
+  final PillarSection pillar;
 
   /// Cell-level decoration (row-wise padding/border defaults).
   final CellSection? cell;
@@ -77,9 +83,7 @@ class EditableFourZhuCardTheme {
   factory EditableFourZhuCardTheme.fromJson(Map<String, dynamic> json) {
     return EditableFourZhuCardTheme(
       card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),
-      pillar: json['pillar'] is Map<String, dynamic>
-          ? PillarSection.fromJson(json['pillar'] as Map<String, dynamic>)
-          : null,
+      pillar: PillarSection.fromJson(json['pillar'] as Map<String, dynamic>),
       cell: json['cell'] is Map<String, dynamic>
           ? CellSection.fromJson(json['cell'] as Map<String, dynamic>)
           : null,
@@ -101,7 +105,7 @@ class EditableFourZhuCardTheme {
     // Validate card section
     // card?.validateInto(errors);
     // Validate pillar section
-    pillar?.validateInto(errors);
+    // pillar?.validateInto(errors);
     // Validate cell section
     cell?.validateInto(errors);
     // Typography has no numeric constraints; fontFamily aliasing is handled elsewhere.
@@ -303,210 +307,82 @@ class CardSection {
   }
 }
 
+@JsonSerializable()
+
 /// Pillar-level decoration and per-pillar margin differentiation.
 class PillarSection {
   /// Creates pillar decoration settings.
-  const PillarSection({
-    this.defaultMargin,
-    this.defaultPadding,
-    this.borderWidth,
-    this.borderColor,
-    this.cornerRadius,
-    this.backgroundColor,
-    this.perPillarMargin,
-    this.withShadow,
-    this.shadowColorFollowsBackground,
-    this.shadowColor,
-    this.shadowOffsetX,
-    this.shadowOffsetY,
-    this.shadowBlurRadius,
-    this.shadowSpreadRadius,
-    this.shadowOpacity,
+  PillarSection({
+    required this.global,
+    required this.mapper,
   });
+  final PillarStyleConfig global;
+  final Map<PillarType, PillarStyleConfig> mapper;
 
-  /// Default outer margin applied to pillars unless overridden.
-  final EdgeInsets? defaultMargin;
-
-  /// Default inner padding applied to pillars.
-  final EdgeInsets? defaultPadding;
-
-  /// Pillar border width; must be non-negative if provided and not `none`.
-  final double? borderWidth;
-
-  /// Pillar border color (nullable for Theme default).
-  final Color? borderColor;
-
-  /// Corner radius in pixels; must be non-negative if provided.
-  final double? cornerRadius;
-
-  /// Background color (nullable for transparent/default when not set).
-  final Color? backgroundColor;
-
-  /// Differentiated outer margins per pillar type.
-  /// Only keys in {year, month, day, hour, luckCycle} are allowed.
-  final Map<PillarType, EdgeInsets>? perPillarMargin;
-
-  /// Whether pillar shadow is enabled explicitly.
-  /// When null, legacy behavior applies: enabled if follow-background or color provided.
-  final bool? withShadow;
-
-  /// When true, shadow color should follow the `backgroundColor`.
-  /// If no background color is set, shadow is considered not present.
-  final bool? shadowColorFollowsBackground;
-
-  /// Box shadow color for pillar containers.
-  final Color? shadowColor;
-
-  /// Box shadow offset X (horizontal), in logical pixels.
-  final double? shadowOffsetX;
-
-  /// Box shadow offset Y (vertical), in logical pixels.
-  final double? shadowOffsetY;
-
-  /// Box shadow blur radius; must be non-negative if provided.
-  final double? shadowBlurRadius;
-
-  /// Box shadow spread radius; must be non-negative if provided.
-  final double? shadowSpreadRadius;
-
-  /// Shadow opacity in [0, 1]. When null, a sensible default is used.
-  final double? shadowOpacity;
-
-  /// Serializes this section to JSON.
-  ///
-  /// Returns: A `Map<String, dynamic>` including default decorations and
-  /// per-pillar margins keyed by `PillarType.name`.
-  Map<String, dynamic> toJson() {
-    return {
-      'defaultMargin': _edgeToJson(defaultMargin),
-      'defaultPadding': _edgeToJson(defaultPadding),
-      'borderWidth': borderWidth,
-      'borderColor': borderColor?.value,
-      'cornerRadius': cornerRadius,
-      'backgroundColor': backgroundColor?.value,
-      'perPillarMargin': perPillarMargin?.map(
-        (k, v) => MapEntry(k.name, _edgeToJson(v)),
-      ),
-      'withShadow': withShadow,
-      'shadowColorFollowsBackground': shadowColorFollowsBackground,
-      'shadowColor': shadowColor?.value,
-      'shadowOffsetX': shadowOffsetX,
-      'shadowOffsetY': shadowOffsetY,
-      'shadowBlurRadius': shadowBlurRadius,
-      'shadowSpreadRadius': shadowSpreadRadius,
-      'shadowOpacity': shadowOpacity,
-    };
-  }
-
-  /// Deserializes this section from JSON.
-  ///
-  /// Parameters:
-  /// - [json]: A `Map<String, dynamic>` with serialized pillar settings.
-  ///
-  /// Returns: A `PillarSection` populated from the provided map.
-  factory PillarSection.fromJson(Map<String, dynamic> json) {
-    final ppmRaw = json['perPillarMargin'];
-    Map<PillarType, EdgeInsets>? ppm;
-    if (ppmRaw is Map<String, dynamic>) {
-      ppm = ppmRaw.map((key, value) {
-        final ptype = PillarType.values.firstWhere(
-          (e) => e.name == key,
-          orElse: () => PillarType.year,
-        );
-
-        /// Ensure non-null EdgeInsets for map values; fallback to zero margins.
-        final edge = _edgeFromJson(value) ?? EdgeInsets.zero;
-        return MapEntry(ptype, edge);
-      });
-    }
-
+  PillarStyleConfig? getBy(PillarType pillarType) =>
+      mapper[pillarType] ?? global;
+  PillarSection copyWith({
+    PillarStyleConfig? global,
+    Map<PillarType, PillarStyleConfig>? mapper,
+  }) {
     return PillarSection(
-      defaultMargin: _edgeFromJson(json['defaultMargin']),
-      defaultPadding: _edgeFromJson(json['defaultPadding']),
-      borderWidth: (json['borderWidth'] as num?)?.toDouble(),
-      borderColor:
-          json['borderColor'] is int ? Color(json['borderColor'] as int) : null,
-      cornerRadius: (json['cornerRadius'] as num?)?.toDouble(),
-      backgroundColor: json['backgroundColor'] is int
-          ? Color(json['backgroundColor'] as int)
-          : null,
-      perPillarMargin: ppm,
-      withShadow: json['withShadow'] as bool?,
-      shadowColorFollowsBackground:
-          json['shadowColorFollowsBackground'] as bool?,
-      shadowColor:
-          json['shadowColor'] is int ? Color(json['shadowColor'] as int) : null,
-      shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble(),
-      shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble(),
-      shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble(),
-      shadowSpreadRadius: (json['shadowSpreadRadius'] as num?)?.toDouble(),
-      shadowOpacity: (json['shadowOpacity'] as num?)?.toDouble(),
+      global: global ?? this.global,
+      mapper: mapper ?? this.mapper,
     );
   }
 
-  /// Appends validation errors into the collector.
-  ///
-  /// Parameters:
-  /// - [out]: A mutable list to which discovered `ThemeValidationError`s are
-  /// appended. Validates non-negative constraints and allowed keys.
-  void validateInto(List<ThemeValidationError> out) {
-    _validateEdgeInsetsNonNegative('pillar.defaultMargin', defaultMargin, out);
-    _validateEdgeInsetsNonNegative(
-        'pillar.defaultPadding', defaultPadding, out);
-    if (borderWidth != null && borderWidth! < 0) {
-      out.add(const ThemeValidationError(
-        scope: 'pillar.borderWidth',
-        message: 'Border width must be non-negative.',
-      ));
-    }
-    if (cornerRadius != null && cornerRadius! < 0) {
-      out.add(const ThemeValidationError(
-        scope: 'pillar.cornerRadius',
-        message: 'Corner radius must be non-negative.',
-      ));
-    }
-    if (shadowBlurRadius != null && shadowBlurRadius! < 0) {
-      out.add(const ThemeValidationError(
-        scope: 'pillar.shadowBlurRadius',
-        message: 'Shadow blur radius must be non-negative.',
-      ));
-    }
-    if (shadowSpreadRadius != null && shadowSpreadRadius! < 0) {
-      out.add(const ThemeValidationError(
-        scope: 'pillar.shadowSpreadRadius',
-        message: 'Shadow spread radius must be non-negative.',
-      ));
-    }
-    if (shadowOpacity != null && (shadowOpacity! < 0 || shadowOpacity! > 1)) {
-      out.add(const ThemeValidationError(
-        scope: 'pillar.shadowOpacity',
-        message: 'Shadow opacity must be within [0, 1].',
-      ));
-    }
-    if (perPillarMargin != null) {
-      final allowed = {
-        PillarType.year,
-        PillarType.month,
-        PillarType.day,
-        PillarType.hour,
-        PillarType.luckCycle,
-      };
-      for (final entry in perPillarMargin!.entries) {
-        if (!allowed.contains(entry.key)) {
-          out.add(ThemeValidationError(
-            scope: 'pillar.perPillarMargin',
-            message:
-                'Unsupported PillarType for margin differentiation: ${entry.key.name}.',
-          ));
-        }
-        _validateEdgeInsetsNonNegative(
-          'pillar.perPillarMargin.${entry.key.name}',
-          entry.value,
-          out,
-        );
-      }
-    }
-  }
+  /// Default outer margin applied to pillars unless overridden.
+  EdgeInsets? get defaultMargin => global.margin;
+
+  /// Default inner padding applied to pillars.
+  EdgeInsets? get defaultPadding => global.padding;
+
+  /// Pillar border width; must be non-negative if provided and not `none`.
+  double? get borderWidth => global.border?.width;
+
+  /// Pillar border color (nullable for Theme default).
+  Color? get borderColor => global.border?.lightColor;
+
+  /// Corner radius in pixels; must be non-negative if provided.
+  double? get cornerRadius => global.border?.radius;
+
+  /// Background color (nullable for transparent/default when not set).
+  Color? get backgroundColor => global.lightBackgroundColor;
+
+  /// Differentiated outer margins per pillar type.
+  /// Only keys in {year, month, day, hour, luckCycle} are allowed.
+  EdgeInsets? get perPillarMargin => global.margin;
+
+  /// Whether pillar shadow is enabled explicitly.
+  /// When null, legacy behavior applies: enabled if follow-background or color provided.
+  bool? get withShadow => global.shadow?.withShadow;
+
+  /// When true, shadow color should follow the `backgroundColor`.
+  /// If no background color is set, shadow is considered not present.
+  bool? get shadowColorFollowsBackground =>
+      global.shadow?.followCardBackgroundColor;
+
+  /// Box shadow color for pillar containers.
+  Color? get shadowColor => global.shadow?.lightThemeColor;
+
+  /// Box shadow offset X (horizontal), in logical pixels.
+  double? get shadowOffsetX => global.shadow?.offset.dx;
+
+  /// Box shadow offset Y (vertical), in logical pixels.
+  double? get shadowOffsetY => global.shadow?.offset.dy;
+
+  /// Box shadow blur radius; must be non-negative if provided.
+  double? get shadowBlurRadius => global.shadow?.blurRadius;
+
+  /// Box shadow spread radius; must be non-negative if provided.
+  double? get shadowSpreadRadius => global.shadow?.spreadRadius;
+
+  /// Shadow opacity in [0, 1]. When null, a sensible default is used.
+  double? get shadowOpacity => global.shadow?.opacity;
+
+  Map<String, dynamic> toJson() => _$PillarSectionToJson(this);
+  factory PillarSection.fromJson(Map<String, dynamic> json) =>
+      _$PillarSectionFromJson(json);
 }
 
 /// Cell-level decoration defaults; row-wise overrides remain in RowConfig.

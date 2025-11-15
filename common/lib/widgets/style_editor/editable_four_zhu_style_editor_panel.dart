@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/card_style_config.dart';
 
 /// EditableFourZhuStyleEditorPanel
@@ -343,7 +344,7 @@ class _EditableFourZhuStyleEditorPanelState
         // 内边距滑块
         _buildSlider(
           label: '内边距',
-          value: config.padding?.left ?? 0.0,
+          value: config.padding.left ?? 0.0,
           min: 0,
           max: 48,
           onChanged: (v) {
@@ -406,7 +407,7 @@ class _EditableFourZhuStyleEditorPanelState
           onChanged: (v) {
             final next = config.copyWith(
               border: (config.border ??
-                      CardBorder(
+                      BoxBorderStyle(
                         enabled: true,
                         width: 0,
                         lightColor: Colors.transparent,
@@ -474,7 +475,7 @@ class _EditableFourZhuStyleEditorPanelState
           value: config.shadow?.withShadow ?? false,
           onChanged: (v) {
             final next = config.copyWith(
-              shadow: (config.shadow ?? CardShadow.defaultShadow)
+              shadow: (config.shadow ?? BoxShadowStyle.defaultShadow)
                   .copyWith(withShadow: v),
             );
             _cardStyleConfig.value = next;
@@ -562,8 +563,8 @@ class _EditableFourZhuStyleEditorPanelState
                 onChanged: (v) {
                   final checked = v ?? false;
                   final newConfig = config.copyWith(
-                    shadow:
-                        (config.shadow ?? CardShadow.defaultShadow).copyWith(
+                    shadow: (config.shadow ?? BoxShadowStyle.defaultShadow)
+                        .copyWith(
                       followCardBackgroundColor: checked,
                     ),
                   );
@@ -579,7 +580,7 @@ class _EditableFourZhuStyleEditorPanelState
                 max: 100,
                 onChanged: (v) {
                   final newShadow =
-                      (config.shadow ?? CardShadow.defaultShadow).copyWith(
+                      (config.shadow ?? BoxShadowStyle.defaultShadow).copyWith(
                     opacity: v / 100,
                   );
                   final newConfig = config.copyWith(shadow: newShadow);

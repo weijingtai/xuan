@@ -26,6 +26,7 @@ import 'card_debug_painters.dart';
 import 'package:common/widgets/four_zhu/card_layout_model.dart'
     as BasicLayout; // 基础布局度量模型（有效分割线尺寸等）
 import 'drag_controller.dart'; // 拖拽节流控制器
+import 'models/pillar_style_config.dart';
 
 // Removed palette-based coloring; group font color applies when colorfulMode is enabled.
 // Sentinel RGB used to indicate shadow follows the character color
@@ -43,14 +44,6 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final Gender gender;
   // Optional: override root card decoration (background, radius, etc.)
   final BoxDecoration? cardDecoration;
-  // Optional: global pillar decoration: margin/padding/border style
-  // Used to compute dynamic decoration width/height and align grip/header columns
-  final EdgeInsets? pillarMargin;
-  final EdgeInsets? pillarPadding;
-  final double? pillarBorderWidth;
-  final Color? pillarBorderColor;
-  final double? pillarCornerRadius;
-  final Color? pillarBackgroundColor;
   // Optional: global typography overrides for V3 rendering
   // When provided, these values will override internal hard-coded TextStyles
   // Optional: per-group text style overrides; takes precedence over global typography.
@@ -58,6 +51,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final String? globalFontFamily;
   final double? globalFontSize;
   final Color? globalFontColor;
+  // 新增：对象化柱样式配置（双栈过渡期间优先使用该对象字段，缺省时回退到旧参数）
+  final PillarStyleConfig? pillarStyle;
   // Optional: per-character color overrides (applied in pure color mode)
   // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
   /// Optional per-Gan color overrides (type-safe): applies in colorful mode.
@@ -89,8 +84,6 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   /// Resolves element colors (Gan/Zhi) via palette/theme strategies.
   final ElementColorResolver elementColorResolver;
 
-  /// Optional pillar container box shadows.
-  final List<BoxShadow>? pillarBoxShadow;
 
   /// 可选：行重排完成时回调通知。用于测试或外部状态同步。
   ///
@@ -106,18 +99,12 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.paddingNotifier,
     required this.gender,
     this.cardDecoration,
-    this.pillarMargin,
-    this.pillarPadding,
-    this.pillarBorderWidth,
-    this.pillarBorderColor,
-    this.pillarCornerRadius,
-    this.pillarBackgroundColor,
-    this.pillarBoxShadow,
     this.onRowsReordered,
     this.groupTextStyles,
     this.globalFontFamily,
     this.globalFontSize,
     this.globalFontColor,
+    this.pillarStyle,
     this.perGanColors,
     this.perZhiColors,
     this.dragFeedbackBuilder,
@@ -129,7 +116,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.showGripColumns = true,
     ElementColorResolver? elementColorResolver,
   }) : elementColorResolver = elementColorResolver ??
-            PaletteElementColorResolver(CardPalette.defaultPalette());
+          PaletteElementColorResolver(CardPalette.defaultPalette());
 
   @override
   State<EditableFourZhuCardV3> createState() => _EditableFourZhuCardV3State();
@@ -256,7 +243,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 动态柱装饰参数与派生尺寸
   /// 有效柱边距（优先使用传入的值，默认 8 全向）
   EdgeInsets get _pillarMarginEff =>
-      widget.pillarMargin ?? const EdgeInsets.all(8.0);
+      widget.pillarStyle?.margin ?? const EdgeInsets.all(8.0);
 
   /// 每列的有效边距：优先使用对应列的 `payload.columnMargin`，否则退回全局。
   EdgeInsets _pillarMarginAtIndex(int i) {
@@ -270,20 +257,27 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   /// 有效柱内边距（优先使用传入的值，默认 16 全向）
   EdgeInsets get _pillarPaddingEff =>
-      widget.pillarPadding ?? const EdgeInsets.all(16.0);
+      widget.pillarStyle?.padding ?? const EdgeInsets.all(16.0);
 
   /// 有效柱边框宽度（优先使用传入的值，默认 2）
-  double get _pillarBorderWidthEff => widget.pillarBorderWidth ?? 0;
+  double get _pillarBorderWidthEff =>
+      widget.pillarStyle?.border?.width ?? 0;
 
   /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
-  Color get _pillarBorderColorEff => widget.pillarBorderColor ?? Colors.red;
+  Color get _pillarBorderColorEff =>
+      widget.pillarStyle?.border?.lightColor ?? Colors.red;
 
   /// 有效柱圆角（优先使用传入的值，默认 0）
-  double get _pillarCornerRadiusEff => widget.pillarCornerRadius ?? 0.0;
+  double get _pillarCornerRadiusEff =>
+      widget.pillarStyle?.border?.radius ?? 0.0;
 
   /// 有效柱背景色（优先使用传入的值，默认透明）
   Color get _pillarBackgroundColorEff =>
-      widget.pillarBackgroundColor ?? Colors.transparent;
+      widget.pillarStyle?.lightBackgroundColor ?? Colors.transparent;
+
+  /// 有效柱阴影（优先使用 PillarStyleConfig 转换的装饰阴影）
+  List<BoxShadow>? get _pillarBoxShadowEff =>
+      widget.pillarStyle?.toBoxDecoration().boxShadow;
 
   /// 装饰总宽度（左右 margin + padding + border）
   double get _pillarDecorationWidthEff =>
@@ -2401,7 +2395,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                     Colors.transparent
                                 ? widget.cardDecoration?.color ?? Colors.white
                                 : _pillarBackgroundColorEff,
-                            // color: Colors.white,
                             borderRadius:
                                 BorderRadius.circular(_pillarCornerRadiusEff),
                             border: _pillarBorderWidthEff == 0
@@ -2410,14 +2403,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                     color: _pillarBorderColorEff,
                                     width: _pillarBorderWidthEff,
                                   ),
-                            boxShadow: widget.pillarBoxShadow,
-                            // boxShadow: [
-                            //   BoxShadow(
-                            //       color: Colors.black.withAlpha(50),
-                            //       offset: Offset(1, 1),
-                            //       blurRadius: 6,
-                            //       spreadRadius: 7)
-                            // ]),
+                            boxShadow: _pillarBoxShadowEff,
                           ),
                           child: SizedBox(
                             width: colW,

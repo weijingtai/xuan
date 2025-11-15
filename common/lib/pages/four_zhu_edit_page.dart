@@ -34,7 +34,6 @@ import '../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../widgets/card_row.dart';
 import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/four_zhu_card_editor_page/editor_workspace.dart';
-import '../widgets/style_editor/four_zhu_pillar_style_editor_panel.dart';
 
 const _defaultCollectionId = 'four_zhu_templates';
 
@@ -127,8 +126,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                   Container(
                     width: 320,
                     decoration: BoxDecoration(
-                      color:
-                          themeData.colorScheme.surfaceContainerHighest,
+                      color: themeData.colorScheme.surfaceContainerHighest,
                       border: Border.all(
                           color: themeData.dividerColor.withOpacity(0.12)),
                     ),

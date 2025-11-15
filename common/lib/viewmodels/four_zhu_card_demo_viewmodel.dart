@@ -1,4 +1,4 @@
-import 'package:common/widgets/editable_fourzhu_card/models/card_style_config.dart';
+import 'package:common/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'package:flutter/material.dart';
 
 import '../enums/enum_di_zhi.dart';
@@ -14,6 +14,8 @@ import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/text_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/pillar_style_config.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../viewmodels/editable_four_zhu_theme_controller.dart';
@@ -91,8 +93,16 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     _theme = EditableFourZhuCardTheme(
       card: CardStyleConfig.defaultCardStyleConfig,
       pillar: PillarSection(
-        defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
-        borderWidth: 0,
+        global: PillarStyleConfig.defaultPillarStyleConfig,
+        mapper: {
+          PillarType.year: PillarStyleConfig.defaultPillarStyleConfig,
+          PillarType.month: PillarStyleConfig.defaultPillarStyleConfig,
+          PillarType.day: PillarStyleConfig.defaultPillarStyleConfig,
+          PillarType.hour: PillarStyleConfig.defaultPillarStyleConfig,
+          PillarType.luckCycle: PillarStyleConfig.defaultPillarStyleConfig,
+        },
+        // defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
+        // borderWidth: 0,
       ),
       typography: TypographySection(
         globalFontFamily: 'NotoSansSC-Regular',
@@ -208,13 +218,13 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   Map<TextGroup, TextStyle> get groupTextStyles => _groupTextStyles;
 
   /// 返回按字符上色映射。
-  Map<String, Color> get perCharColors => _perCharColors;
+  // Map<String, Color> get perCharColors => _perCharColors;
 
   /// 返回按天干类型安全映射（TianGan → Color）。
-  Map<TianGan, Color> get perGanColors => _perGanColors;
+  // Map<TianGan, Color> get perGanColors => _perGanColors;
 
   /// 返回按地支类型安全映射（DiZhi → Color）。
-  Map<DiZhi, Color> get perZhiColors => _perZhiColors;
+  // Map<DiZhi, Color> get perZhiColors => _perZhiColors;
 
   /// 返回是否开启调试滞回可视化。
   bool get debugHysteresisOverlay => _debugHysteresisOverlay;
