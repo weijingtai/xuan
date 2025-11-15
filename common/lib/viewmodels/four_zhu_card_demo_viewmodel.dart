@@ -234,6 +234,19 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     _themeController = EditableFourZhuThemeController(_theme);
     // 主动同步内边距以触发 V3 的重算链，避免等值短路导致监听未触发
     paddingNotifier.value = newTheme.card.padding;
+    final list = List<PillarPayload>.of(pillarsNotifier.value);
+    for (var i = 0; i < list.length; i++) {
+      final payload = list[i];
+      final t = payload.pillarType;
+      final style = _themeController?.resolvePillarStyleFor(t);
+      if (style == null) continue;
+      list[i] = payload.copyWith(
+        columnMargin: style.margin,
+        columnPadding: style.padding,
+        columnBorderWidth: style.border?.width,
+      );
+    }
+    pillarsNotifier.value = list;
     notifyListeners();
   }
 
@@ -329,6 +342,19 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   void setTheme(EditableFourZhuCardTheme t) {
     _theme = t;
     _themeController = EditableFourZhuThemeController(_theme);
+    final list = List<PillarPayload>.of(pillarsNotifier.value);
+    for (var i = 0; i < list.length; i++) {
+      final payload = list[i];
+      final t = payload.pillarType;
+      final style = _themeController?.resolvePillarStyleFor(t);
+      if (style == null) continue;
+      list[i] = payload.copyWith(
+        columnMargin: style.margin,
+        columnPadding: style.padding,
+        columnBorderWidth: style.border?.width,
+      );
+    }
+    pillarsNotifier.value = list;
     notifyListeners();
   }
 

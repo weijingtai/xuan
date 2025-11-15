@@ -1,4 +1,5 @@
 import 'package:common/models/text_style_config.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
@@ -52,7 +53,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final double? globalFontSize;
   final Color? globalFontColor;
   // 新增：对象化柱样式配置（双栈过渡期间优先使用该对象字段，缺省时回退到旧参数）
-  final PillarStyleConfig? pillarStyle;
+  final PillarSection pillarSection;
   // Optional: per-character color overrides (applied in pure color mode)
   // Keyed by the literal character, e.g., '甲', '乙', '子', '丑'.
   /// Optional per-Gan color overrides (type-safe): applies in colorful mode.
@@ -103,7 +104,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.globalFontFamily,
     this.globalFontSize,
     this.globalFontColor,
-    this.pillarStyle,
+    required this.pillarSection,
     this.perGanColors,
     this.perZhiColors,
     this.dragFeedbackBuilder,
@@ -221,6 +222,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return List<double>.generate(rows.length, (i) => _rowHeightByName(rows[i]));
   }
 
+  late final ValueNotifier<PillarSection> _pillarSectionNotifier;
+
   /// 重置行跨度缓存。
   /// 使用场景：拖拽离开或接受后，行集合可能发生变化，需清理旧缓存。
   /// 参数：无。
@@ -242,7 +245,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 动态柱装饰参数与派生尺寸
   /// 有效柱边距（优先使用传入的值，默认 8 全向）
   EdgeInsets get _pillarMarginEff =>
-      widget.pillarStyle?.margin ?? const EdgeInsets.all(8.0);
+      widget.pillarSection?.global.margin ?? const EdgeInsets.all(8.0);
 
   /// 每列的有效边距：优先使用对应列的 `payload.columnMargin`，否则退回全局。
   EdgeInsets _pillarMarginAtIndex(int i) {
@@ -256,26 +259,45 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   /// 有效柱内边距（优先使用传入的值，默认 16 全向）
   EdgeInsets get _pillarPaddingEff =>
-      widget.pillarStyle?.padding ?? const EdgeInsets.all(16.0);
+      widget.pillarSection?.global.padding ?? const EdgeInsets.all(16.0);
+
+  EdgeInsets _pillarPaddingAtIndex(int i) {
+    final payloads = widget.pillarsNotifier.value;
+    if (i >= 0 && i < payloads.length) {
+      final p = payloads[i].columnPadding;
+      if (p != null) return p;
+    }
+    return _pillarPaddingEff;
+  }
 
   /// 有效柱边框宽度（优先使用传入的值，默认 2）
-  double get _pillarBorderWidthEff => widget.pillarStyle?.border?.width ?? 0;
+  double get _pillarBorderWidthEff =>
+      widget.pillarSection?.global.border?.width ?? 0;
+
+  double _pillarBorderWidthAtIndex(int i) {
+    final payloads = widget.pillarsNotifier.value;
+    if (i >= 0 && i < payloads.length) {
+      final bw = payloads[i].columnBorderWidth;
+      if (bw != null) return bw;
+    }
+    return _pillarBorderWidthEff;
+  }
 
   /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
   Color get _pillarBorderColorEff =>
-      widget.pillarStyle?.border?.lightColor ?? Colors.red;
+      widget.pillarSection?.global.border?.lightColor ?? Colors.red;
 
   /// 有效柱圆角（优先使用传入的值，默认 0）
   double get _pillarCornerRadiusEff =>
-      widget.pillarStyle?.border?.radius ?? 0.0;
+      widget.pillarSection?.global.border?.radius ?? 0.0;
 
   /// 有效柱背景色（优先使用传入的值，默认透明）
   Color get _pillarBackgroundColorEff =>
-      widget.pillarStyle?.lightBackgroundColor ?? Colors.transparent;
+      widget.pillarSection?.global.lightBackgroundColor ?? Colors.transparent;
 
   /// 有效柱阴影（优先使用 PillarStyleConfig 转换的装饰阴影）
   List<BoxShadow>? get _pillarBoxShadowEff =>
-      widget.pillarStyle?.toBoxDecoration().boxShadow;
+      widget.pillarSection?.global.toBoxDecoration().boxShadow;
 
   /// 装饰总宽度（左右 margin + padding + border）
   double get _pillarDecorationWidthEff =>
@@ -288,21 +310,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 指定列的装饰总宽度（使用每列边距覆盖）
   double _pillarDecorationWidthAtIndex(int i) {
     final m = _pillarMarginAtIndex(i);
-    return m.left +
-        m.right +
-        _pillarPaddingEff.left +
-        _pillarPaddingEff.right +
-        _pillarBorderWidthEff * 2;
+    final p = _pillarPaddingAtIndex(i);
+    final bw = _pillarBorderWidthAtIndex(i);
+    return m.left + m.right + p.left + p.right + bw * 2;
   }
 
   /// 指定列的装饰总高度（使用每列边距覆盖）
   double _pillarDecorationHeightAtIndex(int i) {
     final m = _pillarMarginAtIndex(i);
-    return m.top +
-        m.bottom +
-        _pillarPaddingEff.top +
-        _pillarPaddingEff.bottom +
-        _pillarBorderWidthEff * 2;
+    final p = _pillarPaddingAtIndex(i);
+    final bw = _pillarBorderWidthAtIndex(i);
+    return m.top + m.bottom + p.top + p.bottom + bw * 2;
   }
 
   /// 装饰总高度（上下 margin + padding + border）
@@ -693,6 +711,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回值：无。
   void initState() {
     super.initState();
+    _pillarSectionNotifier = ValueNotifier(widget.pillarSection);
 
     // 注册 ValueNotifier 监听以进行采样计数
     _dragWantsInsert.addListener(_onDragWantsInsertUpdated);
@@ -785,6 +804,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   @override
   void didUpdateWidget(covariant EditableFourZhuCardV3 oldWidget) {
     super.didUpdateWidget(oldWidget);
+    // 监听柱样式配置变化
+    if (oldWidget.pillarSection != widget.pillarSection) {
+      _pillarSectionNotifier.value = widget.pillarSection;
+    }
 
     final bool rowsVisibilityChanged =
         oldWidget.showGripRows != widget.showGripRows;
@@ -839,6 +862,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _sizeNotifier.dispose();
     _dragWantsInsert.dispose();
     _dragWantsDelete.dispose();
+    _pillarSectionNotifier.dispose();
 
     super.dispose();
   }
@@ -2378,37 +2402,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   child: Stack(
                     children: [
                       AnimatedOpacity(
-                        duration: const Duration(milliseconds: 240),
-                        curve: Curves.easeOutCubic,
-                        opacity:
-                            (_dropColFadeActive && _dropAnimatingColIndex == i)
-                                ? 0.0
-                                : 1.0,
-                        child: Container(
-                          margin: _pillarMarginAtIndex(i),
-                          padding: _pillarPaddingEff,
-                          // width: colW,
-                          decoration: BoxDecoration(
-                            color: _pillarBackgroundColorEff ==
-                                    Colors.transparent
-                                ? widget.cardDecoration?.color ?? Colors.white
-                                : _pillarBackgroundColorEff,
-                            borderRadius:
-                                BorderRadius.circular(_pillarCornerRadiusEff),
-                            border: _pillarBorderWidthEff == 0
-                                ? null
-                                : Border.all(
-                                    color: _pillarBorderColorEff,
-                                    width: _pillarBorderWidthEff,
-                                  ),
-                            boxShadow: _pillarBoxShadowEff,
-                          ),
-                          child: SizedBox(
-                            width: colW,
-                            child: columnContent,
-                          ),
-                        ),
-                      ),
+                          duration: const Duration(milliseconds: 240),
+                          curve: Curves.easeOutCubic,
+                          opacity: (_dropColFadeActive &&
+                                  _dropAnimatingColIndex == i)
+                              ? 0.0
+                              : 1.0,
+                          child: _buildEachPillar(i, colW, columnContent)),
                       if (dragging && t == i)
                         Positioned.fill(
                           child: IgnorePointer(
@@ -2946,6 +2946,69 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         );
       },
     );
+  }
+
+  Widget _buildEachPillar(int pillarIndex, double colW, Widget columnContent) {
+    return ValueListenableBuilder<List<PillarPayload>>(
+        valueListenable: widget.pillarsNotifier,
+        builder: (ctx, pillars, _) {
+          return ValueListenableBuilder<PillarSection>(
+              valueListenable: _pillarSectionNotifier,
+              builder: (context, pillarConfig, __) {
+                final pillarType = pillars[pillarIndex].pillarType;
+                final PillarStyleConfig config = pillarConfig.getBy(pillarType);
+                Color bkColor =
+                    config.lightBackgroundColor == Colors.transparent
+                        ? widget.cardDecoration?.color ?? Colors.white
+                        : config.lightBackgroundColor ?? Colors.white;
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.linear,
+                  margin: config.margin,
+                  padding: config.padding,
+                  width: colW +
+                      (config.margin.horizontal + config.padding.horizontal) *
+                          2,
+                  // margin: _pillarMarginAtIndex(pillarIndex),
+                  // padding: _pillarPaddingAtIndex(pillarIndex),
+                  // width: colW,
+                  decoration: BoxDecoration(
+                    // color: Colors.amber,
+                    color: bkColor,
+                    // color: _pillarBackgroundColorEff == Colors.transparent
+                    //     ? widget.cardDecoration?.color ?? Colors.white
+                    //     : _pillarBackgroundColorEff,
+                    // borderRadius: BorderRadius.circular(_pillarCornerRadiusEff),
+
+                    borderRadius: BorderRadius.circular(config.border!.radius),
+                    border:
+                        (config.border!.width == 0 || !config.border!.enabled)
+                            ? null
+                            : Border.all(
+                                color: config.border!.lightColor,
+                                width: config.border!.width,
+                              ),
+                    boxShadow: config.shadow.withShadow
+                        ? [
+                            BoxShadow(
+                              color: config.shadow.followCardBackgroundColor
+                                  ? bkColor
+                                  : config.shadow.lightThemeColor,
+                              offset: config.shadow.offset,
+                              blurRadius: config.shadow.blurRadius,
+                              spreadRadius: config.shadow.spreadRadius,
+                            )
+                          ]
+                        : [],
+                  ),
+                  child: columnContent,
+                  // child: SizedBox(
+                  //   width: colW,
+                  //   child: columnContent,
+                  // ),
+                );
+              });
+        });
   }
 
   Widget _rowInsertTarget(int insertIndex, int max) {

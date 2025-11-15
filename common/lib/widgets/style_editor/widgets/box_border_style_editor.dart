@@ -139,7 +139,7 @@ class BoxBorderStyleEditor extends StatelessWidget {
       },
     );
     borderNotifier.value = border.copyWith(
-      darkColor: picked,
+      lightColor: picked,
     );
   }
 }

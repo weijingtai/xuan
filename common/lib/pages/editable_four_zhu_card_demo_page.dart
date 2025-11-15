@@ -15,6 +15,7 @@ import '../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../widgets/style_editor/editable_four_zhu_style_editor_panel.dart';
 import '../widgets/text_style/group_text_style_editor_panel.dart';
 
+@Deprecated('Use  instead')
 class EditableFourZhuCardDemoPage extends StatefulWidget {
   const EditableFourZhuCardDemoPage({super.key});
 
@@ -215,60 +216,58 @@ class _EditableFourZhuCardDemoPageState
                       // 添加面板：提供四个可拖拽入口（大运柱、柱分隔符、空亡行、行分割符）
                       FourZhuAddPalette(),
                       const SizedBox(height: 12),
-                      EditableFourZhuCardV3(
-                        brightnessNotifier: _brightnessNotifier,
-                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                        pillarsNotifier: _vm.pillarsNotifier,
-                        rowListNotifier: _vm.rowListNotifier,
-                        paddingNotifier: _vm.paddingNotifier,
-                        gender: Gender.male,
-                        colorfulMode: _vm.v3ColorfulMode,
-                        debugHysteresisOverlay: _vm.debugHysteresisOverlay,
-                        showGripRows: _vm.showGrips,
-                        showGripColumns: _vm.showGrips,
-                        // perGanColors: _vm.perGanColors,
-                        // perZhiColors: _vm.perZhiColors,
-                        // Bind global typography to V3
-                        globalFontFamily: _vm.useIndependentMapping
-                            ? null
-                            : _vm.themeController?.theme.typography
-                                ?.globalFontFamily,
-                        globalFontSize: _vm.useIndependentMapping
-                            ? null
-                            : _vm.themeController?.theme.typography
-                                ?.globalFontSize,
-                        globalFontColor: _vm.useIndependentMapping
-                            ? null
-                            : _vm.themeController?.theme.typography
-                                ?.globalFontColor,
-                        // Bind per-group typography to V3
-                        groupTextStyles: _vm.groupTextStyles,
-                        // Bind theme-driven decoration to V3 card
-                        cardDecoration: BoxDecoration(
-                          color: _vm.themeController
-                                  ?.resolveCardBackgroundColor() ??
-                              Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(
-                            _vm.themeController?.resolveCardCornerRadius() ??
-                                12,
-                          ),
-                          boxShadow:
-                              _vm.themeController?.resolveCardBoxShadow(),
-                          border: Border.all(
-                            color:
-                                _vm.themeController?.resolveCardBorderColor() ??
-                                    Theme.of(context)
-                                        .dividerColor
-                                        .withOpacity(0.35),
-                            width:
-                                _vm.themeController?.resolveCardBorderWidth() ??
-                                    1,
-                          ),
-                        ),
-                        pillarStyle:
-                            _vm.themeController?.resolveGlobalPillarStyle(),
-                        // debugHysteresisOverlay: false,
-                      ),
+                      // EditableFourZhuCardV3(
+                      //   brightnessNotifier: _brightnessNotifier,
+                      //   colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                      //   pillarsNotifier: _vm.pillarsNotifier,
+                      //   rowListNotifier: _vm.rowListNotifier,
+                      //   paddingNotifier: _vm.paddingNotifier,
+                      //   gender: Gender.male,
+                      //   colorfulMode: _vm.v3ColorfulMode,
+                      //   debugHysteresisOverlay: _vm.debugHysteresisOverlay,
+                      //   showGripRows: _vm.showGrips,
+                      //   showGripColumns: _vm.showGrips,
+                      //   globalFontFamily: _vm.useIndependentMapping
+                      //       ? null
+                      //       : _vm.themeController?.theme.typography
+                      //           ?.globalFontFamily,
+                      //   globalFontSize: _vm.useIndependentMapping
+                      //       ? null
+                      //       : _vm.themeController?.theme.typography
+                      //           ?.globalFontSize,
+                      //   globalFontColor: _vm.useIndependentMapping
+                      //       ? null
+                      //       : _vm.themeController?.theme.typography
+                      //           ?.globalFontColor,
+                      //   // Bind per-group typography to V3
+                      //   groupTextStyles: _vm.groupTextStyles,
+                      //   // Bind theme-driven decoration to V3 card
+                      //   cardDecoration: BoxDecoration(
+                      //     color: _vm.themeController
+                      //             ?.resolveCardBackgroundColor() ??
+                      //         Theme.of(context).colorScheme.surface,
+                      //     borderRadius: BorderRadius.circular(
+                      //       _vm.themeController?.resolveCardCornerRadius() ??
+                      //           12,
+                      //     ),
+                      //     boxShadow:
+                      //         _vm.themeController?.resolveCardBoxShadow(),
+                      //     border: Border.all(
+                      //       color:
+                      //           _vm.themeController?.resolveCardBorderColor() ??
+                      //               Theme.of(context)
+                      //                   .dividerColor
+                      //                   .withOpacity(0.35),
+                      //       width:
+                      //           _vm.themeController?.resolveCardBorderWidth() ??
+                      //               1,
+                      //     ),
+                      //   ),
+                      //   // pillarSection: _vm.themeController?.resolveGlobalPillarStyle(),
+                      //   // pillarSection:
+                      //   //     _vm.themeController?.resolveGlobalPillarStyle(),
+                      //   // debugHysteresisOverlay: false,
+                      // ),
                     ],
                   ),
                 ),

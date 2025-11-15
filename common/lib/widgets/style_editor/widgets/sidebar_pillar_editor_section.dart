@@ -92,11 +92,9 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                             pillarStyleConfig: config.getBy(e),
                             onChanged: (pillar) {
                               final Map<PillarType, PillarStyleConfig>
-                                  newMapper = Map.fromEntries(config.mapper
-                                      .map((k, v) => MapEntry(k, v))
-                                      .entries);
-                              _pillarStyleConfigNotifier.value =
-                                  config.copyWith(mapper: newMapper);
+                                  newMapper = Map<PillarType, PillarStyleConfig>.of(config.mapper);
+                              newMapper[e] = pillar;
+                              _pillarStyleConfigNotifier.value = config.copyWith(mapper: newMapper);
                             },
                           )))
                       .toList(),

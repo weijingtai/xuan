@@ -117,6 +117,10 @@ class EditableFourZhuThemeController {
   /// Returns: The configured background color or `null` when not set.
   Color? resolvePillarBackgroundColor() => theme.pillar?.backgroundColor;
 
+  PillarStyleConfig? resolvePillarStyleFor(PillarType type) {
+    return theme.pillar.getBy(type);
+  }
+
   /// 解析并聚合为全局柱样式配置对象。
   ///
   /// 功能描述：

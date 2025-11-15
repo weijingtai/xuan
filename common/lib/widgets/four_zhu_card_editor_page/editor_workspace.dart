@@ -13,6 +13,7 @@ import '../../models/layout_template.dart';
 import '../../models/text_style_config.dart';
 import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
+import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
@@ -227,62 +228,71 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 data: workspaceTheme,
                 child: Container(
                   child: Center(
-                    child: EditableFourZhuCardV3(
-                      brightnessNotifier: _brightnessNotifier,
-                      colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                      pillarsNotifier: _pillarsNotifier,
-                      rowListNotifier: _rowListNotifier,
-                      paddingNotifier: _paddingNotifier,
-                      gender: Gender.male,
-                      showGripRows: _showGripRowsNotifier.value,
-                      showGripColumns: _showGripColumnsNotifier.value,
-                      pillarStyle: Provider.of<FourZhuCardDemoViewModel>(
-                              context,
-                              listen: false)
-                          .themeController
-                          ?.resolveGlobalPillarStyle(),
-                      cardDecoration: BoxDecoration(
-                        color: Provider.of<FourZhuCardDemoViewModel>(context,
-                                    listen: true)
-                                .themeController
-                                ?.resolveCardBackgroundColor() ??
-                            Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
-                                  .themeController
-                                  ?.resolveCardCornerRadius() ??
-                              12,
-                        ),
-                        boxShadow: Provider.of<FourZhuCardDemoViewModel>(
-                                context,
-                                listen: false)
-                            .themeController
-                            ?.resolveCardBoxShadow(),
-                        border: Border.all(
+                    child: Selector<FourZhuCardDemoViewModel,
+                        EditableFourZhuCardTheme>(
+                      builder: (context, show, child) => EditableFourZhuCardV3(
+                        brightnessNotifier: _brightnessNotifier,
+                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                        pillarsNotifier: _pillarsNotifier,
+                        rowListNotifier: _rowListNotifier,
+                        paddingNotifier: _paddingNotifier,
+                        gender: Gender.male,
+                        showGripRows: _showGripRowsNotifier.value,
+                        showGripColumns: _showGripColumnsNotifier.value,
+                        pillarSection: show.pillar,
+                        // pillarSection: Provider.of<FourZhuCardDemoViewModel>(
+                        // context,
+                        // listen: false)
+                        // .themeController
+                        // ?.resolveGlobalPillarStyle(),
+                        cardDecoration: BoxDecoration(
                           color: Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
+                                      listen: true)
                                   .themeController
-                                  ?.resolveCardBorderColor() ??
-                              Theme.of(context).dividerColor.withOpacity(0.35),
-                          width: Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
-                                  .themeController
-                                  ?.resolveCardEffectiveBorderWidth() ??
-                              1,
+                                  ?.resolveCardBackgroundColor() ??
+                              Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(
+                            Provider.of<FourZhuCardDemoViewModel>(context,
+                                        listen: false)
+                                    .themeController
+                                    ?.resolveCardCornerRadius() ??
+                                12,
+                          ),
+                          boxShadow: Provider.of<FourZhuCardDemoViewModel>(
+                                  context,
+                                  listen: false)
+                              .themeController
+                              ?.resolveCardBoxShadow(),
+                          border: Border.all(
+                            color: Provider.of<FourZhuCardDemoViewModel>(
+                                        context,
+                                        listen: false)
+                                    .themeController
+                                    ?.resolveCardBorderColor() ??
+                                Theme.of(context)
+                                    .dividerColor
+                                    .withOpacity(0.35),
+                            width: Provider.of<FourZhuCardDemoViewModel>(
+                                        context,
+                                        listen: false)
+                                    .themeController
+                                    ?.resolveCardEffectiveBorderWidth() ??
+                                1,
+                          ),
                         ),
+                        // 绑定全局排版到 V3 卡片
+                        globalFontFamily:
+                            (globalFamily != null && globalFamily.isNotEmpty)
+                                ? globalFamily
+                                : null,
+                        globalFontSize: globalSize,
+                        globalFontColor: globalColor,
+                        // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
+                        // groupTextStyles: _groupTextStyles,
+                        // 🔧 修复：启用色彩模式，允许字符映射生效
+                        colorfulMode: true,
                       ),
-                      // 绑定全局排版到 V3 卡片
-                      globalFontFamily:
-                          (globalFamily != null && globalFamily.isNotEmpty)
-                              ? globalFamily
-                              : null,
-                      globalFontSize: globalSize,
-                      globalFontColor: globalColor,
-                      // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
-                      // groupTextStyles: _groupTextStyles,
-                      // 🔧 修复：启用色彩模式，允许字符映射生效
-                      colorfulMode: true,
+                      selector: (_, vm) => vm.theme,
                     ),
                   ),
                 ),

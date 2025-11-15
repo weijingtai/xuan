@@ -155,6 +155,8 @@ class PillarPayload {
     this.perRowValues = const {},
     this.columnWidth,
     this.columnMargin,
+    this.columnPadding,
+    this.columnBorderWidth,
     this.placeholderStyle,
     this.textAlign,
     this.orderIndex,
@@ -178,6 +180,14 @@ class PillarPayload {
   /// Optional per-column margin override for UI decoration.
   /// When provided, this overrides the global `pillarMargin` for this pillar.
   final EdgeInsets? columnMargin;
+
+  /// Optional per-column padding override for UI decoration.
+  /// When provided, this overrides the global pillar padding for this pillar.
+  final EdgeInsets? columnPadding;
+
+  /// Optional per-column border width override for UI decoration.
+  /// When provided, this overrides the global pillar border width for this pillar.
+  final double? columnBorderWidth;
 
   /// Optional placeholder style for drag-and-drop feedback.
   final PillarPlaceholderStyle? placeholderStyle;
@@ -211,6 +221,8 @@ class PillarPayload {
     Map<RowType, String>? perRowValues,
     double? columnWidth,
     EdgeInsets? columnMargin,
+    EdgeInsets? columnPadding,
+    double? columnBorderWidth,
     PillarPlaceholderStyle? placeholderStyle,
     RowTextAlign? textAlign,
     int? orderIndex,
@@ -222,6 +234,8 @@ class PillarPayload {
       perRowValues: perRowValues ?? this.perRowValues,
       columnWidth: columnWidth ?? this.columnWidth,
       columnMargin: columnMargin ?? this.columnMargin,
+      columnPadding: columnPadding ?? this.columnPadding,
+      columnBorderWidth: columnBorderWidth ?? this.columnBorderWidth,
       placeholderStyle: placeholderStyle ?? this.placeholderStyle,
       textAlign: textAlign ?? this.textAlign,
       orderIndex: orderIndex ?? this.orderIndex,
