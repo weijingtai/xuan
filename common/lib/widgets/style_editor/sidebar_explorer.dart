@@ -54,6 +54,19 @@ class SidebarExplorer extends StatelessWidget {
   Widget _pillarSecion(BuildContext context,
       {required IconData icon, required String title, required Widget child}) {
     final theme = Theme.of(context);
+    Widget _sub(String label, Widget content) {
+      return ExpansionTile(
+        title: Container(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Text(label, style: theme.textTheme.titleMedium),
+        ),
+        childrenPadding: const EdgeInsets.all(12),
+        children: [content],
+      );
+    }
+
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHigh,
@@ -63,8 +76,14 @@ class SidebarExplorer extends StatelessWidget {
       child: ExpansionTile(
         leading: Icon(icon),
         title: Text(title, style: theme.textTheme.titleMedium),
-        childrenPadding: const EdgeInsets.all(12),
-        children: [child, child],
+        childrenPadding: const EdgeInsets.symmetric(horizontal: 8),
+        children: [
+          _sub('全局', FourZhuPillarStyleEditor(theme: demoVm.theme)),
+          _sub('年柱', FourZhuPillarStyleEditor(theme: demoVm.theme)),
+          _sub('月柱', FourZhuPillarStyleEditor(theme: demoVm.theme)),
+          _sub('日柱', FourZhuPillarStyleEditor(theme: demoVm.theme)),
+          _sub('时柱', FourZhuPillarStyleEditor(theme: demoVm.theme)),
+        ],
       ),
     );
   }
