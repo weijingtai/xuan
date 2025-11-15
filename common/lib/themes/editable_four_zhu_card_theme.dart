@@ -380,6 +380,31 @@ class PillarSection {
   /// Shadow opacity in [0, 1]. When null, a sensible default is used.
   double? get shadowOpacity => global.shadow?.opacity;
 
+  /// 计算指定柱类型的装饰宽度（margin + padding + borderWidth*2）。
+  /// WARNING: 并不包含组层Pillar的Cell宽度
+  /// 参数：
+  /// - [pillarType]：柱类型（如年、月、日、时、大运）。
+  ///
+  ///
+  /// 返回：
+  /// - `double`：该柱的装饰总宽度（逻辑像素）。
+  double getDecorationWidthBy(PillarType pillarType) {
+    final cfg = getBy(pillarType);
+    return cfg.getDecorationWidth();
+  }
+
+  /// 计算指定柱类型的装饰高度（margin + padding + borderWidth*2）。
+  /// WARNING: 并不包含组层Pillar的Cell高度
+  /// 参数：
+  /// - [pillarType]：柱类型（如年、月、日、时、大运）。
+  ///
+  /// 返回：
+  /// - `double`：该柱的装饰总高度（逻辑像素）。
+  double getDecorationHeightBy(PillarType pillarType) {
+    final cfg = getBy(pillarType);
+    return cfg.getDecorationHeight();
+  }
+
   Map<String, dynamic> toJson() => _$PillarSectionToJson(this);
   factory PillarSection.fromJson(Map<String, dynamic> json) =>
       _$PillarSectionFromJson(json);

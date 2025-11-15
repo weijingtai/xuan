@@ -711,7 +711,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回值：无。
   void initState() {
     super.initState();
-    _pillarSectionNotifier = ValueNotifier(widget.pillarSection);
+
+    _pillarSectionNotifier = ValueNotifier(widget.pillarSection)
+      ..addListener(() {
+        _sizeNotifier.value = _computeSizeWithDecorationsV2();
+      });
 
     // 注册 ValueNotifier 监听以进行采样计数
     _dragWantsInsert.addListener(_onDragWantsInsertUpdated);
@@ -763,7 +767,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 初始化尺寸通知器，使用包含装饰的尺寸计算
     _sizeNotifier = ValueNotifier<Size>(
-      _computeSizeWithDecorations(),
+      _computeSizeWithDecorationsV2(),
     );
 
     // 统一监听器：同步更新布局模型和尺寸
@@ -781,7 +785,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // 同步基础布局模型的 padding
       _basicLayoutModel.updatePadding(widget.paddingNotifier.value);
       // 同步更新尺寸（包含装饰）
-      _sizeNotifier.value = _computeSizeWithDecorations();
+      _sizeNotifier.value = _computeSizeWithDecorationsV2();
     };
     widget.pillarsNotifier.addListener(_layoutModelSyncListener);
     widget.rowListNotifier.addListener(_layoutModelSyncListener);
@@ -1264,10 +1268,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           ),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
-            final double colW = _colWidthAtIndex(i, pillars);
+            final double colBaseW = _colWidthAtIndex(i, pillars);
+            final pillarDecorationWith = _pillarSectionNotifier.value
+                .getDecorationWidthBy(
+                    widget.pillarsNotifier.value[i].pillarType);
+            final double colW = colBaseW + pillarDecorationWith ?? 0.0;
+
             if (isSeparatorCol) {
               return SizedBox(
-                width: colW,
+                width: colBaseW,
                 height: _effectiveDragHandleRowHeight,
               );
             }
@@ -2966,20 +2975,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   curve: Curves.linear,
                   margin: config.margin,
                   padding: config.padding,
-                  width: colW +
-                      (config.margin.horizontal + config.padding.horizontal) *
-                          2,
-                  // margin: _pillarMarginAtIndex(pillarIndex),
-                  // padding: _pillarPaddingAtIndex(pillarIndex),
-                  // width: colW,
+                  width: colW + config.padding.horizontal * 2,
                   decoration: BoxDecoration(
-                    // color: Colors.amber,
                     color: bkColor,
-                    // color: _pillarBackgroundColorEff == Colors.transparent
-                    //     ? widget.cardDecoration?.color ?? Colors.white
-                    //     : _pillarBackgroundColorEff,
-                    // borderRadius: BorderRadius.circular(_pillarCornerRadiusEff),
-
                     borderRadius: BorderRadius.circular(config.border!.radius),
                     border:
                         (config.border!.width == 0 || !config.border!.enabled)
@@ -4195,11 +4193,64 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return fallbackHeight ?? otherCellHeight;
   }
 
+  Size _computeSizeWithDecorationsV2() {
+    final pillarSection = _pillarSectionNotifier.value;
+    final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
+    // 1. 首先获取当前一过有多少个pillar
+    final payloads = widget.pillarsNotifier.value;
+    // 2. 根据pillar 的 PillarType 以及 pillarSection 获取对应pillar的DecorationWith 与 DecorationHeight
+    // 2.1.1.
+    final double maxDecorationHeight = payloads
+        .map((p) => pillarSection.getDecorationHeightBy(p.pillarType))
+        .fold(0.0, (a, b) => a + b);
+    // for (int i = 0; i < payloads.length; i++) {
+    //   final decorationWith = pillarSection.getBy(payloads[i].pillarType);
+    //   print("");
+    //   print(
+    //       '------ ${payloads[i].pillarType} ${pillarSection.getDecorationWidthBy(payloads[i].pillarType)}, padding:${decorationWith.padding}, margin:${decorationWith.margin}, borderWidth:${decorationWith.border?.width ?? 0.0}');
+    //   print("");
+    // }
+
+    // final double cellHeight = payloads
+    //     .map((p) => p.)
+    //     .fold(0.0, (a, b) => a + b);
+    // 2.2.1.
+    final double totalDecorationWidth = payloads
+        .map((p) => widget.pillarSection.getDecorationWidthBy(p.pillarType))
+        .fold(0.0, (a, b) => a + b);
+    // 2.2.2. 由于 getDecorationHeightBy 提供的只有padding margin borderWidth的总和
+    //      并没有提供每部Cell的合理宽度，单前使用payload的columnWidth 作为开发临时使用
+    final double totalPillarBaseWidth = payloads
+        .map((p) => p.columnWidth ?? pillarWidth)
+        .fold(0.0, (a, b) => a + b);
+
+    // 计算所有非分隔列的装饰宽度总和（按列覆盖）
+    // final payloads = widget.pillarsNotifier.value;
+    // double totalDecorationWidth = 0.0;
+    // double maxDecorationHeight = 0.0;
+    // for (int i = 0; i < payloads.length; i++) {
+    // if (!_isSeparatorColumnIndex(i)) {
+    // totalDecorationWidth += _pillarDecorationWidthAtIndex(i);
+    // final h = _pillarDecorationHeightAtIndex(i);
+    // if (h > maxDecorationHeight) maxDecorationHeight = h;
+    // }
+    // }
+    // if (h > maxDecorationHeight) maxDecorationHeight = h;
+
+    // 宽度 = 基础宽度 + 所有列装饰宽度之和
+    // 高度 = 基础高度 + 最大列装饰高度（按列覆盖）
+    return Size(
+      baseSize.width + totalDecorationWidth + _cardBorderHorizontalEff,
+      baseSize.height + maxDecorationHeight + _cardBorderVerticalEff,
+    );
+  }
+
   /// 计算包含装饰的 Card 尺寸
   ///
   /// 基于 CardLayoutModel 的基础尺寸，添加每列装饰的额外尺寸：
   /// - 宽度：每个普通列添加装饰宽度 (margin 8*2 + padding 16*2 + border 2*2 = 52px)
   /// - 高度：装饰包裹整列，需要添加一次垂直装饰尺寸 (margin 8*2 + padding 16*2 + border 2*2 = 52px)
+  @Deprecated('Use _computeSizeWithDecorationsV2 instead')
   Size _computeSizeWithDecorations() {
     final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
 
@@ -4811,8 +4862,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         widget.colorfulMode ? ColorPreviewMode.colorful : ColorPreviewMode.pure;
     final brightness = Theme.of(context).brightness;
 
-    print(
-        '🔍 [_resolveCellTextStyle] 字符="$text", rowType=$rowType, colorPreviewMode=$colorPreviewMode, brightness=$brightness');
+    // print(
+    // '🔍 [_resolveCellTextStyle] 字符="$text", rowType=$rowType, colorPreviewMode=$colorPreviewMode, brightness=$brightness');
 
     var style = rowInfo.config?.toTextStyle(
           char: text,
@@ -4821,7 +4872,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         ) ??
         _defaultTextStyleForGroup(group);
 
-    print('🔍 [_resolveCellTextStyle] 解析后颜色: ${style.color}');
+    // print('🔍 [_resolveCellTextStyle] 解析后颜色: ${style.color}');
 
     // 以分组默认样式为起点，避免在调用处硬编码常量
     // var style = _defaultTextStyleForGroup(group);

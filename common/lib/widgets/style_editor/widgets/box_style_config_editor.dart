@@ -23,10 +23,19 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 min: 0,
                 max: 48,
                 onChanged: (v) {
+                  print(
+                      "before ---------- $v , margin ver:${config.margin.top},padding hor:${config.padding.left}");
                   boxStyleConfigNotifier.value = config.copyWith(
-                    margin: EdgeInsets.symmetric(
-                        horizontal: v, vertical: config.margin.top),
+                    margin: EdgeInsets.only(
+                      left: v,
+                      right: v,
+                      top: config.margin.top,
+                      bottom: config.margin.bottom,
+                    ),
                   );
+
+                  print(
+                      "after ---------- margin hor: ${config.margin.left}, margin ver:${config.margin.top},padding hor:${config.padding.left}");
                 },
               ),
               TitleSliderWidget(
@@ -36,8 +45,12 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 max: 48,
                 onChanged: (v) {
                   boxStyleConfigNotifier.value = config.copyWith(
-                    margin: EdgeInsets.symmetric(
-                        horizontal: config.margin.left, vertical: v),
+                    margin: EdgeInsets.only(
+                      left: config.margin.left,
+                      right: config.margin.right,
+                      top: v,
+                      bottom: v,
+                    ),
                   );
                 },
               ),
@@ -49,8 +62,12 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 max: 48,
                 onChanged: (v) {
                   boxStyleConfigNotifier.value = config.copyWith(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: v, vertical: config.padding.top),
+                    padding: EdgeInsets.only(
+                      left: v,
+                      right: v,
+                      top: config.padding.top,
+                      bottom: config.padding.bottom,
+                    ),
                   );
                 },
               ),
@@ -61,8 +78,12 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 max: 48,
                 onChanged: (v) {
                   boxStyleConfigNotifier.value = config.copyWith(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: config.padding.left, vertical: v),
+                    padding: EdgeInsets.only(
+                      left: config.padding.left,
+                      right: config.padding.right,
+                      top: v,
+                      bottom: v,
+                    ),
                   );
                 },
               ),

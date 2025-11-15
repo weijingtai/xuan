@@ -88,10 +88,10 @@ class TextStyleConfig {
       final mapper =
           colorMapperDataModel.getBy(theme: brightness, mode: colorPreviewMode);
       textColor = mapper[char];
-      print(
-          '🔍 [toTextStyle] 字符="$char", mode=$colorPreviewMode, brightness=$brightness');
-      print('🔍 [toTextStyle] mapper 包含 ${mapper.length} 个颜色映射');
-      print('🔍 [toTextStyle] 该字符颜色: $textColor');
+      // print(
+      //     '🔍 [toTextStyle] 字符="$char", mode=$colorPreviewMode, brightness=$brightness');
+      // print('🔍 [toTextStyle] mapper 包含 ${mapper.length} 个颜色映射');
+      // print('🔍 [toTextStyle] 该字符颜色: $textColor');
     }
 
     return TextStyle(
