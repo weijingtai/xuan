@@ -84,7 +84,6 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   /// Resolves element colors (Gan/Zhi) via palette/theme strategies.
   final ElementColorResolver elementColorResolver;
 
-
   /// 可选：行重排完成时回调通知。用于测试或外部状态同步。
   ///
   /// 参数：按当前顺序排列的行载荷列表。
@@ -116,7 +115,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.showGripColumns = true,
     ElementColorResolver? elementColorResolver,
   }) : elementColorResolver = elementColorResolver ??
-          PaletteElementColorResolver(CardPalette.defaultPalette());
+            PaletteElementColorResolver(CardPalette.defaultPalette());
 
   @override
   State<EditableFourZhuCardV3> createState() => _EditableFourZhuCardV3State();
@@ -260,8 +259,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       widget.pillarStyle?.padding ?? const EdgeInsets.all(16.0);
 
   /// 有效柱边框宽度（优先使用传入的值，默认 2）
-  double get _pillarBorderWidthEff =>
-      widget.pillarStyle?.border?.width ?? 0;
+  double get _pillarBorderWidthEff => widget.pillarStyle?.border?.width ?? 0;
 
   /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
   Color get _pillarBorderColorEff =>

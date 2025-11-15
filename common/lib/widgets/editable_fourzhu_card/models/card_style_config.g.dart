@@ -23,9 +23,7 @@ CardStyleConfig _$CardStyleConfigFromJson(Map<String, dynamic> json) =>
           ? EdgeInsets.zero
           : const EdgeInsetsConverter()
               .fromJson(json['margin'] as Map<String, dynamic>),
-      shadow: json['shadow'] == null
-          ? null
-          : BoxShadowStyle.fromJson(json['shadow'] as Map<String, dynamic>),
+      shadow: BoxShadowStyle.fromJson(json['shadow'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$CardStyleConfigToJson(CardStyleConfig instance) =>

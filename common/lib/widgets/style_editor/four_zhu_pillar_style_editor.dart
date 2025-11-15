@@ -18,6 +18,11 @@ import 'widgets/box_shadow_style_editor.dart';
 /// 提供对柱的外边距、内边距、边框、背景色、阴影等样式的编辑控制，
 /// 支持实时 `onChanged` 回调用于外部预览绑定。
 class FourZhuPillarStyleEditor extends StatefulWidget {
+  // final ValueNotifier<PillarStyleConfig> global;
+  // final ValueNotifier<PillarStyleConfig> pillarStyleConfigNotifier;
+  final PillarStyleConfig pillarStyleConfig;
+  final ValueChanged<PillarStyleConfig>? onChanged;
+
   /// 创建柱样式编辑器面板。
   ///
   /// 参数：
@@ -28,14 +33,14 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
   // final String pillarName;
   const FourZhuPillarStyleEditor({
     super.key,
-    required this.theme,
-    // required this.pillarUUID,
-    // required this.pillarName,
-    // this.compact = true,
+    required this.pillarStyleConfig,
+    required this.onChanged,
+    // required this.pillarStyleConfigNotifier,
   });
 
   /// 当前编辑的主题状态
-  final EditableFourZhuCardTheme theme;
+  // final RowType rowType;
+  // final EditableFourZhuCardTheme theme;
   // final bool compact;
 
   /// 变更处理器，在任何编辑操作时调用
@@ -47,48 +52,46 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
 }
 
 class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
-  late EditableFourZhuCardTheme _theme;
+  // late EditableFourZhuCardTheme _theme;
 
   late final ValueNotifier<BoxShadowStyle> _pillarShadowNotifier;
   late final ValueNotifier<BoxBorderStyle> _pillarBorderNotifier;
   late final ValueNotifier<PillarStyleConfig> _pillarStyleConfigNotifier;
+
   @override
   void initState() {
     super.initState();
-    _theme = widget.theme;
-    _pillarShadowNotifier = ValueNotifier(BoxShadowStyle.defaultShadow)
+    // _theme = widget.theme;
+    _pillarStyleConfigNotifier = ValueNotifier(widget.pillarStyleConfig)
       ..addListener(() {
-        updateTheme(_pillarStyleConfigNotifier.value
-            .copyWith(shadow: _pillarShadowNotifier.value));
+        widget.onChanged?.call(_pillarStyleConfigNotifier.value);
       });
+
+    _pillarShadowNotifier =
+        ValueNotifier(_pillarStyleConfigNotifier.value.shadow)
+          ..addListener(() {
+            _pillarStyleConfigNotifier.value = _pillarStyleConfigNotifier.value
+                .copyWith(shadow: _pillarShadowNotifier.value);
+          });
     _pillarBorderNotifier = ValueNotifier(BoxBorderStyle.defaultBorder)
       ..addListener(() {
-        updateTheme(_pillarStyleConfigNotifier.value
-            .copyWith(border: _pillarBorderNotifier.value));
+        _pillarStyleConfigNotifier.value = _pillarStyleConfigNotifier.value
+            .copyWith(border: _pillarBorderNotifier.value);
       });
-    _pillarStyleConfigNotifier =
-        ValueNotifier(PillarStyleConfig.defaultPillarStyleConfig)
-          ..addListener(() {
-            updateTheme(_pillarStyleConfigNotifier.value);
-          });
   }
 
   @override
   void didUpdateWidget(covariant FourZhuPillarStyleEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.theme != widget.theme) {
-      _theme = widget.theme;
+    if (oldWidget.pillarStyleConfig != widget.pillarStyleConfig) {
+      _pillarStyleConfigNotifier.value = widget.pillarStyleConfig;
     }
   }
 
-  // 更新新的 pillar 样式配置 搭配ViewModel 中
-  void updateTheme(PillarStyleConfig newPillarStyle) {
-    Provider.of<FourZhuCardDemoViewModel>(context, listen: false)
-        .updateEditableFourZhuCardTheme(_theme.copyWith(
-            pillar: _theme.pillar?.copyWith(
-      global: newPillarStyle,
-    )));
-  }
+  // // 更新新的 pillar 样式配置 搭配ViewModel 中
+  // void updateTheme(PillarStyleConfig newPillarStyle) {
+  //   _pillarStyleConfigNotifier.value = newPillarStyle;
+  // }
 
   @override
   void dispose() {

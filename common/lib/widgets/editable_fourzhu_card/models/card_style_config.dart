@@ -10,13 +10,13 @@ part 'card_style_config.g.dart';
 /// 功能描述：
 @JsonSerializable()
 class CardStyleConfig extends BaseBoxStyleConfig {
-  const CardStyleConfig({
+  CardStyleConfig({
     super.border,
     super.lightBackgroundColor,
     super.darkBackgroundColor,
     super.padding = EdgeInsets.zero,
     super.margin = EdgeInsets.zero,
-    super.shadow,
+    required super.shadow,
   });
   Map<String, dynamic> toJson() => _$CardStyleConfigToJson(this);
   factory CardStyleConfig.fromJson(Map<String, dynamic> json) =>

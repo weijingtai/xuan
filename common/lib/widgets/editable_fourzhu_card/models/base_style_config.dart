@@ -227,13 +227,13 @@ class BoxBorderStyle {
 
 @JsonSerializable()
 class BaseBoxStyleConfig extends Equatable {
-  const BaseBoxStyleConfig({
-    this.border,
+  BaseBoxStyleConfig({
+    required this.border,
     this.lightBackgroundColor,
     this.darkBackgroundColor,
     this.padding = EdgeInsets.zero,
     this.margin = EdgeInsets.zero,
-    this.shadow,
+    required this.shadow,
     // this.size,
   });
 
@@ -253,7 +253,7 @@ class BaseBoxStyleConfig extends Equatable {
   final EdgeInsets margin;
 
   // Shadow
-  final BoxShadowStyle? shadow;
+  final BoxShadowStyle shadow;
 
   // Size
   // final Size? size;

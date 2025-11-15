@@ -319,7 +319,7 @@ class PillarSection {
   final PillarStyleConfig global;
   final Map<PillarType, PillarStyleConfig> mapper;
 
-  PillarStyleConfig? getBy(PillarType pillarType) =>
+  PillarStyleConfig getBy(PillarType pillarType) =>
       mapper[pillarType] ?? global;
   PillarSection copyWith({
     PillarStyleConfig? global,

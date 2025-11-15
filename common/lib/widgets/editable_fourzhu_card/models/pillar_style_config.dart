@@ -19,13 +19,13 @@ part 'pillar_style_config.g.dart';
 /// 返回值：不可变配置对象。
 @JsonSerializable()
 class PillarStyleConfig extends BaseBoxStyleConfig {
-  const PillarStyleConfig({
-    super.border,
-    super.lightBackgroundColor,
-    super.darkBackgroundColor,
+  PillarStyleConfig({
+    required super.border,
+    required super.lightBackgroundColor,
+    required super.darkBackgroundColor,
     super.padding = EdgeInsets.zero,
     super.margin = EdgeInsets.zero,
-    super.shadow,
+    required super.shadow,
   });
 
   @override
