@@ -1,5 +1,9 @@
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+
+import '../const_resources_mapper.dart';
+import '../dev_constant.dart';
 
 part 'text_style_config.g.dart';
 
@@ -37,6 +41,85 @@ class TextStyleConfig {
     // 基础属性（当前已支持）
   });
 
+  static TextStyleConfig get defaultGanConfig => () {
+        List<String> allGanStrList = TianGan.values
+            .where((e) => e != TianGan.KONG_WANG)
+            .map((e) => e.name)
+            .toList();
+        return TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: Map.fromEntries(allGanStrList
+                .asMap()
+                .entries
+                .map((e) => MapEntry(e.value, Colors.black87))),
+            colorfulLightMapper: Map.fromEntries(ConstResourcesMapper
+                .zodiacGanColors
+                .map((k, v) => MapEntry(k.name, v))
+                .entries),
+            pureDarkMapper: Map.fromEntries(allGanStrList
+                .asMap()
+                .entries
+                .map((e) => MapEntry(e.value, Colors.white))),
+            colorfulDarkMapper: Map.fromEntries(ConstResourcesMapper
+                .zodiacGanColors
+                .map((k, v) => MapEntry(k.name, v))
+                .entries),
+          ),
+          textShadowDataModel: TextShadowDataModel(
+            shadowEnabled: true,
+            followTextColor: true,
+            shadowBlurRadius: 4,
+            lightShadowColor: Colors.black,
+            darkShadowColor: Colors.white,
+            shadowOpacity: 0.7,
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+          ),
+          fontStyleDataModel: FontStyleDataModel(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontFamily: 'NotoSansSC',
+          ),
+        );
+      }();
+  static TextStyleConfig get defaultZhiConfig => () {
+        List<String> allZhiStrList = DiZhi.values.map((e) => e.name).toList();
+        return TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: Map.fromEntries(allZhiStrList
+                .asMap()
+                .entries
+                .map((e) => MapEntry(e.value, Colors.black87))),
+            colorfulLightMapper: Map.fromEntries(ConstResourcesMapper
+                .zodiacGanColors
+                .map((k, v) => MapEntry(k.name, v))
+                .entries),
+            pureDarkMapper: Map.fromEntries(allZhiStrList
+                .asMap()
+                .entries
+                .map((e) => MapEntry(e.value, Colors.white))),
+            colorfulDarkMapper: Map.fromEntries(ConstResourcesMapper
+                .zodiacGanColors
+                .map((k, v) => MapEntry(k.name, v))
+                .entries),
+          ),
+          textShadowDataModel: TextShadowDataModel(
+            shadowEnabled: true,
+            followTextColor: true,
+            shadowBlurRadius: 4,
+            lightShadowColor: Colors.black,
+            darkShadowColor: Colors.white,
+            shadowOpacity: 0.7,
+            shadowOffsetX: 1,
+            shadowOffsetY: 1,
+          ),
+          fontStyleDataModel: FontStyleDataModel(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            fontFamily: 'NotoSansSC',
+          ),
+        );
+      }();
   static TextStyleConfig defaultConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {
@@ -63,6 +146,60 @@ class TextStyleConfig {
       fontFamily: 'NotoSansSC',
     ),
   );
+
+  static TextStyleConfig defaultOthersConfig = TextStyleConfig(
+    colorMapperDataModel: ColorMapperDataModel(
+      pureLightMapper: {
+        "乾造": Colors.black87,
+        "坤造": Colors.black87,
+      },
+      colorfulLightMapper: {
+        "乾造": Colors.black87,
+        "坤造": Colors.black87,
+      },
+      pureDarkMapper: {
+        "乾造": Colors.white,
+        "坤造": Colors.white,
+      },
+      colorfulDarkMapper: {
+        "乾造": Colors.white,
+        "坤造": Colors.white,
+      },
+    ),
+    textShadowDataModel: TextShadowDataModel(),
+    fontStyleDataModel: FontStyleDataModel(
+      fontWeight: FontWeight.normal,
+      fontSize: 12,
+      fontFamily: 'NotoSansSC',
+    ),
+  );
+  static TextStyleConfig defaultOthersTitleConfig = TextStyleConfig(
+    colorMapperDataModel: ColorMapperDataModel(
+      pureLightMapper: {
+        "乾造": Colors.black87,
+        "坤造": Colors.black87,
+      },
+      colorfulLightMapper: {
+        "乾造": Colors.black87,
+        "坤造": Colors.black87,
+      },
+      pureDarkMapper: {
+        "乾造": Colors.white,
+        "坤造": Colors.white,
+      },
+      colorfulDarkMapper: {
+        "乾造": Colors.white,
+        "坤造": Colors.white,
+      },
+    ),
+    textShadowDataModel: TextShadowDataModel(),
+    fontStyleDataModel: FontStyleDataModel(
+      fontWeight: FontWeight.normal,
+      fontSize: 8,
+      fontFamily: 'NotoSansSC',
+    ),
+  );
+
   // ==================== JSON 序列化 ====================
 
   /// 从 JSON 反序列化
@@ -429,6 +566,7 @@ class ColorAhexConverter implements JsonConverter<Color, String> {
 }
 
 class ColorMapperDataModel {
+  Color defaultColor = Colors.blueGrey;
   @JsonKey(
       fromJson: ColorAhexConverter.mapFromJson,
       toJson: ColorAhexConverter.mapToJson)
@@ -451,6 +589,7 @@ class ColorMapperDataModel {
     required this.colorfulLightMapper,
     required this.pureDarkMapper,
     required this.colorfulDarkMapper,
+    this.defaultColor = Colors.blueGrey,
   });
   Map<String, Color> getBy({
     required Brightness theme,

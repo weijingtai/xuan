@@ -192,7 +192,7 @@ class RowDimension implements Measurable {
   final int index;
 
   /// 数据载荷（包含行类型、策略等）
-  final TextRowInfoPayload payload;
+  final TextRowPayload payload;
 
   /// 用户自定义的高度覆盖值
   ///
@@ -604,7 +604,7 @@ class CardLayoutModel {
   /// 这是新旧系统的桥接方法，允许从现有数据无缝构建新模型。
   static CardLayoutModel fromNotifiers({
     required List<PillarPayload> pillars,
-    required List<TextRowInfoPayload> rows,
+    required List<TextRowPayload> rows,
     required EdgeInsets padding,
     Map<int, double>? columnWidthOverrides,
     Map<int, double>? rowHeightOverrides,

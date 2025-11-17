@@ -58,9 +58,10 @@ class ShadowEditorWidget extends StatelessWidget {
             shadowNotifier.value = shadowNotifier.value.copyWith(withShadow: v);
           },
         ),
-        // 阴影跟随背景色
-        if (_pillarShadowEnabled)
-          CheckboxListTile(
+        ...(() {
+          if (!_pillarShadowEnabled) return <Widget>[];
+          final List<Widget> xs = [];
+          xs.add(CheckboxListTile(
             contentPadding: EdgeInsets.zero,
             title: const Text('阴影颜色跟随柱背景色'),
             value: _pillarShadowFollowBackground,
@@ -68,99 +69,90 @@ class ShadowEditorWidget extends StatelessWidget {
               shadowNotifier.value = shadowNotifier.value
                   .copyWith(followCardBackgroundColor: v ?? false);
             },
-          ),
-        // 阴影颜色选择（仅当不跟随背景色时显示）
-        if (_pillarShadowEnabled && !_pillarShadowFollowBackground)
-          Row(
-            children: [
-              const Text('Light 阴影颜色'),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () async {
-                  final picked = await showColorPickerDialog(
-                    context,
-                    // _parseHexColor(_pillarShadowHex) ?? Colors.black54,
-                    _pillarShadowFollowBackground
-                        ? config.lightBackgroundColor ?? Colors.white
-                        : _pillarShadowLightColor,
-
-                    title: const Text('选择阴影颜色'),
-                    pickersEnabled: const {
-                      ColorPickerType.wheel: true,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.custom: false,
-                    },
-                  );
-                  shadowNotifier.value =
-                      shadowNotifier.value.copyWith(lightThemeColor: picked);
-                },
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: lightPillarShadowColor,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color:
-                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+          ));
+          if (!_pillarShadowFollowBackground) {
+            xs.add(Row(
+              children: [
+                const Text('Light 阴影颜色'),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showColorPickerDialog(
+                      context,
+                      _pillarShadowFollowBackground
+                          ? config.lightBackgroundColor ?? Colors.white
+                          : _pillarShadowLightColor,
+                      title: const Text('选择阴影颜色'),
+                      pickersEnabled: const {
+                        ColorPickerType.wheel: true,
+                        ColorPickerType.accent: false,
+                        ColorPickerType.primary: false,
+                        ColorPickerType.custom: false,
+                      },
+                    );
+                    shadowNotifier.value =
+                        shadowNotifier.value.copyWith(lightThemeColor: picked);
+                  },
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: lightPillarShadowColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.4),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Text('选择颜色'),
-            ],
-          ),
-        if (_pillarShadowEnabled && !_pillarShadowFollowBackground)
-          Row(
-            children: [
-              const Text('Dark 阴影颜色'),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () async {
-                  final picked = await showColorPickerDialog(
-                    context,
-                    _pillarShadowFollowBackground
-                        ? config.darkBackgroundColor ?? Colors.white
-                        : _pillarShadowDarkColor,
-                    title: const Text('选择阴影颜色'),
-                    pickersEnabled: const {
-                      ColorPickerType.wheel: true,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.custom: false,
-                    },
-                  );
-                  shadowNotifier.value =
-                      shadowNotifier.value.copyWith(lightThemeColor: picked);
-                  // setState(() {
-                  //   _pillarShadowHex =
-                  //       '#${picked.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
-                  // });
-                  // _emit(_theme.copyWith(pillar: _composePillarSection()));
-                },
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: darkPillarShadowColor,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color:
-                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                const SizedBox(width: 12),
+                const Text('选择颜色'),
+              ],
+            ));
+            xs.add(Row(
+              children: [
+                const Text('Dark 阴影颜色'),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: () async {
+                    final picked = await showColorPickerDialog(
+                      context,
+                      _pillarShadowFollowBackground
+                          ? config.darkBackgroundColor ?? Colors.white
+                          : _pillarShadowDarkColor,
+                      title: const Text('选择阴影颜色'),
+                      pickersEnabled: const {
+                        ColorPickerType.wheel: true,
+                        ColorPickerType.accent: false,
+                        ColorPickerType.primary: false,
+                        ColorPickerType.custom: false,
+                      },
+                    );
+                    shadowNotifier.value =
+                        shadowNotifier.value.copyWith(darkThemeColor: picked);
+                  },
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: darkPillarShadowColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.4),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              const Text('选择颜色'),
-            ],
-          ),
-        // 偏移/模糊/扩散/透明度
-
-        if (_pillarShadowEnabled)
-          TitleSliderWidget(
+                const SizedBox(width: 12),
+                const Text('选择颜色'),
+              ],
+            ));
+          }
+          xs.add(TitleSliderWidget(
             label: '阴影 Offset X (px)',
             value: _pillarShadowOffsetX,
             min: -24,
@@ -169,9 +161,8 @@ class ShadowEditorWidget extends StatelessWidget {
               shadowNotifier.value = shadowNotifier.value
                   .copyWith(offset: Offset(v, _pillarShadowOffsetY));
             },
-          ),
-        if (_pillarShadowEnabled)
-          TitleSliderWidget(
+          ));
+          xs.add(TitleSliderWidget(
             label: '阴影 Offset Y (px)',
             value: _pillarShadowOffsetY,
             min: -24,
@@ -180,9 +171,8 @@ class ShadowEditorWidget extends StatelessWidget {
               shadowNotifier.value = shadowNotifier.value
                   .copyWith(offset: Offset(_pillarShadowOffsetX, v));
             },
-          ),
-        if (_pillarShadowEnabled)
-          TitleSliderWidget(
+          ));
+          xs.add(TitleSliderWidget(
             label: '阴影模糊 (px)',
             value: _pillarShadowBlur,
             min: 0,
@@ -191,9 +181,8 @@ class ShadowEditorWidget extends StatelessWidget {
               shadowNotifier.value =
                   shadowNotifier.value.copyWith(blurRadius: v);
             },
-          ),
-        if (_pillarShadowEnabled)
-          TitleSliderWidget(
+          ));
+          xs.add(TitleSliderWidget(
             label: '阴影扩散 (px)',
             value: _pillarShadowSpread,
             min: 0,
@@ -202,9 +191,8 @@ class ShadowEditorWidget extends StatelessWidget {
               shadowNotifier.value =
                   shadowNotifier.value.copyWith(spreadRadius: v);
             },
-          ),
-        if (_pillarShadowEnabled)
-          TitleSliderWidget(
+          ));
+          xs.add(TitleSliderWidget(
             label: '阴影透明度',
             value: _pillarShadowOpacity,
             min: 0,
@@ -212,7 +200,9 @@ class ShadowEditorWidget extends StatelessWidget {
             onChanged: (v) {
               shadowNotifier.value = shadowNotifier.value.copyWith(opacity: v);
             },
-          ),
+          ));
+          return xs;
+        })(),
       ],
     );
   }

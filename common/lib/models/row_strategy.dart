@@ -78,6 +78,8 @@ abstract class RowComputationStrategy {
   /// 返回：
   /// - RowComputationResult：包含行类型、标题、每柱文本。
   RowComputationResult compute(RowComputationInput input);
+
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender);
 }
 
 /// 示例策略：空亡（占位示例，具体算法可在此实现或替换）。
@@ -109,6 +111,13 @@ class KongWangRowStrategy extends RowComputationStrategy {
   }
 
   /// 不再依赖柱序映射，直接使用 `PillarContent.pillarType`。
+  /// 计算单柱的空亡展示值。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    // 这里可替换为：final kw = jz.getKongWang(input.dayJiaZi.tianGan, input.gender);
+    final kw = pillarJiaZi.getKongWang();
+    return '${kw.item1.value}${kw.item2.value}';
+  }
 }
 
 /// 示例策略：旬首（骨架示例，留给后续开发者填充实际算法）。
@@ -144,6 +153,13 @@ class XunShouRowStrategy extends RowComputationStrategy {
   }
 
   /// 不再依赖柱序映射，直接使用 `PillarContent.pillarType`。
+  /// 计算单柱的旬首展示值。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    // 这里可替换为：final xunShou = _computeXunShouPlaceholder(pillarJiaZi, dayJiaZi);
+    final xunShou = _computeXunShouPlaceholder(pillarJiaZi, dayJiaZi);
+    return xunShou;
+  }
 }
 
 /// 纳音计算策略：根据每柱的干支（JiaZi）返回其对应的纳音字符串。
@@ -175,5 +191,110 @@ class NaYinRowStrategy extends RowComputationStrategy {
       rowLabel: defaultLabel,
       perPillarValues: values,
     );
+  }
+
+  /// 不再依赖柱序映射，直接使用 `PillarContent.pillarType`。
+  /// 计算单柱的纳音展示值。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    return pillarJiaZi.naYinStr;
+  }
+}
+
+class TenGodRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.tenGod;
+
+  @override
+  String get defaultLabel => '十神';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final tenGods = pillarJiaZi.tianGan.getTenGods(input.dayJiaZi.tianGan);
+      values[pillarId] = tenGods.name;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  /// 不再依赖柱序映射，直接使用 `PillarContent.pillarType`。
+  /// 计算单柱的十神展示值。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final tenGods = pillarJiaZi.tianGan.getTenGods(dayJiaZi.tianGan);
+    return tenGods.name;
+  }
+}
+
+class HiddenStemsRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStems;
+
+  @override
+  String get defaultLabel => '藏干';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final hiddenStems = pillarJiaZi.diZhi.cangGan;
+      values[pillarId] = hiddenStems.map((e) => e.name).join();
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  /// 不再依赖柱序映射，直接使用 `PillarContent.pillarType`。
+  /// 计算单柱的藏干十神展示值。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    final tenGods = hiddenStems.map((h) => h.getTenGods(dayJiaZi.tianGan));
+    return tenGods.map((e) => e.singleName).join();
+  }
+}
+
+class HiddenStemsTenGodsRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsTenGod;
+
+  @override
+  String get defaultLabel => '藏干十神';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final hiddenStems = pillarJiaZi.diZhi.cangGan;
+      final tenGods =
+          hiddenStems.map((h) => h.getTenGods(input.dayJiaZi.tianGan));
+      values[pillarId] = tenGods.map((e) => e.singleName).join();
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    final tenGods = hiddenStems.map((h) => h.getTenGods(dayJiaZi.tianGan));
+    return tenGods.map((e) => e.singleName).join();
   }
 }

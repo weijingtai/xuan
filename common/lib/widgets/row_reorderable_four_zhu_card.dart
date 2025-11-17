@@ -365,12 +365,11 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                       // 在“空隙”区域也允许投递，确保插入发生在提示位置
                       DragTarget<Object>(
                         onWillAccept: (data) {
-                          final accept =
-                              data is TextRowInfoPayload || data is int;
+                          final accept = data is TextRowPayload || data is int;
                           if (accept) {
                             setState(() {
                               _hoverRowInsertIndex = insertIndex;
-                              _hoveringExternalRow = data is TextRowInfoPayload;
+                              _hoveringExternalRow = data is TextRowPayload;
                               _isInternalDragging = data is int;
                             });
                           }
@@ -382,7 +381,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                           _isInternalDragging = false;
                         }),
                         onAccept: (data) {
-                          if (data is TextRowInfoPayload) {
+                          if (data is TextRowPayload) {
                             // 外部拖拽：在当前“空隙”索引插入
                             _insertExternalRow(insertIndex, data);
                           } else if (data is int) {
@@ -448,12 +447,11 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                             onWillAccept: (data) {
                               // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
                               final accept =
-                                  data is TextRowInfoPayload || data is int;
+                                  data is TextRowPayload || data is int;
                               if (accept) {
                                 setState(() {
                                   _hoverRowInsertIndex = insertIndex;
-                                  _hoveringExternalRow =
-                                      data is TextRowInfoPayload;
+                                  _hoveringExternalRow = data is TextRowPayload;
                                 });
                               }
                               return accept;
@@ -463,7 +461,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                               _hoveringExternalRow = false;
                             }),
                             onAccept: (data) {
-                              if (data is TextRowInfoPayload) {
+                              if (data is TextRowPayload) {
                                 // 外部拖拽：插入新行到当前索引（与空隙提示一致）
                                 _insertExternalRow(insertIndex, data);
                               } else if (data is int) {
@@ -496,11 +494,11 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             child: DragTarget<Object>(
               onWillAccept: (data) {
                 // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
-                final accept = data is TextRowInfoPayload || data is int;
+                final accept = data is TextRowPayload || data is int;
                 if (accept) {
                   setState(() {
                     _hoverRowInsertIndex = 0;
-                    _hoveringExternalRow = data is TextRowInfoPayload;
+                    _hoveringExternalRow = data is TextRowPayload;
                   });
                 }
                 return accept;
@@ -510,7 +508,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 _hoveringExternalRow = false;
               }),
               onAccept: (data) {
-                if (data is TextRowInfoPayload) {
+                if (data is TextRowPayload) {
                   // 外部拖拽：插入新行
                   _insertExternalRow(0, data);
                 } else if (data is int) {
@@ -855,7 +853,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
         ?.call(Map<int, String>.of(_rowLabelOverrides));
   }
 
-  void _insertExternalRow(int index, TextRowInfoPayload payload) {
+  void _insertExternalRow(int index, TextRowPayload payload) {
     setState(() {
       final absIndex = _computeAbsoluteInsertIndex(
           index, _rows.where((r) => r.isVisible).toList());

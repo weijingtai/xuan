@@ -1267,6 +1267,12 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       ],
       rowConfigs: [
         RowConfig(
+          type: RowType.tenGod,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
+        ),
+        RowConfig(
           type: RowType.heavenlyStem,
           isVisible: true,
           isTitleVisible: true,
@@ -1279,7 +1285,19 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           textStyleConfig: TextStyleConfig.defaultConfig,
         ),
         RowConfig(
-          type: RowType.tenGod,
+          type: RowType.xunShou,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
+        ),
+        RowConfig(
+          type: RowType.kongWang,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
+        ),
+        RowConfig(
+          type: RowType.naYin,
           isVisible: true,
           isTitleVisible: true,
           textStyleConfig: TextStyleConfig.defaultConfig,

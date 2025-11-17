@@ -1,11 +1,14 @@
 import 'package:common/models/pillar_styles.dart';
 import 'package:common/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/layout_template_enums.dart';
+import '../models/text_style_config.dart';
 import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
 import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 
 part 'editable_four_zhu_card_theme.g.dart';
 
@@ -16,15 +19,21 @@ part 'editable_four_zhu_card_theme.g.dart';
 /// - `perPillarMargin` keys limited to {year, month, day, hour, luckCycle}
 /// - Font fallback order: user-specified → theme default → system default
 @deprecated
-class EditableFourZhuCardTheme {
+@JsonSerializable()
+class EditableFourZhuCardTheme extends Equatable {
   /// Creates a theme with optional sections for card, pillar, cell, and typography.
   /// All numeric values are interpreted in logical pixels.
-  const EditableFourZhuCardTheme({
+  EditableFourZhuCardTheme({
+    required this.displayHeaderRow,
+    required this.displayRowTitleColumn,
     required this.card,
     required this.pillar,
-    this.cell,
-    this.typography,
+    required this.cell,
+    required this.typography,
   });
+
+  bool displayHeaderRow;
+  bool displayRowTitleColumn;
 
   /// Card-level decoration and background.
   final CardStyleConfig card;
@@ -33,65 +42,32 @@ class EditableFourZhuCardTheme {
   final PillarSection pillar;
 
   /// Cell-level decoration (row-wise padding/border defaults).
-  final CellSection? cell;
+  final CellSection cell;
 
   /// Text styles and font fallback behaviors.
-  final TypographySection? typography;
+  final TypographySection typography;
 
-  /// Returns a copy with selectively overridden sections.
-  ///
-  /// Parameters:
-  /// - [card]: Optional card section override.
-  /// - [pillar]: Optional pillar section override.
-  /// - [cell]: Optional cell section override.
-  /// - [typography]: Optional typography section override.
-  ///
-  /// Returns: A new `EditableFourZhuCardTheme` with provided overrides applied.
-  EditableFourZhuCardTheme copyWith({
+  factory EditableFourZhuCardTheme.fromJson(Map<String, dynamic> json) =>
+      _$EditableFourZhuCardThemeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$EditableFourZhuCardThemeToJson(this);
+
+  copyWith({
+    bool? displayHeaderRow,
+    bool? displayRowTitleColumn,
     CardStyleConfig? card,
     PillarSection? pillar,
     CellSection? cell,
     TypographySection? typography,
   }) {
     return EditableFourZhuCardTheme(
+      displayHeaderRow: displayHeaderRow ?? this.displayHeaderRow,
+      displayRowTitleColumn:
+          displayRowTitleColumn ?? this.displayRowTitleColumn,
       card: card ?? this.card,
       pillar: pillar ?? this.pillar,
       cell: cell ?? this.cell,
       typography: typography ?? this.typography,
-    );
-  }
-
-  /// Serializes this theme to JSON.
-  ///
-  /// Returns: A `Map<String, dynamic>` containing serializable representation
-  /// of the theme sections. Sections not provided are omitted or set to null.
-  Map<String, dynamic> toJson() {
-    return {
-      'card': card?.toJson(),
-      'pillar': pillar?.toJson(),
-      'cell': cell?.toJson(),
-      'typography': typography?.toJson(),
-    };
-  }
-
-  /// Deserializes a theme from JSON.
-  ///
-  /// Parameters:
-  /// - [json]: A `Map<String, dynamic>` previously produced by `toJson`.
-  ///
-  /// Returns: An `EditableFourZhuCardTheme` with all available sections parsed.
-  factory EditableFourZhuCardTheme.fromJson(Map<String, dynamic> json) {
-    return EditableFourZhuCardTheme(
-      card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),
-      pillar: PillarSection.fromJson(json['pillar'] as Map<String, dynamic>),
-      cell: json['cell'] is Map<String, dynamic>
-          ? CellSection.fromJson(json['cell'] as Map<String, dynamic>)
-          : null,
-      typography: json['typography'] is Map<String, dynamic>
-          ? TypographySection.fromJson(
-              json['typography'] as Map<String, dynamic>,
-            )
-          : null,
     );
   }
 
@@ -123,6 +99,16 @@ class EditableFourZhuCardTheme {
       throw ArgumentError(errors.first.message);
     }
   }
+
+  @override
+  List<Object?> get props => [
+        displayHeaderRow,
+        displayRowTitleColumn,
+        card,
+        pillar,
+        cell,
+        typography,
+      ];
 }
 
 /// Captures validation problems with section/scoped context.
@@ -411,38 +397,53 @@ class PillarSection {
 }
 
 /// Cell-level decoration defaults; row-wise overrides remain in RowConfig.
+@JsonSerializable()
 class CellSection {
   /// Creates cell decoration settings.
-  const CellSection({this.defaultPadding, this.defaultBorderWidth});
+  CellSection({
+    required this.pillarTitleCellConfig,
+    required this.rowTitleCellConfig,
+    required this.defaultCellConfig,
+    required this.rowTypeCellConfigMapper,
+  });
+  final CellStyleConfig pillarTitleCellConfig;
+  final CellStyleConfig rowTitleCellConfig;
+  final CellStyleConfig defaultCellConfig;
+  final Map<RowType, CellStyleConfig> rowTypeCellConfigMapper;
 
   /// Default inner padding applied to non-title cells.
-  final EdgeInsets? defaultPadding;
+  EdgeInsets? get defaultPadding => defaultCellConfig.padding;
 
   /// Default border width applied to cell dividers.
-  final double? defaultBorderWidth;
+  double? get defaultBorderWidth => defaultCellConfig.border?.width;
 
-  /// Serializes this section to JSON.
-  ///
-  /// Returns: A `Map<String, dynamic>` containing default padding and border width.
-  Map<String, dynamic> toJson() {
-    return {
-      'defaultPadding': _edgeToJson(defaultPadding),
-      'defaultBorderWidth': defaultBorderWidth,
-    };
+  CellStyleConfig getBy(RowType rowType) {
+    if (rowType == RowType.columnHeaderRow) {
+      return pillarTitleCellConfig;
+    }
+    return rowTypeCellConfigMapper[rowType] ?? defaultCellConfig;
   }
 
-  /// Deserializes this section from JSON.
-  ///
-  /// Parameters:
-  /// - [json]: A `Map<String, dynamic>` with serialized cell settings.
-  ///
-  /// Returns: A `CellSection` populated from the provided map.
-  factory CellSection.fromJson(Map<String, dynamic> json) {
-    return CellSection(
-      defaultPadding: _edgeFromJson(json['defaultPadding']),
-      defaultBorderWidth: (json['defaultBorderWidth'] as num?)?.toDouble(),
-    );
+  double getDecorationWidthBy(RowType rowType) {
+    final cfg = getBy(rowType);
+    return cfg.getDecorationWidth();
   }
+
+  double getDecorationHeightBy(RowType rowType) {
+    final cfg = getBy(rowType);
+    return cfg.getDecorationHeight();
+  }
+
+  static CellSection get defaultCellSection => CellSection(
+        pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        rowTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        defaultCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        rowTypeCellConfigMapper: {},
+      );
+
+  factory CellSection.fromJson(Map<String, dynamic> json) =>
+      _$CellSectionFromJson(json);
+  Map<String, dynamic> toJson() => _$CellSectionToJson(this);
 
   /// Appends validation errors into the collector.
   ///
@@ -461,59 +462,63 @@ class CellSection {
 }
 
 /// Typography section defines global text family and fallback behaviors.
+@JsonSerializable()
 class TypographySection {
   /// Creates typography defaults.
   const TypographySection({
-    this.globalFontFamily,
-    this.globalFontSize,
-    this.globalFontColor,
-    this.preferredFamilies,
+    required this.globalContent,
+    required this.globalTitle,
+    required this.globalCellTitle,
+    required this.rowTitle,
+    required this.pillarTitle,
+    required this.cellContentMapper,
+    required this.cellTitleMapper,
   });
 
+  final TextStyleConfig globalContent;
+  final TextStyleConfig globalTitle;
+  final TextStyleConfig rowTitle;
+  final TextStyleConfig pillarTitle;
+  final TextStyleConfig globalCellTitle;
+  final Map<RowType, TextStyleConfig> cellContentMapper;
+  final Map<RowType, TextStyleConfig> cellTitleMapper;
+
+  static TypographySection get defaultTypographySection => TypographySection(
+        globalContent: TextStyleConfig.defaultConfig,
+        globalTitle: TextStyleConfig.defaultOthersConfig,
+        rowTitle: TextStyleConfig.defaultOthersConfig,
+        pillarTitle: TextStyleConfig.defaultOthersConfig,
+        globalCellTitle: TextStyleConfig.defaultOthersTitleConfig,
+        cellContentMapper: {
+          RowType.earthlyBranch: TextStyleConfig.defaultGanConfig,
+          RowType.heavenlyStem: TextStyleConfig.defaultZhiConfig,
+        },
+        cellTitleMapper: {},
+      );
+
+  TextStyleConfig getCellContentBy(RowType rowType) {
+    if (rowType == RowType.columnHeaderRow) {
+      return rowTitle;
+    }
+    return cellContentMapper[rowType] ?? globalContent;
+  }
+
+  TextStyleConfig getCellTitleBy(RowType rowType) {
+    return cellTitleMapper[rowType] ?? globalCellTitle;
+  }
+
   /// Theme-level default font family; used if row-specific is absent.
-  final String? globalFontFamily;
+  String? get globalFontFamily => globalContent.fontStyleDataModel.fontFamily;
 
   /// Theme-level default font size for general rows.
-  final double? globalFontSize;
+  double? get globalFontSize => globalContent.fontStyleDataModel.fontSize;
 
   /// Theme-level default text color.
-  final Color? globalFontColor;
+  Color? get globalFontColor => globalContent.colorMapperDataModel.defaultColor;
 
-  /// Ordered list of preferred font families for fallback.
-  /// Resolution priority: row-specific → theme [globalFontFamily] → first of [preferredFamilies] → system default.
-  final List<String>? preferredFamilies;
-
-  /// Serializes this section to JSON.
-  ///
-  /// Returns: A `Map<String, dynamic>` with global text family/size/color and
-  /// preferred fallback families for resolution.
-  Map<String, dynamic> toJson() {
-    return {
-      'globalFontFamily': globalFontFamily,
-      'globalFontSize': globalFontSize,
-      'globalFontColor': globalFontColor?.value,
-      'preferredFamilies': preferredFamilies,
-    };
-  }
-
-  /// Deserializes this section from JSON.
-  ///
-  /// Parameters:
-  /// - [json]: A `Map<String, dynamic>` with serialized typography settings.
-  ///
-  /// Returns: A `TypographySection` populated from the provided map.
-  factory TypographySection.fromJson(Map<String, dynamic> json) {
-    return TypographySection(
-      globalFontFamily: json['globalFontFamily'] as String?,
-      globalFontSize: (json['globalFontSize'] as num?)?.toDouble(),
-      globalFontColor: json['globalFontColor'] is int
-          ? Color(json['globalFontColor'] as int)
-          : null,
-      preferredFamilies: (json['preferredFamilies'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-    );
-  }
+  factory TypographySection.fromJson(Map<String, dynamic> json) =>
+      _$TypographySectionFromJson(json);
+  Map<String, dynamic> toJson() => _$TypographySectionToJson(this);
 }
 
 // ----- Helpers -----

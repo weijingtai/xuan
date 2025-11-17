@@ -124,9 +124,9 @@ void main() {
 
   group('RowDimension', () {
     late MeasurementContext ctx;
-    late TextRowInfoPayload normalRow;
-    late TextRowInfoPayload headerRow;
-    late TextRowInfoPayload separatorRow;
+    late TextRowPayload normalRow;
+    late TextRowPayload headerRow;
+    late TextRowPayload separatorRow;
 
     setUp(() {
       ctx = MeasurementContext(
@@ -138,17 +138,17 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      normalRow = TextRowInfoPayload(
+      normalRow = TextRowPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0, // 直接指定高度，不使用策略
       );
 
-      headerRow = TextRowInfoPayload(
+      headerRow = TextRowPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
 
-      separatorRow = TextRowInfoPayload(
+      separatorRow = TextRowPayload(
         rowType: RowType.naYin, // 使用现有枚举值
         rowHeight: 8.8,
       );
@@ -192,7 +192,7 @@ void main() {
 
   group('CardLayoutModel - 基本功能', () {
     late PillarPayload pillar0, pillar1, pillar2;
-    late TextRowInfoPayload row0, row1, row2;
+    late TextRowPayload row0, row1, row2;
     late MeasurementContext ctx;
 
     setUp(() {
@@ -209,15 +209,15 @@ void main() {
       pillar1 = PillarPayload(pillarType: PillarType.month, perRowValues: {});
       pillar2 = PillarPayload(pillarType: PillarType.day, perRowValues: {});
 
-      row0 = TextRowInfoPayload(
+      row0 = TextRowPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
-      row1 = TextRowInfoPayload(
+      row1 = TextRowPayload(
         rowType: RowType.heavenlyStem,
         rowHeight: 48.0,
       );
-      row2 = TextRowInfoPayload(
+      row2 = TextRowPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0,
       );
@@ -370,7 +370,7 @@ void main() {
 
   group('CardLayoutModel - 行操作', () {
     late CardLayoutModel model;
-    late TextRowInfoPayload row0, row1, row2;
+    late TextRowPayload row0, row1, row2;
     late MeasurementContext ctx;
 
     setUp(() {
@@ -383,15 +383,15 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      row0 = TextRowInfoPayload(
+      row0 = TextRowPayload(
         rowType: RowType.columnHeaderRow,
         rowHeight: 24.0,
       );
-      row1 = TextRowInfoPayload(
+      row1 = TextRowPayload(
         rowType: RowType.heavenlyStem,
         rowHeight: 48.0,
       );
-      row2 = TextRowInfoPayload(
+      row2 = TextRowPayload(
         rowType: RowType.tenGod,
         rowHeight: 32.0,
       );
@@ -459,7 +459,7 @@ void main() {
       ];
 
       final rows = [
-        TextRowInfoPayload(
+        TextRowPayload(
           rowType: RowType.columnHeaderRow,
           rowHeight: 24.0,
         ),

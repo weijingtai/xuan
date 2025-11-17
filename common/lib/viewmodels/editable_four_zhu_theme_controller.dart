@@ -41,7 +41,7 @@ class EditableFourZhuThemeController {
     final family = _fontFallback(
       rowFamily: null,
       themeFamily: t?.globalFontFamily,
-      preferredFamilies: t?.preferredFamilies,
+      // preferredFamilies: t?.preferredFamilies,
     );
     final size = t?.globalFontSize ?? base.globalFontSize;
     final colorHex = (t?.globalFontColor?.value != null)

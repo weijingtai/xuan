@@ -54,13 +54,7 @@ class CardStyleConfig extends BaseBoxStyleConfig {
   /// 创建默认的 CardStyleConfig
   static CardStyleConfig get defaultCardStyleConfig {
     return CardStyleConfig(
-      border: BoxBorderStyle(
-        enabled: true,
-        width: 1.0,
-        lightColor: Colors.grey.shade300,
-        darkColor: Colors.grey.shade700,
-        radius: 8.0,
-      ),
+      border: BoxBorderStyle.defaultBorder,
       lightBackgroundColor: Colors.white,
       darkBackgroundColor: Colors.grey.shade900,
       padding: const EdgeInsets.all(16.0),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 enum CellType { singleText, multiText, richDecorated }
 
+@Deprecated("")
 class TextLineModel {
   final String content;
   final TextStyle style;

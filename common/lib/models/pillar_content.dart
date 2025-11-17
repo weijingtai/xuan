@@ -1,31 +1,42 @@
 import 'package:equatable/equatable.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/enums/enum_jia_zi.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'pillar_content.g.dart';
 
 /// 定义柱来源类别：运算、用户输入、当前时间。
 enum PillarSourceKind {
   /// 通过算法/策略计算得到（如胎元、身宫、命宫、大运）。
+  @JsonValue('operation')
   operation,
 
   /// 由用户直接指定干支值。
+  @JsonValue('userInput')
   userInput,
 
   /// 基于系统当前时间换算（如流年等）。
+  /// 仅当 [PillarSourceKind.currentTime] 时可选携带。
+  @JsonValue('currentTime')
   currentTime,
 }
 
 /// 运算类型，仅当 [PillarSourceKind.operation] 时生效。
 enum PillarOperationType {
   /// 胎元
+  @JsonValue('taiYuan')
   taiYuan,
 
   /// 身宫
+  @JsonValue('shenGong')
   shenGong,
 
   /// 命宫
+  @JsonValue('mingGong')
   mingGong,
 
   /// 大运
+  @JsonValue('daYun')
   daYun,
 }
 
@@ -41,6 +52,7 @@ enum PillarOperationType {
 /// - version：语义版本（String）。
 /// - sourceKind：来源类别（运算/用户输入/当前时间）。
 /// - operationType：当 sourceKind=operation 时的运算类型。
+@JsonSerializable()
 class PillarContent extends Equatable {
   /// 构造函数
   ///
@@ -106,75 +118,12 @@ class PillarContent extends Equatable {
     );
   }
 
-  /// 反序列化：从 JSON 映射为 `PillarContent`。
-  ///
-  /// 参数：`json` 为键值映射对象。
-  /// 返回：解析后的 `PillarContent` 实例。
-  /// 反序列化：从 JSON 映射为 `PillarContent`。
-  ///
-  /// 支持枚举以其 `name` 字符串进行映射；`JiaZi` 额外支持以其中文 `value` 映射。
-  /// 当提供的字符串无法匹配对应枚举值时，将抛出 `ArgumentError`。
-  factory PillarContent.fromJson(Map<String, dynamic> json) {
-    final String id = json['id'] as String;
-    final String label = json['label'] as String;
-    final String version = json['version'] as String;
+  /// 从 JSON 数据创建 `PillarContent` 实例。
+  factory PillarContent.fromJson(Map<String, dynamic> json) =>
+      _$PillarContentFromJson(json);
 
-    final String pillarTypeStr = json['pillarType'] as String;
-    final PillarType pillarType = _decodeEnum(
-      PillarType.values,
-      pillarTypeStr,
-      'PillarType',
-    );
-
-    final String jiaZiStr = json['jiaZi'] as String;
-    final JiaZi jiaZi = _decodeJiaZi(jiaZiStr);
-
-    final String sourceKindStr = json['sourceKind'] as String;
-    final PillarSourceKind sourceKind = _decodeEnum(
-      PillarSourceKind.values,
-      sourceKindStr,
-      'PillarSourceKind',
-    );
-
-    final String? description = json['description'] as String?;
-
-    final String? operationTypeStr = json['operationType'] as String?;
-    final PillarOperationType? operationType = operationTypeStr == null
-        ? null
-        : _decodeEnum(
-            PillarOperationType.values,
-            operationTypeStr,
-            'PillarOperationType',
-          );
-
-    return PillarContent(
-      id: id,
-      pillarType: pillarType,
-      label: label,
-      jiaZi: jiaZi,
-      description: description,
-      version: version,
-      sourceKind: sourceKind,
-      operationType: operationType,
-    );
-  }
-
-  /// 序列化：将 `PillarContent` 转换为 JSON 映射。
-  ///
-  /// 返回：可用于持久化/传输的键值映射对象。
-  /// 序列化：将 `PillarContent` 转换为 JSON 映射。
-  ///
-  /// 所有枚举均以其 `name` 输出，`JiaZi` 同样以 `name` 输出（建议统一存储）。
-  Map<String, dynamic> toJson() => <String, dynamic>{
-        'id': id,
-        'pillarType': pillarType.name,
-        'label': label,
-        'jiaZi': jiaZi.name,
-        'description': description,
-        'version': version,
-        'sourceKind': sourceKind.name,
-        'operationType': operationType?.name,
-      };
+  /// 将 `PillarContent` 实例编码为 JSON 数据。
+  Map<String, dynamic> toJson() => _$PillarContentToJson(this);
 
   @override
   List<Object?> get props => [

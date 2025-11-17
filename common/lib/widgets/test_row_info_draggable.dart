@@ -11,7 +11,7 @@ class TestRowInfoDraggable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Example payload: 「空亡」: 年柱[戌亥], 月柱[戌亥], 日柱[戌亥], 时柱[戌亥], 大运[戌亥]
-    TextRowInfoPayload payload = TextRowInfoPayload(
+    TextRowPayload payload = TextRowPayload(
       rowType: RowType.kongWang,
       rowLabel: '空亡',
       // Per-pillar overrides now keyed by pillar `id`.
@@ -21,7 +21,7 @@ class TestRowInfoDraggable extends StatelessWidget {
       config: TextStyleConfig.defaultConfig,
     );
 
-    return Draggable<TextRowInfoPayload>(
+    return Draggable<TextRowPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,

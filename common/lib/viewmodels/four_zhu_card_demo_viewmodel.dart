@@ -1,5 +1,6 @@
 import 'package:common/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/v4.dart';
 
 import '../enums/enum_di_zhi.dart';
 import '../enums/enum_jia_zi.dart';
@@ -15,6 +16,7 @@ import '../models/row_strategy.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/text_style_config.dart';
 import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../widgets/editable_fourzhu_card/models/pillar_style_config.dart';
 import '../widgets/editable_fourzhu_card/text_groups.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
@@ -74,7 +76,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// V3 载荷型 Notifier：柱/行/内边距。
   late final ValueNotifier<List<PillarPayload>> pillarsNotifier;
-  late final ValueNotifier<List<TextRowInfoPayload>> rowListNotifier;
+  late final ValueNotifier<List<TextRowPayload>> rowListNotifier;
   late final ValueNotifier<EdgeInsets> paddingNotifier;
 
   /// 初始化默认数据与主题。
@@ -92,6 +94,17 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     // 默认主题：卡片边角与排版参数。
     _theme = EditableFourZhuCardTheme(
       card: CardStyleConfig.defaultCardStyleConfig,
+      cell: CellSection(
+        pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        rowTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        defaultCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        rowTypeCellConfigMapper: {
+          RowType.earthlyBranch: CellStyleConfig.defaultCellStyleConfig,
+          RowType.heavenlyStem: CellStyleConfig.defaultCellStyleConfig,
+          RowType.hiddenStems: CellStyleConfig.defaultCellStyleConfig,
+          RowType.hiddenStemsTenGod: CellStyleConfig.defaultCellStyleConfig,
+        },
+      ),
       pillar: PillarSection(
         global: PillarStyleConfig.defaultPillarStyleConfig,
         mapper: {
@@ -99,16 +112,11 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
           PillarType.month: PillarStyleConfig.defaultPillarStyleConfig,
           PillarType.day: PillarStyleConfig.defaultPillarStyleConfig,
           PillarType.hour: PillarStyleConfig.defaultPillarStyleConfig,
-          PillarType.luckCycle: PillarStyleConfig.defaultPillarStyleConfig,
         },
         // defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
         // borderWidth: 0,
       ),
-      typography: TypographySection(
-        globalFontFamily: 'NotoSansSC-Regular',
-        globalFontSize: 16,
-        preferredFamilies: ['NotoSansSC-Regular', 'PingFang SC', 'Roboto'],
-      ),
+      typography: TypographySection.defaultTypographySection,
     );
     _themeController = EditableFourZhuThemeController(_theme);
 
@@ -168,32 +176,32 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     ]);
     // 在 v3 卡片中默认显示“表头行”（列标题），位于索引 0。
     // 后续数据行（天干、地支、纳音）依次排列在其后。
-    rowListNotifier = ValueNotifier<List<TextRowInfoPayload>>([
-      TextRowInfoPayload(
-        rowType: RowType.columnHeaderRow,
-        config: TextStyleConfig.defaultConfig,
-      ),
-      TextRowInfoPayload(
+    rowListNotifier = ValueNotifier<List<TextRowPayload>>([
+      TitleRowPayload(uuid: UuidV4().generate()),
+      TextRowPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
-        config: TextStyleConfig.defaultConfig,
+        uuid: UuidV4().generate(),
+        titleInCell: false,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
-        config: TextStyleConfig.defaultConfig,
+        uuid: UuidV4().generate(),
+        titleInCell: false,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
-        config: TextStyleConfig.defaultConfig,
+        uuid: UuidV4().generate(),
+        titleInCell: false,
       ),
       // 新增：空亡信息行，使用策略驱动按需计算每柱值
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
-        strategy: KongWangRowStrategy(),
-        config: TextStyleConfig.defaultConfig,
+        uuid: UuidV4().generate(),
+        titleInCell: false,
       ),
     ]);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
@@ -241,10 +249,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       final style = _themeController?.resolvePillarStyleFor(t);
       if (style == null) continue;
       list[i] = payload.copyWith(
-        columnMargin: style.margin,
-        columnPadding: style.padding,
-        columnBorderWidth: style.border?.width,
-      );
+          // columnMargin: style.margin,
+          // columnPadding: style.padding,
+          // columnBorderWidth: style.border?.width,
+          );
     }
     pillarsNotifier.value = list;
     notifyListeners();
@@ -348,11 +356,11 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       final t = payload.pillarType;
       final style = _themeController?.resolvePillarStyleFor(t);
       if (style == null) continue;
-      list[i] = payload.copyWith(
-        columnMargin: style.margin,
-        columnPadding: style.padding,
-        columnBorderWidth: style.border?.width,
-      );
+      // list[i] = payload.copyWith(
+      //   columnMargin: style.margin,
+      //   columnPadding: style.padding,
+      //   columnBorderWidth: style.border?.width,
+      // );
     }
     pillarsNotifier.value = list;
     notifyListeners();

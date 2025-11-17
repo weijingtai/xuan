@@ -47,7 +47,7 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
 
   /// 预览用的载荷 ValueNotifier（柱/行/内边距）。
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<TextRowInfoPayload>> _rowListNotifier;
+  late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
 
   /// 是否启用 V3 彩色模式（与 Demo 一致）；侧栏默认关闭，保证对比度与信息清晰。
@@ -123,23 +123,23 @@ class _ThemeEditPreviewSidebarState extends State<ThemeEditPreviewSidebar> {
       ),
     ]);
 
-    _rowListNotifier = ValueNotifier<List<TextRowInfoPayload>>([
-      TextRowInfoPayload(
+    _rowListNotifier = ValueNotifier<List<TextRowPayload>>([
+      TextRowPayload(
           rowType: RowType.columnHeaderRow,
           config: TextStyleConfig.defaultConfig),
-      TextRowInfoPayload(
+      TextRowPayload(
           rowType: RowType.heavenlyStem,
           rowLabel: '天干',
           config: TextStyleConfig.defaultConfig),
-      TextRowInfoPayload(
+      TextRowPayload(
           rowType: RowType.earthlyBranch,
           rowLabel: '地支',
           config: TextStyleConfig.defaultConfig),
-      TextRowInfoPayload(
+      TextRowPayload(
           rowType: RowType.naYin,
           rowLabel: '纳音',
           config: TextStyleConfig.defaultConfig),
-      TextRowInfoPayload(
+      TextRowPayload(
           rowType: RowType.kongWang,
           rowLabel: '空亡',
           config: TextStyleConfig.defaultConfig),

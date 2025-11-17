@@ -52,7 +52,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
 
   /// V3 卡片数据源：柱/行/内边距。
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<TextRowInfoPayload>> _rowListNotifier;
+  late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
   final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<bool> _showGripColumnsNotifier =
@@ -73,8 +73,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     super.initState();
     _pillarsNotifier =
         ValueNotifier<List<PillarPayload>>(_buildPillars(widget.eightChars));
-    _rowListNotifier =
-        ValueNotifier<List<TextRowInfoPayload>>(_buildDefaultRows());
+    _rowListNotifier = ValueNotifier<List<TextRowPayload>>(_buildDefaultRows());
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
@@ -240,11 +239,18 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                         showGripRows: _showGripRowsNotifier.value,
                         showGripColumns: _showGripColumnsNotifier.value,
                         pillarSection: show.pillar,
-                        // pillarSection: Provider.of<FourZhuCardDemoViewModel>(
-                        // context,
-                        // listen: false)
-                        // .themeController
-                        // ?.resolveGlobalPillarStyle(),
+                        cellSection: show.cell,
+                        typographySection: show.typography,
+                        rowStrategyMapper: {
+                          RowType.tenGod: TenGodRowStrategy(),
+                          RowType.hiddenStemsTenGod:
+                              HiddenStemsTenGodsRowStrategy(),
+                          RowType.hiddenStems: HiddenStemsRowStrategy(),
+                          RowType.kongWang: KongWangRowStrategy(),
+                          RowType.naYin: NaYinRowStrategy(),
+                          RowType.xunShou: XunShouRowStrategy(),
+                        },
+
                         cardDecoration: BoxDecoration(
                           color: Provider.of<FourZhuCardDemoViewModel>(context,
                                       listen: true)
@@ -364,29 +370,33 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 构建默认行：表头、天干、地支、纳音、空亡
   /// 参数：无
   /// 返回：行载荷列表
-  List<TextRowInfoPayload> _buildDefaultRows() {
+  List<TextRowPayload> _buildDefaultRows() {
     // var defaultTextStyleConfig =
     return [
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.columnHeaderRow,
         config: TextStyleConfig.defaultConfig,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
+          rowType: RowType.xunShou,
+          rowLabel: "旬首",
+          config: TextStyleConfig.defaultConfig),
+      TextRowPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
         config: TextStyleConfig.defaultConfig,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
         config: TextStyleConfig.defaultConfig,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.naYin,
         rowLabel: '纳音',
         config: TextStyleConfig.defaultConfig,
       ),
-      TextRowInfoPayload(
+      TextRowPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
         config: TextStyleConfig.defaultConfig,
@@ -429,11 +439,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
     // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
-    final rows = <TextRowInfoPayload>[
-      TextRowInfoPayload(rowType: RowType.columnHeaderRow, config: null),
+    final rows = <TextRowPayload>[
+      TextRowPayload(rowType: RowType.columnHeaderRow, config: null),
       for (final c in configs)
         if (c.isVisible)
-          TextRowInfoPayload(
+          TextRowPayload(
             rowType: c.type,
             rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
             textAlign: c.textAlign,
@@ -482,6 +492,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
         return '空亡';
       case RowType.columnHeaderRow:
         return '表头';
+      case RowType.xunShou:
+        return '旬首';
       case RowType.separator:
         return '';
       default:

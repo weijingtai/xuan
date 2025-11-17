@@ -31,6 +31,7 @@ class PillarCardStyle {
 }
 
 /// Placeholder style used during drag-and-drop. Usually mirrors the pillar card style.
+@Deprecated("")
 class PillarPlaceholderStyle {
   const PillarPlaceholderStyle({
     this.cardStyle = const PillarCardStyle(),
@@ -44,6 +45,8 @@ class PillarPlaceholderStyle {
 }
 
 /// Column width allocation policy with min/max constraints and gap between columns.
+
+@Deprecated("")
 class PillarWidthPolicy {
   const PillarWidthPolicy({
     this.minWidth = 120.0,
@@ -79,6 +82,7 @@ abstract class PillarStyleResolver {
 }
 
 /// Default resolver with uniform style across pillars.
+@Deprecated("")
 class DefaultPillarStyleResolver extends PillarStyleResolver {
   const DefaultPillarStyleResolver();
 

@@ -23,8 +23,6 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 min: 0,
                 max: 48,
                 onChanged: (v) {
-                  print(
-                      "before ---------- $v , margin ver:${config.margin.top},padding hor:${config.padding.left}");
                   boxStyleConfigNotifier.value = config.copyWith(
                     margin: EdgeInsets.only(
                       left: v,
@@ -33,9 +31,6 @@ class BoxStyleConfigEditor extends StatelessWidget {
                       bottom: config.margin.bottom,
                     ),
                   );
-
-                  print(
-                      "after ---------- margin hor: ${config.margin.left}, margin ver:${config.margin.top},padding hor:${config.padding.left}");
                 },
               ),
               TitleSliderWidget(

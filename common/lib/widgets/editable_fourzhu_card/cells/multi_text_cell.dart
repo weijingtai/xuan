@@ -1,90 +1,107 @@
 import 'package:flutter/material.dart';
+import '../models/cell_style_config.dart';
 import 'cell_interfaces.dart';
 
 class EditableMultiTextCell extends StatefulWidget {
-  final List<TextLineModel> lines;
-  const EditableMultiTextCell({super.key, required this.lines});
+  final Text content;
+  final Widget? upChild;
+  final Widget? subChild;
+
+  final double constant; // 用于计算字体和预测行高的常数 建议为1.4
+  final CellStyleConfig cellStyleConfig;
+  final Size size;
+  const EditableMultiTextCell({
+    super.key,
+    required this.content,
+    required this.size,
+    this.upChild,
+    this.subChild,
+    this.constant = 1.4,
+    required this.cellStyleConfig,
+  });
   @override
   State<EditableMultiTextCell> createState() => _EditableMultiTextCellState();
 }
 
 class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
-  late List<TextLineModel> _lines;
+  // late List<TextLineModel> _lines;
   @override
   void initState() {
     super.initState();
-    _lines = widget.lines;
+    // _lines = widget.lines;
   }
+
   @override
   void didUpdateWidget(covariant EditableMultiTextCell oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.lines != widget.lines) _lines = widget.lines;
+    // if (oldWidget.lines != widget.lines) _lines = widget.lines;
   }
-  void _openEditor() async {
-    final controllers = _lines.map((e) => TextEditingController(text: e.content)).toList();
-    final sizes = _lines.map((e) => e.style.fontSize ?? 14.0).toList();
-    final res = await showDialog<bool>(
-      context: context,
-      builder: (ctx) {
-        return AlertDialog(
-          content: SizedBox(
-            width: 360,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: List.generate(_lines.length, (i) {
-                  return Column(children: [
-                    TextField(controller: controllers[i]),
-                    const SizedBox(height: 8),
-                    Row(children: [
-                      const Expanded(child: Text('字号')),
-                      Text(sizes[i].toStringAsFixed(0)),
-                    ]),
-                    Slider(
-                      value: sizes[i],
-                      min: 10,
-                      max: 36,
-                      onChanged: (v) {
-                        setState(() {
-                          sizes[i] = v;
-                        });
-                      },
-                    ),
-                    const SizedBox(height: 12),
-                  ]);
-                }),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('取消')),
-            FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('确定')),
-          ],
-        );
-      },
-    );
-    if (res == true) {
-      setState(() {
-        _lines = List.generate(_lines.length, (i) {
-          return TextLineModel(
-            content: controllers[i].text,
-            style: _lines[i].style.copyWith(fontSize: sizes[i]),
-            align: _lines[i].align,
-          );
-        });
-      });
-    }
-  }
+
+  // double get defaultSubTopContentHeight => (widget.defaultSubTopTextSize * 1.4).ceilToDouble(); 11.2 -> 12
+  double get defaultSubTopContentHeight => 12.0;
+
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: _openEditor,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children:
-            _lines.map((l) => Text(l.content, style: l.style, textAlign: l.align)).toList(),
-      ),
-    );
+    return AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: widget.cellStyleConfig.margin,
+        padding: widget.cellStyleConfig.padding,
+        width: widget.size.width,
+        height: widget.size.height,
+        decoration: BoxDecoration(
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? (widget.cellStyleConfig.darkBackgroundColor ==
+                          Colors.transparent
+                      ? Colors.white
+                      : widget.cellStyleConfig.darkBackgroundColor)
+                  : widget.cellStyleConfig.lightBackgroundColor ==
+                          Colors.transparent
+                      ? Colors.white
+                      : widget.cellStyleConfig.lightBackgroundColor) ??
+              Colors.white,
+          border: (widget.cellStyleConfig.border?.enabled ?? false) &&
+                  (widget.cellStyleConfig.border!.width > 0)
+              ? Border.all(
+                  color: widget.cellStyleConfig.border!.lightColor,
+                  width: widget.cellStyleConfig.border!.width,
+                )
+              : null,
+          borderRadius:
+              BorderRadius.circular(widget.cellStyleConfig.border?.radius ?? 0),
+          boxShadow: widget.cellStyleConfig.shadow.withShadow
+              ? [
+                  BoxShadow(
+                    color: (widget.cellStyleConfig.shadow
+                                .followCardBackgroundColor
+                            ? ((Theme.of(context).brightness == Brightness.dark
+                                    ? widget.cellStyleConfig.darkBackgroundColor
+                                    : widget.cellStyleConfig
+                                        .lightBackgroundColor) ??
+                                Colors.transparent)
+                            : (Theme.of(context).brightness == Brightness.dark
+                                ? widget.cellStyleConfig.shadow.darkThemeColor
+                                : widget
+                                    .cellStyleConfig.shadow.lightThemeColor))
+                        .withOpacity(widget.cellStyleConfig.shadow.opacity),
+                    offset: widget.cellStyleConfig.shadow.offset,
+                    blurRadius: widget.cellStyleConfig.shadow.blurRadius,
+                    spreadRadius: widget.cellStyleConfig.shadow.spreadRadius,
+                  )
+                ]
+              : null,
+        ),
+        child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (widget.upChild != null) widget.upChild!,
+              Container(
+                alignment: Alignment.center,
+                height: (widget.content.style!.fontSize! * widget.constant)
+                    .ceilToDouble(),
+                child: widget.content,
+              ),
+              if (widget.subChild != null) widget.subChild!,
+            ]));
   }
 }

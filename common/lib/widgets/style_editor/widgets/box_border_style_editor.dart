@@ -28,81 +28,91 @@ class BoxBorderStyleEditor extends StatelessWidget {
     final _pillarBorderColorDark = border.darkColor;
     return Column(
       children: [
-        // 边框控制
-        TitleSliderWidget(
-          label: '边框宽度 (px)',
-          value: _pillarBorderWidth,
-          min: 0,
-          max: 8,
+        // 启用边框
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('启用边框'),
+          value: border.enabled,
           onChanged: (v) {
-            borderNotifier.value = border.copyWith(width: v);
+            borderNotifier.value = border.copyWith(enabled: v);
           },
         ),
-        TitleSliderWidget(
-          label: '柱圆角 (px)',
-          value: _pillarCornerRadius,
-          min: 0,
-          max: 32,
-          onChanged: (v) {
-            borderNotifier.value = border.copyWith(radius: v);
-          },
-        ),
-
-        // 柱边框颜色控制
-        Row(
-          children: [
-            const Text('Light柱边框颜色'),
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: () => updateLightBorderColor(context, border),
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: _pillarBorderColorLight,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color:
-                        Theme.of(context).dividerColor.withValues(alpha: 0.4),
+        ...(() {
+          if (!(border.enabled ?? false)) return <Widget>[];
+          final List<Widget> xs = [];
+          xs.add(TitleSliderWidget(
+            label: '边框宽度 (px)',
+            value: _pillarBorderWidth,
+            min: 0,
+            max: 8,
+            onChanged: (v) {
+              borderNotifier.value = border.copyWith(width: v);
+            },
+          ));
+          xs.add(TitleSliderWidget(
+            label: '柱圆角 (px)',
+            value: _pillarCornerRadius,
+            min: 0,
+            max: 32,
+            onChanged: (v) {
+              borderNotifier.value = border.copyWith(radius: v);
+            },
+          ));
+          xs.add(Row(
+            children: [
+              const Text('Light柱边框颜色'),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => updateLightBorderColor(context, border),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _pillarBorderColorLight,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            TextButton(
-              onPressed: () => updateLightBorderColor(context, border),
-              child: const Text('选择颜色'),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
-        // 柱边框颜色控制
-        Row(
-          children: [
-            const Text('Dark 柱边框颜色'),
-            const SizedBox(width: 8),
-            InkWell(
-              onTap: () => updateDarkBorderColor(context, border),
-              child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: _pillarBorderColorDark,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color:
-                        Theme.of(context).dividerColor.withValues(alpha: 0.4),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: () => updateLightBorderColor(context, border),
+                child: const Text('选择颜色'),
+              ),
+            ],
+          ));
+          xs.add(const SizedBox(height: 8));
+          xs.add(Row(
+            children: [
+              const Text('Dark 柱边框颜色'),
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => updateDarkBorderColor(context, border),
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: _pillarBorderColorDark,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color:
+                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                    ),
                   ),
                 ),
               ),
-            ),
-            const SizedBox(width: 12),
-            TextButton(
-              onPressed: () => updateDarkBorderColor(context, border),
-              child: const Text('选择颜色'),
-            ),
-          ],
-        ),
+              const SizedBox(width: 12),
+              TextButton(
+                onPressed: () => updateDarkBorderColor(context, border),
+                child: const Text('选择颜色'),
+              ),
+            ],
+          ));
+          return xs;
+        })(),
       ],
     );
   }

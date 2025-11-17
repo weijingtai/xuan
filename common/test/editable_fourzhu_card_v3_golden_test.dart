@@ -79,7 +79,7 @@ List<PillarPayload> _buildPillars() {
 /// - [pillars]：用于构建每行值的柱列表（包含 `pillarContent`）。
 ///
 /// 返回：用于渲染网格的 `RowInfoPayload` 列表。
-List<TextRowInfoPayload> _buildRows(List<PillarPayload> pillars) {
+List<TextRowPayload> _buildRows(List<PillarPayload> pillars) {
   // 构造每行的 perPillarValues 映射（键为 pillarContent.id）。
   final stemValues = <String, String>{};
   final branchValues = <String, String>{};
@@ -100,18 +100,18 @@ List<TextRowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 
   return [
     const ColumnHeaderRowPayload(gender: Gender.male),
-    TextRowInfoPayload(
+    TextRowPayload(
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
         perPillarValues: stemValues),
-    TextRowInfoPayload(
+    TextRowPayload(
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
         perPillarValues: branchValues),
-    const TextRowInfoPayload(rowType: RowType.separator, rowLabel: '分隔符'),
-    TextRowInfoPayload(
+    const TextRowPayload(rowType: RowType.separator, rowLabel: '分隔符'),
+    TextRowPayload(
         rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
-    TextRowInfoPayload(
+    TextRowPayload(
         rowType: RowType.kongWang,
         rowLabel: '空亡',
         perPillarValues: kongWangValues),
@@ -139,13 +139,13 @@ List<TextRowInfoPayload> _buildRows(List<PillarPayload> pillars) {
 Future<void> _pumpCard(
   WidgetTester tester, {
   required List<PillarPayload> pillars,
-  required List<TextRowInfoPayload> rows,
+  required List<TextRowPayload> rows,
   Size size = const Size(420, 280),
 }) async {
   // 设定固定画布尺寸，避免设备不同导致快照不一致。
   await tester.binding.setSurfaceSize(size);
   final pillarsNotifier = ValueNotifier<List<PillarPayload>>(pillars);
-  final rowsNotifier = ValueNotifier<List<TextRowInfoPayload>>(rows);
+  final rowsNotifier = ValueNotifier<List<TextRowPayload>>(rows);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
 
   await tester.pumpWidget(

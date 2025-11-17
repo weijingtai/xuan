@@ -17,7 +17,7 @@ void main() {
     });
 
     test('payload.rowHeight 显式覆盖优先', () {
-      final payload = TextRowInfoPayload(rowType: RowType.naYin, rowHeight: 40);
+      final payload = TextRowPayload(rowType: RowType.naYin, rowHeight: 40);
       final model = CardLayoutModel(dividerHeight: 8);
       final h = model.resolveRowHeight(RowType.naYin,
           payload: payload, defaultCellHeight: 28);
@@ -25,8 +25,7 @@ void main() {
     });
 
     test('表头行返回默认 header（由 defaultCellHeight 传入）', () {
-      final payload =
-          const TextRowInfoPayload(rowType: RowType.columnHeaderRow);
+      final payload = const TextRowPayload(rowType: RowType.columnHeaderRow);
       final model = CardLayoutModel();
       final h = model.resolveRowHeight(RowType.columnHeaderRow,
           payload: payload, defaultCellHeight: 24);

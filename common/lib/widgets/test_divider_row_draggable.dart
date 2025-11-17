@@ -18,14 +18,14 @@ class TestDividerRowDraggable extends StatelessWidget {
   /// - Widget：可拖拽的 Chip，用于向卡片投递 RowInfoPayload。
   @override
   Widget build(BuildContext context) {
-    var payload = TextRowInfoPayload(
+    var payload = TextRowPayload(
       config: TextStyleConfig.defaultConfig,
       // 在 V3 中，当提供 rowLabel 时，rowType 仅作占位，不参与具体渲染逻辑。
       rowType: RowType.naYin,
       rowLabel: '行分割符',
     );
 
-    return Draggable<TextRowInfoPayload>(
+    return Draggable<TextRowPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,

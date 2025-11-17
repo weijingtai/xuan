@@ -1,10 +1,15 @@
+import 'package:common/enums.dart';
 import 'package:common/models/text_style_config.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:json_annotation/json_annotation.dart';
 import '../enums/layout_template_enums.dart';
 import '../enums/enum_gender.dart';
 import 'pillar_styles.dart';
 import 'pillar_content.dart';
 import 'row_strategy.dart';
+import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
+part 'drag_payloads.g.dart';
 
 /// Payload representing a draggable title item for either columns or rows.
 /// Used when the UI allows reordering titles directly without dragging full cells.
@@ -12,62 +17,53 @@ import 'row_strategy.dart';
 ///
 /// 语义：作为“标题行”的拖拽载荷，但继承 `RowInfoPayload`，以便与现有行插入/重排逻辑对齐。
 /// 注意：该载荷仅用于标题行的排序，不代表插入新的数据行。
-class TitleRowPayload extends TextRowInfoPayload {
-  /// Creates a title row payload for drag interactions.
-  ///
-  /// Parameters:
-  /// - [rowType]: The associated `RowType` of the title row（如天干/地支）。
-  /// - [titleLabel]: Optional display label for the title row（如"天干"）。
+@JsonSerializable()
+class TitleRowPayload extends TextRowPayload {
   TitleRowPayload({
-    required RowType rowType,
-    String? titleLabel,
+    required String uuid,
   }) : super(
-          rowType: rowType,
-          rowLabel: titleLabel,
-          padding: null,
-          config: TextStyleConfig(
-            colorMapperDataModel: ColorMapperDataModel(
-              pureLightMapper: {
-                "乾造": Colors.black87,
-                "坤造": Colors.black87,
-              },
-              colorfulLightMapper: {
-                "乾造": Colors.black87,
-                "坤造": Colors.black87,
-              },
-              pureDarkMapper: {
-                "乾造": Colors.white,
-                "坤造": Colors.white,
-              },
-              colorfulDarkMapper: {
-                "乾造": Colors.white,
-                "坤造": Colors.white,
-              },
-            ),
-            textShadowDataModel: TextShadowDataModel(),
-            fontStyleDataModel: FontStyleDataModel(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              fontFamily: 'NotoSansSC',
-            ),
-          ),
+          rowType: RowType.columnHeaderRow,
+          rowLabel: RowType.columnHeaderRow.name,
+          titleInCell: false,
+          uuid: uuid,
         );
+  factory TitleRowPayload.fromJson(Map<String, dynamic> json) =>
+      _$TitleRowPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$TitleRowPayloadToJson(this);
+  @override
+  TextRowPayload copyWith(
+      {String? uuid, RowType? rowType, String? rowLabel, bool? titleInCell}) {
+    return super.copyWith(
+        uuid: uuid,
+        rowType: rowType,
+        rowLabel: rowLabel,
+        titleInCell: titleInCell);
+  }
 }
 
 /// Title column payload: a special pillar payload used when dragging column titles.
 ///
 /// 语义：作为“标题列”的拖拽载荷，但继承 `PillarPayload`，以便与现有列插入/重排逻辑对齐。
 /// 注意：该载荷仅用于标题列的排序，不代表插入新的数据列。
+@JsonSerializable()
 class TitleColumnPayload extends PillarPayload {
-  /// Creates a title column payload for drag interactions.
-  ///
-  /// Parameters:
-  /// - [pillarType]: The associated `PillarType` of the title column（如年/月/日/时）。
-  /// - [titleLabel]: Optional display label for the title column（如“年”）。
-  const TitleColumnPayload({
-    required PillarType pillarType,
-    String? titleLabel,
-  }) : super(pillarType: pillarType, pillarLabel: titleLabel);
+  TitleColumnPayload({
+    required super.uuid,
+  }) : super(
+            pillarType: PillarType.rowTitleColumn,
+            pillarLabel: PillarType.rowTitleColumn.name);
+  factory TitleColumnPayload.fromJson(Map<String, dynamic> json) =>
+      _$TitleColumnPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$TitleColumnPayloadToJson(this);
+  @override
+  PillarPayload copyWith(
+      {String? uuid,
+      PillarType? pillarType,
+      String? pillarLabel,
+      TextStyleConfig? textStyleConfig}) {
+    return super
+        .copyWith(uuid: uuid, pillarType: pillarType, pillarLabel: pillarLabel);
+  }
 }
 
 /// Row title column payload: represents the special column containing row titles.
@@ -77,18 +73,26 @@ class TitleColumnPayload extends PillarPayload {
 /// - 每个单元格的内容不同（根据行类型显示不同的标题）
 /// - 可以与普通柱（年月日时）互换位置
 /// - 左上角单元格显示性别标识（乾造/坤造）
+@JsonSerializable()
 class RowTitleColumnPayload extends PillarPayload {
-  /// Creates a row title column payload.
-  ///
-  /// Parameters:
-  /// - [width]: Optional custom width for the row title column.
   const RowTitleColumnPayload({
-    double? width,
+    required super.uuid,
   }) : super(
           pillarType: PillarType.rowTitleColumn,
           pillarLabel: '行标题',
-          columnWidth: width,
         );
+  factory RowTitleColumnPayload.fromJson(Map<String, dynamic> json) =>
+      _$RowTitleColumnPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$RowTitleColumnPayloadToJson(this);
+  @override
+  PillarPayload copyWith(
+      {String? uuid,
+      PillarType? pillarType,
+      String? pillarLabel,
+      TextStyleConfig? textStyleConfig}) {
+    return super
+        .copyWith(uuid: uuid, pillarType: pillarType, pillarLabel: pillarLabel);
+  }
 }
 
 /// Column header row payload: represents the special row containing column titles and gender.
@@ -97,112 +101,100 @@ class RowTitleColumnPayload extends PillarPayload {
 /// 特点：
 /// - 每个单元格的内容不同（左上角是性别，其他是列标题）
 /// - 可以与普通行（天干/地支/纳音）互换位置
-/// - 性别标识随表头行移动
-class ColumnHeaderRowPayload extends TextRowInfoPayload {
-  /// Creates a column header row payload.
-  ///
-  /// Parameters:
-  /// - [gender]: Gender for the chart (male = 乾造, female = 坤造).
-  /// - [height]: Optional custom height for the header row.
+/// - 性别标识随表头行移动而变化（乾造/坤造）
+@JsonSerializable()
+class ColumnHeaderRowPayload extends TextRowPayload {
   ColumnHeaderRowPayload({
     required this.gender,
-    double? height,
+    required super.uuid,
   }) : super(
-          config: TextStyleConfig(
-            colorMapperDataModel: ColorMapperDataModel(
-              pureLightMapper: {
-                "乾造": Colors.black87,
-                "坤造": Colors.black87,
-              },
-              colorfulLightMapper: {
-                "乾造": Colors.black87,
-                "坤造": Colors.black87,
-              },
-              pureDarkMapper: {
-                "乾造": Colors.white,
-                "坤造": Colors.white,
-              },
-              colorfulDarkMapper: {
-                "乾造": Colors.white,
-                "坤造": Colors.white,
-              },
-            ),
-            textShadowDataModel: TextShadowDataModel(),
-            fontStyleDataModel: FontStyleDataModel(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-              fontFamily: 'NotoSansSC',
-            ),
-          ),
           rowType: RowType.columnHeaderRow,
-          rowLabel: null, // Label will be derived from gender
-          rowHeight: height,
-          padding: null,
+          rowLabel: gender == Gender.male ? '乾造' : '坤造',
+          titleInCell: false,
         );
-
-  /// Gender identifier to display in the left-top corner cell.
   final Gender gender;
-
-  /// Get the gender label text.
   String get genderLabel => gender == Gender.male ? '乾造' : '坤造';
+  factory ColumnHeaderRowPayload.fromJson(Map<String, dynamic> json) =>
+      _$ColumnHeaderRowPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$ColumnHeaderRowPayloadToJson(this);
+  @override
+  TextRowPayload copyWith(
+      {String? uuid, RowType? rowType, String? rowLabel, bool? titleInCell}) {
+    return super.copyWith(
+        uuid: uuid,
+        rowType: rowType,
+        rowLabel: rowLabel,
+        titleInCell: titleInCell);
+  }
 }
 
-/// Payload for dragging a pillar (column) into a card.
-class PillarPayload {
-  const PillarPayload({
-    required this.pillarType,
-    this.pillarLabel,
-    this.perRowValues = const {},
-    this.columnWidth,
-    this.columnMargin,
-    this.columnPadding,
-    this.columnBorderWidth,
-    this.placeholderStyle,
-    this.textAlign,
-    this.orderIndex,
-    this.pillarContent,
+@JsonSerializable()
+class CardPayload extends Equatable {
+  List<String> pillarOrderUuid;
+  List<String> rowOrderUuid;
+  Map<String, RowPayload> rowMap;
+  Map<String, PillarPayload> pillarMap;
+
+  Gender gender;
+  CardPayload({
+    required this.gender,
+    required this.pillarMap,
+    required this.pillarOrderUuid,
+    required this.rowMap,
+    required this.rowOrderUuid,
+    // required this.headerRowPayload,
+    // required this.displayHeaderRow,
+    // required this.displaRowTitleColumn,
+    // required this.rowComputationStrategyMap,
   });
+  factory CardPayload.fromJson(Map<String, dynamic> json) =>
+      _$CardPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$CardPayloadToJson(this);
+
+  @override
+  List<Object?> get props => [
+        pillarMap,
+        pillarOrderUuid,
+        rowOrderUuid,
+        gender,
+      ];
+
+  copyWith({
+    Map<String, PillarPayload>? pillarMap,
+    Map<String, RowPayload>? rowMap,
+    List<String>? pillarOrderUuid,
+    List<String>? rowOrderUuid,
+    Gender? gender,
+  }) {
+    return CardPayload(
+      rowMap: rowMap ?? this.rowMap,
+      pillarMap: pillarMap ?? this.pillarMap,
+      pillarOrderUuid: pillarOrderUuid ?? this.pillarOrderUuid,
+      rowOrderUuid: rowOrderUuid ?? this.rowOrderUuid,
+      gender: gender ?? this.gender,
+    );
+  }
+}
+
+@JsonSerializable()
+
+/// Payload for dragging a pillar (column) into a card.
+class PillarPayload extends Equatable {
+  /// The unique identifier for this payload.
+  final String uuid;
+
+  const PillarPayload(
+      {required this.uuid, required this.pillarType, this.pillarLabel});
 
   /// The type of pillar to insert (e.g., PillarType.luckCycle for 大运).
   final PillarType pillarType;
+  // final PillarContent pillarContent;
 
   /// Optional custom label to display for the inserted pillar.
   final String? pillarLabel;
-
-  /// Optional overrides for each row in this pillar.
-  /// For example: {RowType.heavenlyStem: '乙', RowType.earthlyBranch: '亥'}
-  final Map<RowType, String> perRowValues;
-
-  /// Optional explicit column width for UI rendering during external drag.
-  /// If provided, UI can use this width to size the ghost column.
-  final double? columnWidth;
-
-  /// Optional per-column margin override for UI decoration.
-  /// When provided, this overrides the global `pillarMargin` for this pillar.
-  final EdgeInsets? columnMargin;
-
-  /// Optional per-column padding override for UI decoration.
-  /// When provided, this overrides the global pillar padding for this pillar.
-  final EdgeInsets? columnPadding;
-
-  /// Optional per-column border width override for UI decoration.
-  /// When provided, this overrides the global pillar border width for this pillar.
-  final double? columnBorderWidth;
-
-  /// Optional placeholder style for drag-and-drop feedback.
-  final PillarPlaceholderStyle? placeholderStyle;
-
-  /// Optional text alignment for pillar label/content.
-  final RowTextAlign? textAlign;
-
-  /// Optional UI insertion order within a container.
-  /// When provided, the UI may use this value to place the pillar.
-  final int? orderIndex;
-
-  /// Optional embedded core data for this pillar.
-  /// When provided, row strategies and other modules can consume
-  /// `PillarContent` directly without additional lookups.
-  final PillarContent? pillarContent;
+  factory PillarPayload.fromJson(Map<String, dynamic> json) =>
+      _$PillarPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$PillarPayloadToJson(this);
 
   /// Returns a new `PillarPayload` with selected fields updated.
   ///
@@ -218,118 +210,144 @@ class PillarPayload {
   PillarPayload copyWith({
     PillarType? pillarType,
     String? pillarLabel,
-    Map<RowType, String>? perRowValues,
-    double? columnWidth,
-    EdgeInsets? columnMargin,
-    EdgeInsets? columnPadding,
-    double? columnBorderWidth,
-    PillarPlaceholderStyle? placeholderStyle,
-    RowTextAlign? textAlign,
-    int? orderIndex,
-    PillarContent? pillarContent,
+    String? uuid,
+    // PillarContent? pillarContent,
   }) {
     return PillarPayload(
       pillarType: pillarType ?? this.pillarType,
       pillarLabel: pillarLabel ?? this.pillarLabel,
-      perRowValues: perRowValues ?? this.perRowValues,
-      columnWidth: columnWidth ?? this.columnWidth,
-      columnMargin: columnMargin ?? this.columnMargin,
-      columnPadding: columnPadding ?? this.columnPadding,
-      columnBorderWidth: columnBorderWidth ?? this.columnBorderWidth,
-      placeholderStyle: placeholderStyle ?? this.placeholderStyle,
-      textAlign: textAlign ?? this.textAlign,
-      orderIndex: orderIndex ?? this.orderIndex,
+      uuid: uuid ?? this.uuid,
+      // pillarContent: pillarContent ?? this.pillarContent,
+    );
+  }
+
+  @override
+  List<Object?> get props => [pillarType, pillarLabel, uuid];
+}
+
+@JsonSerializable()
+class SeparatorPillarPayload extends PillarPayload {
+  SeparatorPillarPayload({
+    required super.uuid,
+  }) : super(
+          pillarType: PillarType.separator,
+          pillarLabel: '分隔符',
+        );
+  factory SeparatorPillarPayload.fromJson(Map<String, dynamic> json) =>
+      _$SeparatorPillarPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$SeparatorPillarPayloadToJson(this);
+}
+
+@JsonSerializable()
+class ContentPillarPayload extends PillarPayload {
+  ContentPillarPayload({
+    required super.uuid,
+    required super.pillarType,
+    required super.pillarLabel,
+    required this.pillarContent,
+  });
+  final PillarContent pillarContent;
+  factory ContentPillarPayload.fromJson(Map<String, dynamic> json) =>
+      _$ContentPillarPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$ContentPillarPayloadToJson(this);
+
+  copyWith({
+    PillarType? pillarType,
+    String? pillarLabel,
+    String? uuid,
+    PillarContent? pillarContent,
+  }) {
+    return ContentPillarPayload(
+      pillarType: pillarType ?? this.pillarType,
+      pillarLabel: pillarLabel ?? this.pillarLabel,
+      uuid: uuid ?? this.uuid,
       pillarContent: pillarContent ?? this.pillarContent,
     );
   }
 
-  /// Resolves the expected ghost column width for UI.
-  ///
-  /// Parameters:
-  /// - [defaultWidth]: Current unified pillar width used by the card。
-  /// - [minWidth]: Minimum allowed width（默认 40）。
-  /// - [maxWidth]: Maximum allowed width（默认 160）。
-  ///
-  /// Returns: A `double` representing the width to apply.
-  double resolveWidth({
-    required double defaultWidth,
-    double minWidth = 40.0,
-    double maxWidth = 160.0,
-  }) {
-    final w = columnWidth ?? defaultWidth;
-    if (w.isNaN || w.isInfinite) return defaultWidth;
-    return w.clamp(minWidth, maxWidth);
-  }
+  @override
+  List<Object?> get props => [pillarType, pillarLabel, uuid, pillarContent];
+}
 
-  /// Factory helper: create a Luck Cycle pillar payload with common row values.
-  static PillarPayload luckCycle({
-    String label = '大运',
-    Map<RowType, String> perRowValues = const {},
-    double? columnWidth,
-    PillarPlaceholderStyle? placeholderStyle,
-    RowTextAlign? textAlign,
-    int? orderIndex,
-    PillarContent? pillarContent,
+@JsonSerializable()
+class RowPayload extends Equatable {
+  final RowType rowType;
+  final String uuid;
+  RowPayload({
+    required this.rowType,
+    required this.uuid,
+  });
+  factory RowPayload.fromJson(Map<String, dynamic> json) =>
+      _$RowPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$RowPayloadToJson(this);
+  @override
+  List<Object?> get props => [rowType, uuid];
+}
+
+@JsonSerializable()
+class RowSeparatorPayload extends RowPayload {
+  RowSeparatorPayload({
+    required super.uuid,
+  }) : super(rowType: RowType.separator);
+  factory RowSeparatorPayload.fromJson(Map<String, dynamic> json) =>
+      _$RowSeparatorPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$RowSeparatorPayloadToJson(this);
+  @override
+  List<Object?> get props => [rowType, uuid];
+  copyWith({
+    RowType? rowType,
+    String? uuid,
   }) {
-    return PillarPayload(
-      pillarType: PillarType.luckCycle,
-      pillarLabel: label,
-      perRowValues: perRowValues,
-      columnWidth: columnWidth,
-      placeholderStyle: placeholderStyle,
-      textAlign: textAlign,
-      orderIndex: orderIndex,
-      pillarContent: pillarContent,
+    return RowSeparatorPayload(
+      uuid: uuid ?? this.uuid,
     );
   }
 }
 
 /// Payload for dragging a row info into a card (to insert a new row).
-class TextRowInfoPayload {
-  const TextRowInfoPayload({
-    required this.rowType,
-    required this.config,
+@JsonSerializable()
+class TextRowPayload extends RowPayload {
+  TextRowPayload({
+    required super.rowType,
+    required super.uuid,
+    required this.titleInCell,
     this.rowLabel,
-    this.perPillarValues = const {},
-    this.rowHeight,
-    this.textAlign,
-    this.strategy,
-    this.padding,
-    this.marginVertical,
-    this.marginHorizontal,
-    this.paddingHorizontal,
   });
+  factory TextRowPayload.fromJson(Map<String, dynamic> json) =>
+      _$TextRowPayloadFromJson(json);
+  Map<String, dynamic> toJson() => _$TextRowPayloadToJson(this);
 
-  final TextStyleConfig? config;
+  // final TextStyleConfig? config;
 
   /// The type of row to insert (e.g., RowType.kongWang for 空亡).
-  final RowType rowType;
+  // final RowType rowType;
 
   /// Optional custom label to display for the inserted row.
   final String? rowLabel;
+  final bool titleInCell;
 
   /// Optional overrides for each pillar in this row.
   /// Keys are pillar unique `id`, e.g. {'year#1': '戌亥', 'month#1': '戌亥'}.
   /// Using `id` differentiates repeated pillar types (e.g., multiple luck cycles).
-  final Map<String, String> perPillarValues;
+  // final Map<String, String> perPillarValues;
 
   /// Optional explicit row height to use for UI rendering.
   /// If provided, UI should prefer this value over implicit heuristics.
-  final double? rowHeight;
+  // final double? rowHeight;
 
   /// Optional text alignment for row title/content in UI.
-  final RowTextAlign? textAlign;
+  // final RowTextAlign? textAlign;
 
   /// Optional embedded computation strategy producing or owning this row.
   /// Embedding allows late recomputation or context-aware updates by the UI.
-  final RowComputationStrategy? strategy;
+  // final RowComputationStrategy? strategy;
 
   /// Optional vertical padding (top and bottom) for this row.
   /// When provided, the UI should apply this padding to the row content.
-  final double? padding;
-  final double? marginVertical;
-  final double? marginHorizontal;
-  final double? paddingHorizontal;
+  // final double? padding;
+  // final double? marginVertical;
+  // final double? marginHorizontal;
+  // final double? paddingHorizontal;
 
   /// Creates a standard 空亡 row payload.
   ///
@@ -369,60 +387,18 @@ class TextRowInfoPayload {
   /// - [padding]: Vertical padding override; set `null` to clear.
   ///
   /// Returns: A copied payload reflecting the specified updates.
-  TextRowInfoPayload copyWith({
-    TextStyleConfig? config,
+  TextRowPayload copyWith({
+    String? uuid,
     RowType? rowType,
     String? rowLabel,
-    Map<String, String>? perPillarValues,
-    double? rowHeight,
-    RowTextAlign? textAlign,
-    RowComputationStrategy? strategy,
-    double? padding,
-    double? marginVertical,
-    double? marginHorizontal,
-    double? paddingHorizontal,
+    bool? titleInCell,
   }) {
-    return TextRowInfoPayload(
-      config: config ?? this.config,
+    return TextRowPayload(
+      uuid: uuid ?? this.uuid,
       rowType: rowType ?? this.rowType,
       rowLabel: rowLabel ?? this.rowLabel,
-      perPillarValues: perPillarValues ?? this.perPillarValues,
-      rowHeight: rowHeight ?? this.rowHeight,
-      textAlign: textAlign ?? this.textAlign,
-      strategy: strategy ?? this.strategy,
-      padding: padding ?? this.padding,
-      marginVertical: marginVertical ?? this.marginVertical,
-      marginHorizontal: marginHorizontal ?? this.marginHorizontal,
-      paddingHorizontal: paddingHorizontal ?? this.paddingHorizontal,
+      titleInCell: titleInCell ?? this.titleInCell,
     );
-  }
-
-  /// Resolve display value for a pillar (prefer overrides; fall back to strategy).
-  ///
-  /// Parameters:
-  /// - [pillar]: Target `PillarContent`.
-  /// - [input]: Computation context to use when no override is present.
-  ///
-  /// Returns: The text value; returns `null` if no override and no strategy.
-  String? valueFor(PillarContent pillar, RowComputationInput input) {
-    final override = perPillarValues[pillar.id];
-    if (override != null) return override;
-    final s = strategy;
-    if (s == null) return null;
-    final result = s.compute(input);
-    return result.perPillarValues[pillar.id];
-  }
-
-  /// Compute per-pillar values for this row across all pillars.
-  /// Overrides win; strategy fills missing entries.
-  Map<String, String> computeValues(RowComputationInput input) {
-    final s = strategy;
-    if (s == null) return perPillarValues;
-    final result = s.compute(input);
-    return {
-      ...result.perPillarValues,
-      ...perPillarValues,
-    };
   }
 
   /// Resolves the expected UI height for this row.
@@ -439,7 +415,7 @@ class TextRowInfoPayload {
     double dividerHeight = 8,
     double headerHeight = 24, // 新增：表头行默认高度
   }) {
-    if (rowHeight != null) return rowHeight!;
+    // if (rowHeight != null) return rowHeight!;
     // 特殊处理：表头行
     if (rowType == RowType.columnHeaderRow) {
       return headerHeight;

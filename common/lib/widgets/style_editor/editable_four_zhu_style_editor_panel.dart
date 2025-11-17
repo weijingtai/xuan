@@ -268,18 +268,7 @@ class _EditableFourZhuStyleEditorPanelState
                 onChanged: (v) {
                   _globalFontFamily = (v ?? '').trim();
                   _emit(_theme.copyWith(
-                    typography: TypographySection(
-                      globalFontFamily:
-                          _globalFontFamily.isEmpty ? null : _globalFontFamily,
-                      globalFontSize: _globalFontSize,
-                      globalFontColor: _theme.typography?.globalFontColor,
-                      preferredFamilies: _preferredFamiliesText
-                          .split(',')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList(),
-                    ),
-                  ));
+                      typography: TypographySection.defaultTypographySection));
                 },
               ),
               const widgets.SizedBox(height: 8),
@@ -290,19 +279,10 @@ class _EditableFourZhuStyleEditorPanelState
                 max: 72,
                 onChanged: (v) {
                   _globalFontSize = v;
-                  _emit(_theme.copyWith(
-                    typography: TypographySection(
-                      globalFontFamily:
-                          _globalFontFamily.isEmpty ? null : _globalFontFamily,
-                      globalFontSize: v,
-                      globalFontColor: _theme.typography?.globalFontColor,
-                      preferredFamilies: _preferredFamiliesText
-                          .split(',')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList(),
-                    ),
-                  ));
+                  _emit(
+                    _theme.copyWith(
+                        typography: TypographySection.defaultTypographySection),
+                  );
                 },
               ),
               const widgets.SizedBox(height: 8),
@@ -315,18 +295,7 @@ class _EditableFourZhuStyleEditorPanelState
                 onChanged: (v) {
                   _preferredFamiliesText = v;
                   _emit(_theme.copyWith(
-                    typography: TypographySection(
-                      globalFontFamily:
-                          _globalFontFamily.isEmpty ? null : _globalFontFamily,
-                      globalFontSize: _globalFontSize,
-                      globalFontColor: _theme.typography?.globalFontColor,
-                      preferredFamilies: v
-                          .split(',')
-                          .map((e) => e.trim())
-                          .where((e) => e.isNotEmpty)
-                          .toList(),
-                    ),
-                  ));
+                      typography: TypographySection.defaultTypographySection));
                 },
               ),
             ],

@@ -6,6 +6,29 @@ part of 'editable_four_zhu_card_theme.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+EditableFourZhuCardTheme _$EditableFourZhuCardThemeFromJson(
+        Map<String, dynamic> json) =>
+    EditableFourZhuCardTheme(
+      displayHeaderRow: json['displayHeaderRow'] as bool,
+      displayRowTitleColumn: json['displayRowTitleColumn'] as bool,
+      card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),
+      pillar: PillarSection.fromJson(json['pillar'] as Map<String, dynamic>),
+      cell: CellSection.fromJson(json['cell'] as Map<String, dynamic>),
+      typography: TypographySection.fromJson(
+          json['typography'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$EditableFourZhuCardThemeToJson(
+        EditableFourZhuCardTheme instance) =>
+    <String, dynamic>{
+      'displayHeaderRow': instance.displayHeaderRow,
+      'displayRowTitleColumn': instance.displayRowTitleColumn,
+      'card': instance.card,
+      'pillar': instance.pillar,
+      'cell': instance.cell,
+      'typography': instance.typography,
+    };
+
 PillarSection _$PillarSectionFromJson(Map<String, dynamic> json) =>
     PillarSection(
       global:
@@ -27,17 +50,99 @@ const _$PillarTypeEnumMap = {
   PillarType.year: 'year',
   PillarType.month: 'month',
   PillarType.day: 'day',
-  PillarType.hour: 'hour',
+  PillarType.hour: 'time',
   PillarType.ke: 'ke',
-  PillarType.taiMeta: 'taiMeta',
-  PillarType.taiMonth: 'taiMonth',
-  PillarType.taiDay: 'taiDay',
-  PillarType.lifeHouse: 'lifeHouse',
-  PillarType.luckCycle: 'luckCycle',
+  PillarType.taiMeta: 'tai_meta',
+  PillarType.taiMonth: 'tai_month',
+  PillarType.taiDay: 'tai_day',
+  PillarType.bodyHouse: 'body_house',
+  PillarType.lifeHouse: '命宫',
+  PillarType.luckCycle: 'luck_cycle',
   PillarType.annual: 'annual',
   PillarType.monthly: 'monthly',
   PillarType.daily: 'daily',
   PillarType.hourly: 'hourly',
+  PillarType.kely: 'kely',
   PillarType.separator: 'separator',
-  PillarType.rowTitleColumn: 'rowTitleColumn',
+  PillarType.rowTitleColumn: 'row_title_column',
 };
+
+CellSection _$CellSectionFromJson(Map<String, dynamic> json) => CellSection(
+      pillarTitleCellConfig: CellStyleConfig.fromJson(
+          json['pillarTitleCellConfig'] as Map<String, dynamic>),
+      rowTitleCellConfig: CellStyleConfig.fromJson(
+          json['rowTitleCellConfig'] as Map<String, dynamic>),
+      defaultCellConfig: CellStyleConfig.fromJson(
+          json['defaultCellConfig'] as Map<String, dynamic>),
+      rowTypeCellConfigMapper:
+          (json['rowTypeCellConfigMapper'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry($enumDecode(_$RowTypeEnumMap, k),
+            CellStyleConfig.fromJson(e as Map<String, dynamic>)),
+      ),
+    );
+
+Map<String, dynamic> _$CellSectionToJson(CellSection instance) =>
+    <String, dynamic>{
+      'pillarTitleCellConfig': instance.pillarTitleCellConfig,
+      'rowTitleCellConfig': instance.rowTitleCellConfig,
+      'defaultCellConfig': instance.defaultCellConfig,
+      'rowTypeCellConfigMapper': instance.rowTypeCellConfigMapper
+          .map((k, e) => MapEntry(_$RowTypeEnumMap[k]!, e)),
+    };
+
+const _$RowTypeEnumMap = {
+  RowType.columnHeaderRow: 'column_header_row',
+  RowType.heavenlyStem: 'heavenly_stem_row',
+  RowType.earthlyBranch: 'earthly_branch_row',
+  RowType.tenGod: 'ten_god_row',
+  RowType.naYin: 'na_yin_row',
+  RowType.kongWang: 'kong_wang_row',
+  RowType.xunShou: 'xun_shou_row',
+  RowType.hiddenStems: 'hidden_stems_row',
+  RowType.hiddenStemsTenGod: 'hidden_stems_ten_god_row',
+  RowType.hiddenStemsPrimary: 'hidden_stems_primary_row',
+  RowType.hiddenStemsSecondary: 'hidden_stems_secondary_row',
+  RowType.hiddenStemsTertiary: 'hidden_stems_tertiary_row',
+  RowType.hiddenStemsPrimaryGods: 'hidden_stems_primary_gods_row',
+  RowType.hiddenStemsSecondaryGods: 'hidden_stems_secondary_gods_row',
+  RowType.hiddenStemsTertiaryGods: 'hidden_stems_tertiary_gods_row',
+  RowType.starYun: 'star_yun_row',
+  RowType.selfSiting: 'self_siting_row',
+  RowType.separator: 'separator_row',
+};
+
+TypographySection _$TypographySectionFromJson(Map<String, dynamic> json) =>
+    TypographySection(
+      globalContent: TextStyleConfig.fromJson(
+          json['globalContent'] as Map<String, dynamic>),
+      globalTitle:
+          TextStyleConfig.fromJson(json['globalTitle'] as Map<String, dynamic>),
+      globalCellTitle: TextStyleConfig.fromJson(
+          json['globalCellTitle'] as Map<String, dynamic>),
+      rowTitle:
+          TextStyleConfig.fromJson(json['rowTitle'] as Map<String, dynamic>),
+      pillarTitle:
+          TextStyleConfig.fromJson(json['pillarTitle'] as Map<String, dynamic>),
+      cellContentMapper:
+          (json['cellContentMapper'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry($enumDecode(_$RowTypeEnumMap, k),
+            TextStyleConfig.fromJson(e as Map<String, dynamic>)),
+      ),
+      cellTitleMapper: (json['cellTitleMapper'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry($enumDecode(_$RowTypeEnumMap, k),
+            TextStyleConfig.fromJson(e as Map<String, dynamic>)),
+      ),
+    );
+
+Map<String, dynamic> _$TypographySectionToJson(TypographySection instance) =>
+    <String, dynamic>{
+      'globalContent': instance.globalContent,
+      'globalTitle': instance.globalTitle,
+      'rowTitle': instance.rowTitle,
+      'pillarTitle': instance.pillarTitle,
+      'globalCellTitle': instance.globalCellTitle,
+      'cellContentMapper': instance.cellContentMapper
+          .map((k, e) => MapEntry(_$RowTypeEnumMap[k]!, e)),
+      'cellTitleMapper': instance.cellTitleMapper
+          .map((k, e) => MapEntry(_$RowTypeEnumMap[k]!, e)),
+    };
