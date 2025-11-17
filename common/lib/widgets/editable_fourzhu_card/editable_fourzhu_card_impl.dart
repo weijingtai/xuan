@@ -31,6 +31,9 @@ import 'package:common/widgets/four_zhu/card_layout_model.dart'
 import 'drag_controller.dart'; // 拖拽节流控制器
 import 'models/pillar_style_config.dart';
 import 'package:common/widgets/editable_fourzhu_card/cells/single_text_cell.dart';
+import 'size_calculator/calculator.dart';
+import 'size_calculator/metrics.dart';
+import 'models/card_style_config.dart';
 
 // Removed palette-based coloring; group font color applies when colorfulMode is enabled.
 // Sentinel RGB used to indicate shadow follows the character color
@@ -373,6 +376,54 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return dims.top + dims.bottom;
   }
 
+  double _resolveUniformCardBorderWidth() {
+    final border = widget.cardDecoration?.border;
+    if (border == null) return 0.0;
+    final dimsGeo = border.dimensions;
+    final dims = dimsGeo is EdgeInsets
+        ? dimsGeo
+        : dimsGeo.resolve(Directionality.of(context));
+    final values = [dims.left, dims.right, dims.top, dims.bottom];
+    double maxW = 0.0;
+    for (final v in values) {
+      if (v > maxW) maxW = v;
+    }
+    return maxW;
+  }
+
+  CardMetricsSnapshot _computeMetricsSnapshot() {
+    final pillars = widget.pillarsNotifier.value;
+    final rows = widget.rowListNotifier.value;
+    final theme = EditableFourZhuCardTheme(
+      displayHeaderRow:
+          rows.any((r) => r.rowType == RowType.columnHeaderRow),
+      displayRowTitleColumn:
+          pillars.any((p) => p.pillarType == PillarType.rowTitleColumn),
+      card: CardStyleConfig.defaultCardStyleConfig,
+      pillar: _pillarSectionNotifier.value,
+      cell: _cellSectionNotifier.value,
+      typography: _typographySectionNotifier.value,
+    );
+    final pillarOrder = pillars.map((e) => e.uuid).toList();
+    final rowOrder = rows.map((e) => e.uuid).toList();
+    final pillarMap = {for (final p in pillars) p.uuid: p};
+    final rowMap = {for (final r in rows) r.uuid: r};
+    final payload = CardPayload(
+      gender: widget.gender,
+      pillarMap: pillarMap,
+      pillarOrderUuid: pillarOrder,
+      rowMap: rowMap,
+      rowOrderUuid: rowOrder,
+    );
+    final calc = CardMetricsCalculator(
+      theme: theme,
+      payload: payload,
+      defaultPillarWidth: pillarWidth,
+      lineHeightFactor: 1.4,
+    );
+    return calc.compute();
+  }
+
   // 将逻辑尺寸向下对齐到物理像素，减少由于子像素导致的 RenderFlex 溢出告警
   double _pixelFloor(double logical) {
     final double dpr = ui.window.devicePixelRatio;
@@ -492,7 +543,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final payloads = widget.pillarsNotifier.value;
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
-      // 特殊处理：行标题列
       if (p.pillarType == PillarType.rowTitleColumn) {
         final override = _columnWidthOverrides[i];
         if (override != null && override.isFinite && !override.isNaN) {
@@ -501,6 +551,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         }
         return _pixelFloor((p.columnWidth ?? rowTitleWidth) +
             _pillarDecorationWidthAtIndex(i));
+      }
+      final snap = _computeMetricsSnapshot();
+      final pm = snap.pillars[p.uuid];
+      if (pm != null) {
+        final override = _columnWidthOverrides[i];
+        if (override != null && override.isFinite && !override.isNaN) {
+          return _pixelFloor(override.clamp(_minPillarWidth, _maxPillarWidth) +
+              pm.decorationWidth);
+        }
+        return _pixelFloor(pm.contentWidth + pm.decorationWidth);
       }
     }
 
@@ -514,21 +574,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       return _pixelFloor(pillarWidth + _pillarDecorationWidthAtIndex(i));
     }
 
-    // 检查列宽度覆盖
     final override = _columnWidthOverrides[i];
     if (override != null && override.isFinite && !override.isNaN) {
-      return _pixelFloor(override.clamp(_minPillarWidth, _maxPillarWidth) +
-          _pillarDecorationWidthAtIndex(i));
+      return _pixelFloor(
+          override.clamp(_minPillarWidth, _maxPillarWidth) +
+              _pillarDecorationWidthAtIndex(i));
     }
-    // 当未设置显式覆盖时，优先依据对应列的载荷信息解析列宽
-    // 以保证宽度来源统一由 payload 控制（如拖入外部列或预设列宽）。
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
-      return _pixelFloor(p.resolveWidth(
-            defaultWidth: pillarWidth,
-            minWidth: _minPillarWidth,
-            maxWidth: _maxPillarWidth,
-          ) +
+      return _pixelFloor((p.columnWidth ?? pillarWidth) +
           _pillarDecorationWidthAtIndex(i));
     }
     return _pixelFloor(pillarWidth + _pillarDecorationWidthAtIndex(i));
@@ -3886,21 +3940,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // --- UI helpers ---
   double _rowHeightByName(String name) {
-    // 优先通过对应行的 payload 解析高度（行类型/label 有歧义时以 payload 行为为准）
     final payload = _findRowPayloadByName(name);
     if (payload != null) {
+      final snap = _computeMetricsSnapshot();
+      final rm = snap.rows[payload.uuid];
+      if (rm != null) {
+        final base = rm.contentHeight + rm.decorationHeight;
+        final rowPadding = payload.padding ?? 0.0;
+        return base + (rowPadding * 2);
+      }
       final baseHeight = payload.resolveHeight(
         heavenlyAndEarthlyHeight: ganZhiCellSize.height,
         otherHeight: otherCellHeight,
         dividerHeight: _rowDividerHeightEffective,
-        headerHeight: columnTitleHeight, // 添加表头行高度参数
+        headerHeight: columnTitleHeight,
       );
-      // 如果行有 padding 配置，则加上上下内边距（padding * 2）
       final rowPadding = payload.padding ?? 0.0;
-      // 外边距由外层 Padding 承载，这里仅返回内容高度 + 内边距
       return baseHeight + (rowPadding * 2);
     }
-    // 兜底：不再使用中文标题字符串分支，统一返回通用行高
     return otherCellHeight;
   }
 
@@ -4356,56 +4413,52 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   Size _computeSizeWithDecorationsV2() {
-    final pillarSection = _pillarSectionNotifier.value;
-    final baseSize = _layoutNotifier.value.computeSize(_measurementContext);
-    // 1. 首先获取当前一过有多少个pillar
-    final payloads = widget.pillarsNotifier.value;
-    // 2. 根据pillar 的 PillarType 以及 pillarSection 获取对应pillar的DecorationWith 与 DecorationHeight
-    // 2.1.1.
-    final double maxDecorationHeight = payloads
-        .map((p) => pillarSection.getDecorationHeightBy(p.pillarType))
-        .fold(0.0, (a, b) => a + b);
-    // for (int i = 0; i < payloads.length; i++) {
-    //   final decorationWith = pillarSection.getBy(payloads[i].pillarType);
-    //   print("");
-    //   print(
-    //       '------ ${payloads[i].pillarType} ${pillarSection.getDecorationWidthBy(payloads[i].pillarType)}, padding:${decorationWith.padding}, margin:${decorationWith.margin}, borderWidth:${decorationWith.border?.width ?? 0.0}');
-    //   print("");
-    // }
-
-    // final double cellHeight = payloads
-    //     .map((p) => p.)
-    //     .fold(0.0, (a, b) => a + b);
-    // 2.2.1.
-    final double totalDecorationWidth = payloads
-        .map((p) => widget.pillarSection.getDecorationWidthBy(p.pillarType))
-        .fold(0.0, (a, b) => a + b);
-
-    // 2.2.2. 由于 getDecorationHeightBy 提供的只有padding margin borderWidth的总和
-    //      并没有提供每部Cell的合理宽度，单前使用payload的columnWidth 作为开发临时使用
-    final double totalPillarBaseWidth = payloads
-        .map((p) => p.columnWidth ?? pillarWidth)
-        .fold(0.0, (a, b) => a + b);
-
-    // 计算所有非分隔列的装饰宽度总和（按列覆盖）
-    // final payloads = widget.pillarsNotifier.value;
-    // double totalDecorationWidth = 0.0;
-    // double maxDecorationHeight = 0.0;
-    // for (int i = 0; i < payloads.length; i++) {
-    // if (!_isSeparatorColumnIndex(i)) {
-    // totalDecorationWidth += _pillarDecorationWidthAtIndex(i);
-    // final h = _pillarDecorationHeightAtIndex(i);
-    // if (h > maxDecorationHeight) maxDecorationHeight = h;
-    // }
-    // }
-    // if (h > maxDecorationHeight) maxDecorationHeight = h;
-
-    // 宽度 = 基础宽度 + 所有列装饰宽度之和
-    // 高度 = 基础高度 + 最大列装饰高度（按列覆盖）
-    return Size(
-      baseSize.width + totalDecorationWidth + _cardBorderHorizontalEff,
-      baseSize.height + maxDecorationHeight + _cardBorderVerticalEff,
+    final pillars = widget.pillarsNotifier.value;
+    final rows = widget.rowListNotifier.value;
+    final theme = EditableFourZhuCardTheme(
+      displayHeaderRow:
+          rows.any((r) => r.rowType == RowType.columnHeaderRow),
+      displayRowTitleColumn:
+          pillars.any((p) => p.pillarType == PillarType.rowTitleColumn),
+      card: CardStyleConfig.defaultCardStyleConfig,
+      pillar: _pillarSectionNotifier.value,
+      cell: _cellSectionNotifier.value,
+      typography: _typographySectionNotifier.value,
     );
+
+    final pillarOrder = pillars.map((e) => e.uuid).toList();
+    final rowOrder = rows.map((e) => e.uuid).toList();
+    final pillarMap = {for (final p in pillars) p.uuid: p};
+    final rowMap = {for (final r in rows) r.uuid: r};
+    final payload = CardPayload(
+      gender: widget.gender,
+      pillarMap: pillarMap,
+      pillarOrderUuid: pillarOrder,
+      rowMap: rowMap,
+      rowOrderUuid: rowOrder,
+    );
+
+    final calc = CardMetricsCalculator(
+      theme: theme,
+      payload: payload,
+      defaultPillarWidth: pillarWidth,
+      lineHeightFactor: 1.4,
+    );
+    final opts = MetricsComputeOptions(
+      includeGripRows: widget.showGripRows,
+      includeGripCols: widget.showGripColumns,
+      showTitleRow: theme.displayHeaderRow,
+      showTitleCol: theme.displayRowTitleColumn,
+      cellShowsTitle: rows.any((r) => r.titleInCell),
+      cardPadding: widget.paddingNotifier.value,
+      cardBorderWidth: _resolveUniformCardBorderWidth(),
+      gripRowHeight: _effectiveDragHandleRowHeight,
+      gripColWidth: _effectiveDragHandleColWidth,
+      columnTitleHeight: columnTitleHeight,
+      rowTitleWidth: rowTitleWidth,
+    );
+    final size = calc.computeFinalSize(opts);
+    return size;
   }
 
   /// 计算包含装饰的 Card 尺寸
