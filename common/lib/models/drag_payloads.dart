@@ -142,10 +142,6 @@ class CardPayload extends Equatable {
     required this.pillarOrderUuid,
     required this.rowMap,
     required this.rowOrderUuid,
-    // required this.headerRowPayload,
-    // required this.displayHeaderRow,
-    // required this.displaRowTitleColumn,
-    // required this.rowComputationStrategyMap,
   });
   factory CardPayload.fromJson(Map<String, dynamic> json) =>
       _$CardPayloadFromJson(json);

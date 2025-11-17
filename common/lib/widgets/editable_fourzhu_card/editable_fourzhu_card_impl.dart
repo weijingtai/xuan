@@ -1319,6 +1319,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildGrid(Size size) {
     final pillars = _effectivePillarsTuples();
     final rows = _currentRowLabels();
+    final metricsSnap = _computeMetricsSnapshot();
     // 检查是否存在行标题列（在方法开头统一定义，避免重复）
     final hasRowTitleColumn = _hasRowTitleColumnInGrid(pillars);
     // 仅在外部柱悬停时，为插入位预留一列的宽度（内部重排不扩展卡片）
@@ -2224,8 +2225,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         if (isRowTitleCol) {
                           if (_isSeparatorRowAtIndex(absRowIdx)) {
                             // 分隔行：显示水平分割线
+                            final contentW = rowTitleWidth;
                             cell = Container(
-                              width: colW,
+                              width: contentW,
                               height: rowSize.height,
                               decoration:
                                   CardDecorators.buildRowSeparatorDecoration(
@@ -2260,8 +2262,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   );
 
                             // 只显示标题，不允许拖拽
+                            final contentW = rowTitleWidth;
                             cell = _cell(
-                              Size(colW, rowSize.height),
+                              Size(contentW, rowSize.height),
                               Center(child: titleWidget),
                               verticalPadding: _getRowPaddingByIndex(absRowIdx),
                               horizontalPadding:
@@ -2375,11 +2378,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               (absRowIdx >= 0 && absRowIdx < rowPayloads.length)
                                   ? rowPayloads[absRowIdx].rowType
                                   : null;
-
+                          final pm = metricsSnap
+                              .pillars[pillarPayloads[i].uuid];
+                          final double contentW = pm?.contentWidth ??
+                              (colW - _pillarDecorationWidthAtIndex(i));
                           cell = _buildPillarsEachCell(
                             pillarType: pillarPayloads[i].pillarType,
                             rowType: rowType,
-                            size: Size(colW, rowSize.height),
+                            size: Size(contentW, rowSize.height),
                             absRowIdx: absRowIdx,
                             rowPayloads: rowPayloads,
                             pillarJiaZi: jz,

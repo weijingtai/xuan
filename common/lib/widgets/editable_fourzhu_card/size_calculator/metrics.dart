@@ -296,6 +296,21 @@ class CardTotals extends Equatable {
   List<Object?> get props => [totalWidth, totalHeight, columnCount, rowCount];
 }
 
+/// 动态文本宽度规格：用于估算单元格内容宽度
+class CellTextSpec {
+  final String rowUuid;
+  final String pillarUuid;
+  final int charCount;
+  final double? fontSize;
+
+  const CellTextSpec({
+    required this.rowUuid,
+    required this.pillarUuid,
+    required this.charCount,
+    this.fontSize,
+  });
+}
+
 class MetricsComputeOptions {
   final bool includeGripRows;
   final bool includeGripCols;
