@@ -53,6 +53,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// V3 卡片数据源：柱/行/内边距。
   late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
   late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
+  late final ValueNotifier<CardPayload> _cardPayloadNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
   final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<bool> _showGripColumnsNotifier =
@@ -74,6 +75,15 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     _pillarsNotifier =
         ValueNotifier<List<PillarPayload>>(_buildPillars(widget.eightChars));
     _rowListNotifier = ValueNotifier<List<TextRowPayload>>(_buildDefaultRows());
+    _cardPayloadNotifier = ValueNotifier<CardPayload>(
+      CardPayload(
+        gender: Gender.male,
+        pillarMap: {for (final p in _pillarsNotifier.value) p.uuid: p},
+        pillarOrderUuid: _pillarsNotifier.value.map((e) => e.uuid).toList(),
+        rowMap: {for (final r in _rowListNotifier.value) r.uuid: r},
+        rowOrderUuid: _rowListNotifier.value.map((e) => e.uuid).toList(),
+      ),
+    );
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
@@ -232,12 +242,12 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       builder: (context, show, child) => EditableFourZhuCardV3(
                         brightnessNotifier: _brightnessNotifier,
                         colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                        pillarsNotifier: _pillarsNotifier,
-                        rowListNotifier: _rowListNotifier,
-                        paddingNotifier: _paddingNotifier,
+                        cardPayloadNotifier: _cardPayloadNotifier,
                         gender: Gender.male,
                         showGripRows: _showGripRowsNotifier.value,
                         showGripColumns: _showGripColumnsNotifier.value,
+                        paddingNotifier: _paddingNotifier,
+                        theme: show,
                         pillarSection: show.pillar,
                         cellSection: show.cell,
                         typographySection: show.typography,

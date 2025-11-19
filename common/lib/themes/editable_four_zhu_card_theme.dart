@@ -12,6 +12,56 @@ import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 
 part 'editable_four_zhu_card_theme.g.dart';
 
+/// EditableCardThemeBuilder
+/// 负责从 EditableFourZhuCardTheme 构建各个 Section 的工具类
+class EditableCardThemeBuilder {
+  /// 构建 PillarSection 实例
+  static PillarSection buildPillarSection(EditableFourZhuCardTheme theme) {
+    return PillarSection(
+      global: theme.pillar.global,
+      mapper: theme.pillar.mapper,
+    );
+  }
+
+  /// 构建 CellSection 实例
+  static CellSection buildCellSection(EditableFourZhuCardTheme theme) {
+    return CellSection(
+      pillarTitleCellConfig: theme.cell.pillarTitleCellConfig,
+      rowTitleCellConfig: theme.cell.rowTitleCellConfig,
+      defaultCellConfig: theme.cell.defaultCellConfig,
+      rowTypeCellConfigMapper: theme.cell.rowTypeCellConfigMapper,
+    );
+  }
+
+  /// 构建 TypographySection 实例
+  static TypographySection buildTypographySection(EditableFourZhuCardTheme theme) {
+    return TypographySection(
+      globalContent: theme.typography.globalContent,
+      globalTitle: theme.typography.globalTitle,
+      globalCellTitle: theme.typography.globalCellTitle,
+      rowTitle: theme.typography.rowTitle,
+      pillarTitle: theme.typography.pillarTitle,
+      cellContentMapper: theme.typography.cellContentMapper,
+      cellTitleMapper: theme.typography.cellTitleMapper,
+    );
+  }
+
+  /// 创建默认主题实例
+  static EditableFourZhuCardTheme createDefaultTheme() {
+    return EditableFourZhuCardTheme(
+      displayHeaderRow: true,
+      displayRowTitleColumn: true,
+      card: CardStyleConfig.defaultCardStyleConfig,
+      pillar: PillarSection(
+        global: PillarStyleConfig.defaultPillarStyleConfig,
+        mapper: {},
+      ),
+      cell: CellSection.defaultCellSection,
+      typography: TypographySection.defaultTypographySection,
+    );
+  }
+}
+
 /// EditableFourZhuCardTheme
 /// Encapsulates styling configuration for EditableFourZhuCard V3.
 /// Provides validation to enforce consensus constraints:

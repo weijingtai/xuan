@@ -5,7 +5,7 @@ import '../models/eight_chars.dart';
 import '../enums/enum_jia_zi.dart';
 import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
-import '../widgets/column_reorderable_four_zhu_card.dart';
+import '../widgets/column_reorderable_four_zhu_card.dart.bak';
 import '../widgets/row_reorderable_four_zhu_card.dart';
 import '../viewmodels/four_zhu_layout_controller.dart';
 import '../palette/card_palette.dart';

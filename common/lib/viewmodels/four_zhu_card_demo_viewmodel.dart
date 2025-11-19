@@ -125,7 +125,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       // 第一列：行标题列（特殊柱）。
       RowTitleColumnPayload(width: 52),
       // 数据柱：年月日时。
-      PillarPayload(
+      ContentPillarPayload(
         pillarType: PillarType.year,
         pillarContent: PillarContent(
           id: 'pillar-year',
@@ -205,6 +205,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       ),
     ]);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
+  
   }
 
   /// 返回当前主题。

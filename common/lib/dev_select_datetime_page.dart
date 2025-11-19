@@ -8,7 +8,7 @@ import 'package:provider/provider.dart';
 import 'models/divination_datetime.dart';
 import 'viewmodels/dev_enter_page_view_model.dart';
 import 'widgets/divination_card_widget.dart';
-import 'widgets/column_reorderable_four_zhu_card.dart';
+import 'widgets/column_reorderable_four_zhu_card.dart.bak';
 import 'widgets/row_reorderable_four_zhu_card.dart';
 import 'enums/layout_template_enums.dart';
 import 'enums/enum_jia_zi.dart';
