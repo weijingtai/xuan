@@ -57,7 +57,11 @@ class _LuckCyclePillarDraggable extends StatelessWidget {
   /// 返回：携带 `PillarPayload.luckCycle` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    final payload = PillarPayload.luckCycle(label: '大运');
+    final payload = PillarPayload(
+      uuid: 'luckCycle',
+      pillarType: PillarType.luckCycle,
+      pillarLabel: '大运',
+    );
     return Draggable<PillarPayload>(
       data: payload,
       feedback: Material(
@@ -83,8 +87,8 @@ class _SeparatorPillarDraggable extends StatelessWidget {
   /// 返回：携带 `PillarType.separator` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    return Draggable<PillarType>(
-      data: PillarType.separator,
+    return Draggable<PillarPayload>(
+      data: SeparatorPillarPayload(uuid: 'sep'),
       feedback: Material(
         elevation: 6,
         color: Colors.transparent,
@@ -110,10 +114,9 @@ class _KongWangRowDraggable extends StatelessWidget {
   Widget build(BuildContext context) {
     final payload = TextRowPayload(
       rowType: RowType.kongWang,
+      uuid: 'kongwang_drag',
+      titleInCell: false,
       rowLabel: '空亡',
-      // 在没有明确 perPillarValues 覆盖的情况下，使用策略计算各柱的空亡。
-      strategy: KongWangRowStrategy(),
-      config: TextStyleConfig.defaultConfig,
     );
     return Draggable<TextRowPayload>(
       data: payload,
@@ -140,12 +143,8 @@ class _RowSeparatorDraggable extends StatelessWidget {
   /// 返回：携带 `RowInfoPayload(rowType: RowType.separator)` 的 Draggable。
   @override
   Widget build(BuildContext context) {
-    var payload = TextRowPayload(
-      rowType: RowType.separator,
-      rowLabel: '分割线',
-      config: TextStyleConfig.defaultConfig,
-    );
-    return Draggable<TextRowPayload>(
+    var payload = RowSeparatorPayload(uuid: 'row_sep');
+    return Draggable<RowPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,

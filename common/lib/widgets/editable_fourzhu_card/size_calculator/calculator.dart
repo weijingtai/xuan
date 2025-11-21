@@ -230,7 +230,7 @@ class CardMetricsCalculator {
       final contentW = (maxCellW > 0.0)
           ? _normalizeDouble(maxCellW)
           : _normalizeDouble(defaultPillarWidth);
-      final contentH = 0.0;
+      const contentH = 0.0;
       final mH = _edgeH(theme.pillar.getBy(pt).margin);
       final mV = _edgeV(theme.pillar.getBy(pt).margin);
       final bW = theme.pillar.getBy(pt).border?.width ?? 0.0;

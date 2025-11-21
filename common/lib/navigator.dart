@@ -8,7 +8,6 @@ import './divinatioin_history_record/divination_history_record_page.dart';
 import 'package:common/pages/dev_test_lunar_info_card_page.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
 import 'package:common/pages/editable_four_zhu_card_demo_page.dart';
-import 'package:common/pages/reorderable_cards_demo.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =

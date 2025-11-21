@@ -135,7 +135,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     if (widget.rowConfigs != null) {
       // 仅当传入的行配置与当前本地状态不一致时才刷新，避免本地插入/重排被父级覆盖
       final incoming = widget.rowConfigs!;
-      final eq = const ListEquality<RowConfig>();
+      const eq = ListEquality<RowConfig>();
       if (!eq.equals(incoming, _rows)) {
         _rows = List<RowConfig>.of(incoming);
       }
@@ -236,7 +236,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             return Expanded(
               child: Center(
                 child: Text(
-                  '${pillarLabel}柱',
+                  '$pillarLabel柱',
                   style: labelStyle,
                   textAlign: TextAlign.center,
                 ),
@@ -364,7 +364,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                       // 动态空隙 - 在外部拖拽悬停或内部拖拽时显示
                       // 在“空隙”区域也允许投递，确保插入发生在提示位置
                       DragTarget<Object>(
-                        onWillAccept: (data) {
+                        onWillAcceptWithDetails: (data) {
                           final accept = data is TextRowPayload || data is int;
                           if (accept) {
                             setState(() {
@@ -380,7 +380,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                           _hoveringExternalRow = false;
                           _isInternalDragging = false;
                         }),
-                        onAccept: (data) {
+                        onAcceptWithDetails: (data) {
                           if (data is TextRowPayload) {
                             // 外部拖拽：在当前“空隙”索引插入
                             _insertExternalRow(insertIndex, data);
@@ -441,10 +441,10 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                       ),
                       // 拖拽目标区域 - 统一处理内部和外部拖拽
                       if (insertIndex < visibleRows.length)
-                        Container(
+                        SizedBox(
                           height: cellH,
                           child: DragTarget<Object>(
-                            onWillAccept: (data) {
+                            onWillAcceptWithDetails: (data) {
                               // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
                               final accept =
                                   data is TextRowPayload || data is int;
@@ -460,7 +460,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                               _hoverRowInsertIndex = null;
                               _hoveringExternalRow = false;
                             }),
-                            onAccept: (data) {
+                            onAcceptWithDetails: (data) {
                               if (data is TextRowPayload) {
                                 // 外部拖拽：插入新行到当前索引（与空隙提示一致）
                                 _insertExternalRow(insertIndex, data);
@@ -492,7 +492,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
             right: 0,
             height: cellH / 2,
             child: DragTarget<Object>(
-              onWillAccept: (data) {
+              onWillAcceptWithDetails: (data) {
                 // 接受外部拖拽（RowInfoPayload）和内部拖拽（来自 ReorderableListView）
                 final accept = data is TextRowPayload || data is int;
                 if (accept) {
@@ -507,7 +507,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
                 _hoverRowInsertIndex = null;
                 _hoveringExternalRow = false;
               }),
-              onAccept: (data) {
+              onAcceptWithDetails: (data) {
                 if (data is TextRowPayload) {
                   // 外部拖拽：插入新行
                   _insertExternalRow(0, data);
@@ -905,10 +905,7 @@ class _RowReorderableFourZhuCardState extends State<RowReorderableFourZhuCard> {
     widget.onRowLabelOverridesChanged
         ?.call(Map<int, String>.of(_rowLabelOverrides));
 
-    debugPrint('[RowCard] Accepted external row at index ' +
-        index.toString() +
-        ', type=' +
-        payload.rowType.name);
+    debugPrint('[RowCard] Accepted external row at index $index, type=${payload.rowType.name}');
     widget.onRowConfigsChanged?.call(List<RowConfig>.of(_rows));
   }
 

@@ -112,8 +112,8 @@ class DateTimeDetailsBundleCalculation {
 
       // 2. 检查是否为夏令时，只有在DST时才进行DSTProcessor处理
       DSTProcessResult? dstData;
-      final location_tz = tz.getLocation(params.timezoneStr);
-      final tzDateTime = tz.TZDateTime.from(params.inputDateTime, location_tz);
+      final locationTz = tz.getLocation(params.timezoneStr);
+      final tzDateTime = tz.TZDateTime.from(params.inputDateTime, locationTz);
 
       if (tzDateTime.timeZone.isDst) {
         dstData = await DSTProcessor.process(

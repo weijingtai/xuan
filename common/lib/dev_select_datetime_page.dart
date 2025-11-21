@@ -8,8 +8,6 @@ import 'package:provider/provider.dart';
 import 'models/divination_datetime.dart';
 import 'viewmodels/dev_enter_page_view_model.dart';
 import 'widgets/divination_card_widget.dart';
-import 'widgets/column_reorderable_four_zhu_card.dart.bak';
-import 'widgets/row_reorderable_four_zhu_card.dart';
 import 'enums/layout_template_enums.dart';
 import 'enums/enum_jia_zi.dart';
 import 'models/eight_chars.dart';
@@ -33,7 +31,7 @@ class _DevEnterPageState extends State<DevEnterPage> {
   final PageController _pageController = PageController();
 
   // 四柱卡片相关状态
-  bool _isEditable = false;
+  final bool _isEditable = false;
   late EightChars _sample;
   late List<PillarType> _columnPillars;
   late List<PillarType> _rowPillars;
@@ -55,8 +53,18 @@ class _DevEnterPageState extends State<DevEnterPage> {
       day: JiaZi.BING_YIN,
       time: JiaZi.DING_MAO,
     );
-    _columnPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
-    _rowPillars = const [PillarType.year, PillarType.month, PillarType.day, PillarType.hour];
+    _columnPillars = const [
+      PillarType.year,
+      PillarType.month,
+      PillarType.day,
+      PillarType.hour
+    ];
+    _rowPillars = const [
+      PillarType.year,
+      PillarType.month,
+      PillarType.day,
+      PillarType.hour
+    ];
     _columnRows = [
       RowConfig(
           type: RowType.heavenlyStem,
@@ -178,7 +186,7 @@ class _DevEnterPageState extends State<DevEnterPage> {
                   "divinationInfoModel": result,
                 });
               },
-              child: Text("七政四余")),
+              child: const Text("七政四余")),
           const SizedBox(height: 16),
           ElevatedButton(
             onPressed: () {

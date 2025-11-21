@@ -16,17 +16,17 @@ class TestRowInfoDraggable extends StatelessWidget {
       rowLabel: '空亡',
       // Per-pillar overrides now keyed by pillar `id`.
       // In demo context without concrete pillar ids, keep empty and let strategy compute.
-      perPillarValues: {},
+      perPillarValues: const {},
       strategy: KongWangRowStrategy(),
       config: TextStyleConfig.defaultConfig,
     );
 
     return Draggable<TextRowPayload>(
       data: payload,
-      feedback: Material(
+      feedback: const Material(
         elevation: 6,
         color: Colors.transparent,
-        child: const Chip(label: Text('拖拽: 空亡行')),
+        child: Chip(label: Text('拖拽: 空亡行')),
       ),
       childWhenDragging:
           const Opacity(opacity: 0.5, child: Chip(label: Text('空亡行'))),

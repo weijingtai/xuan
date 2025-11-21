@@ -29,16 +29,8 @@ class TitleRowPayload extends TextRowPayload {
         );
   factory TitleRowPayload.fromJson(Map<String, dynamic> json) =>
       _$TitleRowPayloadFromJson(json);
-  Map<String, dynamic> toJson() => _$TitleRowPayloadToJson(this);
   @override
-  TextRowPayload copyWith(
-      {String? uuid, RowType? rowType, String? rowLabel, bool? titleInCell}) {
-    return super.copyWith(
-        uuid: uuid,
-        rowType: rowType,
-        rowLabel: rowLabel,
-        titleInCell: titleInCell);
-  }
+  Map<String, dynamic> toJson() => _$TitleRowPayloadToJson(this);
 }
 
 /// Title column payload: a special pillar payload used when dragging column titles.
@@ -47,20 +39,21 @@ class TitleRowPayload extends TextRowPayload {
 /// 注意：该载荷仅用于标题列的排序，不代表插入新的数据列。
 @JsonSerializable()
 class TitleColumnPayload extends PillarPayload {
-  TitleColumnPayload({
-    required super.uuid,
-  }) : super(
+  TitleColumnPayload({required super.uuid})
+      : super(
             pillarType: PillarType.rowTitleColumn,
             pillarLabel: PillarType.rowTitleColumn.name);
   factory TitleColumnPayload.fromJson(Map<String, dynamic> json) =>
       _$TitleColumnPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TitleColumnPayloadToJson(this);
   @override
   PillarPayload copyWith(
       {String? uuid,
       PillarType? pillarType,
       String? pillarLabel,
-      TextStyleConfig? textStyleConfig}) {
+      TextStyleConfig? textStyleConfig,
+      double? width}) {
     return super
         .copyWith(uuid: uuid, pillarType: pillarType, pillarLabel: pillarLabel);
   }
@@ -83,6 +76,7 @@ class RowTitleColumnPayload extends PillarPayload {
         );
   factory RowTitleColumnPayload.fromJson(Map<String, dynamic> json) =>
       _$RowTitleColumnPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$RowTitleColumnPayloadToJson(this);
   @override
   PillarPayload copyWith(
@@ -116,16 +110,8 @@ class ColumnHeaderRowPayload extends TextRowPayload {
   String get genderLabel => gender == Gender.male ? '乾造' : '坤造';
   factory ColumnHeaderRowPayload.fromJson(Map<String, dynamic> json) =>
       _$ColumnHeaderRowPayloadFromJson(json);
-  Map<String, dynamic> toJson() => _$ColumnHeaderRowPayloadToJson(this);
   @override
-  TextRowPayload copyWith(
-      {String? uuid, RowType? rowType, String? rowLabel, bool? titleInCell}) {
-    return super.copyWith(
-        uuid: uuid,
-        rowType: rowType,
-        rowLabel: rowLabel,
-        titleInCell: titleInCell);
-  }
+  Map<String, dynamic> toJson() => _$ColumnHeaderRowPayloadToJson(this);
 }
 
 @JsonSerializable()
@@ -207,13 +193,11 @@ class PillarPayload extends Equatable {
     PillarType? pillarType,
     String? pillarLabel,
     String? uuid,
-    // PillarContent? pillarContent,
   }) {
     return PillarPayload(
       pillarType: pillarType ?? this.pillarType,
       pillarLabel: pillarLabel ?? this.pillarLabel,
       uuid: uuid ?? this.uuid,
-      // pillarContent: pillarContent ?? this.pillarContent,
     );
   }
 
@@ -223,7 +207,7 @@ class PillarPayload extends Equatable {
 
 @JsonSerializable()
 class SeparatorPillarPayload extends PillarPayload {
-  SeparatorPillarPayload({
+  const SeparatorPillarPayload({
     required super.uuid,
   }) : super(
           pillarType: PillarType.separator,
@@ -231,12 +215,13 @@ class SeparatorPillarPayload extends PillarPayload {
         );
   factory SeparatorPillarPayload.fromJson(Map<String, dynamic> json) =>
       _$SeparatorPillarPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$SeparatorPillarPayloadToJson(this);
 }
 
 @JsonSerializable()
 class ContentPillarPayload extends PillarPayload {
-  ContentPillarPayload({
+  const ContentPillarPayload({
     required super.uuid,
     required super.pillarType,
     required super.pillarLabel,
@@ -245,8 +230,10 @@ class ContentPillarPayload extends PillarPayload {
   final PillarContent pillarContent;
   factory ContentPillarPayload.fromJson(Map<String, dynamic> json) =>
       _$ContentPillarPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$ContentPillarPayloadToJson(this);
 
+  @override
   copyWith({
     PillarType? pillarType,
     String? pillarLabel,
@@ -269,7 +256,7 @@ class ContentPillarPayload extends PillarPayload {
 class RowPayload extends Equatable {
   final RowType rowType;
   final String uuid;
-  RowPayload({
+  const RowPayload({
     required this.rowType,
     required this.uuid,
   });
@@ -287,6 +274,7 @@ class RowSeparatorPayload extends RowPayload {
   }) : super(rowType: RowType.separator);
   factory RowSeparatorPayload.fromJson(Map<String, dynamic> json) =>
       _$RowSeparatorPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$RowSeparatorPayloadToJson(this);
   @override
   List<Object?> get props => [rowType, uuid];
@@ -311,6 +299,7 @@ class TextRowPayload extends RowPayload {
   });
   factory TextRowPayload.fromJson(Map<String, dynamic> json) =>
       _$TextRowPayloadFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$TextRowPayloadToJson(this);
 
   // final TextStyleConfig? config;

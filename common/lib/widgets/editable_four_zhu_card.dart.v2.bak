@@ -251,7 +251,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                         padding: const EdgeInsets.symmetric(horizontal: 4),
                         child: Center(
                           child: Text(
-                            '${pillarLabel}柱',
+                            '$pillarLabel柱',
                             style: labelStyle,
                             textAlign: TextAlign.center,
                           ),
@@ -274,7 +274,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                               height: headerH,
                               child: Center(
                                 child: Text(
-                                  '${pillarLabel}柱',
+                                  '$pillarLabel柱',
                                   style: labelStyle,
                                   textAlign: TextAlign.center,
                                 ),
@@ -792,7 +792,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
     final active = _hoverDropIndex == position;
     final placeholder = _horizontalPlaceholderTile(context, tileH, tileW);
     return DragTarget<Object>(
-      onWillAccept: (data) {
+      onWillAcceptWithDetails: (data) {
         final accept = data is int || data is PillarType;
         if (accept) setState(() => _hoverDropIndex = position);
         return accept;
@@ -800,7 +800,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
       onLeave: (_) {
         if (_hoverDropIndex == position) setState(() => _hoverDropIndex = null);
       },
-      onAccept: (data) {
+      onAcceptWithDetails: (data) {
         if (data is int) {
           _reorderPillars(data, position);
         } else if (data is PillarType) {
@@ -850,8 +850,8 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
           ),
           Positioned.fill(
             child: DragTarget<PillarType>(
-              onWillAccept: (data) => data != null,
-              onAccept: (type) => _insertPillarAt(_pillars.length, type),
+              onWillAcceptWithDetails: (data) => data != null,
+              onAcceptWithDetails: (type) => _insertPillarAt(_pillars.length, type),
               builder: (context, candidate, rejected) {
                 return IgnorePointer(
                   child: AnimatedContainer(
@@ -1026,7 +1026,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
   Widget _buildVerticalSlot(int position) {
     final active = _hoverDropIndex == position;
     return DragTarget<Object>(
-      onWillAccept: (data) {
+      onWillAcceptWithDetails: (data) {
         final accept = data is int || data is PillarType;
         if (accept) setState(() => _hoverDropIndex = position);
         return accept;
@@ -1034,7 +1034,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
       onLeave: (_) {
         if (_hoverDropIndex == position) setState(() => _hoverDropIndex = null);
       },
-      onAccept: (data) {
+      onAcceptWithDetails: (data) {
         if (data is int) {
           _reorderPillars(data, position);
         } else if (data is PillarType) {
@@ -1101,7 +1101,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                       if (widget.isEditable)
                         _buildPillarSlot(0, dzWidth, cellW)
                       else
-                        SizedBox(width: dzWidth),
+                        const SizedBox(width: dzWidth),
                       ..._pillars.asMap().entries.expand((entry) {
                         final index = entry.key;
                         final p = entry.value;
@@ -1154,7 +1154,7 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                           if (widget.isEditable)
                             _buildPillarSlot(index + 1, dzWidth, cellW)
                           else
-                            SizedBox(width: dzWidth),
+                            const SizedBox(width: dzWidth),
                         ];
                       }).toList(),
                     ],
@@ -1181,37 +1181,41 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
         children: [
           if (active) _placeholderColumn(context, cellW),
           DragTarget<int>(
-            onWillAccept: (from) {
+            onWillAcceptWithDetails: (from) {
               final accept =
                   from != null && from >= 0 && from < _pillars.length;
               if (accept) setState(() => _hoverDropIndex = position);
               return accept;
             },
             onLeave: (_) {
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
-            onAccept: (from) {
+            onAcceptWithDetails: (from) {
               _reorderPillars(from, position);
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
             builder: (context, _, __) => const SizedBox.expand(),
           ),
           DragTarget<PillarType>(
-            onWillAccept: (data) {
+            onWillAcceptWithDetails: (data) {
               final accept = data != null;
               if (accept) setState(() => _hoverDropIndex = position);
               return accept;
             },
             onLeave: (_) {
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
-            onAccept: (pillarType) {
+            onAcceptWithDetails: (pillarType) {
               _insertPillarAt(position, pillarType);
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
             builder: (context, _, __) => const SizedBox.expand(),
           ),
@@ -1258,38 +1262,42 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
           ),
           // Internal reorder target (pillar index drag)
           DragTarget<int>(
-            onWillAccept: (from) {
+            onWillAcceptWithDetails: (from) {
               final accept =
                   from != null && from >= 0 && from < _pillars.length;
               if (accept) setState(() => _hoverDropIndex = position);
               return accept;
             },
             onLeave: (_) {
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
-            onAccept: (from) {
+            onAcceptWithDetails: (from) {
               _reorderPillars(from, position);
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
             builder: (context, _, __) => const SizedBox.expand(),
           ),
           // External add target (accept PillarType from test draggable)
           DragTarget<PillarType>(
-            onWillAccept: (data) {
+            onWillAcceptWithDetails: (data) {
               final accept = data != null;
               if (accept) setState(() => _hoverDropIndex = position);
               return accept;
             },
             onLeave: (_) {
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
-            onAccept: (pillarType) {
+            onAcceptWithDetails: (pillarType) {
               _insertPillarAt(position, pillarType);
-              if (_hoverDropIndex == position)
+              if (_hoverDropIndex == position) {
                 setState(() => _hoverDropIndex = null);
+              }
             },
             builder: (context, _, __) => const SizedBox.expand(),
           ),
@@ -1444,20 +1452,23 @@ class _EditableFourZhuCardState extends State<EditableFourZhuCard> {
                                 top: 0,
                                 bottom: 0,
                                 child: DragTarget<PillarType>(
-                                  onWillAccept: (data) {
+                                  onWillAcceptWithDetails: (data) {
                                     final accept = data != null;
-                                    if (accept)
+                                    if (accept) {
                                       setState(() => _hoverDropIndex = i);
+                                    }
                                     return accept;
                                   },
                                   onLeave: (_) {
-                                    if (_hoverDropIndex == i)
+                                    if (_hoverDropIndex == i) {
                                       setState(() => _hoverDropIndex = null);
+                                    }
                                   },
-                                  onAccept: (type) {
+                                  onAcceptWithDetails: (type) {
                                     _insertPillarAt(i, type);
-                                    if (_hoverDropIndex == i)
+                                    if (_hoverDropIndex == i) {
                                       setState(() => _hoverDropIndex = null);
+                                    }
                                   },
                                   builder: (context, candidate, rejected) {
                                     final active = candidate.isNotEmpty &&

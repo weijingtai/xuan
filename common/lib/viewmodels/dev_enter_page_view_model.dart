@@ -175,7 +175,7 @@ class DevEnterPageViewModel extends ChangeNotifier {
     DateTime now = DateTime.now();
     DivinationRequestInfoDataModel divinationDataModel =
         DivinationRequestInfoDataModel(
-            uuid: UuidV7().generate(),
+            uuid: const UuidV7().generate(),
             createdAt: now,
             lastUpdatedAt: now,
             deletedAt: null,
@@ -217,12 +217,12 @@ class DevEnterPageViewModel extends ChangeNotifier {
     // print(_divinationDatetimeModel?.location?.toJson());
     // print("~~~~~~~~");
     return SeekersCompanion(
-      uuid: Value(UuidV7().generate()),
+      uuid: Value(const UuidV7().generate()),
       createdAt: Value(now),
       lastUpdatedAt: Value(now),
       divinationUuid: Value(divinationUuid),
       gender: Value(genderNotifier.value),
-      deletedAt: Value(null),
+      deletedAt: const Value(null),
       timingType: Value(datetimeType),
       yearGanZhi: Value(_divinationDatetimeModel!.yearJiaZi),
       monthGanZhi: Value(_divinationDatetimeModel!.monthJiaZi),
@@ -242,10 +242,10 @@ class DevEnterPageViewModel extends ChangeNotifier {
   TimingDivinationsCompanion generateDivinationDatetime(String divinationUuid) {
     DateTime now = DateTime.now();
     return TimingDivinationsCompanion(
-      uuid: Value(UuidV7().generate()),
+      uuid: Value(const UuidV7().generate()),
       createdAt: Value(now),
       lastUpdatedAt: Value(now),
-      deletedAt: Value(null),
+      deletedAt: const Value(null),
       divinationUuid: Value(divinationUuid),
       timingType: Value(datetimeType),
       datetime: Value(_divinationDatetimeModel!.datetime),

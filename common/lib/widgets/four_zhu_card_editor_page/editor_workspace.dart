@@ -1,6 +1,5 @@
 import 'package:day_night_themed_switcher/day_night_themed_switcher.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../../enums/enum_gender.dart';
@@ -27,7 +26,7 @@ class EditorWorkspace extends StatefulWidget {
   /// 参数：
   /// - eightChars：四柱八字（年、月、日、时）数据。
   /// 返回值：无（Widget组件）。
-  const EditorWorkspace({required this.eightChars});
+  const EditorWorkspace({super.key, required this.eightChars});
 
   final EightChars eightChars;
 
@@ -51,9 +50,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   bool _initializedBrightness = false;
 
   /// V3 卡片数据源：柱/行/内边距。
-  late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
-  late final ValueNotifier<CardPayload> _cardPayloadNotifier;
+  // late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
+  // late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
   final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<bool> _showGripColumnsNotifier =
@@ -72,18 +70,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void initState() {
     super.initState();
-    _pillarsNotifier =
-        ValueNotifier<List<PillarPayload>>(_buildPillars(widget.eightChars));
-    _rowListNotifier = ValueNotifier<List<TextRowPayload>>(_buildDefaultRows());
-    _cardPayloadNotifier = ValueNotifier<CardPayload>(
-      CardPayload(
-        gender: Gender.male,
-        pillarMap: {for (final p in _pillarsNotifier.value) p.uuid: p},
-        pillarOrderUuid: _pillarsNotifier.value.map((e) => e.uuid).toList(),
-        rowMap: {for (final r in _rowListNotifier.value) r.uuid: r},
-        rowOrderUuid: _rowListNotifier.value.map((e) => e.uuid).toList(),
-      ),
-    );
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
@@ -106,9 +92,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void didUpdateWidget(covariant EditorWorkspace oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.eightChars != widget.eightChars) {
-      _pillarsNotifier.value = _buildPillars(widget.eightChars);
-    }
+    // if (oldWidget.eightChars != widget.eightChars) {
+    //   _pillarsNotifier.value = _buildPillars(widget.eightChars);
+    // }
   }
 
   /// 释放 Notifier 资源
@@ -119,8 +105,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     // 释放 Notifier 资源
     _brightnessNotifier.dispose();
     _colorPreviewModeNotifier.dispose();
-    _pillarsNotifier.dispose();
-    _rowListNotifier.dispose();
+    // _pillarsNotifier.dispose();
+    // _rowListNotifier.dispose();
     _paddingNotifier.dispose();
     _showGripRowsNotifier.dispose();
     _showGripColumnsNotifier.dispose();
@@ -242,15 +228,15 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       builder: (context, show, child) => EditableFourZhuCardV3(
                         brightnessNotifier: _brightnessNotifier,
                         colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                        cardPayloadNotifier: _cardPayloadNotifier,
+                        cardPayloadNotifier:
+                            Provider.of<FourZhuCardDemoViewModel>(context,
+                                    listen: true)
+                                .cardPayloadNotifier,
                         gender: Gender.male,
                         showGripRows: _showGripRowsNotifier.value,
                         showGripColumns: _showGripColumnsNotifier.value,
                         paddingNotifier: _paddingNotifier,
                         theme: show,
-                        pillarSection: show.pillar,
-                        cellSection: show.cell,
-                        typographySection: show.typography,
                         rowStrategyMapper: {
                           RowType.tenGod: TenGodRowStrategy(),
                           RowType.hiddenStemsTenGod:
@@ -303,9 +289,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                 : null,
                         globalFontSize: globalSize,
                         globalFontColor: globalColor,
-                        // 绑定分组样式到 V3 卡片（从 RowConfig 转换而来，优先级高于全局样式）
-                        // groupTextStyles: _groupTextStyles,
-                        // 🔧 修复：启用色彩模式，允许字符映射生效
                         colorfulMode: true,
                       ),
                       selector: (_, vm) => vm.theme,
@@ -325,9 +308,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 返回：柱载荷列表
   List<PillarPayload> _buildPillars(EightChars ec) {
     return [
-      RowTitleColumnPayload(width: 52),
-      PillarPayload(
+      RowTitleColumnPayload(uuid: 'rowTitle'),
+      ContentPillarPayload(
+        uuid: 'year',
         pillarType: PillarType.year,
+        pillarLabel: '年',
         pillarContent: PillarContent(
           id: 'pillar-year',
           pillarType: PillarType.year,
@@ -338,8 +323,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           sourceKind: PillarSourceKind.userInput,
         ),
       ),
-      PillarPayload(
+      ContentPillarPayload(
+        uuid: 'month',
         pillarType: PillarType.month,
+        pillarLabel: '月',
         pillarContent: PillarContent(
           id: 'pillar-month',
           pillarType: PillarType.month,
@@ -350,8 +337,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           sourceKind: PillarSourceKind.userInput,
         ),
       ),
-      PillarPayload(
+      ContentPillarPayload(
+        uuid: 'day',
         pillarType: PillarType.day,
+        pillarLabel: '日',
         pillarContent: PillarContent(
           id: 'pillar-day',
           pillarType: PillarType.day,
@@ -362,8 +351,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           sourceKind: PillarSourceKind.userInput,
         ),
       ),
-      PillarPayload(
+      ContentPillarPayload(
+        uuid: 'hour',
         pillarType: PillarType.hour,
+        pillarLabel: '时',
         pillarContent: PillarContent(
           id: 'pillar-hour',
           pillarType: PillarType.hour,
@@ -385,31 +376,37 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     return [
       TextRowPayload(
         rowType: RowType.columnHeaderRow,
-        config: TextStyleConfig.defaultConfig,
+        uuid: 'header',
+        titleInCell: false,
       ),
       TextRowPayload(
           rowType: RowType.xunShou,
-          rowLabel: "旬首",
-          config: TextStyleConfig.defaultConfig),
+          uuid: 'xunShou',
+          titleInCell: false,
+          rowLabel: "旬首"),
       TextRowPayload(
         rowType: RowType.heavenlyStem,
+        uuid: 'gan',
+        titleInCell: false,
         rowLabel: '天干',
-        config: TextStyleConfig.defaultConfig,
       ),
       TextRowPayload(
         rowType: RowType.earthlyBranch,
+        uuid: 'zhi',
+        titleInCell: false,
         rowLabel: '地支',
-        config: TextStyleConfig.defaultConfig,
       ),
       TextRowPayload(
         rowType: RowType.naYin,
+        uuid: 'nayin',
+        titleInCell: false,
         rowLabel: '纳音',
-        config: TextStyleConfig.defaultConfig,
       ),
       TextRowPayload(
         rowType: RowType.kongWang,
+        uuid: 'kongwang',
+        titleInCell: false,
         rowLabel: '空亡',
-        config: TextStyleConfig.defaultConfig,
       ),
       // RowInfoPayload.kongWang(
       //   label: '空亡',
@@ -428,7 +425,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   void _applyViewModelToNotifiers(FourZhuEditorViewModel viewModel) {
     final configs = viewModel.rowConfigs;
     if (configs.isEmpty) {
-      _rowListNotifier.value = _buildDefaultRows();
+      // _rowListNotifier.value = _buildDefaultRows();
       // _groupTextStyles = null;
       return;
     }
@@ -450,30 +447,28 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
 
     final rows = <TextRowPayload>[
-      TextRowPayload(rowType: RowType.columnHeaderRow, config: null),
+      TextRowPayload(
+          rowType: RowType.columnHeaderRow, uuid: 'header', titleInCell: false),
       for (final c in configs)
         if (c.isVisible)
           TextRowPayload(
             rowType: c.type,
+            uuid: c.type.name,
+            titleInCell: false,
             rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
-            textAlign: c.textAlign,
-            config: c.textStyleConfig,
-            padding: c.paddingVertical,
-            marginVertical: c.marginVertical,
-            marginHorizontal: c.marginHorizontal,
-            paddingHorizontal: c.paddingHorizontal,
           ),
     ];
 
     // 打印调试信息：确认 padding 是否传递
-    for (final row in rows) {
-      if (row.padding != null) {
-        print(
-            '🔍 [EditorWorkspace._applyViewModelToNotifiers] ${row.rowType.name} padding=${row.padding}');
-      }
-    }
+    // 打印调试信息：确认 padding 是否传递
+    // for (final row in rows) {
+    //   if (row.padding != null) {
+    //     print(
+    //         '🔍 [EditorWorkspace._applyViewModelToNotifiers] ${row.rowType.name} padding=${row.padding}');
+    //   }
+    // }
 
-    _rowListNotifier.value = rows;
+    // _rowListNotifier.value = rows;
 
     final insets = viewModel.cardStyle?.contentPadding;
     if (insets != null) {

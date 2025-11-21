@@ -108,7 +108,7 @@ class TextStyleConfig {
     Map<String, String>? perCharColorsLight,
     Map<String, String>? perCharColorsDark,
   }) {
-    Map<String, Color> _toColorMap(Map<String, String>? m) {
+    Map<String, Color> toColorMap(Map<String, String>? m) {
       if (m == null) return const {};
       final out = <String, Color>{};
       m.forEach((k, v) {
@@ -123,9 +123,9 @@ class TextStyleConfig {
 
     return TextStyleConfig(
       colorMapperDataModel: ColorMapperDataModel(
-        pureLightMapper: _toColorMap(perCharColorsLight),
+        pureLightMapper: toColorMap(perCharColorsLight),
         colorfulLightMapper: const {},
-        pureDarkMapper: _toColorMap(perCharColorsDark),
+        pureDarkMapper: toColorMap(perCharColorsDark),
         colorfulDarkMapper: const {},
       ),
       textShadowDataModel: TextShadowDataModel(

@@ -1,5 +1,6 @@
 import 'package:common/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import 'package:uuid/v4.dart';
 
 import '../enums/enum_di_zhi.dart';
@@ -75,9 +76,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   EditableFourZhuThemeController? _themeController;
 
   /// V3 载荷型 Notifier：柱/行/内边距。
-  late final ValueNotifier<List<PillarPayload>> pillarsNotifier;
-  late final ValueNotifier<List<TextRowPayload>> rowListNotifier;
+  // late final ValueNotifier<List<PillarPayload>> pillarsNotifier;
+  // late final ValueNotifier<List<TextRowPayload>> rowListNotifier;
   late final ValueNotifier<EdgeInsets> paddingNotifier;
+  late final ValueNotifier<CardPayload> cardPayloadNotifier;
 
   /// 初始化默认数据与主题。
   void _initDefaults() {
@@ -93,6 +95,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
     // 默认主题：卡片边角与排版参数。
     _theme = EditableFourZhuCardTheme(
+      displayHeaderRow: true,
+      displayRowTitleColumn: true,
       card: CardStyleConfig.defaultCardStyleConfig,
       cell: CellSection(
         pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
@@ -120,92 +124,135 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     );
     _themeController = EditableFourZhuThemeController(_theme);
 
+    final titleUuid = Uuid().v4();
+    final yearUuid = Uuid().v4();
+    final monthUuid = Uuid().v4();
+    final dayUuid = Uuid().v4();
+    final hourUuid = Uuid().v4();
     // 初始化 V3 载荷 Notifier。
-    pillarsNotifier = ValueNotifier<List<PillarPayload>>([
-      // 第一列：行标题列（特殊柱）。
-      RowTitleColumnPayload(width: 52),
-      // 数据柱：年月日时。
-      ContentPillarPayload(
-        pillarType: PillarType.year,
-        pillarContent: PillarContent(
-          id: 'pillar-year',
-          pillarType: PillarType.year,
-          label: '年',
-          jiaZi: sample.year,
-          description: '示例年柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      PillarPayload(
-        pillarType: PillarType.month,
-        pillarContent: PillarContent(
-          id: 'pillar-month',
-          pillarType: PillarType.month,
-          label: '月',
-          jiaZi: sample.month,
-          description: '示例月柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      PillarPayload(
-        pillarType: PillarType.day,
-        pillarContent: PillarContent(
-          id: 'pillar-day',
-          pillarType: PillarType.day,
-          label: '日',
-          jiaZi: sample.day,
-          description: '示例日柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      PillarPayload(
-        pillarType: PillarType.hour,
-        pillarContent: PillarContent(
-          id: 'pillar-hour',
-          pillarType: PillarType.hour,
-          label: '时',
-          jiaZi: sample.time,
-          description: '示例时柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-    ]);
+    // 第一列：行标题列（特殊柱）。
+    final titleRowUuid = Uuid().v4();
+    final heavenlyStemUuid = Uuid().v4();
+    final earthlyBranchUuid = Uuid().v4();
+    final naYinUuid = Uuid().v4();
+    final kongWangUuid = Uuid().v4();
+    final tenGodUuid = Uuid().v4();
     // 在 v3 卡片中默认显示“表头行”（列标题），位于索引 0。
     // 后续数据行（天干、地支、纳音）依次排列在其后。
-    rowListNotifier = ValueNotifier<List<TextRowPayload>>([
-      TitleRowPayload(uuid: UuidV4().generate()),
-      TextRowPayload(
-        rowType: RowType.heavenlyStem,
-        rowLabel: '天干',
-        uuid: UuidV4().generate(),
-        titleInCell: false,
-      ),
-      TextRowPayload(
-        rowType: RowType.earthlyBranch,
-        rowLabel: '地支',
-        uuid: UuidV4().generate(),
-        titleInCell: false,
-      ),
-      TextRowPayload(
-        rowType: RowType.naYin,
-        rowLabel: '纳音',
-        uuid: UuidV4().generate(),
-        titleInCell: false,
-      ),
-      // 新增：空亡信息行，使用策略驱动按需计算每柱值
-      TextRowPayload(
-        rowType: RowType.kongWang,
-        rowLabel: '空亡',
-        uuid: UuidV4().generate(),
-        titleInCell: false,
-      ),
-    ]);
+    // rowListNotifier = ValueNotifier<List<TextRowPayload>>([
+
+    // ]);
+
+    CardPayload cardPayload = CardPayload(
+      gender: Gender.male,
+      pillarMap: {
+        // 第一列：行标题列（特殊柱）
+        titleUuid: RowTitleColumnPayload(uuid: titleUuid),
+        // 数据柱：年月日时。
+        yearUuid: ContentPillarPayload(
+          uuid: yearUuid,
+          pillarLabel: '年',
+          pillarType: PillarType.year,
+          pillarContent: PillarContent(
+            id: 'pillar-year',
+            pillarType: PillarType.year,
+            label: '年',
+            jiaZi: sample.year,
+            description: '示例年柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        monthUuid: ContentPillarPayload(
+          uuid: monthUuid,
+          pillarLabel: '月',
+          pillarType: PillarType.month,
+          pillarContent: PillarContent(
+            id: 'pillar-month',
+            pillarType: PillarType.month,
+            label: '月',
+            jiaZi: sample.month,
+            description: '示例月柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        dayUuid: ContentPillarPayload(
+          uuid: dayUuid,
+          pillarLabel: '日',
+          pillarType: PillarType.day,
+          pillarContent: PillarContent(
+            id: 'pillar-day',
+            pillarType: PillarType.day,
+            label: '日',
+            jiaZi: sample.day,
+            description: '示例日柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        hourUuid: ContentPillarPayload(
+          uuid: hourUuid,
+          pillarLabel: '时',
+          pillarType: PillarType.hour,
+          pillarContent: PillarContent(
+            id: 'pillar-hour',
+            pillarType: PillarType.hour,
+            label: '时',
+            jiaZi: sample.time,
+            description: '示例时柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        )
+      },
+      pillarOrderUuid: [titleUuid, yearUuid, monthUuid, dayUuid, hourUuid],
+      rowMap: {
+        titleRowUuid: TitleRowPayload(uuid: titleRowUuid),
+        tenGodUuid: TextRowPayload(
+          rowType: RowType.tenGod,
+          rowLabel: '十神',
+          uuid: tenGodUuid,
+          titleInCell: false,
+        ),
+        heavenlyStemUuid: TextRowPayload(
+          rowType: RowType.heavenlyStem,
+          rowLabel: '天干',
+          uuid: heavenlyStemUuid,
+          titleInCell: false,
+        ),
+        earthlyBranchUuid: TextRowPayload(
+          rowType: RowType.earthlyBranch,
+          rowLabel: '地支',
+          uuid: earthlyBranchUuid,
+          titleInCell: false,
+        ),
+        naYinUuid: TextRowPayload(
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          uuid: naYinUuid,
+          titleInCell: false,
+        ),
+        // 新增：空亡信息行，使用策略驱动按需计算每柱值
+        kongWangUuid: TextRowPayload(
+          rowType: RowType.kongWang,
+          rowLabel: '空亡',
+          uuid: kongWangUuid,
+          titleInCell: false,
+        ),
+      },
+      rowOrderUuid: [
+        titleRowUuid,
+        tenGodUuid,
+        heavenlyStemUuid,
+        earthlyBranchUuid,
+        naYinUuid,
+        kongWangUuid,
+      ],
+    );
+
+    cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
-  
   }
 
   /// 返回当前主题。
@@ -243,7 +290,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     _themeController = EditableFourZhuThemeController(_theme);
     // 主动同步内边距以触发 V3 的重算链，避免等值短路导致监听未触发
     paddingNotifier.value = newTheme.card.padding;
-    final list = List<PillarPayload>.of(pillarsNotifier.value);
+    final list =
+        List<PillarPayload>.of(cardPayloadNotifier.value.pillarMap.values);
     for (var i = 0; i < list.length; i++) {
       final payload = list[i];
       final t = payload.pillarType;
@@ -255,7 +303,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
           // columnBorderWidth: style.border?.width,
           );
     }
-    pillarsNotifier.value = list;
+    // pillarsNotifier.value = list;
     notifyListeners();
   }
 
@@ -351,7 +399,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   void setTheme(EditableFourZhuCardTheme t) {
     _theme = t;
     _themeController = EditableFourZhuThemeController(_theme);
-    final list = List<PillarPayload>.of(pillarsNotifier.value);
+    final list =
+        List<PillarPayload>.of(cardPayloadNotifier.value.pillarMap.values);
     for (var i = 0; i < list.length; i++) {
       final payload = list[i];
       final t = payload.pillarType;
@@ -363,7 +412,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       //   columnBorderWidth: style.border?.width,
       // );
     }
-    pillarsNotifier.value = list;
+    // pillarsNotifier.value = list;
     notifyListeners();
   }
 

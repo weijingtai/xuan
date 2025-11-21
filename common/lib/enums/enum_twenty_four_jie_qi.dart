@@ -102,19 +102,19 @@ enum TwentyFourJieQi {
 
   // getPrevious
   TwentyFourJieQi get previous {
-    int _order = order - 1;
-    if (_order < 0) {
-      _order = 23;
+    int order = this.order - 1;
+    if (order < 0) {
+      order = 23;
     }
-    return values[_order];
+    return values[order];
   }
 
   TwentyFourJieQi get next {
-    int _order = order + 1;
-    if (_order > 23) {
-      _order = 0;
+    int order = this.order + 1;
+    if (order > 23) {
+      order = 0;
     }
-    return values[_order];
+    return values[order];
   }
 
   /// 获取节

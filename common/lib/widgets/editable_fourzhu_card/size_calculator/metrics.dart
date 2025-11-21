@@ -1,97 +1,22 @@
-import 'package:equatable/equatable.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
-class CellMetrics extends Equatable {
+/// Specification for cell text metrics used in size calculations
+class CellTextSpec {
   final String rowUuid;
   final String pillarUuid;
-  final double contentWidth;
-  final double contentHeight;
-  final double decorationWidth;
-  final double decorationHeight;
-  final double marginHorizontal;
-  final double marginVertical;
-  final double borderWidth;
+  final int charCount;
+  final double? fontSize;
 
-  const CellMetrics({
+  const CellTextSpec({
     required this.rowUuid,
     required this.pillarUuid,
-    required this.contentWidth,
-    required this.contentHeight,
-    required this.decorationWidth,
-    required this.decorationHeight,
-    required this.marginHorizontal,
-    required this.marginVertical,
-    required this.borderWidth,
+    required this.charCount,
+    this.fontSize,
   });
-
-  CellMetrics copyWith({
-    String? rowUuid,
-    String? pillarUuid,
-    double? contentWidth,
-    double? contentHeight,
-    double? decorationWidth,
-    double? decorationHeight,
-    double? marginHorizontal,
-    double? marginVertical,
-    double? borderWidth,
-  }) {
-    return CellMetrics(
-      rowUuid: rowUuid ?? this.rowUuid,
-      pillarUuid: pillarUuid ?? this.pillarUuid,
-      contentWidth: contentWidth ?? this.contentWidth,
-      contentHeight: contentHeight ?? this.contentHeight,
-      decorationWidth: decorationWidth ?? this.decorationWidth,
-      decorationHeight: decorationHeight ?? this.decorationHeight,
-      marginHorizontal: marginHorizontal ?? this.marginHorizontal,
-      marginVertical: marginVertical ?? this.marginVertical,
-      borderWidth: borderWidth ?? this.borderWidth,
-    );
-  }
-
-  factory CellMetrics.fromJson(Map<String, dynamic> json) {
-    return CellMetrics(
-      rowUuid: json['rowUuid'] as String,
-      pillarUuid: json['pillarUuid'] as String,
-      contentWidth: (json['contentWidth'] as num).toDouble(),
-      contentHeight: (json['contentHeight'] as num).toDouble(),
-      decorationWidth: (json['decorationWidth'] as num).toDouble(),
-      decorationHeight: (json['decorationHeight'] as num).toDouble(),
-      marginHorizontal: (json['marginHorizontal'] as num).toDouble(),
-      marginVertical: (json['marginVertical'] as num).toDouble(),
-      borderWidth: (json['borderWidth'] as num).toDouble(),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      'rowUuid': rowUuid,
-      'pillarUuid': pillarUuid,
-      'contentWidth': contentWidth,
-      'contentHeight': contentHeight,
-      'decorationWidth': decorationWidth,
-      'decorationHeight': decorationHeight,
-      'marginHorizontal': marginHorizontal,
-      'marginVertical': marginVertical,
-      'borderWidth': borderWidth,
-    };
-  }
-
-  @override
-  List<Object?> get props => [
-        rowUuid,
-        pillarUuid,
-        contentWidth,
-        contentHeight,
-        decorationWidth,
-        decorationHeight,
-        marginHorizontal,
-        marginVertical,
-        borderWidth,
-      ];
 }
 
-@immutable
-class PillarMetrics extends Equatable {
+/// Metrics for a single pillar (column)
+class PillarMetrics {
   final String pillarUuid;
   final String pillarType;
   final double contentWidth;
@@ -113,74 +38,10 @@ class PillarMetrics extends Equatable {
     required this.marginVertical,
     required this.borderWidth,
   });
-
-  PillarMetrics copyWith({
-    String? pillarUuid,
-    String? pillarType,
-    double? contentWidth,
-    double? contentHeight,
-    double? decorationWidth,
-    double? decorationHeight,
-    double? marginHorizontal,
-    double? marginVertical,
-    double? borderWidth,
-  }) {
-    return PillarMetrics(
-      pillarUuid: pillarUuid ?? this.pillarUuid,
-      pillarType: pillarType ?? this.pillarType,
-      contentWidth: contentWidth ?? this.contentWidth,
-      contentHeight: contentHeight ?? this.contentHeight,
-      decorationWidth: decorationWidth ?? this.decorationWidth,
-      decorationHeight: decorationHeight ?? this.decorationHeight,
-      marginHorizontal: marginHorizontal ?? this.marginHorizontal,
-      marginVertical: marginVertical ?? this.marginVertical,
-      borderWidth: borderWidth ?? this.borderWidth,
-    );
-  }
-
-  factory PillarMetrics.fromJson(Map<String, dynamic> json) {
-    return PillarMetrics(
-      pillarUuid: json['pillarUuid'] as String,
-      pillarType: json['pillarType'] as String,
-      contentWidth: (json['contentWidth'] as num).toDouble(),
-      contentHeight: (json['contentHeight'] as num).toDouble(),
-      decorationWidth: (json['decorationWidth'] as num).toDouble(),
-      decorationHeight: (json['decorationHeight'] as num).toDouble(),
-      marginHorizontal: (json['marginHorizontal'] as num).toDouble(),
-      marginVertical: (json['marginVertical'] as num).toDouble(),
-      borderWidth: (json['borderWidth'] as num).toDouble(),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      'pillarUuid': pillarUuid,
-      'pillarType': pillarType,
-      'contentWidth': contentWidth,
-      'contentHeight': contentHeight,
-      'decorationWidth': decorationWidth,
-      'decorationHeight': decorationHeight,
-      'marginHorizontal': marginHorizontal,
-      'marginVertical': marginVertical,
-      'borderWidth': borderWidth,
-    };
-  }
-
-  @override
-  List<Object?> get props => [
-        pillarUuid,
-        pillarType,
-        contentWidth,
-        contentHeight,
-        decorationWidth,
-        decorationHeight,
-        marginHorizontal,
-        marginVertical,
-        borderWidth,
-      ];
 }
 
-@immutable
-class RowMetrics extends Equatable {
+/// Metrics for a single row
+class RowMetrics {
   final String rowUuid;
   final String rowType;
   final double contentHeight;
@@ -196,59 +57,35 @@ class RowMetrics extends Equatable {
     required this.marginVertical,
     required this.borderWidth,
   });
-
-  RowMetrics copyWith({
-    String? rowUuid,
-    String? rowType,
-    double? contentHeight,
-    double? decorationHeight,
-    double? marginVertical,
-    double? borderWidth,
-  }) {
-    return RowMetrics(
-      rowUuid: rowUuid ?? this.rowUuid,
-      rowType: rowType ?? this.rowType,
-      contentHeight: contentHeight ?? this.contentHeight,
-      decorationHeight: decorationHeight ?? this.decorationHeight,
-      marginVertical: marginVertical ?? this.marginVertical,
-      borderWidth: borderWidth ?? this.borderWidth,
-    );
-  }
-
-  factory RowMetrics.fromJson(Map<String, dynamic> json) {
-    return RowMetrics(
-      rowUuid: json['rowUuid'] as String,
-      rowType: json['rowType'] as String,
-      contentHeight: (json['contentHeight'] as num).toDouble(),
-      decorationHeight: (json['decorationHeight'] as num).toDouble(),
-      marginVertical: (json['marginVertical'] as num).toDouble(),
-      borderWidth: (json['borderWidth'] as num).toDouble(),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      'rowUuid': rowUuid,
-      'rowType': rowType,
-      'contentHeight': contentHeight,
-      'decorationHeight': decorationHeight,
-      'marginVertical': marginVertical,
-      'borderWidth': borderWidth,
-    };
-  }
-
-  @override
-  List<Object?> get props => [
-        rowUuid,
-        rowType,
-        contentHeight,
-        decorationHeight,
-        marginVertical,
-        borderWidth,
-      ];
 }
 
-@immutable
-class CardTotals extends Equatable {
+/// Metrics for a single cell
+class CellMetrics {
+  final String rowUuid;
+  final String pillarUuid;
+  final double contentWidth;
+  final double contentHeight;
+  final double decorationWidth;
+  final double decorationHeight;
+  final double marginHorizontal;
+  final double marginVertical;
+  final double borderWidth;
+
+  const CellMetrics({
+    required this.rowUuid,
+    required this.pillarUuid,
+    required this.contentWidth,
+    required this.contentHeight,
+    required this.decorationWidth,
+    required this.decorationHeight,
+    required this.marginHorizontal,
+    required this.marginVertical,
+    required this.borderWidth,
+  });
+}
+
+/// Total card metrics
+class CardTotals {
   final double totalWidth;
   final double totalHeight;
   final int columnCount;
@@ -274,43 +111,24 @@ class CardTotals extends Equatable {
       rowCount: rowCount ?? this.rowCount,
     );
   }
-
-  factory CardTotals.fromJson(Map<String, dynamic> json) {
-    return CardTotals(
-      totalWidth: (json['totalWidth'] as num).toDouble(),
-      totalHeight: (json['totalHeight'] as num).toDouble(),
-      columnCount: (json['columnCount'] as num).toInt(),
-      rowCount: (json['rowCount'] as num).toInt(),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      'totalWidth': totalWidth,
-      'totalHeight': totalHeight,
-      'columnCount': columnCount,
-      'rowCount': rowCount,
-    };
-  }
-
-  @override
-  List<Object?> get props => [totalWidth, totalHeight, columnCount, rowCount];
 }
 
-/// 动态文本宽度规格：用于估算单元格内容宽度
-class CellTextSpec {
-  final String rowUuid;
-  final String pillarUuid;
-  final int charCount;
-  final double? fontSize;
+/// Snapshot of all card metrics
+class CardMetricsSnapshot {
+  final Map<String, PillarMetrics> pillars;
+  final Map<String, RowMetrics> rows;
+  final Map<String, CellMetrics> cells;
+  final CardTotals totals;
 
-  const CellTextSpec({
-    required this.rowUuid,
-    required this.pillarUuid,
-    required this.charCount,
-    this.fontSize,
+  const CardMetricsSnapshot({
+    required this.pillars,
+    required this.rows,
+    required this.cells,
+    required this.totals,
   });
 }
 
+/// Options for computing card metrics
 class MetricsComputeOptions {
   final bool includeGripRows;
   final bool includeGripCols;
@@ -325,75 +143,16 @@ class MetricsComputeOptions {
   final double rowTitleWidth;
 
   const MetricsComputeOptions({
-    this.includeGripRows = false,
-    this.includeGripCols = false,
-    this.showTitleRow = false,
-    this.showTitleCol = false,
-    this.cellShowsTitle = false,
+    required this.includeGripRows,
+    required this.includeGripCols,
+    required this.showTitleRow,
+    required this.showTitleCol,
+    required this.cellShowsTitle,
     this.cardPadding,
     this.cardBorderWidth,
-    this.gripRowHeight = 20.0,
-    this.gripColWidth = 20.0,
-    this.columnTitleHeight = 24.0,
-    this.rowTitleWidth = 52.0,
+    required this.gripRowHeight,
+    required this.gripColWidth,
+    required this.columnTitleHeight,
+    required this.rowTitleWidth,
   });
-}
-
-@immutable
-class CardMetricsSnapshot extends Equatable {
-  final Map<String, PillarMetrics> pillars;
-  final Map<String, RowMetrics> rows;
-  final Map<String, CellMetrics> cells;
-  final CardTotals totals;
-
-  const CardMetricsSnapshot({
-    required this.pillars,
-    required this.rows,
-    required this.cells,
-    required this.totals,
-  });
-
-  CardMetricsSnapshot copyWith({
-    Map<String, PillarMetrics>? pillars,
-    Map<String, RowMetrics>? rows,
-    Map<String, CellMetrics>? cells,
-    CardTotals? totals,
-  }) {
-    return CardMetricsSnapshot(
-      pillars: pillars ?? this.pillars,
-      rows: rows ?? this.rows,
-      cells: cells ?? this.cells,
-      totals: totals ?? this.totals,
-    );
-  }
-
-  factory CardMetricsSnapshot.fromJson(Map<String, dynamic> json) {
-    final pillarsJson = json['pillars'] as Map<String, dynamic>;
-    final rowsJson = json['rows'] as Map<String, dynamic>;
-    final cellsJson = json['cells'] as Map<String, dynamic>;
-    return CardMetricsSnapshot(
-      pillars: pillarsJson.map(
-        (k, v) =>
-            MapEntry(k, PillarMetrics.fromJson(v as Map<String, dynamic>)),
-      ),
-      rows: rowsJson.map(
-        (k, v) => MapEntry(k, RowMetrics.fromJson(v as Map<String, dynamic>)),
-      ),
-      cells: cellsJson.map(
-        (k, v) => MapEntry(k, CellMetrics.fromJson(v as Map<String, dynamic>)),
-      ),
-      totals: CardTotals.fromJson(json['totals'] as Map<String, dynamic>),
-    );
-  }
-  Map<String, dynamic> toJson() {
-    return {
-      'pillars': pillars.map((k, v) => MapEntry(k, v.toJson())),
-      'rows': rows.map((k, v) => MapEntry(k, v.toJson())),
-      'cells': cells.map((k, v) => MapEntry(k, v.toJson())),
-      'totals': totals.toJson(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [pillars, rows, cells, totals];
 }

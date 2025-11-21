@@ -20,16 +20,16 @@ class TestPillarInfoDraggable extends StatelessWidget {
       },
     );
 
-    return Draggable<PillarPayload>(
+    return const Draggable<PillarPayload>(
       data: payload,
       feedback: Material(
         elevation: 6,
         color: Colors.transparent,
-        child: const Chip(label: Text('拖拽: 大运柱')),
+        child: Chip(label: Text('拖拽: 大运柱')),
       ),
       childWhenDragging:
-          const Opacity(opacity: 0.5, child: Chip(label: Text('大运柱'))),
-      child: const Chip(label: Text('大运柱')),
+          Opacity(opacity: 0.5, child: Chip(label: Text('大运柱'))),
+      child: Chip(label: Text('大运柱')),
     );
   }
 }

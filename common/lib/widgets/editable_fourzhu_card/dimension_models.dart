@@ -123,15 +123,11 @@ class ColumnDimension implements Measurable {
 
     // 3️⃣ 行标题列
     if (payload.pillarType == PillarType.rowTitleColumn) {
-      return payload.columnWidth ?? ctx.rowTitleWidth;
+      return ctx.rowTitleWidth;
     }
 
     // 4️⃣ 使用 payload 解析宽度
-    return payload.resolveWidth(
-      defaultWidth: ctx.defaultPillarWidth,
-      minWidth: ctx.minPillarWidth,
-      maxWidth: ctx.maxPillarWidth,
-    );
+    return ctx.defaultPillarWidth;
   }
 
   /// 创建覆盖了宽度的副本
@@ -221,10 +217,8 @@ class RowDimension implements Measurable {
       dividerHeight: ctx.rowDividerHeightEffective,
       headerHeight: ctx.columnTitleHeight,
     );
-    final vp = (payload.padding ?? 0.0).clamp(0.0, double.infinity);
-    final mv = (payload.marginVertical ?? 0.0).clamp(0.0, double.infinity);
-    // 行总高度：内容基准 + 内边距上下 + 外边距上下（占位用）
-    return base + (vp * 2) + (mv * 2);
+    // 行总高度：内容基准
+    return base;
   }
 
   /// 创建覆盖了高度的副本

@@ -157,6 +157,7 @@ class BoxShadowStyle extends Equatable {
     );
   }
 
+  
   /// 将对象序列化为 JSON。仅写入非空字段，减少冗余。
   Map<String, dynamic> toJson() => _$BoxShadowStyleToJson(this);
   factory BoxShadowStyle.fromJson(Map<String, dynamic> json) =>

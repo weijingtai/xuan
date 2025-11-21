@@ -27,10 +27,10 @@ class TestDividerRowDraggable extends StatelessWidget {
 
     return Draggable<TextRowPayload>(
       data: payload,
-      feedback: Material(
+      feedback: const Material(
         elevation: 6,
         color: Colors.transparent,
-        child: const Chip(label: Text('拖拽: 行分割符')),
+        child: Chip(label: Text('拖拽: 行分割符')),
       ),
       childWhenDragging:
           const Opacity(opacity: 0.5, child: Chip(label: Text('行分割符'))),

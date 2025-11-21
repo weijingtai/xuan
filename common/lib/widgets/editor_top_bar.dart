@@ -444,7 +444,7 @@ class _TemplateTabChipState extends State<_TemplateTabChip> {
         ? theme.colorScheme.primary.withOpacity(0.16)
         : (_focused || _hovered)
             ? theme.colorScheme.primary.withOpacity(0.08)
-            : theme.colorScheme.surfaceVariant.withOpacity(0.6);
+            : theme.colorScheme.surfaceContainerHighest.withOpacity(0.6);
 
     return Padding(
       padding: const EdgeInsets.only(right: 8),
@@ -653,7 +653,7 @@ class _ViewModeSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDisabled = onChanged == null;
     return SegmentedButton<EditorViewMode>(
-      style: ButtonStyle(
+      style: const ButtonStyle(
         visualDensity: VisualDensity.compact,
       ),
       segments: const [

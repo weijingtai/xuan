@@ -97,7 +97,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
           child: Scaffold(
               backgroundColor: themeData.scaffoldBackgroundColor,
               appBar: AppBar(
-                title: Text("卡片样式编辑"),
+                title: const Text("卡片样式编辑"),
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
@@ -138,7 +138,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            const TemplateGalleryView(),
+                            // const TemplateGalleryView(),
                             const SizedBox(height: 8),
                             // 移除旧的PillarPresetList,已被TemplateGalleryView替代
                             if (viewModel.errorMessage != null)
@@ -175,13 +175,13 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                   ),
                                 ),
                                 padding: const EdgeInsets.all(12),
-                                child: Row(
+                                child: const Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Expanded(
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,
-                                        child: const PillarTagBar(),
+                                        child: PillarTagBar(),
                                       ),
                                     ),
                                     // 右侧柱样式面板已移除，避免挤压卡片区域
@@ -438,9 +438,9 @@ class _UnsavedBanner extends StatelessWidget {
     final theme = Theme.of(context);
     return Material(
       color: theme.colorScheme.tertiaryContainer.withValues(alpha: 0.1),
-      child: ListTile(
-        leading: const Icon(Icons.info_outline),
-        title: const Text('有未保存的更改，按 Ctrl/⌘+S 保存'),
+      child: const ListTile(
+        leading: Icon(Icons.info_outline),
+        title: Text('有未保存的更改，按 Ctrl/⌘+S 保存'),
       ),
     );
   }

@@ -25,8 +25,7 @@ class CardDecorators {
     final Color borderColor = color ??
         controller?.resolveCardBorderColor() ??
         Theme.of(context).colorScheme.secondary.withOpacity(0.25);
-    final double width =
-        controller?.theme.cell?.defaultBorderWidth ?? 1.5;
+    final double width = controller?.theme.cell.defaultBorderWidth ?? 1.5;
     return BoxDecoration(
       border: isHover
           ? Border.all(color: borderColor, width: width)
@@ -50,8 +49,7 @@ class CardDecorators {
     final Color borderColor = color ??
         controller?.resolveCardBorderColor() ??
         Theme.of(context).colorScheme.primary.withOpacity(0.25);
-    final double width =
-        controller?.theme.cell?.defaultBorderWidth ?? 1.5;
+    final double width = controller?.theme.cell.defaultBorderWidth ?? 1.5;
     return BoxDecoration(
       border: isHover
           ? Border.all(color: borderColor, width: width)
@@ -79,7 +77,7 @@ class CardDecorators {
       borderRadius: BorderRadius.circular(borderRadius),
       border: Border.all(
         color: color ?? Theme.of(context).colorScheme.error,
-        width: controller?.theme.cell?.defaultBorderWidth ?? borderWidth,
+        width: controller?.theme.cell.defaultBorderWidth ?? borderWidth,
       ),
     );
   }
@@ -101,8 +99,9 @@ class CardDecorators {
     return BoxDecoration(
       border: Border(
         top: BorderSide(
-          color:
-              color ?? controller?.resolveCardBorderColor() ?? Theme.of(context).dividerColor,
+          color: color ??
+              controller?.resolveCardBorderColor() ??
+              Theme.of(context).dividerColor,
           width: thickness,
         ),
       ),
@@ -126,8 +125,9 @@ class CardDecorators {
     return BoxDecoration(
       border: Border(
         left: BorderSide(
-          color:
-              color ?? controller?.resolveCardBorderColor() ?? Theme.of(context).dividerColor,
+          color: color ??
+              controller?.resolveCardBorderColor() ??
+              Theme.of(context).dividerColor,
           width: thickness,
         ),
       ),
