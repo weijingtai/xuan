@@ -98,7 +98,8 @@ class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
               Container(
                 alignment: Alignment.center,
                 height: (widget.content.style!.fontSize! * widget.constant)
-                    .ceilToDouble(),
+                    .toInt()
+                    .toDouble(),
                 child: widget.content,
               ),
               if (widget.subChild != null) widget.subChild!,

@@ -91,7 +91,7 @@ class TextStyleConfig {
                 .entries
                 .map((e) => MapEntry(e.value, Colors.black87))),
             colorfulLightMapper: Map.fromEntries(ConstResourcesMapper
-                .zodiacGanColors
+                .zodiacZhiColors
                 .map((k, v) => MapEntry(k.name, v))
                 .entries),
             pureDarkMapper: Map.fromEntries(allZhiStrList
@@ -99,7 +99,7 @@ class TextStyleConfig {
                 .entries
                 .map((e) => MapEntry(e.value, Colors.white))),
             colorfulDarkMapper: Map.fromEntries(ConstResourcesMapper
-                .zodiacGanColors
+                .zodiacZhiColors
                 .map((k, v) => MapEntry(k.name, v))
                 .entries),
           ),
@@ -141,8 +141,8 @@ class TextStyleConfig {
     ),
     textShadowDataModel: TextShadowDataModel(),
     fontStyleDataModel: FontStyleDataModel(
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
+      fontWeight: FontWeight.normal,
+      fontSize: 14,
       fontFamily: 'NotoSansSC',
     ),
   );

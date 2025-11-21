@@ -35,22 +35,20 @@ class SidebarExplorer extends StatelessWidget {
               child: const RowStyleEditorPanel(),
             ),
             const SizedBox(height: 12),
-            Selector<FourZhuCardDemoViewModel, PillarSection>(
-              selector: (_, vm) => vm.theme.pillar,
-              builder: (context, pillarConfig, child) =>
-                  SidebarPillarEditorSection(
-                      pillarSection: pillarConfig,
-                      title: '柱样式',
-                      icon: Icons.view_column,
-                      onChanged: (config) {
-                        Provider.of<FourZhuCardDemoViewModel>(context,
-                                listen: false)
-                            .updateEditableFourZhuCardTheme(
-                                Provider.of<FourZhuCardDemoViewModel>(context,
-                                        listen: false)
-                                    .theme
-                                    .copyWith(pillar: config));
-                      }),
+            ValueListenableBuilder(
+              valueListenable:
+                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false)
+                      .themeNotifier,
+              builder: (context, theme, child) => SidebarPillarEditorSection(
+                  pillarSection: theme.pillar,
+                  title: '柱样式',
+                  icon: Icons.view_column,
+                  onChanged: (config) {
+                    Provider.of<FourZhuCardDemoViewModel>(context,
+                            listen: false)
+                        .updateEditableFourZhuCardTheme(
+                            theme.copyWith(pillar: config));
+                  }),
             ),
             const SizedBox(height: 12),
             _section(

@@ -34,7 +34,8 @@ class EditableCardThemeBuilder {
   }
 
   /// 构建 TypographySection 实例
-  static TypographySection buildTypographySection(EditableFourZhuCardTheme theme) {
+  static TypographySection buildTypographySection(
+      EditableFourZhuCardTheme theme) {
     return TypographySection(
       globalContent: theme.typography.globalContent,
       globalTitle: theme.typography.globalTitle,
@@ -540,8 +541,8 @@ class TypographySection {
         pillarTitle: TextStyleConfig.defaultOthersConfig,
         globalCellTitle: TextStyleConfig.defaultOthersTitleConfig,
         cellContentMapper: {
-          RowType.earthlyBranch: TextStyleConfig.defaultGanConfig,
-          RowType.heavenlyStem: TextStyleConfig.defaultZhiConfig,
+          RowType.earthlyBranch: TextStyleConfig.defaultZhiConfig,
+          RowType.heavenlyStem: TextStyleConfig.defaultGanConfig,
         },
         cellTitleMapper: {},
       );
@@ -550,6 +551,7 @@ class TypographySection {
     if (rowType == RowType.columnHeaderRow) {
       return rowTitle;
     }
+
     return cellContentMapper[rowType] ?? globalContent;
   }
 

@@ -82,6 +82,8 @@ class CellMetrics {
     required this.marginVertical,
     required this.borderWidth,
   });
+  Size get size => Size(decorationWidth + contentWidth + borderWidth * 2,
+      decorationHeight + contentHeight + borderWidth * 2);
 }
 
 /// Total card metrics

@@ -70,8 +70,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   late CharColorStrategy _charColorStrategy;
 
   /// 当前主题配置与解析控制器。
-  late EditableFourZhuCardTheme _theme;
-  EditableFourZhuCardTheme get theme => _theme;
+  // late EditableFourZhuCardTheme _theme;
+  // EditableFourZhuCardTheme get theme => _theme;
+
+  late final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
 
   EditableFourZhuThemeController? _themeController;
 
@@ -93,8 +95,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       time: JiaZi.DING_MAO,
     );
 
-    // 默认主题：卡片边角与排版参数。
-    _theme = EditableFourZhuCardTheme(
+    themeNotifier = ValueNotifier(EditableFourZhuCardTheme(
       displayHeaderRow: true,
       displayRowTitleColumn: true,
       card: CardStyleConfig.defaultCardStyleConfig,
@@ -121,8 +122,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
         // borderWidth: 0,
       ),
       typography: TypographySection.defaultTypographySection,
-    );
-    _themeController = EditableFourZhuThemeController(_theme);
+    ));
+
+    // 默认主题：卡片边角与排版参数。
+    _themeController = EditableFourZhuThemeController(themeNotifier.value);
 
     final titleUuid = Uuid().v4();
     final yearUuid = Uuid().v4();
@@ -286,8 +289,9 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   bool get debugHysteresisOverlay => _debugHysteresisOverlay;
 
   void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
-    _theme = newTheme;
-    _themeController = EditableFourZhuThemeController(_theme);
+    // _theme = newTheme;
+    themeNotifier.value = newTheme;
+    _themeController = EditableFourZhuThemeController(themeNotifier.value);
     // 主动同步内边距以触发 V3 的重算链，避免等值短路导致监听未触发
     paddingNotifier.value = newTheme.card.padding;
     final list =
@@ -397,8 +401,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   /// 参数：t 新主题。
   /// 返回：无。
   void setTheme(EditableFourZhuCardTheme t) {
-    _theme = t;
-    _themeController = EditableFourZhuThemeController(_theme);
+    themeNotifier.value = t;
+    _themeController = EditableFourZhuThemeController(t);
     final list =
         List<PillarPayload>.of(cardPayloadNotifier.value.pillarMap.values);
     for (var i = 0; i < list.length; i++) {

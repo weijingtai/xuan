@@ -42,8 +42,6 @@ class EditableFourZhuStyleEditorPanel extends StatefulWidget {
 class _EditableFourZhuStyleEditorPanelState
     extends State<EditableFourZhuStyleEditorPanel> {
   _EditableFourZhuStyleEditorPanelState();
-  EditableFourZhuCardTheme get _theme =>
-      Provider.of<FourZhuCardDemoViewModel>(context, listen: false).theme;
   late final ValueNotifier<CardStyleConfig> _cardStyleConfig;
 
   // Cached scalar controls for convenience (uniform values)
@@ -66,6 +64,8 @@ class _EditableFourZhuStyleEditorPanelState
 
   // 分组字符设计功能已移除
 
+  FourZhuCardDemoViewModel get vm => context.read<FourZhuCardDemoViewModel>();
+
   @override
 
   /// 初始化状态：从外部传入的主题加载控件值并建立本地缓存。
@@ -76,15 +76,16 @@ class _EditableFourZhuStyleEditorPanelState
     super.initState();
     final vm = context.read<FourZhuCardDemoViewModel>();
     vm.addListener(() {
-      _cardStyleConfig.value = vm.theme.card;
+      _cardStyleConfig.value = vm.themeNotifier.value.card;
     });
-    _cardStyleConfig = ValueNotifier<CardStyleConfig>(vm.theme.card)
-      ..addListener(() {
-        vm.updateEditableFourZhuCardTheme(
-            _theme.copyWith(card: _cardStyleConfig.value));
-        final editorVm = context.read<FourZhuEditorViewModel>();
-        editorVm.updateCardContentInsets(_cardStyleConfig.value.padding);
-      });
+    _cardStyleConfig =
+        ValueNotifier<CardStyleConfig>(vm.themeNotifier.value.card)
+          ..addListener(() {
+            vm.updateEditableFourZhuCardTheme(
+                vm.themeNotifier.value.copyWith(card: _cardStyleConfig.value));
+            final editorVm = context.read<FourZhuEditorViewModel>();
+            editorVm.updateCardContentInsets(_cardStyleConfig.value.padding);
+          });
   }
 
   @override
@@ -267,7 +268,7 @@ class _EditableFourZhuStyleEditorPanelState
                 ],
                 onChanged: (v) {
                   _globalFontFamily = (v ?? '').trim();
-                  _emit(_theme.copyWith(
+                  _emit(vm.themeNotifier.value.copyWith(
                       typography: TypographySection.defaultTypographySection));
                 },
               ),
@@ -280,7 +281,7 @@ class _EditableFourZhuStyleEditorPanelState
                 onChanged: (v) {
                   _globalFontSize = v;
                   _emit(
-                    _theme.copyWith(
+                    vm.themeNotifier.value.copyWith(
                         typography: TypographySection.defaultTypographySection),
                   );
                 },
@@ -294,7 +295,7 @@ class _EditableFourZhuStyleEditorPanelState
                 controller: TextEditingController(text: _preferredFamiliesText),
                 onChanged: (v) {
                   _preferredFamiliesText = v;
-                  _emit(_theme.copyWith(
+                  _emit(vm.themeNotifier.value.copyWith(
                       typography: TypographySection.defaultTypographySection));
                 },
               ),
