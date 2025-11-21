@@ -4739,12 +4739,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       text: s, style: TextStyle(fontSize: 16, color: Colors.pink));
   Widget _rowTitleText2(TextRowPayload textRowPayload) {
     // return multiLineCell(size: , cellStyleConfig: widget.themeNotifier.value.typography.rowTitle, mainTextStyleConfig: mainTextStyleConfig, content: content)
+
     var rt = widget.themeNotifier.value.typography.rowTitle;
     var textStyle = rt.toTextStyleWithoutContent(
         brightness: widget.brightnessNotifier.value,
         mode: widget.colorPreviewModeNotifier.value);
+    var rowHeight = _rowHeightByName(textRowPayload.rowType.name);
+    // multiLineCell(
+    //   size: Size(, rowHeight), cellStyleConfig: cellStyleConfig, mainTextStyleConfig: mainTextStyleConfig, content: content)
+
     return EditableSingleTextCell(
         text: _labelForRowType(textRowPayload.rowType), style: textStyle);
+    // CardMetricsSnapshot
   }
 
   /// Maps a `RowType` to its default display label.
