@@ -38,6 +38,8 @@ class PillarMetrics {
     required this.marginVertical,
     required this.borderWidth,
   });
+  double get width => contentWidth + decorationWidth;
+  double get height => contentHeight + decorationHeight;
 }
 
 /// Metrics for a single row

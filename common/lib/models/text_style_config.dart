@@ -41,6 +41,34 @@ class TextStyleConfig {
     // 基础属性（当前已支持）
   });
 
+  TextStyle toTextStyleWithoutContent({
+    required Brightness brightness,
+    required ColorPreviewMode mode,
+  }) {
+    var textColor = colorMapperDataModel.getBy(
+        theme: brightness, mode: mode, content: null);
+    var shadowColor = textShadowDataModel.followTextColor
+        ? textColor
+        : (brightness == Brightness.light
+            ? textShadowDataModel.lightShadowColor
+            : textShadowDataModel.darkShadowColor);
+    return TextStyle(
+        fontSize: fontStyleDataModel.fontSize,
+        fontFamily: fontStyleDataModel.fontFamily,
+        fontWeight: fontStyleDataModel.fontWeight,
+        color: textColor,
+        shadows: textShadowDataModel.shadowEnabled
+            ? [
+                Shadow(
+                    color: shadowColor.withAlpha(
+                        (255 * textShadowDataModel.shadowOpacity).toInt()),
+                    blurRadius: textShadowDataModel.shadowBlurRadius,
+                    offset: Offset(textShadowDataModel.shadowOffsetX,
+                        textShadowDataModel.shadowOffsetY))
+              ]
+            : []);
+  }
+
   static TextStyleConfig get defaultGanConfig => () {
         List<String> allGanStrList = TianGan.values
             .where((e) => e != TianGan.KONG_WANG)
@@ -222,8 +250,8 @@ class TextStyleConfig {
   }) {
     Color? textColor;
     if (char != null && colorPreviewMode != null && brightness != null) {
-      final mapper =
-          colorMapperDataModel.getBy(theme: brightness, mode: colorPreviewMode);
+      final mapper = colorMapperDataModel.getMapperBy(
+          theme: brightness, mode: colorPreviewMode);
       textColor = mapper[char];
       // print(
       //     '🔍 [toTextStyle] 字符="$char", mode=$colorPreviewMode, brightness=$brightness');
@@ -591,7 +619,7 @@ class ColorMapperDataModel {
     required this.colorfulDarkMapper,
     this.defaultColor = Colors.blueGrey,
   });
-  Map<String, Color> getBy({
+  Map<String, Color> getMapperBy({
     required Brightness theme,
     required ColorPreviewMode mode,
   }) {
@@ -607,6 +635,17 @@ class ColorMapperDataModel {
     }
   }
 
+  Color getBy({
+    required Brightness theme,
+    required ColorPreviewMode mode,
+    required String? content,
+  }) {
+    if (content == null) {
+      return defaultColor;
+    }
+    return getMapperBy(theme: theme, mode: mode)[content] ?? defaultColor;
+  }
+
   ColorMapperDataModel update({
     required Brightness brightness,
     required ColorPreviewMode mode,
@@ -614,7 +653,7 @@ class ColorMapperDataModel {
     required Color color,
   }) {
     // 根据 theme 和 mode 定位对应的 mapper
-    final mapper = getBy(theme: brightness, mode: mode);
+    final mapper = getMapperBy(theme: brightness, mode: mode);
     // 创建新的 mapper 副本并更新指定 char 的颜色
     final updatedMapper = Map<String, Color>.from(mapper);
     updatedMapper[char] = color;

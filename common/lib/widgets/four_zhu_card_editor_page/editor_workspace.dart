@@ -248,38 +248,38 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                         RowType.xunShou: XunShouRowStrategy(),
                       },
 
-                      cardDecoration: BoxDecoration(
-                        color: Provider.of<FourZhuCardDemoViewModel>(context,
-                                    listen: true)
-                                .themeController
-                                ?.resolveCardBackgroundColor() ??
-                            Theme.of(context).colorScheme.surface,
-                        borderRadius: BorderRadius.circular(
-                          Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
-                                  .themeController
-                                  ?.resolveCardCornerRadius() ??
-                              12,
-                        ),
-                        boxShadow: Provider.of<FourZhuCardDemoViewModel>(
-                                context,
-                                listen: false)
-                            .themeController
-                            ?.resolveCardBoxShadow(),
-                        border: Border.all(
-                          color: Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
-                                  .themeController
-                                  ?.resolveCardBorderColor() ??
-                              Theme.of(context).dividerColor.withOpacity(0.35),
-                          width: Provider.of<FourZhuCardDemoViewModel>(context,
-                                      listen: false)
-                                  .themeController
-                                  ?.resolveCardEffectiveBorderWidth() ??
-                              1,
-                        ),
-                      ),
-                      // 绑定全局排版到 V3 卡片
+                      // cardDecoration: BoxDecoration(
+                      //   color: Provider.of<FourZhuCardDemoViewModel>(context,
+                      //               listen: true)
+                      //           .themeController
+                      //           ?.resolveCardBackgroundColor() ??
+                      //       Theme.of(context).colorScheme.surface,
+                      //   borderRadius: BorderRadius.circular(
+                      //     Provider.of<FourZhuCardDemoViewModel>(context,
+                      //                 listen: false)
+                      //             .themeController
+                      //             ?.resolveCardCornerRadius() ??
+                      //         12,
+                      //   ),
+                      //   boxShadow: Provider.of<FourZhuCardDemoViewModel>(
+                      //           context,
+                      //           listen: false)
+                      //       .themeController
+                      //       ?.resolveCardBoxShadow(),
+                      //   border: Border.all(
+                      //     color: Provider.of<FourZhuCardDemoViewModel>(context,
+                      //                 listen: false)
+                      //             .themeController
+                      //             ?.resolveCardBorderColor() ??
+                      //         Theme.of(context).dividerColor.withOpacity(0.35),
+                      //     width: Provider.of<FourZhuCardDemoViewModel>(context,
+                      //                 listen: false)
+                      //             .themeController
+                      //             ?.resolveCardEffectiveBorderWidth() ??
+                      //         1,
+                      //   ),
+                      // ),
+                      // // 绑定全局排版到 V3 卡片
                       // globalFontFamily:
                       //     (globalFamily != null && globalFamily.isNotEmpty)
                       //         ? globalFamily

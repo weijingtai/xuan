@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.dart';
@@ -53,16 +55,17 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 /// 统一使用 theme 参数进行样式配置
 class EditableFourZhuCardV3 extends StatefulWidget {
   final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
+  final ValueNotifier<CardPayload> cardPayloadNotifier;
+
   final ValueNotifier<Brightness> brightnessNotifier;
   final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
   // final EditableFourZhuCardTheme? theme;
-  final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
 
-  final ValueNotifier<CardPayload> cardPayloadNotifier;
   final ValueNotifier<EdgeInsets> paddingNotifier;
   final Gender gender;
   // Optional: override root card decoration (background, radius, etc.)
-  final BoxDecoration? cardDecoration;
+  // final BoxDecoration? cardDecoration;
   // Optional: global typography overrides for V3 rendering
   // When provided, these values will override internal hard-coded TextStyles
   // Optional: per-group text style overrides; takes precedence over global typography.
@@ -119,7 +122,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.paddingNotifier,
     required this.rowStrategyMapper,
     required this.gender,
-    this.cardDecoration,
+    // this.cardDecoration,
     this.onRowsReordered,
     // this.perGanColors,
     // this.perZhiColors,
@@ -372,7 +375,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // 卡片边框厚度（水平/垂直）合计，用于在整体尺寸中加上边框占用的空间，避免内容被裁剪或溢出。
   double get _cardBorderHorizontalEff {
-    final border = widget.cardDecoration?.border;
+    final border = widget.themeNotifier.value.card.toBoxDecoration().border;
     if (border == null) return 0.0;
     final dimsGeo = border.dimensions; // EdgeInsetsGeometry
     final dims = dimsGeo is EdgeInsets
@@ -382,7 +385,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   double get _cardBorderVerticalEff {
-    final border = widget.cardDecoration?.border;
+    final border = widget.themeNotifier.value.card.toBoxDecoration().border;
     if (border == null) return 0.0;
     final dimsGeo = border.dimensions; // EdgeInsetsGeometry
     final dims = dimsGeo is EdgeInsets
@@ -392,7 +395,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   double _resolveUniformCardBorderWidth() {
-    final border = widget.cardDecoration?.border;
+    final border = widget.themeNotifier.value.card.toBoxDecoration().border;
     if (border == null) return 0.0;
     final dimsGeo = border.dimensions;
     final dims = dimsGeo is EdgeInsets
@@ -408,12 +411,29 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   CardMetricsSnapshot _computeMetricsSnapshot() {
     final cp = widget.cardPayloadNotifier.value;
+    final CardPayload payload = cp;
+    // 构建 cell 文本规格映射
+    final specMap = _buildCellTextSpecMap();
+    final calc = CardMetricsCalculator(
+      theme: widget.themeNotifier.value,
+      payload: payload,
+      defaultPillarWidth: pillarWidth,
+      lineHeightFactor: 1.4,
+      cellTextSpecMap: specMap,
+      avgGlyphWidthScale: 1.2,
+    );
+    return calc.compute();
+  }
+
+  /// 构建 cell 文本规格映射
+  /// 基于当前的 cardPayload、rowStrategyMapper 和 typography 计算每个 cell 的字符数
+  Map<String, CellTextSpec> _buildCellTextSpecMap() {
+    final cp = widget.cardPayloadNotifier.value;
     final List<PillarPayload> pillars =
         cp.pillarOrderUuid.map((id) => cp.pillarMap[id]!).toList();
     final List<RowPayload> rowsLite =
         cp.rowOrderUuid.map((id) => cp.rowMap[id]!).toList();
-    final CardPayload payload = cp;
-    // 构建 cell 文本规格映射
+
     final Map<String, CellTextSpec> specMap = {};
     JiaZi? dayJiaZi;
     try {
@@ -421,6 +441,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           pillars.firstWhere((p) => p.pillarType == PillarType.day);
       dayJiaZi = _pillarJiaZiFromPayload(dayPayload);
     } catch (_) {}
+
     for (final r in rowsLite) {
       final rt = r.rowType;
       for (final p in pillars) {
@@ -447,15 +468,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         );
       }
     }
-    final calc = CardMetricsCalculator(
-      theme: widget.themeNotifier.value,
-      payload: payload,
-      defaultPillarWidth: pillarWidth,
-      lineHeightFactor: 1.4,
-      cellTextSpecMap: specMap,
-      avgGlyphWidthScale: 1.2,
-    );
-    return calc.compute();
+    return specMap;
   }
 
   // 将逻辑尺寸向下对齐到物理像素，减少由于子像素导致的 RenderFlex 溢出告警
@@ -974,21 +987,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // 刷新尺寸（包含装饰），确保父级约束与布局实时更新
       _sizeNotifier.value = _computeSizeWithDecorationsV2();
     }
-    final oldBorder = oldWidget.cardDecoration?.border;
-    final newBorder = widget.cardDecoration?.border;
-    if (oldBorder != newBorder) {
-      final oldGeo = oldBorder?.dimensions;
-      final newGeo = newBorder?.dimensions;
-      final EdgeInsets oldDims = oldGeo is EdgeInsets
-          ? oldGeo
-          : (oldGeo?.resolve(Directionality.of(context)) ?? EdgeInsets.zero);
-      final EdgeInsets newDims = newGeo is EdgeInsets
-          ? newGeo
-          : (newGeo?.resolve(Directionality.of(context)) ?? EdgeInsets.zero);
-      if (oldDims != newDims) {
-        _sizeNotifier.value = _computeSizeWithDecorationsV2();
-      }
-    }
+    // final oldBorder = oldWidget.cardDecoration?.border;
+    // final newBorder = widget.cardDecoration?.border;
+    // if (oldBorder != newBorder) {
+    //   final oldGeo = oldBorder?.dimensions;
+    //   final newGeo = newBorder?.dimensions;
+    //   final EdgeInsets oldDims = oldGeo is EdgeInsets
+    //       ? oldGeo
+    //       : (oldGeo?.resolve(Directionality.of(context)) ?? EdgeInsets.zero);
+    //   final EdgeInsets newDims = newGeo is EdgeInsets
+    //       ? newGeo
+    //       : (newGeo?.resolve(Directionality.of(context)) ?? EdgeInsets.zero);
+    //   if (oldDims != newDims) {
+    //     _sizeNotifier.value = _computeSizeWithDecorationsV2();
+    //   }
+    // }
   }
 
   @override
@@ -1016,10 +1029,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return ValueListenableBuilder<Size>(
       valueListenable: _sizeNotifier,
       builder: (context, size, child) {
-        final double minW = 64.0;
-        final double minH = 64.0;
-        final double safeW = size.width < minW ? minW : size.width;
-        final double safeH = size.height < minH ? minH : size.height;
+        // final double minW = 64.0;
+        // final double minH = 64.0;
+        // final double safeW = size.width < minW ? minW : size.width;
+        // final double safeH = size.height < minH ? minH : size.height;
         // Expand card size dynamically only when hovering an external pillar/row
         final pillars = _effectivePillarsTuples();
         final rows = _currentRowLabels();
@@ -1052,7 +1065,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           fallbackHeight: otherCellHeight,
         );
         final double extraRowHeight = hasRowGhost ? ghostHeight : 0.0;
-        final BoxDecoration? baseDeco = widget.cardDecoration;
+        final BoxDecoration? baseDeco =
+            widget.themeNotifier.value.card.toBoxDecoration();
         BoxDecoration? effectiveDeco = baseDeco;
         if (baseDeco != null && baseDeco.borderRadius != null) {
           final br = baseDeco.borderRadius!.resolve(Directionality.of(context));
@@ -1067,31 +1081,34 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         }
         return Stack(
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 240),
-              curve: Curves.easeInOutCubic,
-              key: _cardKey,
-              width: safeW + extraColWidth,
-              height: safeH + extraRowHeight,
-              alignment: _preferCenterAlignment
-                  ? Alignment.center
-                  : AlignmentDirectional.topStart,
-              clipBehavior: Clip.none,
-              decoration: effectiveDeco ??
-                  BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-              child: ValueListenableBuilder<EdgeInsets>(
-                valueListenable: widget.paddingNotifier,
-                builder: (context, padding, child) {
-                  return Padding(
-                    padding: padding ?? EdgeInsets.zero,
-                    child: _buildGrid(size),
-                  );
-                },
-              ),
+            ValueListenableBuilder<EditableFourZhuCardTheme>(
+              valueListenable: widget.themeNotifier,
+              builder: (context, theme, child) {
+                final padding = theme.card.padding;
+                final borderWidth = _resolveUniformCardBorderWidth();
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 240),
+                  curve: Curves.easeInOutCubic,
+                  key: _cardKey,
+                  padding: padding,
+                  width: size.width +
+                      padding.left +
+                      padding.right +
+                      borderWidth * 2,
+                  height: size.height +
+                      padding.top +
+                      padding.bottom +
+                      borderWidth * 2,
+                  alignment: _preferCenterAlignment
+                      ? Alignment.center
+                      : AlignmentDirectional.topStart,
+                  clipBehavior: Clip.none,
+                  decoration: effectiveDeco,
+                  child: _buildGrid(size),
+                );
+              },
             ),
+
             // 全卡列插入 DragTarget：在卡片任意位置悬停时计算列插入索引
             Positioned.fill(
               child: DragTarget<Object>(
@@ -1326,11 +1343,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                     final List<double> midYs = [];
                     final List<double> rowHeights = [];
-                    final padding = widget.paddingNotifier.value;
 
                     // 坐标系对齐：从整个卡片顶部开始计算
-                    // acc 初始值 = padding.top + topGripRow 高度
-                    double acc = padding.top + dragHandleRowHeight;
+                    // acc 初始值 = topGripRow 高度（padding 由 Container 处理）
+                    double acc = dragHandleRowHeight;
 
                     // 添加所有行的中点和高度，表头行使用 columnTitleHeight
                     for (int i = 0; i < rows.length; i++) {
@@ -2286,22 +2302,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             final titleWidget = isHeaderRow &&
                                     rPayload is ColumnHeaderRowPayload
                                 ? _genderText(rPayload.gender)
-                                : _rowTitleText(
-                                    rPayload?.rowLabel ??
-                                        (rPayload?.rowType != null
-                                            ? _labelForRowType(
-                                                rPayload!.rowType)
-                                            : rowName),
-                                  );
+                                : _rowTitleText2(rPayload!);
+                            // : _rowTitleText(
+                            //     rPayload?.rowLabel ??
+                            //         (rPayload?.rowType != null
+                            //             ? _labelForRowType(
+                            //                 rPayload!.rowType)
+                            //             : rowName),
+                            //   );
 
                             // 只显示标题，不允许拖拽
                             final contentW = rowTitleWidth;
                             cell = _cell(
                               Size(contentW, rowSize.height),
                               Center(child: titleWidget),
-                              verticalPadding: _getRowPaddingByIndex(absRowIdx),
-                              horizontalPadding:
-                                  _getRowHorizontalPaddingByIndex(absRowIdx),
+                              // verticalPadding: _getRowPaddingByIndex(absRowIdx),
+                              // horizontalPadding:
+                              // _getRowHorizontalPaddingByIndex(absRowIdx),
                             );
                             // 始终将单元格加入当前列的行子组件列表（标题列）
                             rowChildren.add(AnimatedSlide(
@@ -3064,7 +3081,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     predictHeight += cellStyleConfig.getDecorationHeight();
 
     return EditableMultiTextCell(
-      size: Size(cellWidth, predictHeight),
+      // size: Size(cellWidth, predictHeight),
+      size: size,
       content: Text(content, style: mainTextStyleConfig.toTextStyle()),
       subChild: Container(),
       // subChild: title != null
@@ -3159,10 +3177,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, pillarConfig, __) {
                 final pillarType = pillars[pillarIndex].pillarType;
                 final PillarStyleConfig config = pillarConfig.getBy(pillarType);
-                Color bkColor =
-                    config.lightBackgroundColor == Colors.transparent
-                        ? widget.cardDecoration?.color ?? Colors.white
-                        : config.lightBackgroundColor ?? Colors.white;
+                Color bkColor = config.lightBackgroundColor ==
+                        Colors.transparent
+                    ? widget.themeNotifier.value.card.toBoxDecoration().color ??
+                        Colors.white
+                    : config.lightBackgroundColor ?? Colors.white;
 
                 // 使用与 CardMetricsCalculator 一致的宽度计算：contentWidth + decorationWidth
                 // decorationWidth 包含 margin + padding + border*2
@@ -4462,11 +4481,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final pillars = _currentPillars();
     final rows = _currentTextRows();
 
+    // 使用辅助方法构建 cellTextSpecMap
+    final specMap = _buildCellTextSpecMap();
+
     final calc = CardMetricsCalculator(
       theme: widget.themeNotifier.value,
       payload: widget.cardPayloadNotifier.value,
       defaultPillarWidth: pillarWidth,
       lineHeightFactor: 1.4,
+      cellTextSpecMap: specMap,
+      avgGlyphWidthScale: 1.2,
     );
     final opts = MetricsComputeOptions(
       includeGripRows: widget.showGripRows,
@@ -4548,7 +4572,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
 
     // 刷新整体尺寸（包含装饰），确保 UI 与度量数据一致
-    _sizeNotifier.value = _computeSizeWithDecorations();
+    _sizeNotifier.value = _computeSizeWithDecorationsV2();
   }
 
   // Build full row feedback (row title + cells across all columns)
@@ -4647,13 +4671,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     verticalPadding: _getRowPadding(rowName),
                     horizontalPadding: _getRowHorizontalPadding(rowName));
               } else if (rowType == RowType.naYin) {
-                return _cell(Size(colW, rowH), _naYinText(jz.naYinStr),
+                return _cell(Size(colW, rowH), Text("纳音"),
                     verticalPadding: _getRowPadding(rowName),
                     horizontalPadding: _getRowHorizontalPadding(rowName));
               } else if (rowType == RowType.kongWang) {
                 final kw = jz.getKongWang();
                 final text = '${kw.item1.value}${kw.item2.value}';
-                return _cell(Size(colW, rowH), _kongWangText(text),
+                return _cell(Size(colW, rowH), Text("空亡"),
                     verticalPadding: _getRowPadding(rowName),
                     horizontalPadding: _getRowHorizontalPadding(rowName));
               } else if (rowType == RowType.columnHeaderRow) {
@@ -4698,9 +4722,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Text _genderText(Gender gender) => Text(
         gender == Gender.male ? '乾造' : '坤造',
-        style: _resolveTextStyle(
+        style: TextStyle(
           fontSize: 14,
-          weight: FontWeight.bold,
+          fontWeight: FontWeight.bold,
           color: Colors.black87,
         ),
       );
@@ -4712,11 +4736,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   ///
   /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Widget _rowTitleText(String s) => EditableSingleTextCell(
-        text: s,
-        style: _resolveTextStyle(
-          group: TextGroup.rowTitle,
-        ),
-      );
+      text: s, style: TextStyle(fontSize: 16, color: Colors.pink));
+  Widget _rowTitleText2(TextRowPayload textRowPayload) {
+    // return multiLineCell(size: , cellStyleConfig: widget.themeNotifier.value.typography.rowTitle, mainTextStyleConfig: mainTextStyleConfig, content: content)
+    var rt = widget.themeNotifier.value.typography.rowTitle;
+    var textStyle = rt.toTextStyleWithoutContent(
+        brightness: widget.brightnessNotifier.value,
+        mode: widget.colorPreviewModeNotifier.value);
+    return EditableSingleTextCell(
+        text: _labelForRowType(textRowPayload.rowType), style: textStyle);
+  }
 
   /// Maps a `RowType` to its default display label.
   ///
@@ -4773,9 +4802,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// Returns: A `Text` widget styled by `_resolveTextStyle`.
   Widget _columnTitleText(String s) => EditableSingleTextCell(
         text: s,
-        style: _resolveTextStyle(
-          group: TextGroup.columnTitle,
-        ),
+        style: TextStyle(fontSize: 16, color: Colors.amber),
       );
 
   /// Builds TianGan text.
@@ -4796,7 +4823,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   TextStyle _resolveGanZhiTextStyle(
       {required RowType rowType, required String content}) {
     final ts = widget.themeNotifier.value.typography.getCellContentBy(rowType);
-    var tmp = ts.colorMapperDataModel.getBy(
+    var tmp = ts.colorMapperDataModel.getMapperBy(
         theme: widget.brightnessNotifier.value,
         mode: widget.colorPreviewModeNotifier.value);
     // print("${rowType.name} $content,tmp: $tmp");
@@ -4847,12 +4874,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - [s]: The NaYin string to render.
   ///
   /// Returns: A `Text` widget styled by `_resolveTextStyle`.
-  Widget _naYinText(String s) => EditableSingleTextCell(
-        text: s,
-        style: _resolveTextStyle(
-          group: TextGroup.naYin,
-        ),
-      );
 
   /// Builds KongWang text with optional global/group typography overrides.
   ///
@@ -4873,173 +4894,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   //       //   group: TextGroup.kongWang,
   //       // ),
   //     );
-  Widget _kongWangText(String s) => EditableSingleTextCell(
-        text: s,
-        style: _resolveTextStyle(
-          group: TextGroup.kongWang,
-        ),
-      );
-
-  /// Returns the centralized default TextStyle for a given [TextGroup].
-  ///
-  /// Parameters:
-  /// - [group]: The logical text group for which to resolve default style.
-  ///
-  /// Returns: A `TextStyle` containing the group-specific default typography.
-  TextStyle _defaultTextStyleForGroup(TextGroup? group) {
-    switch (group) {
-      case TextGroup.rowTitle:
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        );
-      case TextGroup.columnTitle:
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        );
-      case TextGroup.naYin:
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.amber,
-        );
-      case TextGroup.kongWang:
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.black87,
-        );
-      case TextGroup.tenGod:
-        // 十神：保守默认（14sp / w400 / 黑色系），后续可根据视觉规范微调
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.black87,
-        );
-      case TextGroup.xunShou:
-        // 旬首：保守默认（14sp / w400 / 黑色系）
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.black87,
-        );
-      case TextGroup.hiddenStems:
-        // 藏干系列：统一使用保守默认（14sp / w400 / 黑色系）
-        return const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
-          color: Colors.black87,
-        );
-      case TextGroup.tianGan:
-        // 注意：颜色在彩色模式下通过字符映射解析；在非彩色模式下使用黑色。
-        return const TextStyle(
-          fontSize: 24,
-          color: Colors.red,
-          fontWeight: FontWeight.w400,
-          // 颜色按逻辑在 _resolveTextStyle 中处理
-        );
-      case TextGroup.diZhi:
-        return const TextStyle(
-          fontSize: 24,
-          color: Colors.yellow,
-          fontWeight: FontWeight.w500,
-        );
-      default:
-        return const TextStyle();
-    }
-  }
-
-  /// 解析并合并最终文本样式（分组覆盖 + 全局设置 + 入参覆写）。
-  ///
-  /// 参数说明：
-  /// - `fontSize`：入参字号（可选），用于临时覆写；
-  /// - `weight`：入参字重（可选），用于临时覆写；
-  /// - `color`：入参颜色（可选），用于临时覆写；
-  /// - `group`：文本分组（行标题、列标题、天干、地支、纳音等），用于选择默认样式与分组覆写。
-  ///
-  /// 优先级规则：
-  /// 1) 分组默认样式 `_defaultTextStyleForGroup(group)` 作为基线；
-  /// 2) 应用全局设置：`globalFontFamily/globalFontSize/globalFontColor`；
-  ///    - 彩色模式（`colorfulMode`）下的天干/地支抑制全局颜色，避免覆盖字符映射颜色；
-  /// 3) 应用分组覆写 `groupTextStyles[group]`：
-  ///    - 若分组设置了颜色（表示不跟随字符颜色），则优先使用该颜色；
-  ///    - 字体家族、字号、字重与阴影均按分组配置覆盖；
-  /// 4) 最后应用入参覆写 `fontSize/weight/color`（若提供），用于在调用端进行临时强化覆写。
-  ///
-  /// 兼容说明：
-  /// - 当前组件使用 `Map<TextGroup, TextStyle>` 作为分组覆盖；在项目其他渲染路径采用 `TextStyleConfig` 优先策略的背景下，分组覆盖在本组件中等同于“配置优先”，确保一致的优先级语义。
-  /// - 天干/地支的颜色由彩色模式下的字符映射解析；当分组显式指定颜色或入参提供颜色时，按上述优先级覆盖。
-  ///
-  /// 返回值：最终合并后的 `TextStyle`。
-  TextStyle _resolveTextStyle({
-    double? fontSize,
-    FontWeight? weight,
-    Color? color,
-    TextGroup? group,
-  }) {
-    // 以分组默认样式为起点，避免在调用处硬编码常量
-    var style = _defaultTextStyleForGroup(group);
-    // 先应用全局设置（分组覆写在后，确保分组优先）
-    if (widget.themeNotifier.value.typography.globalFontFamily != null &&
-        widget.themeNotifier.value.typography.globalFontFamily!.isNotEmpty) {
-      style = style.copyWith(
-          fontFamily: widget.themeNotifier.value.typography.globalFontFamily);
-    }
-    if (widget.themeNotifier.value.typography.globalFontSize != null &&
-        widget.themeNotifier.value.typography.globalFontSize! > 0) {
-      style = style.copyWith(
-          fontSize: widget.themeNotifier.value.typography.globalFontSize);
-    }
-    // 彩色模式下的天干/地支不应用全局颜色，避免覆盖字符映射颜色。
-    final bool isGanZhi =
-        group == TextGroup.tianGan || group == TextGroup.diZhi;
-    final bool suppressGlobalColor =
-        widget.colorPreviewModeNotifier.value == ColorPreviewMode.colorful &&
-            isGanZhi;
-    if (widget.themeNotifier.value.typography.globalFontColor != null &&
-        !suppressGlobalColor) {
-      style = style.copyWith(
-          color: widget.themeNotifier.value.typography.globalFontColor);
-    }
-    // Gan/Zhi 在非彩色模式下需要默认黑色；若当前未设置颜色且不在彩色模式，则填充黑色
-    if (isGanZhi &&
-        widget.colorPreviewModeNotifier.value != ColorPreviewMode.colorful &&
-        style.color == null) {
-      style = style.copyWith(color: Colors.black87);
-    }
-    if (group != null) {
-      // && widget.themeNotifier.value.typography.groupTextStyles != null) {
-      // final override =
-      //     widget.themeNotifier.value.typography.groupTextStyles![group];
-      final override = TextStyle(fontSize: 16, color: Colors.red);
-      if (override != null) {
-        // 按属性逐项合并：颜色遵循“彩色模式下字符映射优先”的规则，其余属性分组优先
-        var merged = style;
-        if (override.fontFamily != null && override.fontFamily!.isNotEmpty) {
-          merged = merged.copyWith(fontFamily: override.fontFamily);
-        }
-        if (override.fontSize != null && override.fontSize! > 0) {
-          merged = merged.copyWith(fontSize: override.fontSize);
-        }
-        if (override.fontWeight != null) {
-          merged = merged.copyWith(fontWeight: override.fontWeight);
-        }
-        // 阴影：始终允许按分组覆盖（不受彩色模式限制）。
-        if (override.shadows != null && override.shadows!.isNotEmpty) {
-          merged = merged.copyWith(shadows: override.shadows);
-        }
-        // 若分组设置了颜色（表示未勾选“跟随字符”），则优先使用该颜色。
-        if (override.color != null) {
-          merged = merged.copyWith(color: override.color);
-        }
-        style = merged;
-      }
-    }
-    return style;
-  }
 
   // TextStyle _resolveCellTextStyle({
   //   required RowType rowType,

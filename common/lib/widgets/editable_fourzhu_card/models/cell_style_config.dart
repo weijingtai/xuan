@@ -100,10 +100,10 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// 返回：标准默认配置
   static CellStyleConfig get defaultCellStyleConfig {
     return CellStyleConfig(
-      border: BoxBorderStyle.defaultBorder.copyWith(enabled: false),
+      border: BoxBorderStyle.defaultBorder.copyWith(enabled: false, radius: 4),
       lightBackgroundColor: Colors.transparent,
       darkBackgroundColor: Colors.transparent,
-      padding: EdgeInsets.symmetric(horizontal: 4.0, vertical: 4.0),
+      padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       margin: EdgeInsets.zero,
       shadow: BoxShadowStyle.defaultShadow.copyWith(withShadow: false),
     );

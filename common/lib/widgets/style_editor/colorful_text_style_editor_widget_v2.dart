@@ -652,7 +652,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                           String char = widget.values.isNotEmpty
                               ? widget.values[index]
                               : '甲';
-                          Color textColor = colorMapperDataModel.getBy(
+                          Color textColor = colorMapperDataModel.getMapperBy(
                                   theme: previewInfo.item1,
                                   mode: previewInfo.item2)[char] ??
                               Colors.black87;
@@ -1168,7 +1168,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     ? lightBackground
                     : darkBackground;
                 Map<String, Color> textColorMapper =
-                    mapper.getBy(theme: tuple2.item1, mode: tuple2.item2);
+                    mapper.getMapperBy(theme: tuple2.item1, mode: tuple2.item2);
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
