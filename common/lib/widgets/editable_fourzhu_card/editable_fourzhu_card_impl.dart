@@ -28,6 +28,7 @@ import 'widgets/ghost_pillar_widget.dart'; // 幽灵柱占位 Widget
 import 'text_groups.dart';
 import 'card_decorators.dart';
 import 'card_debug_painters.dart';
+// @Deprecated('旧的布局系统,将在 V4 中移除。请使用 size_calculator 系统')
 import 'package:common/widgets/four_zhu/card_layout_model.dart'
     as BasicLayout; // 基础布局度量模型（有效分割线尺寸等）
 import 'drag_controller.dart'; // 拖拽节流控制器
@@ -53,6 +54,7 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 ///
 /// 注意：已移除分离的 pillarSection、cellSection、typographySection 参数，
 /// 统一使用 theme 参数进行样式配置
+
 class EditableFourZhuCardV3 extends StatefulWidget {
   final Map<RowType, RowComputationStrategy> rowStrategyMapper;
   final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
@@ -535,10 +537,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   final Map<int, double> _rowHeightOverrides = {};
 
   // 尺寸管理系统：集中管理所有尺寸计算，自动处理索引重映射
+  @Deprecated('旧布局系统,V4 中将移除')
   late ValueNotifier<CardLayoutModel> _layoutNotifier;
+  @Deprecated('旧度量系统,V4 中将移除')
   late MeasurementContext _measurementContext;
   late VoidCallback _layoutModelSyncListener; // 用于同步数据到布局模型
   late VoidCallback _basicLayoutVersionListener; // 监听基础布局模型版本变化，联动测量上下文与尺寸
+  @Deprecated('旧布局系统,V4 中将移除')
   late BasicLayout.CardLayoutModel _basicLayoutModel; // 基础布局度量模型（分割线有效尺寸/抓手宽度等）
 
   // --- Mapping helpers from payloads to UI tuples/labels ---
@@ -4745,11 +4750,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         brightness: widget.brightnessNotifier.value,
         mode: widget.colorPreviewModeNotifier.value);
     var rowHeight = _rowHeightByName(textRowPayload.rowType.name);
-    // multiLineCell(
-    //   size: Size(, rowHeight), cellStyleConfig: cellStyleConfig, mainTextStyleConfig: mainTextStyleConfig, content: content)
+    var mainTextStyleConfig = widget.themeNotifier.value.typography.globalTitle;
+    var cellStyleConfig = widget.themeNotifier.value.cell.rowTitleCellConfig;
 
-    return EditableSingleTextCell(
-        text: _labelForRowType(textRowPayload.rowType), style: textStyle);
+    print("~~~~$rowHeight");
+
+    return multiLineCell(
+        size: Size(rowTitleWidth, rowHeight),
+        cellStyleConfig: cellStyleConfig,
+        mainTextStyleConfig: mainTextStyleConfig,
+        content: _labelForRowType(textRowPayload.rowType));
+
+    // return EditableSingleTextCell(
+    // text: _labelForRowType(textRowPayload.rowType), style: textStyle);
     // CardMetricsSnapshot
   }
 

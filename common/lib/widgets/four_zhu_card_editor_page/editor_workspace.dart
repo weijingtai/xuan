@@ -1,24 +1,17 @@
-import 'package:day_night_themed_switcher/day_night_themed_switcher.dart';
+import 'package:common/enums/enum_gender.dart';
+import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../enums/enum_gender.dart';
-import '../../enums/enum_tian_gan.dart';
-import '../../enums/enum_di_zhi.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/eight_chars.dart';
-import '../../models/layout_template.dart';
 import '../../models/text_style_config.dart';
-import '../../models/pillar_content.dart';
 import '../../models/row_strategy.dart';
-import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
-import '../style_editor/four_zhu_pillar_style_editor.dart';
-import '../../widgets/pillar_tag_bar.dart';
-import '../editable_fourzhu_card.dart';
+import '../editable_fourzhu_card/editable_fourzhu_card_v4.dart';
 import '../editable_fourzhu_card/text_groups.dart';
 
 class EditorWorkspace extends StatefulWidget {
@@ -51,18 +44,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
 
   /// V3 卡片数据源：柱/行/内边距。
   // late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  // late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
+  late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
   final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
   final ValueNotifier<bool> _showGripColumnsNotifier =
       ValueNotifier<bool>(true);
-
-  /// V3 卡片分组样式：从 RowConfig 转换而来，用于覆盖全局样式。
-  Map<TextGroup, TextStyle>? _groupTextStyles;
-
-  /// 临时逐字颜色覆盖（不持久化）：用于实时预览用户在 Sidebar 中修改的单个字符颜色
-  Map<TianGan, Color>? _perGanColorOverrides;
-  Map<DiZhi, Color>? _perZhiColorOverrides;
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -70,6 +56,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void initState() {
     super.initState();
+    _rowListNotifier = ValueNotifier<List<TextRowPayload>>([]);
     _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
@@ -106,7 +93,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     _brightnessNotifier.dispose();
     _colorPreviewModeNotifier.dispose();
     // _pillarsNotifier.dispose();
-    // _rowListNotifier.dispose();
+    _rowListNotifier.dispose();
     _paddingNotifier.dispose();
     _showGripRowsNotifier.dispose();
     _showGripColumnsNotifier.dispose();
@@ -125,14 +112,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     return Consumer<FourZhuEditorViewModel>(
       builder: (context, viewModel, _) {
         // 在构建时将 ViewModel 的行配置映射到工作区 Notifier
-        _applyViewModelToNotifiers(viewModel);
+        // _applyViewModelToNotifiers(viewModel);
 
         // 从 ViewModel 读取全局字体样式
         final cardStyle = viewModel.cardStyle;
-        final String? globalFamily = cardStyle?.globalFontFamily;
-        final double? globalSize = cardStyle?.globalFontSize;
-        final Color? globalColor =
-            _parseHexColor(cardStyle?.globalFontColorHex);
         // 从 ViewModel 读取分隔线颜色
         final Color? dividerColor = _parseHexColor(cardStyle?.dividerColorHex);
         final ThemeData workspaceTheme = dividerColor != null
@@ -223,72 +206,60 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 data: workspaceTheme,
                 child: Container(
                   child: Center(
-                    child: EditableFourZhuCardV3(
-                      brightnessNotifier: _brightnessNotifier,
-                      colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                      cardPayloadNotifier:
-                          Provider.of<FourZhuCardDemoViewModel>(context,
-                                  listen: true)
-                              .cardPayloadNotifier,
-                      gender: Gender.male,
-                      showGripRows: _showGripRowsNotifier.value,
-                      showGripColumns: _showGripColumnsNotifier.value,
-                      paddingNotifier: _paddingNotifier,
-                      themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
-                              context,
-                              listen: true)
-                          .themeNotifier,
-                      rowStrategyMapper: {
-                        RowType.tenGod: TenGodRowStrategy(),
-                        RowType.hiddenStemsTenGod:
-                            HiddenStemsTenGodsRowStrategy(),
-                        RowType.hiddenStems: HiddenStemsRowStrategy(),
-                        RowType.kongWang: KongWangRowStrategy(),
-                        RowType.naYin: NaYinRowStrategy(),
-                        RowType.xunShou: XunShouRowStrategy(),
-                      },
-
-                      // cardDecoration: BoxDecoration(
-                      //   color: Provider.of<FourZhuCardDemoViewModel>(context,
-                      //               listen: true)
-                      //           .themeController
-                      //           ?.resolveCardBackgroundColor() ??
-                      //       Theme.of(context).colorScheme.surface,
-                      //   borderRadius: BorderRadius.circular(
-                      //     Provider.of<FourZhuCardDemoViewModel>(context,
-                      //                 listen: false)
-                      //             .themeController
-                      //             ?.resolveCardCornerRadius() ??
-                      //         12,
-                      //   ),
-                      //   boxShadow: Provider.of<FourZhuCardDemoViewModel>(
-                      //           context,
-                      //           listen: false)
-                      //       .themeController
-                      //       ?.resolveCardBoxShadow(),
-                      //   border: Border.all(
-                      //     color: Provider.of<FourZhuCardDemoViewModel>(context,
-                      //                 listen: false)
-                      //             .themeController
-                      //             ?.resolveCardBorderColor() ??
-                      //         Theme.of(context).dividerColor.withOpacity(0.35),
-                      //     width: Provider.of<FourZhuCardDemoViewModel>(context,
-                      //                 listen: false)
-                      //             .themeController
-                      //             ?.resolveCardEffectiveBorderWidth() ??
-                      //         1,
-                      //   ),
-                      // ),
-                      // // 绑定全局排版到 V3 卡片
-                      // globalFontFamily:
-                      //     (globalFamily != null && globalFamily.isNotEmpty)
-                      //         ? globalFamily
-                      //         : null,
-                      // globalFontSize: globalSize,
-                      // globalFontColor: globalColor,
-                      // colorfulMode: true,
-                    ),
-                  ),
+                      child: Column(
+                    children: [
+                      EditableFourZhuCardV4(
+                        brightnessNotifier: _brightnessNotifier,
+                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                        cardPayloadNotifier:
+                            Provider.of<FourZhuCardDemoViewModel>(context,
+                                    listen: true)
+                                .cardPayloadNotifier,
+                        showGripRows: _showGripRowsNotifier.value,
+                        showGripColumns: _showGripColumnsNotifier.value,
+                        paddingNotifier: _paddingNotifier,
+                        themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
+                                context,
+                                listen: true)
+                            .themeNotifier,
+                        rowStrategyMapper: {
+                          RowType.tenGod: TenGodRowStrategy(),
+                          RowType.hiddenStemsTenGod:
+                              HiddenStemsTenGodsRowStrategy(),
+                          RowType.hiddenStems: HiddenStemsRowStrategy(),
+                          RowType.kongWang: KongWangRowStrategy(),
+                          RowType.naYin: NaYinRowStrategy(),
+                          RowType.xunShou: XunShouRowStrategy(),
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      EditableFourZhuCardV3(
+                        brightnessNotifier: _brightnessNotifier,
+                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                        cardPayloadNotifier:
+                            Provider.of<FourZhuCardDemoViewModel>(context,
+                                    listen: true)
+                                .cardPayloadNotifier,
+                        showGripRows: _showGripRowsNotifier.value,
+                        showGripColumns: _showGripColumnsNotifier.value,
+                        paddingNotifier: _paddingNotifier,
+                        themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
+                                context,
+                                listen: true)
+                            .themeNotifier,
+                        rowStrategyMapper: {
+                          RowType.tenGod: TenGodRowStrategy(),
+                          RowType.hiddenStemsTenGod:
+                              HiddenStemsTenGodsRowStrategy(),
+                          RowType.hiddenStems: HiddenStemsRowStrategy(),
+                          RowType.kongWang: KongWangRowStrategy(),
+                          RowType.naYin: NaYinRowStrategy(),
+                          RowType.xunShou: XunShouRowStrategy(),
+                        },
+                        gender: Gender.male,
+                      ),
+                    ],
+                  )),
                 ),
               ),
             ),
@@ -301,115 +272,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 构建柱载荷：行标题列 + 年月日时四柱
   /// 参数：ec 八字数据
   /// 返回：柱载荷列表
-  List<PillarPayload> _buildPillars(EightChars ec) {
-    return [
-      RowTitleColumnPayload(uuid: 'rowTitle'),
-      ContentPillarPayload(
-        uuid: 'year',
-        pillarType: PillarType.year,
-        pillarLabel: '年',
-        pillarContent: PillarContent(
-          id: 'pillar-year',
-          pillarType: PillarType.year,
-          label: '年',
-          jiaZi: ec.year,
-          description: '年柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      ContentPillarPayload(
-        uuid: 'month',
-        pillarType: PillarType.month,
-        pillarLabel: '月',
-        pillarContent: PillarContent(
-          id: 'pillar-month',
-          pillarType: PillarType.month,
-          label: '月',
-          jiaZi: ec.month,
-          description: '月柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      ContentPillarPayload(
-        uuid: 'day',
-        pillarType: PillarType.day,
-        pillarLabel: '日',
-        pillarContent: PillarContent(
-          id: 'pillar-day',
-          pillarType: PillarType.day,
-          label: '日',
-          jiaZi: ec.day,
-          description: '日柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-      ContentPillarPayload(
-        uuid: 'hour',
-        pillarType: PillarType.hour,
-        pillarLabel: '时',
-        pillarContent: PillarContent(
-          id: 'pillar-hour',
-          pillarType: PillarType.hour,
-          label: '时',
-          jiaZi: ec.time,
-          description: '时柱',
-          version: '1',
-          sourceKind: PillarSourceKind.userInput,
-        ),
-      ),
-    ];
-  }
-
-  /// 构建默认行：表头、天干、地支、纳音、空亡
-  /// 参数：无
-  /// 返回：行载荷列表
-  List<TextRowPayload> _buildDefaultRows() {
-    // var defaultTextStyleConfig =
-    return [
-      TextRowPayload(
-        rowType: RowType.columnHeaderRow,
-        uuid: 'header',
-        titleInCell: false,
-      ),
-      TextRowPayload(
-          rowType: RowType.xunShou,
-          uuid: 'xunShou',
-          titleInCell: false,
-          rowLabel: "旬首"),
-      TextRowPayload(
-        rowType: RowType.heavenlyStem,
-        uuid: 'gan',
-        titleInCell: false,
-        rowLabel: '天干',
-      ),
-      TextRowPayload(
-        rowType: RowType.earthlyBranch,
-        uuid: 'zhi',
-        titleInCell: false,
-        rowLabel: '地支',
-      ),
-      TextRowPayload(
-        rowType: RowType.naYin,
-        uuid: 'nayin',
-        titleInCell: false,
-        rowLabel: '纳音',
-      ),
-      TextRowPayload(
-        rowType: RowType.kongWang,
-        uuid: 'kongwang',
-        titleInCell: false,
-        rowLabel: '空亡',
-      ),
-      // RowInfoPayload.kongWang(
-      //   label: '空亡',
-      //   strategy: KongWangRowStrategy(),
-      //   config: defaultTextStyleConfig,
-      // ),
-    ];
-  }
 
   /// 将 ViewModel 的行配置映射到工作区的行 Notifier。
   ///
@@ -417,26 +279,16 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// - [viewModel]：编辑页的 `FourZhuEditorViewModel`。
   ///
   /// 返回：无。副作用为更新 `_rowListNotifier.value`，始终在首位插入表头行。
-  void _applyViewModelToNotifiers(FourZhuEditorViewModel viewModel) {
+  void applyViewModelToNotifiers(FourZhuEditorViewModel viewModel) {
     final configs = viewModel.rowConfigs;
     if (configs.isEmpty) {
-      // _rowListNotifier.value = _buildDefaultRows();
-      // _groupTextStyles = null;
       return;
     }
 
-    // final groupStyles = <TextGroup, TextStyle>{};
     for (final config in configs) {
       final textGroup = _rowTypeToTextGroup(config.type);
       if (textGroup != null) {
-        // final style = config.textStyleConfig?.toTextStyle() ??
-        //     TextStyleConfig.fromLegacyRowConfig(
-        //       shadowColorHex: config.shadowColorHex,
-        //       shadowOffsetX: config.shadowOffsetX,
-        //       shadowOffsetY: config.shadowOffsetY,
-        //       shadowBlurRadius: config.shadowBlurRadius,
-        //     ).toTextStyle();
-        // groupStyles[textGroup] = style;
+        // Logic for text groups if needed
       }
     }
     // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
@@ -454,16 +306,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           ),
     ];
 
-    // 打印调试信息：确认 padding 是否传递
-    // 打印调试信息：确认 padding 是否传递
-    // for (final row in rows) {
-    //   if (row.padding != null) {
-    //     print(
-    //         '🔍 [EditorWorkspace._applyViewModelToNotifiers] ${row.rowType.name} padding=${row.padding}');
-    //   }
-    // }
-
-    // _rowListNotifier.value = rows;
+    _rowListNotifier.value = rows;
 
     final insets = viewModel.cardStyle?.contentPadding;
     if (insets != null) {
