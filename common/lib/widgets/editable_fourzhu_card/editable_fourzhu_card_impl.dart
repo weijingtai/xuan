@@ -577,6 +577,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         .toList();
   }
 
+  /// 【方案A优化】确保所有 Pillar 的 GlobalKey 都已创建
+  ///
+  /// 这个方法在 build 开始时调用，确保 GlobalKeys 在抓手行构建之前就存在。
+  /// 这样拖拽开始时就能找到对应的 GlobalKey。
+  void _ensurePillarKeys() {
+    final pillars = _currentPillars();
+    for (int i = 0; i < pillars.length; i++) {
+      _pillarGlobalKeys[i] ??= GlobalKey(debugLabel: 'pillar-$i');
+    }
+  }
+
   /// 为新插入的柱分配唯一 `id`，格式：`<type>#<序号>`，例如：`year#1`、`luckCycle#2`。
   /// 通过当前已存在的同类型柱数量确定下一个序号，确保在当前卡片内唯一。
   String _allocatePillarId(PillarType type) {
@@ -763,6 +774,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 监听注册与移除在统一的 initState/dispose 中处理（见下方组件初始化/释放方法）
   // Guard to prevent double-accept across overlapping DragTargets
   bool _rowAccepting = false;
+
+  // 【方案A优化】柱 Widget 的 GlobalKey 缓存，用于拖拽时复用已渲染的 Pillar
+  // 键为柱索引，值为对应的 GlobalKey
+  final Map<int, GlobalKey> _pillarGlobalKeys = {};
 
   // Hysteresis margins to reduce jitter near boundaries
   static const double _colHysteresisFrac =
@@ -1041,6 +1056,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   @override
   Widget build(BuildContext context) {
+    // 【方案A优化】确保所有 Pillar 的 GlobalKey 在 build 开始前就已创建
+    // 这样抓手行构建时就能找到对应的 GlobalKey
+    _ensurePillarKeys();
+
     return ValueListenableBuilder<Size>(
       valueListenable: _sizeNotifier,
       builder: (context, size, child) {
@@ -1918,24 +1937,33 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       ),
     );
 
-    return AnimatedSlide(
-      duration: const Duration(milliseconds: 240),
-      curve: Curves.easeOutCubic,
-      offset: (_dropColFadeActive && _dropAnimatingColIndex == i)
-          ? const Offset(0, 0)
-          : Offset.zero,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          AnimatedOpacity(
-            duration: const Duration(milliseconds: 240),
-            curve: Curves.easeOutCubic,
-            opacity:
-                (_dropColFadeActive && _dropAnimatingColIndex == i) ? 0.0 : 1.0,
-            child: _buildEachPillar(i, colW, columnContent),
-          ),
-          _buildPillarDragPlaceholder(i),
-        ],
+    // 【方案A优化】为每个柱创建或复用 GlobalKey，用于拖拽时复用 Widget
+    _pillarGlobalKeys[i] ??= GlobalKey(debugLabel: 'pillar-$i');
+
+    // 【方案A优化】使用 RepaintBoundary 包装整个柱，使其渲染边界独立
+    // 这样可以通过 GlobalKey 引用已渲染的 Widget 树
+    return RepaintBoundary(
+      key: _pillarGlobalKeys[i],
+      child: AnimatedSlide(
+        duration: const Duration(milliseconds: 240),
+        curve: Curves.easeOutCubic,
+        offset: (_dropColFadeActive && _dropAnimatingColIndex == i)
+            ? const Offset(0, 0)
+            : Offset.zero,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 240),
+              curve: Curves.easeOutCubic,
+              opacity: (_dropColFadeActive && _dropAnimatingColIndex == i)
+                  ? 0.0
+                  : 1.0,
+              child: _buildEachPillar(i, colW, columnContent),
+            ),
+            _buildPillarDragPlaceholder(i),
+          ],
+        ),
       ),
     );
   }
@@ -2393,29 +2421,33 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _dragWantsDelete.value = false;
                   },
                   dragAnchorStrategy: pointerDragAnchorStrategy,
-                  feedback: _offsetFeedbackDown(
-                    widget.dragFeedbackBuilder?.call(
-                          context,
-                          _buildFullColumnFeedback(
-                            title,
-                            pillars[i].item2,
-                            rows,
-                            widthOverride: _isSeparatorColumnIndex(i)
-                                ? null
-                                : _colWidthAtIndex(i, pillars),
+                  feedback: _buildReusedPillarFeedback(
+                    i,
+                    // 回退方案：如果无法复用，则使用原有的构建方法
+                    () => _offsetFeedbackDown(
+                      widget.dragFeedbackBuilder?.call(
+                            context,
+                            _buildFullColumnFeedback(
+                              title,
+                              pillars[i].item2,
+                              rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars),
+                            ),
+                          ) ??
+                          _statusFeedback(
+                            _buildFullColumnFeedback(
+                              title,
+                              pillars[i].item2,
+                              rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars),
+                            ),
                           ),
-                        ) ??
-                        _statusFeedback(
-                          _buildFullColumnFeedback(
-                            title,
-                            pillars[i].item2,
-                            rows,
-                            widthOverride: _isSeparatorColumnIndex(i)
-                                ? null
-                                : _colWidthAtIndex(i, pillars),
-                          ),
-                        ),
-                    _effectiveDragHandleRowHeight,
+                      _effectiveDragHandleRowHeight,
+                    ),
                   ),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
@@ -2499,29 +2531,33 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _dragWantsDelete.value = false;
                   },
                   dragAnchorStrategy: pointerDragAnchorStrategy,
-                  feedback: _offsetFeedbackUp(
-                    widget.dragFeedbackBuilder?.call(
-                          context,
-                          _buildFullColumnFeedback(
-                            title,
-                            pillars[i].item2,
-                            rows,
-                            widthOverride: _isSeparatorColumnIndex(i)
-                                ? null
-                                : _colWidthAtIndex(i, pillars),
+                  feedback: _buildReusedPillarFeedback(
+                    i,
+                    // 回退方案：如果无法复用，则使用原有的构建方法
+                    () => _offsetFeedbackUp(
+                      widget.dragFeedbackBuilder?.call(
+                            context,
+                            _buildFullColumnFeedback(
+                              title,
+                              pillars[i].item2,
+                              rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars),
+                            ),
+                          ) ??
+                          _statusFeedback(
+                            _buildFullColumnFeedback(
+                              title,
+                              pillars[i].item2,
+                              rows,
+                              widthOverride: _isSeparatorColumnIndex(i)
+                                  ? null
+                                  : _colWidthAtIndex(i, pillars),
+                            ),
                           ),
-                        ) ??
-                        _statusFeedback(
-                          _buildFullColumnFeedback(
-                            title,
-                            pillars[i].item2,
-                            rows,
-                            widthOverride: _isSeparatorColumnIndex(i)
-                                ? null
-                                : _colWidthAtIndex(i, pillars),
-                          ),
-                        ),
-                    _columnFeedbackTotalHeight(rows),
+                      _effectiveDragHandleRowHeight,
+                    ),
                   ),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
@@ -4346,6 +4382,81 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             }
           }).toList(),
         ],
+      ),
+    );
+  }
+
+  /// 【方案A优化】复用已渲染的 Pillar 作为拖拽反馈
+  ///
+  /// 通过 GlobalKey 引用已构建的 Pillar Widget，避免重复构建整个柱的 Widget 树。
+  /// 这大幅提升了拖拽性能，减少了内存占用，并确保视觉一致性。
+  ///
+  /// 参数：
+  /// - pillarIndex: 柱索引
+  /// - fallbackBuilder: 当无法获取已渲染 Pillar 时的回退构建器
+  ///
+  /// 返回：拖拽反馈 Widget
+  Widget _buildReusedPillarFeedback(
+    int pillarIndex,
+    Widget Function() fallbackBuilder,
+  ) {
+    // 获取 GlobalKey
+    final key = _pillarGlobalKeys[pillarIndex];
+
+    if (key == null) {
+      // 如果 key 不存在，使用回退方案
+      debugPrint(
+          'Warning: Pillar GlobalKey not found for index $pillarIndex, using fallback');
+      return fallbackBuilder();
+    }
+
+    // 尝试获取当前的 Widget 和 Context
+    final context = key.currentContext;
+    final widget = key.currentWidget;
+
+    if (context == null || widget == null) {
+      // 如果 Widget 尚未渲染或已销毁，使用回退方案
+      debugPrint(
+          'Warning: Pillar Widget not available for index $pillarIndex, using fallback');
+      return fallbackBuilder();
+    }
+
+    // 获取 RenderBox 用于尺寸信息
+    final renderBox = context.findRenderObject() as RenderBox?;
+
+    // 【关键修复】检查 RenderBox 是否已完成布局
+    // 如果没有布局或尺寸，说明 Widget 还在首次渲染中，使用 fallback
+    if (renderBox == null || !renderBox.hasSize) {
+      debugPrint(
+          'Warning: Pillar RenderBox not laid out for index $pillarIndex, using fallback');
+      return fallbackBuilder();
+    }
+
+    final size = renderBox.size;
+
+    // 获取柱配置以应用圆角等样式
+    final pillars = _currentPillars();
+    final pillarType = (pillarIndex >= 0 && pillarIndex < pillars.length)
+        ? pillars[pillarIndex].pillarType
+        : PillarType.year; // 默认值
+    final borderRadius =
+        _pillarSectionNotifier.value.getBy(pillarType).border?.radius ?? 0;
+
+    // 构建反馈 Widget：复用已渲染的 Widget，添加视觉效果
+    return Transform.translate(
+      // 向下偏移，使 feedback 从抓手下方开始
+      offset: Offset(0, _effectiveDragHandleRowHeight),
+      child: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: Opacity(
+          opacity: 0.85, // 稍微透明，表示拖拽状态
+          child: Material(
+            elevation: 8, // 添加阴影，增强拖拽感
+            borderRadius: BorderRadius.circular(borderRadius),
+            child: widget, // 直接复用已渲染的 Widget
+          ),
+        ),
       ),
     );
   }
