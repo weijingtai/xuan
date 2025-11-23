@@ -59,36 +59,6 @@ class TitleColumnPayload extends PillarPayload {
   }
 }
 
-/// Row title column payload: represents the special column containing row titles.
-///
-/// 语义：行标题列作为一个特殊的"柱"，包含所有行的标题文本。
-/// 特点：
-/// - 每个单元格的内容不同（根据行类型显示不同的标题）
-/// - 可以与普通柱（年月日时）互换位置
-/// - 左上角单元格显示性别标识（乾造/坤造）
-@JsonSerializable()
-class RowTitleColumnPayload extends PillarPayload {
-  const RowTitleColumnPayload({
-    required super.uuid,
-  }) : super(
-          pillarType: PillarType.rowTitleColumn,
-          pillarLabel: '行标题',
-        );
-  factory RowTitleColumnPayload.fromJson(Map<String, dynamic> json) =>
-      _$RowTitleColumnPayloadFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$RowTitleColumnPayloadToJson(this);
-  @override
-  PillarPayload copyWith(
-      {String? uuid,
-      PillarType? pillarType,
-      String? pillarLabel,
-      TextStyleConfig? textStyleConfig}) {
-    return super
-        .copyWith(uuid: uuid, pillarType: pillarType, pillarLabel: pillarLabel);
-  }
-}
-
 /// Column header row payload: represents the special row containing column titles and gender.
 ///
 /// 语义：表头行作为一个特殊的"行"，包含性别标识和所有列的标题文本。
@@ -203,53 +173,6 @@ class PillarPayload extends Equatable {
 
   @override
   List<Object?> get props => [pillarType, pillarLabel, uuid];
-}
-
-@JsonSerializable()
-class SeparatorPillarPayload extends PillarPayload {
-  const SeparatorPillarPayload({
-    required super.uuid,
-  }) : super(
-          pillarType: PillarType.separator,
-          pillarLabel: '分隔符',
-        );
-  factory SeparatorPillarPayload.fromJson(Map<String, dynamic> json) =>
-      _$SeparatorPillarPayloadFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$SeparatorPillarPayloadToJson(this);
-}
-
-@JsonSerializable()
-class ContentPillarPayload extends PillarPayload {
-  const ContentPillarPayload({
-    required super.uuid,
-    required super.pillarType,
-    required super.pillarLabel,
-    required this.pillarContent,
-  });
-  final PillarContent pillarContent;
-  factory ContentPillarPayload.fromJson(Map<String, dynamic> json) =>
-      _$ContentPillarPayloadFromJson(json);
-  @override
-  Map<String, dynamic> toJson() => _$ContentPillarPayloadToJson(this);
-
-  @override
-  copyWith({
-    PillarType? pillarType,
-    String? pillarLabel,
-    String? uuid,
-    PillarContent? pillarContent,
-  }) {
-    return ContentPillarPayload(
-      pillarType: pillarType ?? this.pillarType,
-      pillarLabel: pillarLabel ?? this.pillarLabel,
-      uuid: uuid ?? this.uuid,
-      pillarContent: pillarContent ?? this.pillarContent,
-    );
-  }
-
-  @override
-  List<Object?> get props => [pillarType, pillarLabel, uuid, pillarContent];
 }
 
 @JsonSerializable()
@@ -413,5 +336,82 @@ class TextRowPayload extends RowPayload {
       return dividerHeight;
     }
     return otherHeight;
+  }
+}
+
+@JsonSerializable()
+class SeparatorPillarPayload extends PillarPayload {
+  const SeparatorPillarPayload({
+    required super.uuid,
+  }) : super(
+          pillarType: PillarType.separator,
+          pillarLabel: '分隔符',
+        );
+  factory SeparatorPillarPayload.fromJson(Map<String, dynamic> json) =>
+      _$SeparatorPillarPayloadFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$SeparatorPillarPayloadToJson(this);
+}
+
+@JsonSerializable()
+class ContentPillarPayload extends PillarPayload {
+  const ContentPillarPayload({
+    required super.uuid,
+    required super.pillarType,
+    required super.pillarLabel,
+    required this.pillarContent,
+  });
+  final PillarContent pillarContent;
+  factory ContentPillarPayload.fromJson(Map<String, dynamic> json) =>
+      _$ContentPillarPayloadFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$ContentPillarPayloadToJson(this);
+
+  @override
+  copyWith({
+    PillarType? pillarType,
+    String? pillarLabel,
+    String? uuid,
+    PillarContent? pillarContent,
+  }) {
+    return ContentPillarPayload(
+      pillarType: pillarType ?? this.pillarType,
+      pillarLabel: pillarLabel ?? this.pillarLabel,
+      uuid: uuid ?? this.uuid,
+      pillarContent: pillarContent ?? this.pillarContent,
+    );
+  }
+
+  @override
+  List<Object?> get props => [pillarType, pillarLabel, uuid, pillarContent];
+}
+
+/// Row title column payload: represents the special column containing row titles.
+///
+/// 语义：行标题列作为一个特殊的"柱"，包含所有行的标题文本。
+/// 特点：
+/// - 每个单元格的内容不同（根据行类型显示不同的标题）
+/// - 可以与普通柱（年月日时）互换位置
+/// - 左上角单元格显示性别标识（乾造/坤造）
+@JsonSerializable()
+class RowTitleColumnPayload extends PillarPayload {
+  const RowTitleColumnPayload({
+    required super.uuid,
+  }) : super(
+          pillarType: PillarType.rowTitleColumn,
+          pillarLabel: '行标题',
+        );
+  factory RowTitleColumnPayload.fromJson(Map<String, dynamic> json) =>
+      _$RowTitleColumnPayloadFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$RowTitleColumnPayloadToJson(this);
+  @override
+  PillarPayload copyWith(
+      {String? uuid,
+      PillarType? pillarType,
+      String? pillarLabel,
+      TextStyleConfig? textStyleConfig}) {
+    return super
+        .copyWith(uuid: uuid, pillarType: pillarType, pillarLabel: pillarLabel);
   }
 }

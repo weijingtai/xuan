@@ -1,4 +1,5 @@
 import 'package:common/enums/enum_gender.dart';
+import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -207,6 +208,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 child: Container(
                   child: Center(
                     child: EditableFourZhuCardV3(
+                      dayGanZhi: JiaZi.JIA_ZI,
                       brightnessNotifier: _brightnessNotifier,
                       colorPreviewModeNotifier: _colorPreviewModeNotifier,
                       cardPayloadNotifier:
