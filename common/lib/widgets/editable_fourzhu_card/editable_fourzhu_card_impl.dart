@@ -1585,6 +1585,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               ? const Duration(milliseconds: 180)
                               : Duration.zero,
                           curve: Curves.easeOut,
+
                           // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
                           width: colW,
                           height: draggingRow && tRow == absRowIdx
@@ -1645,24 +1646,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                     rPayload is ColumnHeaderRowPayload
                                 ? _genderText(rPayload.gender)
                                 : _rowTitlePillarText(rPayload!);
-                            // : _rowTitleText(
-                            //     rPayload?.rowLabel ??
-                            //         (rPayload?.rowType != null
-                            //             ? _labelForRowType(
-                            //                 rPayload!.rowType)
-                            //             : rowName),
-                            //   );
-
                             // 只显示标题，不允许拖拽
                             final contentW = rowTitleWidth;
                             cell = Center(child: titleWidget);
-                            // cell = _cell(
-                            //   Size(contentW, rowSize.height),
-                            //   Center(child: titleWidget),
-                            //   // verticalPadding: _getRowPaddingByIndex(absRowIdx),
-                            //   // horizontalPadding:
-                            //   // _getRowHorizontalPaddingByIndex(absRowIdx),
-                            // );
                             // 始终将单元格加入当前列的行子组件列表（标题列）
                             rowChildren.add(AnimatedSlide(
                               duration: const Duration(milliseconds: 240),
@@ -1672,6 +1658,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                   ? const Offset(0, 0.06)
                                   : Offset.zero,
                               child: Stack(
+                                clipBehavior: Clip.none,
                                 children: [
                                   AnimatedOpacity(
                                     duration: const Duration(milliseconds: 240),
@@ -1726,6 +1713,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 ? const Offset(0, 0.06)
                                 : Offset.zero,
                             child: Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 AnimatedOpacity(
                                   duration: const Duration(milliseconds: 240),
@@ -1793,6 +1781,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 ? const Offset(0, 0.06)
                                 : Offset.zero,
                             child: Stack(
+                              clipBehavior: Clip.none,
                               children: [
                                 AnimatedOpacity(
                                   duration: const Duration(milliseconds: 240),
@@ -1844,6 +1833,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       ? const Offset(0.06, 0)
                       : Offset.zero,
                   child: Stack(
+                    clipBehavior: Clip.none,
                     children: [
                       AnimatedOpacity(
                           duration: const Duration(milliseconds: 240),
@@ -3323,6 +3313,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final decorationWidth = config.getDecorationWidth();
                 double width = colW + decorationWidth;
                 return AnimatedContainer(
+                  clipBehavior: Clip.hardEdge,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.linear,
                   margin: config.margin,
