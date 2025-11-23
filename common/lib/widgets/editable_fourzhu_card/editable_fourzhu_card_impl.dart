@@ -1442,9 +1442,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // Left header column: row titles; overlay a unified drag target for continuous row index updates
     // final leftHeader = _buildLeftHeader(rows);
     // Data grid: according to current row order
-    ;
     final dataGrid = Container(
-      // color: Colors.red.withAlpha(200),
       // 数据网格总宽按可变列宽总和计算（像素对齐，避免子像素溢出）
       // width: _pixelFloor(_totalColsWidth(pillars) + extraColWidth),
       width: _pixelFloor(
@@ -3213,7 +3211,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 3. 增加padding 与 margin 以及border
     predictHeight += cellStyleConfig.getDecorationHeight();
     predictHeight = predictHeight.ceilToDouble();
-    // print(" $content ------- $predictHeight --- ${size.height} ");
     return EditableMultiTextCell(
       size: size,
       content: Text(content,
@@ -4649,7 +4646,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       rowTitleWidth: rowTitleWidth,
     );
     final size = calc.computeFinalSize(opts);
-    return size;
+    return Size(size.width, size.height);
   }
 
   /// 计算包含装饰的 Card 尺寸
@@ -4892,9 +4889,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     var mainTextStyleConfig = theme.typography.rowTitle;
     var cellStyleConfig = theme.cell.rowTitleCellConfig;
-
-    // print(
-    //     "${textRowPayload.rowType.name} == ${row.rowType} ------ rowTitleWidth: $rowTitleWidth, rowHeight: $rowHeight");
 
     return multiLineCell(
         size: Size(rowTitleWidth, rowHeight),

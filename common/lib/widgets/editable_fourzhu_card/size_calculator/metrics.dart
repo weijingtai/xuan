@@ -43,7 +43,6 @@ class PillarMetrics {
   double get width => contentWidth + decorationWidth;
   double get totalWidth => width + marginHorizontal * 2;
   double get height => contentHeight + decorationHeight;
-  double get totalHeight => height + marginVertical * 2;
 }
 
 /// Metrics for a single row

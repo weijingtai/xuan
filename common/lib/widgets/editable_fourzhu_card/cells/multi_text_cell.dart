@@ -50,17 +50,17 @@ class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
         height: widget.size.height,
         alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: Colors.teal,
-          // color: (Theme.of(context).brightness == Brightness.dark
-          //         ? (widget.cellStyleConfig.darkBackgroundColor ==
-          //                 Colors.transparent
-          //             ? Colors.white
-          //             : widget.cellStyleConfig.darkBackgroundColor)
-          //         : widget.cellStyleConfig.lightBackgroundColor ==
-          //                 Colors.transparent
-          //             ? Colors.white
-          //             : widget.cellStyleConfig.lightBackgroundColor) ??
-          //     Colors.white,
+          // color: Colors.teal,
+          color: (Theme.of(context).brightness == Brightness.dark
+                  ? (widget.cellStyleConfig.darkBackgroundColor ==
+                          Colors.transparent
+                      ? Colors.white
+                      : widget.cellStyleConfig.darkBackgroundColor)
+                  : widget.cellStyleConfig.lightBackgroundColor ==
+                          Colors.transparent
+                      ? Colors.white
+                      : widget.cellStyleConfig.lightBackgroundColor) ??
+              Colors.white,
           border: (widget.cellStyleConfig.border?.enabled ?? false) &&
                   (widget.cellStyleConfig.border!.width > 0)
               ? Border.all(

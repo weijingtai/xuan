@@ -32,7 +32,7 @@ class CardMetricsCalculator {
     double h = s.totals.totalHeight;
 
     print("=== computeFinalSize START ===");
-    print("基础宽度 totalWidth: $w");
+    print("基础size totalWidth: $w, totalHeight: $h");
 
     if (options.includeGripCols) {
       final gripW = _normalizeDouble(options.gripColWidth) * 2;
@@ -42,7 +42,8 @@ class CardMetricsCalculator {
     if (options.includeGripRows) {
       h += _normalizeDouble(options.gripRowHeight) * 2;
     }
-
+    // final hasTitleRowInPayload = options.showTitleRow;
+    // final hasTitleColInPayload = options.showTitleCol;
     final hasTitleColInPayload = payload.pillarMap.values
         .any((p) => p.pillarType == PillarType.rowTitleColumn);
     final hasTitleRowInPayload =
@@ -59,7 +60,7 @@ class CardMetricsCalculator {
       print("跳过 row title (已在payload中)");
     }
 
-    if (options.showTitleRow) {
+    if (options.showTitleRow && !hasTitleRowInPayload) {
       h += _normalizeDouble(options.columnTitleHeight);
     }
 
@@ -75,7 +76,7 @@ class CardMetricsCalculator {
     w += borderW;
     h += bw * 2;
     print("+ Border: $borderW, 累计: $w");
-    print("=== 最终宽度: $w ===\n");
+    print("=== 最终尺寸: $w x $h ===\n");
 
     return Size(w, h);
   }
