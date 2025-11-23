@@ -122,7 +122,7 @@ class _EditableFourZhuStyleEditorPanelState
 
   @override
   void dispose() {
-    _cardStyleConfig.dispose();
+    // _cardStyleConfig.dispose();
     super.dispose();
   }
 
@@ -442,11 +442,10 @@ class _EditableFourZhuStyleEditorPanelState
         const Divider(),
         SwitchListTile(
           title: const Text('启用阴影'),
-          value: config.shadow?.withShadow ?? false,
+          value: config.shadow.withShadow ?? false,
           onChanged: (v) {
             final next = config.copyWith(
-              shadow: (config.shadow ?? BoxShadowStyle.defaultShadow)
-                  .copyWith(withShadow: v),
+              shadow: config.shadow.copyWith(withShadow: v),
             );
             _cardStyleConfig.value = next;
           },

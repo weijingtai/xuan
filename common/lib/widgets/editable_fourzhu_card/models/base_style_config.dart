@@ -382,6 +382,7 @@ class BaseBoxStyleConfig extends Equatable {
   }
 
   List<BoxShadow>? _buildShadows({Brightness brightness = Brightness.light}) {
+    if (!shadow.withShadow) return null;
     final baseColor = shadow.followCardBackgroundColor
         ? lightBackgroundColor
         : shadow.lightThemeColor;

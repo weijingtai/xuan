@@ -1094,6 +1094,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           );
           effectiveDeco = baseDeco.copyWith(borderRadius: clamped);
         }
+        // print("effectiveDeco: ${effectiveDeco?.boxShadow}");
         return Stack(
           children: [
             ValueListenableBuilder<EditableFourZhuCardTheme>(
