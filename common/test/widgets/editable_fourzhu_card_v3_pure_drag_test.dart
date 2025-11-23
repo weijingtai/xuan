@@ -152,7 +152,7 @@ Future<void> _pumpCard(
                 rowListNotifier: rowsNotifier,
                 paddingNotifier: paddingNotifier,
                 gender: Gender.male,
-                showGripRows: showGripRows,
+                showGrip: showGripRows,
                 showGripColumns: showGripColumns,
                 onRowsReordered: onRowsReordered,
               ),

@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/models/pillar_content.dart'; // Changed from relative import
 import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -93,8 +94,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   // final Map<DiZhi, Color>? perZhiColors;
   // New: toggle visibility of end grip rows and columns
   // When disabled, the visual grip rows/columns are hidden from the card.
-  final bool showGripRows;
-  final bool showGripColumns;
+  final bool showGrip;
+  // final bool showGripColumns;
   // Optional: decorate drag feedback (overlay proxy)
   final Widget Function(BuildContext context, Widget child)?
       dragFeedbackBuilder;
@@ -134,8 +135,8 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     this.rowInsertDecorationBuilder,
     this.debugHysteresisOverlay = false,
     // this.colorfulMode = false,
-    this.showGripRows = true,
-    this.showGripColumns = true,
+    this.showGrip = true,
+    // this.showGripColumns = true,
     ElementColorResolver? elementColorResolver,
   }) : elementColorResolver = elementColorResolver ??
             PaletteElementColorResolver(CardPalette.defaultPalette());
@@ -171,9 +172,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double get _colDividerWidthEffective =>
       _basicLayoutModel.colDividerWidthEffective;
   double get _effectiveDragHandleRowHeight =>
-      _basicLayoutModel.effectiveGripHeight(isVisible: widget.showGripRows);
+      _basicLayoutModel.effectiveGripHeight(isVisible: widget.showGrip);
   double get _effectiveDragHandleColWidth =>
-      _basicLayoutModel.effectiveGripWidth(isVisible: widget.showGripColumns);
+      _basicLayoutModel.effectiveGripWidth(isVisible: widget.showGrip);
 
   // 批处理重建调度标记：避免频繁 setState 导致抖动与重建次数过多
   bool _rebuildScheduled = false;
@@ -278,7 +279,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final pType = payloads[i].pillarType;
       final cfg = _pillarSectionNotifier.value.getBy(pType);
       final m = cfg.margin;
-      if (m != null) return m;
+      return m;
     }
     return _pillarMarginEff;
   }
@@ -291,7 +292,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final payloads = _currentPillars();
     if (i >= 0 && i < payloads.length) {
       final p = payloads[i];
-      return _pillarSectionNotifier.value.getBy(p.pillarType)!.padding;
+      return _pillarSectionNotifier.value.getBy(p.pillarType).padding;
     }
     // 如果没有得到则返回默认
     return _pillarSectionNotifier.value.global.padding;
@@ -299,7 +300,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   /// 有效柱边框宽度（优先使用传入的值，默认 2）
   double get _pillarBorderWidthEff =>
-      _pillarSectionNotifier.value.global.border!.width;
+      _pillarSectionNotifier.value.global.border?.enabled ?? false
+          ? _pillarSectionNotifier.value.global.border!.width
+          : 0;
 
   double _pillarBorderWidthAtIndex(int i) {
     final payloads = _currentPillars();
@@ -313,34 +316,34 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   /// 有效柱边框颜色（优先使用传入的值，默认 Colors.red）
-  Color get _pillarBorderColorEff =>
-      _pillarSectionNotifier.value.global.border!.lightColor;
+  // Color get _pillarBorderColorEff =>
+  //     _pillarSectionNotifier.value.global.border!.lightColor;
 
   /// 有效柱圆角（优先使用传入的值，默认 0）
-  double get _pillarCornerRadiusEff =>
-      _pillarSectionNotifier.value.global.border!.radius;
+  // double get _pillarCornerRadiusEff =>
+  //     _pillarSectionNotifier.value.global.border!.radius;
 
   /// 有效柱背景色（优先使用传入的值，默认透明）
-  Color get _pillarBackgroundColorEff =>
-      _pillarSectionNotifier.value.global.lightBackgroundColor!;
+  // Color get _pillarBackgroundColorEff =>
+  //     _pillarSectionNotifier.value.global.lightBackgroundColor!;
 
   /// 有效柱阴影（优先使用 PillarStyleConfig 转换的装饰阴影）
-  List<BoxShadow>? get _pillarBoxShadowEff => [
-        BoxShadow(
-            color: _pillarSectionNotifier.value.global.shadow.lightThemeColor,
-            blurRadius: _pillarSectionNotifier.value.global.shadow.blurRadius,
-            spreadRadius:
-                _pillarSectionNotifier.value.global.shadow.spreadRadius,
-            offset: _pillarSectionNotifier.value.global.shadow.offset)
-      ];
+  // List<BoxShadow>? get _pillarBoxShadowEff => [
+  //       BoxShadow(
+  //           color: _pillarSectionNotifier.value.global.shadow.lightThemeColor,
+  //           blurRadius: _pillarSectionNotifier.value.global.shadow.blurRadius,
+  //           spreadRadius:
+  //               _pillarSectionNotifier.value.global.shadow.spreadRadius,
+  //           offset: _pillarSectionNotifier.value.global.shadow.offset)
+  //     ];
 
   /// 装饰总宽度（左右 margin + padding + border）
-  double get _pillarDecorationWidthEff =>
-      _pillarMarginEff.left +
-      _pillarMarginEff.right +
-      _pillarPaddingEff.left +
-      _pillarPaddingEff.right +
-      _pillarBorderWidthEff * 2;
+  // double get _pillarDecorationWidthEff =>
+  //     _pillarMarginEff.left +
+  //     _pillarMarginEff.right +
+  //     _pillarPaddingEff.left +
+  //     _pillarPaddingEff.right +
+  //     _pillarBorderWidthEff * 2;
 
   /// 指定列的装饰总宽度（使用每列边距覆盖）
   double _pillarDecorationWidthAtIndex(int i) {
@@ -359,12 +362,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   /// 装饰总高度（上下 margin + padding + border）
-  double get _pillarDecorationHeightEff =>
-      _pillarMarginEff.top +
-      _pillarMarginEff.bottom +
-      _pillarPaddingEff.top +
-      _pillarPaddingEff.bottom +
-      _pillarBorderWidthEff * 2;
+  // double get _pillarDecorationHeightEff =>
+  //     _pillarMarginEff.top +
+  //     _pillarMarginEff.bottom +
+  //     _pillarPaddingEff.top +
+  //     _pillarPaddingEff.bottom +
+  //     _pillarBorderWidthEff * 2;
 
   /// 顶部装饰偏移（margin-top + padding-top + border-top）
   double get _pillarDecorationTopOffsetEff => _pixelFloor(
@@ -431,7 +434,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 构建 cell 文本规格映射
   /// 基于当前的 cardPayload、rowStrategyMapper 和 typography 计算每个 cell 的字符数
   Map<String, CellTextSpec> _buildCellTextSpecMap() {
-    print("DEBUG: _buildCellTextSpecMap called");
+    // print("DEBUG: _buildCellTextSpecMap called");
     final cp = widget.cardPayloadNotifier.value;
     final List<PillarPayload> pillars =
         cp.pillarOrderUuid.map((id) => cp.pillarMap[id]!).toList();
@@ -976,12 +979,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           EditableCardThemeBuilder.buildTypographySection(newTheme);
     }
 
-    final bool rowsVisibilityChanged =
-        oldWidget.showGripRows != widget.showGripRows;
-    final bool colsVisibilityChanged =
-        oldWidget.showGripColumns != widget.showGripColumns;
+    final bool rowsVisibilityChanged = oldWidget.showGrip != widget.showGrip;
+    // final bool colsVisibilityChanged =
+    //     oldWidget.showGripColumns != widget.showGripColumns;
 
-    if (rowsVisibilityChanged || colsVisibilityChanged) {
+    if (rowsVisibilityChanged) {
       // 抓手显示/隐藏时，切换为居中对齐以提升视觉过渡效果
       _preferCenterAlignment = true;
       // 重新构建布局模型，按可见性设置抓手“有效尺寸”
@@ -1098,7 +1100,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               valueListenable: widget.themeNotifier,
               builder: (context, theme, child) {
                 final padding = theme.card.padding;
-                final borderWidth = _resolveUniformCardBorderWidth();
+                final borderWidth = (theme.card.border?.enabled ?? false)
+                    ? 0
+                    : _resolveUniformCardBorderWidth();
+                // print(
+                // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOutCubic,
@@ -1389,6 +1395,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
+  bool get _rowDraggingActive =>
+      _draggingRowIndex != null || _hoveringExternalRow;
+
   Widget _buildGrid(Size size) {
     final pillars = _effectivePillarsTuples();
     final rows = _currentRowLabels();
@@ -1442,591 +1451,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // Left header column: row titles; overlay a unified drag target for continuous row index updates
     // final leftHeader = _buildLeftHeader(rows);
     // Data grid: according to current row order
-    final dataGrid = Container(
-      // 数据网格总宽按可变列宽总和计算（像素对齐，避免子像素溢出）
-      // width: _pixelFloor(_totalColsWidth(pillars) + extraColWidth),
-      width: _pixelFloor(
-          _metricsSnapshotNotifier.value.totals.totalWidth + extraColWidth),
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          // 网格分隔线绘制（叠加层底部）：统一绘制贯穿整列的竖线与分隔行的横线
-          Builder(builder: (context) {
-            final List<double> vXs = List.generate(pillars.length, (i) => i)
-                .where((i) => _isSeparatorColumnIndex(i))
-                .map((i) =>
-                    _sumColWidthsUpTo(i, pillars) +
-                    _colDividerWidthEffective / 2)
-                .toList();
-            // 计算水平分隔线的 Y 坐标：遍历当前行，取分隔行的顶部 + 有效高度的一半
-            final List<String> rowLabels = _currentRowLabels();
-            final List<double> hYs = <double>[];
-            for (int ri = 0; ri < rowLabels.length; ri++) {
-              if (_isSeparatorRowAtIndex(ri)) {
-                final double top = _computeRowTopFromIndex(ri, rowLabels);
-                hYs.add(top + _rowDividerHeightEffective / 2);
-              }
-            }
-            // 叠加层左内边距：如网格中包含“行标题列”，横线避让该列宽度
-            double painterLeftInset = 0;
-            final payloads = _currentPillars();
-            for (int i = 0; i < pillars.length && i < payloads.length; i++) {
-              if (payloads[i].pillarType == PillarType.rowTitleColumn) {
-                painterLeftInset = _colWidthAtIndex(i, pillars);
-                break;
-              }
-            }
-            return Positioned.fill(
-              child: IgnorePointer(
-                child: CustomPaint(
-                  painter: CardGridPainter(
-                    verticalXs: vXs,
-                    horizontalYs: hYs,
-                    topInset: 0,
-                    leftInset: painterLeftInset,
-                    columnColor: Theme.of(context).dividerColor,
-                    columnThickness: _colDividerThickness,
-                    rowColor: Theme.of(context).dividerColor,
-                    rowThickness: _rowDividerThickness,
-                  ),
-                ),
-              ),
-            );
-          }),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: (() {
-              final d = _draggingColumnIndex;
-              final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
-              final List<Widget> children = [];
-              for (int i = 0; i < pillars.length; i++) {
-                // 在每个列前插入一个可动画的幽灵列，占位宽度 0..pillarWidth
-                // 行拖拽进行中时，禁止显示列拖拽的幽灵占位
-                final bool dragging = (d != null || _hoveringExternalPillar) &&
-                    !rowDraggingActive;
-                final double gridGhostWidth = (d != null)
-                    ? _colWidthAtIndex(d, pillars)
-                    : _pixelFloor(_getGhostColumnWidth());
-                children.add(AnimatedContainer(
-                  duration: dragging
-                      ? const Duration(milliseconds: 180)
-                      : Duration.zero,
-                  curve: Curves.easeOut,
-                  width: dragging && t == i ? gridGhostWidth : 0,
-                  child: dragging && t == i
-                      ? GhostPillarWidget.column(
-                          width: gridGhostWidth,
-                          height: _layoutNotifier.value
-                              .totalRowsHeight(_measurementContext),
-                        )
-                      : const SizedBox.shrink(),
-                ));
-                if (d == i) continue; // 拖拽中的列不占原位置
-                final tuple = pillars[i];
-                final jz = tuple.item2;
-                final bool isSeparatorColumn = _isSeparatorColumnIndex(i);
-                final pillarPayloads = _currentPillars();
-                // 检查当前列是否为行标题列，确保外层宽度与内部单元格宽度一致
-                final isRowTitleCol = (i >= 0 && i < pillarPayloads.length) &&
-                    pillarPayloads[i].pillarType == PillarType.rowTitleColumn;
-
-                // colW 是内容宽度（不含装饰），装饰会在外层 Container 中添加。
-                // 为保持与顶/底部抓手行和总宽计算一致，这里统一通过 _colWidthAtIndex 获取“总列宽”（含装饰），
-                // 非分隔列再减去装饰宽度得到内容宽度。这样普通列也能正确应用每列的覆盖宽度。
-                final double colW = (() {
-                  if (isSeparatorColumn) {
-                    return _pixelFloor(_colDividerWidthEffective);
-                  }
-                  final pm = metricsSnap.pillars[pillarPayloads[i].uuid];
-                  final contentW = pm?.contentWidth ?? 0.0;
-                  return contentW > 0 ? _pixelFloor(contentW) : 0.0;
-                })();
-                final columnContent = Column(
-                  // crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ...(() {
-                      final dRow = _draggingRowIndex;
-                      final tRow = _hoverRowInsertIndex ?? _lastRowInsertIndex;
-                      final List<Widget> rowChildren = [];
-                      // 构造一次行计算输入上下文，用于策略按需计算
-                      // pillarPayloads 已在外层声明，直接使用
-                      final pillarContents = pillarPayloads
-                          .whereType<ContentPillarPayload>()
-                          .map((p) => p.pillarContent)
-                          .toList();
-                      final dayJiaZi = (() {
-                        try {
-                          final day = pillarContents.firstWhere(
-                              (c) => c.pillarType == PillarType.day);
-                          return day.jiaZi;
-                        } catch (_) {
-                          return pillarContents.isNotEmpty
-                              ? pillarContents.first.jiaZi
-                              : JiaZi.JIA_ZI;
-                        }
-                      })();
-                      final computationInput = RowComputationInput(
-                        pillars: pillarContents,
-                        dayJiaZi: dayJiaZi,
-                        gender: widget.gender,
-                      );
-                      final rowPayloads = _currentTextRows();
-                      final bool draggingRow =
-                          dRow != null || _hoveringExternalRow;
-
-                      for (final rEntry in rows.asMap().entries) {
-                        final absRowIdx = rEntry.key;
-                        final rowName = rEntry.value;
-
-                        final rowSize = _rowCellSize(rowName);
-                        // 统一让位逻辑：所有行（包括索引0）使用相同的让位机制
-                        rowChildren.add(AnimatedContainer(
-                          duration: draggingRow
-                              ? const Duration(milliseconds: 180)
-                              : Duration.zero,
-                          curve: Curves.easeOut,
-
-                          // 行占位宽度使用外层计算的 colW，确保与单元格宽度一致
-                          width: colW,
-                          height: draggingRow && tRow == absRowIdx
-                              ? _getGhostRowHeight(
-                                  fallbackHeight: rowSize.height)
-                              : 0,
-                          color: draggingRow && tRow == absRowIdx
-                              ? Theme.of(context)
-                                  .colorScheme
-                                  .secondary
-                                  .withOpacity(0.08)
-                              : Colors.transparent,
-                        ));
-                        if (dRow == absRowIdx) continue; // 拖拽中的行不占原位置
-                        Widget cell;
-
-                        // isRowTitleCol 和 colW 已在外层声明，直接使用
-                        final bool isSeparatorColumn =
-                            _isSeparatorTitle(tuple.item1);
-
-                        // 检测当前行是否为表头行（用于确定单元格高度）
-                        final rowPayloadsForHeight = _currentTextRows();
-                        final isCurrentRowHeaderRow = absRowIdx >= 0 &&
-                            absRowIdx < rowPayloadsForHeight.length &&
-                            rowPayloadsForHeight[absRowIdx].rowType ==
-                                RowType.columnHeaderRow;
-
-                        // 行标题列：显示行标签而非柱数据
-                        if (isRowTitleCol) {
-                          if (_isSeparatorRowAtIndex(absRowIdx)) {
-                            // 分隔行：显示水平分割线
-                            final contentW = rowTitleWidth;
-                            cell = Container(
-                              width: contentW,
-                              height: rowSize.height,
-                              decoration:
-                                  CardDecorators.buildRowSeparatorDecoration(
-                                context,
-                                thickness: _rowDividerThickness,
-                              ),
-                            );
-                          } else {
-                            // 普通行与表头行：不允许拖拽，只显示标题
-                            // 获取当前行的payload以判断是否为表头行
-                            final rowPayloads = _currentTextRows();
-                            TextRowPayload? rPayload;
-                            if (absRowIdx >= 0 &&
-                                absRowIdx < rowPayloads.length) {
-                              rPayload = rowPayloads[absRowIdx];
-                            }
-
-                            // 检查是否为表头行
-                            final isHeaderRow =
-                                rPayload?.rowType == RowType.columnHeaderRow;
-
-                            // 表头行显示性别文本，普通行显示行标签
-                            final titleWidget = isHeaderRow &&
-                                    rPayload is ColumnHeaderRowPayload
-                                ? _genderText(rPayload.gender)
-                                : _rowTitlePillarText(rPayload!);
-                            // 只显示标题，不允许拖拽
-                            final contentW = rowTitleWidth;
-                            cell = Center(child: titleWidget);
-                            // 始终将单元格加入当前列的行子组件列表（标题列）
-                            rowChildren.add(AnimatedSlide(
-                              duration: const Duration(milliseconds: 240),
-                              curve: Curves.easeOutCubic,
-                              offset: (_dropRowFadeActive &&
-                                      _dropAnimatingRowIndex == absRowIdx)
-                                  ? const Offset(0, 0.06)
-                                  : Offset.zero,
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                children: [
-                                  AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 240),
-                                    curve: Curves.easeOutCubic,
-                                    // 标题行不参与“落位淡出”动画，避免标题瞬间消失
-                                    opacity: ((_dropRowFadeActive &&
-                                                _dropAnimatingRowIndex ==
-                                                    absRowIdx) &&
-                                            !isHeaderRow)
-                                        ? 0.0
-                                        : (_draggingRowIndex == absRowIdx
-                                            ? 0.9
-                                            : 1.0),
-                                    child: cell,
-                                  ),
-                                  if (draggingRow && tRow == absRowIdx)
-                                    Positioned.fill(
-                                      child: IgnorePointer(
-                                        child: Container(
-                                          decoration: BoxDecoration(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                                .withOpacity(0.12),
-                                            border: Border.all(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .secondary
-                                                  .withOpacity(0.35),
-                                              width: 1,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ));
-                          }
-                        } else if (isSeparatorColumn) {
-                          // 分隔符列：在单元格内不再绘制竖线，改为由数据网格叠加层统一绘制贯穿整列的竖线
-                          cell = SizedBox(
-                            width: colW,
-                            height: rowSize.height,
-                          );
-                          // 分隔列也需要加入到行子组件，以保证网格对齐
-                          rowChildren.add(AnimatedSlide(
-                            duration: const Duration(milliseconds: 240),
-                            curve: Curves.easeOutCubic,
-                            offset: (_dropRowFadeActive &&
-                                    _dropAnimatingRowIndex == absRowIdx)
-                                ? const Offset(0, 0.06)
-                                : Offset.zero,
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 240),
-                                  curve: Curves.easeOutCubic,
-                                  // 标题行不参与“落位淡出”动画，避免标题瞬间消失
-                                  opacity: ((_dropRowFadeActive &&
-                                              _dropAnimatingRowIndex ==
-                                                  absRowIdx) &&
-                                          !isCurrentRowHeaderRow)
-                                      ? 0.0
-                                      : (_draggingRowIndex == absRowIdx
-                                          ? 0.9
-                                          : 1.0),
-                                  child: cell,
-                                ),
-                                if (draggingRow && tRow == absRowIdx)
-                                  Positioned.fill(
-                                    child: IgnorePointer(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                              .withOpacity(0.12),
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                                .withOpacity(0.35),
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ));
-                        } else {
-                          // 使用 RowInfoPayload.rowType 进行类型分支，移除字符串判断
-                          final rowPayloads = _currentTextRows();
-                          final RowType? rowType =
-                              (absRowIdx >= 0 && absRowIdx < rowPayloads.length)
-                                  ? rowPayloads[absRowIdx].rowType
-                                  : null;
-                          final String rUuid = rowPayloads[absRowIdx].uuid;
-                          final String pUuid = pillarPayloads[i].uuid;
-                          final cm = metricsSnap.cells['$rUuid|$pUuid'];
-                          cell = _buildPillarsEachCell(
-                            pillarType: pillarPayloads[i].pillarType,
-                            rowType: rowType,
-                            size: cm!.size,
-                            absRowIdx: absRowIdx,
-                            rowPayloads: rowPayloads,
-                            pillarJiaZi: jz,
-                            gender: widget.gender,
-                            dayJiaZi: dayJiaZi,
-                          );
-
-                          rowChildren.add(AnimatedSlide(
-                            duration: const Duration(milliseconds: 240),
-                            curve: Curves.easeOutCubic,
-                            offset: (_dropRowFadeActive &&
-                                    _dropAnimatingRowIndex == absRowIdx)
-                                ? const Offset(0, 0.06)
-                                : Offset.zero,
-                            child: Stack(
-                              clipBehavior: Clip.none,
-                              children: [
-                                AnimatedOpacity(
-                                  duration: const Duration(milliseconds: 240),
-                                  curve: Curves.easeOutCubic,
-                                  opacity: (_dropRowFadeActive &&
-                                          _dropAnimatingRowIndex == absRowIdx)
-                                      ? 0.0
-                                      : (_draggingRowIndex == absRowIdx
-                                          ? 0.9
-                                          : 1.0),
-                                  child: cell,
-                                ),
-                                if (draggingRow && tRow == absRowIdx)
-                                  Positioned.fill(
-                                    child: IgnorePointer(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Theme.of(context)
-                                              .colorScheme
-                                              .secondary
-                                              .withOpacity(0.12),
-                                          border: Border.all(
-                                            color: Theme.of(context)
-                                                .colorScheme
-                                                .secondary
-                                                .withOpacity(0.35),
-                                            width: 1,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ));
-                        }
-                        // 末尾插入：不在每一列内追加幽灵占位，改为在数据网格叠加层绘制一次全宽幽灵行。
-                        // 为保持列内部高度稳定，这里跳过列内的末尾幽灵渲染。
-                        // 具体渲染逻辑见下方 dataGrid Stack 的 Positioned 叠加层。
-                      }
-                      return rowChildren;
-                    })(),
-                  ],
-                );
-                children.add(AnimatedSlide(
-                  duration: const Duration(milliseconds: 240),
-                  curve: Curves.easeOutCubic,
-                  offset: (_dropColFadeActive && _dropAnimatingColIndex == i)
-                      ? const Offset(0.06, 0)
-                      : Offset.zero,
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      AnimatedOpacity(
-                          duration: const Duration(milliseconds: 240),
-                          curve: Curves.easeOutCubic,
-                          opacity: (_dropColFadeActive &&
-                                  _dropAnimatingColIndex == i)
-                              ? 0.0
-                              : 1.0,
-                          child: _buildEachPillar(i, colW, columnContent)),
-                      if (dragging && t == i)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .primary
-                                    .withOpacity(0.12),
-                                border: Border.all(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary
-                                      .withOpacity(0.35),
-                                  width: 1,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ));
-              }
-              // 末尾列插入位的可动画幽灵列
-              // 行拖拽进行中时，禁止显示列拖拽的幽灵占位
-              final bool dragging =
-                  (d != null || _hoveringExternalPillar) && !rowDraggingActive;
-              final double endGhostWidth = (d != null)
-                  ? _colWidthAtIndex(d, pillars)
-                  : _getGhostColumnWidth();
-              children.add(AnimatedContainer(
-                duration: dragging
-                    ? const Duration(milliseconds: 180)
-                    : Duration.zero,
-                curve: Curves.easeOut,
-                width: dragging && t == pillars.length ? endGhostWidth : 0,
-                child: dragging && t == pillars.length
-                    ? GhostPillarWidget.column(
-                        width: endGhostWidth,
-                        height: _layoutNotifier.value
-                            .totalRowsHeight(_measurementContext),
-                      )
-                    : const SizedBox.shrink(),
-              ));
-              return children;
-            })(),
-          ),
-          // 行插入指示线（右侧数据网格覆盖）
-          if (_hoverRowInsertIndex != null)
-            Positioned(
-              left: 0,
-              top: (_hoverRowInsertIndex == 1)
-                  ? 0
-                  : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) -
-                      1,
-              width: _totalColsWidth(pillars),
-              height: 2,
-              child: Container(
-                color:
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.35),
-              ),
-            ),
-          // 整行高亮：在目标插入位对应的整行显示提示（提升可见性）
-          if (_hoverRowInsertIndex != null &&
-              _hoverRowInsertIndex! >= 1 &&
-              _hoverRowInsertIndex! < rows.length)
-            Positioned(
-              left: 0,
-              top: _computeRowTopFromIndex(_hoverRowInsertIndex!, rows),
-              width: _totalColsWidth(pillars),
-              height: _rowCellSize(rows[_hoverRowInsertIndex!]).height,
-              child: IgnorePointer(
-                child: Container(
-                  color:
-                      Theme.of(context).colorScheme.secondary.withOpacity(0.06),
-                ),
-              ),
-            ),
-          // 尾部插入的全宽幽灵行（叠加层渲染）：避免每列重复渲染导致高度溢出
-          if ((_hoverRowInsertIndex ?? _lastRowInsertIndex) == rows.length)
-            Positioned(
-              left: 0,
-              top: _computeRowInsertTopFromIndex(rows.length, rows),
-              width: _totalColsWidth(pillars),
-              height: _getGhostRowHeight(fallbackHeight: otherCellHeight),
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .secondary
-                        .withOpacity(0.08),
-                    border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.35),
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          // 竖线已由 CardGridPainter 统一绘制
-
-          // 垂直分割线拖拽手柄：调整分割线左侧列的宽度覆盖（仅影响目标列）
-          Positioned.fill(
-            child: IgnorePointer(
-              ignoring: false,
-              child: Stack(
-                children: [
-                  for (int i = 1; i < pillars.length; i++)
-                    Builder(builder: (context) {
-                      // 当存在行标题列时，分割线位置不额外叠加 rowTitleWidth
-                      final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
-                      final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
-                          _sumColWidthsUpTo(i, pillars) -
-                          4;
-                      return Positioned(
-                        left: left,
-                        top: columnTitleHeight,
-                        bottom: 0,
-                        width: 8,
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.resizeColumn,
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onPanStart: (details) {
-                              _resizingDividerIndex = i;
-                              _initialPillarWidth =
-                                  _colWidthAtIndex(i - 1, pillars) -
-                                      _pillarDecorationWidthAtIndex(i - 1);
-                              _scheduleRebuild();
-                            },
-                            onPanUpdate: (details) {
-                              final box = _cardKey.currentContext
-                                  ?.findRenderObject() as RenderBox?;
-                              if (box == null) return;
-                              final idx = _resizingDividerIndex ?? i;
-                              if (idx <= 0) return;
-                              // 分割线左侧目标列索引
-                              final targetCol = idx - 1;
-                              // 分隔列不参与宽度调整
-                              if (_isSeparatorColumnIndex(targetCol)) return;
-
-                              // 统一基准：全局坐标转卡片局部坐标
-                              final local =
-                                  box.globalToLocal(details.globalPosition);
-                              final hasRowTitleCol2 =
-                                  _hasRowTitleColumnInGrid(pillars);
-                              final accLeft =
-                                  hasRowTitleCol2 ? 0 : rowTitleWidth;
-                              final dx = local.dx - accLeft;
-
-                              // 新总宽度 = 当前指针 x 减去左侧列之前所有列宽度累积
-                              final sumPrev =
-                                  _sumColWidthsUpTo(targetCol, pillars);
-                              double newTotalW = dx - sumPrev;
-
-                              // 转换为内容宽度覆盖（扣除装饰宽度），并夹紧到最小/最大内容宽度范围
-                              final decW =
-                                  _pillarDecorationWidthAtIndex(targetCol);
-                              double newContentW = (newTotalW - decW)
-                                  .clamp(_minPillarWidth, _maxPillarWidth);
-                              _columnWidthOverrides[targetCol] = newContentW;
-                              _scheduleRebuild();
-                            },
-                            onPanEnd: (_) {
-                              _resizingDividerIndex = null;
-                              _initialPillarWidth = null;
-                              _scheduleRebuild();
-                            },
-                          ),
-                        ),
-                      );
-                    }),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    final dataGrid = _buildDataGrid(pillars, rows, metricsSnap, extraColWidth);
 
     // 包裹整个网格的 Stack，使行 DragTarget 覆盖所有区域（包括 topGripRow 和 bottomGripRow）
     return Stack(
@@ -2044,7 +1469,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 axis: Axis.vertical,
                 child: child,
               ),
-              child: widget.showGripRows ? topGripRow : const SizedBox.shrink(),
+              child: widget.showGrip ? topGripRow : const SizedBox.shrink(),
             ),
             // 行内容区域
             Row(
@@ -2063,7 +1488,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       child: child,
                     ),
                   ),
-                  child: widget.showGripColumns
+                  child: widget.showGrip
                       ? leftGripColumn
                       : const SizedBox.shrink(),
                 ),
@@ -2083,9 +1508,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       child: child,
                     ),
                   ),
-                  child: widget.showGripColumns
-                      ? gripColumn
-                      : const SizedBox.shrink(),
+                  child: widget.showGrip ? gripColumn : const SizedBox.shrink(),
                 ),
               ],
             ),
@@ -2099,7 +1522,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 axis: Axis.vertical,
                 child: child,
               ),
-              child: widget.showGripRows ? gripRow : const SizedBox.shrink(),
+              child: widget.showGrip ? gripRow : const SizedBox.shrink(),
             ),
           ],
         ),
@@ -2175,7 +1598,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 final dy = _dragController.normalizeRowDy(
                   localDy: local.dy,
                   topGripHeight: dragHandleRowHeight,
-                  gripVisible: widget.showGripRows,
+                  gripVisible: widget.showGrip,
                 );
                 // 现在 dy = 0 对应 leftGripColumn 顶部（行内容开始）
                 // _computeRowInsertIndexFromDyMidpoint 的 acc 也从 0 开始（行内容开始）
@@ -2309,6 +1732,593 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         ),
       ],
     );
+  }
+
+  Widget _buildDataGrid(
+    List<Tuple2<String, JiaZi>> pillars,
+    List<String> rows,
+    CardMetricsSnapshot metricsSnap,
+    double extraColWidth,
+  ) {
+    return Container(
+      // 数据网格总宽按可变列宽总和计算（像素对齐，避免子像素溢出）
+      width: _pixelFloor(
+          _metricsSnapshotNotifier.value.totals.totalWidth + extraColWidth),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // 1. 网格分隔线绘制（叠加层底部）
+          _buildGridLines(pillars, rows),
+
+          // 2. 数据列（核心内容）
+          _buildPillarsRow(pillars, rows, metricsSnap),
+
+          // 3. 行插入指示线与高亮
+          ..._buildRowInsertionOverlays(pillars, rows),
+
+          // 4. 垂直分割线拖拽手柄
+          _buildResizeHandles(pillars),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGridLines(
+      List<Tuple2<String, JiaZi>> pillars, List<String> rows) {
+    return Builder(builder: (context) {
+      final List<double> vXs = List.generate(pillars.length, (i) => i)
+          .where((i) => _isSeparatorColumnIndex(i))
+          .map((i) =>
+              _sumColWidthsUpTo(i, pillars) + _colDividerWidthEffective / 2)
+          .toList();
+      // 计算水平分隔线的 Y 坐标
+      final List<double> hYs = <double>[];
+      for (int ri = 0; ri < rows.length; ri++) {
+        if (_isSeparatorRowAtIndex(ri)) {
+          final double top = _computeRowTopFromIndex(ri, rows);
+          hYs.add(top + _rowDividerHeightEffective / 2);
+        }
+      }
+      // 叠加层左内边距
+      double painterLeftInset = 0;
+      final payloads = _currentPillars();
+      for (int i = 0; i < pillars.length && i < payloads.length; i++) {
+        if (payloads[i].pillarType == PillarType.rowTitleColumn) {
+          painterLeftInset = _colWidthAtIndex(i, pillars);
+          break;
+        }
+      }
+      return Positioned.fill(
+        child: IgnorePointer(
+          child: CustomPaint(
+            painter: CardGridPainter(
+              verticalXs: vXs,
+              horizontalYs: hYs,
+              topInset: 0,
+              leftInset: painterLeftInset,
+              columnColor: Theme.of(context).dividerColor,
+              columnThickness: _colDividerThickness,
+              rowColor: Theme.of(context).dividerColor,
+              rowThickness: _rowDividerThickness,
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildPillarsRow(
+    List<Tuple2<String, JiaZi>> pillars,
+    List<String> rows,
+    CardMetricsSnapshot metricsSnap,
+  ) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: _buildPillarWidgets(pillars, rows, metricsSnap),
+    );
+  }
+
+  List<Widget> _buildPillarWidgets(
+    List<Tuple2<String, JiaZi>> pillars,
+    List<String> rows,
+    CardMetricsSnapshot metricsSnap,
+  ) {
+    final d = _draggingColumnIndex;
+    final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+    final List<Widget> children = [];
+
+    for (int i = 0; i < pillars.length; i++) {
+      // 1. 插入幽灵列（拖拽占位）
+      children.add(_buildGhostColumn(i, t, d, pillars));
+
+      if (d == i) continue; // 拖拽中的列不占原位置
+
+      // 2. 构建真实列
+      children.add(_buildRealPillar(i, pillars, rows, metricsSnap));
+    }
+
+    // 3. 末尾幽灵列
+    children.add(_buildEndGhostColumn(t, d, pillars));
+
+    return children;
+  }
+
+  Widget _buildGhostColumn(int index, int? targetIndex, int? dragIndex,
+      List<Tuple2<String, JiaZi>> pillars) {
+    final bool dragging =
+        (dragIndex != null || _hoveringExternalPillar) && !_rowDraggingActive;
+    final double gridGhostWidth = (dragIndex != null)
+        ? _colWidthAtIndex(dragIndex, pillars)
+        : _pixelFloor(_getGhostColumnWidth());
+
+    return AnimatedContainer(
+      duration: dragging ? const Duration(milliseconds: 180) : Duration.zero,
+      curve: Curves.easeOut,
+      width: dragging && targetIndex == index ? gridGhostWidth : 0,
+      child: dragging && targetIndex == index
+          ? GhostPillarWidget.column(
+              width: gridGhostWidth,
+              height:
+                  _layoutNotifier.value.totalRowsHeight(_measurementContext),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildEndGhostColumn(
+      int? targetIndex, int? dragIndex, List<Tuple2<String, JiaZi>> pillars) {
+    final bool dragging =
+        (dragIndex != null || _hoveringExternalPillar) && !_rowDraggingActive;
+    final double endGhostWidth = (dragIndex != null)
+        ? _colWidthAtIndex(dragIndex, pillars)
+        : _getGhostColumnWidth();
+
+    return AnimatedContainer(
+      duration: dragging ? const Duration(milliseconds: 180) : Duration.zero,
+      curve: Curves.easeOut,
+      width: dragging && targetIndex == pillars.length ? endGhostWidth : 0,
+      child: dragging && targetIndex == pillars.length
+          ? GhostPillarWidget.column(
+              width: endGhostWidth,
+              height:
+                  _layoutNotifier.value.totalRowsHeight(_measurementContext),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  Widget _buildRealPillar(
+    int i,
+    List<Tuple2<String, JiaZi>> pillars,
+    List<String> rows,
+    CardMetricsSnapshot metricsSnap,
+  ) {
+    final tuple = pillars[i];
+    final jz = tuple.item2;
+    final pillarPayloads = _currentPillars();
+    final bool isSeparatorColumn = _isSeparatorColumnIndex(i);
+    final isRowTitleCol = (i >= 0 && i < pillarPayloads.length) &&
+        pillarPayloads[i].pillarType == PillarType.rowTitleColumn;
+
+    final double colW = _calculatePillarContentWidth(
+        i, pillars, pillarPayloads, isSeparatorColumn, metricsSnap);
+
+    final columnContent = Column(
+      children: _buildPillarCells(
+        i,
+        colW,
+        rows,
+        pillarPayloads,
+        isRowTitleCol,
+        isSeparatorColumn,
+        tuple,
+        jz,
+        metricsSnap,
+      ),
+    );
+
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+      offset: (_dropColFadeActive && _dropAnimatingColIndex == i)
+          ? const Offset(0, 0)
+          : Offset.zero,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            opacity:
+                (_dropColFadeActive && _dropAnimatingColIndex == i) ? 0.0 : 1.0,
+            child: _buildEachPillar(i, colW, columnContent),
+          ),
+          _buildPillarDragPlaceholder(i),
+        ],
+      ),
+    );
+  }
+
+  double _calculatePillarContentWidth(
+    int i,
+    List<Tuple2<String, JiaZi>> pillars,
+    List<PillarPayload> pillarPayloads,
+    bool isSeparatorColumn,
+    CardMetricsSnapshot metricsSnap,
+  ) {
+    if (isSeparatorColumn) {
+      return _pixelFloor(_colDividerWidthEffective);
+    }
+    final pm = metricsSnap.pillars[pillarPayloads[i].uuid];
+    final contentW = pm?.contentWidth ?? 0.0;
+    return contentW > 0 ? _pixelFloor(contentW) : 0.0;
+  }
+
+  List<Widget> _buildPillarCells(
+    int pillarIndex,
+    double colW,
+    List<String> rows,
+    List<PillarPayload> pillarPayloads,
+    bool isRowTitleCol,
+    bool isSeparatorColumn,
+    Tuple2<String, JiaZi> tuple,
+    JiaZi jz,
+    CardMetricsSnapshot metricsSnap,
+  ) {
+    final dRow = _draggingRowIndex;
+    final tRow = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+    final List<Widget> rowChildren = [];
+
+    // Prepare computation input
+    final pillarContents = pillarPayloads
+        .whereType<ContentPillarPayload>()
+        .map((p) => p.pillarContent)
+        .toList();
+    final dayJiaZi = _getDayJiaZi(pillarContents);
+
+    final bool draggingRow = dRow != null || _hoveringExternalRow;
+
+    for (final rEntry in rows.asMap().entries) {
+      final absRowIdx = rEntry.key;
+      final rowName = rEntry.value;
+      final rowSize = _rowCellSize(rowName);
+
+      // 1. 行幽灵占位
+      rowChildren.add(
+          _buildGhostRow(absRowIdx, tRow, draggingRow, colW, rowSize.height));
+
+      if (dRow == absRowIdx) continue; // 拖拽中的行不占原位置
+
+      // 2. 构建真实单元格
+      Widget cell = _buildSingleCell(
+        pillarIndex,
+        absRowIdx,
+        colW,
+        rowSize,
+        isRowTitleCol,
+        isSeparatorColumn,
+        tuple,
+        jz,
+        pillarPayloads,
+        metricsSnap,
+        dayJiaZi,
+      );
+
+      rowChildren.add(_buildAnimatedCellWrapper(
+          cell, absRowIdx, tRow, draggingRow, isRowTitleCol));
+    }
+    return rowChildren;
+  }
+
+  JiaZi _getDayJiaZi(List<PillarContent> pillarContents) {
+    try {
+      return pillarContents
+          .firstWhere((c) => c.pillarType == PillarType.day)
+          .jiaZi;
+    } catch (_) {
+      return pillarContents.isNotEmpty
+          ? pillarContents.first.jiaZi
+          : JiaZi.JIA_ZI;
+    }
+  }
+
+  Widget _buildGhostRow(int absRowIdx, int? targetRowIdx, bool draggingRow,
+      double colW, double rowHeight) {
+    return AnimatedContainer(
+      duration: draggingRow ? const Duration(milliseconds: 180) : Duration.zero,
+      curve: Curves.easeOut,
+      width: colW,
+      height: draggingRow && targetRowIdx == absRowIdx
+          ? _getGhostRowHeight(fallbackHeight: rowHeight)
+          : 0,
+      color: draggingRow && targetRowIdx == absRowIdx
+          ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
+          : Colors.transparent,
+    );
+  }
+
+  Widget _buildSingleCell(
+    int pillarIndex,
+    int absRowIdx,
+    double colW,
+    Size rowSize,
+    bool isRowTitleCol,
+    bool isSeparatorColumn,
+    Tuple2<String, JiaZi> tuple,
+    JiaZi jz,
+    List<PillarPayload> pillarPayloads,
+    CardMetricsSnapshot metricsSnap,
+    JiaZi dayJiaZi,
+  ) {
+    if (isRowTitleCol) {
+      return _buildRowTitleCell(absRowIdx, rowSize);
+    } else if (isSeparatorColumn) {
+      return SizedBox(width: colW, height: rowSize.height);
+    } else {
+      return _buildDataCell(
+        pillarIndex,
+        absRowIdx,
+        pillarPayloads,
+        metricsSnap,
+        jz,
+        dayJiaZi,
+      );
+    }
+  }
+
+  Widget _buildRowTitleCell(int absRowIdx, Size rowSize) {
+    if (_isSeparatorRowAtIndex(absRowIdx)) {
+      return Container(
+        width: rowTitleWidth,
+        height: rowSize.height,
+        decoration: CardDecorators.buildRowSeparatorDecoration(
+          context,
+          thickness: _rowDividerThickness,
+        ),
+      );
+    } else {
+      final rowPayloads = _currentTextRows();
+      TextRowPayload? rPayload;
+      if (absRowIdx >= 0 && absRowIdx < rowPayloads.length) {
+        rPayload = rowPayloads[absRowIdx];
+      }
+      final isHeaderRow = rPayload?.rowType == RowType.columnHeaderRow;
+      final titleWidget = isHeaderRow && rPayload is ColumnHeaderRowPayload
+          ? _genderText(rPayload.gender)
+          : _rowTitlePillarText(rPayload!);
+      return Center(child: titleWidget);
+    }
+  }
+
+  Widget _buildDataCell(
+    int pillarIndex,
+    int absRowIdx,
+    List<PillarPayload> pillarPayloads,
+    CardMetricsSnapshot metricsSnap,
+    JiaZi jz,
+    JiaZi dayJiaZi,
+  ) {
+    final rowPayloads = _currentTextRows();
+    final RowType? rowType = (absRowIdx >= 0 && absRowIdx < rowPayloads.length)
+        ? rowPayloads[absRowIdx].rowType
+        : null;
+    final String rUuid = rowPayloads[absRowIdx].uuid;
+    final String pUuid = pillarPayloads[pillarIndex].uuid;
+    final cm = metricsSnap.cells['$rUuid|$pUuid'];
+
+    return _buildPillarsEachCell(
+      pillarType: pillarPayloads[pillarIndex].pillarType,
+      rowType: rowType,
+      size: cm!.size,
+      absRowIdx: absRowIdx,
+      rowPayloads: rowPayloads,
+      pillarJiaZi: jz,
+      gender: widget.gender,
+      dayJiaZi: dayJiaZi,
+    );
+  }
+
+  Widget _buildAnimatedCellWrapper(Widget cell, int absRowIdx, int? tRow,
+      bool draggingRow, bool isRowTitleCol) {
+    // Check if current row is header row
+    final rowPayloads = _currentTextRows();
+    final isCurrentRowHeaderRow = absRowIdx >= 0 &&
+        absRowIdx < rowPayloads.length &&
+        rowPayloads[absRowIdx].rowType == RowType.columnHeaderRow;
+
+    return AnimatedSlide(
+      duration: const Duration(milliseconds: 240),
+      curve: Curves.easeOutCubic,
+      offset: (_dropRowFadeActive && _dropAnimatingRowIndex == absRowIdx)
+          ? const Offset(0, 0)
+          : Offset.zero,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          AnimatedOpacity(
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutCubic,
+            opacity:
+                ((_dropRowFadeActive && _dropAnimatingRowIndex == absRowIdx) &&
+                        !isCurrentRowHeaderRow)
+                    ? 0.0
+                    : (_draggingRowIndex == absRowIdx ? 0.9 : 1.0),
+            child: cell,
+          ),
+          if (draggingRow && tRow == absRowIdx)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .secondary
+                        .withOpacity(0.12),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .secondary
+                          .withOpacity(0.35),
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPillarDragPlaceholder(int index) {
+    final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+    final d = _draggingColumnIndex;
+    final bool dragging =
+        (d != null || _hoveringExternalPillar) && !_rowDraggingActive;
+
+    if (dragging && t == index) {
+      return Positioned.fill(
+        child: IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
+              border: Border.all(
+                color: Theme.of(context).colorScheme.primary.withOpacity(0.35),
+                width: 1,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
+  }
+
+  List<Widget> _buildRowInsertionOverlays(
+      List<Tuple2<String, JiaZi>> pillars, List<String> rows) {
+    final List<Widget> overlays = [];
+    if (_hoverRowInsertIndex == null) return overlays;
+
+    // 1. 插入指示线
+    overlays.add(Positioned(
+      left: 0,
+      top: (_hoverRowInsertIndex == 1)
+          ? 0
+          : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) - 1,
+      width: _totalColsWidth(pillars),
+      height: 2,
+      child: Container(
+        color: Theme.of(context).colorScheme.secondary.withOpacity(0.35),
+      ),
+    ));
+
+    // 2. 整行高亮
+    if (_hoverRowInsertIndex! >= 1 && _hoverRowInsertIndex! < rows.length) {
+      overlays.add(Positioned(
+        left: 0,
+        top: _computeRowTopFromIndex(_hoverRowInsertIndex!, rows),
+        width: _totalColsWidth(pillars),
+        height: _rowCellSize(rows[_hoverRowInsertIndex!]).height,
+        child: IgnorePointer(
+          child: Container(
+            color: Theme.of(context).colorScheme.secondary.withOpacity(0.06),
+          ),
+        ),
+      ));
+    }
+
+    // 3. 尾部插入的全宽幽灵行
+    if ((_hoverRowInsertIndex ?? _lastRowInsertIndex) == rows.length) {
+      overlays.add(Positioned(
+        left: 0,
+        top: _computeRowInsertTopFromIndex(rows.length, rows),
+        width: _totalColsWidth(pillars),
+        height: _getGhostRowHeight(fallbackHeight: otherCellHeight),
+        child: IgnorePointer(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+              border: Border.all(
+                color:
+                    Theme.of(context).colorScheme.secondary.withOpacity(0.35),
+                width: 1,
+              ),
+            ),
+          ),
+        ),
+      ));
+    }
+
+    return overlays;
+  }
+
+  Widget _buildResizeHandles(List<Tuple2<String, JiaZi>> pillars) {
+    return Positioned.fill(
+      child: IgnorePointer(
+        ignoring: false,
+        child: Stack(
+          children: [
+            for (int i = 1; i < pillars.length; i++)
+              _buildSingleResizeHandle(i, pillars),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSingleResizeHandle(int i, List<Tuple2<String, JiaZi>> pillars) {
+    return Builder(builder: (context) {
+      final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
+      final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
+          _sumColWidthsUpTo(i, pillars) -
+          4;
+      return Positioned(
+        left: left,
+        top: columnTitleHeight,
+        bottom: 0,
+        width: 8,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.resizeColumn,
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (details) {
+              _resizingDividerIndex = i;
+              _initialPillarWidth = _colWidthAtIndex(i - 1, pillars) -
+                  _pillarDecorationWidthAtIndex(i - 1);
+              _scheduleRebuild();
+            },
+            onPanUpdate: (details) {
+              final box =
+                  _cardKey.currentContext?.findRenderObject() as RenderBox?;
+              if (box == null) return;
+              final idx = _resizingDividerIndex ?? i;
+              if (idx <= 0) return;
+              final targetCol = idx - 1;
+              if (_isSeparatorColumnIndex(targetCol)) return;
+
+              final local = box.globalToLocal(details.globalPosition);
+              final hasRowTitleCol2 = _hasRowTitleColumnInGrid(pillars);
+              final accLeft = hasRowTitleCol2 ? 0 : rowTitleWidth;
+              final dx = local.dx - accLeft;
+
+              final sumPrev = _sumColWidthsUpTo(targetCol, pillars);
+              double newTotalW = dx - sumPrev;
+
+              final decW = _pillarDecorationWidthAtIndex(targetCol);
+              double newContentW =
+                  (newTotalW - decW).clamp(_minPillarWidth, _maxPillarWidth);
+              _columnWidthOverrides[targetCol] = newContentW;
+              _scheduleRebuild();
+            },
+            onPanEnd: (_) {
+              _resizingDividerIndex = null;
+              _initialPillarWidth = null;
+              _scheduleRebuild();
+            },
+          ),
+        ),
+      );
+    });
   }
 
   // ========================================
@@ -2646,9 +2656,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                           absRowIndex: absRowIdx,
                                         ),
                                       ),
-                                  (widget.showGripColumns
-                                      ? dragHandleColWidth
-                                      : 0.0),
+                                  (widget.showGrip ? dragHandleColWidth : 0.0),
                                 ),
                                 childWhenDragging: const SizedBox.shrink(),
                                 child: MouseRegion(
@@ -3093,7 +3101,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       required JiaZi dayJiaZi,
       required JiaZi pillarJiaZi}) {
     Widget cell;
-
+    // print("${rowType?.name} width: ${size.width}, height: ${size.height}");
     if (_isSeparatorRowAtIndex(absRowIdx)) {
       // 分隔行：不在单元格内绘制横线，由数据网格叠加层统一绘制
       cell = SizedBox.fromSize(
@@ -3106,7 +3114,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           final cellStyleConfig = theme.cell.rowTitleCellConfig;
           final typography = theme.typography;
           cell = multiLineCell(
-            size: size,
+            size: Size(size.width, size.height),
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: typography.pillarTitle,
             content: pillarType.name,
@@ -3201,6 +3209,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 3. 增加padding 与 margin 以及border
     predictHeight += cellStyleConfig.getDecorationHeight();
     predictHeight = predictHeight.ceilToDouble();
+    // print("width: ${size.width}, height: ${size.height}");
     return EditableMultiTextCell(
       size: size,
       content: Text(content,
@@ -3322,13 +3331,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   decoration: BoxDecoration(
                     color: bkColor,
                     borderRadius: BorderRadius.circular(config.border!.radius),
-                    border:
-                        (config.border!.width == 0 || !config.border!.enabled)
-                            ? null
-                            : Border.all(
-                                color: config.border!.lightColor,
-                                width: config.border!.width,
-                              ),
+                    border: (config.border != null &&
+                            config.border!.enabled &&
+                            config.border!.width != 0)
+                        ? Border.all(
+                            color: config.border!.lightColor,
+                            width: config.border!.width,
+                          )
+                        : null,
                     boxShadow: config.shadow.withShadow
                         ? [
                             BoxShadow(
@@ -4624,8 +4634,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       avgGlyphWidthScale: 1.2,
     );
     final opts = MetricsComputeOptions(
-      includeGripRows: widget.showGripRows,
-      includeGripCols: widget.showGripColumns,
+      includeGrip: widget.showGrip,
+      // includeGripCols: widget.showGripColumns,
       showTitleRow: widget.themeNotifier.value.displayHeaderRow,
       showTitleCol: widget.themeNotifier.value.displayRowTitleColumn,
       cellShowsTitle: rows.any((r) => r.titleInCell),
@@ -4635,6 +4645,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       gripColWidth: _effectiveDragHandleColWidth,
       columnTitleHeight: columnTitleHeight,
       rowTitleWidth: rowTitleWidth,
+      withCardBorder: widget.themeNotifier.value.card.border?.enabled ?? false,
     );
     final size = calc.computeFinalSize(opts);
     return Size(size.width, size.height);
@@ -4885,7 +4896,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         size: Size(rowTitleWidth, rowHeight),
         cellStyleConfig: cellStyleConfig,
         mainTextStyleConfig: mainTextStyleConfig,
-        content: "${_labelForRowType(textRowPayload.rowType)}1");
+        content: _labelForRowType(textRowPayload.rowType));
   }
 
   /// Maps a `RowType` to its default display label.

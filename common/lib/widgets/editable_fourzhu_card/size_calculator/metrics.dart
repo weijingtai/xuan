@@ -28,6 +28,7 @@ class PillarMetrics {
   final double marginHorizontal;
   final double marginVertical;
   final double borderWidth;
+  final bool withBorder;
 
   const PillarMetrics({
     required this.pillarUuid,
@@ -39,10 +40,26 @@ class PillarMetrics {
     required this.marginHorizontal,
     required this.marginVertical,
     required this.borderWidth,
+    required this.withBorder,
   });
-  double get width => contentWidth + decorationWidth;
+  double get width {
+    if (withBorder) {
+      return decorationWidth + contentWidth + borderWidth * 2;
+    } else {
+      return decorationWidth + contentWidth;
+    }
+  }
+
   double get totalWidth => width + marginHorizontal * 2;
-  double get height => contentHeight + decorationHeight;
+  double get height {
+    if (withBorder) {
+      return decorationHeight + contentHeight + borderWidth * 2;
+    } else {
+      return decorationHeight + contentHeight;
+    }
+  }
+
+  double get totalHeight => height + marginVertical * 2;
 }
 
 /// Metrics for a single row
@@ -53,6 +70,7 @@ class RowMetrics {
   final double decorationHeight;
   final double marginVertical;
   final double borderWidth;
+  final bool withBorder;
 
   const RowMetrics({
     required this.rowUuid,
@@ -61,8 +79,16 @@ class RowMetrics {
     required this.decorationHeight,
     required this.marginVertical,
     required this.borderWidth,
+    required this.withBorder,
   });
-  double get height => decorationHeight + contentHeight + borderWidth * 2;
+  double get height {
+    if (withBorder) {
+      return decorationHeight + contentHeight + borderWidth * 2;
+    } else {
+      return decorationHeight + contentHeight;
+    }
+  }
+
   double get totalHeight => height + marginVertical * 2;
 }
 
@@ -77,6 +103,7 @@ class CellMetrics {
   final double marginHorizontal;
   final double marginVertical;
   final double borderWidth;
+  final bool withBorder;
 
   const CellMetrics({
     required this.rowUuid,
@@ -88,9 +115,24 @@ class CellMetrics {
     required this.marginHorizontal,
     required this.marginVertical,
     required this.borderWidth,
+    required this.withBorder,
   });
-  double get height => decorationHeight + contentHeight + borderWidth * 2;
-  double get width => decorationWidth + contentWidth + borderWidth * 2;
+  double get height {
+    if (withBorder) {
+      return decorationHeight + contentHeight + borderWidth * 2;
+    } else {
+      return decorationHeight + contentHeight;
+    }
+  }
+
+  double get width {
+    if (withBorder) {
+      return decorationWidth + contentWidth + borderWidth * 2;
+    } else {
+      return decorationWidth + contentWidth;
+    }
+  }
+
   Size get size => Size(width, height);
   double get totalHeight => height + marginVertical * 2;
   double get totalWidth => width + marginHorizontal * 2;
@@ -143,12 +185,14 @@ class CardMetricsSnapshot {
 
 /// Options for computing card metrics
 class MetricsComputeOptions {
-  final bool includeGripRows;
-  final bool includeGripCols;
+  // final bool includeGripRows;
+  // final bool includeGripCols;
+  final bool includeGrip;
   final bool showTitleRow;
   final bool showTitleCol;
   final bool cellShowsTitle;
   final EdgeInsets? cardPadding;
+  final bool withCardBorder;
   final double? cardBorderWidth;
   final double gripRowHeight;
   final double gripColWidth;
@@ -156,12 +200,13 @@ class MetricsComputeOptions {
   final double rowTitleWidth;
 
   const MetricsComputeOptions({
-    required this.includeGripRows,
-    required this.includeGripCols,
+    required this.includeGrip,
+    // required this.includeGripCols,
     required this.showTitleRow,
     required this.showTitleCol,
     required this.cellShowsTitle,
     this.cardPadding,
+    required this.withCardBorder,
     this.cardBorderWidth,
     required this.gripRowHeight,
     required this.gripColWidth,

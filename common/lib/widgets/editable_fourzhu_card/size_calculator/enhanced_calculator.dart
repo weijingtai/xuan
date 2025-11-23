@@ -96,7 +96,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
       // 复用父类逻辑计算 cell metrics 需要访问私有方法或复制逻辑
       // 这里我们复制逻辑
       final rt = RowType.values
-          .firstWhere((e) => e.name == rm.rowType); // 假设 rowType name 匹配
+          .firstWhere((e) => e == rm.rowType); // 假设 rowType name 匹配
 
       final cellDecW = theme.cell.getDecorationWidthBy(rt);
       final cellDecH = rm.decorationHeight;
@@ -119,6 +119,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
         marginHorizontal: _normalizeDouble(mH),
         marginVertical: _normalizeDouble(mV),
         borderWidth: _normalizeDouble(bW),
+        withBorder: theme.cell.getBy(rt).border?.enabled ?? false,
       );
       newCells[key] = cm;
 
@@ -141,6 +142,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
       marginHorizontal: _edgeH(theme.pillar.getBy(pt).margin),
       marginVertical: _edgeV(theme.pillar.getBy(pt).margin),
       borderWidth: theme.pillar.getBy(pt).border?.width ?? 0.0,
+      withBorder: theme.pillar.getBy(pt).border?.enabled ?? false,
     );
     newPillars[column.uuid] = pm;
 
@@ -306,6 +308,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
       decorationHeight: rowDecH,
       marginVertical: rowMarginV,
       borderWidth: rowBorderW,
+      withBorder: false,
     );
     newRows[row.uuid] = rm;
 
@@ -334,6 +337,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
         marginHorizontal: _normalizeDouble(mH),
         marginVertical: _normalizeDouble(mV),
         borderWidth: _normalizeDouble(bW),
+        withBorder: theme.cell.getBy(rt).border?.enabled ?? false,
       );
     }
 

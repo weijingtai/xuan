@@ -34,12 +34,12 @@ class CardMetricsCalculator {
     print("=== computeFinalSize START ===");
     print("基础size totalWidth: $w, totalHeight: $h");
 
-    if (options.includeGripCols) {
+    if (options.includeGrip) {
       final gripW = _normalizeDouble(options.gripColWidth) * 2;
       w += gripW;
       print("+ Grip cols: $gripW, 累计: $w");
     }
-    if (options.includeGripRows) {
+    if (options.includeGrip) {
       h += _normalizeDouble(options.gripRowHeight) * 2;
     }
     // final hasTitleRowInPayload = options.showTitleRow;
@@ -73,6 +73,7 @@ class CardMetricsCalculator {
 
     final bw = _normalizeDouble(options.cardBorderWidth ?? 0.0);
     final borderW = bw * 2;
+    // w += 0;
     w += borderW;
     h += bw * 2;
     print("+ Border: $borderW, 累计: $w");
@@ -104,10 +105,10 @@ class CardMetricsCalculator {
     double w = baseW;
     double h = baseH;
 
-    if (options.includeGripCols) {
+    if (options.includeGrip) {
       w += _normalizeDouble(options.gripColWidth);
     }
-    if (options.includeGripRows) {
+    if (options.includeGrip) {
       h += _normalizeDouble(options.gripRowHeight);
     }
     if (options.showTitleCol &&
@@ -224,7 +225,7 @@ class CardMetricsCalculator {
       final rowContentH = maxRowContentH;
       final rowDecH = theme.cell.getDecorationHeightBy(rt);
       final rowMarginV = _edgeV(theme.cell.getBy(rt).margin);
-      final rowBorderW = theme.cell.getBy(rt).border?.width ?? 0.0;
+      final rowBorderW = 0.0;
 
       rows[rowUuid] = RowMetrics(
         rowUuid: rowUuid,
@@ -233,6 +234,7 @@ class CardMetricsCalculator {
         decorationHeight: rowDecH,
         marginVertical: rowMarginV,
         borderWidth: rowBorderW,
+        withBorder: false,
       );
     }
 
@@ -303,6 +305,7 @@ class CardMetricsCalculator {
         decorationHeight: decH,
         marginHorizontal: mH,
         marginVertical: mV,
+        withBorder: theme.pillar.getBy(pt).border?.enabled ?? false,
         borderWidth: bW,
       );
     }
@@ -345,6 +348,7 @@ class CardMetricsCalculator {
           decorationHeight: _normalizeDouble(decH),
           marginHorizontal: _normalizeDouble(mH),
           marginVertical: _normalizeDouble(mV),
+          withBorder: theme.cell.getBy(rt).border?.enabled ?? false,
           borderWidth: _normalizeDouble(bW),
         );
       }
@@ -358,28 +362,9 @@ class CardMetricsCalculator {
       totalHeight += _normalizeDouble(rm.contentHeight + rm.decorationHeight);
     }
 
-    final totalW = pillars.values.fold(0.0, (sum, p) => sum + p.width);
+    final totalW = pillars.values.fold(0.0, (sum, p) => sum + p.totalWidth);
 
     // Anomaly check
-    if ((totalW - 272).abs() > 1.0) {
-      print("\n" + "!" * 60);
-      print("!!! ANOMALY DETECTED: totalWidth = $totalW (expected ~272) !!!");
-      print("!" * 60);
-      print("=== PILLARS DEBUG (compute) ===");
-      print("Pillar Count: ${pillars.length}");
-      for (final entry in pillars.entries) {
-        final uuid = entry.key;
-        final pm = entry.value;
-        final pillarPayload = payload.pillarMap[uuid];
-        final pillarType = pillarPayload?.pillarType.toString() ?? 'unknown';
-        final shortUuid = uuid.length > 8 ? uuid.substring(0, 8) : uuid;
-        print("  UUID: $shortUuid... Type: $pillarType, width: ${pm.width} "
-            "(content: ${pm.contentWidth}, decoration: ${pm.decorationWidth})");
-      }
-      print("Total Width (sum): $totalW");
-      print("=== END PILLARS DEBUG ===");
-      print("!" * 60 + "\n");
-    }
 
     final totals = CardTotals(
       totalWidth: _normalizeDouble(totalW),
@@ -469,7 +454,7 @@ class CardMetricsCalculator {
           cellIntrinsicContentH +
               cellDecorationH +
               cellMarginV +
-              (cellBorderW * 2),
+              (cellConfig.border?.enabled ?? false ? cellBorderW * 2 : 0.0),
         );
 
         // 1.3 单元格完整水平尺寸（用于计算列宽：内容宽 + 装饰宽 + 左右边距*2 + 边框*2）
@@ -477,7 +462,7 @@ class CardMetricsCalculator {
           cellIntrinsicContentW +
               cellDecorationW +
               cellMarginH +
-              (cellBorderW * 2),
+              ((cellConfig.border?.enabled ?? false) ? cellBorderW * 2 : 0.0),
         );
 
         // 存入临时字典（鲁棒性处理：确保非负、非NaN）
@@ -511,7 +496,9 @@ class CardMetricsCalculator {
         defaultRowContentHeight +
             theme.cell.getDecorationHeightBy(rowType) +
             (cellConfig.margin.top + cellConfig.margin.bottom) +
-            ((cellConfig.border?.width ?? 0.0) * 2),
+            ((cellConfig.border?.enabled ?? false)
+                ? (cellConfig.border?.width ?? 0.0) * 2
+                : 0.0),
       );
       final rowContentH = _normalizeDouble(
         maxCellFullVSize > 0.0 ? maxCellFullVSize : defaultCellFullVSize,
@@ -540,6 +527,7 @@ class CardMetricsCalculator {
         marginVertical: _normalizeDouble(rowMarginV),
         // marginHorizontal: _normalizeDouble(rowMarginH),
         borderWidth: _normalizeDouble(rowBorderW),
+        withBorder: false,
       );
     }
 
@@ -547,8 +535,7 @@ class CardMetricsCalculator {
     for (final pillarUuid in pillarOrder) {
       final pillar = pillarMap[pillarUuid];
       if (pillar == null) continue;
-      final pillarType = pillar.pillarType;
-      final pillarConfig = theme.pillar.getBy(pillarType); // 列主题配置
+      final pillarConfig = theme.pillar.getBy(pillar.pillarType); // 列主题配置
 
       // 3.1 计算同列单元格完整水平尺寸的最大值（列contentWidth的基础）
       double maxCellFullHSize = 0.0;
@@ -577,8 +564,8 @@ class CardMetricsCalculator {
       pillarContentH = _normalizeDouble(pillarContentH);
 
       // 3.4 列自身配置（装饰、边距、边框）
-      final pillarDecorationH = theme.pillar.getDecorationHeightBy(pillarType);
-      final pillarDecorationW = theme.pillar.getDecorationWidthBy(pillarType);
+      final pillarDecorationH = pillarConfig.getDecorationHeight();
+      final pillarDecorationW = pillarConfig.getDecorationWidth();
       final pillarBorderW = pillarConfig.border?.width ?? 0.0;
       final pillarMarginV =
           pillarConfig.margin.top + pillarConfig.margin.bottom;
@@ -588,9 +575,10 @@ class CardMetricsCalculator {
       // 构建列度量（含计算属性totalWidth，简化后续总宽计算）
       pillars[pillarUuid] = PillarMetrics(
         pillarUuid: pillarUuid,
-        pillarType: pillarType,
+        pillarType: pillar.pillarType,
         contentWidth: pillarContentW,
         contentHeight: pillarContentH,
+        withBorder: pillarConfig.border?.enabled ?? false,
         decorationHeight: _normalizeDouble(pillarDecorationH),
         decorationWidth: _normalizeDouble(pillarDecorationW),
         marginVertical: _normalizeDouble(pillarMarginV),
@@ -627,6 +615,7 @@ class CardMetricsCalculator {
         cells[cellKey] = CellMetrics(
           rowUuid: rowUuid,
           pillarUuid: pillarUuid,
+          withBorder: cellConfig.border?.enabled ?? false,
           contentWidth: _normalizeDouble(cellFinalContentW),
           contentHeight: _normalizeDouble(cellFinalContentH),
           decorationHeight: _normalizeDouble(cellDecorationH),
@@ -654,33 +643,10 @@ class CardMetricsCalculator {
     final totalHeight =
         _normalizeDouble(totalRowTotalHeight + maxPillarDecorationH);
 
-    // 保留原异常检查（建议将272改为可配置参数）
-    if ((totalWidth - 272).abs() > 1.0) {
-      print("\n" + "!" * 60);
-      print(
-          "!!! ANOMALY DETECTED: totalWidth = $totalWidth (expected ~272) !!!");
-      print("!" * 60);
-      print("=== PILLARS DEBUG (compute) ===");
-      print("Pillar Count: ${pillars.length}");
-      for (final entry in pillars.entries) {
-        final uuid = entry.key;
-        final pm = entry.value;
-        final pillarPayload = payload.pillarMap[uuid];
-        final pillarType = pillarPayload?.pillarType.toString() ?? 'unknown';
-        final shortUuid = uuid.length > 8 ? uuid.substring(0, 8) : uuid;
-        print(
-            "  UUID: $shortUuid... Type: $pillarType, totalWidth: ${pm.totalWidth} "
-            "(content: ${pm.contentWidth}, decoration: ${pm.decorationWidth}, margin: ${pm.marginHorizontal}, border: ${pm.borderWidth * 2})");
-      }
-      print("Total Width (sum): $totalWidth");
-      print("=== END PILLARS DEBUG ===");
-      print("!" * 60 + "\n");
-    }
-
     // 构建最终快照
     final totals = CardTotals(
       totalWidth: _normalizeDouble(totalWidth),
-      totalHeight: totalHeight,
+      totalHeight: _normalizeDouble(totalHeight),
       columnCount: pillarOrder.length,
       rowCount: rowOrder.length,
     );
@@ -785,6 +751,8 @@ class CardMetricsCalculator {
           14.0;
       contentW = _normalizeDouble(spec.charCount * fs * avgGlyphWidthScale);
     }
+    contentW = contentW.ceilToDouble();
+    // print("DEBUG: Cell $rowUuid|$pillarUuid -> contentW: $contentW");
 
     return contentW;
   }

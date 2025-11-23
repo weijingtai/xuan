@@ -199,11 +199,13 @@ class CardSizeManager {
     computeSnapshot(); // 确保 snapshot 已计算
 
     final options = MetricsComputeOptions(
-      includeGripRows: showGripRows,
-      includeGripCols: showGripColumns,
+      // includeGripRows: showGripRows,
+      // includeGripCols: showGripColumns,
+      includeGrip: showGripRows,
       showTitleRow: theme.displayHeaderRow,
       showTitleCol: theme.displayRowTitleColumn,
       cellShowsTitle: false,
+      withCardBorder: false,
       cardPadding: cardPadding,
       cardBorderWidth: _getCardBorderWidth(),
       gripRowHeight: dragHandleRowHeight,

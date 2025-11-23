@@ -46,9 +46,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   // late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
   late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
   late final ValueNotifier<EdgeInsets> _paddingNotifier;
-  final ValueNotifier<bool> _showGripRowsNotifier = ValueNotifier<bool>(true);
-  final ValueNotifier<bool> _showGripColumnsNotifier =
-      ValueNotifier<bool>(true);
+  final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
+  // final ValueNotifier<bool> _showGripColumnsNotifier =
+  // ValueNotifier<bool>(true);
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -95,8 +95,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     // _pillarsNotifier.dispose();
     _rowListNotifier.dispose();
     _paddingNotifier.dispose();
-    _showGripRowsNotifier.dispose();
-    _showGripColumnsNotifier.dispose();
+    _showGripNotifier.dispose();
+    // _showGripColumnsNotifier.dispose();
     super.dispose();
   }
 
@@ -167,39 +167,39 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             const SizedBox(height: 8),
             Row(
               children: [
-                const Icon(Icons.view_day),
+                const Icon(Icons.drag_handle),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '显示上下抓手行',
+                    '显示抓手行列',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ),
                 Switch(
-                  value: _showGripRowsNotifier.value,
-                  onChanged: (v) =>
-                      setState(() => _showGripRowsNotifier.value = v),
+                  value: _showGripNotifier.value,
+                  onChanged: (v) => setState(() => _showGripNotifier.value = v),
+                  // onChanged: (v) => _showGripNotifier.value = v,
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.view_column),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '显示左右抓手列',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                Switch(
-                  value: _showGripColumnsNotifier.value,
-                  onChanged: (v) =>
-                      setState(() => _showGripColumnsNotifier.value = v),
-                ),
-              ],
-            ),
+            // const SizedBox(height: 8),
+            // Row(
+            //   children: [
+            //     const Icon(Icons.view_column),
+            //     const SizedBox(width: 8),
+            //     Expanded(
+            //       child: Text(
+            //         '显示左右抓手列',
+            //         style: Theme.of(context).textTheme.bodyMedium,
+            //       ),
+            //     ),
+            //     Switch(
+            //       value: _showGripColumnsNotifier.value,
+            //       onChanged: (v) =>
+            //           setState(() => _showGripColumnsNotifier.value = v),
+            //     ),
+            //   ],
+            // ),
             const SizedBox(height: 8),
             Expanded(
               child: Theme(
@@ -213,8 +213,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                           Provider.of<FourZhuCardDemoViewModel>(context,
                                   listen: true)
                               .cardPayloadNotifier,
-                      showGripRows: _showGripRowsNotifier.value,
-                      showGripColumns: _showGripColumnsNotifier.value,
+                      showGrip: _showGripNotifier.value,
+                      // showGripColumns: _showGripColumnsNotifier.value,
                       paddingNotifier: _paddingNotifier,
                       themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
                               context,

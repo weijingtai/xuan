@@ -74,7 +74,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// 返回：装饰总宽度（逻辑像素）
   double getDecorationWidth() {
     final bw = (border?.width ?? 0.0).toDouble();
-    final hasBorder = border?.enabled ?? (bw > 0.0);
+    final hasBorder = border?.enabled ?? false;
     return margin.left +
         margin.right +
         padding.left +
@@ -87,7 +87,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// 返回：装饰总高度（逻辑像素）
   double getDecorationHeight() {
     final bw = (border?.width ?? 0.0).toDouble();
-    final hasBorder = border?.enabled ?? (bw > 0.0);
+    final hasBorder = border?.enabled ?? false;
     return margin.top +
         margin.bottom +
         padding.top +

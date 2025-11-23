@@ -157,14 +157,12 @@ class BoxShadowStyle extends Equatable {
     );
   }
 
-  
   /// 将对象序列化为 JSON。仅写入非空字段，减少冗余。
   Map<String, dynamic> toJson() => _$BoxShadowStyleToJson(this);
   factory BoxShadowStyle.fromJson(Map<String, dynamic> json) =>
       _$BoxShadowStyleFromJson(json);
 
   @override
-  // TODO: implement props
   List<Object?> get props => [
         withShadow,
         followCardBackgroundColor,
@@ -367,8 +365,8 @@ class BaseBoxStyleConfig extends Equatable {
   // ===== Helper implementations =====
 
   Border? _buildBorder() {
-    if (border == null) return null;
-    final w = border!.width.clamp(0.0, double.infinity).toDouble();
+    if (border == null || !border!.enabled) return null;
+    final w = border!.width;
     if (w <= 0) return null;
     // 目前仅支持 solid；其他样式需自绘，后续扩展。
     return Border.all(color: border!.lightColor, width: w);
@@ -384,24 +382,20 @@ class BaseBoxStyleConfig extends Equatable {
   }
 
   List<BoxShadow>? _buildShadows({Brightness brightness = Brightness.light}) {
-    if (shadow == null) return null;
-
-    // 注意：这里需要传入BuildContext来获取当前主题，但这个方法没有上下文
-    // 暂时使用lightThemeColor作为默认值
-    final baseColor = shadow!.followCardBackgroundColor
+    final baseColor = shadow.followCardBackgroundColor
         ? lightBackgroundColor
-        : shadow!.lightThemeColor;
+        : shadow.lightThemeColor;
 
     if (baseColor == null) return null;
-    final color = baseColor.withOpacity(shadow!.opacity.clamp(0.0, 1.0));
+    final color = baseColor.withOpacity(shadow.opacity.clamp(0.0, 1.0));
 
     return [
       BoxShadow(
         color: color,
-        offset: shadow!.offset,
-        blurRadius: shadow!.blurRadius.clamp(0.0, double.infinity).toDouble(),
+        offset: shadow.offset,
+        blurRadius: shadow.blurRadius.clamp(0.0, double.infinity).toDouble(),
         spreadRadius:
-            shadow!.spreadRadius.clamp(0.0, double.infinity).toDouble(),
+            shadow.spreadRadius.clamp(0.0, double.infinity).toDouble(),
       ),
     ];
   }

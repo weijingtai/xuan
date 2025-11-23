@@ -76,14 +76,18 @@ class PillarStyleConfig extends BaseBoxStyleConfig {
   /// 获取柱的装饰高度（包含边框宽度）
   /// WARNING: 并不包含组层Pillar的Cell高度合
   double getDecorationHeight() {
-    final bw = (border?.width ?? 0).clamp(0.0, double.infinity).toDouble();
-    return margin.top + margin.bottom + padding.top + padding.bottom + bw * 2;
+    final bw = border?.width ?? 0;
+    if (border?.enabled ?? false) {
+      return margin.top + margin.bottom + padding.top + padding.bottom + bw * 2;
+    } else {
+      return margin.top + margin.bottom + padding.top + padding.bottom;
+    }
   }
 
   /// 创建默认的 CardStyleConfig
   static PillarStyleConfig get defaultPillarStyleConfig {
     return PillarStyleConfig(
-      border: BoxBorderStyle.defaultBorder,
+      border: BoxBorderStyle.defaultBorder.copyWith(enabled: false),
       lightBackgroundColor: Colors.white,
       darkBackgroundColor: Colors.grey.shade900,
       padding: EdgeInsets.zero,
