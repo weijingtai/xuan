@@ -133,7 +133,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
 
     final pm = PillarMetrics(
       pillarUuid: column.uuid,
-      pillarType: pt.name,
+      pillarType: pt,
       contentWidth: contentW,
       contentHeight: 0.0, // 好像父类也是 0
       decorationWidth: decW,
@@ -301,7 +301,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
 
     final rm = RowMetrics(
       rowUuid: row.uuid,
-      rowType: rt.name,
+      rowType: rt,
       contentHeight: rowContentH,
       decorationHeight: rowDecH,
       marginVertical: rowMarginV,

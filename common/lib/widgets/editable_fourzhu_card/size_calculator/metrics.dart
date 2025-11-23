@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../enums/layout_template_enums.dart';
+
 /// Specification for cell text metrics used in size calculations
 class CellTextSpec {
   final String rowUuid;
@@ -18,7 +20,7 @@ class CellTextSpec {
 /// Metrics for a single pillar (column)
 class PillarMetrics {
   final String pillarUuid;
-  final String pillarType;
+  final PillarType pillarType;
   final double contentWidth;
   final double contentHeight;
   final double decorationWidth;
@@ -39,13 +41,15 @@ class PillarMetrics {
     required this.borderWidth,
   });
   double get width => contentWidth + decorationWidth;
+  double get totalWidth => width + marginHorizontal * 2;
   double get height => contentHeight + decorationHeight;
+  double get totalHeight => height + marginVertical * 2;
 }
 
 /// Metrics for a single row
 class RowMetrics {
   final String rowUuid;
-  final String rowType;
+  final RowType rowType;
   final double contentHeight;
   final double decorationHeight;
   final double marginVertical;
@@ -59,6 +63,8 @@ class RowMetrics {
     required this.marginVertical,
     required this.borderWidth,
   });
+  double get height => decorationHeight + contentHeight + borderWidth * 2;
+  double get totalHeight => height + marginVertical * 2;
 }
 
 /// Metrics for a single cell
@@ -84,8 +90,12 @@ class CellMetrics {
     required this.marginVertical,
     required this.borderWidth,
   });
-  Size get size => Size(decorationWidth + contentWidth + borderWidth * 2,
-      decorationHeight + contentHeight + borderWidth * 2);
+  double get height => decorationHeight + contentHeight + borderWidth * 2;
+  double get width => decorationWidth + contentWidth + borderWidth * 2;
+  Size get size => Size(width, height);
+  double get totalHeight => height + marginVertical * 2;
+  double get totalWidth => width + marginHorizontal * 2;
+  Size get totalSize => Size(totalWidth, totalHeight);
 }
 
 /// Total card metrics

@@ -9,6 +9,7 @@ class CardMetricsCalculator {
   final EditableFourZhuCardTheme theme;
   final CardPayload payload;
   final double defaultPillarWidth;
+  final double defaultRowHeight;
   final double lineHeightFactor;
   final Map<String, CellTextSpec> cellTextSpecMap;
   final double avgGlyphWidthScale;
@@ -22,6 +23,7 @@ class CardMetricsCalculator {
     this.lineHeightFactor = 1.4,
     this.cellTextSpecMap = const {},
     this.avgGlyphWidthScale = 1.2,
+    this.defaultRowHeight = 48.0,
   });
 
   Size computeFinalSize(MetricsComputeOptions options) {
@@ -163,7 +165,8 @@ class CardMetricsCalculator {
   ///
   /// 参数：无（使用构造时注入的 `theme` 与 `payload`）。
   /// 返回：`CardMetricsSnapshot`，包含 `pillars/rows/cells/totals` 四类度量数据。
-  CardMetricsSnapshot compute() {
+  @Deprecated("计算顺序错误，此方法先计算row再计算pillar最后计算cell，不符合计算逻辑，已废弃")
+  CardMetricsSnapshot compute_wrong() {
     final pillarOrder = payload.pillarOrderUuid;
     final rowOrder = payload.rowOrderUuid;
     final pillarMap = payload.pillarMap;
@@ -173,102 +176,126 @@ class CardMetricsCalculator {
     final rows = <String, RowMetrics>{};
     final cells = <String, CellMetrics>{};
 
-    // 1) 先按行类型计算每行的内容高与装饰高，并生成所有单元格度量
+    // Temporary storage for intrinsic cell sizes
+    final intrinsicCellHeights = <String, double>{}; // key: rowUuid|pillarUuid
+    final intrinsicCellWidths = <String, double>{}; // key: rowUuid|pillarUuid
+
+    // 1. Calculate intrinsic size for ALL cells first
     for (final rowUuid in rowOrder) {
       final r = rowMap[rowUuid];
       if (r == null) continue;
       final rt = r.rowType;
-      final rowContentH = _rowContentHeight(rt);
+
+      for (final pillarUuid in pillarOrder) {
+        final p = pillarMap[pillarUuid];
+        if (p == null) continue;
+
+        final key = _cellKey(rowUuid, pillarUuid);
+
+        // Calculate intrinsic height
+        final h = _calculateCellContentHeight(rt, rowUuid, pillarUuid);
+        intrinsicCellHeights[key] = h;
+
+        // Calculate intrinsic width
+        final w = _calculateCellContentWidth(rt, rowUuid, pillarUuid);
+        intrinsicCellWidths[key] = w;
+      }
+    }
+
+    // 2. Determine Row Metrics (Height determined by max cell height in row)
+    for (final rowUuid in rowOrder) {
+      final r = rowMap[rowUuid];
+      if (r == null) continue;
+      final rt = r.rowType;
+
+      double maxRowContentH = 0.0;
+      // Fallback if no pillars (though unlikely in valid grid)
+      if (pillarOrder.isEmpty) {
+        maxRowContentH = _calculateCellContentHeight(rt, rowUuid, null);
+      } else {
+        for (final pillarUuid in pillarOrder) {
+          final key = _cellKey(rowUuid, pillarUuid);
+          final h = intrinsicCellHeights[key] ?? 0.0;
+          if (h > maxRowContentH) maxRowContentH = h;
+        }
+      }
+
+      final rowContentH = maxRowContentH;
       final rowDecH = theme.cell.getDecorationHeightBy(rt);
       final rowMarginV = _edgeV(theme.cell.getBy(rt).margin);
       final rowBorderW = theme.cell.getBy(rt).border?.width ?? 0.0;
 
       rows[rowUuid] = RowMetrics(
         rowUuid: rowUuid,
-        rowType: rt.name,
+        rowType: rt,
         contentHeight: rowContentH,
         decorationHeight: rowDecH,
         marginVertical: rowMarginV,
         borderWidth: rowBorderW,
       );
-
-      for (final pillarUuid in pillarOrder) {
-        final p = pillarMap[pillarUuid];
-        if (p == null) continue;
-        final decW = theme.cell.getDecorationWidthBy(rt);
-        final decH = rowDecH;
-        final mH = _edgeH(theme.cell.getBy(rt).margin);
-        final mV = rowMarginV;
-        final bW = rowBorderW;
-        double contentW = defaultPillarWidth;
-        final spec = cellTextSpecMap[_cellKey(rowUuid, pillarUuid)];
-        if (spec != null) {
-          final fs = spec.fontSize ??
-              theme.typography
-                  .getCellContentBy(rt)
-                  .fontStyleDataModel
-                  .fontSize ??
-              14.0;
-          contentW = _normalizeDouble(spec.charCount * fs * avgGlyphWidthScale);
-        } else {
-          // 调试：cellTextSpecMap 中没有此 cell 的 spec
-          if (pillars.length == 5) {
-            // 只在异常情况下打印
-            print(
-                "⚠️ Cell spec missing for row=${rowMap[rowUuid]?.rowType}, pillar=${p.pillarType}");
-          }
-        }
-        final contentH = rowContentH;
-        final key = _cellKey(rowUuid, pillarUuid);
-        cells[key] = CellMetrics(
-          rowUuid: rowUuid,
-          pillarUuid: pillarUuid,
-          contentWidth: _normalizeDouble(contentW),
-          contentHeight: _normalizeDouble(contentH),
-          decorationWidth: _normalizeDouble(decW),
-          decorationHeight: _normalizeDouble(decH),
-          marginHorizontal: _normalizeDouble(mH),
-          marginVertical: _normalizeDouble(mV),
-          borderWidth: _normalizeDouble(bW),
-        );
-      }
     }
 
-    // 2) 计算列度量与总宽
+    // 3. Determine Pillar Metrics (Width determined by max cell width in column)
     double totalWidth = 0.0;
     for (final pillarUuid in pillarOrder) {
       final p = pillarMap[pillarUuid];
       if (p == null) continue;
       final pt = p.pillarType;
+
       final decW = theme.pillar.getDecorationWidthBy(pt);
-      final decH = theme.pillar.getDecorationHeightBy(pt);
+      final decH = theme.pillar.getDecorationHeightBy(pt); // Usually 0 or fixed
+
       double maxCellW = 0.0;
       int cellCount = 0;
+
       for (final rowUuid in rowOrder) {
-        final cm = cells[_cellKey(rowUuid, pillarUuid)];
-        if (cm == null) continue;
+        final key = _cellKey(rowUuid, pillarUuid);
+        // Note: Cell width logic usually includes decoration width when comparing?
+        // In original code: cellW = contentWidth + decorationWidth
+        // Here we need to be consistent.
+        // Let's assume intrinsicCellWidths is CONTENT width.
+        // We need to add cell decoration width to find the max PILLAR content width?
+        // Wait, Pillar Content Width = Max(Cell Width).
+        // Cell Width = Cell Content Width + Cell Decoration Width.
+        // But Pillar Width = Pillar Content Width + Pillar Decoration Width.
+        // Usually Pillar Content Width is defined as the max of (Cell Content Width + Cell Decoration Width).
+        // Let's check original logic:
+        // final cellW = _normalizeDouble(cm.contentWidth + cm.decorationWidth);
+        // if (cellW > maxCellW) maxCellW = cellW;
+        // final contentW = maxCellW;
+
+        final r = rowMap[rowUuid];
+        if (r == null) continue;
+        final rt = r.rowType;
+        final cellDecW = theme.cell.getDecorationWidthBy(rt);
+
+        final intrinsicW = intrinsicCellWidths[key] ?? 0.0;
+        final cellTotalW = intrinsicW + cellDecW;
+
+        if (cellTotalW > maxCellW) maxCellW = cellTotalW;
         cellCount++;
-        final cellW = _normalizeDouble(cm.contentWidth + cm.decorationWidth);
-        if (cellW > maxCellW) maxCellW = cellW;
       }
+
       final contentW = (maxCellW > 0.0)
           ? _normalizeDouble(maxCellW)
           : _normalizeDouble(defaultPillarWidth);
 
-      // 调试：检测使用默认宽度的情况
+      // Debug: Check default width usage
       if (contentW == defaultPillarWidth && cellCount > 0) {
-        print(
-            "⚠️ Pillar ${p.pillarType} 使用默认宽度 $defaultPillarWidth (cellCount=$cellCount, maxCellW=$maxCellW)");
+        // print("⚠️ Pillar ${p.pillarType} using default width $defaultPillarWidth");
       }
-      const contentH = 0.0;
+
+      const contentH =
+          0.0; // Pillars don't really have a content height sum usually
       final mH = _edgeH(theme.pillar.getBy(pt).margin);
       final mV = _edgeV(theme.pillar.getBy(pt).margin);
       final bW = theme.pillar.getBy(pt).border?.width ?? 0.0;
-      final measuredW = contentW + decW;
-      totalWidth += measuredW;
+
+      totalWidth += (contentW + decW);
+
       pillars[pillarUuid] = PillarMetrics(
         pillarUuid: pillarUuid,
-        pillarType: pt.name,
+        pillarType: pt,
         contentWidth: contentW,
         contentHeight: contentH,
         decorationWidth: decW,
@@ -279,7 +306,50 @@ class CardMetricsCalculator {
       );
     }
 
-    // 3) 计算总高（由所有行的最终高度决定）
+    // 4. Finalize Cell Metrics (Stretched to match Row Height)
+    for (final rowUuid in rowOrder) {
+      final r = rowMap[rowUuid];
+      if (r == null) continue;
+      final rt = r.rowType;
+      final rm = rows[rowUuid];
+      if (rm == null) continue;
+
+      for (final pillarUuid in pillarOrder) {
+        final p = pillarMap[pillarUuid];
+        if (p == null) continue;
+
+        final key = _cellKey(rowUuid, pillarUuid);
+
+        // Width: Intrinsic (or should it be stretched? Usually cells in a grid stretch to column width?
+        // But original code kept 'contentW' as intrinsic. Let's keep it intrinsic to be safe,
+        // or check if UI stretches it. UI usually uses Column Width.)
+        // Original code: contentWidth: _normalizeDouble(contentW) -> intrinsic
+        final intrinsicW = intrinsicCellWidths[key] ?? defaultPillarWidth;
+
+        // Height: Stretched to Row Content Height
+        final contentH = rm.contentHeight;
+
+        final decW = theme.cell.getDecorationWidthBy(rt);
+        final decH = rm.decorationHeight; // Consistent with row
+        final mH = _edgeH(theme.cell.getBy(rt).margin);
+        final mV = rm.marginVertical;
+        final bW = rm.borderWidth;
+
+        cells[key] = CellMetrics(
+          rowUuid: rowUuid,
+          pillarUuid: pillarUuid,
+          contentWidth: _normalizeDouble(intrinsicW),
+          contentHeight: _normalizeDouble(contentH),
+          decorationWidth: _normalizeDouble(decW),
+          decorationHeight: _normalizeDouble(decH),
+          marginHorizontal: _normalizeDouble(mH),
+          marginVertical: _normalizeDouble(mV),
+          borderWidth: _normalizeDouble(bW),
+        );
+      }
+    }
+
+    // 5. Calculate Total Height
     double totalHeight = 0.0;
     for (final rowUuid in rowOrder) {
       final rm = rows[rowUuid];
@@ -289,20 +359,20 @@ class CardMetricsCalculator {
 
     final totalW = pillars.values.fold(0.0, (sum, p) => sum + p.width);
 
-    // 只在宽度异常时打印详细信息
+    // Anomaly check
     if ((totalW - 272).abs() > 1.0) {
       print("\n" + "!" * 60);
       print("!!! ANOMALY DETECTED: totalWidth = $totalW (expected ~272) !!!");
       print("!" * 60);
       print("=== PILLARS DEBUG (compute) ===");
-      print("Pillar 数量: ${pillars.length}");
+      print("Pillar Count: ${pillars.length}");
       for (final entry in pillars.entries) {
         final uuid = entry.key;
         final pm = entry.value;
         final pillarPayload = payload.pillarMap[uuid];
         final pillarType = pillarPayload?.pillarType.toString() ?? 'unknown';
-        print(
-            "  UUID: ${uuid.substring(0, 8)}... Type: $pillarType, width: ${pm.width} "
+        final shortUuid = uuid.length > 8 ? uuid.substring(0, 8) : uuid;
+        print("  UUID: $shortUuid... Type: $pillarType, width: ${pm.width} "
             "(content: ${pm.contentWidth}, decoration: ${pm.decorationWidth})");
       }
       print("Total Width (sum): $totalW");
@@ -323,6 +393,304 @@ class CardMetricsCalculator {
       cells: cells,
       totals: totals,
     );
+
+    return _snapshot!;
+  }
+
+  /// 计算并生成当前卡片的度量快照
+  ///
+  /// 核心逻辑链（严格按你的需求定义）：
+  /// 1. 单元格完整尺寸 → 2. 行度量（行高=同行单元格完整垂直尺寸最大值）→ 3. 列度量（列宽=同列单元格完整水平尺寸最大值；列高=同列行总高之和）→ 4. 单元格最终度量 → 5. 卡片总尺寸
+  /// 关键尺寸构成：
+  /// - 单元格完整垂直尺寸 = cell.contentHeight（内在内容高） + cell.decorationHeight + cell.marginVertical*2 + cell.borderWidth*2
+  /// - 单元格完整水平尺寸 = cell.contentWidth（内在内容宽） + cell.decorationWidth + cell.marginHorizontal*2 + cell.borderWidth*2
+  /// - 行contentHeight = 同行单元格完整垂直尺寸的最大值
+  /// - 行总高 = row.contentHeight + row.decorationHeight + row.borderWidth*2
+  /// - 列contentWidth = 同列单元格完整水平尺寸的最大值
+  /// - 列contentHeight = 同列所有行总高之和
+  /// - 卡片总宽 = 所有列总宽（contentWidth + 列装饰宽 + 列marginHorizontal*2 + 列borderWidth*2）之和
+  /// - 卡片总高 = 所有行总高之和 + 列垂直装饰高的最大值
+  CardMetricsSnapshot compute() {
+    final pillarOrder = payload.pillarOrderUuid;
+    final rowOrder = payload.rowOrderUuid;
+    final pillarMap = payload.pillarMap;
+    final rowMap = payload.rowMap;
+
+    final pillars = <String, PillarMetrics>{};
+    final rows = <String, RowMetrics>{};
+    final cells = <String, CellMetrics>{};
+
+    // 临时存储：单元格核心数据（内在尺寸 + 完整尺寸）
+    final intrinsicCellHeights = <String, double>{}; // 单元格内在内容高（仅内容）
+    final intrinsicCellWidths = <String, double>{}; // 单元格内在内容宽（仅内容）
+    final cellFullVerticalSizes = <String, double>{}; // 单元格完整垂直尺寸（含装饰+边距+边框）
+    final cellFullHorizontalSizes = <String, double>{}; // 单元格完整水平尺寸（含装饰+边距+边框）
+
+    // 默认配置（可提取到主题或配置类，此处为方便展示）
+    const defaultCellContentHeight = 48.0; // 单元格默认内在内容高
+    const defaultCellContentWidth = 80.0; // 单元格默认内在内容宽
+    const defaultPillarContentWidth = 100.0; // 列默认内容宽
+    const defaultRowContentHeight = 60.0; // 行默认内容高（含单元格基础附加尺寸）
+
+    // 1. 第一步：计算所有单元格的「内在尺寸」和「完整尺寸」（行/列计算的输入基础）
+    for (final rowUuid in rowOrder) {
+      final row = rowMap[rowUuid];
+      if (row == null) continue;
+      final rowType = row.rowType;
+      final cellConfig = theme.cell.getBy(rowType); // 单元格主题配置（边距、边框、装饰）
+
+      // 单元格固定配置（从主题读取，统一应用于该行所有单元格）
+      final cellDecorationH = theme.cell.getDecorationHeightBy(rowType);
+      final cellDecorationW = theme.cell.getDecorationWidthBy(rowType);
+      final cellMarginV =
+          cellConfig.margin.top + cellConfig.margin.bottom; // 上下边距之和
+      final cellMarginH =
+          cellConfig.margin.left + cellConfig.margin.right; // 左右边距之和
+      final cellBorderW = cellConfig.border?.width ?? 0.0;
+
+      for (final pillarUuid in pillarOrder) {
+        final pillar = pillarMap[pillarUuid];
+        if (pillar == null) continue;
+        final cellKey = _cellKey(rowUuid, pillarUuid);
+
+        // 1.1 单元格内在内容尺寸（仅文本、图片等纯内容，无任何附加）
+        final cellIntrinsicContentH = _normalizeDouble(
+          _calculateCellContentHeight(rowType, rowUuid, pillarUuid) ??
+              defaultCellContentHeight,
+        );
+        final cellIntrinsicContentW = _normalizeDouble(
+          _calculateCellContentWidth(rowType, rowUuid, pillarUuid) ??
+              defaultCellContentWidth,
+        );
+
+        // 1.2 单元格完整垂直尺寸（按你的公式：内容高 + 装饰高 + 上下边距*2 + 边框*2）
+        final cellFullVSize = _normalizeDouble(
+          cellIntrinsicContentH +
+              cellDecorationH +
+              cellMarginV +
+              (cellBorderW * 2),
+        );
+
+        // 1.3 单元格完整水平尺寸（用于计算列宽：内容宽 + 装饰宽 + 左右边距*2 + 边框*2）
+        final cellFullHSize = _normalizeDouble(
+          cellIntrinsicContentW +
+              cellDecorationW +
+              cellMarginH +
+              (cellBorderW * 2),
+        );
+
+        // 存入临时字典（鲁棒性处理：确保非负、非NaN）
+        intrinsicCellHeights[cellKey] = cellIntrinsicContentH;
+        intrinsicCellWidths[cellKey] = cellIntrinsicContentW;
+        cellFullVerticalSizes[cellKey] = cellFullVSize;
+        cellFullHorizontalSizes[cellKey] = cellFullHSize;
+      }
+    }
+
+    // 2. 第二步：计算「行度量」→ 行contentHeight=同行单元格完整垂直尺寸最大值
+    for (final rowUuid in rowOrder) {
+      final row = rowMap[rowUuid];
+      if (row == null) continue;
+      final rowType = row.rowType;
+      // final rowConfig = theme.row.getBy(rowType); // 行主题配置（装饰、边框）, 当前版本中没有提供行相关装饰，因此设置为0，预留后续扩展接口
+      final cellConfig = theme.cell.getBy(rowType); // 单元格配置（用于默认值计算）
+
+      // 2.1 计算同行单元格完整垂直尺寸的最大值
+      double maxCellFullVSize = 0.0;
+      for (final pillarUuid in pillarOrder) {
+        final cellKey = _cellKey(rowUuid, pillarUuid);
+        final cellFullVSize = cellFullVerticalSizes[cellKey] ?? 0.0;
+        if (cellFullVSize > maxCellFullVSize) {
+          maxCellFullVSize = cellFullVSize;
+        }
+      }
+
+      // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，含基础附加尺寸）
+      final defaultCellFullVSize = _normalizeDouble(
+        defaultRowContentHeight +
+            theme.cell.getDecorationHeightBy(rowType) +
+            (cellConfig.margin.top + cellConfig.margin.bottom) +
+            ((cellConfig.border?.width ?? 0.0) * 2),
+      );
+      final rowContentH = _normalizeDouble(
+        maxCellFullVSize > 0.0 ? maxCellFullVSize : defaultCellFullVSize,
+      );
+
+      // 2.3 行自身配置（装饰、边框）
+      // final rowDecorationH = theme.row.getDecorationHeightBy(rowType);
+      // final rowDecorationW = theme.row.getDecorationWidthBy(rowType);
+      // final rowBorderW = rowConfig.border?.width ?? 0.0;
+      // final rowMarginV = rowConfig.margin.top + rowConfig.margin.bottom;
+      // final rowMarginH = rowConfig.margin.left + rowConfig.margin.right;
+      // WARNING: 当前版本中没有提供行相关装饰，因此设置为0，预留后续扩展接口
+      final rowDecorationH = 0.0;
+      final rowDecorationW = 0.0;
+      final rowBorderW = 0.0;
+      final rowMarginV = 0.0;
+      final rowMarginH = 0.0;
+
+      // 构建行度量（含计算属性totalHeight，简化后续总高计算）
+      rows[rowUuid] = RowMetrics(
+        rowUuid: rowUuid,
+        rowType: rowType,
+        contentHeight: rowContentH,
+        decorationHeight: _normalizeDouble(rowDecorationH),
+        // decorationWidth: _normalizeDouble(rowDecorationW),
+        marginVertical: _normalizeDouble(rowMarginV),
+        // marginHorizontal: _normalizeDouble(rowMarginH),
+        borderWidth: _normalizeDouble(rowBorderW),
+      );
+    }
+
+    // 3. 第三步：计算「列度量」→ 列宽=同列单元格完整水平尺寸最大值；列高=同列行总高之和
+    for (final pillarUuid in pillarOrder) {
+      final pillar = pillarMap[pillarUuid];
+      if (pillar == null) continue;
+      final pillarType = pillar.pillarType;
+      final pillarConfig = theme.pillar.getBy(pillarType); // 列主题配置
+
+      // 3.1 计算同列单元格完整水平尺寸的最大值（列contentWidth的基础）
+      double maxCellFullHSize = 0.0;
+      for (final rowUuid in rowOrder) {
+        final row = rowMap[rowUuid];
+        if (row == null) continue;
+        final cellKey = _cellKey(rowUuid, pillarUuid);
+        final cellFullHSize = cellFullHorizontalSizes[cellKey] ?? 0.0;
+        if (cellFullHSize > maxCellFullHSize) {
+          maxCellFullHSize = cellFullHSize;
+        }
+      }
+
+      // 3.2 列contentWidth兜底逻辑
+      final pillarContentW = _normalizeDouble(
+        maxCellFullHSize > 0.0 ? maxCellFullHSize : defaultPillarContentWidth,
+      );
+
+      // 3.3 计算列contentHeight（同列所有行总高之和）
+      double pillarContentH = 0.0;
+      for (final rowUuid in rowOrder) {
+        final rowMetrics = rows[rowUuid];
+        if (rowMetrics == null) continue;
+        pillarContentH += rowMetrics.totalHeight; // 累加行总高（含行自身装饰+边框）
+      }
+      pillarContentH = _normalizeDouble(pillarContentH);
+
+      // 3.4 列自身配置（装饰、边距、边框）
+      final pillarDecorationH = theme.pillar.getDecorationHeightBy(pillarType);
+      final pillarDecorationW = theme.pillar.getDecorationWidthBy(pillarType);
+      final pillarBorderW = pillarConfig.border?.width ?? 0.0;
+      final pillarMarginV =
+          pillarConfig.margin.top + pillarConfig.margin.bottom;
+      final pillarMarginH =
+          pillarConfig.margin.left + pillarConfig.margin.right;
+
+      // 构建列度量（含计算属性totalWidth，简化后续总宽计算）
+      pillars[pillarUuid] = PillarMetrics(
+        pillarUuid: pillarUuid,
+        pillarType: pillarType,
+        contentWidth: pillarContentW,
+        contentHeight: pillarContentH,
+        decorationHeight: _normalizeDouble(pillarDecorationH),
+        decorationWidth: _normalizeDouble(pillarDecorationW),
+        marginVertical: _normalizeDouble(pillarMarginV),
+        marginHorizontal: _normalizeDouble(pillarMarginH),
+        borderWidth: _normalizeDouble(pillarBorderW),
+      );
+    }
+
+    // 4. 第四步：计算「单元格最终度量」→ 适配列宽+保留内在内容高
+    for (final rowUuid in rowOrder) {
+      final rowMetrics = rows[rowUuid];
+      if (rowMetrics == null) continue;
+      final rowType = rowMetrics.rowType;
+      final cellConfig = theme.cell.getBy(rowType);
+
+      // 单元格固定配置（从主题读取）
+      final cellDecorationH = theme.cell.getDecorationHeightBy(rowType);
+      final cellDecorationW = theme.cell.getDecorationWidthBy(rowType);
+      final cellMarginV = cellConfig.margin.top + cellConfig.margin.bottom;
+      final cellMarginH = cellConfig.margin.left + cellConfig.margin.right;
+      final cellBorderW = cellConfig.border?.width ?? 0.0;
+
+      for (final pillarUuid in pillarOrder) {
+        final pillarMetrics = pillars[pillarUuid];
+        if (pillarMetrics == null) continue;
+        final cellKey = _cellKey(rowUuid, pillarUuid);
+
+        // 单元格最终尺寸：宽度适配列宽，高度保留内在内容高（完整尺寸已计入行高）
+        final cellFinalContentW = pillarMetrics.contentWidth;
+        final cellFinalContentH =
+            intrinsicCellHeights[cellKey] ?? defaultCellContentHeight;
+
+        // 构建单元格度量（所有数值鲁棒性处理）
+        cells[cellKey] = CellMetrics(
+          rowUuid: rowUuid,
+          pillarUuid: pillarUuid,
+          contentWidth: _normalizeDouble(cellFinalContentW),
+          contentHeight: _normalizeDouble(cellFinalContentH),
+          decorationHeight: _normalizeDouble(cellDecorationH),
+          decorationWidth: _normalizeDouble(cellDecorationW),
+          marginVertical: _normalizeDouble(cellMarginV),
+          marginHorizontal: _normalizeDouble(cellMarginH),
+          borderWidth: _normalizeDouble(cellBorderW),
+        );
+      }
+    }
+
+    // 5. 第五步：汇总「卡片总尺寸」
+    // 5.1 卡片总宽 = 所有列总宽（列完整水平尺寸）之和
+    final totalWidth = pillars.values.fold(0.0, (sum, pillar) {
+      return sum + pillar.totalWidth;
+    });
+
+    // 5.2 卡片总高 = 所有行总高之和 + 列垂直装饰高的最大值
+    final totalRowTotalHeight = rows.values.fold(0.0, (sum, row) {
+      return sum + row.totalHeight;
+    });
+    final maxPillarDecorationH = pillars.values.fold(0.0, (max, pillar) {
+      return pillar.decorationHeight > max ? pillar.decorationHeight : max;
+    });
+    final totalHeight =
+        _normalizeDouble(totalRowTotalHeight + maxPillarDecorationH);
+
+    // 保留原异常检查（建议将272改为可配置参数）
+    if ((totalWidth - 272).abs() > 1.0) {
+      print("\n" + "!" * 60);
+      print(
+          "!!! ANOMALY DETECTED: totalWidth = $totalWidth (expected ~272) !!!");
+      print("!" * 60);
+      print("=== PILLARS DEBUG (compute) ===");
+      print("Pillar Count: ${pillars.length}");
+      for (final entry in pillars.entries) {
+        final uuid = entry.key;
+        final pm = entry.value;
+        final pillarPayload = payload.pillarMap[uuid];
+        final pillarType = pillarPayload?.pillarType.toString() ?? 'unknown';
+        final shortUuid = uuid.length > 8 ? uuid.substring(0, 8) : uuid;
+        print(
+            "  UUID: $shortUuid... Type: $pillarType, totalWidth: ${pm.totalWidth} "
+            "(content: ${pm.contentWidth}, decoration: ${pm.decorationWidth}, margin: ${pm.marginHorizontal}, border: ${pm.borderWidth * 2})");
+      }
+      print("Total Width (sum): $totalWidth");
+      print("=== END PILLARS DEBUG ===");
+      print("!" * 60 + "\n");
+    }
+
+    // 构建最终快照
+    final totals = CardTotals(
+      totalWidth: _normalizeDouble(totalWidth),
+      totalHeight: totalHeight,
+      columnCount: pillarOrder.length,
+      rowCount: rowOrder.length,
+    );
+
+    _snapshot = CardMetricsSnapshot(
+      pillars: pillars,
+      rows: rows,
+      cells: cells,
+      totals: totals,
+    );
+
     return _snapshot!;
   }
 
@@ -362,19 +730,62 @@ class CardMetricsCalculator {
     );
   }
 
-  double _rowContentHeight(RowType rt) {
-    final ts = theme.typography.getCellContentBy(rt);
-    final fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
-    final h = (fontSize * lineHeightFactor).toInt().toDouble();
+  double _calculateCellContentHeight(
+      RowType rt, String rowUuid, String? pillarUuid) {
     if (rt == RowType.separator) {
       return 8.0;
     }
-    if (rt == RowType.columnHeaderRow) {
-      final t = theme.typography.getCellContentBy(rt);
-      final fs = t.fontStyleDataModel.fontSize ?? fontSize;
-      return fs * lineHeightFactor;
+
+    double? fontSize;
+
+    // 1. Try to get font size from CellTextSpec if pillarUuid is provided
+    if (pillarUuid != null) {
+      final spec = cellTextSpecMap[_cellKey(rowUuid, pillarUuid)];
+      if (spec != null && spec.fontSize != null) {
+        fontSize = spec.fontSize;
+      }
     }
+
+    // 2. Fallback to theme font size
+    if (fontSize == null) {
+      final ts = theme.typography.getCellContentBy(rt);
+      fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
+
+      if (rt == RowType.columnHeaderRow) {
+        final t = theme.typography.getCellContentBy(rt);
+        final fs = t.fontStyleDataModel.fontSize;
+        if (fs != null) fontSize = fs;
+      }
+    }
+
+    var h = (fontSize! * lineHeightFactor).toInt().toDouble();
+
+    // 3. Add title height if applicable (row-level property)
+    final row = payload.rowMap[rowUuid];
+    if (row is TextRowPayload && (row as TextRowPayload).titleInCell) {
+      final ts = theme.typography.getCellTitleBy(rt);
+      final fs = ts.fontStyleDataModel.fontSize ?? 12.0;
+      h += fs * lineHeightFactor;
+      print("DEBUG: Row $rowUuid has titleInCell, added height. New h: $h");
+    }
+
+    // print("DEBUG: Cell $rowUuid|$pillarUuid -> fontSize: $fontSize, h: $h");
     return _normalizeDouble(h);
+  }
+
+  double _calculateCellContentWidth(
+      RowType rt, String rowUuid, String pillarUuid) {
+    double contentW = defaultPillarWidth;
+    final spec = cellTextSpecMap[_cellKey(rowUuid, pillarUuid)];
+
+    if (spec != null) {
+      final fs = spec.fontSize ??
+          theme.typography.getCellContentBy(rt).fontStyleDataModel.fontSize ??
+          14.0;
+      contentW = _normalizeDouble(spec.charCount * fs * avgGlyphWidthScale);
+    }
+
+    return contentW;
   }
 
   static String _cellKey(String rowUuid, String pillarUuid) =>

@@ -101,7 +101,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       card: CardStyleConfig.defaultCardStyleConfig,
       cell: CellSection(
         pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
-        rowTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        rowTitleCellConfig: CellStyleConfig.defaultCellStyleConfig.copyWith(
+            padding: EdgeInsets.zero,
+            margin: EdgeInsets.zero,
+            border: BoxBorderStyle.defaultBorder.copyWith(enabled: false)),
         defaultCellConfig: CellStyleConfig.defaultCellStyleConfig,
         rowTypeCellConfigMapper: {
           RowType.earthlyBranch: CellStyleConfig.defaultCellStyleConfig,
@@ -209,7 +212,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
           ),
         )
       },
-      pillarOrderUuid: [titleUuid, yearUuid, monthUuid, dayUuid, hourUuid],
+      pillarOrderUuid: [yearUuid, monthUuid, dayUuid, hourUuid, titleUuid],
       rowMap: {
         titleRowUuid: TitleRowPayload(uuid: titleRowUuid),
         tenGodUuid: TextRowPayload(

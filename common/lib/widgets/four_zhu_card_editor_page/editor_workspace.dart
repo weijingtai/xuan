@@ -206,60 +206,32 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 data: workspaceTheme,
                 child: Container(
                   child: Center(
-                      child: Column(
-                    children: [
-                      EditableFourZhuCardV4(
-                        brightnessNotifier: _brightnessNotifier,
-                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                        cardPayloadNotifier:
-                            Provider.of<FourZhuCardDemoViewModel>(context,
-                                    listen: true)
-                                .cardPayloadNotifier,
-                        showGripRows: _showGripRowsNotifier.value,
-                        showGripColumns: _showGripColumnsNotifier.value,
-                        paddingNotifier: _paddingNotifier,
-                        themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
-                                context,
-                                listen: true)
-                            .themeNotifier,
-                        rowStrategyMapper: {
-                          RowType.tenGod: TenGodRowStrategy(),
-                          RowType.hiddenStemsTenGod:
-                              HiddenStemsTenGodsRowStrategy(),
-                          RowType.hiddenStems: HiddenStemsRowStrategy(),
-                          RowType.kongWang: KongWangRowStrategy(),
-                          RowType.naYin: NaYinRowStrategy(),
-                          RowType.xunShou: XunShouRowStrategy(),
-                        },
-                      ),
-                      const SizedBox(height: 8),
-                      EditableFourZhuCardV3(
-                        brightnessNotifier: _brightnessNotifier,
-                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
-                        cardPayloadNotifier:
-                            Provider.of<FourZhuCardDemoViewModel>(context,
-                                    listen: true)
-                                .cardPayloadNotifier,
-                        showGripRows: _showGripRowsNotifier.value,
-                        showGripColumns: _showGripColumnsNotifier.value,
-                        paddingNotifier: _paddingNotifier,
-                        themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
-                                context,
-                                listen: true)
-                            .themeNotifier,
-                        rowStrategyMapper: {
-                          RowType.tenGod: TenGodRowStrategy(),
-                          RowType.hiddenStemsTenGod:
-                              HiddenStemsTenGodsRowStrategy(),
-                          RowType.hiddenStems: HiddenStemsRowStrategy(),
-                          RowType.kongWang: KongWangRowStrategy(),
-                          RowType.naYin: NaYinRowStrategy(),
-                          RowType.xunShou: XunShouRowStrategy(),
-                        },
-                        gender: Gender.male,
-                      ),
-                    ],
-                  )),
+                    child: EditableFourZhuCardV3(
+                      brightnessNotifier: _brightnessNotifier,
+                      colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                      cardPayloadNotifier:
+                          Provider.of<FourZhuCardDemoViewModel>(context,
+                                  listen: true)
+                              .cardPayloadNotifier,
+                      showGripRows: _showGripRowsNotifier.value,
+                      showGripColumns: _showGripColumnsNotifier.value,
+                      paddingNotifier: _paddingNotifier,
+                      themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
+                              context,
+                              listen: true)
+                          .themeNotifier,
+                      rowStrategyMapper: {
+                        RowType.tenGod: TenGodRowStrategy(),
+                        RowType.hiddenStemsTenGod:
+                            HiddenStemsTenGodsRowStrategy(),
+                        RowType.hiddenStems: HiddenStemsRowStrategy(),
+                        RowType.kongWang: KongWangRowStrategy(),
+                        RowType.naYin: NaYinRowStrategy(),
+                        RowType.xunShou: XunShouRowStrategy(),
+                      },
+                      gender: Gender.male,
+                    ),
+                  ),
                 ),
               ),
             ),
