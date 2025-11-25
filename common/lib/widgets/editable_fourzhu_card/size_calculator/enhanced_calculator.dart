@@ -48,6 +48,9 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
       rows: baseSnapshot.rows,
       cells: baseSnapshot.cells,
       totals: baseSnapshot.totals,
+      defaultGlobalPillarMetric: baseSnapshot.defaultGlobalPillarMetric,
+      defaultGlobalRowMetric: baseSnapshot.defaultGlobalRowMetric,
+      defaultGlobalCellMetric: baseSnapshot.defaultGlobalCellMetric,
       pillarOrderUuid: List.from(payload.pillarOrderUuid),
       rowOrderUuid: List.from(payload.rowOrderUuid),
       columnWidthOverrides: const {}, // 初始无覆盖

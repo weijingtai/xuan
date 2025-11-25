@@ -72,8 +72,8 @@ CellSection _$CellSectionFromJson(Map<String, dynamic> json) => CellSection(
           json['pillarTitleCellConfig'] as Map<String, dynamic>),
       rowTitleCellConfig: CellStyleConfig.fromJson(
           json['rowTitleCellConfig'] as Map<String, dynamic>),
-      defaultCellConfig: CellStyleConfig.fromJson(
-          json['defaultCellConfig'] as Map<String, dynamic>),
+      globalCellConfig: CellStyleConfig.fromJson(
+          json['globalCellConfig'] as Map<String, dynamic>),
       rowTypeCellConfigMapper:
           (json['rowTypeCellConfigMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$RowTypeEnumMap, k),
@@ -85,7 +85,7 @@ Map<String, dynamic> _$CellSectionToJson(CellSection instance) =>
     <String, dynamic>{
       'pillarTitleCellConfig': instance.pillarTitleCellConfig,
       'rowTitleCellConfig': instance.rowTitleCellConfig,
-      'defaultCellConfig': instance.defaultCellConfig,
+      'globalCellConfig': instance.globalCellConfig,
       'rowTypeCellConfigMapper': instance.rowTypeCellConfigMapper
           .map((k, e) => MapEntry(_$RowTypeEnumMap[k]!, e)),
     };

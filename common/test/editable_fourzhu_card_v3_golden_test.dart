@@ -162,6 +162,7 @@ Future<void> _pumpCard(
                 rowListNotifier: rowsNotifier,
                 paddingNotifier: paddingNotifier,
                 gender: Gender.male,
+                dayGanZhi: JiaZi.JIA_ZI,
               ),
             ),
           ),

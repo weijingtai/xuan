@@ -1,5 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import '../models/pillar_content.dart';
+
 enum PillarType {
   @JsonValue('year')
   year('年'),
@@ -11,6 +13,7 @@ enum PillarType {
   hour('时'),
   @JsonValue("ke")
   ke('刻'),
+
   @JsonValue('tai_meta')
   taiMeta('胎元'),
   @JsonValue('tai_month')
@@ -21,6 +24,7 @@ enum PillarType {
   bodyHouse('身宫'),
   @JsonValue("命宫")
   lifeHouse('命宫'),
+
   @JsonValue('luck_cycle')
   luckCycle('大运'),
   @JsonValue('annual')

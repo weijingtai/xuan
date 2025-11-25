@@ -154,6 +154,7 @@ Future<void> _pumpCard(
                 showGrip: showGripRows,
                 showGripColumns: showGripColumns,
                 onRowsReordered: onRowsReordered,
+                dayGanZhi: JiaZi.JIA_ZI,
               ),
             ),
           ),

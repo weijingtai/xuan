@@ -6,6 +6,8 @@ import 'package:common/domain/usecases/load_layout_use_case.dart';
 import 'package:common/domain/usecases/save_layout_use_case.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 
+import '../enums/layout_template_enums.dart';
+
 class BaziCardViewModel extends ChangeNotifier {
   final LoadLayoutUseCase loadLayoutUseCase;
   final SaveLayoutUseCase saveLayoutUseCase;
@@ -32,17 +34,61 @@ class BaziCardViewModel extends ChangeNotifier {
         title: '本命',
         isBenMing: true,
         pillars: [
-          PillarData(pillarId: 'year', label: '年', jiaZi: JiaZi.JIA_ZI),
-          PillarData(pillarId: 'month', label: '月', jiaZi: JiaZi.JIA_ZI),
-          PillarData(pillarId: 'day', label: '日', jiaZi: JiaZi.JIA_ZI),
-          PillarData(pillarId: 'time', label: '时', jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'year',
+              label: '年',
+              pillarType: PillarType.year,
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'month',
+              label: '月',
+              pillarType: PillarType.month,
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'day',
+              label: '日',
+              pillarType: PillarType.day,
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'time',
+              label: '时',
+              pillarType: PillarType.hour,
+              jiaZi: JiaZi.JIA_ZI),
         ],
       ),
       PillarGroup(
         title: '流运',
         pillars: [
-          PillarData(pillarId: 'dayun', label: '大运', jiaZi: JiaZi.JIA_ZI),
-          PillarData(pillarId: 'liunian', label: '流年', jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'dayun',
+              pillarType: PillarType.luckCycle,
+              label: '大运',
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'liunian',
+              pillarType: PillarType.annual,
+              label: '流年',
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'liuqi',
+              pillarType: PillarType.monthly,
+              label: '流月',
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'liuji',
+              pillarType: PillarType.daily,
+              label: '流日',
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'liujin',
+              pillarType: PillarType.hourly,
+              label: '流时',
+              jiaZi: JiaZi.JIA_ZI),
+          PillarData(
+              pillarId: 'liujin',
+              pillarType: PillarType.hourly,
+              label: '流时',
+              jiaZi: JiaZi.JIA_ZI),
         ],
       ),
     ];
@@ -83,7 +129,8 @@ class BaziCardViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void togglePillarInGroup(String groupId, String pillarId, String label, bool isVisible) {
+  void togglePillarInGroup(
+      String groupId, String pillarId, String label, bool isVisible) {
     final groupIndex = pillarGroups.indexWhere((g) => g.id == groupId);
     if (groupIndex == -1) return;
 
@@ -93,7 +140,11 @@ class BaziCardViewModel extends ChangeNotifier {
     if (isVisible) {
       if (pillars.every((p) => p.pillarId != pillarId)) {
         // Assuming JiaZi.JIA_ZI is a placeholder
-        pillars.add(PillarData(pillarId: pillarId, label: label, jiaZi: JiaZi.JIA_ZI));
+        pillars.add(PillarData(
+            pillarId: pillarId,
+            pillarType: PillarType.daily,
+            label: label,
+            jiaZi: JiaZi.JIA_ZI));
       }
     } else {
       pillars.removeWhere((p) => p.pillarId == pillarId);

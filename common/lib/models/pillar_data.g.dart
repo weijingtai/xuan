@@ -8,6 +8,7 @@ part of 'pillar_data.dart';
 
 PillarData _$PillarDataFromJson(Map<String, dynamic> json) => PillarData(
       pillarId: json['pillarId'] as String,
+      pillarType: $enumDecode(_$PillarTypeEnumMap, json['pillarType']),
       label: json['label'] as String,
       jiaZi: $enumDecode(_$JiaZiEnumMap, json['jiaZi']),
     );
@@ -15,9 +16,31 @@ PillarData _$PillarDataFromJson(Map<String, dynamic> json) => PillarData(
 Map<String, dynamic> _$PillarDataToJson(PillarData instance) =>
     <String, dynamic>{
       'pillarId': instance.pillarId,
+      'pillarType': _$PillarTypeEnumMap[instance.pillarType]!,
       'label': instance.label,
       'jiaZi': _$JiaZiEnumMap[instance.jiaZi]!,
     };
+
+const _$PillarTypeEnumMap = {
+  PillarType.year: 'year',
+  PillarType.month: 'month',
+  PillarType.day: 'day',
+  PillarType.hour: 'time',
+  PillarType.ke: 'ke',
+  PillarType.taiMeta: 'tai_meta',
+  PillarType.taiMonth: 'tai_month',
+  PillarType.taiDay: 'tai_day',
+  PillarType.bodyHouse: 'body_house',
+  PillarType.lifeHouse: '命宫',
+  PillarType.luckCycle: 'luck_cycle',
+  PillarType.annual: 'annual',
+  PillarType.monthly: 'monthly',
+  PillarType.daily: 'daily',
+  PillarType.hourly: 'hourly',
+  PillarType.kely: 'kely',
+  PillarType.separator: 'separator',
+  PillarType.rowTitleColumn: 'row_title_column',
+};
 
 const _$JiaZiEnumMap = {
   JiaZi.JIA_ZI: '甲子',

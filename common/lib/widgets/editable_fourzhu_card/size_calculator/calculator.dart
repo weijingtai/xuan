@@ -373,11 +373,32 @@ class CardMetricsCalculator {
       rowCount: rowOrder.length,
     );
 
+    // 6. Calculate Default Global Metrics (using helper methods)
+    final representativeRowType = payload.rowMap.values
+        .firstWhere(
+          (r) => r.rowType != RowType.separator,
+          orElse: () => payload.rowMap.values.first,
+        )
+        .rowType;
+    final defaultCell = _computeDefaultGlobalCellMetric(representativeRowType);
+    final defaultPillar = _computeDefaultGlobalPillarMetric(
+      rows: rows,
+      rowOrder: rowOrder,
+    );
+    final defaultRow = _computeDefaultGlobalRowMetric(
+      pillars: pillars,
+      pillarOrder: pillarOrder,
+      representativeRowType: representativeRowType,
+    );
+
     _snapshot = CardMetricsSnapshot(
       pillars: pillars,
       rows: rows,
       cells: cells,
       totals: totals,
+      defaultGlobalPillarMetric: defaultPillar,
+      defaultGlobalRowMetric: defaultRow,
+      defaultGlobalCellMetric: defaultCell,
     );
 
     return _snapshot!;
@@ -651,14 +672,216 @@ class CardMetricsCalculator {
       rowCount: rowOrder.length,
     );
 
+    // 6. 第六步：计算默认全局度量
+    // 6.1 Default Cell Metric
+    final representativeRowType = payload.rowMap.values
+        .firstWhere(
+          (r) => r.rowType != RowType.separator,
+          orElse: () => payload.rowMap.values.first,
+        )
+        .rowType;
+    final defaultCell = _computeDefaultGlobalCellMetric(representativeRowType);
+
+    // 6.2 Default Pillar Metric
+    final defaultPillar = _computeDefaultGlobalPillarMetric(
+      rows: rows,
+      rowOrder: rowOrder,
+    );
+
+    // 6.3 Default Row Metric
+    final defaultRow = _computeDefaultGlobalRowMetric(
+      pillars: pillars,
+      pillarOrder: pillarOrder,
+      representativeRowType: representativeRowType,
+    );
+
     _snapshot = CardMetricsSnapshot(
       pillars: pillars,
       rows: rows,
       cells: cells,
       totals: totals,
+      defaultGlobalPillarMetric: defaultPillar,
+      defaultGlobalRowMetric: defaultRow,
+      defaultGlobalCellMetric: defaultCell,
     );
 
     return _snapshot!;
+  }
+
+  CellMetrics _computeDefaultGlobalCellMetric(RowType rowType) {
+    // 使用全局Cell配置
+    final cellConfig = theme.cell.globalCellConfig;
+
+    // 计算内容尺寸（基于rowType）
+    final contentWidth = _calculateCellContentWidth(
+      rowType,
+      "placeholder",
+      "placeholder",
+    );
+    final contentHeight = _calculateCellContentHeight(
+      rowType,
+      "placeholder",
+      "placeholder",
+    );
+
+    // 装饰、边距、边框
+    final decorationWidth = cellConfig.padding.left + cellConfig.padding.right;
+    final decorationHeight = cellConfig.padding.top + cellConfig.padding.bottom;
+    final marginHorizontal = cellConfig.margin.left + cellConfig.margin.right;
+    final marginVertical = cellConfig.margin.top + cellConfig.margin.bottom;
+    final borderWidth = cellConfig.border?.width ?? 0.0;
+    final withBorder = cellConfig.border?.enabled ?? false;
+
+    return CellMetrics(
+      rowUuid: "placeholder",
+      pillarUuid: "placeholder",
+      contentWidth: _normalizeDouble(contentWidth),
+      contentHeight: _normalizeDouble(contentHeight),
+      decorationWidth: _normalizeDouble(decorationWidth),
+      decorationHeight: _normalizeDouble(decorationHeight),
+      marginHorizontal: _normalizeDouble(marginHorizontal),
+      marginVertical: _normalizeDouble(marginVertical),
+      borderWidth: _normalizeDouble(borderWidth),
+      withBorder: withBorder,
+    );
+  }
+
+  PillarMetrics _computeDefaultGlobalPillarMetric({
+    required Map<String, RowMetrics> rows,
+    required List<String> rowOrder,
+  }) {
+    final pillarConfig = theme.pillar.global;
+
+    // 步骤1：计算 contentWidth = 所有现有pillars中最宽的 contentWidth
+    double maxPillarContentW = 0.0;
+    // 注意：这里我们需要的是已经计算好的 pillars 的 contentWidth。
+    // 但是 compute() 方法中 pillars 是在步骤3计算的，而 defaultPillar 是在步骤6计算的，
+    // 所以我们可以直接访问 compute() 作用域内的 pillars 变量。
+    // 为了避免参数传递复杂，我们假设调用此方法时 pillars 已经计算好。
+    // 实际上，为了更清晰，我们可以在 compute 方法中直接计算，或者传参。
+    // 这里我们选择在 compute 中计算好 maxPillarContentW 传进来，或者直接在 compute 中访问。
+    // 鉴于 _computeDefaultGlobalPillarMetric 是私有方法，我们可以让它接收 pillars map。
+    // 但为了遵循 implementation plan，我们使用 max(existing pillars contentWidth)。
+    // 等等，implementation plan 说的是 "contentWidth = max(cell.totalWidth) for all cells in pillar"
+    // 但用户后来更正为 "直接使用所有 pillars 中最宽的 contentWidth"。
+    // 所以我们需要访问 pillars map。
+
+    // 让我们修改方法签名以接收 pillars
+    // 实际上，由于我在 compute 方法内部调用，我可以访问 pillars 变量，但为了代码结构清晰，
+    // 我还是通过参数传递比较好。
+    // 但是 replace_file_content 只能替换代码块，不能轻易改变上下文变量的可见性。
+    // 所以我将在 compute 方法内部直接传递 pillars。
+    // 哎，wait，我在上面的 replacement content 中调用了 _computeDefaultGlobalPillarMetric
+    // 但没有传递 pillars。让我修正一下调用和定义。
+
+    // 重新设计调用：
+    // final defaultPillar = _computeDefaultGlobalPillarMetric(
+    //   rows: rows,
+    //   rowOrder: rowOrder,
+    //   pillars: pillars, // 添加这个
+    // );
+
+    // 稍等，上面的 replacement content 已经写进去了，我需要在方法定义中添加 pillars 参数。
+    return _computeDefaultGlobalPillarMetricImpl(
+        rows, rowOrder, _snapshot?.pillars ?? {});
+  }
+
+  // 辅助方法实现
+  PillarMetrics _computeDefaultGlobalPillarMetricImpl(
+      Map<String, RowMetrics> rows,
+      List<String> rowOrder,
+      Map<String, PillarMetrics> pillars) {
+    final pillarConfig = theme.pillar.global;
+
+    double maxPillarContentW = 0.0;
+    if (pillars.isNotEmpty) {
+      maxPillarContentW = pillars.values
+          .map((p) => p.contentWidth)
+          .reduce((a, b) => a > b ? a : b);
+    } else {
+      // Fallback if no pillars exist
+      maxPillarContentW = defaultPillarWidth;
+    }
+
+    // 步骤2：高度 = 所有现有行的高度之和
+    double contentHeight = 0.0;
+    for (final rowUuid in rowOrder) {
+      final rowMetrics = rows[rowUuid];
+      if (rowMetrics == null) continue;
+      contentHeight += rowMetrics.totalHeight;
+    }
+
+    // 步骤3：装饰、边距、边框
+    final decorationWidth = pillarConfig.getDecorationWidth();
+    final decorationHeight = pillarConfig.getDecorationHeight();
+    final marginHorizontal =
+        pillarConfig.margin.left + pillarConfig.margin.right;
+    final marginVertical = pillarConfig.margin.top + pillarConfig.margin.bottom;
+    final borderWidth = pillarConfig.border?.width ?? 0.0;
+    final withBorder = pillarConfig.border?.enabled ?? false;
+
+    return PillarMetrics(
+      pillarUuid: "placeholder",
+      pillarType: PillarType.year, // 占位
+      contentWidth: _normalizeDouble(maxPillarContentW),
+      contentHeight: _normalizeDouble(contentHeight),
+      decorationWidth: _normalizeDouble(decorationWidth),
+      decorationHeight: _normalizeDouble(decorationHeight),
+      marginHorizontal: _normalizeDouble(marginHorizontal),
+      marginVertical: _normalizeDouble(marginVertical),
+      borderWidth: _normalizeDouble(borderWidth),
+      withBorder: withBorder,
+    );
+  }
+
+  RowMetrics _computeDefaultGlobalRowMetric({
+    required Map<String, PillarMetrics> pillars,
+    required List<String> pillarOrder,
+    required RowType representativeRowType,
+  }) {
+    // 步骤1：宽度 = 所有现有pillars的总宽度
+    double contentWidth = 0.0;
+    for (final pillarUuid in pillarOrder) {
+      final pillarMetrics = pillars[pillarUuid];
+      if (pillarMetrics == null) continue;
+      contentWidth += pillarMetrics.totalWidth;
+    }
+
+    // 步骤2：高度 = 所有现有pillars中虚拟单元格的最大高度
+    double maxCellTotalHeight = 0.0;
+
+    for (final pillarUuid in pillarOrder) {
+      // 计算虚拟单元格的 totalHeight
+      final cellMetric = _computeDefaultGlobalCellMetric(representativeRowType);
+      final cellTotalHeight = cellMetric.totalHeight;
+
+      if (cellTotalHeight > maxCellTotalHeight) {
+        maxCellTotalHeight = cellTotalHeight;
+      }
+    }
+
+    // 如果没有 pillar，使用默认高度
+    if (pillarOrder.isEmpty) {
+      final cellMetric = _computeDefaultGlobalCellMetric(representativeRowType);
+      maxCellTotalHeight = cellMetric.totalHeight;
+    }
+
+    final contentHeight = maxCellTotalHeight;
+
+    // 步骤3：装饰、边距、边框（使用全局配置，当前版本为0）
+    final decorationHeight = 0.0;
+    final marginVertical = 0.0;
+    final borderWidth = 0.0;
+
+    return RowMetrics(
+      rowUuid: "placeholder",
+      rowType: representativeRowType,
+      contentHeight: _normalizeDouble(contentHeight),
+      decorationHeight: _normalizeDouble(decorationHeight),
+      marginVertical: _normalizeDouble(marginVertical),
+      borderWidth: _normalizeDouble(borderWidth),
+      withBorder: false,
+    );
   }
 
   CellMetrics? getCell(String rowUuid, String pillarUuid) {

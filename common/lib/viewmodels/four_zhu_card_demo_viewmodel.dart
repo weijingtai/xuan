@@ -105,7 +105,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
             padding: EdgeInsets.zero,
             margin: EdgeInsets.zero,
             border: BoxBorderStyle.defaultBorder.copyWith(enabled: false)),
-        defaultCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        globalCellConfig: CellStyleConfig.defaultCellStyleConfig,
         rowTypeCellConfigMapper: {
           RowType.earthlyBranch: CellStyleConfig.defaultCellStyleConfig,
           RowType.heavenlyStem: CellStyleConfig.defaultCellStyleConfig,

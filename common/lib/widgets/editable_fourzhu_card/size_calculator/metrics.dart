@@ -175,11 +175,19 @@ class CardMetricsSnapshot {
   final Map<String, CellMetrics> cells;
   final CardTotals totals;
 
+  // Default global metrics for drag previews and placeholders
+  final PillarMetrics defaultGlobalPillarMetric;
+  final RowMetrics defaultGlobalRowMetric;
+  final CellMetrics defaultGlobalCellMetric;
+
   const CardMetricsSnapshot({
     required this.pillars,
     required this.rows,
     required this.cells,
     required this.totals,
+    required this.defaultGlobalPillarMetric,
+    required this.defaultGlobalRowMetric,
+    required this.defaultGlobalCellMetric,
   });
 }
 

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:common/models/pillar_data.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:common/models/pillar_content.dart'; // Changed from relative import
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'dart:math' as math;
@@ -571,13 +573,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return JiaZi.JIA_ZI;
   }
 
-  List<Tuple2<String, JiaZi>> _effectivePillarsTuples() {
-    final payloads = _currentPillars();
-    return payloads
-        .map((p) =>
-            Tuple2(_pillarLabelFromPayload(p), _pillarJiaZiFromPayload(p)))
-        .toList();
-  }
+  // List<Tuple2<String, JiaZi>> _effectivePillarsTuples() {
+  //   final payloads = _currentPillars();
+  //   return payloads
+  //       .map((p) =>
+  //           Tuple2(_pillarLabelFromPayload(p), _pillarJiaZiFromPayload(p)))
+  //       .toList();
+  // }
 
   /// 【方案A优化】确保所有 Pillar 的 GlobalKey 都已创建
   ///
@@ -749,6 +751,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   bool _hoveringExternalRow = false;
   double _externalRowHoverHeight = 0.0;
   double _externalColHoverWidth = 0.0;
+  // Size? _cardNotragInSize;
 
   /// 当“抓手显示/隐藏”触发尺寸变化时，优先使用居中对齐以获得更顺滑的动画；
   /// 其他情况（如外部柱/行悬停导致容器扩展）则使用顶部起始对齐。
@@ -967,6 +970,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       _basicLayoutModel.updatePadding(widget.paddingNotifier.value);
       // 同步更新尺寸（包含装饰）
       _sizeNotifier.value = _computeSizeWithDecorationsV2();
+      _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
     };
     widget.cardPayloadNotifier.addListener(_layoutModelSyncListener);
     widget.paddingNotifier.addListener(_layoutModelSyncListener);
@@ -1141,11 +1145,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   width: size.width +
                       padding.left +
                       padding.right +
-                      borderWidth * 2,
+                      borderWidth * 2 +
+                      _externalColHoverWidth,
                   height: size.height +
                       padding.top +
                       padding.bottom +
-                      borderWidth * 2,
+                      borderWidth * 2 +
+                      _externalRowHoverHeight,
                   alignment: _preferCenterAlignment
                       ? Alignment.center
                       : AlignmentDirectional.topStart,
@@ -1159,13 +1165,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             // 全卡列插入 DragTarget：在卡片任意位置悬停时计算列插入索引
             Positioned.fill(
               child: DragTarget<Object>(
-                onWillAccept: (data) {
+                onWillAcceptWithDetails: (DragTargetDetails<Object> details) {
+                  final data = details.data;
                   final ok = (data is Tuple2 &&
                           data.item1 is _DragKind &&
                           data.item1 == _DragKind.column) ||
                       (data is PillarPayload) ||
                       (data is PillarType) ||
-                      (data is TitleColumnPayload);
+                      (data is TitleColumnPayload) ||
+                      (data is PillarData);
                   if (ok) {
                     // 外部悬停驱动的尺寸扩展：回到顶部起始对齐（批处理调度）
                     _preferCenterAlignment = false;
@@ -1176,18 +1184,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       _hoverColumnInsertIndex = pillars.length;
                       _lastColInsertIndex = pillars.length;
                       // 设置外部柱的宽度
+                      double width = 0;
                       if (data is PillarPayload) {
-                        _externalColHoverWidth =
-                            (data.pillarType == PillarType.separator)
-                                ? _colDividerWidthEffective
-                                : (data.pillarType == PillarType.rowTitleColumn
-                                    ? rowTitleWidth
-                                    : pillarWidth);
+                        width = _metricsSnapshotNotifier
+                            .value.defaultGlobalPillarMetric.totalWidth;
+
+                        // _externalColHoverWidth =
+                        //     (data.pillarType == PillarType.separator)
+                        //         ? _colDividerWidthEffective
+                        //         : (data.pillarType == PillarType.rowTitleColumn
+                        //             ? rowTitleWidth
+                        //             : pillarWidth);
                       } else if (data is PillarType) {
-                        _externalColHoverWidth = (data == PillarType.separator)
-                            ? _colDividerWidthEffective
-                            : pillarWidth;
+                        // _externalColHoverWidth = (data == PillarType.separator)
+                        // ? _colDividerWidthEffective
+                        // : pillarWidth;
+                        width = pillarWidth;
                       }
+                      final currentSize = _sizeNotifier.value;
+                      _sizeNotifier.value =
+                          Size(currentSize.width + width, currentSize.height);
                     }
                     // 进入列插入目标时，清理行插入提示状态，避免相互干扰
                     _hoverRowInsertIndex = null;
@@ -1205,7 +1221,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   }
 
                   final isExternal = details.data is PillarPayload ||
-                      details.data is PillarType;
+                      details.data is PillarType ||
+                      details.data is PillarData;
                   if (_hoveringExternalPillar != isExternal) {
                     _hoveringExternalPillar = isExternal;
                     _scheduleRebuild();
@@ -1213,21 +1230,33 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                   // 外部柱悬停：更新幽灵列宽度（若载荷提供 columnWidth 则优先使用）
                   if (isExternal) {
-                    double nextW = pillarWidth;
+                    double nextW = _metricsSnapshotNotifier
+                        .value.defaultGlobalPillarMetric.totalWidth;
+                    // double nextW = pillarWidth;
                     final data = details.data;
-                    if (data is PillarPayload) {
-                      nextW = (data.pillarType == PillarType.separator)
-                          ? _colDividerWidthEffective
-                          : (data.pillarType == PillarType.rowTitleColumn
-                              ? rowTitleWidth
-                              : pillarWidth);
+                    if (data is PillarPayload || data is PillarData) {
+                      // nextW = _metricsSnapshotNotifier
+                      // .value.defaultGlobalPillarMetric.totalWidth;
+
+                      // nextW = (data.pillarType == PillarType.separator)
+                      // ? _colDividerWidthEffective
+                      // : (data.pillarType == PillarType.rowTitleColumn
+                      // ? rowTitleWidth
+                      // : pillarWidth);
                     } else if (data is PillarType) {
-                      nextW = (data == PillarType.separator)
-                          ? _colDividerWidthEffective
-                          : pillarWidth;
+                      if (data == PillarType.separator) {
+                        nextW = _colDividerWidthEffective;
+                      }
+                      // nextW = (data == PillarType.separator)
+                      //     ? _colDividerWidthEffective
+                      //     : pillarWidth;
                     }
+
                     if (_externalColHoverWidth != nextW) {
                       _externalColHoverWidth = nextW;
+                      // _cardNotragInSize = _sizeNotifier.value;
+                      // _sizeNotifier.value = Size(
+                      // _externalColHoverWidth + size.width, size.height);
                       _scheduleRebuild();
                     }
                   }
@@ -1290,8 +1319,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
                   _hoveringExternalPillar = false;
-                  _externalColHoverWidth = 0.0;
                   _scheduleRebuild();
+                  // if (_externalColHoverWidth != 0.0) {
+                  //   _sizeNotifier.value = _cardNotragInSize!;
+                  //   _cardNotragInSize = null;
+                  // }
+                  _externalColHoverWidth = 0.0;
+
                   _dragWantsInsert.value = false;
                   _dragWantsDelete.value = _dragController.wantsDeleteOnLeave();
                 },
@@ -1315,7 +1349,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _insertExternalPillarFromType(insertIndex, payload);
                   } else if (payload is TitleColumnPayload) {
                     _reorderColumnsByType(payload.pillarType, insertIndex);
+                  } else if (payload is PillarData) {
+                    final pillarId = Uuid().v4();
+                    final pillarContent = PillarContent(
+                      id: pillarId,
+                      pillarType: payload.pillarType,
+                      label: payload.label, // 使用 PillarData 的 label 字段
+                      jiaZi: payload.jiaZi,
+                      version: "1",
+                      sourceKind: PillarSourceKind.userInput,
+                    );
+                    final contentPillarPayload = ContentPillarPayload(
+                      uuid: pillarId,
+                      pillarType: payload.pillarType,
+                      pillarLabel: payload.label, // 使用 PillarData 的 label 字段
+                      pillarContent: pillarContent,
+                    );
+
+                    _insertExternalPillar(insertIndex, contentPillarPayload);
                   }
+
                   _dragWantsInsert.value = false;
                   _dragWantsDelete.value = false;
                 },
@@ -1558,7 +1611,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         Positioned.fill(
           child: Builder(
             builder: (builderContext) => DragTarget<Object>(
-              onWillAccept: (data) {
+              onWillAcceptWithDetails: (DragTargetDetails<Object> details) {
+                final data = details.data;
                 assert(() {
                   debugPrint('RowDragTarget onWillAccept data=$data');
                   return true;
@@ -1710,7 +1764,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 _dragWantsInsert.value = false;
                 _dragWantsDelete.value = _dragController.wantsDeleteOnLeave();
               },
-              onAccept: (payload) {
+              onAcceptWithDetails: (DragTargetDetails<Object> details) {
+                final payload = details.data;
                 assert(() {
                   debugPrint(
                       'RowDragTarget onAccept payload=$payload hoverIdx=$_hoverRowInsertIndex');
@@ -1882,11 +1937,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       duration: dragging ? const Duration(milliseconds: 180) : Duration.zero,
       curve: Curves.easeOut,
       width: dragging && targetIndex == index ? gridGhostWidth : 0,
+      color: Colors.red,
       child: dragging && targetIndex == index
           ? GhostPillarWidget.column(
               width: gridGhostWidth,
-              height:
-                  _layoutNotifier.value.totalRowsHeight(_measurementContext),
+              height: _metricsSnapshotNotifier
+                  .value.defaultGlobalPillarMetric.totalHeight,
+              // height:
+              //     _layoutNotifier.value.totalRowsHeight(_measurementContext),
             )
           : const SizedBox.shrink(),
     );
@@ -1907,8 +1965,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       child: dragging && targetIndex == pillars.length
           ? GhostPillarWidget.column(
               width: endGhostWidth,
-              height:
-                  _layoutNotifier.value.totalRowsHeight(_measurementContext),
+              height: _metricsSnapshotNotifier
+                  .value.defaultGlobalPillarMetric.totalHeight,
             )
           : const SizedBox.shrink(),
     );
@@ -3220,7 +3278,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // title Cell
       cell = multiLineCell(
           size: Size(size.width, size.height),
-          cellStyleConfig: theme.cell.defaultCellConfig,
+          cellStyleConfig: theme.cell.globalCellConfig,
           mainTextStyleConfig: typography.pillarTitle,
           content: rowType?.name ?? "-");
     }
@@ -3912,25 +3970,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     } else if (payload.pillarType == PillarType.rowTitleColumn) {
       next = RowTitleColumnPayload(uuid: payload.uuid);
     } else {
-      final id = _allocatePillarId(payload.pillarType);
-      final label = _pillarLabelFromPayload(payload);
+      // final id = _allocatePillarId(payload.pillarType);
+      // final label = _pillarLabelFromPayload(payload);
       final jz = _pillarJiaZiFromPayload(payload);
       final content = PillarContent(
-        id: id,
+        id: payload.uuid,
         pillarType: payload.pillarType,
-        label: label,
+        label: payload.pillarLabel!,
         jiaZi: jz,
         description: null,
         version: '1',
         sourceKind: PillarSourceKind.userInput,
-        operationType: payload.pillarType == PillarType.luckCycle
-            ? PillarOperationType.daYun
-            : null,
+        operationType: null,
       );
       next = ContentPillarPayload(
         uuid: payload.uuid,
         pillarType: payload.pillarType,
-        pillarLabel: label,
+        pillarLabel: payload.pillarLabel,
         pillarContent: content,
       );
     }
@@ -3938,6 +3994,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final list = List<PillarPayload>.of(_currentPillars());
     final target = insertIndex.clamp(0, list.length);
     list.insert(target, next);
+    Map<String, PillarPayload> newPillarMap =
+        Map.from(widget.cardPayloadNotifier.value.pillarMap);
+    newPillarMap[next.uuid] = next;
+
     _setPillars(list);
 
     // 持久化列宽覆盖：非分隔列按载荷提供的宽度（若有）记录覆盖，用于重排反馈

@@ -2,6 +2,8 @@ import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/pillar_data.dart';
 import 'package:flutter/material.dart';
 
+import '../enums/layout_template_enums.dart';
+
 class PillarPalette extends StatelessWidget {
   const PillarPalette({Key? key}) : super(key: key);
 
@@ -28,9 +30,14 @@ class PillarPalette extends StatelessWidget {
     );
   }
 
-  Widget _buildPillarPaletteItem(BuildContext context, String label, IconData icon, String pillarId) {
+  Widget _buildPillarPaletteItem(
+      BuildContext context, String label, IconData icon, String pillarId) {
     final theme = Theme.of(context);
-    final pillarData = PillarData(pillarId: pillarId, label: label, jiaZi: JiaZi.JIA_ZI);
+    final pillarData = PillarData(
+        pillarId: pillarId,
+        pillarType: PillarType.year,
+        label: label,
+        jiaZi: JiaZi.JIA_ZI);
 
     return Draggable<PillarData>(
       data: pillarData,
@@ -61,8 +68,10 @@ class PillarPalette extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.2),
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                  color: theme.colorScheme.surfaceContainerHighest
+                      .withValues(alpha: 0.2),
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(6)),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -138,11 +147,15 @@ class PillarPalette extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: theme.colorScheme.primary.withValues(alpha: 0.3)),
+              Icon(icon,
+                  size: 40,
+                  color: theme.colorScheme.primary.withValues(alpha: 0.3)),
               const SizedBox(height: 8),
-              Text(label, style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.3),
-              )),
+              Text(label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color
+                        ?.withValues(alpha: 0.3),
+                  )),
             ],
           ),
         ),

@@ -6,6 +6,7 @@ import 'package:common/widgets/pillar_card.dart';
 import 'package:flutter/material.dart';
 
 import '../enums/enum_jia_zi.dart';
+import '../enums/layout_template_enums.dart';
 import '../models/pillar_preset.dart';
 
 class LayoutEditorPage extends StatefulWidget {
@@ -151,6 +152,7 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                           } else if (data is PillarPreset) {
                             for (final id in (data as PillarPreset).pillarIds) {
                               _canvasPillars.add(PillarData(
+                                pillarType: PillarType.year,
                                 pillarId: id,
                                 label: id, // 或适当标签
                                 jiaZi: JiaZi.JIA_ZI, // 默认值，根据需要调整

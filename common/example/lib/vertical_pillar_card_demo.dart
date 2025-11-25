@@ -1,4 +1,5 @@
 import 'package:common/enums.dart';
+import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/pillar_data.dart';
 import 'package:common/widgets/vertical_pillar_card.dart';
 import 'package:flutter/material.dart';
@@ -13,26 +14,31 @@ class VerticalPillarCardDemo extends StatelessWidget {
     final pillars = [
       PillarData(
         pillarId: 'day',
+        pillarType: PillarType.day,
         label: '日',
         jiaZi: JiaZi.JIA_ZI, // 甲子
       ),
       PillarData(
         pillarId: 'dayun',
         label: '大运',
+        pillarType: PillarType.luckCycle,
         jiaZi: JiaZi.GUI_MAO, // 癸卯
       ),
       PillarData(
         pillarId: 'liunian',
+        pillarType: PillarType.annual,
         label: '流年',
         jiaZi: JiaZi.JIA_CHEN, // 甲辰
       ),
       PillarData(
         pillarId: 'liuyue',
+        pillarType: PillarType.monthly,
         label: '流月',
         jiaZi: JiaZi.BING_YIN, // 丙寅
       ),
       PillarData(
         pillarId: 'liushi',
+        pillarType: PillarType.hourly,
         label: '流时',
         jiaZi: JiaZi.WU_XU, // 戊戌
       ),
@@ -84,10 +90,30 @@ class VerticalPillarCardDemo extends StatelessWidget {
             VerticalPillarCard(
               title: '四柱分析',
               pillars: [
-                PillarData(pillarId: 'year', label: '年', jiaZi: JiaZi.JIA_ZI),
-                PillarData(pillarId: 'month', label: '月', jiaZi: JiaZi.BING_YIN),
-                PillarData(pillarId: 'day', label: '日', jiaZi: JiaZi.WU_CHEN),
-                PillarData(pillarId: 'time', label: '时', jiaZi: JiaZi.GUI_HAI),
+                PillarData(
+                  pillarId: 'year',
+                  label: '年',
+                  pillarType: PillarType.year,
+                  jiaZi: JiaZi.JIA_ZI,
+                ),
+                PillarData(
+                  pillarId: 'month',
+                  label: '月',
+                  pillarType: PillarType.month,
+                  jiaZi: JiaZi.BING_YIN,
+                ),
+                PillarData(
+                  pillarId: 'day',
+                  label: '日',
+                  pillarType: PillarType.day,
+                  jiaZi: JiaZi.WU_CHEN,
+                ),
+                PillarData(
+                  pillarId: 'time',
+                  label: '时',
+                  pillarType: PillarType.hour,
+                  jiaZi: JiaZi.GUI_HAI,
+                ),
               ],
               dayMaster: TianGan.WU,
               isBenMing: true,
@@ -114,10 +140,30 @@ class VerticalPillarCardDemo extends StatelessWidget {
             VerticalPillarCard(
               title: '本命盘',
               pillars: [
-                PillarData(pillarId: 'year', label: '年', jiaZi: JiaZi.BING_YIN),
-                PillarData(pillarId: 'month', label: '月', jiaZi: JiaZi.GENG_YIN),
-                PillarData(pillarId: 'day', label: '日', jiaZi: JiaZi.REN_CHEN),
-                PillarData(pillarId: 'time', label: '时', jiaZi: JiaZi.XIN_HAI),
+                PillarData(
+                  pillarId: 'year',
+                  label: '年',
+                  pillarType: PillarType.year,
+                  jiaZi: JiaZi.BING_YIN,
+                ),
+                PillarData(
+                  pillarId: 'month',
+                  label: '月',
+                  pillarType: PillarType.month,
+                  jiaZi: JiaZi.GENG_YIN,
+                ),
+                PillarData(
+                  pillarId: 'day',
+                  label: '日',
+                  pillarType: PillarType.day,
+                  jiaZi: JiaZi.REN_CHEN,
+                ),
+                PillarData(
+                  pillarId: 'time',
+                  label: '时',
+                  pillarType: PillarType.hour,
+                  jiaZi: JiaZi.XIN_HAI,
+                ),
               ],
               dayMaster: TianGan.REN,
               isBenMing: true,

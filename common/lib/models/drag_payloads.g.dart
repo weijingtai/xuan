@@ -26,18 +26,6 @@ Map<String, dynamic> _$TitleColumnPayloadToJson(TitleColumnPayload instance) =>
       'uuid': instance.uuid,
     };
 
-RowTitleColumnPayload _$RowTitleColumnPayloadFromJson(
-        Map<String, dynamic> json) =>
-    RowTitleColumnPayload(
-      uuid: json['uuid'] as String,
-    );
-
-Map<String, dynamic> _$RowTitleColumnPayloadToJson(
-        RowTitleColumnPayload instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-    };
-
 ColumnHeaderRowPayload _$ColumnHeaderRowPayloadFromJson(
         Map<String, dynamic> json) =>
     ColumnHeaderRowPayload(
@@ -119,37 +107,6 @@ const _$PillarTypeEnumMap = {
   PillarType.rowTitleColumn: 'row_title_column',
 };
 
-SeparatorPillarPayload _$SeparatorPillarPayloadFromJson(
-        Map<String, dynamic> json) =>
-    SeparatorPillarPayload(
-      uuid: json['uuid'] as String,
-    );
-
-Map<String, dynamic> _$SeparatorPillarPayloadToJson(
-        SeparatorPillarPayload instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-    };
-
-ContentPillarPayload _$ContentPillarPayloadFromJson(
-        Map<String, dynamic> json) =>
-    ContentPillarPayload(
-      uuid: json['uuid'] as String,
-      pillarType: $enumDecode(_$PillarTypeEnumMap, json['pillarType']),
-      pillarLabel: json['pillarLabel'] as String?,
-      pillarContent:
-          PillarContent.fromJson(json['pillarContent'] as Map<String, dynamic>),
-    );
-
-Map<String, dynamic> _$ContentPillarPayloadToJson(
-        ContentPillarPayload instance) =>
-    <String, dynamic>{
-      'uuid': instance.uuid,
-      'pillarType': _$PillarTypeEnumMap[instance.pillarType]!,
-      'pillarLabel': instance.pillarLabel,
-      'pillarContent': instance.pillarContent,
-    };
-
 RowPayload _$RowPayloadFromJson(Map<String, dynamic> json) => RowPayload(
       rowType: $enumDecode(_$RowTypeEnumMap, json['rowType']),
       uuid: json['uuid'] as String,
@@ -207,4 +164,47 @@ Map<String, dynamic> _$TextRowPayloadToJson(TextRowPayload instance) =>
       'uuid': instance.uuid,
       'rowLabel': instance.rowLabel,
       'titleInCell': instance.titleInCell,
+    };
+
+SeparatorPillarPayload _$SeparatorPillarPayloadFromJson(
+        Map<String, dynamic> json) =>
+    SeparatorPillarPayload(
+      uuid: json['uuid'] as String,
+    );
+
+Map<String, dynamic> _$SeparatorPillarPayloadToJson(
+        SeparatorPillarPayload instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+    };
+
+ContentPillarPayload _$ContentPillarPayloadFromJson(
+        Map<String, dynamic> json) =>
+    ContentPillarPayload(
+      uuid: json['uuid'] as String,
+      pillarType: $enumDecode(_$PillarTypeEnumMap, json['pillarType']),
+      pillarLabel: json['pillarLabel'] as String?,
+      pillarContent:
+          PillarContent.fromJson(json['pillarContent'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$ContentPillarPayloadToJson(
+        ContentPillarPayload instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
+      'pillarType': _$PillarTypeEnumMap[instance.pillarType]!,
+      'pillarLabel': instance.pillarLabel,
+      'pillarContent': instance.pillarContent,
+    };
+
+RowTitleColumnPayload _$RowTitleColumnPayloadFromJson(
+        Map<String, dynamic> json) =>
+    RowTitleColumnPayload(
+      uuid: json['uuid'] as String,
+    );
+
+Map<String, dynamic> _$RowTitleColumnPayloadToJson(
+        RowTitleColumnPayload instance) =>
+    <String, dynamic>{
+      'uuid': instance.uuid,
     };

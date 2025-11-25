@@ -2,6 +2,8 @@ import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/pillar_data.dart';
 import 'package:flutter/material.dart';
 
+import '../enums/layout_template_enums.dart';
+
 /// PillarTagBar - 底部 20% 高度的小型可拖拽 Tag 列表（含抓手 icon）
 ///
 /// 功能：
@@ -10,21 +12,96 @@ import 'package:flutter/material.dart';
 /// - 标签内提供抓手图标（drag_indicator），更直观的拖拽提示
 class PillarTagBar extends StatelessWidget {
   const PillarTagBar({super.key});
-
+  List<PillarData> get pillars => [
+        const PillarData(
+            pillarId: "separator",
+            pillarType: PillarType.separator,
+            label: "分割符号",
+            jiaZi: JiaZi.JIA_ZI),
+        const PillarData(
+            pillarId: 'year',
+            label: '年',
+            pillarType: PillarType.year,
+            jiaZi: JiaZi.JIA_ZI),
+        const PillarData(
+            pillarId: 'month',
+            label: '月',
+            pillarType: PillarType.month,
+            jiaZi: JiaZi.YI_CHOU),
+        const PillarData(
+            pillarId: 'day',
+            label: '日',
+            pillarType: PillarType.day,
+            jiaZi: JiaZi.BING_YIN),
+        const PillarData(
+            pillarId: 'time',
+            label: '时',
+            pillarType: PillarType.hour,
+            jiaZi: JiaZi.DING_MAO),
+        const PillarData(
+            pillarId: 'ke',
+            label: '刻',
+            pillarType: PillarType.ke,
+            jiaZi: JiaZi.WU_CHEN),
+        const PillarData(
+            pillarId: 'dayun',
+            pillarType: PillarType.luckCycle,
+            label: '大运',
+            jiaZi: JiaZi.JI_SI),
+        const PillarData(
+            pillarId: 'liunian',
+            pillarType: PillarType.annual,
+            label: '流年',
+            jiaZi: JiaZi.GENG_WU),
+        const PillarData(
+            pillarId: 'liuyue',
+            pillarType: PillarType.monthly,
+            label: '流月',
+            jiaZi: JiaZi.XIN_WEI),
+        const PillarData(
+            pillarId: 'liuri',
+            pillarType: PillarType.daily,
+            label: '流日',
+            jiaZi: JiaZi.REN_SHEN),
+        const PillarData(
+            pillarId: 'liushi',
+            pillarType: PillarType.hourly,
+            label: '流时',
+            jiaZi: JiaZi.GUI_YOU),
+        const PillarData(
+            pillarId: 'liuke',
+            pillarType: PillarType.kely,
+            label: '流刻',
+            jiaZi: JiaZi.JIA_XU),
+        const PillarData(
+            pillarId: 'bodyHouse',
+            pillarType: PillarType.bodyHouse,
+            label: '身宫',
+            jiaZi: JiaZi.JI_HAI),
+        const PillarData(
+            pillarId: 'lifeHouse',
+            pillarType: PillarType.lifeHouse,
+            label: '命宫',
+            jiaZi: JiaZi.BING_ZI),
+        const PillarData(
+            pillarId: 'taiMeta',
+            pillarType: PillarType.taiMeta,
+            label: '胎元',
+            jiaZi: JiaZi.JI_MAO),
+        const PillarData(
+            pillarId: 'taiDay',
+            pillarType: PillarType.taiDay,
+            label: '胎日',
+            jiaZi: JiaZi.DING_CHOU),
+        const PillarData(
+            pillarId: 'taiMonth',
+            pillarType: PillarType.taiMonth,
+            label: '胎月',
+            jiaZi: JiaZi.WU_YIN),
+      ];
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tags = <_TagSpec>[
-      _TagSpec('year', '年柱', Icons.calendar_today),
-      _TagSpec('month', '月柱', Icons.calendar_month),
-      _TagSpec('day', '日柱', Icons.today),
-      _TagSpec('time', '时柱', Icons.schedule),
-      _TagSpec('taiyuan', '胎元', Icons.compost),
-      _TagSpec('dayun', '大运', Icons.trending_up),
-      _TagSpec('liunian', '流年', Icons.event),
-      _TagSpec('more', '更多...', Icons.more_horiz),
-    ];
-
     return Container(
       // 高度由外层 Flexible 控制，此处填充可用空间
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -42,20 +119,19 @@ class PillarTagBar extends StatelessWidget {
           primary: false,
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          itemCount: tags.length,
+          itemCount: pillars.length,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
-            final t = tags[index];
-            final data =
-                PillarData(pillarId: t.id, label: t.label, jiaZi: JiaZi.JIA_ZI);
+            final t = pillars[index];
             return Draggable<PillarData>(
-              data: data,
-              feedback: _TagFeedback(label: t.label, icon: t.icon),
+              data: t,
+              feedback:
+                  _TagFeedback(label: t.label, icon: Icons.drag_indicator),
               childWhenDragging: Opacity(
                 opacity: 0.35,
-                child: _Tag(label: t.label, icon: t.icon),
+                child: _Tag(label: t.label, icon: Icons.drag_indicator),
               ),
-              child: _Tag(label: t.label, icon: t.icon),
+              child: _Tag(label: t.label, icon: Icons.drag_indicator),
             );
           },
         ),

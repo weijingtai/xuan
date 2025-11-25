@@ -45,6 +45,9 @@ class EnhancedCardMetricsSnapshot extends CardMetricsSnapshot {
     required super.rows,
     required super.cells,
     required super.totals,
+    required super.defaultGlobalPillarMetric,
+    required super.defaultGlobalRowMetric,
+    required super.defaultGlobalCellMetric,
     required this.pillarOrderUuid,
     required this.rowOrderUuid,
     required this.columnWidthOverrides,
@@ -57,6 +60,9 @@ class EnhancedCardMetricsSnapshot extends CardMetricsSnapshot {
     Map<String, RowMetrics>? rows,
     Map<String, CellMetrics>? cells,
     CardTotals? totals,
+    PillarMetrics? defaultGlobalPillarMetric,
+    RowMetrics? defaultGlobalRowMetric,
+    CellMetrics? defaultGlobalCellMetric,
     List<String>? pillarOrderUuid,
     List<String>? rowOrderUuid,
     Map<int, double>? columnWidthOverrides,
@@ -68,6 +74,12 @@ class EnhancedCardMetricsSnapshot extends CardMetricsSnapshot {
       rows: rows ?? this.rows,
       cells: cells ?? this.cells,
       totals: totals ?? this.totals,
+      defaultGlobalPillarMetric:
+          defaultGlobalPillarMetric ?? this.defaultGlobalPillarMetric,
+      defaultGlobalRowMetric:
+          defaultGlobalRowMetric ?? this.defaultGlobalRowMetric,
+      defaultGlobalCellMetric:
+          defaultGlobalCellMetric ?? this.defaultGlobalCellMetric,
       pillarOrderUuid: pillarOrderUuid ?? this.pillarOrderUuid,
       rowOrderUuid: rowOrderUuid ?? this.rowOrderUuid,
       columnWidthOverrides: columnWidthOverrides ?? this.columnWidthOverrides,

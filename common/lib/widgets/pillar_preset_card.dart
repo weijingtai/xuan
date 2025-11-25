@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../enums/layout_template_enums.dart';
 import '../models/pillar_data.dart';
 import '../enums/enum_jia_zi.dart';
 import '../models/pillar_preset.dart';
@@ -20,6 +21,7 @@ class PillarPresetCard extends StatelessWidget {
     final dateText = _formatDate(preset.updatedAt);
     final data = PillarData(
       pillarId: preset.pillarIds.isNotEmpty ? preset.pillarIds.first : 'year',
+      pillarType: PillarType.year,
       label: preset.name,
       jiaZi: JiaZi.JIA_ZI,
     );
@@ -32,7 +34,8 @@ class PillarPresetCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 220),
-          child: _CardBody(theme: theme, dateText: dateText, dragging: true, preset: preset),
+          child: _CardBody(
+              theme: theme, dateText: dateText, dragging: true, preset: preset),
         ),
       ),
       child: InkWell(
@@ -77,8 +80,18 @@ class _CardBody extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.6)),
         boxShadow: dragging
-            ? [const BoxShadow(blurRadius: 8, offset: Offset(0, 4), color: Color(0x22000000))]
-            : [const BoxShadow(blurRadius: 2, offset: Offset(0, 1), color: Color(0x14000000))],
+            ? [
+                const BoxShadow(
+                    blurRadius: 8,
+                    offset: Offset(0, 4),
+                    color: Color(0x22000000))
+              ]
+            : [
+                const BoxShadow(
+                    blurRadius: 2,
+                    offset: Offset(0, 1),
+                    color: Color(0x14000000))
+              ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

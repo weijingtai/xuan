@@ -28,7 +28,7 @@ class EditableCardThemeBuilder {
     return CellSection(
       pillarTitleCellConfig: theme.cell.pillarTitleCellConfig,
       rowTitleCellConfig: theme.cell.rowTitleCellConfig,
-      defaultCellConfig: theme.cell.defaultCellConfig,
+      globalCellConfig: theme.cell.globalCellConfig,
       rowTypeCellConfigMapper: theme.cell.rowTypeCellConfigMapper,
     );
   }
@@ -453,25 +453,25 @@ class CellSection {
   CellSection({
     required this.pillarTitleCellConfig,
     required this.rowTitleCellConfig,
-    required this.defaultCellConfig,
+    required this.globalCellConfig,
     required this.rowTypeCellConfigMapper,
   });
   final CellStyleConfig pillarTitleCellConfig;
   final CellStyleConfig rowTitleCellConfig;
-  final CellStyleConfig defaultCellConfig;
+  final CellStyleConfig globalCellConfig;
   final Map<RowType, CellStyleConfig> rowTypeCellConfigMapper;
 
   /// Default inner padding applied to non-title cells.
-  EdgeInsets? get defaultPadding => defaultCellConfig.padding;
+  EdgeInsets? get defaultPadding => globalCellConfig.padding;
 
   /// Default border width applied to cell dividers.
-  double? get defaultBorderWidth => defaultCellConfig.border?.width;
+  double? get defaultBorderWidth => globalCellConfig.border?.width;
 
   CellStyleConfig getBy(RowType rowType) {
     if (rowType == RowType.columnHeaderRow) {
       return pillarTitleCellConfig;
     }
-    return rowTypeCellConfigMapper[rowType] ?? defaultCellConfig;
+    return rowTypeCellConfigMapper[rowType] ?? globalCellConfig;
   }
 
   double getDecorationWidthBy(RowType rowType) {
@@ -487,7 +487,7 @@ class CellSection {
   static CellSection get defaultCellSection => CellSection(
         pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
         rowTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,
-        defaultCellConfig: CellStyleConfig.defaultCellStyleConfig,
+        globalCellConfig: CellStyleConfig.defaultCellStyleConfig,
         rowTypeCellConfigMapper: {},
       );
 
