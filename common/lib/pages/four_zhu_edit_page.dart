@@ -8,6 +8,7 @@ import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/editor_top_bar.dart';
+import 'package:common/widgets/row_tag_bar.dart';
 // import 'package:common/widgets/editor_sidebar_v2.dart';
 import 'package:common/widgets/style_editor/sidebar_explorer.dart';
 import 'package:common/widgets/template_board_view.dart';
@@ -175,9 +176,15 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                   ),
                                 ),
                                 padding: const EdgeInsets.all(12),
-                                child: const Row(
+                                child: const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
+                                    Expanded(
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.horizontal,
+                                        child: RowTagBar(),
+                                      ),
+                                    ),
                                     Expanded(
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.horizontal,

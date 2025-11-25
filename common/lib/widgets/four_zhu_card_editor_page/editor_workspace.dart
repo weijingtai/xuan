@@ -222,15 +222,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                               context,
                               listen: true)
                           .themeNotifier,
-                      rowStrategyMapper: {
-                        RowType.tenGod: TenGodRowStrategy(),
-                        RowType.hiddenStemsTenGod:
-                            HiddenStemsTenGodsRowStrategy(),
-                        RowType.hiddenStems: HiddenStemsRowStrategy(),
-                        RowType.kongWang: KongWangRowStrategy(),
-                        RowType.naYin: NaYinRowStrategy(),
-                        RowType.xunShou: XunShouRowStrategy(),
-                      },
                       gender: Gender.male,
                     ),
                   ),

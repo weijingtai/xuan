@@ -20,6 +20,7 @@ class EditableCardThemeBuilder {
     return PillarSection(
       global: theme.pillar.global,
       mapper: theme.pillar.mapper,
+      defaultSeparatorConfig: theme.pillar.defaultSeparatorConfig,
     );
   }
 
@@ -49,6 +50,17 @@ class EditableCardThemeBuilder {
 
   /// 创建默认主题实例
   static EditableFourZhuCardTheme createDefaultTheme() {
+    // Separator 专用配置：窄宽度、浅色背景
+    final defaultSeparatorConfig = PillarStyleConfig(
+      border: BoxBorderStyle.defaultBorder.copyWith(enabled: false),
+      lightBackgroundColor: Colors.grey.shade300,
+      darkBackgroundColor: Colors.grey.shade700,
+      padding: EdgeInsets.zero,
+      margin: EdgeInsets.zero,
+      shadow: BoxShadowStyle.defaultShadow,
+      separatorWidth: 32.0,
+    );
+
     return EditableFourZhuCardTheme(
       displayHeaderRow: true,
       displayRowTitleColumn: true,
@@ -56,6 +68,7 @@ class EditableCardThemeBuilder {
       pillar: PillarSection(
         global: PillarStyleConfig.defaultPillarStyleConfig,
         mapper: {},
+        defaultSeparatorConfig: defaultSeparatorConfig,
       ),
       cell: CellSection.defaultCellSection,
       typography: TypographySection.defaultTypographySection,
@@ -351,19 +364,41 @@ class PillarSection {
   PillarSection({
     required this.global,
     required this.mapper,
+    required this.defaultSeparatorConfig,
   });
   final PillarStyleConfig global;
   final Map<PillarType, PillarStyleConfig> mapper;
 
-  PillarStyleConfig getBy(PillarType pillarType) =>
-      mapper[pillarType] ?? global;
+  /// Separator 列的默认样式配置
+  /// 当 getBy(PillarType.separator) 时：
+  /// 1. 优先使用 mapper[PillarType.separator]
+  /// 2. 其次使用 defaultSeparatorConfig
+  /// 3. 最后回退到 global
+  final PillarStyleConfig defaultSeparatorConfig;
+
+  PillarStyleConfig getBy(PillarType pillarType) {
+    // 优先查找 mapper 中的配置
+    if (mapper.containsKey(pillarType)) {
+      return mapper[pillarType]!;
+    }
+    // 对于 separator，使用专用默认配置
+    if (pillarType == PillarType.separator && defaultSeparatorConfig != null) {
+      return defaultSeparatorConfig!;
+    }
+    // 回退到全局配置
+    return global;
+  }
+
   PillarSection copyWith({
     PillarStyleConfig? global,
     Map<PillarType, PillarStyleConfig>? mapper,
+    PillarStyleConfig? defaultSeparatorConfig,
   }) {
     return PillarSection(
       global: global ?? this.global,
       mapper: mapper ?? this.mapper,
+      defaultSeparatorConfig:
+          defaultSeparatorConfig ?? this.defaultSeparatorConfig,
     );
   }
 

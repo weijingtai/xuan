@@ -1,3 +1,5 @@
+import 'package:common/enums.dart';
+
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
@@ -271,7 +273,7 @@ class HiddenStemsTenGodsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsTenGod;
 
   @override
-  String get defaultLabel => '藏干十神';
+  String get defaultLabel => '藏神';
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -296,5 +298,336 @@ class HiddenStemsTenGodsRowStrategy extends RowComputationStrategy {
     final hiddenStems = pillarJiaZi.diZhi.cangGan;
     final tenGods = hiddenStems.map((h) => h.getTenGods(dayJiaZi.tianGan));
     return tenGods.map((e) => e.singleName).join();
+  }
+}
+
+/// 藏干主气行策略：显示每柱地支的藏干主气。
+class HiddenStemsPrimaryRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsPrimary;
+
+  @override
+  String get defaultLabel => '主气';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final primary = _computeHiddenStemsPrimaryPlaceholder(pillarJiaZi);
+      values[pillarId] = primary;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsPrimaryPlaceholder(JiaZi pillarJiaZi) {
+    // 占位实现：返回藏干列表的第一个元素
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.isNotEmpty ? hiddenStems.first.name : '';
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.isNotEmpty ? hiddenStems.first.name : '';
+  }
+}
+
+/// 藏干中气行策略：显示每柱地支的藏干中气。
+class HiddenStemsSecondaryRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsSecondary;
+
+  @override
+  String get defaultLabel => '中气';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      // TODO: 这里填入藏干中气的实际算法：取藏干列表的第二个（中气）
+      final secondary = _computeHiddenStemsSecondaryPlaceholder(pillarJiaZi);
+      values[pillarId] = secondary;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsSecondaryPlaceholder(JiaZi pillarJiaZi) {
+    // 占位实现：返回藏干列表的第二个元素
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.length > 1 ? hiddenStems[1].name : '';
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.length > 1 ? hiddenStems[1].name : '';
+  }
+}
+
+/// 藏干余气行策略：显示每柱地支的藏干余气。
+class HiddenStemsTertiaryRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsTertiary;
+
+  @override
+  String get defaultLabel => '余气';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      // TODO: 这里填入藏干余气的实际算法：取藏干列表的第三个（余气）
+      final tertiary = _computeHiddenStemsTertiaryPlaceholder(pillarJiaZi);
+      values[pillarId] = tertiary;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsTertiaryPlaceholder(JiaZi pillarJiaZi) {
+    // 占位实现：返回藏干列表的第三个元素
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.length > 2 ? hiddenStems[2].name : '';
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    return hiddenStems.length > 2 ? hiddenStems[2].name : '';
+  }
+}
+
+/// 藏干主气十神行策略：显示每柱地支藏干主气的十神。
+class HiddenStemsPrimaryGodsRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsPrimaryGods;
+
+  @override
+  String get defaultLabel => '主神';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final primaryGod = _computeHiddenStemsPrimaryGodPlaceholder(
+        pillarJiaZi,
+        input.dayJiaZi,
+      );
+      values[pillarId] = primaryGod;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsPrimaryGodPlaceholder(
+    JiaZi pillarJiaZi,
+    JiaZi dayJiaZi,
+  ) {
+    // 占位实现：取藏干主气的十神
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.isEmpty) return '';
+    final tenGod = hiddenStems.first.getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.isEmpty) return '';
+    final tenGod = hiddenStems.first.getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+}
+
+/// 藏干中气十神行策略：显示每柱地支藏干中气的十神。
+class HiddenStemsSecondaryGodsRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsSecondaryGods;
+
+  @override
+  String get defaultLabel => '中神';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final secondaryGod = _computeHiddenStemsSecondaryGodPlaceholder(
+        pillarJiaZi,
+        input.dayJiaZi,
+      );
+      values[pillarId] = secondaryGod;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsSecondaryGodPlaceholder(
+    JiaZi pillarJiaZi,
+    JiaZi dayJiaZi,
+  ) {
+    // 占位实现：取藏干中气的十神
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.length <= 1) return '';
+    final tenGod = hiddenStems[1].getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.length <= 1) return '';
+    final tenGod = hiddenStems[1].getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+}
+
+/// 藏干余气十神行策略：显示每柱地支藏干余气的十神。
+class HiddenStemsTertiaryGodsRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.hiddenStemsTertiaryGods;
+
+  @override
+  String get defaultLabel => '余神';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      final tertiaryGod = _computeHiddenStemsTertiaryGodPlaceholder(
+        pillarJiaZi,
+        input.dayJiaZi,
+      );
+      values[pillarId] = tertiaryGod;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeHiddenStemsTertiaryGodPlaceholder(
+    JiaZi pillarJiaZi,
+    JiaZi dayJiaZi,
+  ) {
+    // 占位实现：取藏干余气的十神
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.length <= 2) return '';
+    final tenGod = hiddenStems[2].getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final hiddenStems = pillarJiaZi.diZhi.cangGan;
+    if (hiddenStems.length <= 2) return '';
+    final tenGod = hiddenStems[2].getTenGods(dayJiaZi.tianGan);
+    return tenGod.singleName;
+  }
+}
+
+/// 星运行策略：显示每柱的星运信息。
+class StarYunRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.starYun;
+
+  @override
+  String get defaultLabel => '星运';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      // TODO: 这里填入星运的实际算法
+      final starYun = _computeStarYunPlaceholder(pillarJiaZi, input.dayJiaZi);
+      values[pillarId] = starYun;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeStarYunPlaceholder(JiaZi pillarJiaZi, JiaZi dayJiaZi) {
+    return TwelveZhangSheng.getZhangShengByTianGanDiZhi(
+            dayJiaZi.tianGan, pillarJiaZi.diZhi)
+        .name;
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final starYun = _computeStarYunPlaceholder(pillarJiaZi, dayJiaZi);
+    return starYun;
+  }
+}
+
+/// 自坐行策略：显示每柱天干的自坐信息。
+class SelfSitingRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.selfSiting;
+
+  @override
+  String get defaultLabel => '自坐';
+
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      final pillarJiaZi = pillar.jiaZi;
+      final pillarId = pillar.id;
+      // TODO: 这里填入自坐的实际算法
+      final selfSiting =
+          _computeSelfSitingPlaceholder(pillarJiaZi, input.dayJiaZi);
+      values[pillarId] = selfSiting;
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  String _computeSelfSitingPlaceholder(JiaZi pillarJiaZi, JiaZi dayJiaZi) {
+    return TwelveZhangSheng.getZhangShengByTianGanDiZhi(
+            pillarJiaZi.tianGan, pillarJiaZi.diZhi)
+        .name;
+  }
+
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final selfSiting = _computeSelfSitingPlaceholder(pillarJiaZi, dayJiaZi);
+    return selfSiting;
   }
 }

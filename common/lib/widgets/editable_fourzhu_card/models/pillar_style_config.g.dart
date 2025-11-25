@@ -24,6 +24,7 @@ PillarStyleConfig _$PillarStyleConfigFromJson(Map<String, dynamic> json) =>
           : const EdgeInsetsConverter()
               .fromJson(json['margin'] as Map<String, dynamic>),
       shadow: BoxShadowStyle.fromJson(json['shadow'] as Map<String, dynamic>),
+      separatorWidth: (json['separatorWidth'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$PillarStyleConfigToJson(PillarStyleConfig instance) =>
@@ -36,4 +37,5 @@ Map<String, dynamic> _$PillarStyleConfigToJson(PillarStyleConfig instance) =>
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'margin': const EdgeInsetsConverter().toJson(instance.margin),
       'shadow': instance.shadow,
+      'separatorWidth': instance.separatorWidth,
     };

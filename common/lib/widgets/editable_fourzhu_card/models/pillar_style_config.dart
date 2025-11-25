@@ -26,7 +26,12 @@ class PillarStyleConfig extends BaseBoxStyleConfig {
     super.padding = EdgeInsets.zero,
     super.margin = EdgeInsets.zero,
     required super.shadow,
+    this.separatorWidth,
   });
+
+  /// Separator列的宽度（仅用于 PillarType.separator）
+  /// 当为 null 时，separator 列使用默认宽度
+  final double? separatorWidth;
 
   @override
   List<Object?> get props => [
@@ -36,6 +41,7 @@ class PillarStyleConfig extends BaseBoxStyleConfig {
         padding,
         margin,
         shadow,
+        separatorWidth,
       ];
   @override
   PillarStyleConfig copyWith({
@@ -45,6 +51,7 @@ class PillarStyleConfig extends BaseBoxStyleConfig {
     EdgeInsets? padding,
     EdgeInsets? margin,
     BoxShadowStyle? shadow,
+    double? separatorWidth,
   }) {
     return PillarStyleConfig(
       border: border ?? this.border,
@@ -53,6 +60,7 @@ class PillarStyleConfig extends BaseBoxStyleConfig {
       padding: padding ?? this.padding,
       margin: margin ?? this.margin,
       shadow: shadow ?? this.shadow,
+      separatorWidth: separatorWidth ?? this.separatorWidth,
       // size: size ?? this.size,
     );
   }

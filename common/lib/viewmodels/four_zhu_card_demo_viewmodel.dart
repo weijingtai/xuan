@@ -37,6 +37,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     _initDefaults();
   }
 
+  late final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+
   // late CardStyleConfig currentCardStyleConfig;
 
   /// 是否处于可编辑模式（预留，当前页面主要用于开关演示）。
@@ -83,8 +85,32 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   late final ValueNotifier<EdgeInsets> paddingNotifier;
   late final ValueNotifier<CardPayload> cardPayloadNotifier;
 
-  /// 初始化默认数据与主题。
   void _initDefaults() {
+    _initThemeStyleDefaults();
+    _initStrategyDefaults();
+  }
+
+  void _initStrategyDefaults() {
+    rowStrategyMapper = {
+      RowType.tenGod: TenGodRowStrategy(),
+      RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
+      RowType.hiddenStems: HiddenStemsRowStrategy(),
+      RowType.kongWang: KongWangRowStrategy(),
+      RowType.naYin: NaYinRowStrategy(),
+      RowType.xunShou: XunShouRowStrategy(),
+      RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
+      RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
+      RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
+      RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
+      RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
+      RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
+      RowType.starYun: StarYunRowStrategy(),
+      RowType.selfSiting: SelfSitingRowStrategy(),
+    };
+  }
+
+  /// 初始化默认数据与主题。
+  void _initThemeStyleDefaults() {
     // 默认颜色策略初始化。
     _charColorStrategy = const DefaultCharColorStrategy();
     // 默认八字样例，仅用于构建柱内容展示；真实业务由上层提供。
@@ -121,6 +147,20 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
           PillarType.day: PillarStyleConfig.defaultPillarStyleConfig,
           PillarType.hour: PillarStyleConfig.defaultPillarStyleConfig,
         },
+        // Separator 专用配置
+        defaultSeparatorConfig: PillarStyleConfig(
+          border:
+              BoxBorderStyle.defaultBorder.copyWith(enabled: false, radius: 0),
+          lightBackgroundColor: Colors.transparent,
+          darkBackgroundColor: Colors.transparent,
+          padding: EdgeInsets.zero,
+          margin: EdgeInsets.zero,
+          shadow: BoxShadowStyle.defaultShadow.copyWith(
+              withShadow: false,
+              lightThemeColor: Colors.transparent,
+              darkThemeColor: Colors.transparent),
+          separatorWidth: 16.0, // 使用用户设置的宽度
+        ),
         // defaultMargin: EdgeInsets.only(left: 6, top: 6, right: 6, bottom: 6),
         // borderWidth: 0,
       ),

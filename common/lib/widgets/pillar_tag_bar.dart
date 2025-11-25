@@ -104,7 +104,7 @@ class PillarTagBar extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       // 高度由外层 Flexible 控制，此处填充可用空间
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -112,8 +112,8 @@ class PillarTagBar extends StatelessWidget {
         ),
       ),
       child: SizedBox(
-        // 为横向 ListView 提供有界高度，避免出现 "Horizontal viewport was given unbounded height" 错误
-        height: 64, // 标签高度 48 + 上下内边距与分隔留白
+        // 为横向 ListVie6 提供有界高度，避免出现 "Horizontal viewport was given unbounded height" 错误
+        height: 32, // 标签高度 48 + 上下内边距与分隔留白
         child: ListView.separated(
           // 关闭默认主滚动控制并启用收缩以避免未绑定高度错误
           primary: false,
@@ -159,7 +159,7 @@ class _Tag extends StatelessWidget {
     final theme = Theme.of(context);
     return Container(
       width: 108,
-      height: 48,
+      height: 24,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color:

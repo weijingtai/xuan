@@ -37,6 +37,8 @@ PillarSection _$PillarSectionFromJson(Map<String, dynamic> json) =>
         (k, e) => MapEntry($enumDecode(_$PillarTypeEnumMap, k),
             PillarStyleConfig.fromJson(e as Map<String, dynamic>)),
       ),
+      defaultSeparatorConfig: PillarStyleConfig.fromJson(
+          json['defaultSeparatorConfig'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$PillarSectionToJson(PillarSection instance) =>
@@ -44,6 +46,7 @@ Map<String, dynamic> _$PillarSectionToJson(PillarSection instance) =>
       'global': instance.global,
       'mapper':
           instance.mapper.map((k, e) => MapEntry(_$PillarTypeEnumMap[k]!, e)),
+      'defaultSeparatorConfig': instance.defaultSeparatorConfig,
     };
 
 const _$PillarTypeEnumMap = {

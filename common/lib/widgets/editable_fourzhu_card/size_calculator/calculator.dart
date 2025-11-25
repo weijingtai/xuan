@@ -13,6 +13,7 @@ class CardMetricsCalculator {
   final double lineHeightFactor;
   final Map<String, CellTextSpec> cellTextSpecMap;
   final double avgGlyphWidthScale;
+  final double defaultSeparatorWidth;
 
   CardMetricsSnapshot? _snapshot;
 
@@ -24,6 +25,7 @@ class CardMetricsCalculator {
     this.cellTextSpecMap = const {},
     this.avgGlyphWidthScale = 1.2,
     this.defaultRowHeight = 48.0,
+    this.defaultSeparatorWidth = 8.0,
   });
 
   Size computeFinalSize(MetricsComputeOptions options) {
@@ -571,9 +573,14 @@ class CardMetricsCalculator {
       }
 
       // 3.2 列contentWidth兜底逻辑
-      final pillarContentW = _normalizeDouble(
-        maxCellFullHSize > 0.0 ? maxCellFullHSize : defaultPillarContentWidth,
-      );
+      double pillarContentW = 0.0;
+      if (pillar.pillarType == PillarType.separator) {
+        pillarContentW = pillarConfig.separatorWidth ?? defaultSeparatorWidth;
+      } else {
+        pillarContentW = _normalizeDouble(
+          maxCellFullHSize > 0.0 ? maxCellFullHSize : defaultPillarContentWidth,
+        );
+      }
 
       // 3.3 计算列contentHeight（同列所有行总高之和）
       double pillarContentH = 0.0;
@@ -923,7 +930,7 @@ class CardMetricsCalculator {
   double _calculateCellContentHeight(
       RowType rt, String rowUuid, String? pillarUuid) {
     if (rt == RowType.separator) {
-      return 8.0;
+      return defaultSeparatorWidth;
     }
 
     double? fontSize;
@@ -965,6 +972,18 @@ class CardMetricsCalculator {
 
   double _calculateCellContentWidth(
       RowType rt, String rowUuid, String pillarUuid) {
+    // 检查是否为 separator 柱
+    final pillar = payload.pillarMap[pillarUuid];
+    if (pillar != null && pillar.pillarType == PillarType.separator) {
+      // 从主题获取separator宽度配置
+      final separatorConfig = theme.pillar.getBy(PillarType.separator);
+
+      double separatorWidth = (separatorConfig.separatorWidth ?? 8.0) +
+          separatorConfig.getDecorationWidth();
+
+      return _normalizeDouble(separatorWidth);
+    }
+
     double contentW = defaultPillarWidth;
     final spec = cellTextSpecMap[_cellKey(rowUuid, pillarUuid)];
 

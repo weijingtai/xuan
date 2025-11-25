@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/pillar_preset.dart';
+import '../widgets/row_tag_bar.dart';
 
 class LayoutEditorPage extends StatefulWidget {
   const LayoutEditorPage({Key? key}) : super(key: key);
@@ -164,6 +165,10 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                     ),
                   ),
                   // 底部 TagBar：占用剩余 20% 高度（通过 Flexible 实现相对比例）
+                  const Flexible(
+                    flex: 1,
+                    child: RowTagBar(),
+                  ),
                   const Flexible(
                     flex: 1,
                     child: PillarTagBar(),
