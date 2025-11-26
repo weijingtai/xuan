@@ -14,6 +14,7 @@ class CardMetricsCalculator {
   final Map<String, CellTextSpec> cellTextSpecMap;
   final double avgGlyphWidthScale;
   final double defaultSeparatorWidth;
+  final Map<String, double> rowHeightOverrides;
 
   CardMetricsSnapshot? _snapshot;
 
@@ -26,6 +27,7 @@ class CardMetricsCalculator {
     this.avgGlyphWidthScale = 1.2,
     this.defaultRowHeight = 48.0,
     this.defaultSeparatorWidth = 8.0,
+    this.rowHeightOverrides = const {},
   });
 
   Size computeFinalSize(MetricsComputeOptions options) {
@@ -514,19 +516,6 @@ class CardMetricsCalculator {
         }
       }
 
-      // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，含基础附加尺寸）
-      final defaultCellFullVSize = _normalizeDouble(
-        defaultRowContentHeight +
-            theme.cell.getDecorationHeightBy(rowType) +
-            (cellConfig.margin.top + cellConfig.margin.bottom) +
-            ((cellConfig.border?.enabled ?? false)
-                ? (cellConfig.border?.width ?? 0.0) * 2
-                : 0.0),
-      );
-      final rowContentH = _normalizeDouble(
-        maxCellFullVSize > 0.0 ? maxCellFullVSize : defaultCellFullVSize,
-      );
-
       // 2.3 行自身配置（装饰、边框）
       // final rowDecorationH = theme.row.getDecorationHeightBy(rowType);
       // final rowDecorationW = theme.row.getDecorationWidthBy(rowType);
@@ -539,6 +528,20 @@ class CardMetricsCalculator {
       final rowBorderW = 0.0;
       final rowMarginV = 0.0;
       final rowMarginH = 0.0;
+
+      // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，含基础附加尺寸）
+      final defaultCellFullVSize = _normalizeDouble(
+        defaultRowContentHeight +
+            theme.cell.getDecorationHeightBy(rowType) +
+            (cellConfig.margin.top + cellConfig.margin.bottom) +
+            ((cellConfig.border?.enabled ?? false)
+                ? (cellConfig.border?.width ?? 0.0) * 2
+                : 0.0),
+      );
+
+      double rowContentH = _normalizeDouble(
+        maxCellFullVSize > 0.0 ? maxCellFullVSize : defaultCellFullVSize,
+      );
 
       // 构建行度量（含计算属性totalHeight，简化后续总高计算）
       rows[rowUuid] = RowMetrics(

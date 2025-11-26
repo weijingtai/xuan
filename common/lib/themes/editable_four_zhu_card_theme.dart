@@ -544,6 +544,22 @@ class CellSection {
       ));
     }
   }
+
+  copyWith({
+    CellStyleConfig? pillarTitleCellConfig,
+    CellStyleConfig? rowTitleCellConfig,
+    CellStyleConfig? globalCellConfig,
+    Map<RowType, CellStyleConfig>? rowTypeCellConfigMapper,
+  }) {
+    return CellSection(
+      pillarTitleCellConfig:
+          pillarTitleCellConfig ?? this.pillarTitleCellConfig,
+      rowTitleCellConfig: rowTitleCellConfig ?? this.rowTitleCellConfig,
+      globalCellConfig: globalCellConfig ?? this.globalCellConfig,
+      rowTypeCellConfigMapper:
+          rowTypeCellConfigMapper ?? this.rowTypeCellConfigMapper,
+    );
+  }
 }
 
 /// Typography section defines global text family and fallback behaviors.
@@ -605,6 +621,26 @@ class TypographySection {
   factory TypographySection.fromJson(Map<String, dynamic> json) =>
       _$TypographySectionFromJson(json);
   Map<String, dynamic> toJson() => _$TypographySectionToJson(this);
+
+  copyWith({
+    TextStyleConfig? globalContent,
+    TextStyleConfig? globalTitle,
+    TextStyleConfig? rowTitle,
+    TextStyleConfig? pillarTitle,
+    TextStyleConfig? globalCellTitle,
+    Map<RowType, TextStyleConfig>? cellContentMapper,
+    Map<RowType, TextStyleConfig>? cellTitleMapper,
+  }) {
+    return TypographySection(
+      globalContent: globalContent ?? this.globalContent,
+      globalTitle: globalTitle ?? this.globalTitle,
+      rowTitle: rowTitle ?? this.rowTitle,
+      pillarTitle: pillarTitle ?? this.pillarTitle,
+      globalCellTitle: globalCellTitle ?? this.globalCellTitle,
+      cellContentMapper: cellContentMapper ?? this.cellContentMapper,
+      cellTitleMapper: cellTitleMapper ?? this.cellTitleMapper,
+    );
+  }
 }
 
 // ----- Helpers -----

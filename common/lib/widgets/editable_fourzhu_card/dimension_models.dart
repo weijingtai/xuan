@@ -190,27 +190,14 @@ class RowDimension implements Measurable {
   /// 数据载荷（包含行类型、策略等）
   final TextRowPayload payload;
 
-  /// 用户自定义的高度覆盖值
-  ///
-  /// 当外部拖入指定高度的行或需要保持特定高度时使用。
-  final double? heightOverride;
-
   const RowDimension({
     required this.index,
     required this.payload,
-    this.heightOverride,
   });
 
   @override
   double measure(MeasurementContext ctx) {
-    // 1️⃣ 优先使用覆盖值
-    if (heightOverride != null &&
-        heightOverride!.isFinite &&
-        !heightOverride!.isNaN) {
-      return heightOverride!;
-    }
-
-    // 2️⃣ 使用 payload 解析高度，并叠加行内的上下内边距（padding * 2）
+    // 使用 payload 解析高度，并叠加行内的上下内边距（padding * 2）
     final base = payload.resolveHeight(
       heavenlyAndEarthlyHeight: ctx.ganZhiCellHeight,
       otherHeight: ctx.defaultOtherCellHeight,
@@ -221,30 +208,11 @@ class RowDimension implements Measurable {
     return base;
   }
 
-  /// 创建覆盖了高度的副本
-  RowDimension withHeightOverride(double height) {
-    return RowDimension(
-      index: index,
-      payload: payload,
-      heightOverride: height,
-    );
-  }
-
   /// 更新索引（用于重排后重建索引）
   RowDimension withIndex(int newIndex) {
     return RowDimension(
       index: newIndex,
       payload: payload,
-      heightOverride: heightOverride,
-    );
-  }
-
-  /// 清除高度覆盖
-  RowDimension clearHeightOverride() {
-    return RowDimension(
-      index: index,
-      payload: payload,
-      heightOverride: null,
     );
   }
 
@@ -254,16 +222,14 @@ class RowDimension implements Measurable {
       other is RowDimension &&
           runtimeType == other.runtimeType &&
           index == other.index &&
-          payload == other.payload &&
-          heightOverride == other.heightOverride;
+          payload == other.payload;
 
   @override
-  int get hashCode => Object.hash(index, payload, heightOverride);
+  int get hashCode => Object.hash(index, payload);
 
   @override
   String toString() {
-    return 'RowDimension(index: $index, type: ${payload.rowType}, '
-        'heightOverride: $heightOverride)';
+    return 'RowDimension(index: $index, type: ${payload.rowType})';
   }
 }
 
@@ -512,38 +478,6 @@ class CardLayoutModel {
     );
   }
 
-  /// 更新行高覆盖（返回新模型）
-  CardLayoutModel updateRowHeight(int index, double height) {
-    if (index < 0 || index >= rows.length) return this;
-
-    final newRows = List<RowDimension>.from(rows);
-    newRows[index] = newRows[index].withHeightOverride(height);
-
-    return CardLayoutModel(
-      columns: columns,
-      rows: newRows,
-      padding: padding,
-      dragHandleRowHeight: dragHandleRowHeight,
-      dragHandleColWidth: dragHandleColWidth,
-    );
-  }
-
-  /// 清除指定行的高度覆盖
-  CardLayoutModel clearRowHeightOverride(int index) {
-    if (index < 0 || index >= rows.length) return this;
-
-    final newRows = List<RowDimension>.from(rows);
-    newRows[index] = newRows[index].clearHeightOverride();
-
-    return CardLayoutModel(
-      columns: columns,
-      rows: newRows,
-      padding: padding,
-      dragHandleRowHeight: dragHandleRowHeight,
-      dragHandleColWidth: dragHandleColWidth,
-    );
-  }
-
   // ==================== 工具方法 ====================
 
   /// 更新 padding（返回新模型）
@@ -564,14 +498,6 @@ class CardLayoutModel {
     return {
       for (var col in columns)
         if (col.widthOverride != null) col.index: col.widthOverride!
-    };
-  }
-
-  /// 提取当前所有行高覆盖
-  Map<int, double> extractRowHeightOverrides() {
-    return {
-      for (var row in rows)
-        if (row.heightOverride != null) row.index: row.heightOverride!
     };
   }
 
@@ -601,7 +527,6 @@ class CardLayoutModel {
     required List<TextRowPayload> rows,
     required EdgeInsets padding,
     Map<int, double>? columnWidthOverrides,
-    Map<int, double>? rowHeightOverrides,
     double dragHandleRowHeight = 20.0,
     double dragHandleColWidth = 20.0,
   }) {
@@ -617,7 +542,6 @@ class CardLayoutModel {
       return RowDimension(
         index: e.key,
         payload: e.value,
-        heightOverride: rowHeightOverrides?[e.key],
       );
     }).toList();
 
