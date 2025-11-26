@@ -9,6 +9,7 @@ part of 'editable_four_zhu_card_theme.dart';
 EditableFourZhuCardTheme _$EditableFourZhuCardThemeFromJson(
         Map<String, dynamic> json) =>
     EditableFourZhuCardTheme(
+      displayCellTitle: json['displayCellTitle'] as bool,
       displayHeaderRow: json['displayHeaderRow'] as bool,
       displayRowTitleColumn: json['displayRowTitleColumn'] as bool,
       card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),

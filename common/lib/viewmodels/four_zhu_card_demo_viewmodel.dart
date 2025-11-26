@@ -124,6 +124,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
     themeNotifier = ValueNotifier(EditableFourZhuCardTheme(
       displayHeaderRow: true,
       displayRowTitleColumn: true,
+      displayCellTitle: false,
       card: CardStyleConfig.defaultCardStyleConfig,
       cell: CellSection(
         pillarTitleCellConfig: CellStyleConfig.defaultCellStyleConfig,

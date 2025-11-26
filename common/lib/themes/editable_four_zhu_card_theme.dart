@@ -64,6 +64,7 @@ class EditableCardThemeBuilder {
     return EditableFourZhuCardTheme(
       displayHeaderRow: true,
       displayRowTitleColumn: true,
+      displayCellTitle: false,
       card: CardStyleConfig.defaultCardStyleConfig,
       pillar: PillarSection(
         global: PillarStyleConfig.defaultPillarStyleConfig,
@@ -93,10 +94,12 @@ class EditableFourZhuCardTheme extends Equatable {
     required this.pillar,
     required this.cell,
     required this.typography,
+    required this.displayCellTitle,
   });
 
   bool displayHeaderRow;
   bool displayRowTitleColumn;
+  bool displayCellTitle;
 
   /// Card-level decoration and background.
   final CardStyleConfig card;
@@ -122,6 +125,7 @@ class EditableFourZhuCardTheme extends Equatable {
     PillarSection? pillar,
     CellSection? cell,
     TypographySection? typography,
+    bool? displayCellTitle,
   }) {
     return EditableFourZhuCardTheme(
       displayHeaderRow: displayHeaderRow ?? this.displayHeaderRow,
@@ -131,6 +135,7 @@ class EditableFourZhuCardTheme extends Equatable {
       pillar: pillar ?? this.pillar,
       cell: cell ?? this.cell,
       typography: typography ?? this.typography,
+      displayCellTitle: displayCellTitle ?? this.displayCellTitle,
     );
   }
 

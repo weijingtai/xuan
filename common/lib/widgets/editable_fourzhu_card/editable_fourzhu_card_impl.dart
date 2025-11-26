@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
+import 'package:uuid/v4.dart';
 import 'dart:ui' as ui;
 import 'dart:async';
 import 'dart:math' as math;
@@ -21,6 +22,7 @@ import '../../enums/enum_tian_gan.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/pillar_content.dart';
+import '../../models/row_data.dart';
 import '../../models/row_strategy.dart';
 import '../../utils/style_resolver.dart';
 import '../../palette/card_palette.dart';
@@ -1501,7 +1503,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // 统一的全区域行拖拽 DragTarget：覆盖整个网格（包括 topGripRow 和 bottomGripRow）
         Positioned.fill(
           child: Builder(
-            builder: (builderContext) => DragTarget<Object>(
+            builder: (builderContext) => DragTarget<RowData>(
               onWillAcceptWithDetails: (DragTargetDetails<Object> details) {
                 final data = details.data;
                 assert(() {
@@ -1510,6 +1512,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 }());
                 final ok = (data is Tuple2 && data.item1 == _DragKind.row) ||
                     (data is TextRowPayload) ||
+                    (data is RowData) ||
                     (data is TitleRowPayload);
                 if (ok) {
                   // 行拖拽开始，清理列插入状态以避免列幽灵遮挡（批处理调度）
@@ -1540,10 +1543,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   return true;
                 }());
                 final data = details.data;
-                final isRowPayload =
-                    (data is Tuple2 && data.item1 == _DragKind.row) ||
-                        data is TextRowPayload ||
-                        (data is TitleRowPayload);
+                final isRowPayload = data is RowData;
+                // (data is Tuple2 && data.item1 == _DragKind.row) ||
+                //     data is TextRowPayload ||
+                //     data is RowData ||
+                //     (data is TitleRowPayload);
                 if (!isRowPayload) return;
                 // 统一节流：避免过度重绘
                 if (!_dragController.allowRowMove()) {
@@ -1551,7 +1555,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 }
 
                 // 外部行悬停：更新幽灵行高度（使用 defaultGlobalRowMetric 确保一致性）
-                final isExternal = details.data is TextRowPayload;
+                final isExternal =
+                    details.data is TextRowPayload || details.data is RowData;
                 if (isExternal) {
                   // 使用统一的默认行高度，而非基于 Payload 计算
                   final h = _metricsSnapshotNotifier
@@ -1695,7 +1700,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     _reorderRows(fromAbsIdx, insertIndex);
                   }
                 } else if (payload is TextRowPayload) {
+                  TextRowPayload textRowPayload = TextRowPayload(
+                      rowType: payload.rowType,
+                      uuid: Uuid().v4(),
+                      titleInCell: payload.titleInCell);
                   _insertExternalRow(insertIndex, payload);
+                } else if (payload is RowData) {
+                  TextRowPayload textRowPayload = TextRowPayload(
+                      rowType: payload.rowType,
+                      uuid: Uuid().v4(),
+                      titleInCell: widget.themeNotifier.value.displayCellTitle);
+                  _insertExternalRow(insertIndex, textRowPayload);
                   // } else if (payload is TitleRowPayload) {
                   // _reorderRowsByTitlePayload(payload, insertIndex);
                 }
@@ -3651,6 +3666,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     var oldRowMapper = Map.fromEntries(
         widget.cardPayloadNotifier.value.rowMap.entries.map((e) => e));
 
+    print("------- _insertExternalRow");
+    print(payload.toJson());
+
     // final rows = List<TextRowPayload>.of(_currentTextRows());
     // 行插入索引范围：[0..rows.length]，允许插入到表头行之前
     final target = insertIndex.clamp(0, oldRowUUIDList.length);
@@ -3691,27 +3709,27 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
 
     // 更新行高覆盖索引：插入新行后，所有后续行的索引都需要向后移动
-    // final Map<int, double> updatedOverrides = {};
-    // for (final entry in _rowHeightOverrides.entries) {
-    //   final idx = entry.key;
-    //   final height = entry.value;
-    //   if (idx >= target) {
-    //     // 后续行索引向后移动一位
-    //     updatedOverrides[idx + 1] = height;
-    //   } else {
-    //     // 前面的行索引不变
-    //     updatedOverrides[idx] = height;
-    //   }
-    // }
+    final Map<int, double> updatedOverrides = {};
+    for (final entry in _rowHeightOverrides.entries) {
+      final idx = entry.key;
+      final height = entry.value;
+      if (idx >= target) {
+        // 后续行索引向后移动一位
+        updatedOverrides[idx + 1] = height;
+      } else {
+        // 前面的行索引不变
+        updatedOverrides[idx] = height;
+      }
+    }
 
     // 持久化行高覆盖：使用 NEW snapshot 的 defaultGlobalRowMetric.totalHeight
-    // final double overrideH =
-    //     _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
-    // updatedOverrides[target] = overrideH;
+    final double overrideH =
+        _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
+    updatedOverrides[target] = overrideH;
 
-    // _rowHeightOverrides
-    //   ..clear()
-    //   ..addAll(updatedOverrides);
+    _rowHeightOverrides
+      ..clear()
+      ..addAll(updatedOverrides);
 
     // 触发与内部重排一致的插入淡入动画
     setState(() {
@@ -3723,7 +3741,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
       // 🔑 在插入完成后清零 _externalRowHoverHeight
       // 确保 AnimatedContainer 正确收缩到新的 size（已包含新行）
-      // _externalRowHoverHeight = 0.0;
+      _externalRowHoverHeight = 0.0;
     });
     // 下一帧关闭淡入标记
     Future.microtask(() {

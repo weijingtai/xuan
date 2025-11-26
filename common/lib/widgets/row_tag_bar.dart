@@ -15,6 +15,11 @@ class RowTagBar extends StatelessWidget {
   /// 定义可拖拽的行类型及其显示标签
   List<RowData> get rows => const [
         RowData(
+          rowId: 'row_separator',
+          rowType: RowType.separator,
+          label: '分隔符',
+        ),
+        RowData(
           rowId: 'heavenly_stem',
           rowType: RowType.heavenlyStem,
           label: '天干',
@@ -122,16 +127,9 @@ class RowTagBar extends StatelessWidget {
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
             final rowData = rows[index];
-            // 创建 TextRowPayload 作为拖拽数据
-            final payload = TextRowPayload(
-              rowType: rowData.rowType,
-              rowLabel: rowData.label,
-              uuid: '', // 空 UUID，在被接受时由接收方生成
-              titleInCell: false,
-            );
 
-            return Draggable<TextRowPayload>(
-              data: payload,
+            return Draggable<RowData>(
+              data: rowData,
               feedback: _RowTagFeedback(
                 label: rowData.label,
                 icon: Icons.drag_indicator,
