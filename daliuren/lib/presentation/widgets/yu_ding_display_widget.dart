@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:common/const_resources_mapper.dart';
 
 import '../../domain/entities/yuding_entry.dart';
 // 请根据实际路径导入 YuDingDaLiuRen 类型

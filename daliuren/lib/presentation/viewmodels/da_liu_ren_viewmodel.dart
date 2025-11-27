@@ -78,14 +78,16 @@ class DaLiuRenViewModel extends BaseViewModel {
       await initializeData();
     }
 
-    print('🔵 [ViewModel] _calculateDivination() called for ${_selectedDateTime}');
+    print(
+        '🔵 [ViewModel] _calculateDivination() called for $_selectedDateTime');
     setLoading();
     try {
       final params = DateTimeParams(_selectedDateTime, question: _question);
       print('🔵 [ViewModel] Calling CalculateDivinationUseCase...');
       final divination = await _calculateDivinationUseCase.call(params);
       _currentDivination = divination;
-      print('🔵 [ViewModel] Calculation successful: ${divination.dayJiaZi.name}日');
+      print(
+          '🔵 [ViewModel] Calculation successful: ${divination.dayJiaZi.name}日');
       _updateDivinationProperties();
       setSuccess();
     } catch (e) {

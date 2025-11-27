@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
-import 'package:common/enums.dart';
 import '../../domain/services/shen_sha_calculation_service.dart';
 import '../../domain/entities/shen_sha_entity.dart';
 

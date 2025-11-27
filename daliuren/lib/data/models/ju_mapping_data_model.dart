@@ -1,12 +1,13 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:common/enums.dart'; // Assuming JiaZi, DiZhi, YinYang are here or defined elsewhere
+// Assuming JiaZi, DiZhi, YinYang are here or defined elsewhere
 
 part 'ju_mapping_data_model.g.dart';
 
 @JsonSerializable()
 class JuMappingDataModel {
   @JsonKey(name: 'dayJiaZi')
-  final String dayJiaZiName; // Store as String, convert to JiaZi enum in domain/repository layer
+  final String
+      dayJiaZiName; // Store as String, convert to JiaZi enum in domain/repository layer
 
   @JsonKey(name: 'timeDiZhi')
   final String timeDiZhiName; // Store as String, convert to DiZhi enum
@@ -23,6 +24,7 @@ class JuMappingDataModel {
     required this.juNumber,
   });
 
-  factory JuMappingDataModel.fromJson(Map<String, dynamic> json) => _$JuMappingDataModelFromJson(json);
+  factory JuMappingDataModel.fromJson(Map<String, dynamic> json) =>
+      _$JuMappingDataModelFromJson(json);
   Map<String, dynamic> toJson() => _$JuMappingDataModelToJson(this);
 }

@@ -1,0 +1,30 @@
+## 原子待办清单
+- 定义 CellModel 与枚举 CellType
+- 定义 TextLineModel 与样式字段
+- 定义 CellDecorationProps 与角标/侧标/图标
+- 新建目录 editable_fourzhu_card/cells/
+- 创建 EditableSingleTextCell 组件
+- 创建 EditableMultiTextCell 组件
+- 创建 EditableRichDecoratedCell 组件
+- 创建统一文本编辑面板 text_line_editor
+- 创建统一装饰编辑面板 decoration_editor
+- 为三类 Cell 添加双击打开编辑
+- 支持右键菜单：复制/粘贴样式/清除
+- 在 _buildGrid 集成 Cell 类型选择
+- 隐藏 title 时注入 subtitle 行文案
+- 实现行高覆盖 rowHeightOverrides 注入
+- 保持行索引与拖拽逻辑不变
+- 复杂 Cell 装饰占位合并到尺寸叠加
+- 五行图标解析接口占位实现
+- 左侧“旺衰休囚死”状态映射接口
+- 四角 tag 渲染与样式开关
+- 复用 TextStyleConfig.toTextStyle 解析
+- 复用主题控制器解析柱/卡装饰
+- 防御性默认值，避免尺寸回零
+- 添加黄金测试：三类 Cell 快照
+- 添加单元测试：样式优先级与编辑回流
+- 添加交互测试：双击编辑与右键菜单
+- 文档更新：使用与扩展说明
+- 兼容性验证：不改基础尺寸接口
+- 性能微调：减少重建与使用 const
+- 提供回滚策略与开关配置

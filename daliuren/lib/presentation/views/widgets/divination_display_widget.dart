@@ -54,8 +54,7 @@ class DivinationDisplayWidget extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text('时间: ${divination.panDateTime}'),
-            if (divination.question != null)
-              Text('问题: ${divination.question}'),
+            if (divination.question != null) Text('问题: ${divination.question}'),
             Text('八字: ${divination.eightChatStr}'),
           ],
         ),
@@ -63,7 +62,8 @@ class DivinationDisplayWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildJiaZiInfoCard(BuildContext context, DaLiuRenViewModel viewModel) {
+  Widget _buildJiaZiInfoCard(
+      BuildContext context, DaLiuRenViewModel viewModel) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -129,8 +129,8 @@ class DivinationDisplayWidget extends StatelessWidget {
         Text(
           '四课',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         Container(
@@ -144,10 +144,14 @@ class DivinationDisplayWidget extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildClassItem('第一课', fourClass.first.sky.name, fourClass.first.ground.name),
-                  _buildClassItem('第二课', fourClass.second.sky.name, fourClass.second.ground.name),
-                  _buildClassItem('第三课', fourClass.third.sky.name, fourClass.third.ground.name),
-                  _buildClassItem('第四课', fourClass.fourth.sky.name, fourClass.fourth.ground.name),
+                  _buildClassItem('第一课', fourClass.first.sky.name,
+                      fourClass.first.ground.name),
+                  _buildClassItem('第二课', fourClass.second.sky.name,
+                      fourClass.second.ground.name),
+                  _buildClassItem('第三课', fourClass.third.sky.name,
+                      fourClass.third.ground.name),
+                  _buildClassItem('第四课', fourClass.fourth.sky.name,
+                      fourClass.fourth.ground.name),
                 ],
               ),
               const SizedBox(height: 8),
@@ -155,13 +159,21 @@ class DivinationDisplayWidget extends StatelessWidget {
                 spacing: 12,
                 children: [
                   if (fourClass.isFuYin)
-                    Chip(label: Text('伏吟'), backgroundColor: Colors.blue[100]),
+                    Chip(
+                        label: const Text('伏吟'),
+                        backgroundColor: Colors.blue[100]),
                   if (fourClass.isFanYin)
-                    Chip(label: Text('反吟'), backgroundColor: Colors.orange[100]),
+                    Chip(
+                        label: const Text('反吟'),
+                        backgroundColor: Colors.orange[100]),
                   if (fourClass.isFullClass)
-                    Chip(label: Text('四课齐备'), backgroundColor: Colors.green[100]),
+                    Chip(
+                        label: const Text('四课齐备'),
+                        backgroundColor: Colors.green[100]),
                   if (fourClass.isThreeClassOnly)
-                    Chip(label: Text('三课'), backgroundColor: Colors.purple[100]),
+                    Chip(
+                        label: const Text('三课'),
+                        backgroundColor: Colors.purple[100]),
                 ],
               ),
             ],
@@ -203,8 +215,8 @@ class DivinationDisplayWidget extends StatelessWidget {
         Text(
           '三传',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         Container(
@@ -249,7 +261,8 @@ class DivinationDisplayWidget extends StatelessWidget {
           child: Column(
             children: [
               if (chuan.tianGan != null)
-                Text('${chuan.tianGan.name}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                Text('${chuan.tianGan.name}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey)),
               Text(
                 chuan.diZhi.name,
                 style: const TextStyle(
@@ -258,8 +271,10 @@ class DivinationDisplayWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 4),
-              Text('${chuan.guiRen.name}', style: const TextStyle(fontSize: 10)),
-              Text('${chuan.liuQin.name}', style: const TextStyle(fontSize: 10)),
+              Text('${chuan.guiRen.name}',
+                  style: const TextStyle(fontSize: 10)),
+              Text('${chuan.liuQin.name}',
+                  style: const TextStyle(fontSize: 10)),
             ],
           ),
         ),
@@ -276,8 +291,8 @@ class DivinationDisplayWidget extends StatelessWidget {
         Text(
           '十二宫位',
           style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 8),
         Container(
@@ -310,7 +325,8 @@ class DivinationDisplayWidget extends StatelessWidget {
                   children: [
                     Text(
                       gong.skyPanDiZhi.name,
-                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                     const Divider(height: 4),
                     Text(

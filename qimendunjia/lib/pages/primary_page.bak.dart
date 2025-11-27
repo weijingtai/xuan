@@ -1,13 +1,7 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
-import 'package:lunar/calendar/Solar.dart';
 import 'package:qimendunjia/data.dart';
 import 'package:tuple/tuple.dart';
-
-import '../widgets/OctagonPainter.dart';
-import "package:qimendunjia/utils/datetime_jie_qi.dart";
 
 class PrimaryPage extends StatefulWidget {
   const PrimaryPage({super.key});

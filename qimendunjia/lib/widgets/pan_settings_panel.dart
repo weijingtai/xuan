@@ -329,8 +329,9 @@ class PanSettingsPanel extends StatelessWidget {
                                     width: 160,
                                     height: 48,
                                     child: CustomDropdown<String>.search(
-                                      decoration: CustomDropdownDecoration(
-                                          /* ... styles ... */),
+                                      decoration:
+                                          const CustomDropdownDecoration(
+                                              /* ... styles ... */),
                                       hintText: hintText,
                                       items: items,
                                       onChanged: (value) {

@@ -1,7 +1,6 @@
 // lib/domain/usecases/initialize_database_usecase.dart
 
 import 'dart:convert';
-import 'package:daliuren/model/pan_config.dart';
 import 'package:flutter/services.dart' show rootBundle; // For loading assets
 import 'package:fpdart/fpdart.dart' hide Failure;
 import 'package:daliuren/core/errors/failures.dart';

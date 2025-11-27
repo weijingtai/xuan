@@ -56,9 +56,10 @@ class PanInfoDisplay extends StatelessWidget {
   }
 
   Widget _buildCenterPanTime(BuildContext context, DateTime? time) {
-    if (time == null)
+    if (time == null) {
       return const SizedBox(
           height: 120, width: 220); // Match size of content when available
+    }
     Lunar lunar = Lunar.fromDate(time);
     return Card(
         child: Container(

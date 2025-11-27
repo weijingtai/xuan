@@ -1,7 +1,6 @@
 // lib/domain/repositories/liuren_repository.dart
 
 import 'package:common/enums.dart';
-import 'package:common/module.dart';
 import 'package:fpdart/fpdart.dart' hide Failure; // For Either type
 import 'package:daliuren/core/errors/failures.dart'; // For Failure type
 import '../entities/liu_ren_pan_model.dart'; // Domain entity for Liu Ren Pan

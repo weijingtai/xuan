@@ -9,7 +9,7 @@ import 'package:daliuren/core/errors/failures.dart'; // For Failure type
 import 'package:daliuren/domain/entities/liu_ren_pan_model.dart'; // Domain entities
 import 'package:daliuren/domain/entities/yuding_entry.dart'; // Domain entities
 import 'package:daliuren/domain/usecases/calculate_liuren_pan_usecase.dart'; // Use cases
-import 'package:daliuren/domain/usecases/get_yuding_entry_usecase.dart'; // Use cases
+// Use cases
 import 'package:daliuren/domain/usecases/initialize_database_usecase.dart'; // Use cases
 import 'package:daliuren/core/usecase/usecase.dart';
 

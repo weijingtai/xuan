@@ -56,6 +56,7 @@ class RawFirstClass extends RawEachClass {
   });
   factory RawFirstClass.fromJson(Map<String, dynamic> json) =>
       _$RawFirstClassFromJson(json);
+  @override
   Map<String, dynamic> toJson() => _$RawFirstClassToJson(this);
 }
 

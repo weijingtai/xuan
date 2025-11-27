@@ -73,7 +73,7 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
   // For月将 hover/long-press effect (can be kept if UI needs it)
   final ValueNotifier<bool> _showMonthGeneralJieQi = ValueNotifier(false);
   Timer? _showMonthGeneralJieQiTimer;
-  bool _isMonthGeneralSticky = false;
+  final bool _isMonthGeneralSticky = false;
 
   @override
   void initState() {
@@ -206,16 +206,15 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
 
             Text("日课: ${pan.dayJiaZi.name} ${pan.timeChen}时"),
             // Could add FourZhuEightChar widget here if BaZi is part of LiuRenPan entity
-            if (pan.dayJiaZi != null &&
-                pan.timeChen != null /* and other BaZi parts */)
+            if (pan.timeChen != null /* and other BaZi parts */)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: FourZhuEightChar(
-                  year: pan.dayJiaZi!, // Placeholder, need full BaZi from pan
-                  month: pan.dayJiaZi!, // Placeholder
-                  day: pan.dayJiaZi!,
+                  year: pan.dayJiaZi, // Placeholder, need full BaZi from pan
+                  month: pan.dayJiaZi, // Placeholder
+                  day: pan.dayJiaZi,
                   chen: JiaZi.getFromGanZhiEnum(
-                      pan.dayJiaZi!.tianGan, pan.timeChen!), // Approximate
+                      pan.dayJiaZi.tianGan, pan.timeChen), // Approximate
                   isColorful: true,
                 ),
               )
@@ -268,9 +267,8 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
         width: 135, // Adjusted width
         height: 48,
         child: CustomDropdown<JiaZi>.search(
-          decoration: CustomDropdownDecoration(
-              searchFieldDecoration:
-                  const SearchFieldDecoration(prefixIcon: null)),
+          decoration: const CustomDropdownDecoration(
+              searchFieldDecoration: SearchFieldDecoration(prefixIcon: null)),
           hintText: hint,
           items: items,
           onChanged: onChanged,
@@ -295,9 +293,8 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
         width: 135,
         height: 48,
         child: CustomDropdown<YinYang>.search(
-          decoration: CustomDropdownDecoration(
-              searchFieldDecoration:
-                  const SearchFieldDecoration(prefixIcon: null)),
+          decoration: const CustomDropdownDecoration(
+              searchFieldDecoration: SearchFieldDecoration(prefixIcon: null)),
           hintText: "阴阳遁",
           items: YinYang.values.toList(), // Filter out UNKNOWN
           onChanged: onChanged,
@@ -324,9 +321,8 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
         width: 135,
         height: 48,
         child: CustomDropdown<int>.search(
-          decoration: CustomDropdownDecoration(
-              searchFieldDecoration:
-                  const SearchFieldDecoration(prefixIcon: null)),
+          decoration: const CustomDropdownDecoration(
+              searchFieldDecoration: SearchFieldDecoration(prefixIcon: null)),
           hintText: "局数",
           items: items,
           onChanged: onChanged,
@@ -386,7 +382,8 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
             // if (_selectedDateTimeForPan != null) {
             // viewModel.calculateByDivinationInfo(widget.divinationInfoModel);
             // } else {
-            InteractiveToast.slide(context: context, title: const Text("请先选择时间或使用现在时间"));
+            InteractiveToast.slide(
+                context: context, title: const Text("请先选择时间或使用现在时间"));
             // }
           },
           child: const Text('依时间排盘'),
@@ -398,21 +395,20 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
           onPressed: () {
             bool isValid = true;
             if (_manualDayJiaZi == null) {
-              (renDayGanZhiShakeKey.currentState as ShakeWidgetState?)?.shake();
+              (renDayGanZhiShakeKey.currentState)?.shake();
               isValid = false;
             }
             // Time OR JuNumber+YinYangDun must be present
             if (_manualTimeJiaZi == null &&
                 (_manualJuNumber == null || _manualYinYangDun == null)) {
-              (renTimeGanZhiShakeKey.currentState as ShakeWidgetState?)
-                  ?.shake();
-              (renJuNumberShakeKey.currentState as ShakeWidgetState?)?.shake();
-              (renDunGanZhiShakeKey.currentState as ShakeWidgetState?)?.shake();
+              (renTimeGanZhiShakeKey.currentState)?.shake();
+              (renJuNumberShakeKey.currentState)?.shake();
+              (renDunGanZhiShakeKey.currentState)?.shake();
               isValid = false;
             }
             if (!isValid) {
-              InteractiveToast.slide(context: context,
-                  title: const Text("请完成干支、局数等必要选择"));
+              InteractiveToast.slide(
+                  context: context, title: const Text("请完成干支、局数等必要选择"));
               return;
             }
 
@@ -483,7 +479,7 @@ class _DaLiuRenHomePageState extends State<DaLiuRenHomePage> {
   // --- Month General Hover/LongPress Logic (can be kept if desired) ---
   // This logic was for showing JieQi details related to YueJiang.
   // It would need to be adapted to get YueJiang from the LiuRenPan entity.
-  void _showMonthlyGeneralJieQi({bool autoHidden = true}) {
+  void _showMonthlyGeneralJieQi() {
     // ... (implementation can be adapted from original if this feature is kept)
   }
   void _hideMonthlyGeneralJieQi() {

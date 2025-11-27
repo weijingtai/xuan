@@ -32,12 +32,12 @@ class CalculateRawPanService {
       DivinationDatetimeModel divinationDatetimeModel) {
     final JiaZi dayJiaZi = divinationDatetimeModel.dayJiaZi;
     // 1. 计算月将
-    final MonthGeneral _monthGeneral = _monthGeneralService.calculate(
+    final MonthGeneral monthGeneral = _monthGeneralService.calculate(
         config.monthGeneralType, divinationDatetimeModel);
 
     // 2. 计算干上神
     final DiZhi uponGod =
-        _zhiOnGanService.calculate(_monthGeneral, divinationDatetimeModel);
+        _zhiOnGanService.calculate(monthGeneral, divinationDatetimeModel);
 
     // 3. 计算日夜贵人
     final EnumDayNight dayNight = _dayNightGuiRen.calculate(
@@ -52,7 +52,7 @@ class CalculateRawPanService {
 
     // 6. 立天盘：将月将置于地盘所占的时辰地支上，然后按照顺时针方向，依次将剩余的十一个地支排列在天盘上。
     Map<DiZhi, DiZhi> tianDiPanMapper = _createTianDiPanMapper(
-        _monthGeneral, divinationDatetimeModel.timeJiaZi.diZhi);
+        monthGeneral, divinationDatetimeModel.timeJiaZi.diZhi);
 
     // 7. 安人盘：根据地盘上所起的时辰地支，参考贵人顺逆起法，确定贵人的位置，并以此为基础，顺时针或逆时针排列人盘地支。
     Map<DiZhi, GuiRen> godsMapper = _calculateGodsMapper(
@@ -100,7 +100,7 @@ class CalculateRawPanService {
     return LiuRenPanModel(
       dayJiaZi: divinationDatetimeModel.dayJiaZi,
       timeGanZhi: divinationDatetimeModel.timeJiaZi,
-      monthGeneral: _monthGeneral,
+      monthGeneral: monthGeneral,
       dayNight: dayNight,
       gongMapper: gongMapper,
       fourClasses: fourClass,
@@ -120,9 +120,9 @@ class CalculateRawPanService {
   int calculateJu(JiaZi dayJiaZi, DiZhi upon) {
     // 1. 获得这个干值日第一局的 干上神
     final firstZhi = DaLiuRenCommonConstants.juMapper[dayJiaZi]!;
-    List<DiZhi> _tmpList =
+    List<DiZhi> tmpList =
         CollectUtils.changeSeq(firstZhi, DiZhi.listAll.reversed.toList());
-    int ju = _tmpList.indexOf(upon) + 1;
+    int ju = tmpList.indexOf(upon) + 1;
     return ju;
   }
 

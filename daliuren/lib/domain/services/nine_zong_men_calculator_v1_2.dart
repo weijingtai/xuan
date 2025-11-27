@@ -545,7 +545,7 @@ class DaLiuRenModelCalculator {
         second: threeChuanItems.item2,
         third: threeChuanItems.item3,
         patternName: keShiName,
-        content: initialBasis + ", 仅一处，取 ${chuChuanKe.sky.name} 发用",
+        content: "$initialBasis, 仅一处，取 ${chuChuanKe.sky.name} 发用",
         nineZongmen: NineZongMen.ZEI_KE,
         originalThreeChuan: rawPanData.three,
       );
@@ -575,8 +575,8 @@ class DaLiuRenModelCalculator {
     // a. 比用法：筛选与日干(天干本身)阴阳相同的候选课的天盘神
     List<_ProcessedFourClassItem> biyongCandidates =
         candidates.where((k) => k.isSkySameYinYangWithDayGan).toList();
-    String biyongBasis = initialBasis +
-        "; ${candidates.length}个候选，转比用(${_isDayGanYang ? '阳日用阳' : '阴日用阴'})";
+    String biyongBasis =
+        "$initialBasis; ${candidates.length}个候选，转比用(${_isDayGanYang ? '阳日用阳' : '阴日用阴'})";
 
     if (biyongCandidates.length == 1) {
       // 比用成功，仅一个符合
@@ -586,9 +586,9 @@ class DaLiuRenModelCalculator {
       // 根据方案B，可以根据原候选数量确定更具体的课名
       if (isFromZeiKe) {
         // 仅在贼克转比用时使用这些特定名称
-        if (candidates.length == 2)
+        if (candidates.length == 2) {
           keShiName = "知一课 (比用)";
-        else if (candidates.length == 3)
+        } else if (candidates.length == 3)
           keShiName = "度厄课 (比用)";
         else if (candidates.length == 4) keShiName = "无禄课 (比用)"; // 或绝嗣课
       } else {
@@ -600,7 +600,7 @@ class DaLiuRenModelCalculator {
         second: threeChuanItems.item2,
         third: threeChuanItems.item3,
         patternName: keShiName,
-        content: biyongBasis + ", 比用唯一，取 ${chuChuanKe.sky.name} 发用",
+        content: "$biyongBasis, 比用唯一，取 ${chuChuanKe.sky.name} 发用",
         nineZongmen: NineZongMen.BI_YONG,
         originalThreeChuan: rawPanData.three,
       );
@@ -660,7 +660,7 @@ class DaLiuRenModelCalculator {
         second: threeChuanItems.item2,
         third: threeChuanItems.item3,
         patternName: keShiName,
-        content: initialBasis + ", 仅一处遥克，取 ${chuChuanKe.sky.name} 发用",
+        content: "$initialBasis, 仅一处遥克，取 ${chuChuanKe.sky.name} 发用",
         nineZongmen: NineZongMen.YAO_KE,
         originalThreeChuan: rawPanData.three,
       );
@@ -713,7 +713,7 @@ class DaLiuRenModelCalculator {
         second: threeChuanItems.item2,
         third: threeChuanItems.item3,
         patternName: keShiName,
-        content: initialBasis + ", 仅一处遥克，取 ${chuChuanKe.sky.name} 发用",
+        content: "$initialBasis, 仅一处遥克，取 ${chuChuanKe.sky.name} 发用",
         nineZongmen: NineZongMen.YAO_KE,
         originalThreeChuan: rawPanData.three,
       );
@@ -746,7 +746,7 @@ class DaLiuRenModelCalculator {
         second: threeChuanItems.item2,
         third: threeChuanItems.item3,
         patternName: "单一候选不涉害",
-        content: basis + ", 单一候选(${chuChuanKe.sky.name})不需涉害比较,直接发用",
+        content: "$basis, 单一候选(${chuChuanKe.sky.name})不需涉害比较,直接发用",
         nineZongmen: NineZongMen.SHE_HAI,
         originalThreeChuan: rawPanData.three,
       );
@@ -762,7 +762,7 @@ class DaLiuRenModelCalculator {
     String sheHaiDetailBasis = "";
 
     // 2. 根据指定的涉害策略 (this.sheHaiStrategy) 进行选择
-    if (this.sheHaiStrategy == SheHaiStrategy.COMPREHENSIVE) {
+    if (sheHaiStrategy == SheHaiStrategy.COMPREHENSIVE) {
       // 深浅法：纯粹按涉害深度排序
       candidatesForSheHai
           .sort((a, b) => b.sheHaiTimes.compareTo(a.sheHaiTimes));
@@ -775,7 +775,7 @@ class DaLiuRenModelCalculator {
         sheHaiDetailBasis =
             "; 深浅法：涉害最深者(${theChosenKe.sky.name}, 深${theChosenKe.sheHaiTimes})发用";
       } else {
-        sheHaiDetailBasis = "; 深浅法：涉害同深(深${maxDepth})，";
+        sheHaiDetailBasis = "; 深浅法：涉害同深(深$maxDepth)，";
         // 涉害相同时，阳日取干上神，阴日取支上神
         _ProcessedFourClassItem? preferredKe = _isDayGanYang
             ? sameDepthCandidates
@@ -801,7 +801,7 @@ class DaLiuRenModelCalculator {
           }
         }
       }
-    } else if (this.sheHaiStrategy == SheHaiStrategy.MENG_PRIORITY) {
+    } else if (sheHaiStrategy == SheHaiStrategy.MENG_PRIORITY) {
       // 孟仲法：严格按孟→仲→季优先级，不取季位
       sheHaiDetailBasis = "; 孟仲法：";
       List<_ProcessedFourClassItem> mengCandidates =
@@ -898,7 +898,7 @@ class DaLiuRenModelCalculator {
           if (maxZhongDepth - maxMengDepth >= 2) {
             theChosenKe = zhongCandidates.first;
             sheHaiDetailBasis +=
-                "仲位涉害显著超过孟位(${maxZhongDepth} vs ${maxMengDepth})，破例取仲位(${theChosenKe.sky.name})发用";
+                "仲位涉害显著超过孟位($maxZhongDepth vs $maxMengDepth)，破例取仲位(${theChosenKe.sky.name})发用";
           } else {
             // 否则仍取孟位
             List<_ProcessedFourClassItem> maxMengCandidates = mengCandidates
@@ -908,7 +908,7 @@ class DaLiuRenModelCalculator {
             if (maxMengCandidates.length == 1) {
               theChosenKe = maxMengCandidates.first;
               sheHaiDetailBasis +=
-                  "孟位涉害足够深(${maxMengDepth})，取孟位(${theChosenKe.sky.name})发用";
+                  "孟位涉害足够深($maxMengDepth)，取孟位(${theChosenKe.sky.name})发用";
             } else {
               // 多个孟位涉害相同，取干上神
               _ProcessedFourClassItem? ganShangKe =
@@ -916,11 +916,11 @@ class DaLiuRenModelCalculator {
               if (ganShangKe != null) {
                 theChosenKe = ganShangKe;
                 sheHaiDetailBasis +=
-                    "多孟位涉害相同(${maxMengDepth})，取干上神(${theChosenKe.sky.name})发用";
+                    "多孟位涉害相同($maxMengDepth)，取干上神(${theChosenKe.sky.name})发用";
               } else {
                 theChosenKe = maxMengCandidates.first;
                 sheHaiDetailBasis +=
-                    "多孟位涉害相同(${maxMengDepth})，取首位孟课(${theChosenKe.sky.name})发用";
+                    "多孟位涉害相同($maxMengDepth)，取首位孟课(${theChosenKe.sky.name})发用";
               }
             }
           }
@@ -933,7 +933,7 @@ class DaLiuRenModelCalculator {
           if (maxMengCandidates.length == 1) {
             theChosenKe = maxMengCandidates.first;
             sheHaiDetailBasis +=
-                "唯一孟位(${theChosenKe.sky.name}, 深${maxMengDepth})发用";
+                "唯一孟位(${theChosenKe.sky.name}, 深$maxMengDepth)发用";
           } else {
             _ProcessedFourClassItem? ganShangKe =
                 maxMengCandidates.firstWhereOrNull((k) => k.order == 0);
@@ -965,9 +965,9 @@ class DaLiuRenModelCalculator {
     final threeChuanItems = _createChainThreeChuanItems(theChosenKe.sky);
     String keShiName = "涉害课";
     if (sheHaiDetailBasis.contains("见机") ||
-        (_isMeng(theChosenKe.ground) && sheHaiDetailBasis.contains("孟")))
+        (_isMeng(theChosenKe.ground) && sheHaiDetailBasis.contains("孟"))) {
       keShiName = "见机课 (涉害)";
-    else if (sheHaiDetailBasis.contains("察微") ||
+    } else if (sheHaiDetailBasis.contains("察微") ||
         (_isZhong(theChosenKe.ground) && sheHaiDetailBasis.contains("仲")))
       keShiName = "察微课 (涉害)";
     else if (sheHaiDetailBasis.contains("缀瑕")) keShiName = "缀瑕课 (涉害)";
@@ -994,8 +994,9 @@ class DaLiuRenModelCalculator {
     int depth = 0;
     List<DiZhi> diZhiRing = DiZhi.values; // 确保这是标准的子到亥顺序
     int pathStartIndexInRing = diZhiRing.indexOf(groundCurrentPos);
-    if (pathStartIndexInRing == -1)
+    if (pathStartIndexInRing == -1) {
       throw Exception("地支环中未找到起点: ${groundCurrentPos.name}");
+    }
 
     // 顺行地盘，从当前落宫到天盘神的本家，包含本家这一步
     for (int i = 0; i < 12; i++) {
@@ -1236,7 +1237,7 @@ class DaLiuRenModelCalculator {
       second: threeChuanItems.item2, // 中传为日干上神
       third: threeChuanItems.item3, // 末传为日干上神
       patternName: "别责课", // 或芜淫课
-      content: basis + "; 中末传均为日干上神(${dayGanSky.name})",
+      content: "$basis; 中末传均为日干上神(${dayGanSky.name})",
       nineZongmen: NineZongMen.BIE_ZE,
       originalThreeChuan: rawPanData.three,
     );
@@ -1282,7 +1283,7 @@ class DaLiuRenModelCalculator {
       second: threeChuanItems.item2, // 中传为日干上神
       third: threeChuanItems.item3, // 末传为日干上神
       patternName: keShiName,
-      content: basis + "; 中末传均为日干上神(${dayGanSky.name})",
+      content: "$basis; 中末传均为日干上神(${dayGanSky.name})",
       nineZongmen: NineZongMen.BA_ZHUAN,
       originalThreeChuan: rawPanData.three,
     );
@@ -1414,10 +1415,8 @@ class DaLiuRenModelCalculator {
       // 这里的“有克”更像是一种课体不纯粹的表征。
       _ProcessedFourClassItem? residualKe = _processedFourClass
           .firstWhereOrNull((k) => k.zeiKeType == ZeiKeType.ZEI);
-      if (residualKe == null) {
-        residualKe = _processedFourClass
-            .firstWhereOrNull((k) => k.zeiKeType == ZeiKeType.KE);
-      }
+      residualKe ??= _processedFourClass
+          .firstWhereOrNull((k) => k.zeiKeType == ZeiKeType.KE);
 
       if (residualKe != null) {
         // 方案B描述：“有克→ 初传=受克的天盘神”。这比较概括。
@@ -1519,13 +1518,13 @@ class DaLiuRenModelCalculator {
   }
 
   DiZhi _getNextInSanHe(DiZhi dayZhi) {
-    List<DiZhi> _list = DiZhiSanHe.getBySingleDiZhi(dayZhi)!.getOrderedSeq();
-    if (_list.first == dayZhi) {
-      return _list[1];
-    } else if (_list[1] == dayZhi) {
-      return _list[2];
+    List<DiZhi> list = DiZhiSanHe.getBySingleDiZhi(dayZhi)!.getOrderedSeq();
+    if (list.first == dayZhi) {
+      return list[1];
+    } else if (list[1] == dayZhi) {
+      return list[2];
     } else {
-      return _list.first;
+      return list.first;
     }
   }
 
