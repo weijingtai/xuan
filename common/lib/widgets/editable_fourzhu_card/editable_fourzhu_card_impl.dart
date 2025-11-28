@@ -450,6 +450,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return physical / dpr;
   }
 
+  double _pixelCeil(double logical) {
+    final double dpr = ui.window.devicePixelRatio;
+    final double physical = (logical * dpr).ceilToDouble();
+    return physical / dpr;
+  }
+
   // --- Column width helpers (support narrow separator columns) ---
   bool _isSeparatorTitle(String title) =>
       title == '分隔符' || title == '列分隔符' || title == '|';
@@ -937,8 +943,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           EditableCardThemeBuilder.buildCellSection(newTheme);
       _typographySectionNotifier.value =
           EditableCardThemeBuilder.buildTypographySection(newTheme);
-      _sizeNotifier.value = _computeSizeWithDecorationsV2();
-      _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
       _scheduleRebuild();
     }
 
@@ -1080,16 +1084,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   curve: Curves.easeInOutCubic,
                   key: _cardKey,
                   padding: padding,
-                  width: size.width +
+                  width: _pixelCeil(size.width +
                       padding.left +
                       padding.right +
                       borderWidth * 2 +
-                      extraColWidth,
-                  height: size.height +
+                      extraColWidth),
+                  height: _pixelCeil(size.height +
                       padding.top +
                       padding.bottom +
                       borderWidth * 2 +
-                      extraRowHeight,
+                      extraRowHeight),
                   alignment: _preferCenterAlignment
                       ? Alignment.center
                       : AlignmentDirectional.topStart,
@@ -1206,7 +1210,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   // 统一使用控制器进行列坐标归一化（扣除抓手与可选标题列宽度）
                   final dx = _dragController.normalizeColumnDx(
                     localDx: local.dx,
-                    gripWidth: dragHandleColWidth,
+                    gripWidth: _effectiveDragHandleColWidth,
                     rowTitleWidth: rowTitleWidth,
                     hasRowTitleColumnInGrid: _hasRowTitleColumnInGrid(pillars),
                   );
@@ -1385,7 +1389,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                     // 坐标系对齐：从整个卡片顶部开始计算
                     // acc 初始值 = topGripRow 高度（padding 由 Container 处理）
-                    double acc = dragHandleRowHeight;
+                    double acc = _effectiveDragHandleRowHeight;
 
                     // 添加所有行的中点和高度，表头行使用 columnTitleHeight
                     for (int i = 0; i < rows.length; i++) {
@@ -1649,7 +1653,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 统一使用控制器进行行坐标归一化（扣除顶部抓手行高度）
                 final dy = _dragController.normalizeRowDy(
                   localDy: local.dy,
-                  topGripHeight: dragHandleRowHeight,
+                  topGripHeight: _effectiveDragHandleRowHeight,
                   gripVisible: widget.showGrip,
                 );
                 // 现在 dy = 0 对应 leftGripColumn 顶部（行内容开始）
@@ -2631,7 +2635,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 左侧空白单元格（对应 leftGripColumn）
-          SizedBox(width: _effectiveDragHandleColWidth, height: _effectiveDragHandleRowHeight),
+          SizedBox(
+              width: _effectiveDragHandleColWidth,
+              height: _effectiveDragHandleRowHeight),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
             final double colW = _colWidthAtIndex(i, pillars);
@@ -2639,7 +2645,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               // Separator: 显示抓手图标，但不显示标题
               return SizedBox(
                 width: colW,
-                height: dragHandleRowHeight,
+                height: _effectiveDragHandleRowHeight,
                 child: Center(
                   child: Draggable<Tuple2<_DragKind, int>>(
                     key: Key('bottom-col-grip-sep-$i'),
@@ -2683,7 +2689,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             final title = _pillarLabelFromPayload(pillars[i]);
             return SizedBox(
               width: colW,
-              height: dragHandleRowHeight,
+              height: _effectiveDragHandleRowHeight,
               child: Center(
                 child: Draggable<Tuple2<_DragKind, int>>(
                   key: Key('bottom-col-grip-$i'),
@@ -2752,7 +2758,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             );
           }),
           // 为右侧的 gripColumn 预留空间
-          SizedBox(width: _effectiveDragHandleColWidth, height: _effectiveDragHandleRowHeight),
+          SizedBox(
+              width: _effectiveDragHandleColWidth,
+              height: _effectiveDragHandleRowHeight),
         ],
       ),
     );
@@ -2769,7 +2777,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     List<PillarPayload> pillarPayloads,
   ) {
     return SizedBox(
-      width: dragHandleColWidth,
+      width: _effectiveDragHandleColWidth,
       child: Stack(
         children: [
           Column(
@@ -2783,7 +2791,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 顶部占位：对齐 dataGrid 列装饰的顶部偏移
                 children.add(
                   SizedBox(
-                    width: dragHandleColWidth,
+                    width: _effectiveDragHandleColWidth,
                     height: _pillarDecorationTopOffsetEff,
                   ),
                 );
@@ -2800,7 +2808,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ? const Duration(milliseconds: 180)
                           : Duration.zero,
                       curve: Curves.easeOut,
-                      width: dragHandleColWidth,
+                      width: _effectiveDragHandleColWidth,
                       height: draggingRow && t == absRowIdx
                           ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                           : 0,
@@ -2814,7 +2822,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   if (d == absRowIdx) continue;
                   children.add(
                     SizedBox(
-                      width: dragHandleColWidth,
+                      width: _effectiveDragHandleColWidth,
                       height: rowSize.height,
                       child: Center(
                         child: Draggable<Tuple2<_DragKind, int>>(
@@ -2872,7 +2880,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                     absRowIndex: absRowIdx,
                                   ),
                                 ),
-                            (widget.showGrip ? dragHandleColWidth : 0.0),
+                            _effectiveDragHandleColWidth,
                           ),
                           childWhenDragging: const SizedBox.shrink(),
                           child: MouseRegion(
@@ -2887,7 +2895,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 底部占位：对齐 dataGrid 列装饰的底部偏移
                 children.add(
                   SizedBox(
-                    width: dragHandleColWidth,
+                    width: _effectiveDragHandleColWidth,
                     height: _pillarDecorationBottomOffsetEff,
                   ),
                 );
@@ -2910,7 +2918,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     List<PillarPayload> pillarPayloads,
   ) {
     return Container(
-      width: dragHandleColWidth,
+      width: _effectiveDragHandleColWidth,
       child: Stack(
         children: [
           Column(
@@ -2924,7 +2932,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 顶部占位
                 children.add(
                   SizedBox(
-                    width: dragHandleColWidth,
+                    width: _effectiveDragHandleColWidth,
                     height: _pillarDecorationTopOffsetEff,
                   ),
                 );
@@ -2941,7 +2949,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ? const Duration(milliseconds: 180)
                           : Duration.zero,
                       curve: Curves.easeOut,
-                      width: dragHandleColWidth,
+                      width: _effectiveDragHandleColWidth,
                       height: draggingRow && t == absRowIdx
                           ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                           : 0,
@@ -2955,7 +2963,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   if (d == absRowIdx) continue;
                   children.add(
                     SizedBox(
-                      width: dragHandleColWidth,
+                      width: _effectiveDragHandleColWidth,
                       height: rowSize.height,
                       child: Center(
                         child: Draggable<Tuple2<_DragKind, int>>(
@@ -3034,7 +3042,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         ? const Duration(milliseconds: 180)
                         : Duration.zero,
                     curve: Curves.easeOut,
-                    width: dragHandleColWidth,
+                    width: _effectiveDragHandleColWidth,
                     height: draggingRow && (t == rows.length)
                         ? (_draggingRowIndex != null
                             ? (_rowHeightOverrides[_draggingRowIndex!] ??
@@ -3051,7 +3059,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 底部占位
                 children.add(
                   SizedBox(
-                    width: dragHandleColWidth,
+                    width: _effectiveDragHandleColWidth,
                     height: _pillarDecorationBottomOffsetEff,
                   ),
                 );
@@ -3540,11 +3548,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     config.padding.left + config.padding.right + borderW * 2;
                 double width = colW + innerDecorationWidth;
                 return AnimatedContainer(
-                  clipBehavior: Clip.hardEdge,
+                  // clipBehavior: Clip.hardEdge,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.linear,
                   margin: config.margin,
-                  padding: config.padding + EdgeInsets.all(borderW),
+                  padding: config.padding,
                   width: _pixelFloor(width),
                   decoration: BoxDecoration(
                     color: bkColor,
@@ -3570,7 +3578,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ]
                         : [],
                   ),
-                  child: columnContent,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(config.border!.radius),
+                    child: columnContent,
+                  ),
                 );
               });
         });
@@ -5063,8 +5074,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         EditableCardThemeBuilder.buildCellSection(newTheme);
     _typographySectionNotifier.value =
         EditableCardThemeBuilder.buildTypographySection(newTheme);
-    _sizeNotifier.value = _computeSizeWithDecorationsV2();
-    _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
     _scheduleRebuild();
   }
 

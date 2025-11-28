@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 import '../../../enums/layout_template_enums.dart';
@@ -599,6 +601,11 @@ class CardMetricsCalculator {
           pillarConfig.padding.top + pillarConfig.padding.bottom;
       final pillarDecorationW =
           pillarConfig.padding.left + pillarConfig.padding.right;
+      if (pillar.pillarType == PillarType.year) {
+        // print("年柱border: ${theme.pillar.mapper[PillarType.year]!.border?.enabled}");
+        print(
+            "年柱borderW: ${pillarConfig.border?.enabled}, ${pillarConfig.border?.width}");
+      }
       final pillarBorderW = pillarConfig.border?.width ?? 0.0;
       final pillarMarginV =
           pillarConfig.margin.top + pillarConfig.margin.bottom;
@@ -676,6 +683,7 @@ class CardMetricsCalculator {
           (pillar.withBorder ? pillar.borderWidth * 2 : 0.0);
       return extras > max ? extras : max;
     });
+    // print("maxPillarVerticalExtras: $maxPillarVerticalExtras");
     final totalHeight =
         _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
 
