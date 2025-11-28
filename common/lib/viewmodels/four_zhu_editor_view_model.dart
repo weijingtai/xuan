@@ -575,6 +575,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     _applyCurrentTemplate(template.copyWith(rowConfigs: defaults));
   }
 
+  void ensureRowConfig(RowType type) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    if (template.rowConfigs.any((c) => c.type == type)) return;
+    final cfg = RowConfig(
+      type: type,
+      isVisible: true,
+      isTitleVisible: true,
+      textStyleConfig: TextStyleConfig.defaultConfig,
+    );
+    final list = List<RowConfig>.of(template.rowConfigs)..add(cfg);
+    _applyCurrentTemplate(template.copyWith(rowConfigs: list));
+  }
+
   // Task 1.3.2 - 全局字体方法
   /// 更新当前模板的全局字体家族。
   ///

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/layout_template.dart';
+import '../../models/drag_payloads.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
@@ -15,12 +16,38 @@ class RowStyleEditorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<FourZhuEditorViewModel>(
-      builder: (context, vm, _) {
-        final rows = vm.rowConfigs;
-        if (rows.isEmpty) {
+    final demoVm = Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    return ValueListenableBuilder<CardPayload>(
+      valueListenable: demoVm.cardPayloadNotifier,
+      builder: (context, payload, _) {
+        final vm = Provider.of<FourZhuEditorViewModel>(context, listen: false);
+        final all = vm.rowConfigs;
+        if (all.isEmpty) {
           return const Text('暂无行配置');
         }
+        final activeTypes = payload.rowOrderUuid
+            .map((id) => payload.rowMap[id])
+            .whereType<TextRowPayload>()
+            .map((p) => p.rowType)
+            .where((t) => t != RowType.separator)
+            .toSet();
+        for (final t in activeTypes) {
+          if (!all.any((c) => c.type == t)) {
+            vm.ensureRowConfig(t);
+          }
+        }
+        final rows = vm.rowConfigs
+            .where((c) => activeTypes.contains(c.type))
+            .toList();
+        final orderMap = <RowType, int>{};
+        for (int i = 0; i < payload.rowOrderUuid.length; i++) {
+          final rp = payload.rowMap[payload.rowOrderUuid[i]];
+          if (rp is TextRowPayload) {
+            orderMap[rp.rowType] = i;
+          }
+        }
+        rows.sort((a, b) =>
+            (orderMap[a.type] ?? 999).compareTo(orderMap[b.type] ?? 999));
         return ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),

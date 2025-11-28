@@ -1,5 +1,8 @@
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../../models/drag_payloads.dart';
 
 import '../../../themes/editable_four_zhu_card_theme.dart';
 import '../../editable_fourzhu_card/models/pillar_style_config.dart';
@@ -58,49 +61,60 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
     final theme = Theme.of(context);
     return ValueListenableBuilder(
         valueListenable: _pillarStyleConfigNotifier,
-        builder: (context, config, child) => Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHigh,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: theme.dividerColor.withOpacity(0.12)),
-              ),
-              child: ExpansionTile(
-                leading: Icon(widget.icon),
-                title: Text(widget.title, style: theme.textTheme.titleMedium),
-                childrenPadding: const EdgeInsets.symmetric(horizontal: 8),
-                children: [
-                  eachPillarEditor(
-                      theme,
-                      '全局',
-                      FourZhuPillarStyleEditor(
-                        pillarStyleConfig: config.global,
-                        onChanged: (global) {
-                          _pillarStyleConfigNotifier.value =
-                              config.copyWith(global: global);
-                        },
-                      )),
-                  ...[
-                    PillarType.year,
-                    PillarType.month,
-                    PillarType.day,
-                    PillarType.hour
-                  ]
-                      .map((e) => eachPillarEditor(
+        builder: (context, config, child) {
+          final demoVm = Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+          return ValueListenableBuilder<CardPayload>(
+              valueListenable: demoVm.cardPayloadNotifier,
+              builder: (context, payload, _) {
+                final theme = Theme.of(context);
+                final types = payload.pillarOrderUuid
+                    .map((id) => payload.pillarMap[id]!.pillarType)
+                    .where((t) => t != PillarType.rowTitleColumn)
+                    .toList();
+                return Container(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: theme.dividerColor.withOpacity(0.12)),
+                  ),
+                  child: ExpansionTile(
+                    leading: Icon(widget.icon),
+                    title: Text(widget.title, style: theme.textTheme.titleMedium),
+                    childrenPadding: const EdgeInsets.symmetric(horizontal: 8),
+                    children: [
+                      eachPillarEditor(
+                          theme,
+                          '全局',
+                          FourZhuPillarStyleEditor(
+                            pillarStyleConfig: config.global,
+                            onChanged: (global) {
+                              _pillarStyleConfigNotifier.value =
+                                  config.copyWith(global: global);
+                            },
+                          )),
+                      ...types.map((e) => eachPillarEditor(
                           theme,
                           e.name,
                           FourZhuPillarStyleEditor(
                             pillarStyleConfig: config.getBy(e),
                             onChanged: (pillar) {
-                              final Map<PillarType, PillarStyleConfig>
-                                  newMapper = Map<PillarType, PillarStyleConfig>.of(config.mapper);
-                              newMapper[e] = pillar;
-                              _pillarStyleConfigNotifier.value = config.copyWith(mapper: newMapper);
+                              if (e == PillarType.separator) {
+                                _pillarStyleConfigNotifier.value =
+                                    config.copyWith(defaultSeparatorConfig: pillar);
+                              } else {
+                                final Map<PillarType, PillarStyleConfig>
+                                    newMapper = Map<PillarType, PillarStyleConfig>.of(config.mapper);
+                                newMapper[e] = pillar;
+                                _pillarStyleConfigNotifier.value =
+                                    config.copyWith(mapper: newMapper);
+                              }
                             },
                           )))
-                      .toList(),
-                ],
-              ),
-            ));
+                    ],
+                  ),
+                );
+              });
+        });
   }
 
   Widget eachPillarEditor(ThemeData theme, String label, Widget content) {
