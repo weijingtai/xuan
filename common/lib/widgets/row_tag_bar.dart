@@ -20,6 +20,11 @@ class RowTagBar extends StatelessWidget {
           label: '分隔符',
         ),
         RowData(
+          rowId: 'title_row',
+          rowType: RowType.columnHeaderRow,
+          label: '标题行',
+        ),
+        RowData(
           rowId: 'heavenly_stem',
           rowType: RowType.heavenlyStem,
           label: '天干',

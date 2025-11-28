@@ -50,7 +50,7 @@ class PillarMetrics {
     }
   }
 
-  double get totalWidth => width + marginHorizontal * 2;
+  double get totalWidth => width + marginHorizontal;
   double get height {
     if (withBorder) {
       return decorationHeight + contentHeight + borderWidth * 2;
@@ -59,7 +59,7 @@ class PillarMetrics {
     }
   }
 
-  double get totalHeight => height + marginVertical * 2;
+  double get totalHeight => height + marginVertical;
 }
 
 /// Metrics for a single row
@@ -89,7 +89,7 @@ class RowMetrics {
     }
   }
 
-  double get totalHeight => height + marginVertical * 2;
+  double get totalHeight => height + marginVertical;
 }
 
 /// Metrics for a single cell
@@ -135,7 +135,7 @@ class CellMetrics {
 
   Size get size => Size(width, height);
   double get totalHeight => height + marginVertical * 2;
-  double get totalWidth => width + marginHorizontal * 2;
+  double get totalWidth => width + marginHorizontal;
   Size get totalSize => Size(totalWidth, totalHeight);
 }
 

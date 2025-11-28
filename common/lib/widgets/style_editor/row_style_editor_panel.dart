@@ -4,6 +4,8 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/layout_template.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
+import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../../enums/enum_tian_gan.dart';
 import '../../enums/enum_di_zhi.dart';
 import 'colorful_text_style_editor_widget_v2.dart';
@@ -68,7 +70,21 @@ class _RowItem extends StatelessWidget {
             value: (cfg.paddingVertical ?? 0).toDouble(),
             min: 0,
             max: 32,
-            onChanged: (v) => vm.updateRowStyle(cfg.type, padding: v),
+            onChanged: (v) {
+              vm.updateRowStyle(cfg.type, padding: v);
+              final demoVm =
+                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+              final theme = demoVm.themeNotifier.value;
+              final cell = theme.cell;
+              final mapper = Map<RowType, CellStyleConfig>.of(
+                  cell.rowTypeCellConfigMapper);
+              final base = mapper[cfg.type] ?? cell.globalCellConfig;
+              final pad = EdgeInsets.fromLTRB(
+                  base.padding.left, v, base.padding.right, v);
+              mapper[cfg.type] = base.copyWith(padding: pad);
+              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
+                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+            },
           ),
           const SizedBox(height: 8),
           Row(
@@ -81,7 +97,21 @@ class _RowItem extends StatelessWidget {
             value: (cfg.marginVertical ?? 0).toDouble(),
             min: 0,
             max: 32,
-            onChanged: (v) => vm.updateRowStyle(cfg.type, marginVertical: v),
+            onChanged: (v) {
+              vm.updateRowStyle(cfg.type, marginVertical: v);
+              final demoVm =
+                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+              final theme = demoVm.themeNotifier.value;
+              final cell = theme.cell;
+              final mapper = Map<RowType, CellStyleConfig>.of(
+                  cell.rowTypeCellConfigMapper);
+              final base = mapper[cfg.type] ?? cell.globalCellConfig;
+              final mar = EdgeInsets.fromLTRB(
+                  base.margin.left, v, base.margin.right, v);
+              mapper[cfg.type] = base.copyWith(margin: mar);
+              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
+                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+            },
           ),
           const SizedBox(height: 8),
           Row(
@@ -94,7 +124,21 @@ class _RowItem extends StatelessWidget {
             value: (cfg.marginHorizontal ?? 0).toDouble(),
             min: 0,
             max: 32,
-            onChanged: (v) => vm.updateRowStyle(cfg.type, marginHorizontal: v),
+            onChanged: (v) {
+              vm.updateRowStyle(cfg.type, marginHorizontal: v);
+              final demoVm =
+                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+              final theme = demoVm.themeNotifier.value;
+              final cell = theme.cell;
+              final mapper = Map<RowType, CellStyleConfig>.of(
+                  cell.rowTypeCellConfigMapper);
+              final base = mapper[cfg.type] ?? cell.globalCellConfig;
+              final mar = EdgeInsets.fromLTRB(
+                  v, base.margin.top, v, base.margin.bottom);
+              mapper[cfg.type] = base.copyWith(margin: mar);
+              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
+                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+            },
           ),
           const SizedBox(height: 8),
           Row(
@@ -107,7 +151,21 @@ class _RowItem extends StatelessWidget {
             value: (cfg.paddingHorizontal ?? 0).toDouble(),
             min: 0,
             max: 32,
-            onChanged: (v) => vm.updateRowStyle(cfg.type, paddingHorizontal: v),
+            onChanged: (v) {
+              vm.updateRowStyle(cfg.type, paddingHorizontal: v);
+              final demoVm =
+                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+              final theme = demoVm.themeNotifier.value;
+              final cell = theme.cell;
+              final mapper = Map<RowType, CellStyleConfig>.of(
+                  cell.rowTypeCellConfigMapper);
+              final base = mapper[cfg.type] ?? cell.globalCellConfig;
+              final pad = EdgeInsets.fromLTRB(
+                  v, base.padding.top, v, base.padding.bottom);
+              mapper[cfg.type] = base.copyWith(padding: pad);
+              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
+                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+            },
           ),
           const SizedBox(height: 8),
           ColorfulTextStyleEditorV2Enhanced(

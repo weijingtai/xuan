@@ -313,15 +313,35 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return m.top + m.bottom + p.top + p.bottom + bw * 2;
   }
 
-  /// 顶部装饰偏移（margin-top + padding-top + border-top）
-  double get _pillarDecorationTopOffsetEff => _pixelFloor(
-      _pillarMarginEff.top + _pillarPaddingEff.top + _pillarBorderWidthEff);
+  /// 顶部装饰偏移（取所有柱的 max(topMargin + topPadding + topBorder)）
+  double get _pillarDecorationTopOffsetEff {
+    final payloads = _currentPillars();
+    final section = _pillarSectionNotifier.value;
+    double maxTop = 0.0;
+    for (int i = 0; i < payloads.length; i++) {
+      final cfg = section.getBy(payloads[i].pillarType);
+      final bw =
+          (cfg.border?.enabled ?? false) ? (cfg.border?.width ?? 0.0) : 0.0;
+      final top = cfg.margin.top + cfg.padding.top + bw;
+      if (top > maxTop) maxTop = top;
+    }
+    return _pixelFloor(maxTop);
+  }
 
-  /// 底部装饰偏移（border-bottom + padding-bottom + margin-bottom）
-  double get _pillarDecorationBottomOffsetEff =>
-      _pixelFloor(_pillarBorderWidthEff +
-          _pillarPaddingEff.bottom +
-          _pillarMarginEff.bottom);
+  /// 底部装饰偏移（取所有柱的 max(bottomBorder + bottomPadding + bottomMargin)）
+  double get _pillarDecorationBottomOffsetEff {
+    final payloads = _currentPillars();
+    final section = _pillarSectionNotifier.value;
+    double maxBottom = 0.0;
+    for (int i = 0; i < payloads.length; i++) {
+      final cfg = section.getBy(payloads[i].pillarType);
+      final bw =
+          (cfg.border?.enabled ?? false) ? (cfg.border?.width ?? 0.0) : 0.0;
+      final bottom = bw + cfg.padding.bottom + cfg.margin.bottom;
+      if (bottom > maxBottom) maxBottom = bottom;
+    }
+    return _pixelFloor(maxBottom);
+  }
 
   // 卡片边框厚度（水平/垂直）合计，用于在整体尺寸中加上边框占用的空间，避免内容被裁剪或溢出。
   double get _cardBorderHorizontalEff {
@@ -789,6 +809,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         ValueNotifier(EditableCardThemeBuilder.buildPillarSection(theme))
           ..addListener(() {
             _sizeNotifier.value = _computeSizeWithDecorationsV2();
+            _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+            _scheduleRebuild();
           });
 
     // 监听字体样式配置变化
@@ -796,12 +818,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         ValueNotifier(EditableCardThemeBuilder.buildTypographySection(theme))
           ..addListener(() {
             _sizeNotifier.value = _computeSizeWithDecorationsV2();
+            _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+            _scheduleRebuild();
           });
 
     _cellSectionNotifier =
         ValueNotifier(EditableCardThemeBuilder.buildCellSection(theme))
           ..addListener(() {
             _sizeNotifier.value = _computeSizeWithDecorationsV2();
+            _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+            _scheduleRebuild();
           });
 
     // 注册 ValueNotifier 监听以进行采样计数
@@ -883,6 +909,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _basicLayoutModel.version.addListener(_basicLayoutVersionListener);
 
     _metricsSnapshotNotifier = ValueNotifier(_computeMetricsSnapshot());
+    widget.themeNotifier.addListener(_onThemeChanged);
   }
 
   /// 在父组件传入的属性发生变化时同步更新布局模型与尺寸
@@ -898,7 +925,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   void didUpdateWidget(covariant EditableFourZhuCardV3 oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // 主题变化处理
+    if (oldWidget.themeNotifier != widget.themeNotifier) {
+      oldWidget.themeNotifier.removeListener(_onThemeChanged);
+      widget.themeNotifier.addListener(_onThemeChanged);
+    }
     if (oldWidget.themeNotifier.value != widget.themeNotifier.value) {
       final newTheme = widget.themeNotifier.value;
       _pillarSectionNotifier.value =
@@ -907,6 +937,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           EditableCardThemeBuilder.buildCellSection(newTheme);
       _typographySectionNotifier.value =
           EditableCardThemeBuilder.buildTypographySection(newTheme);
+      _sizeNotifier.value = _computeSizeWithDecorationsV2();
+      _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+      _scheduleRebuild();
     }
 
     final bool rowsVisibilityChanged = oldWidget.showGrip != widget.showGrip;
@@ -965,6 +998,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _pillarSectionNotifier.dispose();
     _cellSectionNotifier.dispose();
     _typographySectionNotifier.dispose();
+    widget.themeNotifier.removeListener(_onThemeChanged);
 
     super.dispose();
   }
@@ -1037,8 +1071,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, theme, child) {
                 final padding = theme.card.padding;
                 final borderWidth = (theme.card.border?.enabled ?? false)
-                    ? 0
-                    : _resolveUniformCardBorderWidth();
+                    ? _resolveUniformCardBorderWidth()
+                    : 0.0;
                 // print(
                 // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
                 return AnimatedContainer(
@@ -1091,10 +1125,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       // ✅ 方案 A：仅设置 _externalColHoverWidth，不修改 _sizeNotifier
                       // AnimatedContainer 会自动叠加 _externalColHoverWidth 到 size.width
                       if (data is PillarPayload) {
-                        _externalColHoverWidth = _metricsSnapshotNotifier
-                            .value.defaultGlobalPillarMetric.totalWidth;
+                        if (data.pillarType == PillarType.separator) {
+                          _externalColHoverWidth = _colDividerWidthEffective;
+                        } else if (data.pillarType ==
+                            PillarType.rowTitleColumn) {
+                          _externalColHoverWidth = rowTitleWidth;
+                        } else {
+                          _externalColHoverWidth = _metricsSnapshotNotifier
+                              .value.defaultGlobalPillarMetric.totalWidth;
+                        }
                       } else if (data is PillarType) {
-                        _externalColHoverWidth = pillarWidth;
+                        if (data == PillarType.separator) {
+                          _externalColHoverWidth = _colDividerWidthEffective;
+                        } else if (data == PillarType.rowTitleColumn) {
+                          _externalColHoverWidth = rowTitleWidth;
+                        } else {
+                          _externalColHoverWidth = pillarWidth;
+                        }
                       }
                     }
                     // 进入列插入目标时，清理行插入提示状态，避免相互干扰
@@ -1138,10 +1185,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     } else if (data is PillarType) {
                       if (data == PillarType.separator) {
                         nextW = _colDividerWidthEffective;
+                      } else if (data == PillarType.rowTitleColumn) {
+                        nextW = rowTitleWidth;
                       }
-                      // nextW = (data == PillarType.separator)
-                      //     ? _colDividerWidthEffective
-                      //     : pillarWidth;
                     }
 
                     if (_externalColHoverWidth != nextW) {
@@ -1153,7 +1199,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     }
                   }
 
-                  final box = context.findRenderObject() as RenderBox?;
+                  final box =
+                      _cardKey.currentContext?.findRenderObject() as RenderBox?;
                   if (box == null) return;
                   final local = box.globalToLocal(details.offset);
                   // 统一使用控制器进行列坐标归一化（扣除抓手与可选标题列宽度）
@@ -1240,7 +1287,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   } else if (payload is PillarType) {
                     _insertExternalPillarFromType(insertIndex, payload);
                   } else if (payload is TitleColumnPayload) {
-                    _reorderColumnsByType(payload.pillarType, insertIndex);
+                    _insertExternalPillar(insertIndex, payload);
                   } else if (payload is PillarData) {
                     final pillarId = Uuid().v4();
                     final pillarContent = PillarContent(
@@ -1297,7 +1344,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
                 final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
                 final left = dragHandleColWidth +
-                    (hasRowTitleCol ? 0 : rowTitleWidth) +
                     _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
                     1;
                 return Positioned(
@@ -1398,10 +1444,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
     // 统一列让位逻辑：内部拖拽（包括末尾）使用网格内 AnimatedContainer，不扩展容器
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
-    // 如果存在行标题列则不额外添加 rowTitleWidth（行标题列宽度已包含在 _totalColsWidth 中）
-    final totalWidth = (hasRowTitleColumn ? 0 : rowTitleWidth) +
-        _totalColsWidth(pillars) +
-        extraColWidth;
+    // 标题列仅通过 payload 参与度量；不再为缺省标题列预留固定宽度
+    final totalWidth = _totalColsWidth(pillars) + extraColWidth;
 
     // Top Grip row: 顶部抓手行，用于拖拽列
     final topGripRow = _buildTopGripRow(
@@ -1538,10 +1582,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             data.rowType == RowType.separator) ||
                         (data is RowSeparatorPayload) ||
                         (data is RowType && data == RowType.separator);
+                    final bool isTitle = (data is TextRowPayload &&
+                            data.rowType == RowType.columnHeaderRow) ||
+                        (data is RowType && data == RowType.columnHeaderRow);
                     _externalRowHoverHeight = isSeparator
                         ? _rowDividerHeightEffective
-                        : _metricsSnapshotNotifier
-                            .value.defaultGlobalRowMetric.totalHeight;
+                        : (isTitle
+                            ? columnTitleHeight
+                            : _metricsSnapshotNotifier
+                                .value.defaultGlobalRowMetric.totalHeight);
                     _hoverRowInsertIndex = rows.length;
                     _lastRowInsertIndex = rows.length;
                     _scheduleRebuild();
@@ -1591,7 +1640,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   }
                 }
 
-                final box = builderContext.findRenderObject() as RenderBox?;
+                final box =
+                    _cardKey.currentContext?.findRenderObject() as RenderBox?;
                 if (box == null) {
                   return;
                 }
@@ -2357,14 +2407,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   Widget _buildSingleResizeHandle(int i, List<PillarPayload> pillars) {
     return Builder(builder: (context) {
-      final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
-      final left = (hasRowTitleCol ? 0 : rowTitleWidth) +
-          _sumColWidthsUpTo(i, pillars) -
-          4;
+      final left = _sumColWidthsUpTo(i, pillars) - 4;
       return Positioned(
         left: left,
-        top: columnTitleHeight,
-        bottom: 0,
+        top: columnTitleHeight + _pillarDecorationTopOffsetEff,
+        bottom: _pillarDecorationBottomOffsetEff,
         width: 8,
         child: MouseRegion(
           cursor: SystemMouseCursors.resizeColumn,
@@ -2578,13 +2625,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     double totalWidth,
   ) {
     return SizedBox(
-      width: dragHandleColWidth * 2 + totalWidth,
-      height: dragHandleRowHeight,
+      width: _effectiveDragHandleColWidth * 2 + totalWidth,
+      height: _effectiveDragHandleRowHeight,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // 左侧空白单元格（对应 leftGripColumn）
-          SizedBox(width: dragHandleColWidth, height: dragHandleRowHeight),
+          SizedBox(width: _effectiveDragHandleColWidth, height: _effectiveDragHandleRowHeight),
           ...List.generate(pillars.length, (i) {
             final bool isSeparatorCol = _isSeparatorColumnIndex(i);
             final double colW = _colWidthAtIndex(i, pillars);
@@ -2705,7 +2752,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             );
           }),
           // 为右侧的 gripColumn 预留空间
-          SizedBox(width: dragHandleColWidth, height: dragHandleRowHeight),
+          SizedBox(width: _effectiveDragHandleColWidth, height: _effectiveDragHandleRowHeight),
         ],
       ),
     );
@@ -3484,14 +3531,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                 // 使用与 CardMetricsCalculator 一致的宽度计算：contentWidth + decorationWidth
                 // decorationWidth 包含 margin + padding + border*2
-                final decorationWidth = config.getDecorationWidth();
-                double width = colW + decorationWidth;
+                final borderW = (config.border != null &&
+                        config.border!.enabled &&
+                        config.border!.width != 0)
+                    ? config.border!.width
+                    : 0.0;
+                final innerDecorationWidth =
+                    config.padding.left + config.padding.right + borderW * 2;
+                double width = colW + innerDecorationWidth;
                 return AnimatedContainer(
                   clipBehavior: Clip.hardEdge,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.linear,
                   margin: config.margin,
-                  padding: config.padding,
+                  padding: config.padding + EdgeInsets.all(borderW),
                   width: _pixelFloor(width),
                   decoration: BoxDecoration(
                     color: bkColor,
@@ -3662,24 +3715,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (index < 0 || index >= list.length) return;
     list.removeAt(index);
     _setPillars(list);
+    _pillarGlobalKeys.clear();
+    _scheduleRebuild();
   }
 
-  // 删除行（跳过标题行，索引>=1）
+  // 删除行（允许删除标题行与任意索引）
   void _deleteRow(int absIndex) {
     final rows = List<TextRowPayload>.of(_currentTextRows());
-    if (absIndex <= 0 || absIndex >= rows.length) return;
+    if (absIndex < 0 || absIndex >= rows.length) return;
     rows.removeAt(absIndex);
     _setTextRows(rows);
 
-    // 同步清理并重映射行高覆盖：
-    // 1) 移除被删除索引的覆盖；
-    // 2) 将其后的索引全部左移一位，保持与新行索引一致。
     if (_rowHeightOverrides.isNotEmpty) {
       final Map<int, double> next = {};
       for (final entry in _rowHeightOverrides.entries) {
         final k = entry.key;
-        if (k == absIndex) continue; // 删除项的覆盖直接丢弃
-        final nk = k > absIndex ? k - 1 : k; // 右侧条目左移一位
+        if (k == absIndex) continue;
+        final nk = k > absIndex ? k - 1 : k;
         next[nk] = entry.value;
       }
       _rowHeightOverrides
@@ -4587,17 +4639,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final widget = key.currentWidget;
 
     if (context == null || widget == null) {
-      // 如果 Widget 尚未渲染或已销毁，使用回退方案
       debugPrint(
           'Warning: Pillar Widget not available for index $pillarIndex, using fallback');
       return fallbackBuilder();
     }
 
-    // 获取 RenderBox 用于尺寸信息
-    final renderBox = context.findRenderObject() as RenderBox?;
+    final element = context as Element;
+    if (!element.mounted) {
+      debugPrint(
+          'Warning: Pillar Element inactive for index $pillarIndex, using fallback');
+      return fallbackBuilder();
+    }
 
-    // 【关键修复】检查 RenderBox 是否已完成布局
-    // 如果没有布局或尺寸，说明 Widget 还在首次渲染中，使用 fallback
+    final renderBox = element.renderObject as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) {
       debugPrint(
           'Warning: Pillar RenderBox not laid out for index $pillarIndex, using fallback');
@@ -4919,17 +4973,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
     final opts = MetricsComputeOptions(
       includeGrip: widget.showGrip,
-      // includeGripCols: widget.showGripColumns,
-      showTitleRow: widget.themeNotifier.value.displayHeaderRow,
-      showTitleCol: widget.themeNotifier.value.displayRowTitleColumn,
+      showTitleRow: false,
+      showTitleCol: false,
       cellShowsTitle: rows.any((r) => r.titleInCell),
-      cardPadding: widget.paddingNotifier.value,
-      cardBorderWidth: _resolveUniformCardBorderWidth(),
+      cardPadding: EdgeInsets.zero,
+      cardBorderWidth: 0.0,
       gripRowHeight: _effectiveDragHandleRowHeight,
       gripColWidth: _effectiveDragHandleColWidth,
       columnTitleHeight: columnTitleHeight,
       rowTitleWidth: rowTitleWidth,
-      withCardBorder: widget.themeNotifier.value.card.border?.enabled ?? false,
+      withCardBorder: false,
     );
     final size = calc.computeFinalSize(opts);
     return Size(size.width, size.height);
@@ -4999,6 +5052,20 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 刷新整体尺寸（包含装饰），确保 UI 与度量数据一致
     _sizeNotifier.value = _computeSizeWithDecorationsV2();
+    _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+  }
+
+  void _onThemeChanged() {
+    final newTheme = widget.themeNotifier.value;
+    _pillarSectionNotifier.value =
+        EditableCardThemeBuilder.buildPillarSection(newTheme);
+    _cellSectionNotifier.value =
+        EditableCardThemeBuilder.buildCellSection(newTheme);
+    _typographySectionNotifier.value =
+        EditableCardThemeBuilder.buildTypographySection(newTheme);
+    _sizeNotifier.value = _computeSizeWithDecorationsV2();
+    _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+    _scheduleRebuild();
   }
 
   // Build full row feedback (row title + cells across all columns)

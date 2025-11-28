@@ -595,8 +595,10 @@ class CardMetricsCalculator {
       pillarContentH = _normalizeDouble(pillarContentH);
 
       // 3.4 列自身配置（装饰、边距、边框）
-      final pillarDecorationH = pillarConfig.getDecorationHeight();
-      final pillarDecorationW = pillarConfig.getDecorationWidth();
+      final pillarDecorationH =
+          pillarConfig.padding.top + pillarConfig.padding.bottom;
+      final pillarDecorationW =
+          pillarConfig.padding.left + pillarConfig.padding.right;
       final pillarBorderW = pillarConfig.border?.width ?? 0.0;
       final pillarMarginV =
           pillarConfig.margin.top + pillarConfig.margin.bottom;
@@ -668,11 +670,14 @@ class CardMetricsCalculator {
     final totalRowTotalHeight = rows.values.fold(0.0, (sum, row) {
       return sum + row.totalHeight;
     });
-    final maxPillarDecorationH = pillars.values.fold(0.0, (max, pillar) {
-      return pillar.decorationHeight > max ? pillar.decorationHeight : max;
+    final maxPillarVerticalExtras = pillars.values.fold(0.0, (max, pillar) {
+      final extras = pillar.decorationHeight +
+          pillar.marginVertical +
+          (pillar.withBorder ? pillar.borderWidth * 2 : 0.0);
+      return extras > max ? extras : max;
     });
     final totalHeight =
-        _normalizeDouble(totalRowTotalHeight + maxPillarDecorationH);
+        _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
 
     // 构建最终快照
     final totals = CardTotals(
@@ -822,8 +827,10 @@ class CardMetricsCalculator {
     }
 
     // 步骤3：装饰、边距、边框
-    final decorationWidth = pillarConfig.getDecorationWidth();
-    final decorationHeight = pillarConfig.getDecorationHeight();
+    final decorationWidth =
+        pillarConfig.padding.left + pillarConfig.padding.right;
+    final decorationHeight =
+        pillarConfig.padding.top + pillarConfig.padding.bottom;
     final marginHorizontal =
         pillarConfig.margin.left + pillarConfig.margin.right;
     final marginVertical = pillarConfig.margin.top + pillarConfig.margin.bottom;
