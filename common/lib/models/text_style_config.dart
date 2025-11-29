@@ -107,6 +107,7 @@ class TextStyleConfig {
             fontWeight: FontWeight.bold,
             fontSize: 18,
             fontFamily: 'NotoSansSC',
+            height: 1.2,
           ),
         );
       }();
@@ -145,6 +146,7 @@ class TextStyleConfig {
             fontWeight: FontWeight.bold,
             fontSize: 18,
             fontFamily: 'NotoSansSC',
+            height: 1.2,
           ),
         );
       }();
@@ -172,6 +174,7 @@ class TextStyleConfig {
       fontWeight: FontWeight.normal,
       fontSize: 14,
       fontFamily: 'NotoSansSC',
+      height: 1.2,
     ),
   );
 
@@ -199,6 +202,7 @@ class TextStyleConfig {
       fontWeight: FontWeight.normal,
       fontSize: 12,
       fontFamily: 'NotoSansSC',
+      height: 1.2,
     ),
   );
   static TextStyleConfig defaultOthersTitleConfig = TextStyleConfig(
@@ -225,6 +229,7 @@ class TextStyleConfig {
       fontWeight: FontWeight.normal,
       fontSize: 8,
       fontFamily: 'NotoSansSC',
+      height: 1.2,
     ),
   );
 
@@ -264,6 +269,7 @@ class TextStyleConfig {
       fontSize: fontStyleDataModel.fontSize,
       color: textColor,
       fontWeight: fontStyleDataModel.fontWeight,
+      height: fontStyleDataModel.height,
       shadows: textShadowDataModel.shadowEnabled
           ? [
               Shadow(
@@ -327,6 +333,7 @@ class TextStyleConfig {
         fontFamily: style.fontFamily ?? 'System',
         fontSize: style.fontSize ?? 14.0,
         fontWeight: style.fontWeight ?? FontWeight.w400,
+        height: style.height ?? 1.2,
       ),
     );
   }
@@ -377,6 +384,7 @@ class TextStyleConfig {
         fontFamily: fontFamily ?? 'System',
         fontSize: fontSize ?? 14.0,
         fontWeight: weight,
+        height: 1.2,
       ),
     );
   }
@@ -783,19 +791,23 @@ class FontStyleDataModel {
   final String fontFamily;
   final double fontSize;
   final FontWeight fontWeight;
+  final double height;
 
   FontStyleDataModel({
     required this.fontFamily,
     required this.fontSize,
     required this.fontWeight,
+    required this.height,
   });
 
   FontStyleDataModel copyWith({
     String? fontFamily,
     double? fontSize,
     FontWeight? fontWeight,
+    double? height,
   }) {
     return FontStyleDataModel(
+      height: height ?? this.height,
       fontFamily: fontFamily ?? this.fontFamily,
       fontSize: fontSize ?? this.fontSize,
       fontWeight: fontWeight ?? this.fontWeight,
@@ -813,6 +825,7 @@ class FontStyleDataModel {
       fontFamily: family,
       fontSize: size,
       fontWeight: weight,
+      height: (json['height'] as num?)?.toDouble() ?? 1.4,
     );
   }
 
@@ -822,6 +835,7 @@ class FontStyleDataModel {
       'fontSize': fontSize,
       // 序列化为 100、200、…、900 的数字
       'fontWeight': fontWeight.value,
+      'height': height,
     };
   }
 }

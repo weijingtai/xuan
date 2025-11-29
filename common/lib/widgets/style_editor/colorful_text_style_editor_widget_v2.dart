@@ -17,15 +17,12 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
   // final String label;
   final RowType type;
   final List<String> values;
-  // final TextStyle? initialStyle;
   final ValueChanged<TextStyleConfig> onChanged;
   final TextStyleConfig? initialConfig;
 
   const ColorfulTextStyleEditorV2Enhanced({
     super.key,
-    // required this.label,
     required this.type,
-    // this.initialStyle,
     required this.onChanged,
     this.initialConfig,
     required this.values,
@@ -126,10 +123,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
     fontStyleDataModelNotifier = ValueNotifier(
       widget.initialConfig?.fontStyleDataModel ??
           FontStyleDataModel(
-            fontFamily: 'sans-serif',
-            fontSize: 16,
-            fontWeight: FontWeight.normal,
-          ),
+              fontFamily: 'sans-serif',
+              fontSize: 16,
+              fontWeight: FontWeight.normal,
+              height: 1.2),
     )..addListener(() => onFontChanged());
 
     shadowDataModelNotifier = ValueNotifier(
@@ -158,7 +155,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
         '🔍 [onFontChanged] 新 colorMapperDataModel.pureLightMapper 包含 ${config.colorMapperDataModel.pureLightMapper.length} 个颜色');
     print(
         '🔍 [onFontChanged] 新 colorMapperDataModel.colorfulLightMapper 包含 ${config.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
-    widget.onChanged(config);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      widget.onChanged(config);
+    });
   }
 
   @override
@@ -238,7 +237,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ),
         ),
         const SizedBox(height: 16),
-
         // 字体和字重并排
         Row(
           children: [
@@ -289,7 +287,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
               ),
             ),
             const SizedBox(width: 16),
-
             // 字重选择
             Expanded(
               child: Column(
@@ -373,8 +370,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
               ),
             ),
             Container(
-              width: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(6),
@@ -384,7 +381,54 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 fontStyleDataModel.fontSize.toInt().toString(),
                 textAlign: TextAlign.center,
                 style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              '行高',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
+            Expanded(
+              child: SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  activeTrackColor: Colors.grey.shade300,
+                  thumbColor: Colors.blue.shade600,
+                  inactiveTrackColor: Colors.grey.shade300,
+                ),
+                child: Slider(
+                  value: fontStyleDataModel.height * 10,
+                  min: 10,
+                  max: 20,
+                  divisions: 10,
+                  onChanged: (value) {
+                    fontStyleDataModelNotifier.value =
+                        fontStyleDataModel.copyWith(
+                      height: value * .1,
+                    );
+                  },
+                ),
+              ),
+            ),
+            Container(
+              width: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Text(
+                fontStyleDataModel.height.toStringAsFixed(1),
+                textAlign: TextAlign.center,
+                style:
+                    const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -535,8 +579,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
           Row(
             children: [
               const Text(
-                '不透明度',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                '透明度',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
               ),
               Expanded(
                 child: SliderTheme(
@@ -558,8 +602,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 ),
               ),
               Container(
-                width: 60,
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                width: 32,
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                 decoration: BoxDecoration(
                   color: Colors.grey[100],
                   borderRadius: BorderRadius.circular(6),
@@ -569,7 +613,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   '${(shadowDataModel.shadowOpacity * 100).toInt()}%',
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w600),
+                      fontSize: 12, fontWeight: FontWeight.w600),
                 ),
               ),
             ],
@@ -605,10 +649,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: shadowDataModel.shadowOffsetX.clamp(-15.0, 15.0),
-                  min: -15,
-                  max: 15,
-                  divisions: 60,
+                  value: shadowDataModel.shadowOffsetX.clamp(-5.0, 5.0),
+                  min: -5,
+                  max: 5,
+                  divisions: 10,
                   onChanged: (value) {
                     shadowDataModelNotifier.value =
                         shadowDataModel.copyWith(shadowOffsetX: value);
@@ -634,14 +678,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                       color: previewInfo.item1 == Brightness.light
                           ? lightBackground
                           : darkBackground,
-                      // gradient: LinearGradient(
-                      //   begin: Alignment.topLeft,
-                      //   end: Alignment.bottomRight,
-                      //   colors: [
-                      //     Colors.grey.shade100,
-                      //     Colors.grey.shade50,
-                      //   ],
-                      // ),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(color: Colors.grey.shade300, width: 2),
                     ),
@@ -785,10 +821,10 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     inactiveTrackColor: Colors.grey.shade300,
                   ),
                   child: Slider(
-                    value: shadowDataModel.shadowOffsetY.clamp(-15.0, 15.0),
-                    min: -15,
-                    max: 15,
-                    divisions: 60,
+                    value: shadowDataModel.shadowOffsetY.clamp(-5.0, 5.0),
+                    min: -5,
+                    max: 5,
+                    divisions: 10,
                     onChanged: (value) {
                       shadowDataModelNotifier.value =
                           shadowDataModel.copyWith(shadowOffsetY: value);
@@ -805,7 +841,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
         Row(
           children: [
             const Text(
-              '模糊半径',
+              '模糊',
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
@@ -824,20 +860,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: shadowDataModel.shadowBlurRadius.clamp(0.0, 30.0),
+                  value: shadowDataModel.shadowBlurRadius.clamp(0.0, 15.0),
                   min: 0,
-                  max: 30,
-                  divisions: 60,
+                  max: 15,
+                  divisions: 15,
                   onChanged: (value) {
-                    shadowDataModelNotifier.value =
-                        shadowDataModel.copyWith(shadowBlurRadius: value);
+                    shadowDataModelNotifier.value = shadowDataModel.copyWith(
+                        shadowBlurRadius: value.toInt().toDouble());
                   },
                 ),
               ),
             ),
             Container(
-              width: 50,
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              width: 32,
+              padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
               decoration: BoxDecoration(
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(6),

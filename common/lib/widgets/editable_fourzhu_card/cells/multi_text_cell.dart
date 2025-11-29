@@ -43,6 +43,7 @@ class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
+        clipBehavior: Clip.none,
         duration: const Duration(milliseconds: 200),
         margin: widget.cellStyleConfig.margin,
         padding: widget.cellStyleConfig.padding,
@@ -98,10 +99,12 @@ class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
             children: [
               if (widget.upChild != null) widget.upChild!,
               Container(
+                clipBehavior: Clip.none,
                 alignment: Alignment.center,
-                height: (widget.content.style!.fontSize! * widget.constant)
-                    .toInt()
-                    .toDouble(),
+                // color: Colors.red.withAlpha(100),
+                // height: (widget.content.style!.fontSize! * widget.constant)
+                //     .toInt()
+                //     .toDouble(),
                 child: widget.content,
               ),
               if (widget.subChild != null) widget.subChild!,

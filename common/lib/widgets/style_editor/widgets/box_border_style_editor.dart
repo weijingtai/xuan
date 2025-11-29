@@ -3,11 +3,10 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 
 import '../../editable_fourzhu_card/models/base_style_config.dart';
-import '../../editable_fourzhu_card/models/pillar_style_config.dart';
 
 class BoxBorderStyleEditor extends StatelessWidget {
   final ValueNotifier<BoxBorderStyle> borderNotifier;
-  final ValueNotifier<PillarStyleConfig> styleConfigNotifier;
+  final ValueNotifier<BaseBoxStyleConfig> styleConfigNotifier;
   const BoxBorderStyleEditor(
       {super.key,
       required this.borderNotifier,

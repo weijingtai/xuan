@@ -456,6 +456,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return physical / dpr;
   }
 
+  EdgeInsets _pixelFloorEdgeInsets(EdgeInsets e) {
+    final double dpr = ui.window.devicePixelRatio;
+    double f(double v) => (v * dpr).floorToDouble() / dpr;
+    return EdgeInsets.fromLTRB(f(e.left), f(e.top), f(e.right), f(e.bottom));
+  }
+
   // --- Column width helpers (support narrow separator columns) ---
   bool _isSeparatorTitle(String title) =>
       title == '分隔符' || title == '列分隔符' || title == '|';
@@ -2048,9 +2054,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     CardMetricsSnapshot metricsSnap,
   ) {
     if (isSeparatorColumn) {
-      return widget.themeNotifier.value.pillar
-          .getBy(PillarType.separator)
-          .separatorWidth!;
+      final sep = widget.themeNotifier.value.pillar.getBy(PillarType.separator);
+      return _pixelFloor(sep.separatorWidth ?? 0.0);
     }
     final pm = metricsSnap.pillars[pillarPayloads[i].uuid];
     final contentW = pm?.contentWidth ?? 0.0;
@@ -3405,9 +3410,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     double predictLineHeightConstant = 1.4,
   }) {
     // 计算cell width和height
-    double cellWidth = size.width;
+    // double cellWidth = size.width;
     // 增加decorationWidth
-    cellWidth += cellStyleConfig.getDecorationWidth();
+    // cellWidth += cellStyleConfig.getDecorationWidth();
     // final cellHeight = size.height;
     // 1. content 预测高度
     double predictHeight = mainTextStyleConfig.fontStyleDataModel.fontSize *
@@ -3431,7 +3436,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             char: content,
             colorPreviewMode: widget.colorPreviewModeNotifier.value,
             brightness: widget.brightnessNotifier.value,
-          )),
+          ),
+          strutStyle: StrutStyle(
+              fontSize: mainTextStyleConfig.fontStyleDataModel.fontSize,
+              height: mainTextStyleConfig.fontStyleDataModel.height,
+              forceStrutHeight: true)),
       subChild: Container(),
       // subChild: title != null
       //     ? Container(
@@ -3549,10 +3558,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 double width = colW + innerDecorationWidth;
                 return AnimatedContainer(
                   // clipBehavior: Clip.hardEdge,
+                  clipBehavior: Clip.none,
                   duration: const Duration(milliseconds: 300),
                   curve: Curves.linear,
-                  margin: config.margin,
-                  padding: config.padding,
+                  margin: _pixelFloorEdgeInsets(config.margin),
+                  padding: _pixelFloorEdgeInsets(config.padding),
                   width: _pixelFloor(width),
                   decoration: BoxDecoration(
                     color: bkColor,

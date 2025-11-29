@@ -440,6 +440,7 @@ class RowConfig {
         fontWeight: FontWeight.bold,
         fontSize: 16,
         fontFamily: 'NotoSansSC',
+        height: 1.2,
       ),
     );
   }

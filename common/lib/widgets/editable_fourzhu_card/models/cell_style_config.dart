@@ -75,11 +75,15 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   double getDecorationWidth() {
     final bw = (border?.width ?? 0.0).toDouble();
     final hasBorder = border?.enabled ?? false;
-    return margin.left +
+    final base = margin.left +
         margin.right +
         padding.left +
         padding.right +
         (hasBorder ? bw * 2 : 0.0);
+    final extraShadowW = shadow.withShadow
+        ? (shadow.blurRadius + shadow.spreadRadius + shadow.offset.dx.abs())
+        : 0.0;
+    return base + extraShadowW;
   }
 
   /// 计算单元格装饰所占高度（上下 `margin + padding + borderWidth*2`）
@@ -88,11 +92,15 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   double getDecorationHeight() {
     final bw = (border?.width ?? 0.0).toDouble();
     final hasBorder = border?.enabled ?? false;
-    return margin.top +
+    final base = margin.top +
         margin.bottom +
         padding.top +
         padding.bottom +
         (hasBorder ? bw * 2 : 0.0);
+    final extraShadowH = shadow.withShadow
+        ? (shadow.blurRadius + shadow.spreadRadius + shadow.offset.dy.abs())
+        : 0.0;
+    return base + extraShadowH;
   }
 
   /// 默认的 Cell 样式配置（无边距、默认阴影、圆角与边框禁用）

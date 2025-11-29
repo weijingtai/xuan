@@ -953,7 +953,6 @@ class CardMetricsCalculator {
 
     double? fontSize;
 
-    // 1. Try to get font size from CellTextSpec if pillarUuid is provided
     if (pillarUuid != null) {
       final spec = cellTextSpecMap[_cellKey(rowUuid, pillarUuid)];
       if (spec != null && spec.fontSize != null) {
@@ -961,7 +960,6 @@ class CardMetricsCalculator {
       }
     }
 
-    // 2. Fallback to theme font size
     if (fontSize == null) {
       final ts = theme.typography.getCellContentBy(rt);
       fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
@@ -969,22 +967,24 @@ class CardMetricsCalculator {
       if (rt == RowType.columnHeaderRow) {
         final t = theme.typography.getCellContentBy(rt);
         final fs = t.fontStyleDataModel.fontSize;
-        if (fs != null) fontSize = fs;
+        fontSize = fs ?? fontSize;
       }
     }
 
-    var h = (fontSize! * lineHeightFactor).toInt().toDouble();
+    final contentLineHeight =
+        theme.typography.getCellContentBy(rt).fontStyleDataModel.height + .1 ??
+            lineHeightFactor;
+    double h = (fontSize * contentLineHeight).toInt().toDouble();
 
-    // 3. Add title height if applicable (row-level property)
     final row = payload.rowMap[rowUuid];
-    if (row is TextRowPayload && (row as TextRowPayload).titleInCell) {
+    if (row is TextRowPayload && row.titleInCell) {
       final ts = theme.typography.getCellTitleBy(rt);
-      final fs = ts.fontStyleDataModel.fontSize ?? 12.0;
-      h += fs * lineHeightFactor;
-      print("DEBUG: Row $rowUuid has titleInCell, added height. New h: $h");
+      final titleFs = ts.fontStyleDataModel.fontSize ?? 12.0;
+      final titleLineHeight =
+          ts.fontStyleDataModel.height + .1 ?? contentLineHeight;
+      h += (titleFs * titleLineHeight).toInt().toDouble();
     }
 
-    // print("DEBUG: Cell $rowUuid|$pillarUuid -> fontSize: $fontSize, h: $h");
     return _normalizeDouble(h);
   }
 

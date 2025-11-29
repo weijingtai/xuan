@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../editable_fourzhu_card/models/base_style_config.dart';
-import '../../editable_fourzhu_card/models/pillar_style_config.dart';
 import 'title_slider_widget.dart';
 
 class ShadowEditorWidget extends StatelessWidget {
   final ValueNotifier<BoxShadowStyle> shadowNotifier;
-  final ValueNotifier<PillarStyleConfig> styleConfigNotifier;
+  final ValueNotifier<BaseBoxStyleConfig> styleConfigNotifier;
   const ShadowEditorWidget(
       {super.key,
       required this.shadowNotifier,
@@ -16,7 +15,7 @@ class ShadowEditorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<PillarStyleConfig>(
+    return ValueListenableBuilder<BaseBoxStyleConfig>(
       valueListenable: styleConfigNotifier,
       builder: (context, config, child) =>
           ValueListenableBuilder<BoxShadowStyle>(
@@ -27,7 +26,7 @@ class ShadowEditorWidget extends StatelessWidget {
   }
 
   Widget shadow(
-      BuildContext context, BoxShadowStyle shadow, PillarStyleConfig config) {
+      BuildContext context, BoxShadowStyle shadow, BaseBoxStyleConfig config) {
     final _pillarShadowEnabled = shadow.withShadow ?? false;
     final _pillarShadowFollowBackground =
         shadow.followCardBackgroundColor ?? false;
