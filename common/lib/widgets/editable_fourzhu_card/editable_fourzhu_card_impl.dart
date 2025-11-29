@@ -3346,11 +3346,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               widget.themeNotifier.value.cell.getBy(RowType.heavenlyStem);
           // final textStyleConfig = _resolveGanZhiTextStyle(
           //     rowType: RowType.earthlyBranch, content: d.name);
+          // 标题取行载荷中的标注（保持现状）
+          final titleLabel = rowPayloads
+                  .firstWhere((p) => p.rowType == RowType.heavenlyStem,
+                      orElse: () => rowPayloads.first)
+                  .rowLabel ??
+              '天干';
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: textStyleConfig,
+            titleTextStyleConfig:
+                widget.themeNotifier.value.typography.getCellTitleBy(
+              RowType.heavenlyStem,
+            ),
             content: pillarJiaZi.tianGan.name,
+            title: titleLabel,
           );
           // cell = _cell(size, _tianGanText(pillarJiaZi.tianGan),
           // verticalPadding: 0, horizontalPadding: 0);
@@ -3360,11 +3371,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               .getCellContentBy(RowType.earthlyBranch);
           final cellStyleConfig =
               widget.themeNotifier.value.cell.getBy(RowType.earthlyBranch);
+          final titleLabel = rowPayloads
+                  .firstWhere((p) => p.rowType == RowType.earthlyBranch,
+                      orElse: () => rowPayloads.first)
+                  .rowLabel ??
+              '地支';
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: textStyleConfig,
+            titleTextStyleConfig:
+                widget.themeNotifier.value.typography.getCellTitleBy(
+              RowType.earthlyBranch,
+            ),
             content: pillarJiaZi.diZhi.name,
+            title: titleLabel,
           );
 
           break;
@@ -3375,13 +3396,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           final theme = widget.themeNotifier.value;
           final cellStyleConfig = theme.cell.getBy(rowType);
           final typography = theme.typography;
+          final titleLabel = rowPayloads
+                  .firstWhere((p) => p.rowType == rowType,
+                      orElse: () => rowPayloads.first)
+                  .rowLabel ??
+              null;
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: typography.getCellContentBy(rowType),
             titleTextStyleConfig: typography.getCellTitleBy(rowType),
             content: text,
-            // title:  _labelForRowType(rowType)
+            title: titleLabel,
           );
           break;
       }
@@ -3418,11 +3444,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     double predictHeight = mainTextStyleConfig.fontStyleDataModel.fontSize *
         predictLineHeightConstant;
     double? titlePredicatHeight;
-    if (titleTextStyleConfig != null) {
-      titlePredicatHeight = titleTextStyleConfig.fontStyleDataModel.fontSize *
+    final shouldShowTitle = cellStyleConfig.showsTitleInCell &&
+        titleTextStyleConfig != null &&
+        title != null &&
+        title.isNotEmpty;
+    if (shouldShowTitle) {
+      titlePredicatHeight = titleTextStyleConfig!.fontStyleDataModel.fontSize *
           predictLineHeightConstant;
-
-      // 2. 标题高度
       predictHeight += titlePredicatHeight;
     }
     // 3. 增加padding 与 margin 以及border
@@ -3431,6 +3459,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // print("width: ${size.width}, height: ${size.height}");
     return EditableMultiTextCell(
       size: size,
+      cellStyleConfig: cellStyleConfig,
       content: Text(content,
           style: mainTextStyleConfig.toTextStyle(
             char: content,
@@ -3441,7 +3470,35 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               fontSize: mainTextStyleConfig.fontStyleDataModel.fontSize,
               height: mainTextStyleConfig.fontStyleDataModel.height,
               forceStrutHeight: true)),
-      subChild: Container(),
+      subChild: shouldShowTitle
+          ? Text(title!,
+              style: titleTextStyleConfig.toTextStyle(
+                char: title,
+                colorPreviewMode: widget.colorPreviewModeNotifier.value,
+                brightness: widget.brightnessNotifier.value,
+              ),
+              strutStyle: StrutStyle(
+                  fontSize: titleTextStyleConfig.fontStyleDataModel.fontSize,
+                  height: titleTextStyleConfig.fontStyleDataModel.height,
+                  forceStrutHeight: true))
+          : SizedBox(),
+      // subChild: shouldShowTitle
+      //     ? Container(
+      //         alignment: Alignment.center,
+      //         height: titlePredicatHeight,
+      //         child: Text(title!,
+      //             style: titleTextStyleConfig.toTextStyle(
+      //               char: title,
+      //               colorPreviewMode: widget.colorPreviewModeNotifier.value,
+      //               brightness: widget.brightnessNotifier.value,
+      //             ),
+      //             strutStyle: StrutStyle(
+      //                 fontSize:
+      //                     titleTextStyleConfig.fontStyleDataModel.fontSize,
+      //                 height: titleTextStyleConfig.fontStyleDataModel.height,
+      //                 forceStrutHeight: true)),
+      //       )
+      //     : Container(),
       // subChild: title != null
       //     ? Container(
       //         alignment: Alignment.center,
@@ -3449,7 +3506,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       //         child: Text(title, style: titleTextStyleConfig?.toTextStyle()),
       //       )
       //     : Container(),
-      cellStyleConfig: cellStyleConfig,
     );
   }
 
@@ -4996,7 +5052,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       includeGrip: widget.showGrip,
       showTitleRow: false,
       showTitleCol: false,
-      cellShowsTitle: rows.any((r) => r.titleInCell),
+      cellShowsTitle: rows.any((r) {
+        final rt = r.rowType;
+        if (rt == RowType.columnHeaderRow || rt == RowType.separator) {
+          return false;
+        }
+        return widget.themeNotifier.value.cell.getBy(rt).showsTitleInCell;
+      }),
       cardPadding: EdgeInsets.zero,
       cardBorderWidth: 0.0,
       gripRowHeight: _effectiveDragHandleRowHeight,

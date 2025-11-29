@@ -11,6 +11,10 @@ part 'cell_style_config.g.dart';
 /// 与 `PillarStyleConfig` 一致的字段结构，便于统一计算与风格复用，但语义聚焦到 Cell 而非列容器。
 @JsonSerializable()
 class CellStyleConfig extends BaseBoxStyleConfig {
+  /// 是否在单元格内显示标题（行类型覆盖优先）
+  /// 默认值为 false
+  final bool showsTitleInCell;
+
   /// 构造一个 Cell 样式配置对象
   ///
   /// 参数：
@@ -28,6 +32,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
     super.padding = EdgeInsets.zero,
     super.margin = EdgeInsets.zero,
     required super.shadow,
+    this.showsTitleInCell = false,
   });
 
   /// 创建一个更新后的副本
@@ -44,6 +49,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
     EdgeInsets? padding,
     EdgeInsets? margin,
     BoxShadowStyle? shadow,
+    bool? showsTitleInCell,
   }) {
     return CellStyleConfig(
       border: border ?? this.border,
@@ -52,6 +58,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
       padding: padding ?? this.padding,
       margin: margin ?? this.margin,
       shadow: shadow ?? this.shadow,
+      showsTitleInCell: showsTitleInCell ?? this.showsTitleInCell,
     );
   }
 
@@ -115,6 +122,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
       padding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       margin: EdgeInsets.zero,
       shadow: BoxShadowStyle.defaultShadow.copyWith(withShadow: false),
+      showsTitleInCell: false,
     );
   }
 }

@@ -6,6 +6,7 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/layout_template.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/text_style_config.dart';
+import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
@@ -23,7 +24,7 @@ class RowStyleEditorPanel extends StatelessWidget {
     return ValueListenableBuilder<CardPayload>(
       valueListenable: demoVm.cardPayloadNotifier,
       builder: (context, payload, _) {
-        final vm = Provider.of<FourZhuEditorViewModel>(context, listen: false);
+        // final vm = Provider.of<FourZhuEditorViewModel>(context, listen: false);
         final all = payload.rowOrderUuid;
         if (all.isEmpty) {
           return const Text('暂无行配置');
@@ -55,29 +56,101 @@ class RowStyleEditorPanel extends StatelessWidget {
 
         // rows.sort((a, b) =>
         // (orderMap[a.type] ?? 999).compareTo(orderMap[b.type] ?? 999));
-        return ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemBuilder: (ctx, i) {
-            RowType type = activeTypes[i];
-            final rp = payload.rowMap[payload.rowOrderUuid[i]];
-            final cfg = demoVm.themeNotifier.value.cell.getBy(type);
-            final txtCfg =
-                demoVm.themeNotifier.value.typography.getCellContentBy(
-              type,
+        return ValueListenableBuilder<EditableFourZhuCardTheme>(
+          valueListenable: demoVm.themeNotifier,
+          builder: (ctx, theme, __) {
+            return ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemBuilder: (ctx, i) {
+                final type = activeTypes[i];
+                final String rowUUID = payload.rowOrderUuid[i];
+                final rp = payload.rowMap[rowUUID];
+                final cfg = theme.cell.getBy(type);
+                final txtCfg = theme.typography.getCellContentBy(type);
+                final inCellTitleTextCfg =
+                    theme.typography.getCellTitleBy(type);
+                return RowItem(
+                  cfg: cfg,
+                  txtCfg: txtCfg,
+                  inCellTitleTextCfg: inCellTitleTextCfg,
+                  payload: rp!,
+                  onTextStyleChanged: (newTextStyle) {
+                    onTextStyleChanged(context, rowUUID, type, newTextStyle);
+                  },
+                  onCellStyleChanged: (newCellStyle) {
+                    onCellStyleChanged(context, rowUUID, type, newCellStyle);
+                  },
+                  onInCellTitleTextStyleChanged: (newTextStyle) {
+                    onInCellTitleTextStyleChanged(
+                        context, rowUUID, type, newTextStyle);
+                  },
+                );
+              },
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemCount: activeTypes.length,
             );
-            return RowItem(
-              cfg: cfg,
-              txtCfg: txtCfg,
-              payload: rp!,
-            );
-            // return _RowItem(cfg: cfg, vm: vm);
           },
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
-          itemCount: activeTypes.length,
         );
       },
     );
+  }
+
+  onInCellTitleTextStyleChanged(BuildContext context, String rowUUID,
+      RowType type, TextStyleConfig newTextStyle) {
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final oldTheme = demoVm.themeNotifier.value;
+
+    final mappr = Map.fromEntries(
+        oldTheme.typography.cellTitleMapper.entries.map((e) => e));
+    mappr[type] = newTextStyle;
+
+    final newTheme = oldTheme.copyWith(
+      typography: oldTheme.typography.copyWith(
+        cellTitleMapper: mappr,
+        // cellContentMapper: mappr,
+      ),
+    );
+    demoVm.updateEditableFourZhuCardTheme(newTheme);
+  }
+
+  onTextStyleChanged(BuildContext context, String rowUUID, RowType type,
+      TextStyleConfig newTextStyle) {
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final oldTheme = demoVm.themeNotifier.value;
+
+    final mappr = Map.fromEntries(
+        oldTheme.typography.cellContentMapper.entries.map((e) => e));
+    mappr[type] = newTextStyle;
+
+    final newTheme = oldTheme.copyWith(
+      typography: oldTheme.typography.copyWith(
+        cellContentMapper: mappr,
+      ),
+    );
+    demoVm.updateEditableFourZhuCardTheme(newTheme);
+  }
+
+  onCellStyleChanged(BuildContext context, String rowUUID, RowType type,
+      CellStyleConfig newCellStyle) {
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final oldTheme = demoVm.themeNotifier.value;
+
+    final rowTypeCellConfigMapper = Map.fromEntries(
+        oldTheme.cell.rowTypeCellConfigMapper.entries.map((e) => e));
+    rowTypeCellConfigMapper[type] = newCellStyle;
+
+    final newCell = oldTheme.cell.copyWith(
+      rowTypeCellConfigMapper: rowTypeCellConfigMapper,
+    );
+
+    final newTheme = oldTheme.copyWith(
+      cell: newCell,
+    );
+    demoVm.updateEditableFourZhuCardTheme(newTheme);
   }
 }
 
@@ -85,10 +158,22 @@ class RowItem extends StatelessWidget {
   // final RowConfig cfg;
   final CellStyleConfig cfg;
   final TextStyleConfig txtCfg;
+  final TextStyleConfig inCellTitleTextCfg;
   final RowPayload payload;
+  final ValueChanged<TextStyleConfig> onTextStyleChanged;
+  final ValueChanged<TextStyleConfig> onInCellTitleTextStyleChanged;
+
+  final ValueChanged<CellStyleConfig> onCellStyleChanged;
+
   // final FourZhuEditorViewModel vm;
   const RowItem(
-      {required this.cfg, required this.txtCfg, required this.payload});
+      {required this.cfg,
+      required this.txtCfg,
+      required this.inCellTitleTextCfg,
+      required this.payload,
+      required this.onTextStyleChanged,
+      required this.onCellStyleChanged,
+      required this.onInCellTitleTextStyleChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -111,15 +196,18 @@ class RowItem extends StatelessWidget {
             style: theme.textTheme.titleSmall),
         childrenPadding: const EdgeInsets.all(12),
         children: [
-          if (payload is TextRowPayload)
+          if (payload is TextRowPayload &&
+              payload.rowType != RowType.columnHeaderRow &&
+              payload.rowType != RowType.separator)
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
-              title: const Text('显示标题'),
-              value: (payload as TextRowPayload).titleInCell,
+              title: const Text('单元格内显示标题'),
+              value: cfg.showsTitleInCell,
               onChanged: (v) {
-                // vm.updateRowTitleVisibility(payload.rowType, v);
+                onCellStyleChanged(
+                  cfg.copyWith(showsTitleInCell: v),
+                );
               },
-              // onChanged: (v) => vm.updateRowTitleVisibility(payload.rowType, v),
             ),
           Row(
             children: [
@@ -128,23 +216,15 @@ class RowItem extends StatelessWidget {
             ],
           ),
           Slider(
-            value: (cfg.padding.bottom ?? 0).toDouble(),
+            value: (cfg.padding.bottom).toDouble(),
             min: 0,
             max: 32,
             onChanged: (v) {
-              // vm.updateRowStyle(cfg.type, padding: v);
-              // final demoVm =
-              //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              // final theme = demoVm.themeNotifier.value;
-              // final cell = theme.cell;
-              // final mapper = Map<RowType, CellStyleConfig>.of(
-              //     cell.rowTypeCellConfigMapper);
-              // final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              // final pad = EdgeInsets.fromLTRB(
-              //     base.padding.left, v, base.padding.right, v);
-              // mapper[cfg.type] = base.copyWith(padding: pad);
-              // demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-              //     cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+              onCellStyleChanged(
+                cfg.copyWith(
+                    padding: EdgeInsets.fromLTRB(
+                        cfg.padding.right, v, cfg.padding.right, v)),
+              );
             },
           ),
           const SizedBox(height: 8),
@@ -155,23 +235,15 @@ class RowItem extends StatelessWidget {
             ],
           ),
           Slider(
-            value: (cfg.margin.top ?? 0).toDouble(),
+            value: (cfg.margin.top).toDouble(),
             min: 0,
             max: 32,
             onChanged: (v) {
-              // vm.updateRowStyle(cfg.type, marginVertical: v);
-              // final demoVm =
-              //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              // final theme = demoVm.themeNotifier.value;
-              // final cell = theme.cell;
-              // final mapper = Map<RowType, CellStyleConfig>.of(
-              //     cell.rowTypeCellConfigMapper);
-              // final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              // final mar = EdgeInsets.fromLTRB(
-              //     base.margin.left, v, base.margin.right, v);
-              // mapper[cfg.type] = base.copyWith(margin: mar);
-              // demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-              //     cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+              onCellStyleChanged(
+                cfg.copyWith(
+                    margin: EdgeInsets.fromLTRB(
+                        cfg.margin.left, v, cfg.margin.right, v)),
+              );
             },
           ),
           const SizedBox(height: 8),
@@ -182,23 +254,15 @@ class RowItem extends StatelessWidget {
             ],
           ),
           Slider(
-            value: (cfg.margin.left ?? 0).toDouble(),
+            value: (cfg.margin.left).toDouble(),
             min: 0,
             max: 32,
             onChanged: (v) {
-              // // vm.updateRowStyle(cfg.type, marginHorizontal: v);ddd
-              // final demoVm =
-              //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              // final theme = demoVm.themeNotifier.value;
-              // final cell = theme.cell;
-              // final mapper = Map<RowType, CellStyleConfig>.of(
-              //     cell.rowTypeCellConfigMapper);
-              // final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              // final mar = EdgeInsets.fromLTRB(
-              //     v, base.margin.top, v, base.margin.bottom);
-              // mapper[cfg.type] = base.copyWith(margin: mar);
-              // demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-              //     cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+              onCellStyleChanged(
+                cfg.copyWith(
+                    margin: EdgeInsets.fromLTRB(
+                        v, cfg.margin.top, v, cfg.margin.bottom)),
+              );
             },
           ),
           const SizedBox(height: 8),
@@ -209,48 +273,32 @@ class RowItem extends StatelessWidget {
             ],
           ),
           Slider(
-            value: (cfg.padding.left ?? 0).toDouble(),
+            value: (cfg.padding.left).toDouble(),
             min: 0,
             max: 32,
             onChanged: (v) {
-              // vm.updateRowStyle(cfg.type, paddingHorizontal: v);
-              // final demoVm =
-              //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              // final theme = demoVm.themeNotifier.value;
-              // final cell = theme.cell;
-              // final mapper = Map<RowType, CellStyleConfig>.of(
-              //     cell.rowTypeCellConfigMapper);
-              // final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              // final pad = EdgeInsets.fromLTRB(
-              //     v, base.padding.top, v, base.padding.bottom);
-              // mapper[cfg.type] = base.copyWith(padding: pad);
-              // demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-              //     cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
+              onCellStyleChanged(
+                cfg.copyWith(
+                    padding: EdgeInsets.fromLTRB(
+                        v, cfg.padding.top, v, cfg.padding.bottom)),
+              );
             },
           ),
           const SizedBox(height: 8),
           ColorfulTextStyleEditorV2Enhanced(
-            type: payload.rowType,
-            initialConfig: txtCfg,
-            values: payload.rowType == RowType.heavenlyStem
-                ? TianGan.values.take(10).map((e) => e.name).toList()
-                : DiZhi.values.take(12).map((e) => e.name).toList(),
-            onChanged: (TextStyleConfig style) {
-              // vm.updateRowStyle(cfg.type, textStyleConfig: style);
-              // final demoVm =
-              //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              // final theme = demoVm.themeNotifier.value;
-              // final typo = theme.typography;
-              // final mapper =
-              //     Map<RowType, TextStyleConfig>.of(typo.cellContentMapper);
-              // mapper[cfg.type] = style;
-              // demoVm.updateEditableFourZhuCardTheme(
-              //   theme.copyWith(
-              //     typography: typo.copyWith(cellContentMapper: mapper),
-              //   ),
-              // );
-            },
-          ),
+              type: payload.rowType,
+              initialConfig: txtCfg,
+              values: payload.rowType == RowType.heavenlyStem
+                  ? TianGan.values.take(10).map((e) => e.name).toList()
+                  : DiZhi.values.take(12).map((e) => e.name).toList(),
+              onChanged: onTextStyleChanged),
+          if (cfg.showsTitleInCell) ...[
+            const SizedBox(height: 8),
+            ColorfulTextStyleEditorV2Enhanced(
+                type: payload.rowType,
+                initialConfig: inCellTitleTextCfg,
+                onChanged: onInCellTitleTextStyleChanged),
+          ]
         ],
       ),
     );

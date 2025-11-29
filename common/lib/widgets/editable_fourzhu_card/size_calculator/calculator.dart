@@ -976,8 +976,14 @@ class CardMetricsCalculator {
             lineHeightFactor;
     double h = (fontSize * contentLineHeight).toInt().toDouble();
 
-    final row = payload.rowMap[rowUuid];
-    if (row is TextRowPayload && row.titleInCell) {
+    // 样式层：若当前行类型开启“单元格内显示标题”，叠加标题高度
+    final showTitle = () {
+      if (rt == RowType.columnHeaderRow || rt == RowType.separator) {
+        return false;
+      }
+      return theme.cell.getBy(rt).showsTitleInCell;
+    }();
+    if (showTitle) {
       final ts = theme.typography.getCellTitleBy(rt);
       final titleFs = ts.fontStyleDataModel.fontSize ?? 12.0;
       final titleLineHeight =
@@ -1011,10 +1017,30 @@ class CardMetricsCalculator {
           14.0;
       contentW = _normalizeDouble(spec.charCount * fs * avgGlyphWidthScale);
     }
-    contentW = contentW.ceilToDouble();
-    // print("DEBUG: Cell $rowUuid|$pillarUuid -> contentW: $contentW");
 
-    return contentW;
+    double titleW = 0.0;
+    final showTitle = () {
+      if (rt == RowType.columnHeaderRow || rt == RowType.separator) {
+        return false;
+      }
+      return theme.cell.getBy(rt).showsTitleInCell;
+    }();
+
+    if (showTitle) {
+      final rowPayload = payload.rowMap[rowUuid];
+      String label = '';
+      if (rowPayload is TextRowPayload) {
+        label = rowPayload.rowLabel ?? '';
+      }
+      if (label.isNotEmpty) {
+        final ts = theme.typography.getCellTitleBy(rt);
+        final titleFs = ts.fontStyleDataModel.fontSize ?? 12.0;
+        titleW = _normalizeDouble(label.length * titleFs * avgGlyphWidthScale);
+      }
+    }
+
+    final maxW = (titleW > contentW ? titleW : contentW).ceilToDouble();
+    return maxW;
   }
 
   static String _cellKey(String rowUuid, String pillarUuid) =>

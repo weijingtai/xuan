@@ -16,16 +16,16 @@ import '../../const_resources_mapper.dart';
 class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
   // final String label;
   final RowType type;
-  final List<String> values;
+  final List<String>? values;
   final ValueChanged<TextStyleConfig> onChanged;
-  final TextStyleConfig? initialConfig;
+  final TextStyleConfig initialConfig;
 
   const ColorfulTextStyleEditorV2Enhanced({
     super.key,
     required this.type,
     required this.onChanged,
-    this.initialConfig,
-    required this.values,
+    required this.initialConfig,
+    this.values,
   });
 
   @override
@@ -58,89 +58,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
     super.dispose();
   }
 
-  TextShadowDataModel get defaultShadow => TextShadowDataModel(
-        shadowEnabled: false,
-        followTextColor: false,
-        shadowBlurRadius: 10,
-        lightShadowColor: Colors.black,
-        shadowOpacity: 0.65,
-        shadowOffsetX: 5.0,
-        shadowOffsetY: 5.0,
-      );
-
-  /// 纯色模式 - 亮色主题：所有天干都使用黑色
-  Map<String, Color> get pureLightMapper {
-    return Map.fromEntries(List.generate(
-      widget.values.length,
-      (i) => MapEntry(widget.values[i], Colors.black87),
-    ));
-  }
-
-  /// 彩色模式 - 亮色主题：从 ConstResourcesMapper 获取天干颜色
-  Map<String, Color> get colorfulLightMapper {
-    switch (widget.type) {
-      case RowType.heavenlyStem:
-        return ConstResourcesMapper.zodiacGanColors.map(
-          (key, value) => MapEntry(key.name, value),
-        );
-      case RowType.earthlyBranch:
-        return ConstResourcesMapper.zodiacZhiColors.map(
-          (key, value) => MapEntry(key.name, value),
-        );
-      default:
-        return pureLightMapper;
-    }
-  }
-
-  /// 纯色模式 - 暗色主题：所有天干都使用浅灰色
-  Map<String, Color> get pureDarkMapper {
-    return Map.fromEntries(List.generate(
-      widget.values.length,
-      (i) => MapEntry(widget.values[i], Colors.white70),
-    ));
-  }
-
-  /// 彩色模式 - 暗色主题：从 ConstResourcesMapper 获取天干颜色（与亮色相同）
-  Map<String, Color> get colorfulDarkMapper {
-    switch (widget.type) {
-      case RowType.heavenlyStem:
-        return ConstResourcesMapper.zodiacGanColors.map(
-          (key, value) => MapEntry(key.name, value),
-        );
-      case RowType.earthlyBranch:
-        return ConstResourcesMapper.zodiacZhiColors.map(
-          (key, value) => MapEntry(key.name, value),
-        );
-      default:
-        return pureDarkMapper;
-    }
-  }
-
   @override
   void initState() {
     super.initState();
     // 优先使用 initialConfig，如果不存在则使用默认值
-    fontStyleDataModelNotifier = ValueNotifier(
-      widget.initialConfig?.fontStyleDataModel ??
-          FontStyleDataModel(
-              fontFamily: 'sans-serif',
-              fontSize: 16,
-              fontWeight: FontWeight.normal,
-              height: 1.2),
-    )..addListener(() => onFontChanged());
+    fontStyleDataModelNotifier =
+        ValueNotifier(widget.initialConfig.fontStyleDataModel)
+          ..addListener(() => onFontChanged());
 
     shadowDataModelNotifier = ValueNotifier(
-      widget.initialConfig?.textShadowDataModel ?? defaultShadow,
+      widget.initialConfig.textShadowDataModel,
     )..addListener(() => onFontChanged());
 
     colorMapperDataModelNotifier = ValueNotifier(
-      widget.initialConfig?.colorMapperDataModel ??
-          ColorMapperDataModel(
-            pureLightMapper: pureLightMapper,
-            colorfulLightMapper: colorfulLightMapper,
-            pureDarkMapper: pureDarkMapper,
-            colorfulDarkMapper: colorfulDarkMapper,
-          ),
+      widget.initialConfig.colorMapperDataModel,
     )..addListener(() => onFontChanged());
   }
 
@@ -685,9 +616,13 @@ class _ColorfulTextStyleEditorV2EnhancedState
                         valueListenable: _previewCharIndexNotifier,
                         builder: (ctx, index, _) {
                           Color shadowColor = shadowDataModel.lightShadowColor;
-                          String char = widget.values.isNotEmpty
-                              ? widget.values[index]
-                              : '甲';
+                          final hasValues =
+                              (widget.values?.isNotEmpty ?? false);
+                          final vals = widget.values ?? const <String>[];
+                          final safeIndex = vals.isNotEmpty
+                              ? (index as int).clamp(0, vals.length - 1)
+                              : 0;
+                          String char = hasValues ? vals[safeIndex] : '甲';
                           Color textColor = colorMapperDataModel.getMapperBy(
                                   theme: previewInfo.item1,
                                   mode: previewInfo.item2)[char] ??
@@ -702,9 +637,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                               // 中间：预览文字
                               Center(
                                 child: Text(
-                                  widget.values.isNotEmpty
-                                      ? widget.values[index]
-                                      : '甲',
+                                  hasValues ? vals[safeIndex] : '甲',
                                   style: TextStyle(
                                     fontSize: fontStyleDataModel.fontSize,
                                     // fontWeight: FontWeight.bold,
@@ -725,8 +658,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                 ),
                               ),
                               // 左侧箭头按钮
-                              if (widget.values.isNotEmpty &&
-                                  widget.values.length > 1)
+                              if (hasValues && vals.length > 1)
                                 Positioned(
                                   left: 8,
                                   top: 0,
@@ -739,21 +671,17 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                         size: 28,
                                       ),
                                       onTap: () {
-                                        _previewCharIndexNotifier.value =
-                                            (index - 1) % widget.values.length;
-                                        if (_previewCharIndexNotifier.value <
-                                            0) {
-                                          _previewCharIndexNotifier.value =
-                                              widget.values.length;
-                                        }
+                                        final len = vals.length;
+                                        var next = ((index as int) - 1) % len;
+                                        if (next < 0) next = len - 1;
+                                        _previewCharIndexNotifier.value = next;
                                       },
                                     ),
                                   ),
                                 ),
 
                               // 右侧箭头按钮
-                              if (widget.values.isNotEmpty &&
-                                  widget.values.length > 1)
+                              if (hasValues && vals.length > 1)
                                 Positioned(
                                   right: 8,
                                   top: 0,
@@ -766,16 +694,16 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                         size: 28,
                                       ),
                                       onTap: () {
+                                        final len = vals.length;
                                         _previewCharIndexNotifier.value =
-                                            (index + 1) % widget.values.length;
+                                            ((index as int) + 1) % len;
                                       },
                                     ),
                                   ),
                                 ),
 
                               // 底部：页码指示器
-                              if (widget.values.isNotEmpty &&
-                                  widget.values.length > 1)
+                              if (hasValues && vals.length > 1)
                                 Positioned(
                                   bottom: 8,
                                   left: 0,
@@ -789,7 +717,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        '${index + 1} / ${widget.values.length}',
+                                        '${(index as int) + 1} / ${vals.length}',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -995,8 +923,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ],
         ),
         const SizedBox(height: 20),
-        // 天干地支颜色选择
-        _buildGanZhiColorPicker(currentTheme),
+        if (widget.values != null) _buildGanZhiColorPicker(currentTheme),
       ],
     );
   }
@@ -1076,11 +1003,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
             label: '彩色',
             isSelected: mode == ColorPreviewMode.colorful,
             textColor: isLight
-                ? colorfulLightMapper.entries.first.value // 浅色主题使用"甲"的颜色
-                : colorfulDarkMapper.entries.first.value, // 深色主题使用"甲"的颜色
+                ? widget.initialConfig.colorMapperDataModel.pureLightMapper
+                    .entries.first.value // 浅色主题使用"甲"的颜色
+                : widget.initialConfig.colorMapperDataModel.pureDarkMapper
+                    .entries.first.value, // 深色主题使用"甲"的颜色
             circleColor: isLight
-                ? colorfulLightMapper.entries.first.value // 浅色主题使用"甲"的颜色
-                : colorfulDarkMapper.entries.first.value, // 深色主题使用"甲"的颜色
+                ? widget.initialConfig.colorMapperDataModel.colorfulLightMapper
+                    .entries.first.value // 浅色主题使用"甲"的颜色
+                : widget.initialConfig.colorMapperDataModel.colorfulDarkMapper
+                    .entries.first.value, // 深色主题使用"甲"的颜色
             onTap: () => onModeChanged(ColorPreviewMode.colorful),
           ),
         ],
@@ -1186,7 +1117,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
   }
 
   Widget _buildGanZhiColorPicker(Brightness currentTheme) {
-    List<String> list = widget.values;
+    final List<String> list = widget.values!;
 
     final textColor =
         currentTheme == Brightness.light ? Colors.black87 : Colors.white;

@@ -24,6 +24,7 @@ CellStyleConfig _$CellStyleConfigFromJson(Map<String, dynamic> json) =>
           : const EdgeInsetsConverter()
               .fromJson(json['margin'] as Map<String, dynamic>),
       shadow: BoxShadowStyle.fromJson(json['shadow'] as Map<String, dynamic>),
+      showsTitleInCell: json['showsTitleInCell'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$CellStyleConfigToJson(CellStyleConfig instance) =>
@@ -36,4 +37,5 @@ Map<String, dynamic> _$CellStyleConfigToJson(CellStyleConfig instance) =>
       'padding': const EdgeInsetsConverter().toJson(instance.padding),
       'margin': const EdgeInsetsConverter().toJson(instance.margin),
       'shadow': instance.shadow,
+      'showsTitleInCell': instance.showsTitleInCell,
     };

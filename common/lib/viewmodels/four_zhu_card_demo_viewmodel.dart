@@ -300,6 +300,9 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
     cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
     paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
+
+    // 执行一次批量迁移：将旧数据中的 titleInCell 映射到样式层
+    _migrateTitleInCellToCellStyle();
   }
 
   /// 返回当前主题。
@@ -331,6 +334,29 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 返回是否开启调试滞回可视化。
   bool get debugHysteresisOverlay => _debugHysteresisOverlay;
+
+  /// 批量迁移：将载荷中的 titleInCell 映射为样式层的 showsTitleInCell
+  /// 仅迁移非 header/separator 的行类型；行类型覆盖始终优先
+  void _migrateTitleInCellToCellStyle() {
+    final payload = cardPayloadNotifier.value;
+    final theme = themeNotifier.value;
+    final cell = theme.cell;
+    final mapper =
+        Map<RowType, CellStyleConfig>.of(cell.rowTypeCellConfigMapper);
+    payload.rowMap.values.whereType<TextRowPayload>().forEach((row) {
+      final rt = row.rowType;
+      if (rt == RowType.columnHeaderRow || rt == RowType.separator) return;
+      if (row.titleInCell) {
+        final base = mapper[rt] ?? cell.globalCellConfig;
+        mapper[rt] = base.copyWith(showsTitleInCell: true);
+      }
+    });
+    updateEditableFourZhuCardTheme(
+      theme.copyWith(
+        cell: cell.copyWith(rowTypeCellConfigMapper: mapper),
+      ),
+    );
+  }
 
   void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
     // _theme = newTheme;
