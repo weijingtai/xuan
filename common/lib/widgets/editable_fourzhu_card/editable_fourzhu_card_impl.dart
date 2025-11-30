@@ -391,6 +391,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       lineHeightFactor: 1.4,
       cellTextSpecMap: specMap,
       avgGlyphWidthScale: 1.2,
+      defaultSeparatorWidth: widget.themeNotifier.value.pillar
+              .getBy(PillarType.separator)
+              .separatorWidth ??
+          8.0,
+      rowTitleWidth: rowTitleWidth,
     );
     return calc.compute();
   }
@@ -2053,13 +2058,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     bool isSeparatorColumn,
     CardMetricsSnapshot metricsSnap,
   ) {
-    if (isSeparatorColumn) {
-      final sep = widget.themeNotifier.value.pillar.getBy(PillarType.separator);
-      return _pixelFloor(sep.separatorWidth ?? 0.0);
-    }
+    // Prioritize metrics from snapshot to ensure consistency with container width (totals.totalWidth)
+    // and to fix gap issues (use totalWidth because _buildEachPillar subtracts margin).
     final pm = metricsSnap.pillars[pillarPayloads[i].uuid];
-    final contentW = pm?.contentWidth ?? 0.0;
-    return contentW > 0 ? _pixelFloor(contentW) : 0.0;
+    if (pm != null) {
+      return _pixelFloor(pm.totalWidth);
+    }
+
+    // Fallback: if metrics missing (e.g. stale during update), return 0 to avoid overflow
+    // Previously we returned separatorWidth directly for separators, which caused overflow
+    // when metricsSnap didn't include the separator yet.
+    return 0.0;
   }
 
   List<Widget> _buildPillarCells(
@@ -3324,7 +3333,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (_isSeparatorRowAtIndex(absRowIdx)) {
       // 分隔行：不在单元格内绘制横线，由数据网格叠加层统一绘制
       cell = SizedBox.fromSize(
-        size: const Size(10, 10), // 临时值, 用于占位
+        size: size,
       );
     } else if (rowType != null) {
       switch (rowType) {
@@ -3580,11 +3589,54 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
+  Widget _buildStyledPillarSegment(
+      PillarStyleConfig config, Color bkColor, double width, Widget content) {
+    return AnimatedContainer(
+      // clipBehavior: Clip.hardEdge,
+      clipBehavior: Clip.none,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.linear,
+      margin: _pixelFloorEdgeInsets(config.margin),
+      padding: _pixelFloorEdgeInsets(config.padding),
+      width: _pixelFloor(width),
+      decoration: BoxDecoration(
+        color: bkColor,
+        borderRadius: BorderRadius.circular(config.border!.radius),
+        border: (config.border != null &&
+                config.border!.enabled &&
+                config.border!.width != 0)
+            ? Border.all(
+                color: config.border!.lightColor,
+                width: config.border!.width,
+              )
+            : null,
+        boxShadow: config.shadow.withShadow
+            ? [
+                BoxShadow(
+                  color: config.shadow.followCardBackgroundColor
+                      ? bkColor
+                      : config.shadow.lightThemeColor,
+                  offset: config.shadow.offset,
+                  blurRadius: config.shadow.blurRadius,
+                  spreadRadius: config.shadow.spreadRadius,
+                )
+              ]
+            : [],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(config.border!.radius),
+        child: content,
+      ),
+    );
+  }
+
   Widget _buildEachPillar(int pillarIndex, double colW, Widget columnContent) {
     return ValueListenableBuilder(
         valueListenable: widget.cardPayloadNotifier,
         builder: (ctx, _, __) {
           final pillars = _currentPillars();
+          final rowPayloads = _currentTextRows();
+
           return ValueListenableBuilder<PillarSection>(
               valueListenable: _pillarSectionNotifier,
               builder: (context, pillarConfig, __) {
@@ -3604,51 +3656,64 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
                 // 使用与 CardMetricsCalculator 一致的宽度计算：contentWidth + decorationWidth
                 // decorationWidth 包含 margin + padding + border*2
-                final borderW = (config.border != null &&
-                        config.border!.enabled &&
-                        config.border!.width != 0)
-                    ? config.border!.width
-                    : 0.0;
-                final innerDecorationWidth =
-                    config.padding.left + config.padding.right + borderW * 2;
-                double width = colW + innerDecorationWidth;
-                return AnimatedContainer(
-                  // clipBehavior: Clip.hardEdge,
-                  clipBehavior: Clip.none,
-                  duration: const Duration(milliseconds: 300),
-                  curve: Curves.linear,
-                  margin: _pixelFloorEdgeInsets(config.margin),
-                  padding: _pixelFloorEdgeInsets(config.padding),
-                  width: _pixelFloor(width),
-                  decoration: BoxDecoration(
-                    color: bkColor,
-                    borderRadius: BorderRadius.circular(config.border!.radius),
-                    border: (config.border != null &&
-                            config.border!.enabled &&
-                            config.border!.width != 0)
-                        ? Border.all(
-                            color: config.border!.lightColor,
-                            width: config.border!.width,
-                          )
-                        : null,
-                    boxShadow: config.shadow.withShadow
-                        ? [
-                            BoxShadow(
-                              color: config.shadow.followCardBackgroundColor
-                                  ? bkColor
-                                  : config.shadow.lightThemeColor,
-                              offset: config.shadow.offset,
-                              blurRadius: config.shadow.blurRadius,
-                              spreadRadius: config.shadow.spreadRadius,
-                            )
-                          ]
-                        : [],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(config.border!.radius),
-                    child: columnContent,
-                  ),
-                );
+                // colW 是总宽度，_buildStyledPillarSegment 会设置 margin，所以传给它的 width 应为 colW - margin
+                final marginW = config.margin.left + config.margin.right;
+                double width = colW - marginW;
+                if (width < 0) width = 0;
+
+                if (columnContent is Column) {
+                  final children = columnContent.children;
+                  // 校验 children 数量是否为行数的两倍（GhostRow + Cell）
+                  if (children.length == rowPayloads.length * 2) {
+                    List<Widget> finalChildren = [];
+                    List<Widget> currentSegmentChildren = [];
+
+                    for (int i = 0; i < rowPayloads.length; i++) {
+                      final row = rowPayloads[i];
+                      // 获取该行对应的两个 Widget
+                      final ghost = children[2 * i];
+                      final cell = children[2 * i + 1];
+
+                      if (row.rowType == RowType.separator) {
+                        // 遇到分隔符：结束当前段落
+                        if (currentSegmentChildren.isNotEmpty) {
+                          finalChildren.add(_buildStyledPillarSegment(
+                              config,
+                              bkColor,
+                              width,
+                              Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [...currentSegmentChildren])));
+                          currentSegmentChildren.clear();
+                        }
+                        // 添加分隔符行本身的 Widget（通常是占位或间隙），不包裹在样式容器中
+                        finalChildren.add(Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [ghost, cell]));
+                      } else {
+                        currentSegmentChildren.add(ghost);
+                        currentSegmentChildren.add(cell);
+                      }
+                    }
+                    // 添加剩余段落
+                    if (currentSegmentChildren.isNotEmpty) {
+                      finalChildren.add(_buildStyledPillarSegment(
+                          config,
+                          bkColor,
+                          width,
+                          Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [...currentSegmentChildren])));
+                    }
+
+                    return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: finalChildren);
+                  }
+                }
+
+                return _buildStyledPillarSegment(
+                    config, bkColor, width, columnContent);
               });
         });
   }
@@ -5047,6 +5112,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       lineHeightFactor: 1.4,
       cellTextSpecMap: specMap,
       avgGlyphWidthScale: 1.2,
+      defaultSeparatorWidth: widget.themeNotifier.value.pillar
+              .getBy(PillarType.separator)
+              .separatorWidth ??
+          8.0,
+      rowTitleWidth: rowTitleWidth,
     );
     final opts = MetricsComputeOptions(
       includeGrip: widget.showGrip,
@@ -5059,8 +5129,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         }
         return widget.themeNotifier.value.cell.getBy(rt).showsTitleInCell;
       }),
-      cardPadding: EdgeInsets.zero,
-      cardBorderWidth: 0.0,
+      cardPadding: widget.paddingNotifier.value,
+      cardBorderWidth: widget.themeNotifier.value.card.border?.width ?? 0.0,
       gripRowHeight: _effectiveDragHandleRowHeight,
       gripColWidth: _effectiveDragHandleColWidth,
       columnTitleHeight: columnTitleHeight,

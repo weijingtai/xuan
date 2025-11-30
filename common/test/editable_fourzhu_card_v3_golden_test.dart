@@ -1,6 +1,7 @@
 import 'package:common/widgets/editable_fourzhu_card/card_grid_painter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
 import 'package:common/widgets/editable_fourzhu_card/card_grid_painter.dart';
@@ -10,6 +11,9 @@ import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/pillar_content.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/pillar_content.dart' as model;
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/viewmodels/four_zhu_card_demo_viewmodel.dart';
 
 /// Builds a minimal `PillarContent` instance for a four pillars chart.
 ///
@@ -44,26 +48,30 @@ model.PillarContent _pillarContent({
 /// Returns: List of `PillarPayload` used to render the grid.
 List<PillarPayload> _buildPillars() {
   return [
-    const RowTitleColumnPayload(width: 52),
-    PillarPayload(
+    const RowTitleColumnPayload(uuid: 'row-title'),
+    ContentPillarPayload(
+      uuid: 'year-col',
       pillarType: PillarType.year,
       pillarLabel: '年',
       pillarContent:
           _pillarContent(id: 'year#1', pillarType: PillarType.year, label: '年'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'month-col',
       pillarType: PillarType.month,
       pillarLabel: '月',
       pillarContent: _pillarContent(
           id: 'month#1', pillarType: PillarType.month, label: '月'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'day-col',
       pillarType: PillarType.day,
       pillarLabel: '日',
       pillarContent:
           _pillarContent(id: 'day#1', pillarType: PillarType.day, label: '日'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'hour-col',
       pillarType: PillarType.hour,
       pillarLabel: '时',
       pillarContent:
@@ -72,49 +80,40 @@ List<PillarPayload> _buildPillars() {
   ];
 }
 
-/// Creates a basic rows list including 表头/天干/地支/分隔/纳音/空亡，
-/// 并填充每行的 `perPillarValues` 以避免运行时异常。
+/// Creates a basic rows list including 表头/天干/地支/分隔/纳音/空亡。
 ///
 /// 参数：
 /// - [pillars]：用于构建每行值的柱列表（包含 `pillarContent`）。
 ///
 /// 返回：用于渲染网格的 `RowInfoPayload` 列表。
 List<TextRowPayload> _buildRows(List<PillarPayload> pillars) {
-  // 构造每行的 perPillarValues 映射（键为 pillarContent.id）。
-  final stemValues = <String, String>{};
-  final branchValues = <String, String>{};
-  final naYinValues = <String, String>{};
-  final kongWangValues = <String, String>{};
-
-  for (final p in pillars) {
-    final content = p.pillarContent;
-    if (content == null) continue;
-    final id = content.id;
-    final jz = content.jiaZi;
-    stemValues[id] = jz.gan.value;
-    branchValues[id] = jz.zhi.value;
-    naYinValues[id] = jz.naYinStr;
-    final kw = jz.getKongWang();
-    kongWangValues[id] = kw.item1.value + kw.item2.value;
-  }
-
   return [
-    const ColumnHeaderRowPayload(gender: Gender.male),
+    ColumnHeaderRowPayload(uuid: 'header', gender: Gender.male),
     TextRowPayload(
+        uuid: 'stem-row',
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
-        perPillarValues: stemValues),
+        titleInCell: false),
     TextRowPayload(
+        uuid: 'branch-row',
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
-        perPillarValues: branchValues),
-    const TextRowPayload(rowType: RowType.separator, rowLabel: '分隔符'),
+        titleInCell: false),
     TextRowPayload(
-        rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
+        uuid: 'sep-row',
+        rowType: RowType.separator,
+        rowLabel: '分隔符',
+        titleInCell: false),
     TextRowPayload(
+        uuid: 'nayin-row',
+        rowType: RowType.naYin,
+        rowLabel: '纳音',
+        titleInCell: false),
+    TextRowPayload(
+        uuid: 'kw-row',
         rowType: RowType.kongWang,
         rowLabel: '空亡',
-        perPillarValues: kongWangValues),
+        titleInCell: false),
   ];
 }
 
@@ -144,9 +143,22 @@ Future<void> _pumpCard(
 }) async {
   // 设定固定画布尺寸，避免设备不同导致快照不一致。
   await tester.binding.setSurfaceSize(size);
-  final pillarsNotifier = ValueNotifier<List<PillarPayload>>(pillars);
-  final rowsNotifier = ValueNotifier<List<TextRowPayload>>(rows);
+
+  final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(
+      EditableCardThemeBuilder.createDefaultTheme());
+  final brightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+  final colorPreviewModeNotifier =
+      ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+
+  final cardPayload = CardPayload(
+    gender: Gender.male,
+    pillarMap: {for (final p in pillars) p.uuid: p},
+    pillarOrderUuid: pillars.map((e) => e.uuid).toList(),
+    rowMap: {for (final r in rows) r.uuid: r},
+    rowOrderUuid: rows.map((e) => e.uuid).toList(),
+  );
+  final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
   await tester.pumpWidget(
     MaterialApp(
@@ -157,12 +169,17 @@ Future<void> _pumpCard(
             height: size.height,
             child: RepaintBoundary(
               key: const Key('v3-card-boundary'),
-              child: EditableFourZhuCardV3(
-                pillarsNotifier: pillarsNotifier,
-                rowListNotifier: rowsNotifier,
-                paddingNotifier: paddingNotifier,
-                gender: Gender.male,
-                dayGanZhi: JiaZi.JIA_ZI,
+              child: ChangeNotifierProvider(
+                create: (_) => FourZhuCardDemoViewModel(),
+                child: EditableFourZhuCardV3(
+                  dayGanZhi: JiaZi.JIA_ZI,
+                  brightnessNotifier: brightnessNotifier,
+                  colorPreviewModeNotifier: colorPreviewModeNotifier,
+                  themeNotifier: themeNotifier,
+                  cardPayloadNotifier: cardPayloadNotifier,
+                  paddingNotifier: paddingNotifier,
+                  gender: Gender.male,
+                ),
               ),
             ),
           ),

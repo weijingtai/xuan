@@ -17,6 +17,7 @@ class CardMetricsCalculator {
   final double avgGlyphWidthScale;
   final double defaultSeparatorWidth;
   final Map<String, double> rowHeightOverrides;
+  final double rowTitleWidth;
 
   CardMetricsSnapshot? _snapshot;
 
@@ -30,6 +31,7 @@ class CardMetricsCalculator {
     this.defaultRowHeight = 48.0,
     this.defaultSeparatorWidth = 8.0,
     this.rowHeightOverrides = const {},
+    this.rowTitleWidth = 52.0,
   });
 
   Size computeFinalSize(MetricsComputeOptions options) {
@@ -581,6 +583,8 @@ class CardMetricsCalculator {
       double pillarContentW = 0.0;
       if (pillar.pillarType == PillarType.separator) {
         pillarContentW = pillarConfig.separatorWidth ?? defaultSeparatorWidth;
+      } else if (pillar.pillarType == PillarType.rowTitleColumn) {
+        pillarContentW = rowTitleWidth;
       } else {
         pillarContentW = _normalizeDouble(
           maxCellFullHSize > 0.0 ? maxCellFullHSize : defaultPillarContentWidth,
@@ -972,9 +976,9 @@ class CardMetricsCalculator {
     }
 
     final contentLineHeight =
-        theme.typography.getCellContentBy(rt).fontStyleDataModel.height + .1 ??
+        theme.typography.getCellContentBy(rt).fontStyleDataModel.height ??
             lineHeightFactor;
-    double h = (fontSize * contentLineHeight).toInt().toDouble();
+    double h = (fontSize * contentLineHeight).ceilToDouble();
 
     // 样式层：若当前行类型开启“单元格内显示标题”，叠加标题高度
     final showTitle = () {
@@ -986,9 +990,8 @@ class CardMetricsCalculator {
     if (showTitle) {
       final ts = theme.typography.getCellTitleBy(rt);
       final titleFs = ts.fontStyleDataModel.fontSize ?? 12.0;
-      final titleLineHeight =
-          ts.fontStyleDataModel.height + .1 ?? contentLineHeight;
-      h += (titleFs * titleLineHeight).toInt().toDouble();
+      final titleLineHeight = ts.fontStyleDataModel.height ?? contentLineHeight;
+      h += (titleFs * titleLineHeight).ceilToDouble();
     }
 
     return _normalizeDouble(h);

@@ -151,7 +151,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
         // Separator 专用配置
         defaultSeparatorConfig: PillarStyleConfig(
           border:
-              BoxBorderStyle.defaultBorder.copyWith(enabled: false, radius: 0),
+              BoxBorderStyle.defaultBorder.copyWith(enabled: false, radius: 0.0),
           lightBackgroundColor: Colors.transparent,
           darkBackgroundColor: Colors.transparent,
           padding: EdgeInsets.zero,
