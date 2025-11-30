@@ -29,11 +29,10 @@ class RowStyleEditorPanel extends StatelessWidget {
         if (all.isEmpty) {
           return const Text('暂无行配置');
         }
-        final activeTypes = payload.rowOrderUuid
+        final validRows = payload.rowOrderUuid
             .map((id) => payload.rowMap[id])
             .whereType<TextRowPayload>()
-            .map((p) => p.rowType)
-            .where((t) => t != RowType.separator)
+            .where((p) => p.rowType != RowType.separator)
             .toList();
         // final missing =
         // activeTypes.where((t) => !all.any((c) => c.type == t)).toList();
@@ -63,9 +62,10 @@ class RowStyleEditorPanel extends StatelessWidget {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemBuilder: (ctx, i) {
-                final type = activeTypes[i];
-                final String rowUUID = payload.rowOrderUuid[i];
-                final rp = payload.rowMap[rowUUID];
+                final rp = validRows[i];
+                final type = rp.rowType;
+                final String rowUUID = rp.uuid;
+                // final rp = payload.rowMap[rowUUID];
                 final cfg = theme.cell.getBy(type);
                 final txtCfg = theme.typography.getCellContentBy(type);
                 final inCellTitleTextCfg =
@@ -88,7 +88,7 @@ class RowStyleEditorPanel extends StatelessWidget {
                 );
               },
               separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemCount: activeTypes.length,
+              itemCount: validRows.length,
             );
           },
         );

@@ -91,7 +91,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   /// 可选：行重排完成时回调通知。用于测试或外部状态同步。
   ///
   /// 参数：按当前顺序排列的行载荷列表。
-  final void Function(List<TextRowPayload> rows)? onRowsReordered;
+  final void Function(List<RowPayload> rows)? onRowsReordered;
 
   EditableFourZhuCardV3({
     super.key,
@@ -512,9 +512,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回值：
   /// - 当行类型为 `RowType.separator` 时返回 true，否则返回 false。
   bool _isSeparatorRowAtIndex(int absRowIdx) {
-    final rows = _currentTextRows();
+    final rows = _currentRows();
     if (absRowIdx >= 0 && absRowIdx < rows.length) {
-      return rows[absRowIdx].rowType == RowType.separator;
+      final r = rows[absRowIdx];
+      return r is RowSeparatorPayload || r.rowType == RowType.separator;
     }
     return false;
   }
@@ -579,8 +580,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   List<String> _currentRowLabels() {
-    final rows = _currentTextRows();
-    return rows.map((r) => r.rowLabel ?? r.rowType.name).toList();
+    final rows = _currentRows();
+    return rows.map((r) {
+      if (r is TextRowPayload) return r.rowLabel ?? r.rowType.name;
+      return r.rowType.name;
+    }).toList();
   }
 
   List<PillarPayload> _currentPillars() {
@@ -588,15 +592,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return cp.pillarOrderUuid.map((id) => cp.pillarMap[id]!).toList();
   }
 
-  List<TextRowPayload> _currentTextRows() {
+  List<RowPayload> _currentRows() {
     final cp = widget.cardPayloadNotifier.value;
-    return cp.rowOrderUuid
-        .map((id) => cp.rowMap[id])
-        .whereType<TextRowPayload>()
-        .toList();
+    return cp.rowOrderUuid.map((id) => cp.rowMap[id]!).toList();
   }
 
-  void _setTextRows(List<TextRowPayload> rows) {
+  void _setRows(List<RowPayload> rows) {
     final cp = widget.cardPayloadNotifier.value;
     widget.cardPayloadNotifier.value = cp.copyWith(
       rowMap: {for (final r in rows) r.uuid: r},
@@ -745,18 +746,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   // 依据外部行载荷推断行高：优先使用 rowType，其次使用 rowLabel
-  double _rowHeightByPayload(TextRowPayload payload) {
+  double _rowHeightByPayload(RowPayload payload) {
     // 使用模型的统一解析方法，确保行为与外部载荷约定一致
     // 只返回内容高度，不包含 padding（与 CardMetricsCalculator 的设计一致）
     // padding 由 _cell 方法通过 Padding widget 统一处理
-    final baseHeight = payload.resolveHeight(
-      heavenlyAndEarthlyHeight: ganZhiCellSize.height,
-      otherHeight: otherCellHeight,
-      dividerHeight: _rowDividerHeightEffective,
-      headerHeight: columnTitleHeight, // 传递表头行高度
-    );
-
-    return baseHeight;
+    if (payload is TextRowPayload) {
+      final baseHeight = payload.resolveHeight(
+        heavenlyAndEarthlyHeight: ganZhiCellSize.height,
+        otherHeight: otherCellHeight,
+        dividerHeight: _rowDividerHeightEffective,
+        headerHeight: columnTitleHeight, // 传递表头行高度
+      );
+      return baseHeight;
+    } else if (payload is RowSeparatorPayload) {
+      return _rowDividerHeightEffective;
+    }
+    return otherCellHeight;
   }
 
   int _commitColInsert(double eff, int draggingIdx, int n,
@@ -885,7 +890,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _layoutNotifier = ValueNotifier(
       CardLayoutModel.fromNotifiers(
         pillars: _currentPillars(),
-        rows: _currentTextRows(),
+        rows: _currentRows(),
         padding: widget.paddingNotifier.value,
         columnWidthOverrides: _columnWidthOverrides,
         // rowHeightOverrides: _rowHeightOverrides,
@@ -904,7 +909,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _layoutModelSyncListener = () {
       _layoutNotifier.value = CardLayoutModel.fromNotifiers(
         pillars: _currentPillars(),
-        rows: _currentTextRows(),
+        rows: _currentRows(),
         padding: widget.paddingNotifier.value,
         columnWidthOverrides: _columnWidthOverrides,
         // rowHeightOverrides: _rowHeightOverrides,
@@ -967,7 +972,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // 重新构建布局模型，按可见性设置抓手“有效尺寸”
       _layoutNotifier.value = CardLayoutModel.fromNotifiers(
         pillars: _currentPillars(),
-        rows: _currentTextRows(),
+        rows: _currentRows(),
         padding: widget.paddingNotifier.value,
         columnWidthOverrides: _columnWidthOverrides,
         // rowHeightOverrides: _rowHeightOverrides,
@@ -1090,6 +1095,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     : 0.0;
                 // print(
                 // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
+                // DEBUG: Print size info
+                // print(
+                //     "DEBUG: size=${size.width}x${size.height}, padding=${padding}, extraColWidth=$extraColWidth");
+
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOutCubic,
@@ -1391,7 +1400,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   ignoring: true,
                   child: Builder(builder: (context) {
                     // 计算所有行的中点Y坐标和高度（包括表头行）
-                    final rowPayloads = _currentTextRows();
+                    final rowPayloads = _currentRows();
                     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
                         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -1461,6 +1470,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final double extraColWidth = hasColGhost ? ghostWidth : 0.0;
     // 标题列仅通过 payload 参与度量；不再为缺省标题列预留固定宽度
     final totalWidth = _totalColsWidth(pillars) + extraColWidth;
+    // print("DEBUG: _buildGrid totalWidth=$totalWidth, size.width=${size.width}");
 
     // Top Grip row: 顶部抓手行，用于拖拽列
     final topGripRow = _buildTopGripRow(
@@ -1788,19 +1798,23 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 } else if (payload is TextRowPayload) {
                   _insertExternalRow(insertIndex, payload);
                 } else if (payload is RowData) {
-                  final p = TextRowPayload(
-                    uuid: const Uuid().v4(),
-                    rowType: payload.rowType,
-                    rowLabel: payload.label,
-                    titleInCell: widget.themeNotifier.value.displayCellTitle,
-                  );
-                  _insertExternalRow(insertIndex, p);
+                  if (payload.rowType == RowType.separator) {
+                    final p = RowSeparatorPayload(
+                      uuid: const Uuid().v4(),
+                    );
+                    _insertExternalRow(insertIndex, p);
+                  } else {
+                    final p = TextRowPayload(
+                      uuid: const Uuid().v4(),
+                      rowType: payload.rowType,
+                      rowLabel: payload.label,
+                      titleInCell: widget.themeNotifier.value.displayCellTitle,
+                    );
+                    _insertExternalRow(insertIndex, p);
+                  }
                 } else if (payload is RowSeparatorPayload) {
-                  final p = TextRowPayload(
+                  final p = RowSeparatorPayload(
                     uuid: const Uuid().v4(),
-                    rowType: RowType.separator,
-                    rowLabel: '分隔符',
-                    titleInCell: false,
                   );
                   _insertExternalRow(insertIndex, p);
                 } else if (payload is RowType) {
@@ -1834,10 +1848,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     CardMetricsSnapshot metricsSnap,
     double extraColWidth,
   ) {
+    // Use passed metricsSnap to ensure consistency with children
+    final containerW = _pixelFloor(metricsSnap.totals.totalWidth +
+        extraColWidth +
+        1.0); // Add 1.0 buffer for rounding errors
+    // print("DEBUG: DataGrid Container Width=$containerW");
+
     return Container(
       // 数据网格总宽按可变列宽总和计算（像素对齐，避免子像素溢出）
-      width: _pixelFloor(
-          _metricsSnapshotNotifier.value.totals.totalWidth + extraColWidth),
+      width: containerW,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
@@ -1913,6 +1932,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     List<String> rows,
     CardMetricsSnapshot metricsSnap,
   ) {
+    // final children = _buildPillarWidgets(pillars, rows, metricsSnap);
+    // DEBUG: Sum children width (assuming they are RepaintBoundary->AnimatedSlide->Stack->...->Container(width))
+    // We can't easily check widget width here, but we can check _calculatePillarContentWidth
+    // double sumW = 0.0;
+    // for (int i = 0; i < pillars.length; i++) {
+    //   // bool isSep = _isSeparatorColumnIndex(i);
+    //   bool isSep = pillars[i].pillarType ==
+    //       PillarType.separator; // Check payload directly
+    //   sumW += _calculatePillarContentWidth(i, pillars, isSep, metricsSnap);
+    // }
+    // print("DEBUG: _buildPillarsRow Sum(children)=$sumW");
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: _buildPillarWidgets(pillars, rows, metricsSnap),
@@ -2233,16 +2264,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // ),
       );
     } else {
-      final rowPayloads = _currentTextRows();
-      TextRowPayload? rPayload;
+      final rowPayloads = _currentRows();
+      RowPayload? rPayload;
       if (absRowIdx >= 0 && absRowIdx < rowPayloads.length) {
         rPayload = rowPayloads[absRowIdx];
       }
-      final isHeaderRow = rPayload?.rowType == RowType.columnHeaderRow;
-      final titleWidget = isHeaderRow && rPayload is ColumnHeaderRowPayload
-          ? _genderText(rPayload.gender)
-          : _rowTitlePillarText(rPayload!);
-      return Center(child: titleWidget);
+
+      if (rPayload is TextRowPayload) {
+        final isHeaderRow = rPayload.rowType == RowType.columnHeaderRow;
+        final titleWidget = isHeaderRow && rPayload is ColumnHeaderRowPayload
+            ? _genderText(rPayload.gender)
+            : _rowTitlePillarText(rPayload);
+        return Center(child: titleWidget);
+      } else {
+        return const SizedBox.shrink();
+      }
     }
   }
 
@@ -2255,7 +2291,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     JiaZi jz,
     JiaZi dayJiaZi,
   ) {
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final RowType? rowType = (absRowIdx >= 0 && absRowIdx < rowPayloads.length)
         ? rowPayloads[absRowIdx].rowType
         : null;
@@ -2278,7 +2314,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildAnimatedCellWrapper(Widget cell, int absRowIdx, int? tRow,
       bool draggingRow, bool isRowTitleCol) {
     // Check if current row is header row
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isCurrentRowHeaderRow = absRowIdx >= 0 &&
         absRowIdx < rowPayloads.length &&
         rowPayloads[absRowIdx].rowType == RowType.columnHeaderRow;
@@ -2490,8 +2526,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     List<String> rows,
     double totalWidth,
   ) {
+    // print(
+    //     "DEBUG: TopGripRow totalWidth=$totalWidth, gripWidth=$_effectiveDragHandleColWidth, SizedBox width=${_effectiveDragHandleColWidth * 2 + totalWidth}");
+    // double sumChildren = _effectiveDragHandleColWidth * 2;
+    // for (int i = 0; i < pillars.length; i++) {
+    //   sumChildren += _colWidthAtIndex(i, pillars);
+    // }
+    // print("DEBUG: TopGripRow sumChildren=$sumChildren");
+
     return SizedBox(
-      width: _effectiveDragHandleColWidth * 2 + totalWidth,
+      // Add a small buffer to avoid floating point rounding errors causing overflow
+      width: _effectiveDragHandleColWidth * 2 + totalWidth + 1.0,
       height: _effectiveDragHandleRowHeight,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -3149,8 +3194,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         )
                       else
                         (() {
-                          final rowPayloads = _currentTextRows();
-                          TextRowPayload? rPayload;
+                          final rowPayloads = _currentRows();
+                          RowPayload? rPayload;
                           if (absRowIdx >= 0 &&
                               absRowIdx < rowPayloads.length) {
                             rPayload = rowPayloads[absRowIdx];
@@ -3168,7 +3213,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 rowName,
                               ),
                             );
-                          } else if (rPayload != null) {
+                          } else if (rPayload is TextRowPayload) {
                             return _rowTitlePillarText(rPayload);
                           } else {
                             final titleWidget = _rowTitleText(rowName);
@@ -3324,7 +3369,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       required PillarType pillarType,
       required Size size,
       required int absRowIdx,
-      required List<TextRowPayload> rowPayloads,
+      required List<RowPayload> rowPayloads,
       required Gender gender,
       required JiaZi dayJiaZi,
       required JiaZi pillarJiaZi}) {
@@ -3356,11 +3401,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           // final textStyleConfig = _resolveGanZhiTextStyle(
           //     rowType: RowType.earthlyBranch, content: d.name);
           // 标题取行载荷中的标注（保持现状）
-          final titleLabel = rowPayloads
-                  .firstWhere((p) => p.rowType == RowType.heavenlyStem,
-                      orElse: () => rowPayloads.first)
-                  .rowLabel ??
-              '天干';
+          final p = rowPayloads.firstWhere(
+              (p) => p.rowType == RowType.heavenlyStem,
+              orElse: () => rowPayloads.first);
+          final titleLabel = (p is TextRowPayload ? p.rowLabel : null) ?? '天干';
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
@@ -3380,11 +3424,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               .getCellContentBy(RowType.earthlyBranch);
           final cellStyleConfig =
               widget.themeNotifier.value.cell.getBy(RowType.earthlyBranch);
-          final titleLabel = rowPayloads
-                  .firstWhere((p) => p.rowType == RowType.earthlyBranch,
-                      orElse: () => rowPayloads.first)
-                  .rowLabel ??
-              '地支';
+          final p = rowPayloads.firstWhere(
+              (p) => p.rowType == RowType.earthlyBranch,
+              orElse: () => rowPayloads.first);
+          final titleLabel = (p is TextRowPayload ? p.rowLabel : null) ?? '地支';
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
@@ -3405,11 +3448,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           final theme = widget.themeNotifier.value;
           final cellStyleConfig = theme.cell.getBy(rowType);
           final typography = theme.typography;
-          final titleLabel = rowPayloads
-                  .firstWhere((p) => p.rowType == rowType,
-                      orElse: () => rowPayloads.first)
-                  .rowLabel ??
-              null;
+          final p = rowPayloads.firstWhere((p) => p.rowType == rowType,
+              orElse: () => rowPayloads.first);
+          final titleLabel = (p is TextRowPayload ? p.rowLabel : null) ?? null;
           cell = multiLineCell(
             size: size,
             cellStyleConfig: cellStyleConfig,
@@ -3635,7 +3676,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         valueListenable: widget.cardPayloadNotifier,
         builder: (ctx, _, __) {
           final pillars = _currentPillars();
-          final rowPayloads = _currentTextRows();
+          final rowPayloads = _currentRows();
 
           return ValueListenableBuilder<PillarSection>(
               valueListenable: _pillarSectionNotifier,
@@ -3706,9 +3747,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               children: [...currentSegmentChildren])));
                     }
 
-                    return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: finalChildren);
+                    return SizedBox(
+                      width: colW,
+                      child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: finalChildren),
+                    );
                   }
                 }
 
@@ -3752,10 +3796,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         double hoveredHeight = otherCellHeight;
         if (_draggingRowIndex != null && _draggingRowIndex! < max + 1) {
           final d = _draggingRowIndex!;
-          final rowsPayload = _currentTextRows();
+          final rowsPayload = _currentRows();
           if (d < rowsPayload.length) {
             final override = _rowHeightOverrides[d];
-            hoveredHeight = override ?? _rowHeightByPayload(rowsPayload[d]);
+            final rp = rowsPayload[d];
+            if (rp is TextRowPayload) {
+              hoveredHeight = override ?? _rowHeightByPayload(rp);
+            } else if (rp is RowSeparatorPayload) {
+              // Handle separator height if dragged
+              // Assuming separator has fixed height or similar logic
+              // For now fallback to otherCellHeight or lookup theme
+              hoveredHeight = override ?? otherCellHeight;
+            }
           }
         } else if (_hoveringExternalRow) {
           hoveredHeight = _externalRowHoverHeight;
@@ -3781,7 +3833,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - double：相对于左侧标题区域的顶部偏移量（像素）。
   double _computeRowInsertTopFromIndex(int insertIndex, List<String> rows) {
     // 检查 rows[0] 是否为表头行
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -3823,7 +3875,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double _computeRowTopFromIndex(int index, List<String> rows) {
     // index 取值 [1..rows.length-1]；1 对应第一数据行，top=0
     // 检查 rows[0] 是否为表头行，决定是否跳过索引0
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -3863,10 +3915,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // 删除行（允许删除标题行与任意索引）
   void _deleteRow(int absIndex) {
-    final rows = List<TextRowPayload>.of(_currentTextRows());
+    final rows = List<RowPayload>.of(_currentRows());
     if (absIndex < 0 || absIndex >= rows.length) return;
     rows.removeAt(absIndex);
-    _setTextRows(rows);
+    _setRows(rows);
 
     if (_rowHeightOverrides.isNotEmpty) {
       final Map<int, double> next = {};
@@ -3883,7 +3935,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   // 接受外部行信息载荷并插入到指定位置（支持例如「空亡」行）
-  void _insertExternalRow(int insertIndex, TextRowPayload payload) {
+  void _insertExternalRow(int insertIndex, RowPayload payload) {
     var oldRowUUIDList =
         widget.cardPayloadNotifier.value.rowOrderUuid.map((s) => s).toList();
     var oldRowMapper = Map.fromEntries(
@@ -3892,7 +3944,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     print("------- _insertExternalRow");
     print(payload.toJson());
 
-    // final rows = List<TextRowPayload>.of(_currentTextRows());
+    // final rows = List<RowPayload>.of(_currentRows());
     // 行插入索引范围：[0..rows.length]，允许插入到表头行之前
     final target = insertIndex.clamp(0, oldRowUUIDList.length);
     oldRowUUIDList.insert(target, payload.uuid);
@@ -3925,8 +3977,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           .copyWith(cellContentMapper: cellContentMapper),
     );
 
-    // _setTextRows(rows);
-
     _externalRowHoverHeight = 0.0;
     // 🔑 立即重新计算 metricsSnapshot，确保后续使用的是包含新行的最新数据
     _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
@@ -3946,9 +3996,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
 
     // 持久化行高覆盖：使用 NEW snapshot 的 defaultGlobalRowMetric.totalHeight
-    final double overrideH =
-        _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
-    updatedOverrides[target] = overrideH;
+    // 注意：分隔符行 (RowSeparatorPayload) 不应应用默认行高覆盖，
+    // 而是应由 _rowHeightByPayload 根据 _rowDividerHeightEffective 自动计算。
+    if (payload is! RowSeparatorPayload) {
+      final double overrideH =
+          _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
+      updatedOverrides[target] = overrideH;
+    }
 
     _rowHeightOverrides
       ..clear()
@@ -4057,29 +4111,27 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // Calculate full column feedback height: header + all row heights
   double _columnFeedbackTotalHeight(List<String> rows) {
     // 检查 rows[0] 是否为表头行
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
     double total = 0.0;
     for (int i = 0; i < rows.length; i++) {
-      final TextRowPayload? payload =
+      final RowPayload? payload =
           (i >= 0 && i < rowPayloads.length) ? rowPayloads[i] : null;
       if (i == 0 && isRows0HeaderRow) {
         total += columnTitleHeight;
         continue;
       }
       if (payload != null) {
-        final base = payload.resolveHeight(
-          heavenlyAndEarthlyHeight: ganZhiCellSize.height,
-          otherHeight: otherCellHeight,
-          dividerHeight: _rowDividerHeightEffective,
-          headerHeight: columnTitleHeight,
-        );
-        final padInsets =
-            _cellSectionNotifier.value.getBy(payload.rowType).padding;
-        final vp = ((padInsets.top + padInsets.bottom) / 2.0)
-            .clamp(0.0, double.infinity);
+        final base = _rowHeightByPayload(payload);
+        double vp = 0.0;
+        if (payload is TextRowPayload) {
+          final padInsets =
+              _cellSectionNotifier.value.getBy(payload.rowType).padding;
+          vp = ((padInsets.top + padInsets.bottom) / 2.0)
+              .clamp(0.0, double.infinity);
+        }
         total += base + (vp * 2);
       } else {
         total += _rowHeightByName(rows[i]);
@@ -4410,7 +4462,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   void _reorderRows(int fromAbsIdx, int insertIndex) {
     // Rows include header row at index 0; now allow reordering from index 0
-    final rows = List<TextRowPayload>.of(_currentTextRows());
+    final rows = List<RowPayload>.of(_currentRows());
     if (fromAbsIdx < 0 || fromAbsIdx >= rows.length) return; // 允许索引0
     // Insert index in [0..rows.length]
     final item = rows.removeAt(fromAbsIdx);
@@ -4420,14 +4472,15 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
     target = target.clamp(0, rows.length); // 允许插入到索引0
     rows.insert(target, item);
-    _setTextRows(List<TextRowPayload>.of(rows));
+    _setRows(rows);
     debugPrint(
         '[RowReorder] from=$fromAbsIdx -> insert=$insertIndex -> target=$target');
-    final labels =
-        _currentTextRows().map((e) => e.rowLabel ?? e.rowType.name).toList();
+    final labels = _currentRows().map((e) => e.rowType.name).toList();
     debugPrint('[RowReorder] new order=${labels.join(' | ')}');
     // 通知外部行顺序更新（例如测试用例观察）
-    widget.onRowsReordered?.call(_currentTextRows());
+    if (widget.onRowsReordered != null) {
+      widget.onRowsReordered!(_currentRows());
+    }
     debugPrint('[RowReorder] onRowsReordered fired');
 
     // 根据移动行为重映射行高覆盖索引，保持覆盖与行位置一致
@@ -4463,15 +4516,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - [insertIndex]: 目标插入索引（>=1）。
   /// 返回：无；直接执行重排与状态更新。
   void _reorderRowsByTitlePayload(TitleRowPayload t, int insertIndex) {
-    final rows = List<TextRowPayload>.of(_currentTextRows());
+    final rows = List<RowPayload>.of(_currentRows());
     int fromAbsIdx = -1;
     for (int i = 0; i < rows.length; i++) {
       final rp = rows[i];
-      final label = rp.rowLabel ?? rp.rowType.name;
-      if (rp.rowType == t.rowType &&
-          (t.rowLabel == null || t.rowLabel == label)) {
-        fromAbsIdx = i;
-        break;
+      if (rp is TextRowPayload) {
+        final label = rp.rowLabel ?? rp.rowType.name;
+        if (rp.rowType == t.rowType &&
+            (t.rowLabel == null || t.rowLabel == label)) {
+          fromAbsIdx = i;
+          break;
+        }
       }
     }
     if (fromAbsIdx < 0) return; // 未找到，直接返回
@@ -4515,34 +4570,38 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       final snap = _metricsSnapshotNotifier.value;
       final rm = snap.rows[payload.uuid];
 
-      return rm?.height ?? 0;
-
       if (rm != null) {
-        final base = rm.contentHeight + rm.decorationHeight;
+        return rm.height;
+      }
+
+      if (payload is TextRowPayload) {
+        final baseHeight = payload.resolveHeight(
+          heavenlyAndEarthlyHeight: ganZhiCellSize.height,
+          otherHeight: otherCellHeight,
+          dividerHeight: _rowDividerHeightEffective,
+          headerHeight: columnTitleHeight,
+        );
         final padInsets =
             _cellSectionNotifier.value.getBy(payload.rowType).padding;
         final rowPadding = (padInsets.top + padInsets.bottom) / 2.0;
-        return base + (rowPadding * 2);
+        return baseHeight + (rowPadding * 2);
+      } else if (payload is RowSeparatorPayload) {
+        return _rowDividerHeightEffective;
       }
-      final baseHeight = payload.resolveHeight(
-        heavenlyAndEarthlyHeight: ganZhiCellSize.height,
-        otherHeight: otherCellHeight,
-        dividerHeight: _rowDividerHeightEffective,
-        headerHeight: columnTitleHeight,
-      );
-      final padInsets =
-          _cellSectionNotifier.value.getBy(payload.rowType).padding;
-      final rowPadding = (padInsets.top + padInsets.bottom) / 2.0;
-      return baseHeight + (rowPadding * 2);
     }
     return otherCellHeight;
   }
 
-  /// 根据行名称在当前行列表中查找对应的 `RowInfoPayload`。
+  /// 根据行名称在当前行列表中查找对应的 `RowPayload`。
   /// 优先使用 `rowLabel` 匹配，其次回退到 `rowType.name`。
-  TextRowPayload? _findRowPayloadByName(String name) {
-    for (final p in _currentTextRows()) {
-      final label = p.rowLabel ?? p.rowType.name;
+  RowPayload? _findRowPayloadByName(String name) {
+    for (final p in _currentRows()) {
+      String label;
+      if (p is TextRowPayload) {
+        label = p.rowLabel ?? p.rowType.name;
+      } else {
+        label = p.rowType.name;
+      }
       if (label == name) return p;
     }
     return null;
@@ -4576,7 +4635,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   /// 通过行索引获取行的垂直内边距值
   double? _getRowPaddingByIndex(int absRowIdx) {
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     if (absRowIdx >= 0 && absRowIdx < rowPayloads.length) {
       final rt = rowPayloads[absRowIdx].rowType;
       final cfg = _cellSectionNotifier.value.getBy(rt);
@@ -4588,7 +4647,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   double? _getRowHorizontalPaddingByIndex(int absRowIdx) {
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     if (absRowIdx >= 0 && absRowIdx < rowPayloads.length) {
       final rt = rowPayloads[absRowIdx].rowType;
       final cfg = _cellSectionNotifier.value.getBy(rt);
@@ -4673,7 +4732,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     }
 
     // 检查 rows[0] 是否为表头行
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -4917,7 +4976,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   int _computeRowInsertIndexFromDyMidpoint(double dy, List<String> rows) {
     // dy 是相对于 gripColumn/leftHeader 的局部坐标
     // 检查 rows[0] 是否为表头行
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -4966,7 +5025,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   double _rowBoundaryMidY(int idx, List<String> rows) {
     // 返回的是相对于 gripColumn/leftHeader 的局部坐标
     // 检查 rows[0] 是否为表头行
-    final rowPayloads = _currentTextRows();
+    final rowPayloads = _currentRows();
     final isRows0HeaderRow = rowPayloads.isNotEmpty &&
         rowPayloads[0].rowType == RowType.columnHeaderRow;
 
@@ -5011,7 +5070,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - double：该行的高度（像素）。当索引越界时返回 `otherCellHeight` 作为兜底。
   double _rowHeightByIndex(int idx) {
-    final payloads = _currentTextRows();
+    final payloads = _currentRows();
     if (idx >= 0 && idx < payloads.length) {
       return _rowHeightByPayload(payloads[idx]);
     }
@@ -5100,7 +5159,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   Size _computeSizeWithDecorationsV2() {
     final pillars = _currentPillars();
-    final rows = _currentTextRows();
+    final rows = _currentRows();
 
     // 使用辅助方法构建 cellTextSpecMap
     final specMap = _buildCellTextSpecMap();
@@ -5195,7 +5254,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     // 重要：同步更新布局模型中的抓手“有效尺寸”，避免 computeSize 使用旧值
     _layoutNotifier.value = CardLayoutModel.fromNotifiers(
       pillars: _currentPillars(),
-      rows: _currentTextRows(),
+      rows: _currentRows(),
       padding: widget.paddingNotifier.value,
       columnWidthOverrides: _columnWidthOverrides,
       // rowHeightOverrides: _rowHeightOverrides,
@@ -5241,8 +5300,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       List<PillarPayload> pillarPayloads,
       {int? absRowIndex}) {
     // 推断行类型与载荷
-    final rowPayloads = _currentTextRows();
-    final TextRowPayload? payload = absRowIndex != null &&
+    final rowPayloads = _currentRows();
+    final RowPayload? payload = absRowIndex != null &&
             absRowIndex >= 0 &&
             absRowIndex < rowPayloads.length
         ? rowPayloads[absRowIndex]
@@ -5275,18 +5334,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final totalW = rowTitleWidth + _totalColsWidth(pillarPayloads);
 
     // 标题文本：payload.label 优先，其次 RowType 默认，兜底 rowName
-    final String titleStr = payload?.rowLabel ??
-        (rowType != null ? _labelForRowType(rowType) : rowName);
+    String titleStr = rowName;
+    if (payload is TextRowPayload) {
+      titleStr = payload.rowLabel ??
+          (rowType != null ? _labelForRowType(rowType) : rowName);
+    } else if (rowType != null) {
+      titleStr = _labelForRowType(rowType);
+    }
 
     // 外层占位：应用行的上下外边距（仅占位，不影响内部内容测量）
     final double marginV = 0.0;
-    return Padding(
-        padding: EdgeInsets.symmetric(vertical: marginV),
-        child: Container(
-          width: totalW,
-          height: rowH,
-          color: Colors.red,
-        ));
     return Padding(
       padding: EdgeInsets.symmetric(vertical: marginV),
       child: SizedBox(
@@ -5311,16 +5368,49 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   horizontalPadding: _getRowHorizontalPadding(rowName)),
             ...pillarPayloads.asMap().entries.map((entry) {
               final i = entry.key;
-              var tuple;
+              final colW = _colWidthAtIndex(i, pillarPayloads);
+
+              // 1. 特殊处理：行标题列 (RowTitleColumnPayload)
+              // 它没有 JiaZi 数据，也不能作为 ContentPillarPayload 处理。
+              // 直接渲染占位符以保持网格对齐。
+              if (entry.value is RowTitleColumnPayload) {
+                return _cell(Size(colW, rowH), const SizedBox.shrink(),
+                    verticalPadding: _getRowPadding(rowName),
+                    horizontalPadding: _getRowHorizontalPadding(rowName));
+              }
+
+              // 2. 获取内容数据
+              ContentPillarPayload? tuple;
               JiaZi? jz;
               if (entry.value is ContentPillarPayload) {
                 tuple = entry.value as ContentPillarPayload;
                 jz = tuple.pillarContent.jiaZi;
-              } else if (entry.value is RowTitleColumnPayload) {
-                tuple = entry.value as RowTitleColumnPayload;
               }
 
-              final colW = _colWidthAtIndex(i, pillarPayloads);
+              // 3. 分割线处理
+              if (isRowSeparator) {
+                return Container(
+                  width: colW,
+                  height: rowH,
+                  decoration: CardDecorators.buildRowSeparatorDecoration(
+                    context,
+                    thickness: _rowDividerThickness,
+                  ),
+                );
+              }
+
+              // 4. 数据依赖检查
+              // 如果是需要 JiaZi 数据的行类型，但 jz 为空，则渲染空单元格，避免崩溃。
+              final bool needsJiaZi = rowType == RowType.heavenlyStem ||
+                  rowType == RowType.earthlyBranch ||
+                  rowType == RowType.naYin ||
+                  rowType == RowType.kongWang;
+
+              if (needsJiaZi && jz == null) {
+                return _cell(Size(colW, rowH), const SizedBox.shrink(),
+                    verticalPadding: _getRowPadding(rowName),
+                    horizontalPadding: _getRowHorizontalPadding(rowName));
+              }
 
               if (rowType == RowType.heavenlyStem) {
                 return _cell(Size(colW, rowH), _tianGanText(jz!.tianGan),
@@ -5336,27 +5426,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     horizontalPadding: _getRowHorizontalPadding(rowName));
               } else if (rowType == RowType.kongWang) {
                 final kw = jz!.getKongWang();
-                final text = '${kw.item1.value}${kw.item2.value}';
+                // final text = '${kw.item1.value}${kw.item2.value}';
                 return _cell(Size(colW, rowH), Text("空亡"),
                     verticalPadding: _getRowPadding(rowName),
                     horizontalPadding: _getRowHorizontalPadding(rowName));
               } else if (rowType == RowType.columnHeaderRow) {
-                return _cell(
-                    Size(colW, rowH), _columnTitleText(tuple.pillarType.name),
+                final pName = tuple?.pillarType.name ?? "";
+                return _cell(Size(colW, rowH), _columnTitleText(pName),
                     verticalPadding: _getRowPadding(rowName),
                     horizontalPadding: _getRowHorizontalPadding(rowName));
-              } else if (isRowSeparator) {
-                return Container(
-                  width: colW,
-                  height: rowH,
-                  decoration: CardDecorators.buildRowSeparatorDecoration(
-                    context,
-                    thickness: _rowDividerThickness,
-                  ),
-                );
               } else {
-                return _cell(
-                    Size(colW, rowH), _columnTitleText(tuple.pillarType.name),
+                final pName = tuple?.pillarType.name ?? "";
+                return _cell(Size(colW, rowH), _columnTitleText(pName),
                     verticalPadding: _getRowPadding(rowName));
               }
             }).toList(),

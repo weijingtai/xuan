@@ -188,7 +188,7 @@ class RowDimension implements Measurable {
   final int index;
 
   /// 数据载荷（包含行类型、策略等）
-  final TextRowPayload payload;
+  final RowPayload payload;
 
   const RowDimension({
     required this.index,
@@ -197,15 +197,25 @@ class RowDimension implements Measurable {
 
   @override
   double measure(MeasurementContext ctx) {
-    // 使用 payload 解析高度，并叠加行内的上下内边距（padding * 2）
-    final base = payload.resolveHeight(
-      heavenlyAndEarthlyHeight: ctx.ganZhiCellHeight,
-      otherHeight: ctx.defaultOtherCellHeight,
-      dividerHeight: ctx.rowDividerHeightEffective,
-      headerHeight: ctx.columnTitleHeight,
-    );
-    // 行总高度：内容基准
-    return base;
+    // 1. 分隔符特殊处理
+    if (payload is RowSeparatorPayload) {
+      return ctx.rowDividerHeightEffective;
+    }
+
+    // 2. 文本行处理：使用 payload 解析高度
+    if (payload is TextRowPayload) {
+      final textPayload = payload as TextRowPayload;
+      final base = textPayload.resolveHeight(
+        heavenlyAndEarthlyHeight: ctx.ganZhiCellHeight,
+        otherHeight: ctx.defaultOtherCellHeight,
+        dividerHeight: ctx.rowDividerHeightEffective,
+        headerHeight: ctx.columnTitleHeight,
+      );
+      return base;
+    }
+
+    // 3. 默认兜底
+    return ctx.defaultOtherCellHeight;
   }
 
   /// 更新索引（用于重排后重建索引）
@@ -524,7 +534,7 @@ class CardLayoutModel {
   /// 这是新旧系统的桥接方法，允许从现有数据无缝构建新模型。
   static CardLayoutModel fromNotifiers({
     required List<PillarPayload> pillars,
-    required List<TextRowPayload> rows,
+    required List<RowPayload> rows,
     required EdgeInsets padding,
     Map<int, double>? columnWidthOverrides,
     double dragHandleRowHeight = 20.0,
