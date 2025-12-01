@@ -182,6 +182,7 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
               builder: (ctx, theme, _) {
                 return ColorfulTextStyleEditorV2Enhanced(
                   type: RowType.columnHeaderRow,
+                  lable: '字体',
                   initialConfig: theme.typography.rowTitle,
                   onChanged: (style) {
                     demoVm.updateEditableFourZhuCardTheme(

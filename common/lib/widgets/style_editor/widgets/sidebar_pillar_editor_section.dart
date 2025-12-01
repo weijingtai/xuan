@@ -102,7 +102,7 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                       ReorderableListView(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        buildDefaultDragHandles: true,
+                        buildDefaultDragHandles: false,
                         onReorder: (oldIndex, newIndex) {
                           if (oldIndex < newIndex) {
                             newIndex -= 1;
@@ -129,27 +129,31 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                           demoVm.updatePillarOrderFromTypes(newTypes);
                         },
                         children: [
-                          for (final uuid in orderedUuids)
+                          for (int i = 0; i < orderedUuids.length; i++)
                             Container(
-                              key: ValueKey(uuid),
+                              key: ValueKey(orderedUuids[i]),
                               child: eachPillarEditor(
                                 theme,
-                                payload.pillarMap[uuid]!.pillarType ==
+                                payload.pillarMap[orderedUuids[i]]!
+                                            .pillarType ==
                                         PillarType.rowTitleColumn
                                     ? '标题列'
-                                    : payload.pillarMap[uuid]!.pillarType.name,
+                                    : payload.pillarMap[orderedUuids[i]]!
+                                        .pillarType.name,
                                 FourZhuPillarStyleEditor(
-                                  showSeparatorWidth:
-                                      payload.pillarMap[uuid]!.pillarType ==
-                                          PillarType.separator,
-                                  showTitleColumnFontEditor:
-                                      payload.pillarMap[uuid]!.pillarType ==
-                                          PillarType.rowTitleColumn,
-                                  pillarStyleConfig: config.getBy(
-                                      payload.pillarMap[uuid]!.pillarType),
+                                  showSeparatorWidth: payload
+                                          .pillarMap[orderedUuids[i]]!
+                                          .pillarType ==
+                                      PillarType.separator,
+                                  showTitleColumnFontEditor: payload
+                                          .pillarMap[orderedUuids[i]]!
+                                          .pillarType ==
+                                      PillarType.rowTitleColumn,
+                                  pillarStyleConfig: config.getBy(payload
+                                      .pillarMap[orderedUuids[i]]!.pillarType),
                                   onChanged: (pillar) {
-                                    final type =
-                                        payload.pillarMap[uuid]!.pillarType;
+                                    final type = payload
+                                        .pillarMap[orderedUuids[i]]!.pillarType;
                                     if (type == PillarType.separator) {
                                       // 如果是 separator，更新 defaultSeparatorConfig
                                       // 同时清理 mapper 中的 separator 配置，防止覆盖
@@ -174,7 +178,10 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                                     }
                                   },
                                 ),
-                                leading: const Icon(Icons.drag_handle),
+                                leading: ReorderableDragStartListener(
+                                  index: i,
+                                  child: const Icon(Icons.drag_handle),
+                                ),
                               ),
                             )
                         ],

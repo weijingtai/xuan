@@ -20,11 +20,14 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
   final ValueChanged<TextStyleConfig> onChanged;
   final TextStyleConfig initialConfig;
 
+  final String lable;
+
   const ColorfulTextStyleEditorV2Enhanced({
     super.key,
     required this.type,
     required this.onChanged,
     required this.initialConfig,
+    required this.lable,
     this.values,
   });
 
@@ -159,9 +162,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          '字体',
-          style: TextStyle(
+        Text(
+          widget.lable,
+          style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: Colors.black87,

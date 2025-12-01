@@ -62,7 +62,7 @@ class RowStyleEditorPanel extends StatelessWidget {
             return ReorderableListView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              buildDefaultDragHandles: true,
+              buildDefaultDragHandles: false,
               onReorder: (oldIndex, newIndex) {
                 if (oldIndex < newIndex) {
                   newIndex -= 1;
@@ -78,28 +78,35 @@ class RowStyleEditorPanel extends StatelessWidget {
                 demoVm.updateRowOrderFromTypes(newTypes);
               },
               children: [
-                for (final rp in validRows)
+                for (int i = 0; i < validRows.length; i++)
                   Container(
-                    key: ValueKey(rp.uuid),
+                    key: ValueKey(validRows[i].uuid),
                     margin: const EdgeInsets.only(bottom: 8),
                     child: RowItem(
-                      leading: const Icon(Icons.drag_handle),
-                      cfg: theme.cell.getBy(rp.rowType),
-                      txtCfg: theme.typography.getCellContentBy(rp.rowType),
+                      leading: ReorderableDragStartListener(
+                        index: i,
+                        child: const Icon(Icons.drag_handle),
+                      ),
+                      cfg: theme.cell.getBy(validRows[i].rowType),
+                      txtCfg: theme.typography
+                          .getCellContentBy(validRows[i].rowType),
                       inCellTitleTextCfg:
-                          theme.typography.getCellTitleBy(rp.rowType),
-                      payload: rp,
+                          theme.typography.getCellTitleBy(validRows[i].rowType),
+                      payload: validRows[i],
                       onTextStyleChanged: (newTextStyle) {
-                        onTextStyleChanged(
-                            context, rp.uuid, rp.rowType, newTextStyle);
+                        onTextStyleChanged(context, validRows[i].uuid,
+                            validRows[i].rowType, newTextStyle);
                       },
                       onCellStyleChanged: (newCellStyle) {
-                        onCellStyleChanged(
-                            context, rp.uuid, rp.rowType, newCellStyle);
+                        onCellStyleChanged(context, validRows[i].uuid,
+                            validRows[i].rowType, newCellStyle);
                       },
                       onInCellTitleTextStyleChanged: (newTextStyle) {
                         onInCellTitleTextStyleChanged(
-                            context, rp.uuid, rp.rowType, newTextStyle);
+                            context,
+                            validRows[i].uuid,
+                            validRows[i].rowType,
+                            newTextStyle);
                       },
                     ),
                   )
@@ -225,21 +232,34 @@ class RowItem extends StatelessWidget {
         leading: leading,
         title: Text(getRowTypeLabel(payload.rowType),
             style: theme.textTheme.titleSmall),
+        subtitle: (payload is TextRowPayload &&
+                payload.rowType != RowType.columnHeaderRow &&
+                payload.rowType != RowType.separator)
+            ? Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Checkbox(
+                    value: cfg.showsTitleInCell,
+                    onChanged: (v) {
+                      if (v == null) return;
+                      onCellStyleChanged(
+                        cfg.copyWith(showsTitleInCell: v),
+                      );
+                    },
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  Text(
+                    '单元格内显示标题',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      fontSize: 12,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                ],
+              )
+            : null,
         childrenPadding: const EdgeInsets.all(12),
         children: [
-          if (payload is TextRowPayload &&
-              payload.rowType != RowType.columnHeaderRow &&
-              payload.rowType != RowType.separator)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('单元格内显示标题'),
-              value: cfg.showsTitleInCell,
-              onChanged: (v) {
-                onCellStyleChanged(
-                  cfg.copyWith(showsTitleInCell: v),
-                );
-              },
-            ),
           if (payload.rowType == RowType.separator) ...[
             Row(
               children: [
@@ -337,6 +357,7 @@ class RowItem extends StatelessWidget {
           const SizedBox(height: 8),
           if (payload.rowType != RowType.separator)
             ColorfulTextStyleEditorV2Enhanced(
+                lable: '字体',
                 type: payload.rowType,
                 initialConfig: txtCfg,
                 values: payload.rowType == RowType.heavenlyStem
@@ -346,6 +367,7 @@ class RowItem extends StatelessWidget {
           if (cfg.showsTitleInCell) ...[
             const SizedBox(height: 8),
             ColorfulTextStyleEditorV2Enhanced(
+                lable: '内标题字体',
                 type: payload.rowType,
                 initialConfig: inCellTitleTextCfg,
                 onChanged: onInCellTitleTextStyleChanged),
@@ -521,6 +543,7 @@ class _RowItem extends StatelessWidget {
                 ),
               );
             },
+            lable: '字体',
           ),
         ],
       ),
