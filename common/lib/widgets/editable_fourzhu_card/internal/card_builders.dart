@@ -122,8 +122,11 @@ class CardBuilders {
 
     // 左上角空白/抓手 (对应 Grip Column)
     if (showGripColumns) {
+      final dpr = MediaQuery.of(context).devicePixelRatio;
+      final gripW =
+          (sizeManager.dragHandleColWidth * dpr).floorToDouble() / dpr;
       children.add(SizedBox(
-        width: sizeManager.dragHandleColWidth,
+        width: gripW,
         height: sizeManager.dragHandleRowHeight,
       ));
     }
@@ -138,11 +141,9 @@ class CardBuilders {
 
     // 各列的抓手
     for (int i = 0; i < pillarOrder.length; i++) {
-      final colWidth = sizeManager.getColumnWidth(i);
-
-      // 检查是否正在拖拽该列 (用于未来扩展，如显示不同样式)
-      // final isDraggingThis = dragHandler.isDraggingColumn &&
-      //    dragHandler.draggingColumnIndex == i;
+      final dpr = MediaQuery.of(context).devicePixelRatio;
+      final rawWidth = sizeManager.getColumnWidth(i);
+      final colWidth = (rawWidth * dpr).floorToDouble() / dpr;
 
       children.add(_buildColumnGrip(
         context: context,
@@ -297,8 +298,10 @@ class CardBuilders {
         title = rowPayload.genderLabel;
       }
 
+      final dpr = MediaQuery.of(context).devicePixelRatio;
+      final titleW = (sizeManager.rowTitleWidth * dpr).floorToDouble() / dpr;
       children.add(Container(
-        width: sizeManager.rowTitleWidth,
+        width: titleW,
         height: rowHeight,
         alignment: Alignment.center,
         child: Text(title, style: const TextStyle(fontSize: 12)), // 简单渲染
@@ -315,10 +318,11 @@ class CardBuilders {
 
     for (int i = 0; i < pillarOrder.length; i++) {
       final pillarUuid = pillarOrder[i];
-      final colWidth = sizeManager.getColumnWidth(i);
+      final dpr = MediaQuery.of(context).devicePixelRatio;
+      final rawWidth = sizeManager.getColumnWidth(i);
+      final colWidth = (rawWidth * dpr).floorToDouble() / dpr;
       final text = rowValues[pillarUuid] ?? '';
 
-      // 获取样式
       final style = CardDataAdapter.getCellStyle(
         rowType: rowPayload.rowType,
         content: text,
@@ -353,14 +357,10 @@ class CardBuilders {
         (border != null && border.enabled) ? border.width ?? 0.0 : 0.0;
 
     return BoxDecoration(
-      color: brightness == Brightness.light
-          ? theme.card.lightBackgroundColor
-          : theme.card.darkBackgroundColor,
+      color: theme.card.resolveBackgroundColor(brightness),
       border: borderWidth > 0
           ? Border.all(
-              color: brightness == Brightness.light
-                  ? theme.card.border!.lightColor
-                  : theme.card.border!.darkColor,
+              color: theme.card.border!.resolveColor(brightness),
               width: borderWidth,
             )
           : null,

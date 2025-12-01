@@ -50,6 +50,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
   // ValueNotifier<bool>(true);
+  final TextEditingController _cardNameController = TextEditingController();
+  final ValueNotifier<String> _cardNameNotifier = ValueNotifier<String>('');
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -98,6 +100,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     _paddingNotifier.dispose();
     _showGripNotifier.dispose();
     // _showGripColumnsNotifier.dispose();
+    _cardNameController.dispose();
+    _cardNameNotifier.dispose();
     super.dispose();
   }
 
@@ -123,91 +127,112 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             ? localTheme.copyWith(dividerColor: dividerColor)
             : localTheme;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.invert_colors),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '工作区主题（仅组件内生效）',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
-                Switch(
-                  value: _brightnessNotifier.value == Brightness.dark,
-                  onChanged: (dark) => setState(() => _brightnessNotifier
-                      .value = dark ? Brightness.dark : Brightness.light),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.invert_colors),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '启用色彩模式',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
-                Switch(
-                  value: _colorPreviewModeNotifier.value ==
-                      ColorPreviewMode.colorful,
-                  onChanged: (dark) => setState(() => _colorPreviewModeNotifier
-                          .value =
-                      dark ? ColorPreviewMode.colorful : ColorPreviewMode.pure),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                const Icon(Icons.drag_handle),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    '显示抓手行列',
-                    style: Theme.of(context).textTheme.bodyMedium,
-                  ),
-                ),
-                Switch(
-                  value: _showGripNotifier.value,
-                  onChanged: (v) => setState(() => _showGripNotifier.value = v),
-                  // onChanged: (v) => _showGripNotifier.value = v,
-                ),
-              ],
-            ),
-            // const SizedBox(height: 8),
-            // Row(
-            //   children: [
-            //     const Icon(Icons.view_column),
-            //     const SizedBox(width: 8),
-            //     Expanded(
-            //       child: Text(
-            //         '显示左右抓手列',
-            //         style: Theme.of(context).textTheme.bodyMedium,
-            //       ),
-            //     ),
-            //     Switch(
-            //       value: _showGripColumnsNotifier.value,
-            //       onChanged: (v) =>
-            //           setState(() => _showGripColumnsNotifier.value = v),
-            //     ),
-            //   ],
-            // ),
-            const SizedBox(height: 8),
-            Expanded(
-              child: Theme(
-                data: workspaceTheme,
+        return SizedBox.expand(
+            child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          color: workspaceTheme.colorScheme.surface,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Positioned(
+                right: 0,
+                top: 0,
                 child: Container(
-                  child: Center(
-                    child: EditableFourZhuCardV3(
+                  width: 240,
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.invert_colors),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '工作区主题（仅组件内生效）',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
+                          Switch(
+                            value: _brightnessNotifier.value == Brightness.dark,
+                            onChanged: (dark) => setState(() =>
+                                _brightnessNotifier.value =
+                                    dark ? Brightness.dark : Brightness.light),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.invert_colors),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '启用色彩模式',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
+                          Switch(
+                            value: _colorPreviewModeNotifier.value ==
+                                ColorPreviewMode.colorful,
+                            onChanged: (dark) => setState(() =>
+                                _colorPreviewModeNotifier.value = dark
+                                    ? ColorPreviewMode.colorful
+                                    : ColorPreviewMode.pure),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.drag_handle),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '显示抓手行列',
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          Switch(
+                            value: _showGripNotifier.value,
+                            onChanged: (v) =>
+                                setState(() => _showGripNotifier.value = v),
+                            // onChanged: (v) => _showGripNotifier.value = v,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: 48,
+                      width: 200,
+                      child: TextField(
+                        controller: _cardNameController,
+                        onChanged: (v) => _cardNameNotifier.value = v,
+                        decoration: InputDecoration(
+                          labelText: '卡片名称',
+                          hintText: '请输入卡片名称',
+                          border: UnderlineInputBorder(),
+                          suffixIcon: Icon(
+                            Icons.edit,
+                            size: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 24,
+                    ),
+                    EditableFourZhuCardV3(
                       dayGanZhi: JiaZi.JIA_ZI,
                       brightnessNotifier: _brightnessNotifier,
                       colorPreviewModeNotifier: _colorPreviewModeNotifier,
@@ -224,6 +249,127 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                           .themeNotifier,
                       gender: Gender.male,
                     ),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ));
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.invert_colors),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '工作区主题（仅组件内生效）',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
+                      Switch(
+                        value: _brightnessNotifier.value == Brightness.dark,
+                        onChanged: (dark) => setState(() => _brightnessNotifier
+                            .value = dark ? Brightness.dark : Brightness.light),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.invert_colors),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '启用色彩模式',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
+                      Switch(
+                        value: _colorPreviewModeNotifier.value ==
+                            ColorPreviewMode.colorful,
+                        onChanged: (dark) => setState(() =>
+                            _colorPreviewModeNotifier.value = dark
+                                ? ColorPreviewMode.colorful
+                                : ColorPreviewMode.pure),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(Icons.drag_handle),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '显示抓手行列',
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      ),
+                      Switch(
+                        value: _showGripNotifier.value,
+                        onChanged: (v) =>
+                            setState(() => _showGripNotifier.value = v),
+                        // onChanged: (v) => _showGripNotifier.value = v,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: Theme(
+                data: workspaceTheme,
+                child: Container(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        height: 48,
+                        width: 200,
+                        child: TextField(
+                          controller: _cardNameController,
+                          onChanged: (v) => _cardNameNotifier.value = v,
+                          decoration: InputDecoration(
+                            labelText: '卡片名称',
+                            hintText: '请输入卡片名称',
+                            border: UnderlineInputBorder(),
+                            suffixIcon: Icon(
+                              Icons.edit,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                      EditableFourZhuCardV3(
+                        dayGanZhi: JiaZi.JIA_ZI,
+                        brightnessNotifier: _brightnessNotifier,
+                        colorPreviewModeNotifier: _colorPreviewModeNotifier,
+                        cardPayloadNotifier:
+                            Provider.of<FourZhuCardDemoViewModel>(context,
+                                    listen: true)
+                                .cardPayloadNotifier,
+                        showGrip: _showGripNotifier.value,
+                        // showGripColumns: _showGripColumnsNotifier.value,
+                        paddingNotifier: _paddingNotifier,
+                        themeNotifier: Provider.of<FourZhuCardDemoViewModel>(
+                                context,
+                                listen: true)
+                            .themeNotifier,
+                        gender: Gender.male,
+                      ),
+                    ],
                   ),
                 ),
               ),

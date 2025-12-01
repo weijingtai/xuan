@@ -124,6 +124,11 @@ class BoxShadowStyle extends Equatable {
     required this.opacity,
   });
 
+  /// 根据亮度解析最终颜色
+  Color resolveColor(Brightness brightness) {
+    return brightness == Brightness.light ? lightThemeColor : darkThemeColor;
+  }
+
   static BoxShadowStyle defaultShadow = BoxShadowStyle(
     withShadow: true,
     followCardBackgroundColor: false,
@@ -211,6 +216,11 @@ class BoxBorderStyle extends Equatable {
     );
   }
 
+  /// 根据亮度解析最终边框颜色
+  Color resolveColor(Brightness brightness) {
+    return brightness == Brightness.light ? lightColor : darkColor;
+  }
+
   static get defaultBorder => BoxBorderStyle(
         enabled: false,
         width: 1,
@@ -260,6 +270,13 @@ class BaseBoxStyleConfig extends Equatable {
   // Size
   // final Size? size;
 
+  /// 根据亮度解析背景颜色
+  Color? resolveBackgroundColor(Brightness brightness) {
+    return brightness == Brightness.light
+        ? lightBackgroundColor
+        : darkBackgroundColor;
+  }
+
   /// 复制更新当前样式配置。
   ///
   /// 参数：对应字段的可选新值；未提供的字段保持原值。
@@ -286,12 +303,12 @@ class BaseBoxStyleConfig extends Equatable {
   /// 将配置转换为 `BoxDecoration`。
   ///
   /// 行为：仅转换非空字段；未设置的属性保持默认，避免破坏现有渲染。
-  BoxDecoration toBoxDecoration() {
+  BoxDecoration toBoxDecoration({Brightness brightness = Brightness.light}) {
     return BoxDecoration(
-      color: lightBackgroundColor ?? Colors.transparent,
-      border: _buildBorder(),
+      color: resolveBackgroundColor(brightness) ?? Colors.transparent,
+      border: _buildBorder(brightness),
       borderRadius: _buildBorderRadius(),
-      boxShadow: _buildShadows(),
+      boxShadow: _buildShadows(brightness: brightness),
     );
   }
 
@@ -353,12 +370,11 @@ class BaseBoxStyleConfig extends Equatable {
 
   // ===== Helper implementations =====
 
-  Border? _buildBorder() {
+  Border? _buildBorder(Brightness brightness) {
     if (border == null || !border!.enabled) return null;
     final w = border!.width;
     if (w <= 0) return null;
-    // 目前仅支持 solid；其他样式需自绘，后续扩展。
-    return Border.all(color: border!.lightColor, width: w);
+    return Border.all(color: border!.resolveColor(brightness), width: w);
   }
 
   BorderRadius? _buildBorderRadius() {
@@ -373,8 +389,8 @@ class BaseBoxStyleConfig extends Equatable {
   List<BoxShadow>? _buildShadows({Brightness brightness = Brightness.light}) {
     if (!shadow.withShadow) return null;
     final baseColor = shadow.followCardBackgroundColor
-        ? lightBackgroundColor
-        : shadow.lightThemeColor;
+        ? resolveBackgroundColor(brightness)
+        : shadow.resolveColor(brightness);
 
     if (baseColor == null) return null;
     final color = baseColor.withOpacity(shadow.opacity.clamp(0.0, 1.0));

@@ -1067,8 +1067,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // );
         final double extraRowHeight =
             hasRowGhost ? _externalRowHoverHeight : 0.0;
-        final BoxDecoration? baseDeco =
-            widget.themeNotifier.value.card.toBoxDecoration();
+
+        print(
+            "brightness: Theme.of(context).brightness  ---- ${Theme.of(context).brightness}");
+        final BoxDecoration? baseDeco = widget.themeNotifier.value.card
+            .toBoxDecoration(brightness: Theme.of(context).brightness);
         BoxDecoration? effectiveDeco = baseDeco;
         if (baseDeco != null && baseDeco.borderRadius != null) {
           final br = baseDeco.borderRadius!.resolve(Directionality.of(context));
@@ -1848,8 +1851,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   ) {
     // Use passed metricsSnap to ensure consistency with children
     final containerW = _pixelFloor(metricsSnap.totals.totalWidth +
-        extraColWidth +
-        1.0); // Add 1.0 buffer for rounding errors
+        extraColWidth); // Add 1.0 buffer for rounding errors
     // print("DEBUG: DataGrid Container Width=$containerW");
 
     return Container(
@@ -3629,9 +3631,34 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   Widget _buildStyledPillarSegment(
-      PillarStyleConfig config, Color bkColor, double width, Widget content) {
+    PillarStyleConfig config,
+    Color bkColor,
+    double width,
+    Widget content,
+    Brightness brightness,
+  ) {
+    final border = config.border;
+    final double borderWidth =
+        (border != null && border.enabled) ? border.width : 0;
+    final resolvedBorderColor =
+        (borderWidth > 0) ? border!.resolveColor(brightness) : null;
+
+    final shadowBaseColor = config.shadow.followCardBackgroundColor
+        ? bkColor
+        : config.shadow.resolveColor(brightness);
+    final boxShadows = config.shadow.withShadow
+        ? [
+            BoxShadow(
+              color: shadowBaseColor
+                  .withOpacity(config.shadow.opacity.clamp(0.0, 1.0)),
+              offset: config.shadow.offset,
+              blurRadius: config.shadow.blurRadius,
+              spreadRadius: config.shadow.spreadRadius,
+            )
+          ]
+        : null;
+
     return AnimatedContainer(
-      // clipBehavior: Clip.hardEdge,
       clipBehavior: Clip.none,
       duration: const Duration(milliseconds: 300),
       curve: Curves.linear,
@@ -3641,26 +3668,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       decoration: BoxDecoration(
         color: bkColor,
         borderRadius: BorderRadius.circular(config.border!.radius),
-        border: (config.border != null &&
-                config.border!.enabled &&
-                config.border!.width != 0)
-            ? Border.all(
-                color: config.border!.lightColor,
-                width: config.border!.width,
-              )
+        border: (borderWidth > 0 && resolvedBorderColor != null)
+            ? Border.all(color: resolvedBorderColor, width: borderWidth)
             : null,
-        boxShadow: config.shadow.withShadow
-            ? [
-                BoxShadow(
-                  color: config.shadow.followCardBackgroundColor
-                      ? bkColor
-                      : config.shadow.lightThemeColor,
-                  offset: config.shadow.offset,
-                  blurRadius: config.shadow.blurRadius,
-                  spreadRadius: config.shadow.spreadRadius,
-                )
-              ]
-            : [],
+        boxShadow: boxShadows,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(config.border!.radius),
@@ -3681,16 +3692,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, pillarConfig, __) {
                 final pillarType = pillars[pillarIndex].pillarType;
                 final PillarStyleConfig config = pillarConfig.getBy(pillarType);
+                final brightness = widget.brightnessNotifier.value;
                 Color bkColor;
-                if (pillarType == PillarType.separator) {
-                  bkColor = config.lightBackgroundColor!;
+                final bg = config.resolveBackgroundColor(brightness);
+                if (bg == null || bg == Colors.transparent) {
+                  bkColor = widget.themeNotifier.value.card
+                          .toBoxDecoration(brightness: brightness)
+                          .color ??
+                      Colors.white;
                 } else {
-                  bkColor = config.lightBackgroundColor == Colors.transparent
-                      ? widget.themeNotifier.value.card
-                              .toBoxDecoration()
-                              .color ??
-                          Colors.white
-                      : config.lightBackgroundColor ?? Colors.white;
+                  bkColor = bg;
                 }
 
                 // 使用与 CardMetricsCalculator 一致的宽度计算：contentWidth + decorationWidth
@@ -3722,7 +3733,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               width,
                               Column(
                                   mainAxisSize: MainAxisSize.min,
-                                  children: [...currentSegmentChildren])));
+                                  children: [...currentSegmentChildren]),
+                              brightness));
                           currentSegmentChildren.clear();
                         }
                         // 添加分隔符行本身的 Widget（通常是占位或间隙），不包裹在样式容器中
@@ -3742,7 +3754,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           width,
                           Column(
                               mainAxisSize: MainAxisSize.min,
-                              children: [...currentSegmentChildren])));
+                              children: [...currentSegmentChildren]),
+                          brightness));
                     }
 
                     return SizedBox(
@@ -3755,7 +3768,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 }
 
                 return _buildStyledPillarSegment(
-                    config, bkColor, width, columnContent);
+                    config, bkColor, width, columnContent, brightness);
               });
         });
   }

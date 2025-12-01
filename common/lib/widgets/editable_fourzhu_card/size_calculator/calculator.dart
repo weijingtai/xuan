@@ -80,12 +80,17 @@ class CardMetricsCalculator {
     print("+ Padding: $padW, 累计: $w");
 
     final bw = _normalizeDouble(options.cardBorderWidth ?? 0.0);
-    final borderW = bw * 2;
-    // w += 0;
-    w += borderW;
-    h += bw * 2;
-    print("+ Border: $borderW, 累计: $w");
-    print("=== 最终尺寸: $w x $h ===\n");
+    if (options.withCardBorder && bw > 0.0) {
+      final borderW = bw * 2;
+      w += borderW;
+      h += bw * 2;
+      print("+ Border: $borderW, 累计: $w");
+    } else {
+      print("+ Border: 0 (disabled), 累计: $w");
+    }
+    w = w.ceilToDouble();
+    h = h.ceilToDouble();
+    print("=== 最终尺寸(ceil): $w x $h ===\n");
 
     return Size(w, h);
   }
@@ -690,7 +695,7 @@ class CardMetricsCalculator {
 
     // 构建最终快照
     final totals = CardTotals(
-      totalWidth: _normalizeDouble(totalWidth),
+      totalWidth: _normalizeDouble(totalWidth + 1),
       totalHeight: _normalizeDouble(totalHeight),
       columnCount: pillarOrder.length,
       rowCount: rowOrder.length,

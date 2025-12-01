@@ -205,7 +205,7 @@ class CardSizeManager {
       showTitleRow: theme.displayHeaderRow,
       showTitleCol: theme.displayRowTitleColumn,
       cellShowsTitle: false,
-      withCardBorder: false,
+      withCardBorder: theme.card.border?.enabled ?? false,
       cardPadding: cardPadding,
       cardBorderWidth: _getCardBorderWidth(),
       gripRowHeight: dragHandleRowHeight,

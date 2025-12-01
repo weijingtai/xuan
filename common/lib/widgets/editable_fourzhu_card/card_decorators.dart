@@ -22,8 +22,9 @@ class CardDecorators {
     Color? color,
   }) {
     // 优先级：显式 color 参数 > 主题控制器解析 > 系统主题色
+    final brightness = Theme.of(context).brightness;
     final Color borderColor = color ??
-        controller?.resolveCardBorderColor() ??
+        controller?.resolveCardBorderColorBy(brightness) ??
         Theme.of(context).colorScheme.secondary.withOpacity(0.25);
     final double width = controller?.theme.cell.defaultBorderWidth ?? 1.5;
     return BoxDecoration(
@@ -46,8 +47,9 @@ class CardDecorators {
     EditableFourZhuThemeController? controller,
     Color? color,
   }) {
+    final brightness = Theme.of(context).brightness;
     final Color borderColor = color ??
-        controller?.resolveCardBorderColor() ??
+        controller?.resolveCardBorderColorBy(brightness) ??
         Theme.of(context).colorScheme.primary.withOpacity(0.25);
     final double width = controller?.theme.cell.defaultBorderWidth ?? 1.5;
     return BoxDecoration(

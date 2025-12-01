@@ -336,6 +336,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
                     ),
                   );
                 },
+                lable: '字体',
               ),
               const SizedBox(height: 8),
               Row(
@@ -348,6 +349,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
                 value: cellCfg.padding.bottom.toDouble(),
                 min: 0,
                 max: 32,
+                divisions: 32,
                 onChanged: (v) {
                   final nextCell = cellCfg.copyWith(
                     padding: EdgeInsets.fromLTRB(
@@ -376,6 +378,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
                 value: cellCfg.padding.left.toDouble(),
                 min: 0,
                 max: 32,
+                divisions: 32,
                 onChanged: (v) {
                   final nextCell = cellCfg.copyWith(
                     padding: EdgeInsets.fromLTRB(
@@ -404,6 +407,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
                 value: cellCfg.margin.top.toDouble(),
                 min: 0,
                 max: 32,
+                divisions: 32,
                 onChanged: (v) {
                   final nextCell = cellCfg.copyWith(
                     margin: EdgeInsets.fromLTRB(
@@ -432,6 +436,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
                 value: cellCfg.margin.left.toDouble(),
                 min: 0,
                 max: 32,
+                divisions: 32,
                 onChanged: (v) {
                   final nextCell = cellCfg.copyWith(
                     margin: EdgeInsets.fromLTRB(
@@ -649,6 +654,7 @@ class _CoreRowItemState extends State<_CoreRowItem> {
           ),
         );
       },
+      lable: '字体',
     );
   }
 
@@ -966,6 +972,7 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
             textStyleConfig: style,
           ));
         },
+        lable: label,
         // showInlineWheel: true,
       );
     }

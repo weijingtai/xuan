@@ -45,28 +45,29 @@ class TextStyleConfig {
     required Brightness brightness,
     required ColorPreviewMode mode,
   }) {
-    var textColor = colorMapperDataModel.getBy(
+    final textColor = colorMapperDataModel.getBy(
         theme: brightness, mode: mode, content: null);
-    var shadowColor = textShadowDataModel.followTextColor
-        ? textColor
-        : (brightness == Brightness.light
-            ? textShadowDataModel.lightShadowColor
-            : textShadowDataModel.darkShadowColor);
+    final shadowBase = textShadowDataModel.resolveColor(brightness, textColor);
     return TextStyle(
-        fontSize: fontStyleDataModel.fontSize,
-        fontFamily: fontStyleDataModel.fontFamily,
-        fontWeight: fontStyleDataModel.fontWeight,
-        color: textColor,
-        shadows: textShadowDataModel.shadowEnabled
-            ? [
-                Shadow(
-                    color: shadowColor.withAlpha(
-                        (255 * textShadowDataModel.shadowOpacity).toInt()),
-                    blurRadius: textShadowDataModel.shadowBlurRadius,
-                    offset: Offset(textShadowDataModel.shadowOffsetX,
-                        textShadowDataModel.shadowOffsetY))
-              ]
-            : []);
+      fontSize: fontStyleDataModel.fontSize,
+      fontFamily: fontStyleDataModel.fontFamily,
+      fontWeight: fontStyleDataModel.fontWeight,
+      color: textColor,
+      shadows: textShadowDataModel.shadowEnabled
+          ? [
+              Shadow(
+                color: shadowBase.withAlpha(
+                  (255 * textShadowDataModel.shadowOpacity).toInt(),
+                ),
+                blurRadius: textShadowDataModel.shadowBlurRadius,
+                offset: Offset(
+                  textShadowDataModel.shadowOffsetX,
+                  textShadowDataModel.shadowOffsetY,
+                ),
+              )
+            ]
+          : [],
+    );
   }
 
   static TextStyleConfig get defaultGanConfig => () {
@@ -253,16 +254,14 @@ class TextStyleConfig {
     ColorPreviewMode? colorPreviewMode,
     Brightness? brightness,
   }) {
-    Color? textColor;
-    if (char != null && colorPreviewMode != null && brightness != null) {
-      final mapper = colorMapperDataModel.getMapperBy(
-          theme: brightness, mode: colorPreviewMode);
-      textColor = mapper[char];
-      // print(
-      //     '🔍 [toTextStyle] 字符="$char", mode=$colorPreviewMode, brightness=$brightness');
-      // print('🔍 [toTextStyle] mapper 包含 ${mapper.length} 个颜色映射');
-      // print('🔍 [toTextStyle] 该字符颜色: $textColor');
-    }
+    final b = brightness ?? Brightness.light;
+    final m = colorPreviewMode ?? ColorPreviewMode.pure;
+
+    final Color? textColor = (char != null)
+        ? colorMapperDataModel.getBy(theme: b, mode: m, content: char)
+        : null;
+
+    final shadowBase = textShadowDataModel.resolveColor(b, textColor);
 
     return TextStyle(
       fontFamily: fontStyleDataModel.fontFamily,
@@ -273,9 +272,9 @@ class TextStyleConfig {
       shadows: textShadowDataModel.shadowEnabled
           ? [
               Shadow(
-                color: textShadowDataModel.followTextColor
-                    ? textColor ?? textShadowDataModel.lightShadowColor
-                    : textShadowDataModel.lightShadowColor,
+                color: shadowBase.withAlpha(
+                  (255 * textShadowDataModel.shadowOpacity).toInt(),
+                ),
                 blurRadius: textShadowDataModel.shadowBlurRadius,
                 offset: Offset(
                   textShadowDataModel.shadowOffsetX,
@@ -758,6 +757,14 @@ class TextShadowDataModel {
       shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
       shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
     );
+  }
+
+  Color resolveColor(Brightness brightness, Color? textColor) {
+    if (followTextColor) {
+      return textColor ??
+          (brightness == Brightness.light ? lightShadowColor : darkShadowColor);
+    }
+    return brightness == Brightness.light ? lightShadowColor : darkShadowColor;
   }
 
   factory TextShadowDataModel.fromJson(Map<String, dynamic> json) {

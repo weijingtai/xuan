@@ -25,7 +25,12 @@ class TitleSliderWidget extends StatelessWidget {
             Text(value.toStringAsFixed(0)),
           ],
         ),
-        Slider(value: value, min: min, max: max, onChanged: onChanged),
+        Slider(
+            value: value,
+            min: min,
+            max: max,
+            divisions: max.toInt(),
+            onChanged: onChanged),
         const SizedBox(height: 8),
       ],
     );

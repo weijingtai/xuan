@@ -14,26 +14,29 @@ class CardDecoration {
   }) {
     final cellStyle = theme.cell.getBy(rowType);
     final border = cellStyle.border;
+    final backgroundColor = cellStyle.resolveBackgroundColor(brightness);
 
     Color? borderColor;
     double borderWidth = 0.0;
 
     if (border != null && border.enabled) {
-      borderWidth = border.width ?? 1.0;
-      borderColor =
-          brightness == Brightness.light ? border.lightColor : border.darkColor;
+      borderWidth = border.width;
+      borderColor = border.resolveColor(brightness);
     }
 
     // 如果没有边框配置，使用默认的透明边框以保持布局一致性
     // 或者根据设计需求，某些行可能有特定边框逻辑
 
-    if (borderWidth > 0 && borderColor != null) {
+    if ((borderWidth > 0 && borderColor != null) || backgroundColor != null) {
       return BoxDecoration(
-        border: Border.all(
-          color: borderColor,
-          width: borderWidth,
-        ),
-        borderRadius: BorderRadius.circular(border!.radius),
+        color: backgroundColor,
+        border: (borderWidth > 0 && borderColor != null)
+            ? Border.all(
+                color: borderColor,
+                width: borderWidth,
+              )
+            : null,
+        borderRadius: BorderRadius.circular(border?.radius ?? 0),
       );
     }
 

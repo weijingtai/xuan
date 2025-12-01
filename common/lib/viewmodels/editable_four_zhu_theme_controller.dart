@@ -188,6 +188,9 @@ class EditableFourZhuThemeController {
   /// Returns: The background color override or `null`.
   Color? resolveCardBackgroundColor() => theme.card?.lightBackgroundColor;
 
+  Color? resolveCardBackgroundColorBy(Brightness brightness) =>
+      theme.card?.resolveBackgroundColor(brightness);
+
   /// Resolves card-level border width.
   ///
   /// Returns: The configured card border width or `null` when not set.
@@ -204,6 +207,9 @@ class EditableFourZhuThemeController {
   /// Returns: The configured card border color or `null` when not set.
   Color? resolveCardBorderColor() => theme.card?.border?.lightColor;
 
+  Color? resolveCardBorderColorBy(Brightness brightness) =>
+      theme.card?.border?.resolveColor(brightness);
+
   /// Resolves card-level box shadow from theme.
   ///
   /// Returns: A list with a single `BoxShadow` when `shadowColor` is set,
@@ -214,29 +220,25 @@ class EditableFourZhuThemeController {
   }) {
     final c = theme.card;
     if (c == null) return null;
-    if (c.shadow?.withShadow != true) return null;
-    if (c.shadow?.withShadow != true) return null;
-    Color? color;
-    if (c.shadow?.followCardBackgroundColor ?? false) {
-      color = (brightness == Brightness.light)
-          ? c.lightBackgroundColor
-          : c.darkBackgroundColor;
-    } else {
-      color = (brightness == Brightness.light)
-          ? c.shadow?.lightThemeColor
-          : c.shadow?.darkThemeColor;
-    }
-    if (color == null) return null;
-    final dx = c.shadow?.offset.dx ?? 0;
-    final dy = c.shadow?.offset.dy ?? 0;
-    final blur = c.shadow?.blurRadius ?? 0;
-    final spread = c.shadow?.spreadRadius ?? 0;
+    if (c.shadow.withShadow != true) return null;
+
+    final Color? baseColor = c.shadow.followCardBackgroundColor
+        ? c.resolveBackgroundColor(brightness ?? Brightness.light)
+        : c.shadow.resolveColor(brightness ?? Brightness.light);
+    if (baseColor == null) return null;
+
+    final color = baseColor.withOpacity(c.shadow.opacity.clamp(0.0, 1.0));
+    final dx = c.shadow.offset.dx;
+    final dy = c.shadow.offset.dy;
+    final blur = c.shadow.blurRadius;
+    final spread = c.shadow.spreadRadius;
     return [
       BoxShadow(
-          color: color,
-          offset: Offset(dx, dy),
-          blurRadius: blur,
-          spreadRadius: spread)
+        color: color,
+        offset: Offset(dx, dy),
+        blurRadius: blur,
+        spreadRadius: spread,
+      ),
     ];
   }
 

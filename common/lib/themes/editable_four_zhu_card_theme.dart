@@ -437,6 +437,12 @@ class PillarSection {
   /// Background color (nullable for transparent/default when not set).
   Color? get backgroundColor => global.lightBackgroundColor;
 
+  Color? resolveBorderColor(Brightness brightness) =>
+      global.border?.resolveColor(brightness);
+
+  Color? resolveBackgroundColor(Brightness brightness) =>
+      global.resolveBackgroundColor(brightness);
+
   /// Differentiated outer margins per pillar type.
   /// Only keys in {year, month, day, hour, luckCycle} are allowed.
   EdgeInsets? get perPillarMargin => global.margin;
