@@ -22,6 +22,7 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
   // final ValueNotifier<PillarStyleConfig> pillarStyleConfigNotifier;
   final PillarStyleConfig pillarStyleConfig;
   final ValueChanged<PillarStyleConfig>? onChanged;
+  final bool showSeparatorWidth;
 
   /// 创建柱样式编辑器面板。
   ///
@@ -35,6 +36,7 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
     super.key,
     required this.pillarStyleConfig,
     required this.onChanged,
+    this.showSeparatorWidth = false,
     // required this.pillarStyleConfigNotifier,
   });
 
@@ -64,7 +66,9 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
     // _theme = widget.theme;
     _pillarStyleConfigNotifier = ValueNotifier(widget.pillarStyleConfig)
       ..addListener(() {
-        widget.onChanged?.call(_pillarStyleConfigNotifier.value);
+        if (widget.onChanged != null) {
+          widget.onChanged!(_pillarStyleConfigNotifier.value);
+        }
       });
 
     _pillarShadowNotifier =
@@ -83,8 +87,21 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
   @override
   void didUpdateWidget(covariant FourZhuPillarStyleEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.pillarStyleConfig != widget.pillarStyleConfig) {
-      _pillarStyleConfigNotifier.value = widget.pillarStyleConfig;
+    if (oldWidget.pillarStyleConfig != widget.pillarStyleConfig &&
+        widget.pillarStyleConfig != _pillarStyleConfigNotifier.value) {
+      // 检查 separatorWidth 是否在外部保持不变，但在内部发生了变化
+      // 如果是，则保留内部的 separatorWidth，防止因父组件更新滞后或无关更新导致的回退
+      if (widget.showSeparatorWidth &&
+          oldWidget.pillarStyleConfig.separatorWidth ==
+              widget.pillarStyleConfig.separatorWidth &&
+          widget.pillarStyleConfig.separatorWidth !=
+              _pillarStyleConfigNotifier.value.separatorWidth) {
+        _pillarStyleConfigNotifier.value = widget.pillarStyleConfig.copyWith(
+          separatorWidth: _pillarStyleConfigNotifier.value.separatorWidth,
+        );
+      } else {
+        _pillarStyleConfigNotifier.value = widget.pillarStyleConfig;
+      }
     }
   }
 
@@ -131,6 +148,29 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
       builder: (context, config, child) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.showSeparatorWidth) ...[
+            Row(
+              children: [
+                const Expanded(child: Text('分隔符宽度 (px)')),
+                Text('${config.separatorWidth?.toStringAsFixed(0) ?? 8}'),
+              ],
+            ),
+            Slider(
+              value: config.separatorWidth ?? 0.0,
+              min: 0,
+              max: 64,
+              divisions: 64,
+              onChanged: (v) {
+                // print("DEBUG: Slider onChanged: $v");
+                final newValue = _pillarStyleConfigNotifier.value
+                    .copyWith(separatorWidth: v);
+                if (newValue != _pillarStyleConfigNotifier.value) {
+                  _pillarStyleConfigNotifier.value = newValue;
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
           // 外边距、内边距控制
           BoxStyleConfigEditor(
             boxStyleConfigNotifier: _pillarStyleConfigNotifier,

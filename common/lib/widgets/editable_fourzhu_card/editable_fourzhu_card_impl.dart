@@ -492,13 +492,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// `PillarType.rowTitleColumn` 时返回 true；避免仅存在于 payloads 中、
   /// 但未参与实际渲染网格的“幽灵行标题列”导致左侧标题误隐藏。
   bool _hasRowTitleColumnInGrid(List<PillarPayload> pillars) {
-    final payloads = _currentPillars();
-    for (int i = 0; i < pillars.length; i++) {
-      if (i < payloads.length) {
-        if (payloads[i].pillarType == PillarType.rowTitleColumn) {
-          return true;
-        }
-      }
+    for (final p in pillars) {
+      if (p.pillarType == PillarType.rowTitleColumn) return true;
     }
     return false;
   }
@@ -922,6 +917,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       // 同步更新尺寸（包含装饰）
       _sizeNotifier.value = _computeSizeWithDecorationsV2();
       _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+      // 强制调度重建，确保内容更新（如 pillar 顺序变更但尺寸不变时）也能触发 UI 刷新
+      _scheduleRebuild();
     };
     widget.cardPayloadNotifier.addListener(_layoutModelSyncListener);
     widget.paddingNotifier.addListener(_layoutModelSyncListener);
@@ -5275,6 +5272,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         EditableCardThemeBuilder.buildCellSection(newTheme);
     _typographySectionNotifier.value =
         EditableCardThemeBuilder.buildTypographySection(newTheme);
+
+    // 刷新度量快照和尺寸，确保布局参数（如分隔符宽度）更新生效
+    _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
+    _sizeNotifier.value = _computeSizeWithDecorationsV2();
+
     _scheduleRebuild();
   }
 

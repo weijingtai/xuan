@@ -61,6 +61,14 @@ class EditableCardThemeBuilder {
       separatorWidth: 32.0,
     );
 
+    // Row Separator 专用配置
+    final defaultRowSeparatorConfig =
+        CellStyleConfig.defaultCellStyleConfig.copyWith(
+      separatorHeight: 8.0,
+      lightBackgroundColor: Colors.transparent,
+      darkBackgroundColor: Colors.transparent,
+    );
+
     return EditableFourZhuCardTheme(
       displayHeaderRow: true,
       displayRowTitleColumn: true,
@@ -71,7 +79,11 @@ class EditableCardThemeBuilder {
         mapper: {},
         defaultSeparatorConfig: defaultSeparatorConfig,
       ),
-      cell: CellSection.defaultCellSection,
+      cell: CellSection.defaultCellSection.copyWith(
+        rowTypeCellConfigMapper: {
+          RowType.separator: defaultRowSeparatorConfig,
+        },
+      ),
       typography: TypographySection.defaultTypographySection,
     );
   }
@@ -364,9 +376,9 @@ class CardSection {
 @JsonSerializable()
 
 /// Pillar-level decoration and per-pillar margin differentiation.
-class PillarSection {
+class PillarSection extends Equatable {
   /// Creates pillar decoration settings.
-  PillarSection({
+  const PillarSection({
     required this.global,
     required this.mapper,
     required this.defaultSeparatorConfig,
@@ -380,6 +392,9 @@ class PillarSection {
   /// 2. 其次使用 defaultSeparatorConfig
   /// 3. 最后回退到 global
   final PillarStyleConfig defaultSeparatorConfig;
+
+  @override
+  List<Object?> get props => [global, mapper, defaultSeparatorConfig];
 
   PillarStyleConfig getBy(PillarType pillarType) {
     // 优先查找 mapper 中的配置
@@ -488,9 +503,9 @@ class PillarSection {
 
 /// Cell-level decoration defaults; row-wise overrides remain in RowConfig.
 @JsonSerializable()
-class CellSection {
+class CellSection extends Equatable {
   /// Creates cell decoration settings.
-  CellSection({
+  const CellSection({
     required this.pillarTitleCellConfig,
     required this.rowTitleCellConfig,
     required this.globalCellConfig,
@@ -500,6 +515,14 @@ class CellSection {
   final CellStyleConfig rowTitleCellConfig;
   final CellStyleConfig globalCellConfig;
   final Map<RowType, CellStyleConfig> rowTypeCellConfigMapper;
+
+  @override
+  List<Object?> get props => [
+        pillarTitleCellConfig,
+        rowTitleCellConfig,
+        globalCellConfig,
+        rowTypeCellConfigMapper,
+      ];
 
   /// Default inner padding applied to non-title cells.
   EdgeInsets? get defaultPadding => globalCellConfig.padding;

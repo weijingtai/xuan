@@ -31,8 +31,8 @@ class RowStyleEditorPanel extends StatelessWidget {
         }
         final validRows = payload.rowOrderUuid
             .map((id) => payload.rowMap[id])
-            .whereType<TextRowPayload>()
-            .where((p) => p.rowType != RowType.separator)
+            .where((p) => p != null && p is RowPayload)
+            .cast<RowPayload>()
             .toList();
         // final missing =
         // activeTypes.where((t) => !all.any((c) => c.type == t)).toList();
@@ -58,37 +58,51 @@ class RowStyleEditorPanel extends StatelessWidget {
         return ValueListenableBuilder<EditableFourZhuCardTheme>(
           valueListenable: demoVm.themeNotifier,
           builder: (ctx, theme, __) {
-            return ListView.separated(
+            return ReorderableListView(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (ctx, i) {
-                final rp = validRows[i];
-                final type = rp.rowType;
-                final String rowUUID = rp.uuid;
-                // final rp = payload.rowMap[rowUUID];
-                final cfg = theme.cell.getBy(type);
-                final txtCfg = theme.typography.getCellContentBy(type);
-                final inCellTitleTextCfg =
-                    theme.typography.getCellTitleBy(type);
-                return RowItem(
-                  cfg: cfg,
-                  txtCfg: txtCfg,
-                  inCellTitleTextCfg: inCellTitleTextCfg,
-                  payload: rp!,
-                  onTextStyleChanged: (newTextStyle) {
-                    onTextStyleChanged(context, rowUUID, type, newTextStyle);
-                  },
-                  onCellStyleChanged: (newCellStyle) {
-                    onCellStyleChanged(context, rowUUID, type, newCellStyle);
-                  },
-                  onInCellTitleTextStyleChanged: (newTextStyle) {
-                    onInCellTitleTextStyleChanged(
-                        context, rowUUID, type, newTextStyle);
-                  },
-                );
+              buildDefaultDragHandles: true,
+              onReorder: (oldIndex, newIndex) {
+                if (oldIndex < newIndex) {
+                  newIndex -= 1;
+                }
+                final newRows = List<RowPayload>.from(validRows);
+                final item = newRows.removeAt(oldIndex);
+                newRows.insert(newIndex, item);
+                final newTypes = newRows.map((r) => r.rowType).toList();
+
+                final editorVm =
+                    Provider.of<FourZhuEditorViewModel>(context, listen: false);
+                editorVm.reorderRowsByTypes(newTypes);
+                demoVm.updateRowOrderFromTypes(newTypes);
               },
-              separatorBuilder: (_, __) => const SizedBox(height: 8),
-              itemCount: validRows.length,
+              children: [
+                for (final rp in validRows)
+                  Container(
+                    key: ValueKey(rp.uuid),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    child: RowItem(
+                      leading: const Icon(Icons.drag_handle),
+                      cfg: theme.cell.getBy(rp.rowType),
+                      txtCfg: theme.typography.getCellContentBy(rp.rowType),
+                      inCellTitleTextCfg:
+                          theme.typography.getCellTitleBy(rp.rowType),
+                      payload: rp,
+                      onTextStyleChanged: (newTextStyle) {
+                        onTextStyleChanged(
+                            context, rp.uuid, rp.rowType, newTextStyle);
+                      },
+                      onCellStyleChanged: (newCellStyle) {
+                        onCellStyleChanged(
+                            context, rp.uuid, rp.rowType, newCellStyle);
+                      },
+                      onInCellTitleTextStyleChanged: (newTextStyle) {
+                        onInCellTitleTextStyleChanged(
+                            context, rp.uuid, rp.rowType, newTextStyle);
+                      },
+                    ),
+                  )
+              ],
             );
           },
         );
@@ -164,6 +178,7 @@ class RowItem extends StatelessWidget {
   final ValueChanged<TextStyleConfig> onInCellTitleTextStyleChanged;
 
   final ValueChanged<CellStyleConfig> onCellStyleChanged;
+  final Widget? leading;
 
   // final FourZhuEditorViewModel vm;
   const RowItem(
@@ -173,7 +188,8 @@ class RowItem extends StatelessWidget {
       required this.payload,
       required this.onTextStyleChanged,
       required this.onCellStyleChanged,
-      required this.onInCellTitleTextStyleChanged});
+      required this.onInCellTitleTextStyleChanged,
+      this.leading});
 
   @override
   Widget build(BuildContext context) {
@@ -192,6 +208,7 @@ class RowItem extends StatelessWidget {
         border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
       ),
       child: ExpansionTile(
+        leading: leading,
         title: Text(getRowTypeLabel(payload.rowType),
             style: theme.textTheme.titleSmall),
         childrenPadding: const EdgeInsets.all(12),
@@ -209,6 +226,25 @@ class RowItem extends StatelessWidget {
                 );
               },
             ),
+          if (payload.rowType == RowType.separator) ...[
+            Row(
+              children: [
+                const Expanded(child: Text('行高度 (px)')),
+                Text('${cfg.separatorHeight?.toStringAsFixed(0) ?? 0}'),
+              ],
+            ),
+            Slider(
+              value: (cfg.separatorHeight ?? 0).toDouble(),
+              min: 0,
+              max: 64,
+              onChanged: (v) {
+                onCellStyleChanged(
+                  cfg.copyWith(separatorHeight: v),
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
           Row(
             children: [
               const Expanded(child: Text('上下内边距 (px)')),
@@ -285,13 +321,14 @@ class RowItem extends StatelessWidget {
             },
           ),
           const SizedBox(height: 8),
-          ColorfulTextStyleEditorV2Enhanced(
-              type: payload.rowType,
-              initialConfig: txtCfg,
-              values: payload.rowType == RowType.heavenlyStem
-                  ? TianGan.values.take(10).map((e) => e.name).toList()
-                  : DiZhi.values.take(12).map((e) => e.name).toList(),
-              onChanged: onTextStyleChanged),
+          if (payload.rowType != RowType.separator)
+            ColorfulTextStyleEditorV2Enhanced(
+                type: payload.rowType,
+                initialConfig: txtCfg,
+                values: payload.rowType == RowType.heavenlyStem
+                    ? TianGan.values.take(10).map((e) => e.name).toList()
+                    : DiZhi.values.take(12).map((e) => e.name).toList(),
+                onChanged: onTextStyleChanged),
           if (cfg.showsTitleInCell) ...[
             const SizedBox(height: 8),
             ColorfulTextStyleEditorV2Enhanced(

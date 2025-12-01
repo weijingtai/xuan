@@ -15,6 +15,9 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// 默认值为 false
   final bool showsTitleInCell;
 
+  /// 分隔行高度（仅当 RowType.separator 时生效）
+  final double? separatorHeight;
+
   /// 构造一个 Cell 样式配置对象
   ///
   /// 参数：
@@ -23,6 +26,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// - [padding]：内边距（内容与边框之间）
   /// - [margin]：外边距（单元格与相邻单元之间）
   /// - [shadow]：阴影样式（开关、颜色、偏移、模糊、扩散、透明度）
+  /// - [separatorHeight]：分隔行高度（可选）
   ///
   /// 返回：不可变配置对象
   CellStyleConfig({
@@ -33,6 +37,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
     super.margin = EdgeInsets.zero,
     required super.shadow,
     this.showsTitleInCell = false,
+    this.separatorHeight,
   });
 
   /// 创建一个更新后的副本
@@ -50,6 +55,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
     EdgeInsets? margin,
     BoxShadowStyle? shadow,
     bool? showsTitleInCell,
+    double? separatorHeight,
   }) {
     return CellStyleConfig(
       border: border ?? this.border,
@@ -59,6 +65,7 @@ class CellStyleConfig extends BaseBoxStyleConfig {
       margin: margin ?? this.margin,
       shadow: shadow ?? this.shadow,
       showsTitleInCell: showsTitleInCell ?? this.showsTitleInCell,
+      separatorHeight: separatorHeight ?? this.separatorHeight,
     );
   }
 

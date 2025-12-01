@@ -202,6 +202,47 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  void reorderPillarsInGroup(String groupId, int oldIndex, int newIndex) {
+    if (_currentTemplate == null) return;
+    final updatedGroups = _currentTemplate!.chartGroups.map((group) {
+      if (group.id == groupId) {
+        final newPillarOrder = List<PillarType>.from(group.pillarOrder);
+        if (oldIndex < 0 || oldIndex >= newPillarOrder.length) return group;
+
+        if (oldIndex < newIndex) {
+          newIndex -= 1;
+        }
+
+        // Fix: Ensure newIndex is within bounds
+        if (newIndex < 0) newIndex = 0;
+        if (newIndex > newPillarOrder.length) newIndex = newPillarOrder.length;
+
+        final item = newPillarOrder.removeAt(oldIndex);
+        newPillarOrder.insert(newIndex, item);
+        return group.copyWith(pillarOrder: newPillarOrder);
+      }
+      return group;
+    }).toList();
+
+    _currentTemplate = _currentTemplate!.copyWith(chartGroups: updatedGroups);
+    _hasUnsavedChanges = true;
+    notifyListeners();
+  }
+
+  void updatePillarOrderInGroup(String groupId, List<PillarType> newOrder) {
+    if (_currentTemplate == null) return;
+    final updatedGroups = _currentTemplate!.chartGroups.map((group) {
+      if (group.id == groupId) {
+        return group.copyWith(pillarOrder: newOrder);
+      }
+      return group;
+    }).toList();
+
+    _currentTemplate = _currentTemplate!.copyWith(chartGroups: updatedGroups);
+    _hasUnsavedChanges = true;
+    notifyListeners();
+  }
+
   void clearSelection() {
     if (_selectedTemplateIds.isEmpty) {
       return;
@@ -656,6 +697,47 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     list.insert(clampedNew, item);
 
     _applyCurrentTemplate(template.copyWith(rowConfigs: list));
+  }
+
+  /// Reorders rows based on a list of types, preserving the position of types not in the list (e.g. separators).
+  /// Uses a "Slot Filling" strategy:
+  /// 1. Identifies "slots" in the current config list that correspond to the types in [orderedTypes].
+  /// 2. Fills these slots sequentially with the configs corresponding to [orderedTypes].
+  /// 3. Leaves other configs (e.g. separators) in their original positions.
+  void reorderRowsByTypes(List<RowType> orderedTypes) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    final currentConfigs = template.rowConfigs;
+    final reorderedConfigs = <RowConfig>[];
+    final typesSet = orderedTypes.toSet();
+    int orderedIndex = 0;
+
+    // Validate that all orderedTypes exist in currentConfigs
+    // Note: This assumes RowType is unique in currentConfigs for the types being reordered.
+    // If orderedTypes contains duplicates, this logic might need adjustment, but RowTypes are usually unique.
+
+    for (final config in currentConfigs) {
+      if (typesSet.contains(config.type)) {
+        // This is a slot to be filled by the next item in orderedTypes
+        if (orderedIndex < orderedTypes.length) {
+          final nextType = orderedTypes[orderedIndex++];
+          final nextConfig = currentConfigs.firstWhere(
+            (c) => c.type == nextType,
+            orElse: () => config, // Should not happen if valid
+          );
+          reorderedConfigs.add(nextConfig);
+        } else {
+          // Should not happen if lists match
+          reorderedConfigs.add(config);
+        }
+      } else {
+        // Keep non-reordered items (e.g. separators) in place
+        reorderedConfigs.add(config);
+      }
+    }
+
+    _applyCurrentTemplate(template.copyWith(rowConfigs: reorderedConfigs));
   }
 
   Future<void> refreshRowConfigs() async {
@@ -1272,6 +1354,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           id: _uuid.v4(),
           title: '流年盘',
           pillarOrder: const [
+            PillarType.rowTitleColumn,
             PillarType.year,
             PillarType.month,
             PillarType.day,

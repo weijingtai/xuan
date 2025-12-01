@@ -952,7 +952,9 @@ class CardMetricsCalculator {
   double _calculateCellContentHeight(
       RowType rt, String rowUuid, String? pillarUuid) {
     if (rt == RowType.separator) {
-      return defaultSeparatorWidth;
+      // Return configured height or 0
+      final cellConfig = theme.cell.getBy(rt);
+      return _normalizeDouble(cellConfig.separatorHeight ?? 0.0);
     }
 
     double? fontSize;

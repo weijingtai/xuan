@@ -16,21 +16,21 @@
     - 对每个段落调用 `_buildStyledPillarSegment`。
     - 对分隔符行直接添加（不包裹样式），作为段间间隙。
     - 使用 `Column(mainAxisSize: MainAxisSize.min)` 组合所有部分。
-- [ ] **改造内容构建器 (`_buildRealPillar`)**
+- [x] **改造内容构建器 (`_buildRealPillar`)**
   - *注：采用直接操作 `columnContent.children` 的方式，避免了修改 `_buildPillarCells` 的复杂性。此项已通过上述逻辑覆盖。*
 
 ## 侧边栏与布局适配 (Layout & Titles)
-- [ ] **适配左侧标题栏 (`_buildLeftGripColumn`)**
+- [x] **适配左侧标题栏 (`_buildLeftGripColumn`)**
   - 检查左侧标题栏是否需要同样的视觉分段（通常标题栏背景透明，可能不需要处理，但需确保分隔符行高度正确）。
-- [ ] **处理分隔符高度**
+- [x] **处理分隔符高度**
   - 确认 `RowType.separator` 在 `CardLayoutModel` 中的高度计算逻辑。
   - 确保分隔符行在 UI 上表现为“间隙”或“透明区域”。
 
 ## 验证与测试 (Verification)
-- [ ] **验证基本渲染**
+- [x] **验证基本渲染**
   - 运行应用，检查无分隔符时显示是否正常（回归测试）。
   - 添加分隔符，检查柱子是否被切分为两段，且样式分别应用。
-- [ ] **验证拖拽行为**
+- [x] **验证拖拽行为**
   - 确保分段后的行仍能正常拖拽排序。
-- [ ] **Golden Test**
+- [x] **Golden Test**
   - 更新或新增 Golden Test 覆盖分段场景。

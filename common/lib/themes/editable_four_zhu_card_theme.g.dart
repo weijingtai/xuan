@@ -9,7 +9,6 @@ part of 'editable_four_zhu_card_theme.dart';
 EditableFourZhuCardTheme _$EditableFourZhuCardThemeFromJson(
         Map<String, dynamic> json) =>
     EditableFourZhuCardTheme(
-      displayCellTitle: json['displayCellTitle'] as bool,
       displayHeaderRow: json['displayHeaderRow'] as bool,
       displayRowTitleColumn: json['displayRowTitleColumn'] as bool,
       card: CardStyleConfig.fromJson(json['card'] as Map<String, dynamic>),
@@ -17,6 +16,7 @@ EditableFourZhuCardTheme _$EditableFourZhuCardThemeFromJson(
       cell: CellSection.fromJson(json['cell'] as Map<String, dynamic>),
       typography: TypographySection.fromJson(
           json['typography'] as Map<String, dynamic>),
+      displayCellTitle: json['displayCellTitle'] as bool,
     );
 
 Map<String, dynamic> _$EditableFourZhuCardThemeToJson(
@@ -24,6 +24,7 @@ Map<String, dynamic> _$EditableFourZhuCardThemeToJson(
     <String, dynamic>{
       'displayHeaderRow': instance.displayHeaderRow,
       'displayRowTitleColumn': instance.displayRowTitleColumn,
+      'displayCellTitle': instance.displayCellTitle,
       'card': instance.card,
       'pillar': instance.pillar,
       'cell': instance.cell,

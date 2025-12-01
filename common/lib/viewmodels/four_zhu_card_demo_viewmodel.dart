@@ -134,6 +134,7 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
             border: BoxBorderStyle.defaultBorder.copyWith(enabled: false)),
         globalCellConfig: CellStyleConfig.defaultCellStyleConfig,
         rowTypeCellConfigMapper: {
+          RowType.columnHeaderRow: CellStyleConfig.defaultCellStyleConfig,
           RowType.earthlyBranch: CellStyleConfig.defaultCellStyleConfig,
           RowType.heavenlyStem: CellStyleConfig.defaultCellStyleConfig,
           RowType.hiddenStems: CellStyleConfig.defaultCellStyleConfig,
@@ -150,8 +151,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
         },
         // Separator 专用配置
         defaultSeparatorConfig: PillarStyleConfig(
-          border:
-              BoxBorderStyle.defaultBorder.copyWith(enabled: false, radius: 0.0),
+          border: BoxBorderStyle.defaultBorder
+              .copyWith(enabled: false, radius: 0.0),
           lightBackgroundColor: Colors.transparent,
           darkBackgroundColor: Colors.transparent,
           padding: EdgeInsets.zero,
@@ -378,6 +379,87 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
           );
     }
     // pillarsNotifier.value = list;
+    notifyListeners();
+  }
+
+  void updatePillarOrderFromTypes(List<PillarType> types) {
+    final currentPayload = cardPayloadNotifier.value;
+    final pillarMap = currentPayload.pillarMap;
+    final usedUuids = <String>{};
+    final newOrderUuid = <String>[];
+
+    for (var type in types) {
+      String? foundUuid;
+      for (var entry in pillarMap.entries) {
+        if (entry.value.pillarType == type && !usedUuids.contains(entry.key)) {
+          foundUuid = entry.key;
+          break;
+        }
+      }
+
+      if (foundUuid != null) {
+        newOrderUuid.add(foundUuid);
+        usedUuids.add(foundUuid);
+      }
+    }
+
+    // Append any remaining pillars that were not in the types list
+    // (This ensures we don't accidentally lose pillars if the input list was partial)
+    for (var uuid in currentPayload.pillarOrderUuid) {
+      if (!usedUuids.contains(uuid)) {
+        newOrderUuid.add(uuid);
+      }
+    }
+
+    cardPayloadNotifier.value =
+        currentPayload.copyWith(pillarOrderUuid: newOrderUuid);
+    notifyListeners();
+  }
+
+  void updateRowOrderFromTypes(List<RowType> orderedTypes) {
+    final currentPayload = cardPayloadNotifier.value;
+    final rowMap = currentPayload.rowMap;
+    final oldOrderUuid = currentPayload.rowOrderUuid;
+
+    final newOrderUuid = <String>[];
+    final typesSet = orderedTypes.toSet();
+
+    // 1. Collect available UUIDs for the types in orderedTypes
+    final availableUuidsByType = <RowType, List<String>>{};
+    for (final uuid in oldOrderUuid) {
+      final payload = rowMap[uuid];
+      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
+        availableUuidsByType.putIfAbsent(payload.rowType, () => []).add(uuid);
+      }
+    }
+
+    // 2. Slot Filling
+    int orderedIndex = 0;
+
+    for (final uuid in oldOrderUuid) {
+      final payload = rowMap[uuid];
+      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
+        // This is a slot. Fill with UUID of the next type in orderedTypes.
+        if (orderedIndex < orderedTypes.length) {
+          final nextType = orderedTypes[orderedIndex++];
+          final candidates = availableUuidsByType[nextType];
+          if (candidates != null && candidates.isNotEmpty) {
+            newOrderUuid.add(candidates.removeAt(0));
+          } else {
+            // Fallback
+            newOrderUuid.add(uuid);
+          }
+        } else {
+          newOrderUuid.add(uuid);
+        }
+      } else {
+        // Keep (e.g. separator or header if not in orderedTypes)
+        newOrderUuid.add(uuid);
+      }
+    }
+
+    cardPayloadNotifier.value =
+        currentPayload.copyWith(rowOrderUuid: newOrderUuid);
     notifyListeners();
   }
 
