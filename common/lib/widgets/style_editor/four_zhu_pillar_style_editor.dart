@@ -11,6 +11,7 @@ import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/pillar_style_config.dart';
 import 'widgets/box_border_style_editor.dart';
 import 'widgets/box_shadow_style_editor.dart';
+import 'colorful_text_style_editor_widget_v2.dart';
 
 /// FourZhuPillarStyleEditor
 /// 独立的柱样式编辑器面板，用于编辑四柱卡片的柱样式配置。
@@ -23,6 +24,7 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
   final PillarStyleConfig pillarStyleConfig;
   final ValueChanged<PillarStyleConfig>? onChanged;
   final bool showSeparatorWidth;
+  final bool showTitleColumnFontEditor;
 
   /// 创建柱样式编辑器面板。
   ///
@@ -37,6 +39,7 @@ class FourZhuPillarStyleEditor extends StatefulWidget {
     required this.pillarStyleConfig,
     required this.onChanged,
     this.showSeparatorWidth = false,
+    this.showTitleColumnFontEditor = false,
     // required this.pillarStyleConfigNotifier,
   });
 
@@ -143,6 +146,8 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
 
   @override
   Widget build(BuildContext context) {
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
     return ValueListenableBuilder(
       valueListenable: _pillarStyleConfigNotifier,
       builder: (context, config, child) => Column(
@@ -167,6 +172,25 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
                 if (newValue != _pillarStyleConfigNotifier.value) {
                   _pillarStyleConfigNotifier.value = newValue;
                 }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+          if (widget.showTitleColumnFontEditor) ...[
+            ValueListenableBuilder<EditableFourZhuCardTheme>(
+              valueListenable: demoVm.themeNotifier,
+              builder: (ctx, theme, _) {
+                return ColorfulTextStyleEditorV2Enhanced(
+                  type: RowType.columnHeaderRow,
+                  initialConfig: theme.typography.rowTitle,
+                  onChanged: (style) {
+                    demoVm.updateEditableFourZhuCardTheme(
+                      theme.copyWith(
+                        typography: theme.typography.copyWith(rowTitle: style),
+                      ),
+                    );
+                  },
+                );
               },
             ),
             const SizedBox(height: 8),

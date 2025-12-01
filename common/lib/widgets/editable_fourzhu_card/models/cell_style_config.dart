@@ -18,6 +18,18 @@ class CellStyleConfig extends BaseBoxStyleConfig {
   /// 分隔行高度（仅当 RowType.separator 时生效）
   final double? separatorHeight;
 
+  @override
+  List<Object?> get props => [
+        border,
+        lightBackgroundColor,
+        darkBackgroundColor,
+        padding,
+        margin,
+        shadow,
+        showsTitleInCell,
+        separatorHeight,
+      ];
+
   /// 构造一个 Cell 样式配置对象
   ///
   /// 参数：

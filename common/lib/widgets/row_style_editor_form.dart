@@ -329,27 +329,15 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
   /// 参数：无（使用本地状态）
   /// 返回：void（通过 onSave 回调传递更新后的 RowConfig）
   void _handleSave() {
-    // 构造 TextStyleConfig（优先采用当前选择，缺省时回退到已有配置）
-    final existing = widget.config.textStyleConfig;
-    // final newTextStyleConfig = TextStyleConfig.fromLegacyRowConfig(
-    //   fontFamily: _selectedFontFamily ?? existing?.fontFamily,
-    //   fontSize: _selectedFontSize ?? existing?.fontSize,
-    //   textColorHex: _selectedTextColor ?? existing?.colorHex,
-    //   // 表单暂不编辑字重与阴影，保持原值或旧字段
-    //   fontWeight: widget.config.fontWeight ??
-    //       (existing?.fontWeightValue != null
-    //           ? 'w${existing!.fontWeightValue}'
-    //           : null),
-    //   shadowColorHex: widget.config.shadowColorHex ?? existing?.shadowColorHex,
-    //   shadowOffsetX: widget.config.shadowOffsetX ?? existing?.shadowOffsetX,
-    //   shadowOffsetY: widget.config.shadowOffsetY ?? existing?.shadowOffsetY,
-    //   shadowBlurRadius:
-    //       widget.config.shadowBlurRadius ?? existing?.shadowBlurRadius,
-    // );
+    final base = widget.config.textStyleConfig;
+    final newTextStyleConfig = TextStyleConfig.fromLegacyRowConfig(
+      fontFamily: _selectedFontFamily ?? base.fontStyleDataModel.fontFamily,
+      fontSize: _selectedFontSize ?? base.fontStyleDataModel.fontSize,
+      textColorHex: _selectedTextColor,
+    );
 
     final updated = widget.config.copyWith(
-      // 同步新版集中样式
-      textStyleConfig: existing,
+      textStyleConfig: newTextStyleConfig,
       textAlign: _selectedTextAlign,
       borderType: _selectedBorderType,
       borderColorHex: _selectedBorderColor,

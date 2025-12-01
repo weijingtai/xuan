@@ -59,7 +59,6 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     return ValueListenableBuilder(
         valueListenable: _pillarStyleConfigNotifier,
         builder: (context, config, child) {
@@ -81,8 +80,8 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surfaceContainerHigh,
                     borderRadius: BorderRadius.circular(8),
-                    border:
-                        Border.all(color: theme.dividerColor.withOpacity(0.12)),
+                    border: Border.all(
+                        color: theme.dividerColor.withValues(alpha: 0.12)),
                   ),
                   child: ExpansionTile(
                     leading: Icon(widget.icon),
@@ -143,6 +142,9 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                                   showSeparatorWidth:
                                       payload.pillarMap[uuid]!.pillarType ==
                                           PillarType.separator,
+                                  showTitleColumnFontEditor:
+                                      payload.pillarMap[uuid]!.pillarType ==
+                                          PillarType.rowTitleColumn,
                                   pillarStyleConfig: config.getBy(
                                       payload.pillarMap[uuid]!.pillarType),
                                   onChanged: (pillar) {
@@ -194,27 +196,6 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
       ),
       childrenPadding: const EdgeInsets.all(12),
       children: [content],
-    );
-  }
-
-  Widget _pillarSecion() {
-    final theme = Theme.of(context);
-
-    // final demoVm =
-    //     Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-    //     ValueNotifier<FouZhu> globalPillarStyleConfigNotifier = demoVm.pillarStyleConfigNotifier;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor.withOpacity(0.12)),
-      ),
-      child: ExpansionTile(
-          leading: Icon(widget.icon),
-          title: Text(widget.title, style: theme.textTheme.titleMedium),
-          childrenPadding: const EdgeInsets.symmetric(horizontal: 8),
-          children: [const Placeholder()]),
     );
   }
 }

@@ -605,11 +605,6 @@ class CardMetricsCalculator {
           pillarConfig.padding.top + pillarConfig.padding.bottom;
       final pillarDecorationW =
           pillarConfig.padding.left + pillarConfig.padding.right;
-      if (pillar.pillarType == PillarType.year) {
-        // print("年柱border: ${theme.pillar.mapper[PillarType.year]!.border?.enabled}");
-        print(
-            "年柱borderW: ${pillarConfig.border?.enabled}, ${pillarConfig.border?.width}");
-      }
       final pillarBorderW = pillarConfig.border?.width ?? 0.0;
       final pillarMarginV =
           pillarConfig.margin.top + pillarConfig.margin.bottom;
@@ -689,7 +684,9 @@ class CardMetricsCalculator {
     });
     // print("maxPillarVerticalExtras: $maxPillarVerticalExtras");
     final totalHeight =
-        _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
+        _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras)
+            .toInt()
+            .toDouble();
 
     // 构建最终快照
     final totals = CardTotals(
@@ -967,6 +964,19 @@ class CardMetricsCalculator {
     }
 
     if (fontSize == null) {
+      // Special-case: title column cells use Typography.rowTitle
+      if (pillarUuid != null) {
+        final pillar = payload.pillarMap[pillarUuid];
+        if (pillar != null && pillar.pillarType == PillarType.rowTitleColumn) {
+          final ts = theme.typography.rowTitle;
+          fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
+          final contentLineHeight =
+              ts.fontStyleDataModel.height ?? lineHeightFactor;
+          double h = (fontSize * contentLineHeight).ceilToDouble();
+          return _normalizeDouble(h);
+        }
+      }
+
       final ts = theme.typography.getCellContentBy(rt);
       fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
 

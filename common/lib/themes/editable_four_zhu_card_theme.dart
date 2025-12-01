@@ -376,9 +376,9 @@ class CardSection {
 @JsonSerializable()
 
 /// Pillar-level decoration and per-pillar margin differentiation.
-class PillarSection extends Equatable {
+class PillarSection {
   /// Creates pillar decoration settings.
-  const PillarSection({
+  PillarSection({
     required this.global,
     required this.mapper,
     required this.defaultSeparatorConfig,
@@ -392,9 +392,6 @@ class PillarSection extends Equatable {
   /// 2. 其次使用 defaultSeparatorConfig
   /// 3. 最后回退到 global
   final PillarStyleConfig defaultSeparatorConfig;
-
-  @override
-  List<Object?> get props => [global, mapper, defaultSeparatorConfig];
 
   PillarStyleConfig getBy(PillarType pillarType) {
     // 优先查找 mapper 中的配置
@@ -503,9 +500,9 @@ class PillarSection extends Equatable {
 
 /// Cell-level decoration defaults; row-wise overrides remain in RowConfig.
 @JsonSerializable()
-class CellSection extends Equatable {
+class CellSection {
   /// Creates cell decoration settings.
-  const CellSection({
+  CellSection({
     required this.pillarTitleCellConfig,
     required this.rowTitleCellConfig,
     required this.globalCellConfig,
@@ -515,14 +512,6 @@ class CellSection extends Equatable {
   final CellStyleConfig rowTitleCellConfig;
   final CellStyleConfig globalCellConfig;
   final Map<RowType, CellStyleConfig> rowTypeCellConfigMapper;
-
-  @override
-  List<Object?> get props => [
-        pillarTitleCellConfig,
-        rowTitleCellConfig,
-        globalCellConfig,
-        rowTypeCellConfigMapper,
-      ];
 
   /// Default inner padding applied to non-title cells.
   EdgeInsets? get defaultPadding => globalCellConfig.padding;
@@ -627,9 +616,8 @@ class TypographySection {
 
   TextStyleConfig getCellContentBy(RowType rowType) {
     if (rowType == RowType.columnHeaderRow) {
-      return rowTitle;
+      return cellContentMapper[rowType] ?? rowTitle;
     }
-
     return cellContentMapper[rowType] ?? globalContent;
   }
 

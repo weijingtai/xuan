@@ -176,7 +176,7 @@ class BoxShadowStyle extends Equatable {
 }
 
 @JsonSerializable()
-class BoxBorderStyle {
+class BoxBorderStyle extends Equatable {
   final double width;
   @ColorAHexConverter()
   final Color lightColor;
@@ -222,6 +222,9 @@ class BoxBorderStyle {
   toJson() => _$BoxBorderStyleToJson(this);
   factory BoxBorderStyle.fromJson(Map<String, dynamic> json) =>
       _$BoxBorderStyleFromJson(json);
+
+  @override
+  List<Object?> get props => [enabled, width, lightColor, darkColor, radius];
 }
 
 @JsonSerializable()
@@ -338,21 +341,7 @@ class BaseBoxStyleConfig extends Equatable {
   // }
 
   @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other.runtimeType != runtimeType) return false;
-    return other is BaseBoxStyleConfig &&
-        other.border == border &&
-        other.lightBackgroundColor == lightBackgroundColor &&
-        other.darkBackgroundColor == darkBackgroundColor &&
-        other.padding == padding &&
-        other.margin == margin &&
-        other.shadow == shadow;
-    // other.size == size;
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
+  List<Object?> get props => [
         border,
         lightBackgroundColor,
         darkBackgroundColor,
@@ -360,7 +349,7 @@ class BaseBoxStyleConfig extends Equatable {
         margin,
         shadow,
         // size,
-      ]);
+      ];
 
   // ===== Helper implementations =====
 
@@ -545,16 +534,6 @@ class BaseBoxStyleConfig extends Equatable {
       (json['height'] as num?)?.toDouble() ?? 0,
     );
   }
-
-  @override
-  List<Object?> get props => [
-        border,
-        lightBackgroundColor,
-        darkBackgroundColor,
-        padding,
-        margin,
-        shadow,
-      ];
 }
 
 enum _Corner { topLeft, topRight, bottomLeft, bottomRight }

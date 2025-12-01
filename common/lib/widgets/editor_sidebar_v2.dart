@@ -9,6 +9,9 @@ import '../viewmodels/four_zhu_editor_view_model.dart';
 import 'row_style_editor_form.dart';
 import 'style_editor/theme_edit_preview_sidebar.dart.bak';
 import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
+import '../themes/editable_four_zhu_card_theme.dart';
+import '../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
 ///
@@ -60,6 +63,8 @@ class EditorSidebarV2 extends StatelessWidget {
                   );
                 },
               ),
+              const Divider(height: 24),
+              const _HeaderRowStyleSection(),
               const Divider(height: 32),
 
               // 主题编辑与预览（替换原“全局字体设置部分”）
@@ -259,6 +264,196 @@ class _DividerConfigSectionState extends State<_DividerConfigSection> {
       // Invalid color, return default
     }
     return const Color(0xFFD1D5DB);
+  }
+}
+
+class _HeaderRowStyleSection extends StatefulWidget {
+  const _HeaderRowStyleSection({super.key});
+
+  @override
+  State<_HeaderRowStyleSection> createState() => _HeaderRowStyleSectionState();
+}
+
+class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
+  bool _expanded = true;
+
+  @override
+  Widget build(BuildContext context) {
+    FourZhuCardDemoViewModel? demoVm;
+    try {
+      demoVm = Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    } catch (_) {
+      demoVm = null;
+    }
+    if (demoVm == null) {
+      return const SizedBox.shrink();
+    }
+    return ValueListenableBuilder<EditableFourZhuCardTheme>(
+      valueListenable: demoVm.themeNotifier,
+      builder: (ctx, theme, _) {
+        final rowTitleCfg = theme.typography.rowTitle;
+        final cellCfg = theme.cell.pillarTitleCellConfig;
+        final displayHeader = theme.displayHeaderRow;
+        final t = Theme.of(context);
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    '标题行',
+                    style: t.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+                  tooltip: _expanded ? '收起' : '下拉展开',
+                  onPressed: () => setState(() => _expanded = !_expanded),
+                ),
+              ],
+            ),
+            if (_expanded) ...[
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('显示标题行'),
+                value: displayHeader,
+                onChanged: (v) {
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(displayHeaderRow: v),
+                  );
+                },
+              ),
+              ColorfulTextStyleEditorV2Enhanced(
+                type: RowType.columnHeaderRow,
+                initialConfig: rowTitleCfg,
+                onChanged: (TextStyleConfig style) {
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      typography: theme.typography.copyWith(rowTitle: style),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(child: Text('上下内边距 (px)')),
+                  Text('${cellCfg.padding.bottom.toStringAsFixed(0)}'),
+                ],
+              ),
+              Slider(
+                value: cellCfg.padding.bottom.toDouble(),
+                min: 0,
+                max: 32,
+                onChanged: (v) {
+                  final nextCell = cellCfg.copyWith(
+                    padding: EdgeInsets.fromLTRB(
+                      cellCfg.padding.left,
+                      v,
+                      cellCfg.padding.right,
+                      v,
+                    ),
+                  );
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      cell:
+                          theme.cell.copyWith(pillarTitleCellConfig: nextCell),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(child: Text('左右内边距 (px)')),
+                  Text('${cellCfg.padding.left.toStringAsFixed(0)}'),
+                ],
+              ),
+              Slider(
+                value: cellCfg.padding.left.toDouble(),
+                min: 0,
+                max: 32,
+                onChanged: (v) {
+                  final nextCell = cellCfg.copyWith(
+                    padding: EdgeInsets.fromLTRB(
+                      v,
+                      cellCfg.padding.top,
+                      v,
+                      cellCfg.padding.bottom,
+                    ),
+                  );
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      cell:
+                          theme.cell.copyWith(pillarTitleCellConfig: nextCell),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(child: Text('上下外边距 (px)')),
+                  Text('${cellCfg.margin.top.toStringAsFixed(0)}'),
+                ],
+              ),
+              Slider(
+                value: cellCfg.margin.top.toDouble(),
+                min: 0,
+                max: 32,
+                onChanged: (v) {
+                  final nextCell = cellCfg.copyWith(
+                    margin: EdgeInsets.fromLTRB(
+                      cellCfg.margin.left,
+                      v,
+                      cellCfg.margin.right,
+                      v,
+                    ),
+                  );
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      cell:
+                          theme.cell.copyWith(pillarTitleCellConfig: nextCell),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Expanded(child: Text('左右外边距 (px)')),
+                  Text('${cellCfg.margin.left.toStringAsFixed(0)}'),
+                ],
+              ),
+              Slider(
+                value: cellCfg.margin.left.toDouble(),
+                min: 0,
+                max: 32,
+                onChanged: (v) {
+                  final nextCell = cellCfg.copyWith(
+                    margin: EdgeInsets.fromLTRB(
+                      v,
+                      cellCfg.margin.top,
+                      v,
+                      cellCfg.margin.bottom,
+                    ),
+                  );
+                  demoVm!.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      cell:
+                          theme.cell.copyWith(pillarTitleCellConfig: nextCell),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ],
+        );
+      },
+    );
   }
 }
 

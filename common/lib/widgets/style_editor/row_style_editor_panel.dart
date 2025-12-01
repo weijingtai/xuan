@@ -7,6 +7,7 @@ import '../../models/layout_template.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/text_style_config.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
+import '../../utils/constant_values_utils.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
@@ -31,7 +32,7 @@ class RowStyleEditorPanel extends StatelessWidget {
         }
         final validRows = payload.rowOrderUuid
             .map((id) => payload.rowMap[id])
-            .where((p) => p != null && p is RowPayload)
+            .where((p) => p != null)
             .cast<RowPayload>()
             .toList();
         // final missing =
@@ -139,11 +140,18 @@ class RowStyleEditorPanel extends StatelessWidget {
         oldTheme.typography.cellContentMapper.entries.map((e) => e));
     mappr[type] = newTextStyle;
 
-    final newTheme = oldTheme.copyWith(
+    var newTheme = oldTheme.copyWith(
       typography: oldTheme.typography.copyWith(
         cellContentMapper: mappr,
       ),
     );
+    if (RowType.columnHeaderRow == type) {
+      newTheme = newTheme.copyWith(
+        typography: newTheme.typography.copyWith(
+          pillarTitle: newTextStyle,
+        ),
+      );
+    }
     demoVm.updateEditableFourZhuCardTheme(newTheme);
   }
 
@@ -157,13 +165,19 @@ class RowStyleEditorPanel extends StatelessWidget {
         oldTheme.cell.rowTypeCellConfigMapper.entries.map((e) => e));
     rowTypeCellConfigMapper[type] = newCellStyle;
 
-    final newCell = oldTheme.cell.copyWith(
+    var newCell = oldTheme.cell.copyWith(
       rowTypeCellConfigMapper: rowTypeCellConfigMapper,
     );
+    if (RowType.columnHeaderRow == type) {
+      newCell = newCell.copyWith(
+        pillarTitleCellConfig: newCellStyle,
+      );
+    }
 
-    final newTheme = oldTheme.copyWith(
+    var newTheme = oldTheme.copyWith(
       cell: newCell,
     );
+
     demoVm.updateEditableFourZhuCardTheme(newTheme);
   }
 }
@@ -342,45 +356,7 @@ class RowItem extends StatelessWidget {
   }
 
   String getRowTypeLabel(RowType type) {
-    switch (type) {
-      case RowType.columnHeaderRow: // 列标题行
-        return '标题行';
-      case RowType.heavenlyStem: // 天干
-        return '天干';
-      case RowType.earthlyBranch: // 地支
-        return '地支';
-      case RowType.tenGod: // 十神
-        return '十神';
-      case RowType.naYin: // 纳音
-        return '纳音';
-      case RowType.kongWang: // 空亡
-        return '空亡';
-      case RowType.xunShou: // 旬首
-        return '旬首';
-      case RowType.hiddenStems: // 藏干
-        return '藏干';
-
-      case RowType.hiddenStemsPrimary: // 藏干主气
-        return '藏干·主气';
-      case RowType.hiddenStemsSecondary: // 藏干中气
-        return '藏干·中气';
-      case RowType.hiddenStemsTertiary: // 藏干余气
-        return '藏干·余气';
-      case RowType.hiddenStemsTenGod: // 藏干十神
-        return '';
-      case RowType.hiddenStemsPrimaryGods: // 藏干主气 十神
-        return '十神·藏干主气';
-      case RowType.hiddenStemsSecondaryGods: // 藏干中气 十神
-        return '十神·藏干中气';
-      case RowType.hiddenStemsTertiaryGods: // 藏干余气 十神
-        return '十神·藏干余气';
-      case RowType.starYun: // 星运
-        return '星运';
-      case RowType.selfSiting: // 自坐
-        return '自坐';
-      case RowType.separator: // UI 分隔行：仅用于渲染水平分割线，不包含数据内容
-        return '分隔行';
-    }
+    return ConstantValuesUtils.labelForRowType(type);
   }
 }
 
