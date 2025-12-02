@@ -156,11 +156,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   int _rebuildCount = 0;
   int _rebuildScheduleRequests = 0;
 
-  Widget drag_icon = const Icon(
-    Icons.drag_indicator,
-    size: 16,
-    color: Colors.black,
-  );
+  Widget get drag_icon => Icon(
+        Icons.drag_indicator,
+        size: 16,
+        color: Theme.of(context).iconTheme.color ??
+            (Theme.of(context).brightness == Brightness.dark
+                ? Colors.white70
+                : Colors.black87),
+      );
   // 缓存：行插入索引计算所需的跨度列表（每行高度）。
   // 目的：减少 onMove 高频生成 List 与高度计算的开销，提升拖拽性能。
   List<double>? _rowSpansCache;
@@ -1067,9 +1070,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         // );
         final double extraRowHeight =
             hasRowGhost ? _externalRowHoverHeight : 0.0;
-
-        print(
-            "brightness: Theme.of(context).brightness  ---- ${Theme.of(context).brightness}");
         final BoxDecoration? baseDeco = widget.themeNotifier.value.card
             .toBoxDecoration(brightness: Theme.of(context).brightness);
         BoxDecoration? effectiveDeco = baseDeco;
@@ -2224,7 +2224,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildSeparatorCell(double width, double height) {
     final separatorConfig =
         widget.themeNotifier.value.pillar.getBy(PillarType.separator);
-    final brightness = widget.brightnessNotifier.value;
+    final brightness = Theme.of(context).brightness;
     final bgColor = brightness == Brightness.light
         ? separatorConfig.lightBackgroundColor
         : separatorConfig.darkBackgroundColor;
@@ -3514,7 +3514,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           style: mainTextStyleConfig.toTextStyle(
             char: content,
             colorPreviewMode: widget.colorPreviewModeNotifier.value,
-            brightness: widget.brightnessNotifier.value,
+            brightness: Theme.of(context).brightness,
           ),
           strutStyle: StrutStyle(
               fontSize: mainTextStyleConfig.fontStyleDataModel.fontSize,
@@ -3525,7 +3525,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               style: titleTextStyleConfig.toTextStyle(
                 char: title,
                 colorPreviewMode: widget.colorPreviewModeNotifier.value,
-                brightness: widget.brightnessNotifier.value,
+                brightness: Theme.of(context).brightness,
               ),
               strutStyle: StrutStyle(
                   fontSize: titleTextStyleConfig.fontStyleDataModel.fontSize,
@@ -3692,14 +3692,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, pillarConfig, __) {
                 final pillarType = pillars[pillarIndex].pillarType;
                 final PillarStyleConfig config = pillarConfig.getBy(pillarType);
-                final brightness = widget.brightnessNotifier.value;
+                final brightness = Theme.of(context).brightness;
                 Color bkColor;
                 final bg = config.resolveBackgroundColor(brightness);
                 if (bg == null || bg == Colors.transparent) {
                   bkColor = widget.themeNotifier.value.card
                           .toBoxDecoration(brightness: brightness)
                           .color ??
-                      Colors.white;
+                      Theme.of(context).cardColor;
                 } else {
                   bkColor = bg;
                 }
@@ -5545,13 +5545,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       {required RowType rowType, required String content}) {
     final ts = widget.themeNotifier.value.typography.getCellContentBy(rowType);
     var tmp = ts.colorMapperDataModel.getMapperBy(
-        theme: widget.brightnessNotifier.value,
+        theme: Theme.of(context).brightness,
         mode: widget.colorPreviewModeNotifier.value);
     // print("${rowType.name} $content,tmp: $tmp");
     final Color textColor = tmp[content]!;
     Color shadowColor = textColor;
     if (!ts.textShadowDataModel.followTextColor) {
-      shadowColor = widget.brightnessNotifier.value == Brightness.light
+      shadowColor = Theme.of(context).brightness == Brightness.light
           ? ts.textShadowDataModel.lightShadowColor
           : ts.textShadowDataModel.darkShadowColor;
     }
