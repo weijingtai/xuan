@@ -1,5 +1,6 @@
 import 'package:common/widgets/style_editor/widgets/title_slider_widget.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 import 'package:flutter/material.dart';
 
 import '../../editable_fourzhu_card/models/base_style_config.dart';
@@ -118,16 +119,10 @@ class BoxBorderStyleEditor extends StatelessWidget {
 
   void updateDarkBorderColor(
       BuildContext context, BoxBorderStyle border) async {
-    final picked = await showColorPickerDialog(
+    final picked = await showAppPalettePickerDialog(
       context,
-      border.darkColor,
-      title: const Text('选择颜色'),
-      pickersEnabled: const {
-        ColorPickerType.wheel: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.primary: false,
-        ColorPickerType.custom: false,
-      },
+      initialColor: border.darkColor,
+      title: '选择颜色',
     );
     borderNotifier.value = border.copyWith(
       darkColor: picked,
@@ -136,16 +131,10 @@ class BoxBorderStyleEditor extends StatelessWidget {
 
   void updateLightBorderColor(
       BuildContext context, BoxBorderStyle border) async {
-    final picked = await showColorPickerDialog(
+    final picked = await showAppPalettePickerDialog(
       context,
-      border.lightColor,
-      title: const Text('选择颜色'),
-      pickersEnabled: const {
-        ColorPickerType.wheel: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.primary: false,
-        ColorPickerType.custom: false,
-      },
+      initialColor: border.lightColor,
+      title: '选择颜色',
     );
     borderNotifier.value = border.copyWith(
       lightColor: picked,

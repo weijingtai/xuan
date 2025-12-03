@@ -1,5 +1,6 @@
 import 'package:common/widgets/style_editor/widgets/title_slider_widget.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
+import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 import 'package:flutter/material.dart';
 
 import '../../editable_fourzhu_card/models/base_style_config.dart';
@@ -155,17 +156,11 @@ class BoxStyleConfigEditor extends StatelessWidget {
 
   void updateDarkBackgroundolor(
       BuildContext context, BaseBoxStyleConfig config) async {
-    final picked = await showColorPickerDialog(
+    final picked = await showAppPalettePickerDialog(
       context,
-      config.darkBackgroundColor ??
+      initialColor: config.darkBackgroundColor ??
           Theme.of(context).colorScheme.surfaceContainerLowest,
-      title: const Text('选择颜色'),
-      pickersEnabled: const {
-        ColorPickerType.wheel: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.primary: false,
-        ColorPickerType.custom: false,
-      },
+      title: '选择颜色',
     );
     boxStyleConfigNotifier.value = config.copyWith(
       darkBackgroundColor: picked,
@@ -174,17 +169,11 @@ class BoxStyleConfigEditor extends StatelessWidget {
 
   void updateLightBackgroundColor(
       BuildContext context, BaseBoxStyleConfig config) async {
-    final picked = await showColorPickerDialog(
+    final picked = await showAppPalettePickerDialog(
       context,
-      config.lightBackgroundColor ??
+      initialColor: config.lightBackgroundColor ??
           Theme.of(context).colorScheme.surfaceContainerHighest,
-      title: const Text('选择颜色'),
-      pickersEnabled: const {
-        ColorPickerType.wheel: true,
-        ColorPickerType.accent: false,
-        ColorPickerType.primary: false,
-        ColorPickerType.custom: false,
-      },
+      title: '选择颜色',
     );
     boxStyleConfigNotifier.value = config.copyWith(
       lightBackgroundColor: picked,

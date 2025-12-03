@@ -2585,9 +2585,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       _dragWantsDelete.value = false;
                     },
                     dragAnchorStrategy: pointerDragAnchorStrategy,
-                    feedback: Material(
-                      color: Colors.transparent,
-                      child: drag_icon,
+                    feedback: _offsetFeedbackUp(
+                      Material(
+                        color: Colors.transparent,
+                        child: drag_icon,
+                      ),
+                      _effectiveDragHandleRowHeight,
                     ),
                     child: drag_icon,
                   ),
@@ -2632,7 +2635,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   dragAnchorStrategy: pointerDragAnchorStrategy,
                   feedback: _buildReusedPillarFeedback(
                     i,
-                    // 回退方案：如果无法复用，则使用原有的构建方法
                     () => _offsetFeedbackDown(
                       widget.dragFeedbackBuilder?.call(
                             context,
@@ -2657,6 +2659,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ),
                       _effectiveDragHandleRowHeight,
                     ),
+                    horizontalOffset: -_metricsSnapshotNotifier
+                            .value.pillars[pillars[i].uuid]!.totalWidth *
+                        0.5,
+                    verticalOffset: _effectiveDragHandleRowHeight * .5,
                   ),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
@@ -2807,6 +2813,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                           ),
                       _effectiveDragHandleRowHeight,
                     ),
+                    horizontalOffset: -_metricsSnapshotNotifier
+                            .value.pillars[pillars[i].uuid]!.totalWidth *
+                        0.5,
+                    verticalOffset:
+                        -_metricsSnapshotNotifier.value.totals.totalHeight -
+                            _effectiveDragHandleRowHeight * .5,
                   ),
                   child: MouseRegion(
                     cursor: SystemMouseCursors.grab,
@@ -4834,8 +4846,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：拖拽反馈 Widget
   Widget _buildReusedPillarFeedback(
     int pillarIndex,
-    Widget Function() fallbackBuilder,
-  ) {
+    Widget Function() fallbackBuilder, {
+    double verticalOffset = 0,
+    double horizontalOffset = 0,
+  }) {
     // 获取 GlobalKey
     final key = _pillarGlobalKeys[pillarIndex];
 
@@ -4882,8 +4896,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 构建反馈 Widget：复用已渲染的 Widget，添加视觉效果
     return Transform.translate(
-      // 向下偏移，使 feedback 从抓手下方开始
-      offset: Offset(0, _effectiveDragHandleRowHeight),
+      offset: Offset(horizontalOffset, verticalOffset),
       child: SizedBox(
         width: size.width,
         height: size.height,

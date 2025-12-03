@@ -1,6 +1,7 @@
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 
 import '../../editable_fourzhu_card/models/base_style_config.dart';
 import 'title_slider_widget.dart';
@@ -76,21 +77,18 @@ class ShadowEditorWidget extends StatelessWidget {
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () async {
-                    final picked = await showColorPickerDialog(
+                    final picked = await showAppPalettePickerDialog(
                       context,
-                      _pillarShadowFollowBackground
-                          ? config.lightBackgroundColor ?? Colors.white
+                      initialColor: _pillarShadowFollowBackground
+                          ? (config.lightBackgroundColor ?? Colors.white)
                           : _pillarShadowLightColor,
-                      title: const Text('选择阴影颜色'),
-                      pickersEnabled: const {
-                        ColorPickerType.wheel: true,
-                        ColorPickerType.accent: false,
-                        ColorPickerType.primary: false,
-                        ColorPickerType.custom: false,
-                      },
+                      title: '选择阴影颜色',
                     );
-                    shadowNotifier.value =
-                        shadowNotifier.value.copyWith(lightThemeColor: picked);
+                    if (picked != null) {
+                      shadowNotifier.value = shadowNotifier.value.copyWith(
+                        lightThemeColor: picked,
+                      );
+                    }
                   },
                   child: Container(
                     width: 22,
@@ -116,21 +114,18 @@ class ShadowEditorWidget extends StatelessWidget {
                 const SizedBox(width: 8),
                 InkWell(
                   onTap: () async {
-                    final picked = await showColorPickerDialog(
+                    final picked = await showAppPalettePickerDialog(
                       context,
-                      _pillarShadowFollowBackground
-                          ? config.darkBackgroundColor ?? Colors.white
+                      initialColor: _pillarShadowFollowBackground
+                          ? (config.darkBackgroundColor ?? Colors.black)
                           : _pillarShadowDarkColor,
-                      title: const Text('选择阴影颜色'),
-                      pickersEnabled: const {
-                        ColorPickerType.wheel: true,
-                        ColorPickerType.accent: false,
-                        ColorPickerType.primary: false,
-                        ColorPickerType.custom: false,
-                      },
+                      title: '选择阴影颜色',
                     );
-                    shadowNotifier.value =
-                        shadowNotifier.value.copyWith(darkThemeColor: picked);
+                    if (picked != null) {
+                      shadowNotifier.value = shadowNotifier.value.copyWith(
+                        darkThemeColor: picked,
+                      );
+                    }
                   },
                   child: Container(
                     width: 22,
