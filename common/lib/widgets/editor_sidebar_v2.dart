@@ -61,6 +61,19 @@ class EditorSidebarV2 extends StatelessWidget {
                     // shadowOffsetY: updatedConfig.shadowOffsetY,
                     // shadowBlurRadius: updatedConfig.shadowBlurRadius,
                   );
+
+                  final demoVm = Provider.of<FourZhuCardDemoViewModel>(context,
+                      listen: false);
+                  final theme = demoVm.themeNotifier.value;
+                  final typo = theme.typography;
+                  final mapper =
+                      Map<RowType, TextStyleConfig>.of(typo.cellContentMapper);
+                  mapper[updatedConfig.type] = updatedConfig.textStyleConfig;
+                  demoVm.updateEditableFourZhuCardTheme(
+                    theme.copyWith(
+                      typography: typo.copyWith(cellContentMapper: mapper),
+                    ),
+                  );
                 },
               ),
               const Divider(height: 24),
@@ -939,43 +952,58 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     );
   }
 
-  /// 构建可选行样式编辑器：藏干/十神使用纯文本样式编辑器
+  /// 构建可选行样式编辑器：固定值行使用逐值颜色编辑器
   Widget _buildOptionalRowEditor() {
     final type = widget.config.type;
     final label = _getRowTypeName(type);
-    if (type == RowType.hiddenStems ||
-        type == RowType.hiddenStemsTenGod ||
-        type == RowType.tenGod) {
-      final valuse = [
-        "正印",
-        "偏印",
-        "正官",
-        "七杀",
-        "食神",
-        "伤官",
-        "比肩",
-        "劫财",
-        "正财",
-        "偏财"
-      ];
 
-      // final initial = _configToTextStyle(widget.config);
+    final List<String>? values;
+    if (type == RowType.tenGod || type == RowType.hiddenStemsTenGod) {
+      values = const [
+        '正印',
+        '偏印',
+        '正官',
+        '七杀',
+        '食神',
+        '伤官',
+        '比肩',
+        '劫财',
+        '正财',
+        '偏财',
+      ];
+    } else if (type == RowType.xunShou) {
+      values = const [
+        JiaZi.JIA_ZI,
+        JiaZi.JIA_XU,
+        JiaZi.JIA_SHEN,
+        JiaZi.JIA_WU,
+        JiaZi.JIA_CHEN,
+        JiaZi.JIA_YIN,
+      ].map((e) => e.ganZhiStr).toList(growable: false);
+    } else if (type == RowType.naYin) {
+      values = NaYinFiveXing.values.map((e) => e.name).toList(growable: false);
+    } else if (type == RowType.kongWang) {
+      values = const ['戌亥', '申酉', '午未', '辰巳', '寅卯', '子丑'];
+    } else {
+      values = null;
+    }
+
+    if (values != null) {
       return ColorfulTextStyleEditorV2Enhanced(
         type: type,
-        values: valuse,
-        // label: label,
+        values: values,
         initialConfig: widget.config.textStyleConfig,
         onChanged: (style) {
-          // final updated = _applyTextStyleToConfig(widget.config, style);
-
-          widget.onInlineSave(widget.config.copyWith(
-            textStyleConfig: style,
-          ));
+          widget.onInlineSave(
+            widget.config.copyWith(
+              textStyleConfig: style,
+            ),
+          );
         },
         lable: label,
-        // showInlineWheel: true,
       );
     }
+
     return RowStyleEditorForm(
       config: widget.config,
       onSave: widget.onInlineSave,

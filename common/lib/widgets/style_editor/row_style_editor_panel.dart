@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:common/enums/enum_twelve_zhang_sheng.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../enums/layout_template_enums.dart';
@@ -13,6 +14,7 @@ import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../../enums/enum_tian_gan.dart';
 import '../../enums/enum_di_zhi.dart';
+import '../../enums/enum_jia_zi.dart';
 import 'colorful_text_style_editor_widget_v2.dart';
 
 class RowStyleEditorPanel extends StatelessWidget {
@@ -212,6 +214,58 @@ class RowItem extends StatelessWidget {
       required this.onInCellTitleTextStyleChanged,
       this.leading});
 
+  List<String>? _valuesForRowType(RowType type) {
+    switch (type) {
+      case RowType.heavenlyStem:
+        return TianGan.values
+            .take(10)
+            .map((e) => e.name)
+            .toList(growable: false);
+      case RowType.earthlyBranch:
+      case RowType.hiddenStems:
+      case RowType.hiddenStemsPrimary:
+      case RowType.hiddenStemsSecondary:
+      case RowType.hiddenStemsTertiary:
+        return DiZhi.values.take(12).map((e) => e.name).toList(growable: false);
+      case RowType.tenGod:
+      case RowType.hiddenStemsTenGod:
+      case RowType.hiddenStemsPrimaryGods:
+      case RowType.hiddenStemsSecondaryGods:
+        return const [
+          '正印',
+          '偏印',
+          '正官',
+          '七杀',
+          '食神',
+          '伤官',
+          '比肩',
+          '劫财',
+          '正财',
+          '偏财',
+        ];
+      case RowType.xunShou:
+        return const [
+          JiaZi.JIA_ZI,
+          JiaZi.JIA_XU,
+          JiaZi.JIA_SHEN,
+          JiaZi.JIA_WU,
+          JiaZi.JIA_CHEN,
+          JiaZi.JIA_YIN,
+        ].map((e) => e.ganZhiStr).toList(growable: false);
+      case RowType.naYin:
+        return NaYinFiveXing.values.map((e) => e.name).toList(growable: false);
+      case RowType.kongWang:
+        return const ['戌亥', '申酉', '午未', '辰巳', '寅卯', '子丑'];
+      case RowType.selfSiting:
+      case RowType.starYun:
+        return TwelveZhangSheng.values
+            .map((e) => e.name)
+            .toList(growable: false);
+      default:
+        return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -357,13 +411,12 @@ class RowItem extends StatelessWidget {
           const SizedBox(height: 8),
           if (payload.rowType != RowType.separator)
             ColorfulTextStyleEditorV2Enhanced(
-                lable: '字体',
-                type: payload.rowType,
-                initialConfig: txtCfg,
-                values: payload.rowType == RowType.heavenlyStem
-                    ? TianGan.values.take(10).map((e) => e.name).toList()
-                    : DiZhi.values.take(12).map((e) => e.name).toList(),
-                onChanged: onTextStyleChanged),
+              lable: '字体',
+              type: payload.rowType,
+              initialConfig: txtCfg,
+              values: _valuesForRowType(payload.rowType),
+              onChanged: onTextStyleChanged,
+            ),
           if (cfg.showsTitleInCell) ...[
             const SizedBox(height: 8),
             ColorfulTextStyleEditorV2Enhanced(
@@ -525,9 +578,12 @@ class _RowItem extends StatelessWidget {
           ColorfulTextStyleEditorV2Enhanced(
             type: cfg.type,
             initialConfig: cfg.textStyleConfig,
-            values: cfg.type == RowType.heavenlyStem
-                ? TianGan.values.take(10).map((e) => e.name).toList()
-                : DiZhi.values.take(12).map((e) => e.name).toList(),
+            values: cfg
+                .textStyleConfig.colorMapperDataModel.colorfulDarkMapper.keys
+                .toList(),
+            // values: cfg.type == RowType.heavenlyStem
+            //     ? TianGan.values.take(10).map((e) => e.name).toList()
+            //     : DiZhi.values.take(12).map((e) => e.name).toList(),
             onChanged: (TextStyleConfig style) {
               vm.updateRowStyle(cfg.type, textStyleConfig: style);
               final demoVm =

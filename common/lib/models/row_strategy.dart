@@ -3,6 +3,7 @@ import 'package:common/enums.dart';
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
+import '../utils/constant_values_utils.dart';
 import 'pillar_content.dart';
 
 /// 输入契约：为某一“行策略”提供所需的上下文信息，
@@ -90,7 +91,7 @@ class KongWangRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.kongWang;
 
   @override
-  String get defaultLabel => '空亡';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   /// 计算每柱的空亡展示值。
   /// 策略示例：可依据 dayJiaZi（日元）与各柱甲子，调用已有工具方法生成空亡。
@@ -128,7 +129,7 @@ class XunShouRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.xunShou;
 
   @override
-  String get defaultLabel => '旬首';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   /// 计算各柱的“旬首”文本。
   /// 建议：以 input.dayJiaZi 为基准，结合柱的甲子与参考时间，推导所在旬与旬首。
@@ -172,7 +173,7 @@ class NaYinRowStrategy extends RowComputationStrategy {
 
   /// 默认行标题：纳音。
   @override
-  String get defaultLabel => '纳音';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   /// 核心计算：遍历输入中的各柱数据，使用 `JiaZi.naYinStr` 生成每柱的纳音文本。
   ///
@@ -208,7 +209,7 @@ class TenGodRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.tenGod;
 
   @override
-  String get defaultLabel => '十神';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -240,7 +241,7 @@ class HiddenStemsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStems;
 
   @override
-  String get defaultLabel => '藏干';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -273,7 +274,7 @@ class HiddenStemsTenGodsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsTenGod;
 
   @override
-  String get defaultLabel => '藏神';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -307,7 +308,7 @@ class HiddenStemsPrimaryRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsPrimary;
 
   @override
-  String get defaultLabel => '主气';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -344,7 +345,7 @@ class HiddenStemsSecondaryRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsSecondary;
 
   @override
-  String get defaultLabel => '中气';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -382,7 +383,7 @@ class HiddenStemsTertiaryRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsTertiary;
 
   @override
-  String get defaultLabel => '余气';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -420,7 +421,7 @@ class HiddenStemsPrimaryGodsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsPrimaryGods;
 
   @override
-  String get defaultLabel => '主神';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -467,7 +468,7 @@ class HiddenStemsSecondaryGodsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsSecondaryGods;
 
   @override
-  String get defaultLabel => '中神';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -514,7 +515,7 @@ class HiddenStemsTertiaryGodsRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.hiddenStemsTertiaryGods;
 
   @override
-  String get defaultLabel => '余神';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -561,7 +562,7 @@ class StarYunRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.starYun;
 
   @override
-  String get defaultLabel => '星运';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {
@@ -599,7 +600,7 @@ class SelfSitingRowStrategy extends RowComputationStrategy {
   RowType get rowType => RowType.selfSiting;
 
   @override
-  String get defaultLabel => '自坐';
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
   @override
   RowComputationResult compute(RowComputationInput input) {

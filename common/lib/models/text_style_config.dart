@@ -1,4 +1,5 @@
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -151,6 +152,44 @@ class TextStyleConfig {
           ),
         );
       }();
+  static TextStyleConfig defaultTenGodsConfig = TextStyleConfig(
+    colorMapperDataModel: ColorMapperDataModel(
+        colorfulLightMapper: Map.fromEntries(EnumTenGods.values
+            .map((zs) => MapEntry(zs.name, Colors.purpleAccent))),
+        pureLightMapper: Map.fromEntries(
+            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.black87))),
+        colorfulDarkMapper: Map.fromEntries(
+            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.purple))),
+        pureDarkMapper: Map.fromEntries(
+            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.white)))),
+    textShadowDataModel: TextShadowDataModel(),
+    fontStyleDataModel: FontStyleDataModel(
+      fontWeight: FontWeight.normal,
+      fontSize: 12,
+      fontFamily: 'NotoSansSC',
+      height: 1.2,
+    ),
+  );
+  static TextStyleConfig defaultTwelveZhangShengConfig = TextStyleConfig(
+    colorMapperDataModel: ColorMapperDataModel(
+      colorfulLightMapper: Map.fromEntries(TwelveZhangSheng.values
+          .map((zs) => MapEntry(zs.name, Colors.deepPurpleAccent))),
+      pureLightMapper: Map.fromEntries(TwelveZhangSheng.values
+          .map((zs) => MapEntry(zs.name, Colors.black87))),
+      colorfulDarkMapper: Map.fromEntries(TwelveZhangSheng.values
+          .map((zs) => MapEntry(zs.name, Colors.deepPurple))),
+      pureDarkMapper: Map.fromEntries(
+          TwelveZhangSheng.values.map((zs) => MapEntry(zs.name, Colors.white))),
+    ),
+    textShadowDataModel: TextShadowDataModel(),
+    fontStyleDataModel: FontStyleDataModel(
+      fontWeight: FontWeight.normal,
+      fontSize: 12,
+      fontFamily: 'NotoSansSC',
+      height: 1.2,
+    ),
+  );
+
   static TextStyleConfig defaultConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {

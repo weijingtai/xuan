@@ -22,14 +22,68 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
 
   final String lable;
 
-  const ColorfulTextStyleEditorV2Enhanced({
+  ColorfulTextStyleEditorV2Enhanced({
     super.key,
     required this.type,
     required this.onChanged,
-    required this.initialConfig,
+    required TextStyleConfig initialConfig,
     required this.lable,
     this.values,
-  });
+  }) : initialConfig = _normalizeInitialConfig(initialConfig, values);
+
+  static TextStyleConfig _normalizeInitialConfig(
+    TextStyleConfig base,
+    List<String>? keys,
+  ) {
+    if (keys == null || keys.isEmpty) return base;
+    return base.copyWith(
+      colorMapperDataModel: _ensureColorMapperHasKeys(
+        base.colorMapperDataModel,
+        keys,
+      ),
+    );
+  }
+
+  static ColorMapperDataModel _ensureColorMapperHasKeys(
+    ColorMapperDataModel base,
+    List<String> keys,
+  ) {
+    Map<String, Color> ensurePure(
+      Map<String, Color> src,
+      Color fallback,
+    ) {
+      final out = Map<String, Color>.from(src);
+      for (final k in keys) {
+        out.putIfAbsent(k, () => fallback);
+      }
+      return out;
+    }
+
+    Map<String, Color> ensureColorful(
+      Map<String, Color> src,
+      Map<String, Color> pure,
+      Color fallback,
+    ) {
+      final out = Map<String, Color>.from(src);
+      for (final k in keys) {
+        out.putIfAbsent(k, () => pure[k] ?? fallback);
+      }
+      return out;
+    }
+
+    final pureLight = ensurePure(base.pureLightMapper, Colors.black87);
+    final pureDark = ensurePure(base.pureDarkMapper, Colors.white70);
+
+    return ColorMapperDataModel(
+      pureLightMapper: pureLight,
+      colorfulLightMapper:
+          ensureColorful(base.colorfulLightMapper, pureLight, Colors.black87),
+      pureDarkMapper: pureDark,
+      colorfulDarkMapper:
+          ensureColorful(base.colorfulDarkMapper, pureDark, Colors.white70),
+      defaultColor: base.defaultColor,
+    );
+  }
 
   @override
   State<ColorfulTextStyleEditorV2Enhanced> createState() =>
@@ -64,7 +118,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
   @override
   void initState() {
     super.initState();
-    // 优先使用 initialConfig，如果不存在则使用默认值
     fontStyleDataModelNotifier =
         ValueNotifier(widget.initialConfig.fontStyleDataModel)
           ..addListener(() => onFontChanged());
@@ -76,6 +129,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
     colorMapperDataModelNotifier = ValueNotifier(
       widget.initialConfig.colorMapperDataModel,
     )..addListener(() => onFontChanged());
+  }
+
+  Color _firstOrFallback(Map<String, Color> map, Color fallback) {
+    if (map.isEmpty) return fallback;
+    return map.entries.first.value;
   }
 
   void onFontChanged() {
@@ -1006,15 +1064,23 @@ class _ColorfulTextStyleEditorV2EnhancedState
             label: '彩色',
             isSelected: mode == ColorPreviewMode.colorful,
             textColor: isLight
-                ? widget.initialConfig.colorMapperDataModel.pureLightMapper
-                    .entries.first.value // 浅色主题使用"甲"的颜色
-                : widget.initialConfig.colorMapperDataModel.pureDarkMapper
-                    .entries.first.value, // 深色主题使用"甲"的颜色
+                ? _firstOrFallback(
+                    colorMapperDataModelNotifier.value.pureLightMapper,
+                    Colors.black87,
+                  )
+                : _firstOrFallback(
+                    colorMapperDataModelNotifier.value.pureDarkMapper,
+                    Colors.white,
+                  ),
             circleColor: isLight
-                ? widget.initialConfig.colorMapperDataModel.colorfulLightMapper
-                    .entries.first.value // 浅色主题使用"甲"的颜色
-                : widget.initialConfig.colorMapperDataModel.colorfulDarkMapper
-                    .entries.first.value, // 深色主题使用"甲"的颜色
+                ? _firstOrFallback(
+                    colorMapperDataModelNotifier.value.colorfulLightMapper,
+                    Colors.black87,
+                  )
+                : _firstOrFallback(
+                    colorMapperDataModelNotifier.value.colorfulDarkMapper,
+                    Colors.white,
+                  ),
             onTap: () => onModeChanged(ColorPreviewMode.colorful),
           ),
         ],
@@ -1171,19 +1237,23 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                 // 颜色块
                                 GestureDetector(
                                   onTap: () => _pickGanColor(
-                                      char,
-                                      textColorMapper[char]!,
-                                      tuple2.item1,
-                                      tuple2.item2),
+                                    char,
+                                    textColorMapper[char] ??
+                                        mapper.defaultColor,
+                                    tuple2.item1,
+                                    tuple2.item2,
+                                  ),
                                   child: Container(
                                     width: 18,
                                     height: 18,
                                     decoration: BoxDecoration(
-                                      color: textColorMapper[char],
+                                      color: textColorMapper[char] ??
+                                          mapper.defaultColor,
                                       borderRadius: BorderRadius.circular(4),
                                       border: Border.all(
-                                          color: Colors.grey.shade400,
-                                          width: 1.5),
+                                        color: Colors.grey.shade400,
+                                        width: 1.5,
+                                      ),
                                       boxShadow: const [
                                         BoxShadow(
                                           color: Colors.black12,

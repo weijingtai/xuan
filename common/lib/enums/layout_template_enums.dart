@@ -87,7 +87,6 @@ enum RowType {
   separator;
 }
 
-
 enum BorderType { solid, dashed, dotted, none }
 
 enum RowTextAlign { left, center, right }

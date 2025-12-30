@@ -1430,6 +1430,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       (payload is TitleColumnPayload) ||
                       (payload is PillarData);
 
+                  final columnInsertIndex = _hoverColumnInsertIndex ?? 0;
+                  final rowInsertIndex = _hoverRowInsertIndex ?? 1;
+
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
                   _draggingColumnIndex = null;
@@ -1446,7 +1449,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   _dragWantsDelete.value = false;
 
                   if (isColumnDrag) {
-                    final insertIndex = _hoverColumnInsertIndex ?? 0;
+                    final insertIndex = columnInsertIndex;
                     if (payload is Tuple2) {
                       final kind = payload.item1;
                       final fromIdx = payload.item2 as int;
@@ -1480,7 +1483,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   } else {
                     if (_rowAccepting) return;
                     _rowAccepting = true;
-                    final insertIndex = _hoverRowInsertIndex ?? 1;
+                    final insertIndex = rowInsertIndex;
                     _resetRowSpansCache();
 
                     if (payload is Tuple2) {
@@ -1915,7 +1918,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       duration: dragging ? const Duration(milliseconds: 180) : Duration.zero,
       curve: Curves.easeOut,
       width: dragging && targetIndex == index ? gridGhostWidth : 0,
-      color: Colors.red,
       child: dragging && targetIndex == index
           ? GhostPillarWidget.column(
               width: gridGhostWidth,
@@ -2099,16 +2101,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   Widget _buildGhostRow(int absRowIdx, int? targetRowIdx, bool draggingRow,
       double colW, double rowHeight) {
+    final h = draggingRow && targetRowIdx == absRowIdx
+        ? _getGhostRowHeight(fallbackHeight: rowHeight)
+        : 0.0;
+
     return AnimatedContainer(
       duration: draggingRow ? const Duration(milliseconds: 180) : Duration.zero,
       curve: Curves.easeOut,
       width: colW,
-      height: draggingRow && targetRowIdx == absRowIdx
-          ? _getGhostRowHeight(fallbackHeight: rowHeight)
-          : 0,
-      color: draggingRow && targetRowIdx == absRowIdx
-          ? Theme.of(context).colorScheme.secondary.withOpacity(0.08)
-          : Colors.transparent,
+      height: h,
+      child: h > 0
+          ? GhostPillarWidget.row(
+              width: colW,
+              height: h,
+            )
+          : const SizedBox.shrink(),
     );
   }
 
@@ -2266,52 +2273,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                     : (_draggingRowIndex == absRowIdx ? 0.9 : 1.0),
             child: cell,
           ),
-          if (draggingRow && tRow == absRowIdx)
-            Positioned.fill(
-              child: IgnorePointer(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .secondary
-                        .withOpacity(0.12),
-                    border: Border.all(
-                      color: Theme.of(context)
-                          .colorScheme
-                          .secondary
-                          .withOpacity(0.35),
-                      width: 1,
-                    ),
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );
   }
 
   Widget _buildPillarDragPlaceholder(int index) {
-    final t = _hoverColumnInsertIndex ?? _lastColInsertIndex;
-    final d = _draggingColumnIndex;
-    final bool dragging =
-        (d != null || _hoveringExternalPillar) && !_rowDraggingActive;
-
-    if (dragging && t == index) {
-      return Positioned.fill(
-        child: IgnorePointer(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.12),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.primary.withOpacity(0.35),
-                width: 1,
-              ),
-            ),
-          ),
-        ),
-      );
-    }
     return const SizedBox.shrink();
   }
 
@@ -2333,21 +2300,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     //   ),
     // ));
 
-    // 2. 整行高亮
-    if (_hoverRowInsertIndex! >= 1 && _hoverRowInsertIndex! < rows.length) {
-      overlays.add(Positioned(
-        left: 0,
-        top: _computeRowTopFromIndex(_hoverRowInsertIndex!, rows),
-        width: _totalColsWidth(pillars),
-        height: _rowCellSize(rows[_hoverRowInsertIndex!]).height,
-        child: IgnorePointer(
-          child: Container(
-            color: Theme.of(context).colorScheme.secondary.withOpacity(0.06),
-          ),
-        ),
-      ));
-    }
-
     // 3. 尾部插入的全宽幽灵行
     if ((_hoverRowInsertIndex ?? _lastRowInsertIndex) == rows.length) {
       overlays.add(Positioned(
@@ -2355,17 +2307,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         top: _computeRowInsertTopFromIndex(rows.length, rows),
         width: _totalColsWidth(pillars),
         height: _getGhostRowHeight(fallbackHeight: otherCellHeight),
-        child: IgnorePointer(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.secondary.withOpacity(0.08),
-              border: Border.all(
-                color:
-                    Theme.of(context).colorScheme.secondary.withOpacity(0.35),
-                width: 1,
-              ),
-            ),
-          ),
+        child: GhostPillarWidget.row(
+          width: _totalColsWidth(pillars),
+          height: _getGhostRowHeight(fallbackHeight: otherCellHeight),
         ),
       ));
     }
@@ -2811,11 +2755,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       height: draggingRow && t == absRowIdx
                           ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                           : 0,
-                      color: draggingRow && t == absRowIdx
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.secondary.withOpacity(0.08)
-                          : Colors.transparent,
                     ),
                   );
                   if (d == absRowIdx) continue;
@@ -2952,11 +2891,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       height: draggingRow && t == absRowIdx
                           ? _getGhostRowHeight(fallbackHeight: rowSize.height)
                           : 0,
-                      color: draggingRow && t == absRowIdx
-                          ? Theme.of(
-                              context,
-                            ).colorScheme.secondary.withOpacity(0.08)
-                          : Colors.transparent,
                     ),
                   );
                   if (d == absRowIdx) continue;
@@ -3048,11 +2982,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                                 _rowHeightByName(rows[_draggingRowIndex!]))
                             : _externalRowHoverHeight)
                         : 0,
-                    color: draggingRow && (t == rows.length)
-                        ? Theme.of(
-                            context,
-                          ).colorScheme.secondary.withOpacity(0.08)
-                        : Colors.transparent,
                   ),
                 );
                 // 底部占位

@@ -38,9 +38,9 @@ class ConstantValuesUtils {
       case RowType.hiddenStemsTertiaryGods:
         return '藏干余神';
       case RowType.starYun:
-        return '神煞';
+        return '星运';
       case RowType.selfSiting:
-        return '命宫';
+        return '自坐';
       case RowType.columnHeaderRow:
         return '表头行';
       case RowType.separator:

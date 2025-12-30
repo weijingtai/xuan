@@ -615,7 +615,28 @@ class TypographySection {
         globalCellTitle: TextStyleConfig.defaultOthersTitleConfig,
         cellContentMapper: {
           RowType.earthlyBranch: TextStyleConfig.defaultZhiConfig,
+          RowType.hiddenStemsPrimary: TextStyleConfig.defaultZhiConfig.copyWith(
+              fontStyleDataModel: TextStyleConfig
+                  .defaultZhiConfig.fontStyleDataModel
+                  .copyWith(fontSize: 12)),
+          RowType.hiddenStemsSecondary: TextStyleConfig.defaultZhiConfig
+              .copyWith(
+                  fontStyleDataModel: TextStyleConfig
+                      .defaultZhiConfig.fontStyleDataModel
+                      .copyWith(fontSize: 12)),
+          RowType.hiddenStemsTertiary: TextStyleConfig.defaultZhiConfig
+              .copyWith(
+                  fontStyleDataModel: TextStyleConfig
+                      .defaultZhiConfig.fontStyleDataModel
+                      .copyWith(fontSize: 12)),
           RowType.heavenlyStem: TextStyleConfig.defaultGanConfig,
+          RowType.tenGod: TextStyleConfig.defaultTenGodsConfig,
+          RowType.hiddenStemsSecondaryGods:
+              TextStyleConfig.defaultTenGodsConfig,
+          RowType.hiddenStemsPrimaryGods: TextStyleConfig.defaultTenGodsConfig,
+          RowType.hiddenStemsTertiaryGods: TextStyleConfig.defaultTenGodsConfig,
+          RowType.starYun: TextStyleConfig.defaultTwelveZhangShengConfig,
+          RowType.selfSiting: TextStyleConfig.defaultTwelveZhangShengConfig,
         },
         cellTitleMapper: {},
       );
