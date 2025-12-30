@@ -155,7 +155,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 批处理重建采样：记录一次交互期间的重建次数与调度请求次数
   int _rebuildCount = 0;
   int _rebuildScheduleRequests = 0;
-
+  double dragIconOffset = 16.0;
   Widget get drag_icon => Icon(
         Icons.drag_indicator,
         size: 16,
@@ -1125,30 +1125,37 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               },
             ),
 
-            // 全卡列插入 DragTarget：在卡片任意位置悬停时计算列插入索引
+            // 统一全卡 DragTarget：处理所有行与列的拖拽交互，避免层叠遮挡导致 HitTest 失败
             Positioned.fill(
               child: DragTarget<Object>(
                 onWillAcceptWithDetails: (DragTargetDetails<Object> details) {
                   final data = details.data;
-                  final ok = (data is Tuple2 &&
+                  final isColumnDrag = (data is Tuple2 &&
                           data.item1 is _DragKind &&
                           data.item1 == _DragKind.column) ||
                       (data is PillarPayload) ||
                       (data is PillarType) ||
                       (data is TitleColumnPayload) ||
                       (data is PillarData);
-                  if (ok) {
-                    // 外部悬停驱动的尺寸扩展：回到顶部起始对齐（批处理调度）
+                  final isRowDrag =
+                      (data is Tuple2 && data.item1 == _DragKind.row) ||
+                          (data is RowPayload) ||
+                          (data is RowData) ||
+                          (data is RowType);
+
+                  if (!isColumnDrag && !isRowDrag) return false;
+
+                  if (isColumnDrag) {
                     _preferCenterAlignment = false;
+                    _hoverRowInsertIndex = null;
+                    _lastRowInsertIndex = null;
+                    _hoveringExternalRow = false;
+                    _externalRowHoverHeight = 0.0;
                     if (data is PillarPayload || data is PillarType) {
                       _hoveringExternalPillar = true;
-                      // 设置默认插入索引为末尾，onMove 会更新为实际位置
                       final pillars = _currentPillars();
                       _hoverColumnInsertIndex = pillars.length;
                       _lastColInsertIndex = pillars.length;
-
-                      // ✅ 方案 A：仅设置 _externalColHoverWidth，不修改 _sizeNotifier
-                      // AnimatedContainer 会自动叠加 _externalColHoverWidth 到 size.width
                       if (data is PillarPayload) {
                         if (data.pillarType == PillarType.separator) {
                           _externalColHoverWidth = _colDividerWidthEffective;
@@ -1169,172 +1176,357 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         }
                       }
                     }
-                    // 进入列插入目标时，清理行插入提示状态，避免相互干扰
-                    _hoverRowInsertIndex = null;
-                    _lastRowInsertIndex = null;
-                    _hoveringExternalRow = false;
-                    _externalRowHoverHeight = 0.0;
+                    _scheduleRebuild();
+                  } else if (isRowDrag) {
+                    _hoverColumnInsertIndex = null;
+                    _lastColInsertIndex = null;
+                    _hoveringExternalPillar = false;
+                    _externalColHoverWidth = 0.0;
+                    _rowSpansCache = _computeCurrentRowSpans();
+                    final rows = _currentRowLabels();
+                    if (data is Tuple2 && data.item1 == _DragKind.row) {
+                      _hoverRowInsertIndex = rows.length;
+                      _lastRowInsertIndex = rows.length;
+                    } else {
+                      _hoveringExternalRow = true;
+                      final bool isSeparator = (data is RowPayload &&
+                              data.rowType == RowType.separator) ||
+                          (data is RowData &&
+                              data.rowType == RowType.separator) ||
+                          (data is RowType && data == RowType.separator);
+                      final bool isTitle = (data is RowPayload &&
+                              data.rowType == RowType.columnHeaderRow) ||
+                          (data is RowType && data == RowType.columnHeaderRow);
+                      _externalRowHoverHeight = isSeparator
+                          ? _rowDividerHeightEffective
+                          : (isTitle
+                              ? columnTitleHeight
+                              : _metricsSnapshotNotifier
+                                  .value.defaultGlobalRowMetric.totalHeight);
+                      _hoverRowInsertIndex = rows.length;
+                      _lastRowInsertIndex = rows.length;
+                    }
                     _scheduleRebuild();
                   }
-                  return ok;
+                  return true;
                 },
                 onMove: (details) {
-                  // 统一节流：避免过度重绘
-                  if (!_dragController.allowColumnMove()) {
-                    return;
-                  }
+                  final data = details.data;
+                  final isColumnDrag = (data is Tuple2 &&
+                          data.item1 is _DragKind &&
+                          data.item1 == _DragKind.column) ||
+                      (data is PillarPayload) ||
+                      (data is PillarType) ||
+                      (data is TitleColumnPayload) ||
+                      (data is PillarData);
 
-                  final isExternal = details.data is PillarPayload ||
-                      details.data is PillarType ||
-                      details.data is PillarData;
-                  if (_hoveringExternalPillar != isExternal) {
-                    _hoveringExternalPillar = isExternal;
-                    _scheduleRebuild();
-                  }
-
-                  // 外部柱悬停：更新幽灵列宽度（若载荷提供 columnWidth 则优先使用）
-                  if (isExternal) {
-                    double nextW = _metricsSnapshotNotifier
-                        .value.defaultGlobalPillarMetric.totalWidth;
-                    // double nextW = pillarWidth;
-                    final data = details.data;
-                    if (data is PillarPayload || data is PillarData) {
-                      // nextW = _metricsSnapshotNotifier
-                      // .value.defaultGlobalPillarMetric.totalWidth;
-
-                      // nextW = (data.pillarType == PillarType.separator)
-                      // ? _colDividerWidthEffective
-                      // : (data.pillarType == PillarType.rowTitleColumn
-                      // ? rowTitleWidth
-                      // : pillarWidth);
-                    } else if (data is PillarType) {
-                      if (data == PillarType.separator) {
-                        nextW = _colDividerWidthEffective;
-                      } else if (data == PillarType.rowTitleColumn) {
-                        nextW = rowTitleWidth;
-                      }
-                    }
-
-                    if (_externalColHoverWidth != nextW) {
-                      _externalColHoverWidth = nextW;
-                      // _cardNotragInSize = _sizeNotifier.value;
-                      // _sizeNotifier.value = Size(
-                      // _externalColHoverWidth + size.width, size.height);
-                      _scheduleRebuild();
-                    }
-                  }
-
+                  // Coordinate Correction: Subtract padding to align with grid content
+                  // AND add drag icon offset (heuristic) to center the interaction
+                  // The user feedback indicates the "drag_icon size" was missing from calculation.
+                  // We add ~24px (half of typical icon size) to align the "hotspot" with the visual center.
+                  // const dragIconOffset = 24.0;
+                  final padding = widget.themeNotifier.value.card.padding;
                   final box =
                       _cardKey.currentContext?.findRenderObject() as RenderBox?;
                   if (box == null) return;
                   final local = box.globalToLocal(details.offset);
-                  // 统一使用控制器进行列坐标归一化（扣除抓手与可选标题列宽度）
-                  final dx = _dragController.normalizeColumnDx(
-                    localDx: local.dx,
-                    gripWidth: _effectiveDragHandleColWidth,
-                    rowTitleWidth: rowTitleWidth,
-                    hasRowTitleColumnInGrid: _hasRowTitleColumnInGrid(pillars),
-                  );
-                  // 计算插入索引（中点规则，支持不等宽列）
-                  final spans = List<double>.generate(
-                    pillars.length,
-                    (i) => _colWidthAtIndex(i, pillars),
-                  );
-                  final candidate =
-                      _dragController.computeInsertIndexByMidpoints(dx, spans);
-                  final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+                  final correctedDx = local.dx - padding.left + dragIconOffset;
+                  final correctedDy = local.dy - padding.top + dragIconOffset;
 
-                  if (last == null) {
+                  if (isColumnDrag) {
+                    if (_hoveringExternalRow || _hoverRowInsertIndex != null) {
+                      _hoveringExternalRow = false;
+                      _hoverRowInsertIndex = null;
+                      _lastRowInsertIndex = null;
+                      _externalRowHoverHeight = 0.0;
+                      _scheduleRebuild();
+                    }
+                    if (!_dragController.allowColumnMove()) return;
+
+                    final isExternal = data is PillarPayload ||
+                        data is PillarType ||
+                        data is PillarData;
+                    if (_hoveringExternalPillar != isExternal) {
+                      _hoveringExternalPillar = isExternal;
+                      _scheduleRebuild();
+                    }
+                    if (isExternal) {
+                      double nextW = _metricsSnapshotNotifier
+                          .value.defaultGlobalPillarMetric.totalWidth;
+                      if (data is PillarType) {
+                        if (data == PillarType.separator) {
+                          nextW = _colDividerWidthEffective;
+                        } else if (data == PillarType.rowTitleColumn) {
+                          nextW = rowTitleWidth;
+                        }
+                      }
+                      if (_externalColHoverWidth != nextW) {
+                        _externalColHoverWidth = nextW;
+                        _scheduleRebuild();
+                      }
+                    }
+
+                    final pillars = _currentPillars();
+                    final dx = _dragController.normalizeColumnDx(
+                      localDx: correctedDx,
+                      gripWidth: _effectiveDragHandleColWidth,
+                      rowTitleWidth: rowTitleWidth,
+                      hasRowTitleColumnInGrid:
+                          _hasRowTitleColumnInGrid(pillars),
+                    );
+                    final spans = List<double>.generate(
+                      pillars.length,
+                      (i) => _colWidthAtIndex(i, pillars),
+                    );
+                    final candidate = _dragController
+                        .computeInsertIndexByMidpoints(dx, spans);
+                    final last = _hoverColumnInsertIndex ?? _lastColInsertIndex;
+                    if (last == null) {
+                      _hoverColumnInsertIndex = candidate;
+                      _lastColInsertIndex = candidate;
+                      _scheduleRebuild();
+                      _dragWantsInsert.value =
+                          _dragController.wantsInsertOnHoverChange(
+                              candidate: candidate, last: last);
+                      _dragWantsDelete.value = false;
+                      return;
+                    }
+                    if (candidate == last) return;
+                    final bool allowUpdate =
+                        _dragController.allowColumnHysteresisSwitch(
+                      candidate: candidate,
+                      last: last,
+                      coord: dx,
+                      spans: spans,
+                      fallbackSpan: _getGhostColumnWidth(),
+                      fraction: _colHysteresisFrac,
+                    );
+                    if (!allowUpdate) return;
                     _hoverColumnInsertIndex = candidate;
                     _lastColInsertIndex = candidate;
                     _scheduleRebuild();
-                    final wi = _dragController.wantsInsertOnHoverChange(
+                    _dragWantsInsert.value =
+                        _dragController.wantsInsertOnHoverChange(
+                            candidate: candidate, last: last);
+                    _dragWantsDelete.value = false;
+                  } else {
+                    // Row Logic
+                    if (_hoveringExternalPillar ||
+                        _hoverColumnInsertIndex != null) {
+                      _hoveringExternalPillar = false;
+                      _hoverColumnInsertIndex = null;
+                      _lastColInsertIndex = null;
+                      _externalColHoverWidth = 0.0;
+                      _scheduleRebuild();
+                    }
+                    if (!_dragController.allowRowMove()) return;
+
+                    final bool isExternal = (data is RowPayload) ||
+                        (data is RowData) ||
+                        (data is RowType);
+                    if (isExternal) {
+                      final bool isSeparator = (data is RowPayload &&
+                              data.rowType == RowType.separator) ||
+                          (data is RowData &&
+                              data.rowType == RowType.separator) ||
+                          (data is RowType && data == RowType.separator);
+                      final double h = isSeparator
+                          ? _rowDividerHeightEffective
+                          : _metricsSnapshotNotifier
+                              .value.defaultGlobalRowMetric.totalHeight;
+                      if (_hoveringExternalRow != true ||
+                          _externalRowHoverHeight != h) {
+                        _hoveringExternalRow = true;
+                        _externalRowHoverHeight = h;
+                        _scheduleRebuild();
+                      }
+                    }
+
+                    final dy = _dragController.normalizeRowDy(
+                      localDy: correctedDy,
+                      topGripHeight: _effectiveDragHandleRowHeight,
+                      gripVisible: widget.showGrip,
+                    );
+                    final spans = _rowSpansCache ?? _computeCurrentRowSpans();
+                    _rowSpansCache = spans;
+                    final candidate = _dragController
+                        .computeInsertIndexByMidpoints(dy, spans);
+                    final last = _hoverRowInsertIndex ?? _lastRowInsertIndex;
+                    if (last == null) {
+                      _hoverRowInsertIndex = candidate;
+                      _lastRowInsertIndex = candidate;
+                      _scheduleRebuild();
+                      _dragWantsInsert.value =
+                          _dragController.wantsInsertOnHoverChange(
+                              candidate: candidate, last: last);
+                      _dragWantsDelete.value = false;
+                      return;
+                    }
+                    if (candidate == 0 || candidate == 1) {
+                      _hoverRowInsertIndex = candidate;
+                      _lastRowInsertIndex = candidate;
+                      _scheduleRebuild();
+                      _dragWantsInsert.value =
+                          _dragController.wantsInsertOnHoverChange(
+                              candidate: candidate, last: last);
+                      _dragWantsDelete.value = false;
+                      return;
+                    }
+                    if (candidate == last) return;
+                    final bool allowUpdate =
+                        _dragController.allowRowHysteresisSwitch(
                       candidate: candidate,
                       last: last,
+                      coord: dy,
+                      spans: spans,
+                      fallbackSpan:
+                          _getGhostRowHeight(fallbackHeight: otherCellHeight),
+                      fraction: _rowHysteresisFrac,
                     );
-                    _dragWantsInsert.value = wi;
+                    if (!allowUpdate) return;
+                    _hoverRowInsertIndex = candidate;
+                    _lastRowInsertIndex = candidate;
+                    _scheduleRebuild();
+                    _dragWantsInsert.value =
+                        _dragController.wantsInsertOnHoverChange(
+                            candidate: candidate, last: last);
                     _dragWantsDelete.value = false;
-                    return;
                   }
-                  if (candidate == last) return;
-
-                  // 滞回判定：越过中点 ± margin 时允许切换
-                  final bool allowUpdate =
-                      _dragController.allowColumnHysteresisSwitch(
-                    candidate: candidate,
-                    last: last,
-                    coord: dx,
-                    spans: spans,
-                    fallbackSpan: _getGhostColumnWidth(),
-                    fraction: _colHysteresisFrac, // 可选覆盖默认值
-                  );
-                  if (!allowUpdate) return;
-                  _hoverColumnInsertIndex = candidate;
-                  _lastColInsertIndex = candidate;
-                  _scheduleRebuild();
-                  final wi = _dragController.wantsInsertOnHoverChange(
-                    candidate: candidate,
-                    last: last,
-                  );
-                  _dragWantsInsert.value = wi;
-                  _dragWantsDelete.value = false;
                 },
-                onLeave: (_) {
+                onLeave: (data) {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
                   _hoveringExternalPillar = false;
-                  _scheduleRebuild();
-                  // if (_externalColHoverWidth != 0.0) {
-                  //   _sizeNotifier.value = _cardNotragInSize!;
-                  //   _cardNotragInSize = null;
-                  // }
                   _externalColHoverWidth = 0.0;
 
+                  _hoverRowInsertIndex = null;
+                  _lastRowInsertIndex = null;
+                  _hoveringExternalRow = false;
+                  _externalRowHoverHeight = 0.0;
+
+                  _scheduleRebuild();
                   _dragWantsInsert.value = false;
-                  _dragWantsDelete.value = _dragController.wantsDeleteOnLeave();
+
+                  bool isInternalColumn = data is Tuple2 &&
+                      data.item1 is _DragKind &&
+                      data.item1 == _DragKind.column;
+                  bool isInternalRow =
+                      data is Tuple2 && data.item1 == _DragKind.row;
+
+                  if (isInternalColumn || isInternalRow) {
+                    _dragWantsDelete.value =
+                        _dragController.wantsDeleteOnLeave();
+                  } else {
+                    _dragWantsDelete.value = false;
+                  }
                 },
-                onAccept: (payload) {
-                  final insertIndex = _hoverColumnInsertIndex ?? 0;
+                onAcceptWithDetails: (DragTargetDetails<Object> details) {
+                  final payload = details.data;
+                  final isColumnDrag = (payload is Tuple2 &&
+                          payload.item1 is _DragKind &&
+                          payload.item1 == _DragKind.column) ||
+                      (payload is PillarPayload) ||
+                      (payload is PillarType) ||
+                      (payload is TitleColumnPayload) ||
+                      (payload is PillarData);
+
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
                   _draggingColumnIndex = null;
                   _hoveringExternalPillar = false;
                   _externalColHoverWidth = 0.0;
+
+                  _hoverRowInsertIndex = null;
+                  _lastRowInsertIndex = null;
+                  _draggingRowIndex = null;
+                  _hoveringExternalRow = false;
+
                   _scheduleRebuild();
-                  if (payload is Tuple2) {
-                    final kind = payload.item1;
-                    final fromIdx = payload.item2 as int;
-                    if (kind == _DragKind.column) {
-                      _reorderColumns(fromIdx, insertIndex);
-                    }
-                  } else if (payload is PillarPayload) {
-                    _insertExternalPillar(insertIndex, payload);
-                  } else if (payload is PillarType) {
-                    _insertExternalPillarFromType(insertIndex, payload);
-                  } else if (payload is TitleColumnPayload) {
-                    _insertExternalPillar(insertIndex, payload);
-                  } else if (payload is PillarData) {
-                    final pillarId = Uuid().v4();
-                    final pillarContent = PillarContent(
-                      id: pillarId,
-                      pillarType: payload.pillarType,
-                      label: payload.label, // 使用 PillarData 的 label 字段
-                      jiaZi: payload.jiaZi,
-                      version: "1",
-                      sourceKind: PillarSourceKind.userInput,
-                    );
-                    final contentPillarPayload = ContentPillarPayload(
-                      uuid: pillarId,
-                      pillarType: payload.pillarType,
-                      pillarLabel: payload.label, // 使用 PillarData 的 label 字段
-                      pillarContent: pillarContent,
-                    );
-
-                    _insertExternalPillar(insertIndex, contentPillarPayload);
-                  }
-
                   _dragWantsInsert.value = false;
                   _dragWantsDelete.value = false;
+
+                  if (isColumnDrag) {
+                    final insertIndex = _hoverColumnInsertIndex ?? 0;
+                    if (payload is Tuple2) {
+                      final kind = payload.item1;
+                      final fromIdx = payload.item2 as int;
+                      if (kind == _DragKind.column) {
+                        _reorderColumns(fromIdx, insertIndex);
+                      }
+                    } else if (payload is PillarPayload) {
+                      _insertExternalPillar(insertIndex, payload);
+                    } else if (payload is PillarType) {
+                      _insertExternalPillarFromType(insertIndex, payload);
+                    } else if (payload is TitleColumnPayload) {
+                      _insertExternalPillar(insertIndex, payload);
+                    } else if (payload is PillarData) {
+                      final pillarId = Uuid().v4();
+                      final pillarContent = PillarContent(
+                        id: pillarId,
+                        pillarType: payload.pillarType,
+                        label: payload.label,
+                        jiaZi: payload.jiaZi,
+                        version: "1",
+                        sourceKind: PillarSourceKind.userInput,
+                      );
+                      final contentPillarPayload = ContentPillarPayload(
+                        uuid: pillarId,
+                        pillarType: payload.pillarType,
+                        pillarLabel: payload.label,
+                        pillarContent: pillarContent,
+                      );
+                      _insertExternalPillar(insertIndex, contentPillarPayload);
+                    }
+                  } else {
+                    if (_rowAccepting) return;
+                    _rowAccepting = true;
+                    final insertIndex = _hoverRowInsertIndex ?? 1;
+                    _resetRowSpansCache();
+
+                    if (payload is Tuple2) {
+                      final kind = payload.item1;
+                      final fromAbsIdx = payload.item2 as int;
+                      if (kind == _DragKind.row) {
+                        _reorderRows(fromAbsIdx, insertIndex);
+                      }
+                    } else if (payload is TextRowPayload) {
+                      _insertExternalRow(insertIndex, payload);
+                    } else if (payload is RowData) {
+                      if (payload.rowType == RowType.separator) {
+                        final p = RowSeparatorPayload(uuid: const Uuid().v4());
+                        _insertExternalRow(insertIndex, p);
+                      } else {
+                        final p = TextRowPayload(
+                          uuid: const Uuid().v4(),
+                          rowType: payload.rowType,
+                          rowLabel: payload.label,
+                          titleInCell:
+                              widget.themeNotifier.value.displayCellTitle,
+                        );
+                        _insertExternalRow(insertIndex, p);
+                      }
+                    } else if (payload is RowSeparatorPayload) {
+                      final p = RowSeparatorPayload(uuid: const Uuid().v4());
+                      _insertExternalRow(insertIndex, p);
+                    } else if (payload is RowType) {
+                      final p = TextRowPayload(
+                        uuid: const Uuid().v4(),
+                        rowType: payload,
+                        rowLabel: payload.name,
+                        titleInCell:
+                            widget.themeNotifier.value.displayCellTitle,
+                      );
+                      _insertExternalRow(insertIndex, p);
+                    } else if (payload is RowPayload) {
+                      _insertExternalRow(insertIndex, payload);
+                    }
+
+                    Future.microtask(() {
+                      if (!mounted) return;
+                      _rowAccepting = false;
+                      _scheduleRebuild();
+                    });
+                  }
                 },
                 builder: (context, _, __) => const SizedBox.expand(),
               ),
@@ -1363,37 +1555,37 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               ),
             ),
             // 插入位指示条（全卡覆盖）：在当前 hover 的插入索引位置绘制纵向细线，增强可视反馈
-            if (_hoverColumnInsertIndex != null) ...[
-              Builder(builder: (context) {
-                // 使用可变列宽累计，正确定位插入指示线
-                // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
-                final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
-                final left = dragHandleColWidth +
-                    _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
-                    1;
-                return Positioned(
-                  left: left,
-                  top: 0,
-                  width: 2,
-                  height: size.height + extraRowHeight,
-                  child: IgnorePointer(
-                    ignoring: true,
-                    child: SizedBox(
-                      height: size.height + extraRowHeight,
-                      width: 2,
-                      child: VerticalDivider(
-                        width: 2,
-                        thickness: 2,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .primary
-                            .withOpacity(0.45),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ],
+            // if (_hoverColumnInsertIndex != null) ...[
+            //   Builder(builder: (context) {
+            //     // 使用可变列宽累计，正确定位插入指示线
+            //     // 当存在行标题列时，不需要加上 rowTitleWidth（行标题列已在 pillars 中）
+            //     final hasRowTitleCol = _hasRowTitleColumnInGrid(pillars);
+            //     final left = dragHandleColWidth +
+            //         _sumColWidthsUpTo(_hoverColumnInsertIndex!, pillars) -
+            //         1;
+            //     return Positioned(
+            //       left: left,
+            //       top: 0,
+            //       width: 2,
+            //       height: size.height + extraRowHeight,
+            //       child: IgnorePointer(
+            //         ignoring: true,
+            //         child: SizedBox(
+            //           height: size.height + extraRowHeight,
+            //           width: 2,
+            //           child: VerticalDivider(
+            //             width: 2,
+            //             thickness: 2,
+            //             color: Theme.of(context)
+            //                 .colorScheme
+            //                 .primary
+            //                 .withOpacity(0.45),
+            //           ),
+            //         ),
+            //       ),
+            //     );
+            //   }),
+            // ],
             // Debug overlay: 行边界辅助线（显示每一行的中点位置）
             if (widget.debugHysteresisOverlay)
               Positioned.fill(
@@ -1570,275 +1762,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             ),
           ],
         ),
-        // 统一的全区域行拖拽 DragTarget：覆盖整个网格（包括 topGripRow 和 bottomGripRow）
-        Positioned.fill(
-          child: Builder(
-            builder: (builderContext) => DragTarget<Object>(
-              onWillAcceptWithDetails: (DragTargetDetails<Object> details) {
-                final data = details.data;
-                assert(() {
-                  debugPrint('RowDragTarget onWillAccept data=$data');
-                  return true;
-                }());
-                final ok = (data is Tuple2 && data.item1 == _DragKind.row) ||
-                    (data is TextRowPayload) ||
-                    (data is RowData) ||
-                    (data is TitleRowPayload) ||
-                    (data is RowSeparatorPayload) ||
-                    (data is RowType);
-                if (ok) {
-                  _hoverColumnInsertIndex = null;
-                  _lastColInsertIndex = null;
-                  _hoveringExternalPillar = false;
-                  _scheduleRebuild();
-                  _rowSpansCache = _computeCurrentRowSpans();
-                  final rows = _currentRowLabels();
-                  if (data is Tuple2 && data.item1 == _DragKind.row) {
-                    _hoverRowInsertIndex = rows.length;
-                    _lastRowInsertIndex = rows.length;
-                    _scheduleRebuild();
-                  } else if (data is TextRowPayload ||
-                      data is RowData ||
-                      data is RowSeparatorPayload ||
-                      (data is RowType)) {
-                    _hoveringExternalRow = true;
-                    final bool isSeparator = (data is TextRowPayload &&
-                            data.rowType == RowType.separator) ||
-                        (data is RowData &&
-                            data.rowType == RowType.separator) ||
-                        (data is RowSeparatorPayload) ||
-                        (data is RowType && data == RowType.separator);
-                    final bool isTitle = (data is TextRowPayload &&
-                            data.rowType == RowType.columnHeaderRow) ||
-                        (data is RowType && data == RowType.columnHeaderRow);
-                    _externalRowHoverHeight = isSeparator
-                        ? _rowDividerHeightEffective
-                        : (isTitle
-                            ? columnTitleHeight
-                            : _metricsSnapshotNotifier
-                                .value.defaultGlobalRowMetric.totalHeight);
-                    _hoverRowInsertIndex = rows.length;
-                    _lastRowInsertIndex = rows.length;
-                    _scheduleRebuild();
-                  }
-                }
-                return ok;
-              },
-              onMove: (details) {
-                assert(() {
-                  debugPrint(
-                      'RowDragTarget onMove dy=${details.offset.dy} data=${details.data}');
-                  return true;
-                }());
-                final data = details.data;
-                final isRowPayload =
-                    (data is Tuple2 && data.item1 == _DragKind.row) ||
-                        (data is TextRowPayload) ||
-                        (data is RowData) ||
-                        (data is TitleRowPayload) ||
-                        (data is RowSeparatorPayload) ||
-                        (data is RowType);
-                if (!isRowPayload) return;
-                if (!_dragController.allowRowMove()) {
-                  return;
-                }
-
-                // 外部行悬停：更新幽灵行高度（区分分隔符与普通行）
-                final bool isExternal = (data is TextRowPayload) ||
-                    (data is RowData) ||
-                    (data is RowSeparatorPayload) ||
-                    (data is RowType);
-                if (isExternal) {
-                  final bool isSeparator = (data is TextRowPayload &&
-                          data.rowType == RowType.separator) ||
-                      (data is RowData && data.rowType == RowType.separator) ||
-                      (data is RowSeparatorPayload) ||
-                      (data is RowType && data == RowType.separator);
-                  final double h = isSeparator
-                      ? _rowDividerHeightEffective
-                      : _metricsSnapshotNotifier
-                          .value.defaultGlobalRowMetric.totalHeight;
-                  if (_hoveringExternalRow != true ||
-                      _externalRowHoverHeight != h) {
-                    _hoveringExternalRow = true;
-                    _externalRowHoverHeight = h;
-                    _scheduleRebuild();
-                  }
-                }
-
-                final box =
-                    _cardKey.currentContext?.findRenderObject() as RenderBox?;
-                if (box == null) {
-                  return;
-                }
-                final local = box.globalToLocal(details.offset);
-                // 统一使用控制器进行行坐标归一化（扣除顶部抓手行高度）
-                final dy = _dragController.normalizeRowDy(
-                  localDy: local.dy,
-                  topGripHeight: _effectiveDragHandleRowHeight,
-                  gripVisible: widget.showGrip,
-                );
-                // 现在 dy = 0 对应 leftGripColumn 顶部（行内容开始）
-                // _computeRowInsertIndexFromDyMidpoint 的 acc 也从 0 开始（行内容开始）
-                // 两者坐标系一致
-
-                final rows = _currentRowLabels();
-                // 计算插入索引（中点规则，支持不等高行）
-                final spans = _rowSpansCache ?? _computeCurrentRowSpans();
-                _rowSpansCache = spans;
-                final candidate =
-                    _dragController.computeInsertIndexByMidpoints(dy, spans);
-                final last = _hoverRowInsertIndex ?? _lastRowInsertIndex;
-
-                if (last == null) {
-                  _hoverRowInsertIndex = candidate;
-                  _lastRowInsertIndex = candidate;
-                  _scheduleRebuild();
-                  final wi = _dragController.wantsInsertOnHoverChange(
-                    candidate: candidate,
-                    last: last,
-                  );
-                  _dragWantsInsert.value = wi;
-                  _dragWantsDelete.value = false;
-                  return;
-                }
-                // 顶部插入位特殊处理：当目标为表头行之前（索引0）或第一个可拖拽行（索引1）时立即更新，避免不让位
-                if (candidate == 0 || candidate == 1) {
-                  _hoverRowInsertIndex = candidate;
-                  _lastRowInsertIndex = candidate;
-                  _scheduleRebuild();
-                  final wi = _dragController.wantsInsertOnHoverChange(
-                    candidate: candidate,
-                    last: last,
-                  );
-                  _dragWantsInsert.value = wi;
-                  _dragWantsDelete.value = false;
-                  return;
-                }
-                if (candidate == last) return;
-
-                // 滞回判定：越过中点 ± margin 时允许切换
-                final bool allowUpdate =
-                    _dragController.allowRowHysteresisSwitch(
-                  candidate: candidate,
-                  last: last,
-                  coord: dy,
-                  spans: spans,
-                  fallbackSpan:
-                      _getGhostRowHeight(fallbackHeight: otherCellHeight),
-                  fraction: _rowHysteresisFrac, // 可选覆盖默认值
-                );
-
-                if (!allowUpdate) return; // 在滞回缓冲区内，不触发切换
-
-                _hoverRowInsertIndex = candidate;
-                _lastRowInsertIndex = candidate;
-                _scheduleRebuild();
-                final wi = _dragController.wantsInsertOnHoverChange(
-                  candidate: candidate,
-                  last: last,
-                );
-                _dragWantsInsert.value = wi;
-                _dragWantsDelete.value = false;
-              },
-              onLeave: (_) {
-                _hoverRowInsertIndex = null;
-                _lastRowInsertIndex = null;
-                _hoveringExternalRow = false;
-                _externalRowHoverHeight = 0.0;
-                // 调试：输出节流计数与重建采样（仅调试态）
-                assert(() {
-                  final counters = takeAndResetDragMoveCounts();
-                  final sampling = takeAndResetRebuildSampling();
-                  final notifier = takeAndResetNotifierSampling();
-                  debugPrint(
-                      'RowDragTarget onLeave counters=$counters, sampling=$sampling, notifier=$notifier');
-                  return true;
-                }());
-                _resetRowSpansCache();
-                _scheduleRebuild();
-                _dragWantsInsert.value = false;
-                _dragWantsDelete.value = _dragController.wantsDeleteOnLeave();
-              },
-              onAcceptWithDetails: (DragTargetDetails<Object> details) {
-                final payload = details.data;
-
-                print(
-                    "onAcceptWithDetails ${payload.runtimeType} payload=$payload");
-                assert(() {
-                  debugPrint(
-                      'RowDragTarget onAccept payload=$payload hoverIdx=$_hoverRowInsertIndex');
-                  return true;
-                }());
-                if (_rowAccepting) return;
-                _rowAccepting = true;
-                final insertIndex = _hoverRowInsertIndex ?? 1;
-                _hoverRowInsertIndex = null;
-                _lastRowInsertIndex = null;
-                _draggingRowIndex = null;
-                _hoveringExternalRow = false;
-                // ⚠️ 不在这里清零 _externalRowHoverHeight，在 _insertExternalRow 后清零
-                // _externalRowHoverHeight = 0.0;
-                // 调试：输出节流计数与重建采样（仅调试态）
-                assert(() {
-                  final counters = takeAndResetDragMoveCounts();
-                  final sampling = takeAndResetRebuildSampling();
-                  final notifier = takeAndResetNotifierSampling();
-                  debugPrint(
-                      'RowDragTarget onAccept counters=$counters, sampling=$sampling, notifier=$notifier');
-                  return true;
-                }());
-                _resetRowSpansCache();
-                _scheduleRebuild();
-                if (payload is Tuple2) {
-                  final kind = payload.item1;
-                  final fromAbsIdx = payload.item2 as int;
-                  if (kind == _DragKind.row) {
-                    _reorderRows(fromAbsIdx, insertIndex);
-                  }
-                } else if (payload is TextRowPayload) {
-                  _insertExternalRow(insertIndex, payload);
-                } else if (payload is RowData) {
-                  if (payload.rowType == RowType.separator) {
-                    final p = RowSeparatorPayload(
-                      uuid: const Uuid().v4(),
-                    );
-                    _insertExternalRow(insertIndex, p);
-                  } else {
-                    final p = TextRowPayload(
-                      uuid: const Uuid().v4(),
-                      rowType: payload.rowType,
-                      rowLabel: payload.label,
-                      titleInCell: widget.themeNotifier.value.displayCellTitle,
-                    );
-                    _insertExternalRow(insertIndex, p);
-                  }
-                } else if (payload is RowSeparatorPayload) {
-                  final p = RowSeparatorPayload(
-                    uuid: const Uuid().v4(),
-                  );
-                  _insertExternalRow(insertIndex, p);
-                } else if (payload is RowType) {
-                  final p = TextRowPayload(
-                    uuid: const Uuid().v4(),
-                    rowType: payload,
-                    rowLabel: payload.name,
-                    titleInCell: widget.themeNotifier.value.displayCellTitle,
-                  );
-                  _insertExternalRow(insertIndex, p);
-                }
-                Future.microtask(() {
-                  if (!mounted) return;
-                  _rowAccepting = false;
-                  _scheduleRebuild();
-                });
-                _dragWantsInsert.value = false;
-                _dragWantsDelete.value = false;
-              },
-              builder: (context, _, __) => const SizedBox.expand(),
-            ),
-          ),
-        ),
+        // 统一的全区域行拖拽 DragTarget 已移动至外层（merged into UnifiedDragTarget），此处仅保留占位
+        // 避免层叠遮挡，确保 DragTarget 位于顶层处理所有事件
+        // Positioned.fill(
+        //   child: Container(),
+        // ),
       ],
     );
   }
@@ -2393,17 +2321,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (_hoverRowInsertIndex == null) return overlays;
 
     // 1. 插入指示线
-    overlays.add(Positioned(
-      left: 0,
-      top: (_hoverRowInsertIndex == 1)
-          ? 0
-          : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) - 1,
-      width: _totalColsWidth(pillars),
-      height: 2,
-      child: Container(
-        color: Theme.of(context).colorScheme.secondary.withOpacity(0.35),
-      ),
-    ));
+    // overlays.add(Positioned(
+    //   left: 0,
+    //   top: (_hoverRowInsertIndex == 1)
+    //       ? 0
+    //       : _computeRowInsertTopFromIndex(_hoverRowInsertIndex!, rows) - 1,
+    //   width: _totalColsWidth(pillars),
+    //   height: 2,
+    //   child: Container(
+    //     color: Theme.of(context).colorScheme.secondary.withOpacity(0.35),
+    //   ),
+    // ));
 
     // 2. 整行高亮
     if (_hoverRowInsertIndex! >= 1 && _hoverRowInsertIndex! < rows.length) {
@@ -3593,7 +3521,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     return DragTarget<Object>(
       key: Key('col-insert-target-$insertIndex'),
       onWillAccept: (data) {
-        // Accept internal column drag or external PillarPayload
+        // Only allow column-related payloads
         final ok = (data is Tuple2 &&
                 data.item1 is _DragKind &&
                 data.item1 == _DragKind.column) ||
@@ -3982,23 +3910,24 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       rowMap: oldRowMapper,
     );
 
-    final rowTypeCellConfigMapper = Map.fromEntries(widget
-        .themeNotifier.value.cell.rowTypeCellConfigMapper.entries
-        .map((e) => e));
-    rowTypeCellConfigMapper[payload.rowType] =
-        widget.themeNotifier.value.cell.globalCellConfig;
-    final cellContentMapper = Map.fromEntries(widget
-        .themeNotifier.value.typography.cellContentMapper.entries
-        .map((e) => e));
-    cellContentMapper[payload.rowType] =
-        widget.themeNotifier.value.typography.globalContent;
+    // Commented out to prevent red border issue caused by theme update during drag/drop
+    // final rowTypeCellConfigMapper = Map.fromEntries(widget
+    //     .themeNotifier.value.cell.rowTypeCellConfigMapper.entries
+    //     .map((e) => e));
+    // rowTypeCellConfigMapper[payload.rowType] =
+    //     widget.themeNotifier.value.cell.globalCellConfig;
+    // final cellContentMapper = Map.fromEntries(widget
+    //     .themeNotifier.value.typography.cellContentMapper.entries
+    //     .map((e) => e));
+    // cellContentMapper[payload.rowType] =
+    //     widget.themeNotifier.value.typography.globalContent;
 
-    widget.themeNotifier.value = widget.themeNotifier.value.copyWith(
-      cell: widget.themeNotifier.value.cell
-          .copyWith(rowTypeCellConfigMapper: rowTypeCellConfigMapper),
-      typography: widget.themeNotifier.value.typography
-          .copyWith(cellContentMapper: cellContentMapper),
-    );
+    // widget.themeNotifier.value = widget.themeNotifier.value.copyWith(
+    //   cell: widget.themeNotifier.value.cell
+    //       .copyWith(rowTypeCellConfigMapper: rowTypeCellConfigMapper),
+    //   typography: widget.themeNotifier.value.typography
+    //       .copyWith(cellContentMapper: cellContentMapper),
+    // );
 
     _externalRowHoverHeight = 0.0;
     // 🔑 立即重新计算 metricsSnapshot，确保后续使用的是包含新行的最新数据
