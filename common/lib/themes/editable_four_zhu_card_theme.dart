@@ -471,8 +471,12 @@ class PillarSection {
   /// Box shadow spread radius; must be non-negative if provided.
   double? get shadowSpreadRadius => global.shadow?.spreadRadius;
 
-  /// Shadow opacity in [0, 1]. When null, a sensible default is used.
-  double? get shadowOpacity => global.shadow?.opacity;
+  /// Shadow opacity in [0, 1], derived from shadow color alpha.
+  double? get shadowOpacity {
+    final shadow = global.shadow;
+    if (shadow == null) return null;
+    return shadow.lightThemeColor.alpha / 255.0;
+  }
 
   /// 计算指定柱类型的装饰宽度（margin + padding + borderWidth*2）。
   /// WARNING: 并不包含组层Pillar的Cell宽度

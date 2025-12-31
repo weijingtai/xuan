@@ -3518,14 +3518,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final resolvedBorderColor =
         (borderWidth > 0) ? border!.resolveColor(brightness) : null;
 
-    final shadowBaseColor = config.shadow.followCardBackgroundColor
-        ? bkColor
-        : config.shadow.resolveColor(brightness);
+    final configuredShadowColor = config.shadow.resolveColor(brightness);
+    final shadowColor = config.shadow.followCardBackgroundColor
+        ? bkColor.withAlpha(configuredShadowColor.alpha)
+        : configuredShadowColor;
     final boxShadows = config.shadow.withShadow
         ? [
             BoxShadow(
-              color: shadowBaseColor
-                  .withOpacity(config.shadow.opacity.clamp(0.0, 1.0)),
+              color: shadowColor,
               offset: config.shadow.offset,
               blurRadius: config.shadow.blurRadius,
               spreadRadius: config.shadow.spreadRadius,
@@ -5434,12 +5434,13 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       content: content,
     );
 
-    Color shadowColor = textColor;
-    if (!ts.textShadowDataModel.followTextColor) {
-      shadowColor = brightness == Brightness.light
-          ? ts.textShadowDataModel.lightShadowColor
-          : ts.textShadowDataModel.darkShadowColor;
-    }
+    final baseShadowColor = brightness == Brightness.light
+        ? ts.textShadowDataModel.lightShadowColor
+        : ts.textShadowDataModel.darkShadowColor;
+
+    final shadowColor = ts.textShadowDataModel.followTextColor
+        ? textColor.withAlpha(baseShadowColor.alpha)
+        : baseShadowColor;
 
     TextStyle base = TextStyle(
       fontSize: ts.fontStyleDataModel.fontSize,
@@ -5448,8 +5449,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       fontFamily: ts.fontStyleDataModel.fontFamily,
       shadows: [
         Shadow(
-          color: shadowColor
-              .withAlpha((ts.textShadowDataModel.shadowOpacity * 255).toInt()),
+          color: shadowColor,
           offset: Offset(ts.textShadowDataModel.shadowOffsetX,
               ts.textShadowDataModel.shadowOffsetY),
           blurRadius: ts.textShadowDataModel.shadowBlurRadius,

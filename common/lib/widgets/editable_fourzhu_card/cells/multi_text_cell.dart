@@ -81,11 +81,19 @@ class _EditableMultiTextCellState extends State<EditableMultiTextCell> {
                                     : widget.cellStyleConfig
                                         .lightBackgroundColor) ??
                                 Colors.transparent)
+                                .withAlpha(
+                                  (Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? widget.cellStyleConfig.shadow
+                                              .darkThemeColor
+                                          : widget.cellStyleConfig.shadow
+                                              .lightThemeColor)
+                                      .alpha,
+                                )
                             : (Theme.of(context).brightness == Brightness.dark
                                 ? widget.cellStyleConfig.shadow.darkThemeColor
                                 : widget
-                                    .cellStyleConfig.shadow.lightThemeColor))
-                        .withOpacity(widget.cellStyleConfig.shadow.opacity),
+                                    .cellStyleConfig.shadow.lightThemeColor)),
                     offset: widget.cellStyleConfig.shadow.offset,
                     blurRadius: widget.cellStyleConfig.shadow.blurRadius,
                     spreadRadius: widget.cellStyleConfig.shadow.spreadRadius,

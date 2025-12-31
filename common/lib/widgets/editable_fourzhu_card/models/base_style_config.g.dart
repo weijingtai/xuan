@@ -18,7 +18,6 @@ BoxShadowStyle _$BoxShadowStyleFromJson(Map<String, dynamic> json) =>
           .fromJson(json['offset'] as Map<String, dynamic>),
       blurRadius: (json['blurRadius'] as num).toDouble(),
       spreadRadius: (json['spreadRadius'] as num).toDouble(),
-      opacity: (json['opacity'] as num).toDouble(),
     );
 
 Map<String, dynamic> _$BoxShadowStyleToJson(BoxShadowStyle instance) =>
@@ -32,7 +31,6 @@ Map<String, dynamic> _$BoxShadowStyleToJson(BoxShadowStyle instance) =>
       'offset': const OffsetConverter().toJson(instance.offset),
       'blurRadius': instance.blurRadius,
       'spreadRadius': instance.spreadRadius,
-      'opacity': instance.opacity,
     };
 
 BoxBorderStyle _$BoxBorderStyleFromJson(Map<String, dynamic> json) =>

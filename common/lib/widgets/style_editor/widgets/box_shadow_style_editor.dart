@@ -1,4 +1,3 @@
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
@@ -37,7 +36,6 @@ class ShadowEditorWidget extends StatelessWidget {
     final _pillarShadowOffsetY = (shadow.offset.dy ?? 0).toDouble();
     final _pillarShadowBlur = (shadow.blurRadius ?? 0).toDouble();
     final _pillarShadowSpread = (shadow.spreadRadius ?? 0).toDouble();
-    final _pillarShadowOpacity = (shadow.opacity ?? 0.35).toDouble();
 
     final lightPillarShadowColor = _pillarShadowFollowBackground
         ? Colors.transparent
@@ -184,15 +182,6 @@ class ShadowEditorWidget extends StatelessWidget {
             onChanged: (v) {
               shadowNotifier.value =
                   shadowNotifier.value.copyWith(spreadRadius: v);
-            },
-          ));
-          xs.add(TitleSliderWidget(
-            label: '阴影透明度',
-            value: _pillarShadowOpacity,
-            min: 0,
-            max: 1,
-            onChanged: (v) {
-              shadowNotifier.value = shadowNotifier.value.copyWith(opacity: v);
             },
           ));
           return xs;

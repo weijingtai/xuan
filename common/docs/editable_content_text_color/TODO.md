@@ -186,3 +186,78 @@
   - `common/lib/widgets/style_editor/widgets/box_border_style_editor.dart`
   - `common/lib/widgets/style_editor/widgets/box_style_config_editor.dart`
   - `common/lib/widgets/style_editor/widgets/box_shadow_style_editor.dart`
+
+---
+
+# 透明度统一（移除独立 opacity 字段）- TODO List
+
+## 目标
+- 统一“透明度”的唯一来源：仅存在于 `Color.alpha`（`#AARRGGBB`）中
+- 移除/停用所有独立透明度字段（如 `shadowOpacity`、`BoxShadowStyle.opacity`），避免“双体系叠加/覆盖”导致的不可控
+- 保持向后兼容：旧数据仍可加载，并在保存/写回后自然完成迁移（透明度收敛到颜色自身）
+
+## 范围边界
+- ✅ 文本阴影（TextStyle.shadows）透明度：由阴影颜色 `Color.alpha` 决定
+- ✅ 卡片容器阴影（BoxShadow）透明度：由阴影颜色 `Color.alpha` 决定
+- ✅ 颜色选择器：提供 alpha 调节能力，但只通过返回的 `Color` 体现（不新增独立透明度字段）
+- ✅ 兼容旧 JSON：读入旧字段时做一次性融合（alpha = 旧 opacity 映射），写出时不再输出旧字段
+- ❌ 不做颜色策略（五行/自动配色）与渲染链路的其他重构
+
+## 关键决策（收敛规则）
+- 决策 1：阴影强度只由“阴影色的 alpha”表达
+  - 文本阴影：`Shadow.color.alpha` 直接决定强度
+  - 容器阴影：`BoxShadow.color.alpha` 直接决定强度
+- 决策 2：follow 逻辑只跟随 RGB，不跟随 alpha
+  - followTextColor：阴影 RGB = 文字 RGB；阴影 alpha = 当前阴影色 alpha
+  - followCardBackgroundColor：阴影 RGB = 背景 RGB；阴影 alpha = 当前阴影色 alpha
+- 决策 3：兼容旧数据时仅在 fromJson 做融合，不保留“双写双读”
+
+## 原子任务清单
+
+### D0 - 盘点与影响面确认（只读排查）
+- [ ] D0.1 搜索全仓：列出所有 `shadowOpacity` 的定义与读写点（模型/序列化/UI/渲染）
+- [ ] D0.2 搜索全仓：列出所有 `BoxShadowStyle.opacity` 的定义与读写点（模型/序列化/UI/渲染）
+- [ ] D0.3 确认所有阴影最终落到 `Shadow.color`/`BoxShadow.color` 的路径中是否存在 `withAlpha/withOpacity` 覆盖行为
+- [ ] D0.4 记录需要迁移的 JSON 字段名清单（旧字段→新语义）与默认值策略
+
+### D1 - 文本阴影模型收敛（TextShadowDataModel）
+- [ ] D1.1 移除 `TextShadowDataModel.shadowOpacity`（或标记废弃并停止使用），将强度完全交给 `lightShadowColor/darkShadowColor.alpha`
+- [ ] D1.2 修改 `TextStyleConfig.toTextStyle...`：不再对阴影做 `withAlpha(255*shadowOpacity)` 覆盖，直接使用解析出的阴影颜色
+- [ ] D1.3 修改 `TextShadowDataModel.resolveColor(...)` 的 followTextColor 语义：只跟随 RGB，alpha 取阴影自身 alpha
+- [ ] D1.4 fromJson 兼容迁移：若读到旧 `shadowOpacity`，将其融合进 `shadowColor`（alpha = round(opacity*255)），并忽略旧字段
+- [ ] D1.5 toJson 输出收敛：不再输出旧 `shadowOpacity` 字段（确保一次保存后完成迁移）
+
+### D2 - 容器阴影模型收敛（BoxShadowStyle）
+- [ ] D2.1 移除 `BoxShadowStyle.opacity`（或标记废弃并停止使用），将强度完全交给 `lightThemeColor/darkThemeColor.alpha`
+- [ ] D2.2 修改阴影构建：不再 `baseColor.withOpacity(opacity)` 覆盖；follow 背景时只替换 RGB，alpha 取阴影自身 alpha
+- [ ] D2.3 fromJson 兼容迁移：若读到旧 `opacity`，融合进 `lightThemeColor/darkThemeColor` 的 alpha
+- [ ] D2.4 toJson 输出收敛：不再输出旧 `opacity` 字段（确保一次保存后完成迁移）
+
+### D3 - 编辑器 UI 对齐（移除独立透明度滑块）
+- [ ] D3.1 文本阴影编辑 UI：移除“阴影透明度”滑块与相关状态写回，改为修改阴影色 alpha
+- [ ] D3.2 容器阴影编辑 UI（box shadow editor）：移除“阴影透明度”滑块与 `opacity` 写回，改为修改阴影色 alpha
+- [ ] D3.3 follow 模式下的交互约束：
+  - 允许用户调 alpha（强度）
+  - RGB 由 follow 目标决定，但不影响 alpha
+
+### D4 - 颜色选择器增强（仅通过 Color.alpha 表达）
+- [ ] D4.1 为 `showAppPalettePickerDialog` 增加 alpha 调节区（例如 Slider 0..255 或 0..100%）并实时作用于 `selected.withAlpha(...)`
+- [ ] D4.2 选中信息条展示 alpha：HEX 若非不透明显示 `#AARRGGBB`，并展示 `A: xx%` 或 `Alpha: 0..255`
+- [ ] D4.3 详情弹窗补充 alpha 信息与复制：复制 HEX 时按当前 alpha 输出
+- [ ] D4.4 保持返回值语义不变：仍返回 `Future<Color?>`，透明度只体现在返回的 `Color` 中
+
+### D5 - 回归验证与验收
+- [ ] D5.1 回归：旧数据加载后阴影视觉一致（或符合“alpha=旧opacity”融合规则），并且保存一次后完成迁移
+- [ ] D5.2 回归：followTextColor / followCardBackgroundColor 行为符合“只跟随 RGB，不跟随 alpha”
+- [ ] D5.3 回归：所有阴影不再出现“颜色 alpha 与 opacity 二次叠加/覆盖”导致的意外变淡/变深
+- [ ] D5.4 冒烟测试：逐字改色、阴影改色、卡片阴影改色都可通过同一颜色选择器调整 alpha
+
+## 影响文件（预期）
+- 模型与渲染：
+  - `common/lib/models/text_style_config.dart`
+  - `common/lib/widgets/editable_fourzhu_card/models/base_style_config.dart`
+- 编辑器：
+  - `common/lib/widgets/style_editor/colorful_text_style_editor_widget_v2.dart`
+  - `common/lib/widgets/style_editor/widgets/box_shadow_style_editor.dart`
+- 颜色选择器：
+  - `common/lib/widgets/style_editor/widgets/app_palette_picker_dialog.dart`

@@ -222,12 +222,16 @@ class EditableFourZhuThemeController {
     if (c == null) return null;
     if (c.shadow.withShadow != true) return null;
 
+    final resolvedBrightness = brightness ?? Brightness.light;
     final Color? baseColor = c.shadow.followCardBackgroundColor
-        ? c.resolveBackgroundColor(brightness ?? Brightness.light)
-        : c.shadow.resolveColor(brightness ?? Brightness.light);
+        ? c.resolveBackgroundColor(resolvedBrightness)
+        : c.shadow.resolveColor(resolvedBrightness);
     if (baseColor == null) return null;
 
-    final color = baseColor.withOpacity(c.shadow.opacity.clamp(0.0, 1.0));
+    final configuredShadowColor = c.shadow.resolveColor(resolvedBrightness);
+    final color = c.shadow.followCardBackgroundColor
+        ? baseColor.withAlpha(configuredShadowColor.alpha)
+        : configuredShadowColor;
     final dx = c.shadow.offset.dx;
     final dy = c.shadow.offset.dy;
     final blur = c.shadow.blurRadius;

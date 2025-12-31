@@ -542,21 +542,7 @@ class _EditableFourZhuStyleEditorPanelState
                   // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
                 },
               ),
-              // 阴影模糊半径滑块
-              _buildSlider(
-                label: '阴影透明度',
-                value: (config.shadow?.opacity ?? 0.4) * 100,
-                min: 0,
-                max: 100,
-                onChanged: (v) {
-                  final newShadow =
-                      (config.shadow ?? BoxShadowStyle.defaultShadow).copyWith(
-                    opacity: v / 100,
-                  );
-                  final newConfig = config.copyWith(shadow: newShadow);
-                  _cardStyleConfig.value = newConfig;
-                },
-              ),
+
             ],
           ),
         ),

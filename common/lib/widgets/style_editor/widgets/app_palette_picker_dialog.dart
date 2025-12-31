@@ -280,6 +280,7 @@ Future<Color?> showAppPalettePickerDialog(
                     .toList(growable: false);
 
             final info = currentInfo();
+            final opacity = selected.alpha / 255.0;
 
             Widget searchBar() {
               return TextField(
@@ -431,6 +432,36 @@ Future<Color?> showAppPalettePickerDialog(
                     ),
                     const SizedBox(height: 10),
                     selectedBar(),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const SizedBox(width: 56, child: Text('透明度')),
+                        Expanded(
+                          child: Slider(
+                            value: opacity,
+                            min: 0,
+                            max: 1,
+                            divisions: 100,
+                            label: '${(opacity * 100).round()}%',
+                            onChanged: (v) {
+                              setState(() {
+                                selected = selected.withAlpha(
+                                  (v * 255).round().clamp(0, 255),
+                                );
+                                selectedEntry = null;
+                              });
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: 48,
+                          child: Text(
+                            '${(opacity * 100).round()}%',
+                            textAlign: TextAlign.right,
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),

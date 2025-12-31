@@ -59,9 +59,7 @@ class TextStyleConfig {
       shadows: textShadowDataModel.shadowEnabled
           ? [
               Shadow(
-                color: shadowBase.withAlpha(
-                  (255 * textShadowDataModel.shadowOpacity).toInt(),
-                ),
+                color: shadowBase,
                 blurRadius: textShadowDataModel.shadowBlurRadius,
                 offset: Offset(
                   textShadowDataModel.shadowOffsetX,
@@ -101,9 +99,8 @@ class TextStyleConfig {
             shadowEnabled: true,
             followTextColor: true,
             shadowBlurRadius: 4,
-            lightShadowColor: Colors.black,
-            darkShadowColor: Colors.white,
-            shadowOpacity: 0.7,
+            lightShadowColor: Colors.black.withAlpha(178),
+            darkShadowColor: Colors.white.withAlpha(178),
             shadowOffsetX: 1,
             shadowOffsetY: 1,
           ),
@@ -140,9 +137,8 @@ class TextStyleConfig {
             shadowEnabled: true,
             followTextColor: true,
             shadowBlurRadius: 4,
-            lightShadowColor: Colors.black,
-            darkShadowColor: Colors.white,
-            shadowOpacity: 0.7,
+            lightShadowColor: Colors.black.withAlpha(178),
+            darkShadowColor: Colors.white.withAlpha(178),
             shadowOffsetX: 1,
             shadowOffsetY: 1,
           ),
@@ -313,9 +309,7 @@ class TextStyleConfig {
       shadows: textShadowDataModel.shadowEnabled
           ? [
               Shadow(
-                color: shadowBase.withAlpha(
-                  (255 * textShadowDataModel.shadowOpacity).toInt(),
-                ),
+                color: shadowBase,
                 blurRadius: textShadowDataModel.shadowBlurRadius,
                 offset: Offset(
                   textShadowDataModel.shadowOffsetX,
@@ -364,8 +358,10 @@ class TextStyleConfig {
         shadowEnabled: hasShadow,
         followTextColor: false,
         shadowBlurRadius: shadow?.blurRadius ?? 10,
-        lightShadowColor: shadow?.color ?? (style.color ?? Colors.black),
-        shadowOpacity: 0.65,
+        lightShadowColor:
+            (shadow?.color ?? (style.color ?? Colors.black)).withAlpha(165),
+        darkShadowColor:
+            (shadow?.color ?? (style.color ?? Colors.black)).withAlpha(165),
         shadowOffsetX: shadow?.offset.dx ?? 5.0,
         shadowOffsetY: shadow?.offset.dy ?? 5.0,
       ),
@@ -415,8 +411,8 @@ class TextStyleConfig {
             (shadowBlurRadius != null),
         followTextColor: false,
         shadowBlurRadius: shadowBlurRadius ?? 10,
-        lightShadowColor: shadowColor,
-        shadowOpacity: 0.65,
+        lightShadowColor: shadowColor.withAlpha(165),
+        darkShadowColor: shadowColor.withAlpha(165),
         shadowOffsetX: shadowOffsetX ?? 5.0,
         shadowOffsetY: shadowOffsetY ?? 5.0,
       ),
@@ -812,7 +808,6 @@ class TextShadowDataModel {
   double shadowBlurRadius = 10;
   Color lightShadowColor = Colors.black;
   Color darkShadowColor = Colors.white;
-  double shadowOpacity = 0.65;
   double shadowOffsetX = 5.0; // 默认 X 轴偏移
   double shadowOffsetY = 5.0; // 默认 Y 轴偏移
   TextShadowDataModel({
@@ -821,7 +816,6 @@ class TextShadowDataModel {
     this.shadowBlurRadius = 10,
     this.lightShadowColor = Colors.black,
     this.darkShadowColor = Colors.white,
-    this.shadowOpacity = 0.65,
     this.shadowOffsetX = 5.0,
     this.shadowOffsetY = 5.0,
   });
@@ -831,7 +825,6 @@ class TextShadowDataModel {
     double? shadowBlurRadius,
     Color? lightShadowColor,
     Color? darkShadowColor,
-    double? shadowOpacity,
     double? shadowOffsetX,
     double? shadowOffsetY,
   }) {
@@ -841,29 +834,43 @@ class TextShadowDataModel {
       shadowBlurRadius: shadowBlurRadius ?? this.shadowBlurRadius,
       lightShadowColor: lightShadowColor ?? this.lightShadowColor,
       darkShadowColor: darkShadowColor ?? this.darkShadowColor,
-      shadowOpacity: shadowOpacity ?? this.shadowOpacity,
       shadowOffsetX: shadowOffsetX ?? this.shadowOffsetX,
       shadowOffsetY: shadowOffsetY ?? this.shadowOffsetY,
     );
   }
 
   Color resolveColor(Brightness brightness, Color? textColor) {
-    if (followTextColor) {
-      return textColor ??
-          (brightness == Brightness.light ? lightShadowColor : darkShadowColor);
+    final base =
+        brightness == Brightness.light ? lightShadowColor : darkShadowColor;
+    if (followTextColor && textColor != null) {
+      return textColor.withAlpha(base.alpha);
     }
-    return brightness == Brightness.light ? lightShadowColor : darkShadowColor;
+    return base;
   }
 
   factory TextShadowDataModel.fromJson(Map<String, dynamic> json) {
     const c = ColorAhexConverter();
+    final rawLight = (json['lightShadowColor'] as String?) ??
+        (json['shadowColor'] as String?) ??
+        '#FF000000';
+    final rawDark = (json['darkShadowColor'] as String?) ?? rawLight;
+
+    Color light = c.fromJson(rawLight);
+    Color dark = c.fromJson(rawDark);
+
+    final legacyOpacity = (json['shadowOpacity'] as num?)?.toDouble();
+    if (legacyOpacity != null) {
+      final a = (255 * legacyOpacity).toInt().clamp(0, 255);
+      light = light.withAlpha(a);
+      dark = dark.withAlpha(a);
+    }
+
     return TextShadowDataModel(
       shadowEnabled: json['shadowEnabled'] as bool? ?? false,
       followTextColor: json['followTextColor'] as bool? ?? false,
       shadowBlurRadius: (json['shadowBlurRadius'] as num?)?.toDouble() ?? 10,
-      lightShadowColor:
-          c.fromJson((json['shadowColor'] as String?) ?? '#FF000000'),
-      shadowOpacity: (json['shadowOpacity'] as num?)?.toDouble() ?? 0.65,
+      lightShadowColor: light,
+      darkShadowColor: dark,
       shadowOffsetX: (json['shadowOffsetX'] as num?)?.toDouble() ?? 5.0,
       shadowOffsetY: (json['shadowOffsetY'] as num?)?.toDouble() ?? 5.0,
     );
@@ -875,7 +882,8 @@ class TextShadowDataModel {
       'followTextColor': followTextColor,
       'shadowBlurRadius': shadowBlurRadius,
       'shadowColor': c.toJson(lightShadowColor),
-      'shadowOpacity': shadowOpacity,
+      'lightShadowColor': c.toJson(lightShadowColor),
+      'darkShadowColor': c.toJson(darkShadowColor),
       'shadowOffsetX': shadowOffsetX,
       'shadowOffsetY': shadowOffsetY,
     };

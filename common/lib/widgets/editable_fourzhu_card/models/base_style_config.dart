@@ -2,7 +2,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../../../enums/layout_template_enums.dart';
-import '../../../themes/editable_four_zhu_card_theme.dart';
 
 part 'base_style_config.g.dart';
 
@@ -110,8 +109,6 @@ class BoxShadowStyle extends Equatable {
   final Offset offset;
   final double blurRadius;
   final double spreadRadius;
-  // 阴影透明度（0.0~1.0）。与颜色的 Alpha 叠加时，以该值为准。
-  final double opacity;
 
   BoxShadowStyle({
     required this.withShadow,
@@ -121,7 +118,6 @@ class BoxShadowStyle extends Equatable {
     required this.offset,
     required this.blurRadius,
     required this.spreadRadius,
-    required this.opacity,
   });
 
   /// 根据亮度解析最终颜色
@@ -132,12 +128,11 @@ class BoxShadowStyle extends Equatable {
   static BoxShadowStyle defaultShadow = BoxShadowStyle(
     withShadow: true,
     followCardBackgroundColor: false,
-    lightThemeColor: Colors.black87.withAlpha(100),
-    darkThemeColor: Colors.white.withAlpha(100),
+    lightThemeColor: Colors.black87.withAlpha(102),
+    darkThemeColor: Colors.white.withAlpha(102),
     offset: const Offset(1, 1),
     blurRadius: 3,
     spreadRadius: 7,
-    opacity: 0.4,
   );
   copyWith({
     bool? followCardBackgroundColor,
@@ -146,7 +141,6 @@ class BoxShadowStyle extends Equatable {
     Offset? offset,
     double? blurRadius,
     double? spreadRadius,
-    double? opacity,
     bool? withShadow,
   }) {
     return BoxShadowStyle(
@@ -158,14 +152,24 @@ class BoxShadowStyle extends Equatable {
       offset: offset ?? this.offset,
       blurRadius: blurRadius ?? this.blurRadius,
       spreadRadius: spreadRadius ?? this.spreadRadius,
-      opacity: opacity ?? this.opacity,
     );
   }
 
   /// 将对象序列化为 JSON。仅写入非空字段，减少冗余。
   Map<String, dynamic> toJson() => _$BoxShadowStyleToJson(this);
-  factory BoxShadowStyle.fromJson(Map<String, dynamic> json) =>
-      _$BoxShadowStyleFromJson(json);
+
+  factory BoxShadowStyle.fromJson(Map<String, dynamic> json) {
+    final style = _$BoxShadowStyleFromJson(json);
+
+    final legacyOpacity = (json['opacity'] as num?)?.toDouble();
+    if (legacyOpacity == null) return style;
+
+    final a = (255 * legacyOpacity).round().clamp(0, 255);
+    return style.copyWith(
+      lightThemeColor: style.lightThemeColor.withAlpha(a),
+      darkThemeColor: style.darkThemeColor.withAlpha(a),
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -176,7 +180,6 @@ class BoxShadowStyle extends Equatable {
         offset,
         blurRadius,
         spreadRadius,
-        opacity,
       ];
 }
 
@@ -393,7 +396,11 @@ class BaseBoxStyleConfig extends Equatable {
         : shadow.resolveColor(brightness);
 
     if (baseColor == null) return null;
-    final color = baseColor.withOpacity(shadow.opacity.clamp(0.0, 1.0));
+
+    final configured = shadow.resolveColor(brightness);
+    final color = shadow.followCardBackgroundColor
+        ? baseColor.withAlpha(configured.alpha)
+        : configured;
 
     return [
       BoxShadow(
@@ -477,7 +484,6 @@ class BaseBoxStyleConfig extends Equatable {
       offset: shadow.offset,
       blurRadius: shadow.blurRadius,
       spreadRadius: shadow.spreadRadius,
-      opacity: shadow.color.opacity,
     );
   }
 
@@ -510,28 +516,47 @@ class BaseBoxStyleConfig extends Equatable {
       'offset': {'dx': shadow.offset.dx, 'dy': shadow.offset.dy},
       'blurRadius': shadow.blurRadius,
       'spreadRadius': shadow.spreadRadius,
-      'opacity': shadow.opacity,
     };
   }
 
   static BoxShadowStyle? _jsonToCardShadow(dynamic json) {
     if (json is! Map<String, dynamic>) return null;
+
+    final rawLight = _parseColor(json['lightThemeColor'] as String?) ??
+        Colors.black87.withAlpha(102);
+    final rawDark = _parseColor(json['darkThemeColor'] as String?) ??
+        Colors.white.withAlpha(102);
+
+    final legacyOpacity = (json['opacity'] as num?)?.toDouble();
+    if (legacyOpacity != null) {
+      final a = (255 * legacyOpacity).round().clamp(0, 255);
+      return BoxShadowStyle(
+        withShadow: true,
+        followCardBackgroundColor:
+            json['followCardBackgroundColor'] as bool? ?? false,
+        lightThemeColor: rawLight.withAlpha(a),
+        darkThemeColor: rawDark.withAlpha(a),
+        offset: Offset(
+          (json['offset']?['dx'] as num?)?.toDouble() ?? 0,
+          (json['offset']?['dy'] as num?)?.toDouble() ?? 0,
+        ),
+        blurRadius: (json['blurRadius'] as num?)?.toDouble() ?? 0,
+        spreadRadius: (json['spreadRadius'] as num?)?.toDouble() ?? 0,
+      );
+    }
+
     return BoxShadowStyle(
       withShadow: true,
       followCardBackgroundColor:
           json['followCardBackgroundColor'] as bool? ?? false,
-      lightThemeColor: _parseColor(json['lightThemeColor'] as String?) ??
-          Colors.black87.withAlpha(100),
-      darkThemeColor: _parseColor(json['darkThemeColor'] as String?) ??
-          Colors.white.withAlpha(100),
+      lightThemeColor: rawLight,
+      darkThemeColor: rawDark,
       offset: Offset(
         (json['offset']?['dx'] as num?)?.toDouble() ?? 0,
         (json['offset']?['dy'] as num?)?.toDouble() ?? 0,
       ),
       blurRadius: (json['blurRadius'] as num?)?.toDouble() ?? 0,
       spreadRadius: (json['spreadRadius'] as num?)?.toDouble() ?? 0,
-      opacity: (json['opacity'] as num?)?.toDouble() ??
-          (_parseColor(json['lightThemeColor'] as String?)?.opacity ?? 0.4),
     );
   }
 

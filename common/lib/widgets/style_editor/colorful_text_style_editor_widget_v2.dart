@@ -108,6 +108,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
   Color lightBackground = Colors.white;
   bool _bwStrengthLinked = true;
 
+  Color? _pureBatchColorLight;
+  Color? _pureBatchColorDark;
+
   @override
   void dispose() {
     charPreviewNotifier.dispose();
@@ -569,50 +572,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
             ],
           ),
           const SizedBox(height: 16),
-
-          // 不透明度
-          Row(
-            children: [
-              const Text(
-                '透明度',
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-              ),
-              Expanded(
-                child: SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    activeTrackColor: Colors.grey.shade300,
-                    thumbColor: Colors.blue.shade600,
-                    inactiveTrackColor: Colors.grey.shade300,
-                  ),
-                  child: Slider(
-                    value: shadowDataModel.shadowOpacity,
-                    min: 0,
-                    max: 1,
-                    divisions: 100,
-                    onChanged: (value) {
-                      shadowDataModelNotifier.value =
-                          shadowDataModel.copyWith(shadowOpacity: value);
-                    },
-                  ),
-                ),
-              ),
-              Container(
-                width: 32,
-                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: Colors.grey.shade300),
-                ),
-                child: Text(
-                  '${(shadowDataModel.shadowOpacity * 100).toInt()}%',
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 12, fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ),
         ],
       ],
     );
@@ -644,9 +603,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: shadowDataModel.shadowOffsetX
-                      .clamp(-5.0, 5.0)
-                      .toDouble(),
+                  value:
+                      shadowDataModel.shadowOffsetX.clamp(-5.0, 5.0).toDouble(),
                   min: -5,
                   max: 5,
                   divisions: 10,
@@ -681,14 +639,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     child: ValueListenableBuilder(
                         valueListenable: _previewCharIndexNotifier,
                         builder: (ctx, index, _) {
-                          Color shadowColor = shadowDataModel.lightShadowColor;
+                          final baseShadowColor =
+                              previewInfo.item1 == Brightness.light
+                                  ? shadowDataModel.lightShadowColor
+                                  : shadowDataModel.darkShadowColor;
                           final hasValues =
                               (widget.values?.isNotEmpty ?? false);
                           final vals = widget.values ?? const <String>[];
                           final int safeIndex = vals.isNotEmpty
-                              ? (index as int)
-                                  .clamp(0, vals.length - 1)
-                                  .toInt()
+                              ? (index as int).clamp(0, vals.length - 1).toInt()
                               : 0;
                           String char = hasValues ? vals[safeIndex] : '甲';
                           final Color textColor = colorMapperDataModel.getBy(
@@ -696,11 +655,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
                             mode: previewInfo.item2,
                             content: char,
                           );
-                          if (shadowDataModel.followTextColor) {
-                            shadowColor = textColor;
-                          }
-                          shadowColor = shadowColor.withAlpha(
-                              (shadowDataModel.shadowOpacity * 255).toInt());
+                          final shadowColor = shadowDataModel.followTextColor
+                              ? textColor.withAlpha(baseShadowColor.alpha)
+                              : baseShadowColor;
                           return Stack(
                             children: [
                               // 中间：预览文字
@@ -986,7 +943,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ],
         ),
         const SizedBox(height: 20),
-        if (mode == ColorPreviewMode.blackwhite) _buildBlackwhiteStrengthEditor(),
+        if (mode == ColorPreviewMode.blackwhite)
+          _buildBlackwhiteStrengthEditor(),
         if (mode != ColorPreviewMode.blackwhite && widget.values != null)
           _buildGanZhiColorPicker(currentTheme),
       ],
@@ -1366,6 +1324,35 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 final bgColor = tuple2.item1 == Brightness.light
                     ? lightBackground
                     : darkBackground;
+
+                final isPure = tuple2.item2 == ColorPreviewMode.pure;
+                final pureBatchColor = !isPure
+                    ? null
+                    : (tuple2.item1 == Brightness.light
+                        ? (_pureBatchColorLight ??
+                            mapper.getBy(
+                              theme: tuple2.item1,
+                              mode: ColorPreviewMode.pure,
+                              content: null,
+                            ))
+                        : (_pureBatchColorDark ??
+                            mapper.getBy(
+                              theme: tuple2.item1,
+                              mode: ColorPreviewMode.pure,
+                              content: null,
+                            )));
+                final hasMismatch = !isPure
+                    ? false
+                    : list.any(
+                        (char) =>
+                            mapper.getBy(
+                              theme: tuple2.item1,
+                              mode: ColorPreviewMode.pure,
+                              content: char,
+                            ) !=
+                            pureBatchColor,
+                      );
+
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -1373,12 +1360,106 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: borderColor, width: 2),
                   ),
-                  child: Wrap(
-                    spacing: 8,
-                    runSpacing: 12,
-                    alignment: WrapAlignment.start,
-                    children: list
-                        .map((char) {
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (isPure) ...[
+                        Row(
+                          children: [
+                            SizedBox(
+                              width: 72,
+                              child: Text(
+                                '选择颜色',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: textColor,
+                                ),
+                              ),
+                            ),
+                            GestureDetector(
+                              onTap: () async {
+                                final result = await showAppPalettePickerDialog(
+                                  context,
+                                  initialColor: pureBatchColor!,
+                                  title: '选择色块',
+                                );
+                                if (result == null) return;
+
+                                final oldColor = pureBatchColor;
+                                var next = mapper;
+                                for (final char in list) {
+                                  final current = mapper.getBy(
+                                    theme: tuple2.item1,
+                                    mode: ColorPreviewMode.pure,
+                                    content: char,
+                                  );
+                                  if (current == oldColor) {
+                                    next = next.update(
+                                      brightness: tuple2.item1,
+                                      mode: ColorPreviewMode.pure,
+                                      char: char,
+                                      color: result,
+                                    );
+                                  }
+                                }
+
+                                setState(() {
+                                  if (tuple2.item1 == Brightness.light) {
+                                    _pureBatchColorLight = result;
+                                  } else {
+                                    _pureBatchColorDark = result;
+                                  }
+                                });
+                                colorMapperDataModelNotifier.value = next;
+                              },
+                              child: Container(
+                                width: 18,
+                                height: 18,
+                                decoration: BoxDecoration(
+                                  color: pureBatchColor,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(
+                                    color: Colors.grey.shade400,
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      color: Colors.black12,
+                                      blurRadius: 2,
+                                      offset: Offset(0, 1),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            TextButton(
+                              onPressed: !hasMismatch
+                                  ? null
+                                  : () {
+                                      var next = mapper;
+                                      for (final char in list) {
+                                        next = next.update(
+                                          brightness: tuple2.item1,
+                                          mode: ColorPreviewMode.pure,
+                                          char: char,
+                                          color: pureBatchColor!,
+                                        );
+                                      }
+                                      colorMapperDataModelNotifier.value = next;
+                                    },
+                              child: const Text('全部'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                      ],
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 12,
+                        alignment: WrapAlignment.start,
+                        children: list.map((char) {
                           final currentColor = mapper.getBy(
                             theme: tuple2.item1,
                             mode: tuple2.item2,
@@ -1429,8 +1510,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
                               ),
                             ],
                           );
-                        })
-                        .toList(),
+                        }).toList(),
+                      ),
+                    ],
                   ),
                 );
               });
@@ -1448,6 +1530,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
     if (result == null) return;
 
     colorMapperDataModelNotifier.value = colorMapperDataModelNotifier.value
-        .update(brightness: theme, mode: previewMode, char: char, color: result);
+        .update(
+            brightness: theme, mode: previewMode, char: char, color: result);
   }
 }
