@@ -174,20 +174,56 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      '启用色彩模式',
+                                      '颜色预览模式',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium,
                                     ),
                                   ),
-                                  // 替换第三方组件为本地 Switch，避免未定义引用导致编译失败
-                                  Switch(
-                                    value: _colorPreviewModeNotifier.value ==
-                                        ColorPreviewMode.colorful,
-                                    onChanged: (dark) => setState(() =>
-                                        _colorPreviewModeNotifier.value = dark
-                                            ? ColorPreviewMode.colorful
-                                            : ColorPreviewMode.pure),
+                                  ToggleButtons(
+                                    isSelected: [
+                                      _colorPreviewModeNotifier.value ==
+                                          ColorPreviewMode.pure,
+                                      _colorPreviewModeNotifier.value ==
+                                          ColorPreviewMode.colorful,
+                                      _colorPreviewModeNotifier.value ==
+                                          ColorPreviewMode.blackwhite,
+                                    ],
+                                    onPressed: (index) {
+                                      ColorPreviewMode next =
+                                          _colorPreviewModeNotifier.value;
+                                      if (index == 0) {
+                                        next = ColorPreviewMode.pure;
+                                      } else if (index == 1) {
+                                        next = ColorPreviewMode.colorful;
+                                      } else if (index == 2) {
+                                        next = ColorPreviewMode.blackwhite;
+                                      }
+                                      setState(() =>
+                                          _colorPreviewModeNotifier.value =
+                                              next);
+                                    },
+                                    constraints: const BoxConstraints(
+                                      minHeight: 32,
+                                      minWidth: 52,
+                                    ),
+                                    children: const [
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Text('纯色'),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Text('色彩'),
+                                      ),
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 10),
+                                        child: Text('黑白'),
+                                      ),
+                                    ],
                                   ),
                                 ],
                               ),

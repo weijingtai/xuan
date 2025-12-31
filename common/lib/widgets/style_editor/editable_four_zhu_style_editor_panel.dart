@@ -1,8 +1,9 @@
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as widgets;
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:provider/provider.dart';
+
+import 'widgets/app_palette_picker_dialog.dart';
 
 import '../../enums/layout_template_enums.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
@@ -575,17 +576,12 @@ class _EditableFourZhuStyleEditorPanelState
         const widgets.SizedBox(width: 8),
         InkWell(
           onTap: () async {
-            final picked = await showColorPickerDialog(
+            final picked = await showAppPalettePickerDialog(
               context,
-              color ?? Theme.of(context).colorScheme.surface,
-              title: Text('选择$label'),
-              pickersEnabled: const {
-                ColorPickerType.wheel: true,
-                ColorPickerType.accent: false,
-                ColorPickerType.primary: false,
-                ColorPickerType.custom: false,
-              },
+              initialColor: color ?? Theme.of(context).colorScheme.surface,
+              title: '选择$label',
             );
+            if (picked == null) return;
             onColorChanged(picked);
           },
           child: Container(
@@ -602,17 +598,12 @@ class _EditableFourZhuStyleEditorPanelState
         ),
         TextButton(
           onPressed: () async {
-            final picked = await showColorPickerDialog(
+            final picked = await showAppPalettePickerDialog(
               context,
-              color ?? Theme.of(context).colorScheme.surface,
-              title: Text('选择$label'),
-              pickersEnabled: const {
-                ColorPickerType.wheel: true,
-                ColorPickerType.accent: false,
-                ColorPickerType.primary: false,
-                ColorPickerType.custom: false,
-              },
+              initialColor: color ?? Theme.of(context).colorScheme.surface,
+              title: '选择$label',
             );
+            if (picked == null) return;
             onColorChanged(picked);
           },
           child: const Text('选择颜色'),
@@ -633,17 +624,12 @@ class _EditableFourZhuStyleEditorPanelState
         const widgets.SizedBox(width: 8),
         InkWell(
             onTap: () async {
-              final picked = await showColorPickerDialog(
+              final picked = await showAppPalettePickerDialog(
                 context,
-                color ?? Theme.of(context).colorScheme.surface,
-                title: Text('选择$label'),
-                pickersEnabled: const {
-                  ColorPickerType.wheel: true,
-                  ColorPickerType.accent: false,
-                  ColorPickerType.primary: false,
-                  ColorPickerType.custom: false,
-                },
+                initialColor: color ?? Theme.of(context).colorScheme.surface,
+                title: '选择$label',
               );
+              if (picked == null) return;
               onColorChanged(picked);
             },
             child: Container(
@@ -658,17 +644,12 @@ class _EditableFourZhuStyleEditorPanelState
                 ))),
         TextButton(
           onPressed: () async {
-            final picked = await showColorPickerDialog(
+            final picked = await showAppPalettePickerDialog(
               context,
-              color ?? Theme.of(context).colorScheme.surface,
-              title: Text('选择$label'),
-              pickersEnabled: const {
-                ColorPickerType.wheel: true,
-                ColorPickerType.accent: false,
-                ColorPickerType.primary: false,
-                ColorPickerType.custom: false,
-              },
+              initialColor: color ?? Theme.of(context).colorScheme.surface,
+              title: '选择$label',
             );
+            if (picked == null) return;
             onColorChanged(picked);
           },
           child: const Text('选择颜色'),

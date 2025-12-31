@@ -99,7 +99,8 @@ flutter:
     - ../assets/dataset/
     - ../assets/dataset/geo/
     - ../assets/sql/
-    - ../assets/colors/
+    - assets/colors/zhongguose.pb
+    - assets/colors/forbidden_city.pb
 
   # To add Flutter specific assets to your application, add an assets section,
   # like this:

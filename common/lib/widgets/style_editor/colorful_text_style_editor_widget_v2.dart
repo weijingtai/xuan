@@ -1,9 +1,9 @@
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:tuple/tuple.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/text_style_config.dart';
 import '../../const_resources_mapper.dart';
+import 'widgets/app_palette_picker_dialog.dart';
 
 /// ColorfulTextStyleEditorV2Enhanced
 ///
@@ -82,6 +82,8 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
       colorfulDarkMapper:
           ensureColorful(base.colorfulDarkMapper, pureDark, Colors.white70),
       defaultColor: base.defaultColor,
+      blackwhiteLightStrength: base.blackwhiteLightStrength,
+      blackwhiteDarkStrength: base.blackwhiteDarkStrength,
     );
   }
 
@@ -104,6 +106,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
       ValueNotifier(Tuple2(Brightness.light, ColorPreviewMode.colorful));
   Color darkBackground = Colors.blueGrey.shade800;
   Color lightBackground = Colors.white;
+  bool _bwStrengthLinked = true;
 
   @override
   void dispose() {
@@ -641,7 +644,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: shadowDataModel.shadowOffsetX.clamp(-5.0, 5.0),
+                  value: shadowDataModel.shadowOffsetX
+                      .clamp(-5.0, 5.0)
+                      .toDouble(),
                   min: -5,
                   max: 5,
                   divisions: 10,
@@ -680,14 +685,17 @@ class _ColorfulTextStyleEditorV2EnhancedState
                           final hasValues =
                               (widget.values?.isNotEmpty ?? false);
                           final vals = widget.values ?? const <String>[];
-                          final safeIndex = vals.isNotEmpty
-                              ? (index as int).clamp(0, vals.length - 1)
+                          final int safeIndex = vals.isNotEmpty
+                              ? (index as int)
+                                  .clamp(0, vals.length - 1)
+                                  .toInt()
                               : 0;
                           String char = hasValues ? vals[safeIndex] : '甲';
-                          Color textColor = colorMapperDataModel.getMapperBy(
-                                  theme: previewInfo.item1,
-                                  mode: previewInfo.item2)[char] ??
-                              Colors.black87;
+                          final Color textColor = colorMapperDataModel.getBy(
+                            theme: previewInfo.item1,
+                            mode: previewInfo.item2,
+                            content: char,
+                          );
                           if (shadowDataModel.followTextColor) {
                             shadowColor = textColor;
                           }
@@ -810,7 +818,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     inactiveTrackColor: Colors.grey.shade300,
                   ),
                   child: Slider(
-                    value: shadowDataModel.shadowOffsetY.clamp(-5.0, 5.0),
+                    value: shadowDataModel.shadowOffsetY
+                        .clamp(-5.0, 5.0)
+                        .toDouble(),
                     min: -5,
                     max: 5,
                     divisions: 10,
@@ -849,7 +859,9 @@ class _ColorfulTextStyleEditorV2EnhancedState
                   inactiveTrackColor: Colors.grey.shade300,
                 ),
                 child: Slider(
-                  value: shadowDataModel.shadowBlurRadius.clamp(0.0, 15.0),
+                  value: shadowDataModel.shadowBlurRadius
+                      .clamp(0.0, 15.0)
+                      .toDouble(),
                   min: 0,
                   max: 15,
                   divisions: 15,
@@ -884,33 +896,23 @@ class _ColorfulTextStyleEditorV2EnhancedState
   }
 
   void _pickLightShadowColor(Color color) async {
-    final result = await showColorPickerDialog(
+    final result = await showAppPalettePickerDialog(
       context,
-      color,
-      title: const Text('选择颜色'),
-      pickersEnabled: {
-        ColorPickerType.wheel: true,
-        // ColorPickerType.accent: widget,
-        // ColorPickerType.primary: widget.dialogEnablePrimaryAccent,
-        ColorPickerType.custom: false,
-      },
+      initialColor: color,
+      title: '选择颜色',
     );
+    if (result == null) return;
     shadowDataModelNotifier.value = shadowDataModelNotifier.value
         .copyWith(lightShadowColor: result, followTextColor: false);
   }
 
   void _pickDarkShadowColor(Color color) async {
-    final result = await showColorPickerDialog(
+    final result = await showAppPalettePickerDialog(
       context,
-      color,
-      title: const Text('选择颜色'),
-      pickersEnabled: {
-        ColorPickerType.wheel: true,
-        // ColorPickerType.accent: widget,
-        // ColorPickerType.primary: widget.dialogEnablePrimaryAccent,
-        ColorPickerType.custom: false,
-      },
+      initialColor: color,
+      title: '选择颜色',
     );
+    if (result == null) return;
     shadowDataModelNotifier.value = shadowDataModelNotifier.value
         .copyWith(darkShadowColor: result, followTextColor: false);
   }
@@ -984,14 +986,22 @@ class _ColorfulTextStyleEditorV2EnhancedState
           ],
         ),
         const SizedBox(height: 20),
-        if (widget.values != null) _buildGanZhiColorPicker(currentTheme),
+        if (mode == ColorPreviewMode.blackwhite) _buildBlackwhiteStrengthEditor(),
+        if (mode != ColorPreviewMode.blackwhite && widget.values != null)
+          _buildGanZhiColorPicker(currentTheme),
       ],
     );
   }
 
   String _getCurrentModeLabel(Brightness currentTheme, ColorPreviewMode mode) {
-    // final mode = currentTheme == Brightness.light ? mode : mode;
-    return mode == ColorPreviewMode.pure ? '纯色' : '彩色';
+    switch (mode) {
+      case ColorPreviewMode.pure:
+        return '纯色';
+      case ColorPreviewMode.colorful:
+        return '彩色';
+      case ColorPreviewMode.blackwhite:
+        return '黑白';
+    }
   }
 
   Widget _buildThemeCard({
@@ -1082,6 +1092,22 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     Colors.white,
                   ),
             onTap: () => onModeChanged(ColorPreviewMode.colorful),
+          ),
+          const SizedBox(height: 10),
+          _buildModeOption(
+            label: '黑白',
+            isSelected: mode == ColorPreviewMode.blackwhite,
+            textColor: colorMapperDataModelNotifier.value.getBy(
+              theme: isLight ? Brightness.light : Brightness.dark,
+              mode: ColorPreviewMode.blackwhite,
+              content: null,
+            ),
+            circleColor: colorMapperDataModelNotifier.value.getBy(
+              theme: isLight ? Brightness.light : Brightness.dark,
+              mode: ColorPreviewMode.blackwhite,
+              content: null,
+            ),
+            onTap: () => onModeChanged(ColorPreviewMode.blackwhite),
           ),
         ],
       ),
@@ -1185,6 +1211,143 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
+  Widget _buildBlackwhiteStrengthEditor() {
+    return ValueListenableBuilder<ColorMapperDataModel>(
+      valueListenable: colorMapperDataModelNotifier,
+      builder: (ctx, mapper, _) {
+        final light = mapper.blackwhiteLightStrength.clamp(0.0, 1.0).toDouble();
+        final dark = mapper.blackwhiteDarkStrength.clamp(0.0, 1.0).toDouble();
+        final lightColor = mapper.getBy(
+          theme: Brightness.light,
+          mode: ColorPreviewMode.blackwhite,
+          content: null,
+        );
+        final darkColor = mapper.getBy(
+          theme: Brightness.dark,
+          mode: ColorPreviewMode.blackwhite,
+          content: null,
+        );
+
+        void write({double? nextLight, double? nextDark}) {
+          final nl = (nextLight ?? light).clamp(0.0, 1.0).toDouble();
+          final nd = (nextDark ?? dark).clamp(0.0, 1.0).toDouble();
+          colorMapperDataModelNotifier.value = ColorMapperDataModel(
+            pureLightMapper: mapper.pureLightMapper,
+            colorfulLightMapper: mapper.colorfulLightMapper,
+            pureDarkMapper: mapper.pureDarkMapper,
+            colorfulDarkMapper: mapper.colorfulDarkMapper,
+            defaultColor: mapper.defaultColor,
+            blackwhiteLightStrength: nl,
+            blackwhiteDarkStrength: nd,
+          );
+        }
+
+        Widget slider({
+          required String title,
+          required double value,
+          required Color preview,
+          required ValueChanged<double> onChanged,
+        }) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    width: 18,
+                    height: 18,
+                    decoration: BoxDecoration(
+                      color: preview,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(color: Colors.grey.shade400),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${(value * 100).round()}%',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+              Slider(
+                value: value,
+                min: 0.0,
+                max: 1.0,
+                divisions: 100,
+                onChanged: onChanged,
+              ),
+            ],
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey.shade50,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey.shade400, width: 2),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.tune, size: 18),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      '黑白深浅（0=灰，1=黑/白）',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  Switch(
+                    value: _bwStrengthLinked,
+                    onChanged: (v) => setState(() => _bwStrengthLinked = v),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              slider(
+                title: '浅色',
+                value: light,
+                preview: lightColor,
+                onChanged: (v) {
+                  final s = v.clamp(0.0, 1.0).toDouble();
+                  write(nextLight: s, nextDark: _bwStrengthLinked ? s : dark);
+                },
+              ),
+              const SizedBox(height: 12),
+              slider(
+                title: '深色',
+                value: dark,
+                preview: darkColor,
+                onChanged: (v) {
+                  final s = v.clamp(0.0, 1.0).toDouble();
+                  write(nextLight: _bwStrengthLinked ? s : light, nextDark: s);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   Widget _buildGanZhiColorPicker(Brightness currentTheme) {
     final List<String> list = widget.values!;
 
@@ -1203,8 +1366,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 final bgColor = tuple2.item1 == Brightness.light
                     ? lightBackground
                     : darkBackground;
-                Map<String, Color> textColorMapper =
-                    mapper.getMapperBy(theme: tuple2.item1, mode: tuple2.item2);
                 return Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -1217,55 +1378,58 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     runSpacing: 12,
                     alignment: WrapAlignment.start,
                     children: list
-                        .map((char) => Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // 天干字符
-                                SizedBox(
+                        .map((char) {
+                          final currentColor = mapper.getBy(
+                            theme: tuple2.item1,
+                            mode: tuple2.item2,
+                            content: char,
+                          );
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 18,
+                                child: Text(
+                                  char,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              GestureDetector(
+                                onTap: () => _pickGanColor(
+                                  char,
+                                  currentColor,
+                                  tuple2.item1,
+                                  tuple2.item2,
+                                ),
+                                child: Container(
                                   width: 18,
-                                  child: Text(
-                                    char,
-                                    textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: textColor,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    color: currentColor,
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                      color: Colors.grey.shade400,
+                                      width: 1.5,
                                     ),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                // 颜色块
-                                GestureDetector(
-                                  onTap: () => _pickGanColor(
-                                    char,
-                                    textColorMapper[char] ??
-                                        mapper.defaultColor,
-                                    tuple2.item1,
-                                    tuple2.item2,
-                                  ),
-                                  child: Container(
-                                    width: 18,
-                                    height: 18,
-                                    decoration: BoxDecoration(
-                                      color: textColorMapper[char] ??
-                                          mapper.defaultColor,
-                                      borderRadius: BorderRadius.circular(4),
-                                      border: Border.all(
-                                        color: Colors.grey.shade400,
-                                        width: 1.5,
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black12,
+                                        blurRadius: 2,
+                                        offset: Offset(0, 1),
                                       ),
-                                      boxShadow: const [
-                                        BoxShadow(
-                                          color: Colors.black12,
-                                          blurRadius: 2,
-                                          offset: Offset(0, 1),
-                                        ),
-                                      ],
-                                    ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ))
+                              ),
+                            ],
+                          );
+                        })
                         .toList(),
                   ),
                 );
@@ -1275,34 +1439,15 @@ class _ColorfulTextStyleEditorV2EnhancedState
 
   void _pickGanColor(String char, Color color, Brightness theme,
       ColorPreviewMode previewMode) async {
-    // 简化版颜色选择器
-    // final currentColor = (_currentTheme == Brightness.light
-    //     ? _perCharColorsLight
-    //     : _perCharColorsDark)[char];
-
-    final result = await showColorPickerDialog(
+    final result = await showAppPalettePickerDialog(
       context,
-      color,
-      title: const Text('选择颜色'),
-      pickersEnabled: {
-        ColorPickerType.wheel: true,
-        // ColorPickerType.accent: widget,
-        // ColorPickerType.primary: widget.dialogEnablePrimaryAccent,
-        ColorPickerType.custom: false,
-      },
+      initialColor: color,
+      title: '选择颜色',
     );
 
-    // 用户取消选择时不更新颜色
-    if (result == null) {
-      print('🔍 [颜色选择器] 用户取消了颜色选择');
-      return;
-    }
+    if (result == null) return;
 
-    print(
-        '🔍 [颜色选择器] 更新字符 "$char" 颜色: $result (theme: $theme, mode: $previewMode)');
     colorMapperDataModelNotifier.value = colorMapperDataModelNotifier.value
-        .update(
-            brightness: theme, mode: previewMode, char: char, color: result);
-    print('🔍 [颜色选择器] 颜色已更新到 ValueNotifier');
+        .update(brightness: theme, mode: previewMode, char: char, color: result);
   }
 }

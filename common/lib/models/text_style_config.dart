@@ -23,7 +23,9 @@ enum ColorPreviewMode {
   @JsonValue("pure")
   pure,
   @JsonValue("colorful")
-  colorful
+  colorful,
+  @JsonValue("blackwhite")
+  blackwhite,
 }
 
 @JsonSerializable()
@@ -296,7 +298,7 @@ class TextStyleConfig {
     final b = brightness ?? Brightness.light;
     final m = colorPreviewMode ?? ColorPreviewMode.pure;
 
-    final Color? textColor = (char != null)
+    final Color? textColor = (char != null || m == ColorPreviewMode.blackwhite)
         ? colorMapperDataModel.getBy(theme: b, mode: m, content: char)
         : null;
 
@@ -641,6 +643,8 @@ class ColorAhexConverter implements JsonConverter<Color, String> {
 
 class ColorMapperDataModel {
   Color defaultColor = Colors.blueGrey;
+  double blackwhiteLightStrength;
+  double blackwhiteDarkStrength;
   @JsonKey(
       fromJson: ColorAhexConverter.mapFromJson,
       toJson: ColorAhexConverter.mapToJson)
@@ -664,11 +668,41 @@ class ColorMapperDataModel {
     required this.pureDarkMapper,
     required this.colorfulDarkMapper,
     this.defaultColor = Colors.blueGrey,
+    this.blackwhiteLightStrength = 1.0,
+    this.blackwhiteDarkStrength = 1.0,
   });
+
+  Color _blackwhiteColor(Brightness theme) {
+    final s = (theme == Brightness.light
+            ? blackwhiteLightStrength
+            : blackwhiteDarkStrength)
+        .clamp(0.0, 1.0);
+    return Color.lerp(
+          Colors.grey,
+          theme == Brightness.light ? Colors.black87 : Colors.white70,
+          s,
+        ) ??
+        (theme == Brightness.light ? Colors.black87 : Colors.white70);
+  }
+
+  Color _modeDefaultColor({
+    required Brightness theme,
+    required ColorPreviewMode mode,
+  }) {
+    switch (mode) {
+      case ColorPreviewMode.blackwhite:
+        return _blackwhiteColor(theme);
+      case ColorPreviewMode.pure:
+      case ColorPreviewMode.colorful:
+        return theme == Brightness.light ? Colors.black87 : Colors.white70;
+    }
+  }
+
   Map<String, Color> getMapperBy({
     required Brightness theme,
     required ColorPreviewMode mode,
   }) {
+    if (mode == ColorPreviewMode.blackwhite) return const {};
     switch (theme) {
       case Brightness.light:
         return mode == ColorPreviewMode.colorful
@@ -686,10 +720,14 @@ class ColorMapperDataModel {
     required ColorPreviewMode mode,
     required String? content,
   }) {
-    if (content == null) {
-      return defaultColor;
+    if (mode == ColorPreviewMode.blackwhite) {
+      return _blackwhiteColor(theme);
     }
-    return getMapperBy(theme: theme, mode: mode)[content] ?? defaultColor;
+    final fallback = _modeDefaultColor(theme: theme, mode: mode);
+    if (content == null) {
+      return fallback;
+    }
+    return getMapperBy(theme: theme, mode: mode)[content] ?? fallback;
   }
 
   ColorMapperDataModel update({
@@ -698,13 +736,14 @@ class ColorMapperDataModel {
     required String char,
     required Color color,
   }) {
-    // 根据 theme 和 mode 定位对应的 mapper
+    if (mode == ColorPreviewMode.blackwhite) {
+      return this;
+    }
+
     final mapper = getMapperBy(theme: brightness, mode: mode);
-    // 创建新的 mapper 副本并更新指定 char 的颜色
     final updatedMapper = Map<String, Color>.from(mapper);
     updatedMapper[char] = color;
 
-    // 根据 brightness 和 mode 决定返回哪个字段的新值
     final pureLight =
         brightness == Brightness.light && mode == ColorPreviewMode.pure
             ? updatedMapper
@@ -727,6 +766,9 @@ class ColorMapperDataModel {
       colorfulLightMapper: colorfulLight,
       pureDarkMapper: pureDark,
       colorfulDarkMapper: colorfulDark,
+      defaultColor: defaultColor,
+      blackwhiteLightStrength: blackwhiteLightStrength,
+      blackwhiteDarkStrength: blackwhiteDarkStrength,
     );
   }
 
@@ -735,6 +777,9 @@ class ColorMapperDataModel {
     final colorfulLight = json['colorfulLightMapper'] as Map<String, dynamic>?;
     final pureDark = json['pureDarkMapper'] as Map<String, dynamic>?;
     final colorfulDark = json['colorfulDarkMapper'] as Map<String, dynamic>?;
+    final bwLight =
+        (json['blackwhiteLightStrength'] as num?)?.toDouble() ?? 1.0;
+    final bwDark = (json['blackwhiteDarkStrength'] as num?)?.toDouble() ?? 1.0;
     return ColorMapperDataModel(
       pureLightMapper:
           pureLight == null ? {} : ColorAhexConverter.mapFromJson(pureLight),
@@ -746,6 +791,8 @@ class ColorMapperDataModel {
       colorfulDarkMapper: colorfulDark == null
           ? {}
           : ColorAhexConverter.mapFromJson(colorfulDark),
+      blackwhiteLightStrength: bwLight,
+      blackwhiteDarkStrength: bwDark,
     );
   }
   Map<String, dynamic> toJson() => {
@@ -754,6 +801,8 @@ class ColorMapperDataModel {
             ColorAhexConverter.mapToJson(colorfulLightMapper),
         'pureDarkMapper': ColorAhexConverter.mapToJson(pureDarkMapper),
         'colorfulDarkMapper': ColorAhexConverter.mapToJson(colorfulDarkMapper),
+        'blackwhiteLightStrength': blackwhiteLightStrength,
+        'blackwhiteDarkStrength': blackwhiteDarkStrength,
       };
 }
 

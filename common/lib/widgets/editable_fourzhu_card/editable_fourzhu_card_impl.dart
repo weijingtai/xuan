@@ -160,7 +160,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         Icons.drag_indicator,
         size: 16,
         color: Theme.of(context).iconTheme.color ??
-            (Theme.of(context).brightness == Brightness.dark
+            (widget.brightnessNotifier.value == Brightness.dark
                 ? Colors.white70
                 : Colors.black87),
       );
@@ -933,6 +933,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     _metricsSnapshotNotifier = ValueNotifier(_computeMetricsSnapshot());
     widget.themeNotifier.addListener(_onThemeChanged);
+    widget.brightnessNotifier.addListener(_onBrightnessChanged);
   }
 
   /// 在父组件传入的属性发生变化时同步更新布局模型与尺寸
@@ -961,6 +962,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       _typographySectionNotifier.value =
           EditableCardThemeBuilder.buildTypographySection(newTheme);
       _scheduleRebuild();
+    }
+
+    if (oldWidget.brightnessNotifier != widget.brightnessNotifier) {
+      oldWidget.brightnessNotifier.removeListener(_onBrightnessChanged);
+      widget.brightnessNotifier.addListener(_onBrightnessChanged);
     }
 
     final bool rowsVisibilityChanged = oldWidget.showGrip != widget.showGrip;
@@ -1004,7 +1010,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   @override
   void dispose() {
-    // 清理监听器
     _dragWantsInsert.removeListener(_onDragWantsInsertUpdated);
     _dragWantsDelete.removeListener(_onDragWantsDeleteUpdated);
     _metricsSnapshotNotifier.dispose();
@@ -1020,6 +1025,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _cellSectionNotifier.dispose();
     _typographySectionNotifier.dispose();
     widget.themeNotifier.removeListener(_onThemeChanged);
+    widget.brightnessNotifier.removeListener(_onBrightnessChanged);
 
     super.dispose();
   }
@@ -1071,7 +1077,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final double extraRowHeight =
             hasRowGhost ? _externalRowHoverHeight : 0.0;
         final BoxDecoration? baseDeco = widget.themeNotifier.value.card
-            .toBoxDecoration(brightness: Theme.of(context).brightness);
+            .toBoxDecoration(brightness: widget.brightnessNotifier.value);
         BoxDecoration? effectiveDeco = baseDeco;
         if (baseDeco != null && baseDeco.borderRadius != null) {
           final br = baseDeco.borderRadius!.resolve(Directionality.of(context));
@@ -2159,7 +2165,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildSeparatorCell(double width, double height) {
     final separatorConfig =
         widget.themeNotifier.value.pillar.getBy(PillarType.separator);
-    final brightness = Theme.of(context).brightness;
+    final brightness = widget.brightnessNotifier.value;
     final bgColor = brightness == Brightness.light
         ? separatorConfig.lightBackgroundColor
         : separatorConfig.darkBackgroundColor;
@@ -3383,7 +3389,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           style: mainTextStyleConfig.toTextStyle(
             char: content,
             colorPreviewMode: widget.colorPreviewModeNotifier.value,
-            brightness: Theme.of(context).brightness,
+            brightness: widget.brightnessNotifier.value,
           ),
           strutStyle: StrutStyle(
               fontSize: mainTextStyleConfig.fontStyleDataModel.fontSize,
@@ -3394,7 +3400,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               style: titleTextStyleConfig.toTextStyle(
                 char: title,
                 colorPreviewMode: widget.colorPreviewModeNotifier.value,
-                brightness: Theme.of(context).brightness,
+                brightness: widget.brightnessNotifier.value,
               ),
               strutStyle: StrutStyle(
                   fontSize: titleTextStyleConfig.fontStyleDataModel.fontSize,
@@ -3561,7 +3567,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, pillarConfig, __) {
                 final pillarType = pillars[pillarIndex].pillarType;
                 final PillarStyleConfig config = pillarConfig.getBy(pillarType);
-                final brightness = Theme.of(context).brightness;
+                final brightness = widget.brightnessNotifier.value;
                 Color bkColor;
                 final bg = config.resolveBackgroundColor(brightness);
                 if (bg == null || bg == Colors.transparent) {
@@ -5165,6 +5171,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _scheduleRebuild();
   }
 
+  void _onBrightnessChanged() {
+    _scheduleRebuild();
+  }
+
   // Build full row feedback (row title + cells across all columns)
   /// 构建整行拖拽反馈视图（包含行标题与跨所有列的单元格）。
   ///
@@ -5415,14 +5425,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   TextStyle _resolveGanZhiTextStyle(
       {required RowType rowType, required String content}) {
     final ts = widget.themeNotifier.value.typography.getCellContentBy(rowType);
-    var tmp = ts.colorMapperDataModel.getMapperBy(
-        theme: Theme.of(context).brightness,
-        mode: widget.colorPreviewModeNotifier.value);
-    // print("${rowType.name} $content,tmp: $tmp");
-    final Color textColor = tmp[content]!;
+    final brightness = widget.brightnessNotifier.value;
+    final mode = widget.colorPreviewModeNotifier.value;
+
+    final Color textColor = ts.colorMapperDataModel.getBy(
+      theme: brightness,
+      mode: mode,
+      content: content,
+    );
+
     Color shadowColor = textColor;
     if (!ts.textShadowDataModel.followTextColor) {
-      shadowColor = Theme.of(context).brightness == Brightness.light
+      shadowColor = brightness == Brightness.light
           ? ts.textShadowDataModel.lightShadowColor
           : ts.textShadowDataModel.darkShadowColor;
     }

@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:typed_data';
+import 'package:common/datasource/loca_binary/color.pb.dart' as pb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
@@ -10,41 +12,142 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 class PaletteEntry {
   final String name;
   final Color color;
-  const PaletteEntry(this.name, this.color);
+  final String hex;
+  final String rgb;
 
-  /// 从 JSON 对象构造
-  /// 参数：json（包含 meta.name 与 schema.hex）
-  /// 返回：PaletteEntry；无法解析时抛出格式异常
+  const PaletteEntry({
+    required this.name,
+    required this.color,
+    required this.hex,
+    required this.rgb,
+  });
+
   static PaletteEntry fromJson(Map<String, dynamic> json) {
-    final name = (json['meta']?['name'] ?? '').toString();
-    final hex = (json['schema']?['hex'] ?? '').toString();
-    return PaletteEntry(name, _parseHexColor(hex));
+    final meta = json['meta'];
+    final schema = json['schema'];
+
+    final name = (meta is Map ? meta['name'] : '')?.toString() ?? '';
+    final hexRaw = (schema is Map ? schema['hex'] : '')?.toString() ?? '';
+    final rgbRaw = (schema is Map ? schema['rgb'] : '')?.toString() ?? '';
+
+    final parsed = _tryParseHexColor(hexRaw);
+    final color = parsed ?? Colors.black;
+
+    return PaletteEntry(
+      name: name,
+      color: color,
+      hex: _formatHex(color),
+      rgb: rgbRaw.isNotEmpty ? rgbRaw : _formatRgb(color),
+    );
   }
 
-  /// 解析十六进制颜色（#RRGGBB 或 #AARRGGBB）
-  /// 参数：hex（字符串）
-  /// 返回：Color；无法解析时抛出格式异常
-  static Color _parseHexColor(String hex) {
+  static Color? _tryParseHexColor(String hex) {
     var v = hex.trim().toUpperCase();
     if (v.startsWith('#')) v = v.substring(1);
     if (v.length == 6) v = 'FF$v';
-    final n = int.parse(v, radix: 16);
-    return Color(n);
+    if (v.length != 8) return null;
+    try {
+      final n = int.parse(v, radix: 16);
+      return Color(n);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static String _formatHex(Color c) {
+    final a = c.alpha;
+    final r = c.red;
+    final g = c.green;
+    final b = c.blue;
+    if (a == 0xFF) {
+      return '#${_hex2(r)}${_hex2(g)}${_hex2(b)}';
+    }
+    return '#${_hex2(a)}${_hex2(r)}${_hex2(g)}${_hex2(b)}';
+  }
+
+  static String _hex2(int v) =>
+      v.toRadixString(16).padLeft(2, '0').toUpperCase();
+
+  static String _formatRgb(Color c) {
+    return 'RGB(${c.red}, ${c.green}, ${c.blue})';
   }
 }
 
-/// 读取 JSON 颜色列表
-/// 描述：从 assets 路径加载并解析为 PaletteEntry 列表
-/// 参数：assetPath（资产路径）
-/// 返回：Future<List<PaletteEntry>>
-Future<List<PaletteEntry>> _loadPalette(String assetPath) async {
-  final txt = await rootBundle.loadString(assetPath);
-  final data = jsonDecode(txt);
-  if (data is! List) return const [];
-  return data
-      .whereType<Map<String, dynamic>>()
-      .map((e) => PaletteEntry.fromJson(e))
-      .toList(growable: false);
+final Map<String, Future<List<PaletteEntry>>> _paletteCache = {};
+Future<Set<String>>? _assetKeysFuture;
+
+Future<List<PaletteEntry>> _loadPaletteByAny(
+  String cacheKey,
+  List<String> assetPaths,
+) {
+  return _paletteCache.putIfAbsent(cacheKey, () async {
+    _assetKeysFuture ??= () async {
+      final manifestTxt = await rootBundle.loadString('AssetManifest.json');
+      final manifest = jsonDecode(manifestTxt);
+      if (manifest is Map<String, dynamic>) {
+        return manifest.keys.toSet();
+      }
+      if (manifest is Map) {
+        return manifest.keys.map((e) => e.toString()).toSet();
+      }
+      return <String>{};
+    }();
+
+    Set<String>? assetKeys;
+    try {
+      assetKeys = await _assetKeysFuture;
+    } catch (_) {
+      assetKeys = null;
+    }
+
+    String? resolved;
+    if (assetKeys != null) {
+      for (final p in assetPaths) {
+        if (assetKeys.contains(p)) {
+          resolved = p;
+          break;
+        }
+      }
+    }
+
+    ByteData? data;
+    if (resolved != null) {
+      try {
+        data = await rootBundle.load(resolved);
+      } catch (_) {
+        data = null;
+      }
+    } else {
+      for (final p in assetPaths) {
+        try {
+          data = await rootBundle.load(p);
+          break;
+        } catch (_) {
+          data = null;
+        }
+      }
+    }
+
+    if (data == null) return const [];
+
+    final Uint8List bytes =
+        data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    final dataset = pb.ColorDataset.fromBuffer(bytes);
+
+    final out = <PaletteEntry>[];
+    for (final e in dataset.entries) {
+      final c = Color(e.argb);
+      out.add(
+        PaletteEntry(
+          name: e.name,
+          color: c,
+          hex: PaletteEntry._formatHex(c),
+          rgb: PaletteEntry._formatRgb(c),
+        ),
+      );
+    }
+    return out.toList(growable: false);
+  });
 }
 
 /// 显示“应用配色选择对话框”
@@ -59,75 +162,290 @@ Future<Color?> showAppPalettePickerDialog(
   required Color initialColor,
   String? title,
 }) async {
-  final zhongguose = await _loadPalette('assets/colors/zhongguose_color.json');
-  final forbidden =
-      await _loadPalette('assets/colors/forbidden_city_color.json');
+  final zhongguose = await _loadPaletteByAny(
+    'zhongguose',
+    const [
+      'assets/colors/zhongguose.pb',
+      'packages/common/assets/colors/zhongguose.pb',
+      '../assets/colors/zhongguose.pb',
+    ],
+  );
+  final forbidden = await _loadPaletteByAny(
+    'forbidden_city',
+    const [
+      'assets/colors/forbidden_city.pb',
+      'packages/common/assets/colors/forbidden_city.pb',
+      '../assets/colors/forbidden_city.pb',
+    ],
+  );
 
+  final searchController = TextEditingController();
   Color selected = initialColor;
+  PaletteEntry? selectedEntry;
+
+  bool matches(PaletteEntry e, String q) {
+    final qq = q.trim().toLowerCase();
+    if (qq.isEmpty) return true;
+    return e.name.toLowerCase().contains(qq) ||
+        e.hex.toLowerCase().contains(qq) ||
+        e.rgb.toLowerCase().contains(qq);
+  }
+
+  PaletteEntry currentInfo() {
+    return selectedEntry ??
+        PaletteEntry(
+          name: '自定义',
+          color: selected,
+          hex: PaletteEntry._formatHex(selected),
+          rgb: PaletteEntry._formatRgb(selected),
+        );
+  }
+
+  void showDetails(BuildContext ctx, PaletteEntry e) {
+    showDialog<void>(
+      context: ctx,
+      builder: (dctx) {
+        return AlertDialog(
+          title: Text(e.name.isEmpty ? '颜色信息' : e.name),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 72,
+                decoration: BoxDecoration(
+                  color: e.color,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Theme.of(dctx).brightness == Brightness.dark
+                        ? Colors.white24
+                        : Colors.black12,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text('HEX: ${e.hex}'),
+              const SizedBox(height: 6),
+              Text('RGB: ${e.rgb}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: e.hex));
+                if (dctx.mounted) Navigator.of(dctx).pop();
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('已复制 HEX')),
+                );
+              },
+              child: const Text('复制 HEX'),
+            ),
+            TextButton(
+              onPressed: () async {
+                await Clipboard.setData(ClipboardData(text: e.rgb));
+                if (dctx.mounted) Navigator.of(dctx).pop();
+                ScaffoldMessenger.of(ctx).showSnackBar(
+                  const SnackBar(content: Text('已复制 RGB')),
+                );
+              },
+              child: const Text('复制 RGB'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dctx).pop(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   return showDialog<Color?>(
     context: context,
     builder: (ctx) {
       return DefaultTabController(
         length: 3,
-        child: AlertDialog(
-          title: Text(title ?? '选择颜色'),
-          content: SizedBox(
-            width: 520,
-            height: 420,
-            child: Column(
-              children: [
-                const TabBar(
-                  tabs: [
-                    Tab(text: '中华色'),
-                    Tab(text: '故宫色'),
-                    Tab(text: '色轮'),
+        child: StatefulBuilder(
+          builder: (ctx, setState) {
+            final query = searchController.text;
+            final z = query.trim().isEmpty
+                ? zhongguose
+                : zhongguose
+                    .where((e) => matches(e, query))
+                    .toList(growable: false);
+            final f = query.trim().isEmpty
+                ? forbidden
+                : forbidden
+                    .where((e) => matches(e, query))
+                    .toList(growable: false);
+
+            final info = currentInfo();
+
+            Widget searchBar() {
+              return TextField(
+                controller: searchController,
+                decoration: const InputDecoration(
+                  isDense: true,
+                  hintText: '搜索：名称 / HEX / RGB',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.search),
+                ),
+                onChanged: (_) => setState(() {}),
+              );
+            }
+
+            Widget selectedBar() {
+              return Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  color: Theme.of(ctx).colorScheme.surfaceContainerHighest,
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 18,
+                      height: 18,
+                      decoration: BoxDecoration(
+                        color: info.color,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(ctx).brightness == Brightness.dark
+                              ? Colors.white24
+                              : Colors.black12,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            info.name.isEmpty ? '未命名' : info.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(ctx).textTheme.labelLarge,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${info.hex} · ${info.rgb}',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: Theme.of(ctx).textTheme.labelSmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => showDetails(ctx, info),
+                      icon: const Icon(Icons.info_outline),
+                      tooltip: '详情',
+                    ),
                   ],
                 ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: TabBarView(
-                    children: [
-                      _PaletteGrid(
-                          entries: zhongguose,
-                          onTap: (c) {
-                            selected = c;
-                            Navigator.of(ctx).pop(c);
-                          }),
-                      _PaletteGrid(
-                          entries: forbidden,
-                          onTap: (c) {
-                            selected = c;
-                            Navigator.of(ctx).pop(c);
-                          }),
-                      ColorPicker(
-                        color: selected,
-                        pickersEnabled: const {
-                          ColorPickerType.wheel: true,
-                          ColorPickerType.primary: false,
-                          ColorPickerType.accent: false,
-                          ColorPickerType.custom: false,
-                        },
-                        onColorChanged: (c) {
-                          selected = c;
-                        },
+              );
+            }
+
+            return AlertDialog(
+              title: Text(title ?? '选择颜色'),
+              content: SizedBox(
+                width: 560,
+                height: 460,
+                child: Column(
+                  children: [
+                    const TabBar(
+                      tabs: [
+                        Tab(text: '中华色'),
+                        Tab(text: '故宫色'),
+                        Tab(text: '色轮'),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          Column(
+                            children: [
+                              searchBar(),
+                              const SizedBox(height: 10),
+                              Expanded(
+                                child: _PaletteGrid(
+                                  entries: z,
+                                  selectedColor: selected,
+                                  onSelect: (e) {
+                                    setState(() {
+                                      selected = e.color;
+                                      selectedEntry = e;
+                                    });
+                                  },
+                                  onDoubleTap: (e) {
+                                    Navigator.of(ctx).pop(e.color);
+                                  },
+                                  onShowDetails: (e) => showDetails(ctx, e),
+                                ),
+                              ),
+                            ],
+                          ),
+                          Column(
+                            children: [
+                              searchBar(),
+                              const SizedBox(height: 10),
+                              Expanded(
+                                child: _PaletteGrid(
+                                  entries: f,
+                                  selectedColor: selected,
+                                  onSelect: (e) {
+                                    setState(() {
+                                      selected = e.color;
+                                      selectedEntry = e;
+                                    });
+                                  },
+                                  onDoubleTap: (e) {
+                                    Navigator.of(ctx).pop(e.color);
+                                  },
+                                  onShowDetails: (e) => showDetails(ctx, e),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ColorPicker(
+                            color: selected,
+                            pickersEnabled: const {
+                              ColorPickerType.wheel: true,
+                              ColorPickerType.primary: false,
+                              ColorPickerType.accent: false,
+                              ColorPickerType.custom: false,
+                            },
+                            onColorChanged: (c) {
+                              setState(() {
+                                selected = c;
+                                selectedEntry = null;
+                              });
+                            },
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 10),
+                    selectedBar(),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(null),
+                  child: const Text('取消'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(selected),
+                  child: const Text('确定'),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(null),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(selected),
-              child: const Text('确定'),
-            ),
-          ],
+            );
+          },
         ),
       );
     },
@@ -142,8 +460,18 @@ Future<Color?> showAppPalettePickerDialog(
 /// 返回：Widget
 class _PaletteGrid extends StatelessWidget {
   final List<PaletteEntry> entries;
-  final ValueChanged<Color> onTap;
-  const _PaletteGrid({required this.entries, required this.onTap});
+  final Color selectedColor;
+  final ValueChanged<PaletteEntry> onSelect;
+  final ValueChanged<PaletteEntry>? onDoubleTap;
+  final ValueChanged<PaletteEntry>? onShowDetails;
+
+  const _PaletteGrid({
+    required this.entries,
+    required this.selectedColor,
+    required this.onSelect,
+    this.onDoubleTap,
+    this.onShowDetails,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -153,39 +481,126 @@ class _PaletteGrid extends StatelessWidget {
         crossAxisCount: 6,
         mainAxisSpacing: 8,
         crossAxisSpacing: 8,
-        childAspectRatio: 1.0,
+        childAspectRatio: 0.78,
       ),
       itemBuilder: (ctx, i) {
         final e = entries[i];
-        return InkWell(
-          onTap: () => onTap(e.color),
-          child: Container(
-            decoration: BoxDecoration(
-              color: e.color,
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white30
-                    : Colors.black26,
-              ),
-            ),
-            alignment: Alignment.bottomCenter,
+        final isSelected = e.color.value == selectedColor.value;
+        final fg =
+            ThemeData.estimateBrightnessForColor(e.color) == Brightness.dark
+                ? Colors.white
+                : Colors.black87;
+        final infoBg =
+            ThemeData.estimateBrightnessForColor(e.color) == Brightness.dark
+                ? Colors.black.withOpacity(0.20)
+                : Colors.white.withOpacity(0.72);
+
+        return GestureDetector(
+          onDoubleTap: onDoubleTap == null ? null : () => onDoubleTap!(e),
+          onLongPress: onShowDetails == null ? null : () => onShowDetails!(e),
+          child: InkWell(
+            onTap: () => onSelect(e),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 6),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.12),
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(8),
-                  bottomRight: Radius.circular(8),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : (Theme.of(context).brightness == Brightness.dark
+                          ? Colors.white30
+                          : Colors.black26),
+                  width: isSelected ? 2 : 1,
                 ),
               ),
-              child: Text(
-                e.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Colors.white,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(9),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: Container(color: e.color),
+                          ),
+                          if (isSelected)
+                            Positioned(
+                              right: 6,
+                              top: 6,
+                              child: Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.25),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.check,
+                                  size: 14,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          Positioned(
+                            left: 4,
+                            top: 2,
+                            child: IconButton(
+                              visualDensity: VisualDensity.compact,
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(
+                                minWidth: 28,
+                                minHeight: 28,
+                              ),
+                              onPressed: onShowDetails == null
+                                  ? null
+                                  : () => onShowDetails!(e),
+                              icon: Icon(
+                                Icons.info_outline,
+                                size: 16,
+                                color: Colors.white.withOpacity(0.92),
+                              ),
+                              tooltip: '详情',
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(8, 6, 8, 7),
+                      decoration: BoxDecoration(color: infoBg),
+                      child: DefaultTextStyle(
+                        style: TextStyle(color: fg),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              e.name,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              e.hex,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                            const SizedBox(height: 1),
+                            Text(
+                              e.rgb,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
