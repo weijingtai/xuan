@@ -75,6 +75,7 @@ class _EditableFourZhuStyleEditorPanelState
   /// - `void`：完成初始加载并触发首帧渲染。
   void initState() {
     super.initState();
+    warmupPaletteNameIndex();
     final vm = context.read<FourZhuCardDemoViewModel>();
     vm.addListener(() {
       _cardStyleConfig.value = vm.themeNotifier.value.card;
@@ -542,7 +543,6 @@ class _EditableFourZhuStyleEditorPanelState
                   // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
                 },
               ),
-
             ],
           ),
         ),
@@ -556,6 +556,7 @@ class _EditableFourZhuStyleEditorPanelState
     required Color? color,
     required ValueChanged<Color> onColorChanged,
   }) {
+    final displayColor = color ?? Theme.of(context).colorScheme.surface;
     return Row(
       children: [
         Text(label),
@@ -570,16 +571,39 @@ class _EditableFourZhuStyleEditorPanelState
             if (picked == null) return;
             onColorChanged(picked);
           },
-          child: Container(
-            width: 22,
-            height: 22,
-            decoration: BoxDecoration(
-              color: color ?? Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(
-                color: Theme.of(context).dividerColor.withAlpha(100),
-              ),
-            ),
+          child: ValueListenableBuilder<int>(
+            valueListenable: paletteNameIndexVersion,
+            builder: (context, _, __) {
+              final hex = displayColor.value
+                  .toRadixString(16)
+                  .padLeft(8, '0')
+                  .toUpperCase();
+              final a8 = (displayColor.a * 255.0).round().clamp(0, 255);
+              final r8 = (displayColor.r * 255.0).round().clamp(0, 255);
+              final g8 = (displayColor.g * 255.0).round().clamp(0, 255);
+              final b8 = (displayColor.b * 255.0).round().clamp(0, 255);
+              final aPct = (a8 / 255.0 * 100).round();
+              final body = '#$hex · RGBA($r8, $g8, $b8, $aPct%)';
+              final name = lookupPaletteName(displayColor);
+              final tooltip =
+                  (name == null || name.isEmpty) ? body : '$name\n$body';
+              return Tooltip(
+                message: tooltip,
+                child: Container(
+                  width: 22,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: displayColor,
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(
+                      color: Theme.of(context)
+                          .dividerColor
+                          .withValues(alpha: 100 / 255.0),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
         TextButton(
@@ -604,6 +628,7 @@ class _EditableFourZhuStyleEditorPanelState
     required Color? color,
     required ValueChanged<Color> onColorChanged,
   }) {
+    final displayColor = color ?? Theme.of(context).colorScheme.surface;
     return Row(
       children: [
         Text(label),
@@ -618,16 +643,40 @@ class _EditableFourZhuStyleEditorPanelState
               if (picked == null) return;
               onColorChanged(picked);
             },
-            child: Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  color: color ?? Theme.of(context).colorScheme.surface,
-                  borderRadius: BorderRadius.circular(4),
-                  border: Border.all(
-                    color: Theme.of(context).dividerColor.withAlpha(100),
+            child: ValueListenableBuilder<int>(
+              valueListenable: paletteNameIndexVersion,
+              builder: (context, _, __) {
+                final hex = displayColor.value
+                    .toRadixString(16)
+                    .padLeft(8, '0')
+                    .toUpperCase();
+                final a8 = (displayColor.a * 255.0).round().clamp(0, 255);
+                final r8 = (displayColor.r * 255.0).round().clamp(0, 255);
+                final g8 = (displayColor.g * 255.0).round().clamp(0, 255);
+                final b8 = (displayColor.b * 255.0).round().clamp(0, 255);
+                final aPct = (a8 / 255.0 * 100).round();
+                final body = '#$hex · RGBA($r8, $g8, $b8, $aPct%)';
+                final name = lookupPaletteName(displayColor);
+                final tooltip =
+                    (name == null || name.isEmpty) ? body : '$name\n$body';
+                return Tooltip(
+                  message: tooltip,
+                  child: Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: displayColor,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 100 / 255.0),
+                      ),
+                    ),
                   ),
-                ))),
+                );
+              },
+            )),
         TextButton(
           onPressed: () async {
             final picked = await showAppPalettePickerDialog(

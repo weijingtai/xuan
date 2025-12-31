@@ -8,11 +8,8 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/eight_chars.dart';
 import '../../models/text_style_config.dart';
-import '../../models/row_strategy.dart';
-import '../../themes/editor_theme.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
-import '../editable_fourzhu_card/editable_fourzhu_card_v4.dart';
 import '../editable_fourzhu_card/text_groups.dart';
 
 class EditorWorkspace extends StatefulWidget {
@@ -30,16 +27,7 @@ class EditorWorkspace extends StatefulWidget {
 
 class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 本地主题开关：true 为 Dark，false 为 Light。
-
-  final ValueNotifier<ColorPreviewMode> _colorPreviewModeNotifier =
-      ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
-  // bool _isDarkLocal = false;
-
-  /// 启用色彩模式开关：true 为启用，false 为禁用。
-  // bool _enableColorfulMode = false;
-
-  final ValueNotifier<Brightness> _cardBrightnessNotifier =
-      ValueNotifier<Brightness>(Brightness.light);
+  bool _didInitWorkspaceBrightness = false;
 
   /// V3 卡片数据源：柱/行/内边距。
   // late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
@@ -50,8 +38,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   // ValueNotifier<bool>(true);
   final TextEditingController _cardNameController = TextEditingController();
   final ValueNotifier<String> _cardNameNotifier = ValueNotifier<String>('');
-  final ValueNotifier<ThemeMode> _themeModeNotifier =
-      ValueNotifier<ThemeMode>(ThemeMode.system);
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -70,7 +56,12 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _cardBrightnessNotifier.value = Theme.of(context).brightness;
+    if (_didInitWorkspaceBrightness) return;
+    _didInitWorkspaceBrightness = true;
+    final brightness = Theme.of(context).brightness;
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    demoVm.cardBrightnessNotifier.value = brightness;
   }
 
   /// 响应外部八字数据变化，更新柱载荷
@@ -90,7 +81,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void dispose() {
     // 释放 Notifier 资源
-    _colorPreviewModeNotifier.dispose();
     // _pillarsNotifier.dispose();
     _rowListNotifier.dispose();
     _paddingNotifier.dispose();
@@ -98,8 +88,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     // _showGripColumnsNotifier.dispose();
     _cardNameController.dispose();
     _cardNameNotifier.dispose();
-    _cardBrightnessNotifier.dispose();
-    _themeModeNotifier.dispose();
     super.dispose();
   }
 
@@ -108,26 +96,22 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 返回：组件树
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final ThemeData workspaceLocalTheme =
-        _themeModeNotifier.value == ThemeMode.dark
-            ? ThemeData.dark()
-            : (_themeModeNotifier.value == ThemeMode.light
-                ? ThemeData.light()
-                : theme);
-
     return Consumer<FourZhuEditorViewModel>(
       builder: (context, viewModel, _) {
+        final demoVm =
+            Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
         // 在构建时将 ViewModel 的行配置映射到工作区 Notifier
         // _applyViewModelToNotifiers(viewModel);
 
-        // 从 ViewModel 读取全局字体样式
-        final cardStyle = viewModel.cardStyle;
-        // 可选：读取分隔线颜色（系统主题管理下不在本地覆写 Theme）
-        final Color? dividerColor = _parseHexColor(cardStyle?.dividerColorHex);
+        return ValueListenableBuilder<Brightness>(
+          valueListenable: demoVm.cardBrightnessNotifier,
+          builder: (context, workspaceBrightness, _) {
+            final workspaceLocalTheme = workspaceBrightness == Brightness.dark
+                ? ThemeData.dark()
+                : ThemeData.light();
 
-        return SizedBox.expand(
-            child: Theme(
+            return SizedBox.expand(
+              child: Theme(
                 data: workspaceLocalTheme,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
@@ -152,80 +136,80 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                   Expanded(
                                     child: Text(
                                       '工作区明暗',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
+                                      style: workspaceLocalTheme
+                                          .textTheme.bodyMedium,
                                     ),
                                   ),
                                   Switch(
-                                    value: _themeModeNotifier.value ==
-                                        ThemeMode.dark,
-                                    onChanged: (v) => setState(() =>
-                                        _themeModeNotifier.value = v
-                                            ? ThemeMode.dark
-                                            : ThemeMode.light),
+                                    value:
+                                        workspaceBrightness == Brightness.dark,
+                                    onChanged: (v) {
+                                      demoVm.cardBrightnessNotifier.value = v
+                                          ? Brightness.dark
+                                          : Brightness.light;
+                                    },
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Row(
-                                children: [
-                                  const Icon(Icons.invert_colors),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      '颜色预览模式',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
-                                    ),
-                                  ),
-                                  ToggleButtons(
-                                    isSelected: [
-                                      _colorPreviewModeNotifier.value ==
-                                          ColorPreviewMode.pure,
-                                      _colorPreviewModeNotifier.value ==
-                                          ColorPreviewMode.colorful,
-                                      _colorPreviewModeNotifier.value ==
-                                          ColorPreviewMode.blackwhite,
+                              ValueListenableBuilder<ColorPreviewMode>(
+                                valueListenable:
+                                    demoVm.colorPreviewModeNotifier,
+                                builder: (context, mode, _) {
+                                  return Row(
+                                    children: [
+                                      const Icon(Icons.invert_colors),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          '颜色预览模式',
+                                          style: workspaceLocalTheme
+                                              .textTheme.bodyMedium,
+                                        ),
+                                      ),
+                                      ToggleButtons(
+                                        isSelected: [
+                                          mode == ColorPreviewMode.pure,
+                                          mode == ColorPreviewMode.colorful,
+                                          mode == ColorPreviewMode.blackwhite,
+                                        ],
+                                        onPressed: (index) {
+                                          ColorPreviewMode next = mode;
+                                          if (index == 0) {
+                                            next = ColorPreviewMode.pure;
+                                          } else if (index == 1) {
+                                            next = ColorPreviewMode.colorful;
+                                          } else if (index == 2) {
+                                            next = ColorPreviewMode.blackwhite;
+                                          }
+                                          demoVm.colorPreviewModeNotifier
+                                              .value = next;
+                                        },
+                                        constraints: const BoxConstraints(
+                                          minHeight: 32,
+                                          minWidth: 52,
+                                        ),
+                                        children: const [
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Text('纯色'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Text('色彩'),
+                                          ),
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 10),
+                                            child: Text('黑白'),
+                                          ),
+                                        ],
+                                      ),
                                     ],
-                                    onPressed: (index) {
-                                      ColorPreviewMode next =
-                                          _colorPreviewModeNotifier.value;
-                                      if (index == 0) {
-                                        next = ColorPreviewMode.pure;
-                                      } else if (index == 1) {
-                                        next = ColorPreviewMode.colorful;
-                                      } else if (index == 2) {
-                                        next = ColorPreviewMode.blackwhite;
-                                      }
-                                      setState(() =>
-                                          _colorPreviewModeNotifier.value =
-                                              next);
-                                    },
-                                    constraints: const BoxConstraints(
-                                      minHeight: 32,
-                                      minWidth: 52,
-                                    ),
-                                    children: const [
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 10),
-                                        child: Text('纯色'),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 10),
-                                        child: Text('色彩'),
-                                      ),
-                                      Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 10),
-                                        child: Text('黑白'),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                  );
+                                },
                               ),
                               const SizedBox(height: 8),
                               Row(
@@ -235,9 +219,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                   Expanded(
                                     child: Text(
                                       '显示抓手行列',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyMedium,
+                                      style: workspaceLocalTheme
+                                          .textTheme.bodyMedium,
                                     ),
                                   ),
                                   Switch(
@@ -279,20 +262,14 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                             ),
                             EditableFourZhuCardV3(
                               dayGanZhi: JiaZi.JIA_ZI,
-                              brightnessNotifier: _cardBrightnessNotifier,
+                              brightnessNotifier: demoVm.cardBrightnessNotifier,
                               colorPreviewModeNotifier:
-                                  _colorPreviewModeNotifier,
-                              cardPayloadNotifier:
-                                  Provider.of<FourZhuCardDemoViewModel>(context,
-                                          listen: true)
-                                      .cardPayloadNotifier,
+                                  demoVm.colorPreviewModeNotifier,
+                              cardPayloadNotifier: demoVm.cardPayloadNotifier,
                               showGrip: _showGripNotifier.value,
                               // showGripColumns: _showGripColumnsNotifier.value,
                               paddingNotifier: _paddingNotifier,
-                              themeNotifier:
-                                  Provider.of<FourZhuCardDemoViewModel>(context,
-                                          listen: true)
-                                      .themeNotifier,
+                              themeNotifier: demoVm.themeNotifier,
                               gender: Gender.male,
                             ),
                           ],
@@ -300,7 +277,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                       )
                     ],
                   ),
-                )));
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }
@@ -402,28 +383,5 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       default:
         return null; // 其他行类型暂不映射
     }
-  }
-
-  /// 解析 `#AARRGGBB` 或 `#RRGGBB` 形式的十六进制颜色字符串为 `Color`。
-  ///
-  /// 参数：
-  /// - [hex]：颜色字符串；为空或非法时返回 `null`。
-  /// 返回：解析后的 `Color` 或 `null`。
-  Color? _parseHexColor(String? hex) {
-    if (hex == null || hex.isEmpty) return null;
-    final normalized = hex.replaceAll('#', '');
-    if (normalized.length == 8) {
-      // AARRGGBB
-      final value = int.tryParse(normalized, radix: 16);
-      if (value == null) return null;
-      return Color(value);
-    }
-    if (normalized.length == 6) {
-      // RRGGBB -> 强制不透明
-      final value = int.tryParse(normalized, radix: 16);
-      if (value == null) return null;
-      return Color(0xFF000000 | value);
-    }
-    return null;
   }
 }

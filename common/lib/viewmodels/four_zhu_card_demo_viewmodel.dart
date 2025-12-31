@@ -76,6 +76,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
   // EditableFourZhuCardTheme get theme => _theme;
 
   late final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
+  late final ValueNotifier<Brightness> cardBrightnessNotifier;
+  late final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
 
   EditableFourZhuThemeController? _themeController;
 
@@ -168,6 +170,10 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       ),
       typography: TypographySection.defaultTypographySection,
     ));
+
+    cardBrightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+    colorPreviewModeNotifier =
+        ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
 
     // 默认主题：卡片边角与排版参数。
     _themeController = EditableFourZhuThemeController(themeNotifier.value);
@@ -590,4 +596,14 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
 
   /// 返回是否处于编辑模式（预留）。
   bool get isEditable => _isEditable;
+
+  @override
+  void dispose() {
+    themeNotifier.dispose();
+    cardBrightnessNotifier.dispose();
+    colorPreviewModeNotifier.dispose();
+    paddingNotifier.dispose();
+    cardPayloadNotifier.dispose();
+    super.dispose();
+  }
 }

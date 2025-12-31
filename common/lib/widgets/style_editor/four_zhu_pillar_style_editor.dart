@@ -1,11 +1,11 @@
-import 'package:common/models/pillar_styles.dart';
 import 'package:common/widgets/style_editor/widgets/box_style_config_editor.dart';
 import 'package:flutter/material.dart';
-import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../enums/layout_template_enums.dart';
+import '../../models/drag_payloads.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
+import '../../utils/constant_values_utils.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/pillar_style_config.dart';
@@ -121,29 +121,6 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
     super.dispose();
   }
 
-  /// 构建滑块组件
-  Widget _buildSlider({
-    required String label,
-    required double value,
-    required double min,
-    required double max,
-    required ValueChanged<double> onChanged,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Expanded(child: Text(label)),
-            Text(value.toStringAsFixed(0)),
-          ],
-        ),
-        Slider(value: value, min: min, max: max, onChanged: onChanged),
-        const SizedBox(height: 8),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final demoVm =
@@ -177,18 +154,47 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
             const SizedBox(height: 8),
           ],
           if (widget.showTitleColumnFontEditor) ...[
-            ValueListenableBuilder<EditableFourZhuCardTheme>(
-              valueListenable: demoVm.themeNotifier,
-              builder: (ctx, theme, _) {
-                return ColorfulTextStyleEditorV2Enhanced(
-                  type: RowType.columnHeaderRow,
-                  lable: '字体',
-                  initialConfig: theme.typography.rowTitle,
-                  onChanged: (style) {
-                    demoVm.updateEditableFourZhuCardTheme(
-                      theme.copyWith(
-                        typography: theme.typography.copyWith(rowTitle: style),
-                      ),
+            ValueListenableBuilder<CardPayload>(
+              valueListenable: demoVm.cardPayloadNotifier,
+              builder: (ctx, payload, _) {
+                return ValueListenableBuilder<EditableFourZhuCardTheme>(
+                  valueListenable: demoVm.themeNotifier,
+                  builder: (ctx, theme, _) {
+                    final out = <String>[];
+                    bool hasHeaderRow = false;
+                    for (final rowUuid in payload.rowOrderUuid) {
+                      final row = payload.rowMap[rowUuid];
+                      if (row == null) continue;
+                      if (row.rowType == RowType.separator) continue;
+                      if (row.rowType == RowType.columnHeaderRow) {
+                        hasHeaderRow = true;
+                        continue;
+                      }
+                      final label = ConstantValuesUtils.labelForRowType(
+                        row.rowType,
+                      );
+                      if (!out.contains(label)) out.add(label);
+                    }
+                    final values = <String>[
+                      if (hasHeaderRow) ...['乾造', '坤造'],
+                      ...out,
+                    ];
+
+                    return ColorfulTextStyleEditorV2Enhanced(
+                      type: RowType.columnHeaderRow,
+                      lable: '字体',
+                      initialConfig: theme.typography.rowTitle,
+                      brightnessNotifier: demoVm.cardBrightnessNotifier,
+                      colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+                      values: values,
+                      onChanged: (style) {
+                        demoVm.updateEditableFourZhuCardTheme(
+                          theme.copyWith(
+                            typography:
+                                theme.typography.copyWith(rowTitle: style),
+                          ),
+                        );
+                      },
                     );
                   },
                 );
@@ -212,32 +218,6 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// 分区组件
-class _Section extends StatelessWidget {
-  const _Section({
-    required this.title,
-    required this.child,
-  });
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        const SizedBox(height: 16),
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
-        const SizedBox(height: 8),
-        const Divider(),
-        const SizedBox(height: 8),
-        child,
-      ],
     );
   }
 }

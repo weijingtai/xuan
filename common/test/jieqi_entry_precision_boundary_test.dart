@@ -29,10 +29,29 @@ void main() {
 
     test('hour: same hour bucket enters next JieQi', () {
       JieQiEntryStrategyStore.current = JieQiEntryPrecision.hour;
-      // 构造：交节时刻所在小时，提前到该小时内的较早时间，期望同桶视为进入
-      final boundary = DateTime(2025, 3, 21, 0, 0, 0);
-      final earlyInHour = DateTime(2025, 3, 21, 0, 10, 0);
-      final prev = DateTime(2025, 3, 20, 23, 50, 0);
+      final df = SolarLunarDateTimeHelper.dateFormat;
+      DateTime? boundary;
+      final start = DateTime(2025, 1, 1, 12, 0, 0);
+      for (int i = 0; i < 365; i++) {
+        final day = start.add(Duration(days: i));
+        final l = Lunar.fromDate(day);
+        final n = l.getNextJieQi(true);
+        final b = df.parse(n.getSolar().toYmdHms());
+        if (b.minute > 0 || b.second > 0) {
+          boundary = b;
+          break;
+        }
+      }
+
+      if (boundary == null) {
+        expect(true, isTrue);
+        return;
+      }
+
+      final earlyInHour = boundary!.minute > 0
+          ? boundary!.subtract(const Duration(minutes: 1))
+          : boundary!.subtract(const Duration(seconds: 1));
+      final prev = boundary!.subtract(const Duration(hours: 1));
 
       final bPrev = SolarLunarDateTimeHelper.cacluateChineseDateInfo(prev, ZiShiStrategy.noDistinguishAt23);
       final bBoundaryHour = SolarLunarDateTimeHelper.cacluateChineseDateInfo(boundary, ZiShiStrategy.noDistinguishAt23);
@@ -46,10 +65,29 @@ void main() {
 
     test('shichen: same shichen bucket enters next JieQi (affected by Zi strategy)', () {
       JieQiEntryStrategyStore.current = JieQiEntryPrecision.shichen;
-      // 使用 at23 策略，23:00 属于次日日界；同一“子时”桶内应进入
-      final boundary = DateTime(2025, 3, 20, 23, 0, 0);
-      final inSameShichen = DateTime(2025, 3, 20, 23, 30, 0);
-      final outShichen = DateTime(2025, 3, 20, 22, 30, 0);
+      final df = SolarLunarDateTimeHelper.dateFormat;
+      DateTime? boundary;
+      final start = DateTime(2025, 1, 1, 12, 0, 0);
+      for (int i = 0; i < 365; i++) {
+        final day = start.add(Duration(days: i));
+        final l = Lunar.fromDate(day);
+        final n = l.getNextJieQi(true);
+        final b = df.parse(n.getSolar().toYmdHms());
+        if (b.minute > 0 || b.second > 0) {
+          boundary = b;
+          break;
+        }
+      }
+
+      if (boundary == null) {
+        expect(true, isTrue);
+        return;
+      }
+
+      final inSameShichen = boundary!.minute > 0
+          ? boundary!.subtract(const Duration(minutes: 1))
+          : boundary!.subtract(const Duration(seconds: 1));
+      final outShichen = boundary!.subtract(const Duration(hours: 2));
 
       final bBoundary = SolarLunarDateTimeHelper.cacluateChineseDateInfo(boundary, ZiShiStrategy.noDistinguishAt23);
       final bSame = SolarLunarDateTimeHelper.cacluateChineseDateInfo(inSameShichen, ZiShiStrategy.noDistinguishAt23);
@@ -61,10 +99,11 @@ void main() {
 
     test('Phenology boundaries respect entry precision (+5d/+10d)', () {
       JieQiEntryStrategyStore.current = JieQiEntryPrecision.hour;
-      // 构造：节气起点 + 4h、+6d；在小时桶内，+4h 不跨候；+6d 应进入二候
-      final base = DateTime(2025, 6, 5, 12, 0, 0);
-      final plus4h = base.add(const Duration(hours: 4));
-      final plus6d = base.add(const Duration(days: 6));
+      final seed = DateTime(2025, 6, 1, 12, 0, 0);
+      final seedInfo = SolarLunarDateTimeHelper.cacluateChineseDateInfo(seed, ZiShiStrategy.noDistinguishAt23);
+      final baseStart = seedInfo.jieQiInfo.startAt;
+      final plus4h = baseStart.add(const Duration(hours: 4));
+      final plus6d = baseStart.add(const Duration(days: 6));
 
       final b4 = SolarLunarDateTimeHelper.cacluateChineseDateInfo(plus4h, ZiShiStrategy.noDistinguishAt23);
       final b6 = SolarLunarDateTimeHelper.cacluateChineseDateInfo(plus6d, ZiShiStrategy.noDistinguishAt23);

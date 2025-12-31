@@ -507,21 +507,25 @@ class CardMetricsCalculator {
       }
     }
 
-    // 2. 第二步：计算「行度量」→ 行contentHeight=同行单元格完整垂直尺寸最大值
+    // 2. 第二步：计算「行度量」→ 行contentHeight=同行单元格内在内容高度最大值
     for (final rowUuid in rowOrder) {
       final row = rowMap[rowUuid];
       if (row == null) continue;
       final rowType = row.rowType;
       // final rowConfig = theme.row.getBy(rowType); // 行主题配置（装饰、边框）, 当前版本中没有提供行相关装饰，因此设置为0，预留后续扩展接口
       final cellConfig = theme.cell.getBy(rowType); // 单元格配置（用于默认值计算）
+      final cellDecorationH = theme.cell.getDecorationHeightBy(rowType);
+      final cellMarginV = cellConfig.margin.top + cellConfig.margin.bottom;
+      final cellBorderW = cellConfig.border?.width ?? 0.0;
+      final cellBorderEnabled = cellConfig.border?.enabled ?? false;
 
-      // 2.1 计算同行单元格完整垂直尺寸的最大值
-      double maxCellFullVSize = 0.0;
+      // 2.1 计算同行单元格内在内容高度的最大值
+      double maxIntrinsicContentH = 0.0;
       for (final pillarUuid in pillarOrder) {
         final cellKey = _cellKey(rowUuid, pillarUuid);
-        final cellFullVSize = cellFullVerticalSizes[cellKey] ?? 0.0;
-        if (cellFullVSize > maxCellFullVSize) {
-          maxCellFullVSize = cellFullVSize;
+        final intrinsicH = intrinsicCellHeights[cellKey] ?? 0.0;
+        if (intrinsicH > maxIntrinsicContentH) {
+          maxIntrinsicContentH = intrinsicH;
         }
       }
 
@@ -532,24 +536,20 @@ class CardMetricsCalculator {
       // final rowMarginV = rowConfig.margin.top + rowConfig.margin.bottom;
       // final rowMarginH = rowConfig.margin.left + rowConfig.margin.right;
       // WARNING: 当前版本中没有提供行相关装饰，因此设置为0，预留后续扩展接口
-      final rowDecorationH = 0.0;
+      final rowDecorationH =
+          cellDecorationH + (cellBorderEnabled ? cellBorderW * 2 : 0.0);
       final rowDecorationW = 0.0;
       final rowBorderW = 0.0;
-      final rowMarginV = 0.0;
+      final rowMarginV = cellMarginV;
       final rowMarginH = 0.0;
 
-      // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，含基础附加尺寸）
-      final defaultCellFullVSize = _normalizeDouble(
-        defaultRowContentHeight +
-            theme.cell.getDecorationHeightBy(rowType) +
-            (cellConfig.margin.top + cellConfig.margin.bottom) +
-            ((cellConfig.border?.enabled ?? false)
-                ? (cellConfig.border?.width ?? 0.0) * 2
-                : 0.0),
-      );
+      // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，仅内容高度）
+      final defaultRowIntrinsicContentH = _normalizeDouble(defaultRowContentHeight);
 
       double rowContentH = _normalizeDouble(
-        maxCellFullVSize > 0.0 ? maxCellFullVSize : defaultCellFullVSize,
+        maxIntrinsicContentH > 0.0
+            ? maxIntrinsicContentH
+            : defaultRowIntrinsicContentH,
       );
 
       // 构建行度量（含计算属性totalHeight，简化后续总高计算）
@@ -631,7 +631,7 @@ class CardMetricsCalculator {
       );
     }
 
-    // 4. 第四步：计算「单元格最终度量」→ 适配列宽+保留内在内容高
+    // 4. 第四步：计算「单元格最终度量」→ 适配列宽+拉伸内容高度到行内容高度
     for (final rowUuid in rowOrder) {
       final rowMetrics = rows[rowUuid];
       if (rowMetrics == null) continue;
@@ -650,10 +650,9 @@ class CardMetricsCalculator {
         if (pillarMetrics == null) continue;
         final cellKey = _cellKey(rowUuid, pillarUuid);
 
-        // 单元格最终尺寸：宽度适配列宽，高度保留内在内容高（完整尺寸已计入行高）
+        // 单元格最终尺寸：宽度适配列宽，高度拉伸到行内容高度（行装饰/边距由 RowMetrics + CellMetrics 承载）
         final cellFinalContentW = pillarMetrics.contentWidth;
-        final cellFinalContentH =
-            intrinsicCellHeights[cellKey] ?? defaultCellContentHeight;
+        final cellFinalContentH = rowMetrics.contentHeight;
 
         // 构建单元格度量（所有数值鲁棒性处理）
         cells[cellKey] = CellMetrics(

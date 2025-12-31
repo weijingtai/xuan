@@ -1,4 +1,3 @@
-import 'package:common/models/row_strategy.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -10,8 +9,15 @@ import 'package:common/enums/enum_di_zhi.dart';
 import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/pillar_content.dart';
 import 'package:common/models/row_strategy.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import 'package:common/widgets/editable_fourzhu_card/text_groups.dart';
 import 'package:common/utils/style_resolver.dart';
+import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
+import 'package:provider/provider.dart';
+
+import 'package:common/viewmodels/four_zhu_card_demo_viewmodel.dart';
 
 /// A test-only style probe that mirrors the card's style resolution precedence.
 /// It renders a single Text using centralized defaults and global/group overrides.
@@ -126,6 +132,30 @@ class StyleProbeWidget extends StatelessWidget {
 
 void main() {
   group('EditableFourZhuCardV3 TextStyle resolution', () {
+    test('Column header row content style falls back to pillarTitle', () {
+      final base = TypographySection.defaultTypographySection;
+      final rowTitle = base.rowTitle.copyWith(
+        fontStyleDataModel: base.rowTitle.fontStyleDataModel.copyWith(
+          fontSize: 11,
+        ),
+      );
+      final pillarTitle = base.pillarTitle.copyWith(
+        fontStyleDataModel: base.pillarTitle.fontStyleDataModel.copyWith(
+          fontSize: 22,
+        ),
+      );
+      final t = base.copyWith(
+        rowTitle: rowTitle,
+        pillarTitle: pillarTitle,
+        cellContentMapper: const {},
+      );
+
+      expect(
+        t.getCellContentBy(RowType.columnHeaderRow).fontStyleDataModel.fontSize,
+        22,
+      );
+    });
+
     testWidgets('NaYin and KongWang default styles are applied',
         (tester) async {
       // Verify strategy outputs (data correctness)
@@ -283,6 +313,254 @@ void main() {
       await tester.pumpAndSettle();
       final kongWangText = tester.widget<Text>(find.text('戌亥'));
       expect(kongWangText.style?.color, Colors.blue);
+    });
+
+    testWidgets('In-cell title color follows row title color by default',
+        (tester) async {
+      await tester.binding.setSurfaceSize(const Size(920, 360));
+
+      final pillars = <PillarPayload>[
+        const RowTitleColumnPayload(uuid: 'row-title'),
+        ContentPillarPayload(
+          uuid: 'year-col',
+          pillarType: PillarType.year,
+          pillarLabel: '年',
+          pillarContent: PillarContent(
+            id: 'year#1',
+            pillarType: PillarType.year,
+            label: '年',
+            jiaZi: JiaZi.JIA_ZI,
+            description: null,
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+            operationType: null,
+          ),
+        ),
+      ];
+
+      final rows = <TextRowPayload>[
+        ColumnHeaderRowPayload(uuid: 'header', gender: Gender.male),
+        TextRowPayload(
+          uuid: 'nayin-row',
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          titleInCell: false,
+        ),
+      ];
+
+      final cardPayload = CardPayload(
+        gender: Gender.male,
+        pillarMap: {for (final p in pillars) p.uuid: p},
+        pillarOrderUuid: pillars.map((e) => e.uuid).toList(),
+        rowMap: {for (final r in rows) r.uuid: r},
+        rowOrderUuid: rows.map((e) => e.uuid).toList(),
+      );
+
+      const expected = Colors.green;
+
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+
+      final rowTitleMapper =
+          baseTheme.typography.rowTitle.colorMapperDataModel.update(
+        brightness: Brightness.light,
+        mode: ColorPreviewMode.pure,
+        char: '纳音',
+        color: expected,
+      );
+
+      final rowTypeCellConfigMapper = Map<RowType, CellStyleConfig>.of(
+          baseTheme.cell.rowTypeCellConfigMapper);
+      rowTypeCellConfigMapper[RowType.naYin] =
+          baseTheme.cell.getBy(RowType.naYin).copyWith(showsTitleInCell: true);
+
+      final theme = baseTheme.copyWith(
+        typography: baseTheme.typography.copyWith(
+          rowTitle: baseTheme.typography.rowTitle
+              .copyWith(colorMapperDataModel: rowTitleMapper),
+        ),
+        cell: baseTheme.cell.copyWith(
+          rowTypeCellConfigMapper: rowTypeCellConfigMapper,
+        ),
+      );
+
+      final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(theme);
+      final brightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+      final colorPreviewModeNotifier =
+          ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
+      final paddingNotifier =
+          ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+      final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 920,
+                height: 360,
+                child: ChangeNotifierProvider(
+                  create: (_) => FourZhuCardDemoViewModel(),
+                  child: EditableFourZhuCardV3(
+                    dayGanZhi: JiaZi.JIA_ZI,
+                    brightnessNotifier: brightnessNotifier,
+                    colorPreviewModeNotifier: colorPreviewModeNotifier,
+                    themeNotifier: themeNotifier,
+                    cardPayloadNotifier: cardPayloadNotifier,
+                    paddingNotifier: paddingNotifier,
+                    gender: Gender.male,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final titleFinder = find.text('纳音');
+      expect(titleFinder, findsWidgets);
+
+      final titleTexts = tester.widgetList<Text>(titleFinder).toList();
+      expect(titleTexts.length >= 2, isTrue);
+      for (final t in titleTexts) {
+        expect(t.style?.color, expected);
+      }
+    });
+
+    testWidgets('In-cell title color can be overridden', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(920, 360));
+
+      final pillars = <PillarPayload>[
+        const RowTitleColumnPayload(uuid: 'row-title'),
+        ContentPillarPayload(
+          uuid: 'year-col',
+          pillarType: PillarType.year,
+          pillarLabel: '年',
+          pillarContent: PillarContent(
+            id: 'year#1',
+            pillarType: PillarType.year,
+            label: '年',
+            jiaZi: JiaZi.JIA_ZI,
+            description: null,
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+            operationType: null,
+          ),
+        ),
+      ];
+
+      final rows = <TextRowPayload>[
+        ColumnHeaderRowPayload(uuid: 'header', gender: Gender.male),
+        TextRowPayload(
+          uuid: 'nayin-row',
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          titleInCell: false,
+        ),
+      ];
+
+      final cardPayload = CardPayload(
+        gender: Gender.male,
+        pillarMap: {for (final p in pillars) p.uuid: p},
+        pillarOrderUuid: pillars.map((e) => e.uuid).toList(),
+        rowMap: {for (final r in rows) r.uuid: r},
+        rowOrderUuid: rows.map((e) => e.uuid).toList(),
+      );
+
+      const inherited = Colors.green;
+      const overridden = Colors.red;
+
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+
+      final rowTitleMapper =
+          baseTheme.typography.rowTitle.colorMapperDataModel.update(
+        brightness: Brightness.light,
+        mode: ColorPreviewMode.pure,
+        char: '纳音',
+        color: inherited,
+      );
+
+      final inCellTitleMapper = baseTheme.typography
+          .getCellTitleBy(RowType.naYin)
+          .colorMapperDataModel
+          .update(
+            brightness: Brightness.light,
+            mode: ColorPreviewMode.pure,
+            char: '纳音',
+            color: overridden,
+          );
+
+      final cellTitleMapper = Map<RowType, TextStyleConfig>.of(
+          baseTheme.typography.cellTitleMapper);
+      cellTitleMapper[RowType.naYin] = baseTheme.typography
+          .getCellTitleBy(RowType.naYin)
+          .copyWith(colorMapperDataModel: inCellTitleMapper);
+
+      final rowTypeCellConfigMapper = Map<RowType, CellStyleConfig>.of(
+          baseTheme.cell.rowTypeCellConfigMapper);
+      rowTypeCellConfigMapper[RowType.naYin] =
+          baseTheme.cell.getBy(RowType.naYin).copyWith(showsTitleInCell: true);
+
+      final theme = baseTheme.copyWith(
+        typography: baseTheme.typography.copyWith(
+          rowTitle: baseTheme.typography.rowTitle
+              .copyWith(colorMapperDataModel: rowTitleMapper),
+          cellTitleMapper: cellTitleMapper,
+        ),
+        cell: baseTheme.cell.copyWith(
+          rowTypeCellConfigMapper: rowTypeCellConfigMapper,
+        ),
+      );
+
+      final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(theme);
+      final brightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+      final colorPreviewModeNotifier =
+          ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
+      final paddingNotifier =
+          ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+      final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: SizedBox(
+                width: 920,
+                height: 360,
+                child: ChangeNotifierProvider(
+                  create: (_) => FourZhuCardDemoViewModel(),
+                  child: EditableFourZhuCardV3(
+                    dayGanZhi: JiaZi.JIA_ZI,
+                    brightnessNotifier: brightnessNotifier,
+                    colorPreviewModeNotifier: colorPreviewModeNotifier,
+                    themeNotifier: themeNotifier,
+                    cardPayloadNotifier: cardPayloadNotifier,
+                    paddingNotifier: paddingNotifier,
+                    gender: Gender.male,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final titleFinder = find.text('纳音');
+      expect(titleFinder, findsWidgets);
+
+      final titleTexts = tester.widgetList<Text>(titleFinder).toList();
+      expect(titleTexts.length >= 2, isTrue);
+      expect(
+        titleTexts.any((t) => t.style?.color == overridden),
+        isTrue,
+      );
+      expect(
+        titleTexts.any((t) => t.style?.color == inherited),
+        isTrue,
+      );
     });
   });
 }

@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/drag_payloads.dart';
-import 'package:common/models/pillar_content.dart';
-import 'package:common/models/row_strategy.dart';
 import 'package:common/widgets/editable_fourzhu_card/dimension_models.dart';
 
 void main() {
@@ -43,19 +41,17 @@ void main() {
         rowTitleWidth: 52.0,
       );
 
-      normalPillar = PillarPayload(
-        pillarType: PillarType.year,
-        perRowValues: {},
-      );
+      normalPillar =
+          const PillarPayload(uuid: 'pillar-normal', pillarType: PillarType.year);
 
-      separatorPillar = PillarPayload(
+      separatorPillar = const PillarPayload(
+        uuid: 'pillar-separator',
         pillarType: PillarType.separator,
-        perRowValues: {},
       );
 
-      rowTitlePillar = PillarPayload(
+      rowTitlePillar = const PillarPayload(
+        uuid: 'pillar-row-title',
         pillarType: PillarType.rowTitleColumn,
-        perRowValues: {},
       );
     });
 
@@ -126,7 +122,7 @@ void main() {
     late MeasurementContext ctx;
     late TextRowPayload normalRow;
     late TextRowPayload headerRow;
-    late TextRowPayload separatorRow;
+    late RowSeparatorPayload separatorRow;
 
     setUp(() {
       ctx = MeasurementContext(
@@ -139,19 +135,18 @@ void main() {
       );
 
       normalRow = TextRowPayload(
+        uuid: 'row-normal',
         rowType: RowType.tenGod,
-        rowHeight: 32.0, // 直接指定高度，不使用策略
+        titleInCell: false,
       );
 
       headerRow = TextRowPayload(
         rowType: RowType.columnHeaderRow,
-        rowHeight: 24.0,
+        uuid: 'row-header',
+        titleInCell: false,
       );
 
-      separatorRow = TextRowPayload(
-        rowType: RowType.naYin, // 使用现有枚举值
-        rowHeight: 8.8,
-      );
+      separatorRow = RowSeparatorPayload(uuid: 'row-separator');
     });
 
     test('普通行使用默认高度', () {
@@ -168,25 +163,6 @@ void main() {
     test('分隔行使用固定高度', () {
       final row = RowDimension(index: 0, payload: separatorRow);
       expect(row.measure(ctx), 8.8);
-    });
-
-    test('覆盖值优先于策略高度', () {
-      final row = RowDimension(
-        index: 0,
-        payload: normalRow,
-        heightOverride: 50.0,
-      );
-      expect(row.measure(ctx), 50.0);
-    });
-
-    test('withHeightOverride 创建正确副本', () {
-      final row = RowDimension(index: 0, payload: normalRow);
-      final updated = row.withHeightOverride(60.0);
-
-      expect(updated.index, 0);
-      expect(updated.payload, normalRow);
-      expect(updated.heightOverride, 60.0);
-      expect(row.heightOverride, null);
     });
   });
 
@@ -205,21 +181,25 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      pillar0 = PillarPayload(pillarType: PillarType.year, perRowValues: {});
-      pillar1 = PillarPayload(pillarType: PillarType.month, perRowValues: {});
-      pillar2 = PillarPayload(pillarType: PillarType.day, perRowValues: {});
+      pillar0 = const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year);
+      pillar1 =
+          const PillarPayload(uuid: 'pillar-1', pillarType: PillarType.month);
+      pillar2 = const PillarPayload(uuid: 'pillar-2', pillarType: PillarType.day);
 
       row0 = TextRowPayload(
+        uuid: 'row-0',
         rowType: RowType.columnHeaderRow,
-        rowHeight: 24.0,
+        titleInCell: false,
       );
       row1 = TextRowPayload(
+        uuid: 'row-1',
         rowType: RowType.heavenlyStem,
-        rowHeight: 48.0,
+        titleInCell: false,
       );
       row2 = TextRowPayload(
+        uuid: 'row-2',
         rowType: RowType.tenGod,
-        rowHeight: 32.0,
+        titleInCell: false,
       );
     });
 
@@ -240,11 +220,11 @@ void main() {
 
       final size = model.computeSize(ctx);
 
-      // 宽度: 64*2 + 10*2 = 148
-      expect(size.width, 148.0);
+      // 宽度: 64*2 + 10*2 + 20*2 = 188
+      expect(size.width, 188.0);
 
-      // 高度: 24+48+32 + 10*2 + 20 = 144
-      expect(size.height, 144.0);
+      // 高度: 24+48+32 + 10*2 + 20*2 = 164
+      expect(size.height, 164.0);
     });
 
     test('columnWidth 返回正确宽度', () {
@@ -295,9 +275,10 @@ void main() {
         colDividerWidthEffective: 9.6,
       );
 
-      pillar0 = PillarPayload(pillarType: PillarType.year, perRowValues: {});
-      pillar1 = PillarPayload(pillarType: PillarType.month, perRowValues: {});
-      pillar2 = PillarPayload(pillarType: PillarType.day, perRowValues: {});
+      pillar0 = const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year);
+      pillar1 =
+          const PillarPayload(uuid: 'pillar-1', pillarType: PillarType.month);
+      pillar2 = const PillarPayload(uuid: 'pillar-2', pillarType: PillarType.day);
 
       model = CardLayoutModel(
         columns: [
@@ -385,15 +366,18 @@ void main() {
 
       row0 = TextRowPayload(
         rowType: RowType.columnHeaderRow,
-        rowHeight: 24.0,
+        uuid: 'row-0',
+        titleInCell: false,
       );
       row1 = TextRowPayload(
         rowType: RowType.heavenlyStem,
-        rowHeight: 48.0,
+        uuid: 'row-1',
+        titleInCell: false,
       );
       row2 = TextRowPayload(
         rowType: RowType.tenGod,
-        rowHeight: 32.0,
+        uuid: 'row-2',
+        titleInCell: false,
       );
 
       model = CardLayoutModel(
@@ -440,28 +424,20 @@ void main() {
       expect(updated.rows[1].index, 1);
       expect(updated.rows[2].index, 2);
     });
-
-    test('高度覆盖在重排后自动跟随', () {
-      final modelWithOverride = model.updateRowHeight(0, 50.0);
-
-      final updated = modelWithOverride.reorderRow(0, 2);
-
-      expect(updated.rows[1].heightOverride, 50.0);
-      expect(updated.rows[1].payload, row0);
-    });
   });
 
   group('CardLayoutModel - 工厂方法', () {
     test('fromNotifiers 正确构建模型', () {
       final pillars = [
-        PillarPayload(pillarType: PillarType.year, perRowValues: {}),
-        PillarPayload(pillarType: PillarType.month, perRowValues: {}),
+        const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year),
+        const PillarPayload(uuid: 'pillar-1', pillarType: PillarType.month),
       ];
 
       final rows = [
         TextRowPayload(
           rowType: RowType.columnHeaderRow,
-          rowHeight: 24.0,
+          uuid: 'row-0',
+          titleInCell: false,
         ),
       ];
 
@@ -470,13 +446,11 @@ void main() {
         rows: rows,
         padding: const EdgeInsets.all(10.0),
         columnWidthOverrides: {0: 80.0},
-        rowHeightOverrides: {0: 30.0},
       );
 
       expect(model.columns.length, 2);
       expect(model.rows.length, 1);
       expect(model.columns[0].widthOverride, 80.0);
-      expect(model.rows[0].heightOverride, 30.0);
       expect(model.padding, const EdgeInsets.all(10.0));
     });
 
@@ -486,18 +460,19 @@ void main() {
           ColumnDimension(
             index: 0,
             payload:
-                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+                const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year),
             widthOverride: 100.0,
           ),
           ColumnDimension(
             index: 1,
             payload:
-                PillarPayload(pillarType: PillarType.month, perRowValues: {}),
+                const PillarPayload(
+                    uuid: 'pillar-1', pillarType: PillarType.month),
           ),
           ColumnDimension(
             index: 2,
             payload:
-                PillarPayload(pillarType: PillarType.day, perRowValues: {}),
+                const PillarPayload(uuid: 'pillar-2', pillarType: PillarType.day),
             widthOverride: 120.0,
           ),
         ],
@@ -534,8 +509,8 @@ void main() {
 
       final size = model.computeSize(ctx);
 
-      expect(size.width, 0.0);
-      expect(size.height, 20.0); // 只有 dragHandleRowHeight
+      expect(size.width, 40.0); // 只有 dragHandleColWidth * 2
+      expect(size.height, 40.0); // 只有 dragHandleRowHeight * 2
     });
 
     test('删除不存在的索引不影响模型', () {
@@ -544,7 +519,7 @@ void main() {
           ColumnDimension(
             index: 0,
             payload:
-                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+                const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year),
           ),
         ],
         rows: [],
@@ -563,7 +538,7 @@ void main() {
           ColumnDimension(
             index: 0,
             payload:
-                PillarPayload(pillarType: PillarType.year, perRowValues: {}),
+                const PillarPayload(uuid: 'pillar-0', pillarType: PillarType.year),
           ),
         ],
         rows: [],
@@ -572,7 +547,8 @@ void main() {
 
       final newCol = ColumnDimension(
         index: -1,
-        payload: PillarPayload(pillarType: PillarType.month, perRowValues: {}),
+        payload:
+            const PillarPayload(uuid: 'pillar-new', pillarType: PillarType.month),
       );
 
       // 插入到负数索引，应该钳位到0

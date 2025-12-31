@@ -8,6 +8,10 @@ import 'package:common/enums/enum_gender.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/pillar_content.dart' as model;
 import 'package:common/models/drag_payloads.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/viewmodels/four_zhu_card_demo_viewmodel.dart';
+import 'package:provider/provider.dart';
 
 /// 构建一个最小的 `PillarContent` 示例。
 ///
@@ -40,26 +44,30 @@ model.PillarContent _pillarContent({
 /// 返回：`PillarPayload` 列表用于渲染网格。
 List<PillarPayload> _buildPillars() {
   return [
-    const RowTitleColumnPayload(width: 52),
-    PillarPayload(
+    const RowTitleColumnPayload(uuid: 'row-title'),
+    ContentPillarPayload(
+      uuid: 'year-col',
       pillarType: PillarType.year,
       pillarLabel: '年',
       pillarContent:
           _pillarContent(id: 'year#1', pillarType: PillarType.year, label: '年'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'month-col',
       pillarType: PillarType.month,
       pillarLabel: '月',
       pillarContent: _pillarContent(
           id: 'month#1', pillarType: PillarType.month, label: '月'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'day-col',
       pillarType: PillarType.day,
       pillarLabel: '日',
       pillarContent:
           _pillarContent(id: 'day#1', pillarType: PillarType.day, label: '日'),
     ),
-    PillarPayload(
+    ContentPillarPayload(
+      uuid: 'hour-col',
       pillarType: PillarType.hour,
       pillarLabel: '时',
       pillarContent:
@@ -75,40 +83,33 @@ List<PillarPayload> _buildPillars() {
 ///
 /// 返回：`RowInfoPayload` 列表用于渲染网格。
 List<TextRowPayload> _buildRows(List<PillarPayload> pillars) {
-  final stemValues = <String, String>{};
-  final branchValues = <String, String>{};
-  final naYinValues = <String, String>{};
-  final kongWangValues = <String, String>{};
-
-  for (final p in pillars) {
-    final content = p.pillarContent;
-    if (content == null) continue;
-    final id = content.id;
-    final jz = content.jiaZi;
-    stemValues[id] = jz.gan.value;
-    branchValues[id] = jz.zhi.value;
-    naYinValues[id] = jz.naYinStr;
-    final kw = jz.getKongWang();
-    kongWangValues[id] = kw.item1.value + kw.item2.value;
-  }
-
   return [
-    const ColumnHeaderRowPayload(gender: Gender.male),
+    ColumnHeaderRowPayload(uuid: 'header', gender: Gender.male),
     TextRowPayload(
+        uuid: 'stem-row',
         rowType: RowType.heavenlyStem,
         rowLabel: '天干',
-        perPillarValues: stemValues),
+        titleInCell: false),
     TextRowPayload(
+        uuid: 'branch-row',
         rowType: RowType.earthlyBranch,
         rowLabel: '地支',
-        perPillarValues: branchValues),
-    const TextRowPayload(rowType: RowType.separator, rowLabel: '分隔符'),
+        titleInCell: false),
     TextRowPayload(
-        rowType: RowType.naYin, rowLabel: '纳音', perPillarValues: naYinValues),
+        uuid: 'sep-row',
+        rowType: RowType.separator,
+        rowLabel: '分隔符',
+        titleInCell: false),
     TextRowPayload(
+        uuid: 'nayin-row',
+        rowType: RowType.naYin,
+        rowLabel: '纳音',
+        titleInCell: false),
+    TextRowPayload(
+        uuid: 'kw-row',
         rowType: RowType.kongWang,
         rowLabel: '空亡',
-        perPillarValues: kongWangValues),
+        titleInCell: false),
   ];
 }
 
@@ -128,14 +129,25 @@ Future<void> _pumpCard(
   required List<PillarPayload> pillars,
   required List<TextRowPayload> rows,
   Size size = const Size(720, 420),
-  bool showGripRows = false,
-  bool showGripColumns = true,
-  void Function(List<TextRowPayload> rows)? onRowsReordered,
+  bool showGrip = true,
+  void Function(List<RowPayload> rows)? onRowsReordered,
 }) async {
   await tester.binding.setSurfaceSize(size);
-  final pillarsNotifier = ValueNotifier<List<PillarPayload>>(pillars);
-  final rowsNotifier = ValueNotifier<List<TextRowPayload>>(rows);
+  final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(
+      EditableCardThemeBuilder.createDefaultTheme());
+  final brightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+  final colorPreviewModeNotifier =
+      ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+
+  final cardPayload = CardPayload(
+    gender: Gender.male,
+    pillarMap: {for (final p in pillars) p.uuid: p},
+    pillarOrderUuid: pillars.map((e) => e.uuid).toList(),
+    rowMap: {for (final r in rows) r.uuid: r},
+    rowOrderUuid: rows.map((e) => e.uuid).toList(),
+  );
+  final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
   await tester.pumpWidget(
     MaterialApp(
@@ -146,15 +158,19 @@ Future<void> _pumpCard(
             height: size.height,
             child: RepaintBoundary(
               key: const Key('v3-card-boundary'),
-              child: EditableFourZhuCardV3(
-                pillarsNotifier: pillarsNotifier,
-                rowListNotifier: rowsNotifier,
-                paddingNotifier: paddingNotifier,
-                gender: Gender.male,
-                showGrip: showGripRows,
-                showGripColumns: showGripColumns,
-                onRowsReordered: onRowsReordered,
-                dayGanZhi: JiaZi.JIA_ZI,
+              child: ChangeNotifierProvider(
+                create: (_) => FourZhuCardDemoViewModel(),
+                child: EditableFourZhuCardV3(
+                  dayGanZhi: JiaZi.JIA_ZI,
+                  brightnessNotifier: brightnessNotifier,
+                  colorPreviewModeNotifier: colorPreviewModeNotifier,
+                  themeNotifier: themeNotifier,
+                  cardPayloadNotifier: cardPayloadNotifier,
+                  paddingNotifier: paddingNotifier,
+                  gender: Gender.male,
+                  showGrip: showGrip,
+                  onRowsReordered: onRowsReordered,
+                ),
               ),
             ),
           ),
@@ -195,15 +211,14 @@ void main() {
     final pillars = _buildPillars();
     final rows = _buildRows(pillars);
     bool reordered = false;
-    List<TextRowPayload> latestRows = rows;
+    List<RowPayload> latestRows = rows;
 
     await _pumpCard(
       tester,
       pillars: pillars,
       rows: rows,
       size: const Size(720, 480),
-      showGripRows: false, // 隐藏列抓手行，避免干扰 Draggable 选择
-      showGripColumns: true,
+      showGrip: true,
       onRowsReordered: (r) {
         reordered = true;
         latestRows = r;
@@ -222,8 +237,6 @@ void main() {
     final start = tester.getCenter(source);
     final stemFinder = find.text('天干');
     final stemTop = tester.getTopLeft(stemFinder).dy;
-    final boundaryRect =
-        tester.getRect(find.byKey(const Key('v3-card-boundary')));
     final stemCenterX = tester.getCenter(stemFinder).dx;
     // 选择一个位于“天干”行顶部之上的位置，确保落在插入间隙（索引1）
     // 将落点的 X 移到网格内容区域（标题列右侧），避免落在左侧标题区域导致未被 DragTarget 接受
@@ -242,10 +255,10 @@ void main() {
 
     // 验证结果：优先通过回调判断；如未触发回调，则回退到 UI 坐标判断
     if (reordered) {
-      final labels =
-          latestRows.map((e) => e.rowLabel ?? e.rowType.name).toList();
-      final stemIdx = labels.indexOf('天干');
-      final branchIdx = labels.indexOf('地支');
+      final stemIdx =
+          latestRows.indexWhere((e) => e.rowType == RowType.heavenlyStem);
+      final branchIdx =
+          latestRows.indexWhere((e) => e.rowType == RowType.earthlyBranch);
       expect(branchIdx >= 0 && stemIdx >= 0, isTrue);
       expect(branchIdx < stemIdx, isTrue);
     } else {

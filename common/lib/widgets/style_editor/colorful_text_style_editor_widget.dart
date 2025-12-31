@@ -4,6 +4,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import '../../const_resources_mapper.dart';
 import '../../models/text_style_config.dart';
 import '../editable_fourzhu_card/text_groups.dart';
+import 'widgets/app_palette_picker_dialog.dart';
 
 // Sentinel RGB used to signal shadow follows character color
 const int _kShadowFollowSentinelRGB = 0x00FEED;
@@ -75,10 +76,38 @@ class _ColorfulTextStyleEditorWidgetState
   bool _shadowFollowCharColor = false;
   double _shadowOpacity = 0.5;
 
+  String _hex2(int v) => v.toRadixString(16).padLeft(2, '0').toUpperCase();
+
+  String _formatHex(Color c) {
+    return '#${_hex2(c.alpha)}${_hex2(c.red)}${_hex2(c.green)}${_hex2(c.blue)}';
+  }
+
+  String _formatRgba(Color c) {
+    final a = (c.alpha / 255.0 * 100).round();
+    return 'RGBA(${c.red}, ${c.green}, ${c.blue}, ${a}%)';
+  }
+
+  String _colorTooltip(Color c) {
+    final name = lookupPaletteName(c);
+    final body = '${_formatHex(c)} · ${_formatRgba(c)}';
+    if (name == null || name.isEmpty) return body;
+    return '$name\n$body';
+  }
+
+  Widget _withColorTooltip(Color c, Widget child) {
+    return ValueListenableBuilder<int>(
+      valueListenable: paletteNameIndexVersion,
+      builder: (context, _, __) {
+        return Tooltip(message: _colorTooltip(c), child: child);
+      },
+    );
+  }
+
   /// Initialize local editing state from `initialStyle`.
   @override
   void initState() {
     super.initState();
+    warmupPaletteNameIndex();
     final s = widget.initialStyle ?? const TextStyle();
     _fontFamily = s.fontFamily ?? '';
     _fontSize = (s.fontSize ?? 14).clamp(8, 64).toDouble();
@@ -517,16 +546,19 @@ class _ColorfulTextStyleEditorWidgetState
                             setState(() => _color = c);
                             _emit();
                           },
-                          child: Container(
-                            width: 24,
-                            height: 24,
-                            decoration: BoxDecoration(
-                              color: c,
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withValues(alpha: 0.4),
+                          child: _withColorTooltip(
+                            c,
+                            Container(
+                              width: 24,
+                              height: 24,
+                              decoration: BoxDecoration(
+                                color: c,
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withValues(alpha: 0.4),
+                                ),
                               ),
                             ),
                           ),
@@ -636,12 +668,40 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
   late Color _pureGlobalColorLight;
   late Color _pureGlobalColorDark;
 
+  String _hex2(int v) => v.toRadixString(16).padLeft(2, '0').toUpperCase();
+
+  String _formatHex(Color c) {
+    return '#${_hex2(c.alpha)}${_hex2(c.red)}${_hex2(c.green)}${_hex2(c.blue)}';
+  }
+
+  String _formatRgba(Color c) {
+    final a = (c.alpha / 255.0 * 100).round();
+    return 'RGBA(${c.red}, ${c.green}, ${c.blue}, ${a}%)';
+  }
+
+  String _colorTooltip(Color c) {
+    final name = lookupPaletteName(c);
+    final body = '${_formatHex(c)} · ${_formatRgba(c)}';
+    if (name == null || name.isEmpty) return body;
+    return '$name\n$body';
+  }
+
+  Widget _withColorTooltip(Color c, Widget child) {
+    return ValueListenableBuilder<int>(
+      valueListenable: paletteNameIndexVersion,
+      builder: (context, _, __) {
+        return Tooltip(message: _colorTooltip(c), child: child);
+      },
+    );
+  }
+
   /// 公开当前颜色模式（纯色/色彩），供父组件访问
   ColorPreviewMode get mode => _mode;
 
   @override
   void initState() {
     super.initState();
+    warmupPaletteNameIndex();
     _allChars = _orderedChars(widget.group);
     final defaults = _allChars.map((ch) => _defaultColorForChar(ch)).toList();
     _perCharColorsLight = List<Color>.from(defaults);
@@ -818,16 +878,19 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                             widget.onPerCharPureColorChanged
                                 ?.call(_allChars[i], picked);
                           },
-                          child: Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: colors[i],
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                color: Theme.of(context)
-                                    .dividerColor
-                                    .withValues(alpha: 0.4),
+                          child: _withColorTooltip(
+                            colors[i],
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: colors[i],
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Theme.of(context)
+                                      .dividerColor
+                                      .withValues(alpha: 0.4),
+                                ),
                               ),
                             ),
                           ),
@@ -910,15 +973,19 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                         ?.call(_allChars[i], picked);
                   }
                 },
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: global,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color:
-                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+                child: _withColorTooltip(
+                  global,
+                  Container(
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: global,
+                      borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: Theme.of(context)
+                            .dividerColor
+                            .withValues(alpha: 0.4),
+                      ),
                     ),
                   ),
                 ),
@@ -1016,19 +1083,22 @@ class _DualThemeColorPreviewState extends State<_DualThemeColorPreview> {
                             widget.onPerCharPureColorChanged
                                 ?.call(_allChars[i], picked);
                           },
-                          child: Container(
-                            width: 22,
-                            height: 22,
-                            decoration: BoxDecoration(
-                              color: blockColors[i],
-                              borderRadius: BorderRadius.circular(4),
-                              border: Border.all(
-                                width: selected.contains(i) ? 2 : 1,
-                                color: selected.contains(i)
-                                    ? Theme.of(context).colorScheme.primary
-                                    : Theme.of(context)
-                                        .dividerColor
-                                        .withValues(alpha: 0.4),
+                          child: _withColorTooltip(
+                            blockColors[i],
+                            Container(
+                              width: 22,
+                              height: 22,
+                              decoration: BoxDecoration(
+                                color: blockColors[i],
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  width: selected.contains(i) ? 2 : 1,
+                                  color: selected.contains(i)
+                                      ? Theme.of(context).colorScheme.primary
+                                      : Theme.of(context)
+                                          .dividerColor
+                                          .withValues(alpha: 0.4),
+                                ),
                               ),
                             ),
                           ),

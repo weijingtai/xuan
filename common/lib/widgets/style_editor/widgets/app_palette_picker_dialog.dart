@@ -76,6 +76,57 @@ class PaletteEntry {
 final Map<String, Future<List<PaletteEntry>>> _paletteCache = {};
 Future<Set<String>>? _assetKeysFuture;
 
+final ValueNotifier<int> paletteNameIndexVersion = ValueNotifier<int>(0);
+Map<int, String>? _paletteNameIndex;
+Future<void>? _paletteNameIndexFuture;
+
+void warmupPaletteNameIndex() {
+  _paletteNameIndexFuture ??= () async {
+    final zhongguose = await _loadPaletteByAny(
+      'zhongguose',
+      const [
+        'assets/colors/zhongguose.pb',
+        'packages/common/assets/colors/zhongguose.pb',
+        '../assets/colors/zhongguose.pb',
+      ],
+    );
+    final forbidden = await _loadPaletteByAny(
+      'forbidden_city',
+      const [
+        'assets/colors/forbidden_city.pb',
+        'packages/common/assets/colors/forbidden_city.pb',
+        '../assets/colors/forbidden_city.pb',
+      ],
+    );
+
+    final map = <int, String>{};
+    void addAll(List<PaletteEntry> entries) {
+      for (final e in entries) {
+        final argb = e.color.toARGB32();
+        final name = e.name.trim();
+        if (name.isEmpty) continue;
+        final prev = map[argb];
+        if (prev == null || prev.isEmpty) {
+          map[argb] = name;
+          continue;
+        }
+        if (prev == name) continue;
+        map[argb] = '$prev / $name';
+      }
+    }
+
+    addAll(zhongguose);
+    addAll(forbidden);
+
+    _paletteNameIndex = map;
+    paletteNameIndexVersion.value = paletteNameIndexVersion.value + 1;
+  }();
+}
+
+String? lookupPaletteName(Color color) {
+  return _paletteNameIndex?[color.toARGB32()];
+}
+
 Future<List<PaletteEntry>> _loadPaletteByAny(
   String cacheKey,
   List<String> assetPaths,
@@ -305,16 +356,20 @@ Future<Color?> showAppPalettePickerDialog(
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 18,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        color: info.color,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: Theme.of(ctx).brightness == Brightness.dark
-                              ? Colors.white24
-                              : Colors.black12,
+                    Tooltip(
+                      message:
+                          '${info.name.isEmpty ? '未命名' : info.name}\n${info.hex}\n${info.rgb}',
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: info.color,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(ctx).brightness == Brightness.dark
+                                ? Colors.white24
+                                : Colors.black12,
+                          ),
                         ),
                       ),
                     ),
@@ -551,7 +606,11 @@ class _PaletteGrid extends StatelessWidget {
                       child: Stack(
                         children: [
                           Positioned.fill(
-                            child: Container(color: e.color),
+                            child: Tooltip(
+                              message:
+                                  '${e.name.isEmpty ? '未命名' : e.name}\n${e.hex}\n${e.rgb}',
+                              child: Container(color: e.color),
+                            ),
                           ),
                           if (isSelected)
                             Positioned(

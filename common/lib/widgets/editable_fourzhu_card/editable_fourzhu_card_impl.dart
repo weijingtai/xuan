@@ -934,6 +934,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _metricsSnapshotNotifier = ValueNotifier(_computeMetricsSnapshot());
     widget.themeNotifier.addListener(_onThemeChanged);
     widget.brightnessNotifier.addListener(_onBrightnessChanged);
+    widget.colorPreviewModeNotifier.addListener(_onColorPreviewModeChanged);
   }
 
   /// 在父组件传入的属性发生变化时同步更新布局模型与尺寸
@@ -967,6 +968,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (oldWidget.brightnessNotifier != widget.brightnessNotifier) {
       oldWidget.brightnessNotifier.removeListener(_onBrightnessChanged);
       widget.brightnessNotifier.addListener(_onBrightnessChanged);
+    }
+
+    if (oldWidget.colorPreviewModeNotifier != widget.colorPreviewModeNotifier) {
+      oldWidget.colorPreviewModeNotifier
+          .removeListener(_onColorPreviewModeChanged);
+      widget.colorPreviewModeNotifier.addListener(_onColorPreviewModeChanged);
     }
 
     final bool rowsVisibilityChanged = oldWidget.showGrip != widget.showGrip;
@@ -1026,6 +1033,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _typographySectionNotifier.dispose();
     widget.themeNotifier.removeListener(_onThemeChanged);
     widget.brightnessNotifier.removeListener(_onBrightnessChanged);
+    widget.colorPreviewModeNotifier.removeListener(_onColorPreviewModeChanged);
 
     super.dispose();
   }
@@ -3259,14 +3267,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       switch (rowType) {
         case RowType.columnHeaderRow:
           final theme = widget.themeNotifier.value;
-          final cellStyleConfig = theme.cell.rowTitleCellConfig;
           final typography = theme.typography;
+          final cellStyleConfig = theme.cell.getBy(RowType.columnHeaderRow);
           cell = multiLineCell(
             size: Size(size.width, size.height),
             cellStyleConfig: cellStyleConfig,
-            mainTextStyleConfig: typography.pillarTitle,
+            mainTextStyleConfig: typography.getCellContentBy(
+              RowType.columnHeaderRow,
+            ),
             content: pillarType.name,
           );
+          break;
 
         case RowType.heavenlyStem:
           final textStyleConfig = widget.themeNotifier.value.typography
@@ -3288,6 +3299,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 widget.themeNotifier.value.typography.getCellTitleBy(
               RowType.heavenlyStem,
             ),
+            rowTypeForTitleColor: RowType.heavenlyStem,
             content: pillarJiaZi.tianGan.name,
             title: titleLabel,
           );
@@ -3311,6 +3323,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 widget.themeNotifier.value.typography.getCellTitleBy(
               RowType.earthlyBranch,
             ),
+            rowTypeForTitleColor: RowType.earthlyBranch,
             content: pillarJiaZi.diZhi.name,
             title: titleLabel,
           );
@@ -3331,6 +3344,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: typography.getCellContentBy(rowType),
             titleTextStyleConfig: typography.getCellTitleBy(rowType),
+            rowTypeForTitleColor: rowType,
             content: text,
             title: titleLabel,
           );
@@ -3356,6 +3370,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     required CellStyleConfig cellStyleConfig,
     required TextStyleConfig mainTextStyleConfig,
     TextStyleConfig? titleTextStyleConfig,
+    RowType? rowTypeForTitleColor,
     required String content,
     String? title,
     double predictLineHeightConstant = 1.4,
@@ -3396,16 +3411,60 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               height: mainTextStyleConfig.fontStyleDataModel.height,
               forceStrutHeight: true)),
       subChild: shouldShowTitle
-          ? Text(title!,
-              style: titleTextStyleConfig.toTextStyle(
-                char: title,
-                colorPreviewMode: widget.colorPreviewModeNotifier.value,
-                brightness: widget.brightnessNotifier.value,
-              ),
-              strutStyle: StrutStyle(
-                  fontSize: titleTextStyleConfig.fontStyleDataModel.fontSize,
-                  height: titleTextStyleConfig.fontStyleDataModel.height,
-                  forceStrutHeight: true))
+          ? Builder(builder: (context) {
+              final theme = widget.themeNotifier.value;
+              final b = widget.brightnessNotifier.value;
+              final m = widget.colorPreviewModeNotifier.value;
+
+              final titleCfg = titleTextStyleConfig!;
+              final titleColor = (rowTypeForTitleColor != null &&
+                      theme.typography.cellTitleMapper
+                          .containsKey(rowTypeForTitleColor))
+                  ? titleCfg.colorMapperDataModel.getBy(
+                      theme: b,
+                      mode: m,
+                      content: title,
+                    )
+                  : theme.typography.rowTitle.colorMapperDataModel.getBy(
+                      theme: b,
+                      mode: m,
+                      content: title,
+                    );
+
+              final shadowBase =
+                  titleCfg.textShadowDataModel.resolveColor(b, titleColor);
+
+              final titleStyle = TextStyle(
+                fontFamily: titleCfg.fontStyleDataModel.fontFamily,
+                fontSize: titleCfg.fontStyleDataModel.fontSize,
+                color: titleColor,
+                fontWeight: titleCfg.fontStyleDataModel.fontWeight,
+                height: titleCfg.fontStyleDataModel.height,
+                shadows: titleCfg.textShadowDataModel.shadowEnabled
+                    ? [
+                        Shadow(
+                          color: shadowBase,
+                          blurRadius:
+                              titleCfg.textShadowDataModel.shadowBlurRadius,
+                          offset: Offset(
+                            titleCfg.textShadowDataModel.shadowOffsetX,
+                            titleCfg.textShadowDataModel.shadowOffsetY,
+                          ),
+                        )
+                      ]
+                    : null,
+              );
+
+              return Text(
+                title!,
+                style: titleStyle,
+                strutStyle: StrutStyle(
+                  fontSize: titleCfg.fontStyleDataModel.fontSize,
+                  height: titleCfg.fontStyleDataModel.height,
+                  forceStrutHeight: true,
+                ),
+              );
+            })
           : SizedBox(),
       // subChild: shouldShowTitle
       //     ? Container(
@@ -3592,6 +3651,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   if (children.length == rowPayloads.length * 2) {
                     List<Widget> finalChildren = [];
                     List<Widget> currentSegmentChildren = [];
+                    var segmentGapIndex = 0;
 
                     for (int i = 0; i < rowPayloads.length; i++) {
                       final row = rowPayloads[i];
@@ -3614,8 +3674,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                         }
                         // 添加分隔符行本身的 Widget（通常是占位或间隙），不包裹在样式容器中
                         finalChildren.add(Column(
+                            key: Key(
+                                'pillar-segment-gap-$pillarIndex-$segmentGapIndex'),
                             mainAxisSize: MainAxisSize.min,
                             children: [ghost, cell]));
+                        segmentGapIndex++;
                       } else {
                         currentSegmentChildren.add(ghost);
                         currentSegmentChildren.add(cell);
@@ -5175,6 +5238,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _scheduleRebuild();
   }
 
+  void _onColorPreviewModeChanged() {
+    _scheduleRebuild();
+  }
+
   // Build full row feedback (row title + cells across all columns)
   /// 构建整行拖拽反馈视图（包含行标题与跨所有列的单元格）。
   ///
@@ -5360,14 +5427,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// - [gender]: The `Gender` enum to display.
   ///
   /// Returns: A `Text` widget styled by `_resolveTextStyle`.
-  Text _genderText(Gender gender) => Text(
-        gender == Gender.male ? '乾造' : '坤造',
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        ),
-      );
+  Text _genderText(Gender gender) {
+    final theme = widget.themeNotifier.value;
+    final typography = theme.typography;
+    final label = gender == Gender.male ? '乾造' : '坤造';
+    final style = typography.rowTitle.toTextStyle(
+      char: label,
+      brightness: widget.brightnessNotifier.value,
+      colorPreviewMode: widget.colorPreviewModeNotifier.value,
+    );
+    return Text(label, style: style);
+  }
 
   /// Builds row title text with optional global typography overrides.
   ///

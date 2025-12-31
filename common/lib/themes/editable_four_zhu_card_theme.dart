@@ -647,7 +647,7 @@ class TypographySection {
 
   TextStyleConfig getCellContentBy(RowType rowType) {
     if (rowType == RowType.columnHeaderRow) {
-      return cellContentMapper[rowType] ?? rowTitle;
+      return cellContentMapper[rowType] ?? pillarTitle;
     }
     return cellContentMapper[rowType] ?? globalContent;
   }

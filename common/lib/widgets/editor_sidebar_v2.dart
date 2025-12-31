@@ -304,7 +304,7 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
     return ValueListenableBuilder<EditableFourZhuCardTheme>(
       valueListenable: demoVm.themeNotifier,
       builder: (ctx, theme, _) {
-        final rowTitleCfg = theme.typography.rowTitle;
+        final pillarTitleCfg = theme.typography.pillarTitle;
         final cellCfg = theme.cell.pillarTitleCellConfig;
         final displayHeader = theme.displayHeaderRow;
         final t = Theme.of(context);
@@ -341,11 +341,19 @@ class _HeaderRowStyleSectionState extends State<_HeaderRowStyleSection> {
               ),
               ColorfulTextStyleEditorV2Enhanced(
                 type: RowType.columnHeaderRow,
-                initialConfig: rowTitleCfg,
+                initialConfig: pillarTitleCfg,
+                brightnessNotifier: demoVm!.cardBrightnessNotifier,
+                colorPreviewModeNotifier: demoVm!.colorPreviewModeNotifier,
+                values: PillarType.values
+                    .where((p) =>
+                        p != PillarType.separator &&
+                        p != PillarType.rowTitleColumn)
+                    .map((p) => p.name)
+                    .toList(growable: false),
                 onChanged: (TextStyleConfig style) {
                   demoVm!.updateEditableFourZhuCardTheme(
                     theme.copyWith(
-                      typography: theme.typography.copyWith(rowTitle: style),
+                      typography: theme.typography.copyWith(pillarTitle: style),
                     ),
                   );
                 },
@@ -649,12 +657,16 @@ class _CoreRowItemState extends State<_CoreRowItem> {
   Widget _buildCoreRowEditor() {
     final label = _getRowTypeName(widget.config.type);
     // final initial = _configToTextStyle(widget.config);
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
     return ColorfulTextStyleEditorV2Enhanced(
       // label: '$label - 字体和阴影设置',
       type: widget.config.type,
 
       // initialStyle: initial,
       initialConfig: widget.config.textStyleConfig,
+      brightnessNotifier: demoVm.cardBrightnessNotifier,
+      colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
       values: widget.config.type == RowType.heavenlyStem
           ? TianGan.values.take(10).map((e) => e.name).toList()
           : DiZhi.values.take(12).map((e) => e.name).toList(),
@@ -989,10 +1001,14 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     }
 
     if (values != null) {
+      final demoVm =
+          Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
       return ColorfulTextStyleEditorV2Enhanced(
         type: type,
         values: values,
         initialConfig: widget.config.textStyleConfig,
+        brightnessNotifier: demoVm.cardBrightnessNotifier,
+        colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
         onChanged: (style) {
           widget.onInlineSave(
             widget.config.copyWith(

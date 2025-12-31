@@ -1,10 +1,7 @@
-import 'dart:convert';
-
 import 'package:common/enums/enum_twelve_zhang_sheng.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../enums/layout_template_enums.dart';
-import '../../models/layout_template.dart';
 import '../../models/drag_payloads.dart';
 import '../../models/text_style_config.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
@@ -92,8 +89,17 @@ class RowStyleEditorPanel extends StatelessWidget {
                       cfg: theme.cell.getBy(validRows[i].rowType),
                       txtCfg: theme.typography
                           .getCellContentBy(validRows[i].rowType),
-                      inCellTitleTextCfg:
-                          theme.typography.getCellTitleBy(validRows[i].rowType),
+                      inCellTitleTextCfg: () {
+                        final rt = validRows[i].rowType;
+                        final base = theme.typography.getCellTitleBy(rt);
+                        final hasCustom =
+                            theme.typography.cellTitleMapper.containsKey(rt);
+                        if (hasCustom) return base;
+                        return base.copyWith(
+                          colorMapperDataModel:
+                              theme.typography.rowTitle.colorMapperDataModel,
+                        );
+                      }(),
                       payload: validRows[i],
                       onTextStyleChanged: (newTextStyle) {
                         onTextStyleChanged(context, validRows[i].uuid,
@@ -214,8 +220,19 @@ class RowItem extends StatelessWidget {
       required this.onInCellTitleTextStyleChanged,
       this.leading});
 
-  List<String>? _valuesForRowType(RowType type) {
+  List<String>? _valuesForRowType(CardPayload cardPayload, RowType type) {
     switch (type) {
+      case RowType.columnHeaderRow:
+        final out = <String>[];
+        for (final uuid in cardPayload.pillarOrderUuid) {
+          final p = cardPayload.pillarMap[uuid];
+          if (p == null) continue;
+          if (p.pillarType == PillarType.separator) continue;
+          if (p.pillarType == PillarType.rowTitleColumn) continue;
+          final name = p.pillarType.name;
+          if (!out.contains(name)) out.add(name);
+        }
+        return out;
       case RowType.heavenlyStem:
         return TianGan.values
             .take(10)
@@ -269,6 +286,8 @@ class RowItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final demoVm =
+        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
     // print(cfg.type);
     // if (cfg.type == RowType.earthlyBranch) {
     //   print(json.encode(cfg
@@ -336,7 +355,7 @@ class RowItem extends StatelessWidget {
           Row(
             children: [
               const Expanded(child: Text('上下内边距 (px)')),
-              Text('${cfg.padding.bottom.toStringAsFixed(0) ?? 0}'),
+              Text(cfg.padding.bottom.toStringAsFixed(0)),
             ],
           ),
           Slider(
@@ -355,7 +374,7 @@ class RowItem extends StatelessWidget {
           Row(
             children: [
               const Expanded(child: Text('上下外边距 (px)')),
-              Text('${cfg.margin.top.toStringAsFixed(0) ?? 0}'),
+              Text(cfg.margin.top.toStringAsFixed(0)),
             ],
           ),
           Slider(
@@ -374,7 +393,7 @@ class RowItem extends StatelessWidget {
           Row(
             children: [
               const Expanded(child: Text('左右外边距 (px)')),
-              Text('${cfg.margin.left.toStringAsFixed(0) ?? 0}'),
+              Text(cfg.margin.left.toStringAsFixed(0)),
             ],
           ),
           Slider(
@@ -393,7 +412,7 @@ class RowItem extends StatelessWidget {
           Row(
             children: [
               const Expanded(child: Text('左右内边距 (px)')),
-              Text('${cfg.padding.left.toStringAsFixed(0) ?? 0}'),
+              Text(cfg.padding.left.toStringAsFixed(0)),
             ],
           ),
           Slider(
@@ -414,7 +433,13 @@ class RowItem extends StatelessWidget {
               lable: '字体',
               type: payload.rowType,
               initialConfig: txtCfg,
-              values: _valuesForRowType(payload.rowType),
+              brightnessNotifier: demoVm.cardBrightnessNotifier,
+              colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+              values: _valuesForRowType(
+                demoVm.cardPayloadNotifier.value,
+                payload.rowType,
+              ),
+              showPureAllConsistentButton: false,
               onChanged: onTextStyleChanged,
             ),
           if (cfg.showsTitleInCell) ...[
@@ -423,6 +448,11 @@ class RowItem extends StatelessWidget {
                 lable: '内标题字体',
                 type: payload.rowType,
                 initialConfig: inCellTitleTextCfg,
+                brightnessNotifier: demoVm.cardBrightnessNotifier,
+                colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+                values: [getRowTypeLabel(payload.rowType)],
+                enableColorEditing: true,
+                showPureAllConsistentButton: false,
                 onChanged: onInCellTitleTextStyleChanged),
           ]
         ],
@@ -432,219 +462,5 @@ class RowItem extends StatelessWidget {
 
   String getRowTypeLabel(RowType type) {
     return ConstantValuesUtils.labelForRowType(type);
-  }
-}
-
-class _RowItem extends StatelessWidget {
-  final RowConfig cfg;
-  final FourZhuEditorViewModel vm;
-  const _RowItem({required this.cfg, required this.vm});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    print(cfg.type);
-    if (cfg.type == RowType.earthlyBranch) {
-      print(json.encode(cfg
-          .textStyleConfig.colorMapperDataModel.colorfulLightMapper
-          .map((k, v) => MapEntry(k, v.toString()))));
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.08)),
-      ),
-      child: ExpansionTile(
-        title:
-            Text(getRowTypeLabel(cfg.type), style: theme.textTheme.titleSmall),
-        childrenPadding: const EdgeInsets.all(12),
-        children: [
-          SwitchListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('显示标题'),
-            value: cfg.isTitleVisible,
-            onChanged: (v) => vm.updateRowTitleVisibility(cfg.type, v),
-          ),
-          Row(
-            children: [
-              const Expanded(child: Text('上下内边距 (px)')),
-              Text('${cfg.paddingVertical?.toStringAsFixed(0) ?? 0}'),
-            ],
-          ),
-          Slider(
-            value: (cfg.paddingVertical ?? 0).toDouble(),
-            min: 0,
-            max: 32,
-            onChanged: (v) {
-              vm.updateRowStyle(cfg.type, padding: v);
-              final demoVm =
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              final theme = demoVm.themeNotifier.value;
-              final cell = theme.cell;
-              final mapper = Map<RowType, CellStyleConfig>.of(
-                  cell.rowTypeCellConfigMapper);
-              final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              final pad = EdgeInsets.fromLTRB(
-                  base.padding.left, v, base.padding.right, v);
-              mapper[cfg.type] = base.copyWith(padding: pad);
-              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
-            },
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Expanded(child: Text('上下外边距 (px)')),
-              Text('${cfg.marginVertical?.toStringAsFixed(0) ?? 0}'),
-            ],
-          ),
-          Slider(
-            value: (cfg.marginVertical ?? 0).toDouble(),
-            min: 0,
-            max: 32,
-            onChanged: (v) {
-              vm.updateRowStyle(cfg.type, marginVertical: v);
-              final demoVm =
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              final theme = demoVm.themeNotifier.value;
-              final cell = theme.cell;
-              final mapper = Map<RowType, CellStyleConfig>.of(
-                  cell.rowTypeCellConfigMapper);
-              final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              final mar = EdgeInsets.fromLTRB(
-                  base.margin.left, v, base.margin.right, v);
-              mapper[cfg.type] = base.copyWith(margin: mar);
-              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
-            },
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Expanded(child: Text('左右外边距 (px)')),
-              Text('${cfg.marginHorizontal?.toStringAsFixed(0) ?? 0}'),
-            ],
-          ),
-          Slider(
-            value: (cfg.marginHorizontal ?? 0).toDouble(),
-            min: 0,
-            max: 32,
-            onChanged: (v) {
-              vm.updateRowStyle(cfg.type, marginHorizontal: v);
-              final demoVm =
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              final theme = demoVm.themeNotifier.value;
-              final cell = theme.cell;
-              final mapper = Map<RowType, CellStyleConfig>.of(
-                  cell.rowTypeCellConfigMapper);
-              final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              final mar = EdgeInsets.fromLTRB(
-                  v, base.margin.top, v, base.margin.bottom);
-              mapper[cfg.type] = base.copyWith(margin: mar);
-              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
-            },
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              const Expanded(child: Text('左右内边距 (px)')),
-              Text('${cfg.paddingHorizontal?.toStringAsFixed(0) ?? 0}'),
-            ],
-          ),
-          Slider(
-            value: (cfg.paddingHorizontal ?? 0).toDouble(),
-            min: 0,
-            max: 32,
-            onChanged: (v) {
-              vm.updateRowStyle(cfg.type, paddingHorizontal: v);
-              final demoVm =
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              final theme = demoVm.themeNotifier.value;
-              final cell = theme.cell;
-              final mapper = Map<RowType, CellStyleConfig>.of(
-                  cell.rowTypeCellConfigMapper);
-              final base = mapper[cfg.type] ?? cell.globalCellConfig;
-              final pad = EdgeInsets.fromLTRB(
-                  v, base.padding.top, v, base.padding.bottom);
-              mapper[cfg.type] = base.copyWith(padding: pad);
-              demoVm.updateEditableFourZhuCardTheme(theme.copyWith(
-                  cell: cell.copyWith(rowTypeCellConfigMapper: mapper)));
-            },
-          ),
-          const SizedBox(height: 8),
-          ColorfulTextStyleEditorV2Enhanced(
-            type: cfg.type,
-            initialConfig: cfg.textStyleConfig,
-            values: cfg
-                .textStyleConfig.colorMapperDataModel.colorfulDarkMapper.keys
-                .toList(),
-            // values: cfg.type == RowType.heavenlyStem
-            //     ? TianGan.values.take(10).map((e) => e.name).toList()
-            //     : DiZhi.values.take(12).map((e) => e.name).toList(),
-            onChanged: (TextStyleConfig style) {
-              vm.updateRowStyle(cfg.type, textStyleConfig: style);
-              final demoVm =
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-              final theme = demoVm.themeNotifier.value;
-              final typo = theme.typography;
-              final mapper =
-                  Map<RowType, TextStyleConfig>.of(typo.cellContentMapper);
-              mapper[cfg.type] = style;
-              demoVm.updateEditableFourZhuCardTheme(
-                theme.copyWith(
-                  typography: typo.copyWith(cellContentMapper: mapper),
-                ),
-              );
-            },
-            lable: '字体',
-          ),
-        ],
-      ),
-    );
-  }
-
-  String getRowTypeLabel(RowType type) {
-    switch (type) {
-      case RowType.columnHeaderRow: // 列标题行
-        return '标题行';
-      case RowType.heavenlyStem: // 天干
-        return '天干';
-      case RowType.earthlyBranch: // 地支
-        return '地支';
-      case RowType.tenGod: // 十神
-        return '十神';
-      case RowType.naYin: // 纳音
-        return '纳音';
-      case RowType.kongWang: // 空亡
-        return '空亡';
-      case RowType.xunShou: // 旬首
-        return '旬首';
-      case RowType.hiddenStems: // 藏干
-        return '藏干';
-
-      case RowType.hiddenStemsPrimary: // 藏干主气
-        return '藏干·主气';
-      case RowType.hiddenStemsSecondary: // 藏干中气
-        return '藏干·中气';
-      case RowType.hiddenStemsTertiary: // 藏干余气
-        return '藏干·余气';
-      case RowType.hiddenStemsTenGod: // 藏干十神
-        return '';
-      case RowType.hiddenStemsPrimaryGods: // 藏干主气 十神
-        return '十神·藏干主气';
-      case RowType.hiddenStemsSecondaryGods: // 藏干中气 十神
-        return '十神·藏干中气';
-      case RowType.hiddenStemsTertiaryGods: // 藏干余气 十神
-        return '十神·藏干余气';
-      case RowType.starYun: // 星运
-        return '星运';
-      case RowType.selfSiting: // 自坐
-        return '自坐';
-      case RowType.separator: // UI 分隔行：仅用于渲染水平分割线，不包含数据内容
-        return '分隔行';
-    }
   }
 }

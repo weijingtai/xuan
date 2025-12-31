@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tuple/tuple.dart';
 import '../../enums/layout_template_enums.dart';
 import '../../models/text_style_config.dart';
-import '../../const_resources_mapper.dart';
 import 'widgets/app_palette_picker_dialog.dart';
 
 /// ColorfulTextStyleEditorV2Enhanced
@@ -19,6 +17,10 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
   final List<String>? values;
   final ValueChanged<TextStyleConfig> onChanged;
   final TextStyleConfig initialConfig;
+  final ValueNotifier<Brightness>? brightnessNotifier;
+  final ValueNotifier<ColorPreviewMode>? colorPreviewModeNotifier;
+  final bool enableColorEditing;
+  final bool showPureAllConsistentButton;
 
   final String lable;
 
@@ -29,6 +31,10 @@ class ColorfulTextStyleEditorV2Enhanced extends StatefulWidget {
     required TextStyleConfig initialConfig,
     required this.lable,
     this.values,
+    this.brightnessNotifier,
+    this.colorPreviewModeNotifier,
+    this.enableColorEditing = true,
+    this.showPureAllConsistentButton = true,
   }) : initialConfig = _normalizeInitialConfig(initialConfig, values);
 
   static TextStyleConfig _normalizeInitialConfig(
@@ -101,9 +107,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
   final ValueNotifier<int> _previewCharIndexNotifier = ValueNotifier(0);
   // int _previewCharIndex = 0;
   late final ValueNotifier<TextShadowDataModel> shadowDataModelNotifier;
-  final ValueNotifier<Tuple2<Brightness, ColorPreviewMode>>
-      charPreviewNotifier =
-      ValueNotifier(Tuple2(Brightness.light, ColorPreviewMode.colorful));
+  late final ValueNotifier<Brightness> selectedThemeNotifier;
+  late final ValueNotifier<ColorPreviewMode> selectedModeNotifier;
+  late final bool _ownsThemeNotifier;
+  late final bool _ownsModeNotifier;
+  bool _didInitThemeFromSystem = false;
   Color darkBackground = Colors.blueGrey.shade800;
   Color lightBackground = Colors.white;
   bool _bwStrengthLinked = true;
@@ -111,12 +119,67 @@ class _ColorfulTextStyleEditorV2EnhancedState
   Color? _pureBatchColorLight;
   Color? _pureBatchColorDark;
 
+  int _chan(double v) => (v * 255.0).round().clamp(0, 255) & 0xff;
+
+  String _hex2(int v) => v.toRadixString(16).padLeft(2, '0').toUpperCase();
+
+  String _formatHex(Color c) {
+    final a = _chan(c.a);
+    final r = _chan(c.r);
+    final g = _chan(c.g);
+    final b = _chan(c.b);
+    return '#${_hex2(a)}${_hex2(r)}${_hex2(g)}${_hex2(b)}';
+  }
+
+  String _formatRgba(Color c) {
+    final a8 = _chan(c.a);
+    final r8 = _chan(c.r);
+    final g8 = _chan(c.g);
+    final b8 = _chan(c.b);
+    final aPct = (a8 / 255.0 * 100).round();
+    return 'RGBA($r8, $g8, $b8, $aPct%)';
+  }
+
+  String _colorTooltip(Color c) {
+    final name = lookupPaletteName(c);
+    final body = '${_formatHex(c)} · ${_formatRgba(c)}';
+    if (name == null || name.isEmpty) return body;
+    return '$name\n$body';
+  }
+
+  Widget _withColorTooltip(Color c, Widget child) {
+    return ValueListenableBuilder<int>(
+      valueListenable: paletteNameIndexVersion,
+      builder: (context, _, __) {
+        return Tooltip(
+          message: _colorTooltip(c),
+          child: child,
+        );
+      },
+    );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_ownsThemeNotifier) return;
+    if (_didInitThemeFromSystem) return;
+    _didInitThemeFromSystem = true;
+    selectedThemeNotifier.value = MediaQuery.platformBrightnessOf(context);
+  }
+
   @override
   void dispose() {
-    charPreviewNotifier.dispose();
+    if (_ownsThemeNotifier) {
+      selectedThemeNotifier.dispose();
+    }
+    if (_ownsModeNotifier) {
+      selectedModeNotifier.dispose();
+    }
     shadowDataModelNotifier.dispose();
     _previewCharIndexNotifier.dispose();
     fontStyleDataModelNotifier.dispose();
+    colorMapperDataModelNotifier.dispose();
 
     super.dispose();
   }
@@ -124,6 +187,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
   @override
   void initState() {
     super.initState();
+    warmupPaletteNameIndex();
     fontStyleDataModelNotifier =
         ValueNotifier(widget.initialConfig.fontStyleDataModel)
           ..addListener(() => onFontChanged());
@@ -135,6 +199,14 @@ class _ColorfulTextStyleEditorV2EnhancedState
     colorMapperDataModelNotifier = ValueNotifier(
       widget.initialConfig.colorMapperDataModel,
     )..addListener(() => onFontChanged());
+
+    _ownsThemeNotifier = widget.brightnessNotifier == null;
+    selectedThemeNotifier = widget.brightnessNotifier ??
+        ValueNotifier<Brightness>(Brightness.light);
+
+    _ownsModeNotifier = widget.colorPreviewModeNotifier == null;
+    selectedModeNotifier = widget.colorPreviewModeNotifier ??
+        ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
   }
 
   Color _firstOrFallback(Map<String, Color> map, Color fallback) {
@@ -143,16 +215,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
   }
 
   void onFontChanged() {
-    print('🔍 [onFontChanged] 开始传播样式变更到父组件');
     final config = TextStyleConfig(
       colorMapperDataModel: colorMapperDataModelNotifier.value,
       textShadowDataModel: shadowDataModelNotifier.value,
       fontStyleDataModel: fontStyleDataModelNotifier.value,
     );
-    print(
-        '🔍 [onFontChanged] 新 colorMapperDataModel.pureLightMapper 包含 ${config.colorMapperDataModel.pureLightMapper.length} 个颜色');
-    print(
-        '🔍 [onFontChanged] 新 colorMapperDataModel.colorfulLightMapper 包含 ${config.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       widget.onChanged(config);
     });
@@ -207,15 +274,20 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 return _buildShadowSection(value);
               },
             ),
-            const SizedBox(height: 32),
-
-            // 主题 Section
-            ValueListenableBuilder<Tuple2<Brightness, ColorPreviewMode>>(
-              valueListenable: charPreviewNotifier,
-              builder: (context, value, child) {
-                return _buildThemeSection(value.item1, value.item2);
-              },
-            ),
+            if (widget.enableColorEditing) ...[
+              const SizedBox(height: 32),
+              ValueListenableBuilder<Brightness>(
+                valueListenable: selectedThemeNotifier,
+                builder: (context, theme, child) {
+                  return ValueListenableBuilder<ColorPreviewMode>(
+                    valueListenable: selectedModeNotifier,
+                    builder: (context, mode, child) {
+                      return _buildThemeSection(theme, mode);
+                    },
+                  );
+                },
+              ),
+            ],
           ],
         ),
       ),
@@ -486,19 +558,31 @@ class _ColorfulTextStyleEditorV2EnhancedState
 
         if (shadowDataModel.shadowEnabled) ...[
           // 阴影预览框（简洁布局）
-          ValueListenableBuilder(
-              valueListenable: charPreviewNotifier,
-              builder: (ctx, tuple2, _) {
-                return ValueListenableBuilder(
+          ValueListenableBuilder<Brightness>(
+            valueListenable: selectedThemeNotifier,
+            builder: (ctx, previewTheme, _) {
+              return ValueListenableBuilder<ColorPreviewMode>(
+                valueListenable: selectedModeNotifier,
+                builder: (ctx, previewMode, _) {
+                  return ValueListenableBuilder(
                     valueListenable: colorMapperDataModelNotifier,
                     builder: (ctx, map, _) {
                       return ValueListenableBuilder(
                         valueListenable: fontStyleDataModelNotifier,
                         builder: (ctx, style, _) => _buildShadowPreview(
-                            shadowDataModel, map, tuple2, style),
+                          shadowDataModel,
+                          map,
+                          previewTheme,
+                          previewMode,
+                          style,
+                        ),
                       );
-                    });
-              }),
+                    },
+                  );
+                },
+              );
+            },
+          ),
           // 收紧间距，减少布局压力
           const SizedBox(height: 16),
 
@@ -583,7 +667,8 @@ class _ColorfulTextStyleEditorV2EnhancedState
   Widget _buildShadowPreview(
       TextShadowDataModel shadowDataModel,
       ColorMapperDataModel colorMapperDataModel,
-      Tuple2<Brightness, ColorPreviewMode> previewInfo,
+      Brightness previewTheme,
+      ColorPreviewMode previewMode,
       FontStyleDataModel fontStyleDataModel) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -626,11 +711,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
             // 中间：大预览区域
             Expanded(
                 child: AnimatedContainer(
-                    duration: Duration(milliseconds: 300),
+                    duration: const Duration(milliseconds: 300),
                     height: 180,
                     width: 180,
                     decoration: BoxDecoration(
-                      color: previewInfo.item1 == Brightness.light
+                      color: previewTheme == Brightness.light
                           ? lightBackground
                           : darkBackground,
                       borderRadius: BorderRadius.circular(12),
@@ -640,23 +725,23 @@ class _ColorfulTextStyleEditorV2EnhancedState
                         valueListenable: _previewCharIndexNotifier,
                         builder: (ctx, index, _) {
                           final baseShadowColor =
-                              previewInfo.item1 == Brightness.light
+                              previewTheme == Brightness.light
                                   ? shadowDataModel.lightShadowColor
                                   : shadowDataModel.darkShadowColor;
                           final hasValues =
                               (widget.values?.isNotEmpty ?? false);
                           final vals = widget.values ?? const <String>[];
                           final int safeIndex = vals.isNotEmpty
-                              ? (index as int).clamp(0, vals.length - 1).toInt()
+                              ? index.clamp(0, vals.length - 1).toInt()
                               : 0;
                           String char = hasValues ? vals[safeIndex] : '甲';
                           final Color textColor = colorMapperDataModel.getBy(
-                            theme: previewInfo.item1,
-                            mode: previewInfo.item2,
+                            theme: previewTheme,
+                            mode: previewMode,
                             content: char,
                           );
                           final shadowColor = shadowDataModel.followTextColor
-                              ? textColor.withAlpha(baseShadowColor.alpha)
+                              ? textColor.withAlpha(baseShadowColor.a.round())
                               : baseShadowColor;
                           return Stack(
                             children: [
@@ -698,7 +783,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                       ),
                                       onTap: () {
                                         final len = vals.length;
-                                        var next = ((index as int) - 1) % len;
+                                        var next = (index - 1) % len;
                                         if (next < 0) next = len - 1;
                                         _previewCharIndexNotifier.value = next;
                                       },
@@ -722,7 +807,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                       onTap: () {
                                         final len = vals.length;
                                         _previewCharIndexNotifier.value =
-                                            ((index as int) + 1) % len;
+                                            (index + 1) % len;
                                       },
                                     ),
                                   ),
@@ -743,7 +828,7 @@ class _ColorfulTextStyleEditorV2EnhancedState
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
-                                        '${(index as int) + 1} / ${vals.length}',
+                                        '${index + 1} / ${vals.length}',
                                         style: const TextStyle(
                                           color: Colors.white,
                                           fontSize: 11,
@@ -874,84 +959,141 @@ class _ColorfulTextStyleEditorV2EnhancedState
         .copyWith(darkShadowColor: result, followTextColor: false);
   }
 
-  Widget _buildThemeSection(Brightness currentTheme, ColorPreviewMode mode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 主题标题
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            const Text(
-              '主题',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.blue.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.blue.shade300),
-              ),
-              child: Text(
-                '当前: ${_getCurrentModeLabel(currentTheme, mode)}',
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.blue.shade700,
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 16),
+  Widget _buildThemeSection(Brightness selectedTheme, ColorPreviewMode mode) {
+    return ValueListenableBuilder<ColorMapperDataModel>(
+      valueListenable: colorMapperDataModelNotifier,
+      builder: (context, mapper, _) {
+        final pureCircleColor = selectedTheme == Brightness.light
+            ? _firstOrFallback(mapper.pureLightMapper, Colors.black87)
+            : _firstOrFallback(mapper.pureDarkMapper, Colors.white70);
+        final colorfulCircleColor = selectedTheme == Brightness.light
+            ? _firstOrFallback(mapper.colorfulLightMapper, Colors.black87)
+            : _firstOrFallback(mapper.colorfulDarkMapper, Colors.white70);
+        final blackwhiteCircleColor = mapper.getBy(
+          theme: selectedTheme,
+          mode: ColorPreviewMode.blackwhite,
+          content: null,
+        );
 
-        // 浅色/深色主题卡片（使用 Wrap 保证在窄屏下自动换行，避免 Row 溢出）
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.spaceBetween,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(
-              width: 320,
-              child: _buildThemeCardV2(
-                title: '浅色',
-                isLight: true,
-                isCurrentTheme: currentTheme == Brightness.light,
-                mode: mode,
-                onModeChanged: (m) {
-                  charPreviewNotifier.value = Tuple2(Brightness.light, m);
-                },
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  '主题',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.shade300),
+                  ),
+                  child: Text(
+                    '当前: ${selectedTheme == Brightness.light ? '浅色' : '深色'} · ${_getCurrentModeLabel(mode)}',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            SizedBox(
-              width: 320,
-              child: _buildThemeCardV2(
-                title: '深色',
-                isLight: false,
-                isCurrentTheme: currentTheme == Brightness.dark,
-                mode: mode,
-                onModeChanged: (m) {
-                  charPreviewNotifier.value = Tuple2(Brightness.dark, m);
-                },
-              ),
+            const SizedBox(height: 16),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SegmentedButton<ColorPreviewMode>(
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  segments: [
+                    ButtonSegment<ColorPreviewMode>(
+                      value: ColorPreviewMode.pure,
+                      icon: _buildModeDot(pureCircleColor),
+                      label: const Text('纯色'),
+                      tooltip: '纯色',
+                    ),
+                    ButtonSegment<ColorPreviewMode>(
+                      value: ColorPreviewMode.colorful,
+                      icon: _buildModeDot(colorfulCircleColor),
+                      label: const Text('彩色'),
+                      tooltip: '彩色',
+                    ),
+                    ButtonSegment<ColorPreviewMode>(
+                      value: ColorPreviewMode.blackwhite,
+                      icon: _buildModeDot(blackwhiteCircleColor),
+                      label: const Text('黑白'),
+                      tooltip: '黑白',
+                    ),
+                  ],
+                  selected: <ColorPreviewMode>{mode},
+                  onSelectionChanged: (values) {
+                    if (values.isNotEmpty) {
+                      selectedModeNotifier.value = values.first;
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<Brightness>(
+                  style: const ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                  segments: const [
+                    ButtonSegment<Brightness>(
+                      value: Brightness.light,
+                      icon: Icon(Icons.wb_sunny_outlined, size: 16),
+                      label: Text('浅色'),
+                      tooltip: '浅色',
+                    ),
+                    ButtonSegment<Brightness>(
+                      value: Brightness.dark,
+                      icon: Icon(Icons.nightlight_round, size: 16),
+                      label: Text('深色'),
+                      tooltip: '深色',
+                    ),
+                  ],
+                  selected: <Brightness>{selectedTheme},
+                  onSelectionChanged: (values) {
+                    if (values.isNotEmpty) {
+                      selectedThemeNotifier.value = values.first;
+                    }
+                  },
+                ),
+              ],
             ),
+            const SizedBox(height: 20),
+            if (mode == ColorPreviewMode.blackwhite)
+              _buildBlackwhiteStrengthEditor(),
+            if (mode != ColorPreviewMode.blackwhite && widget.values != null)
+              _buildGanZhiColorPicker(selectedTheme, mode),
           ],
-        ),
-        const SizedBox(height: 20),
-        if (mode == ColorPreviewMode.blackwhite)
-          _buildBlackwhiteStrengthEditor(),
-        if (mode != ColorPreviewMode.blackwhite && widget.values != null)
-          _buildGanZhiColorPicker(currentTheme),
-      ],
+        );
+      },
     );
   }
 
-  String _getCurrentModeLabel(Brightness currentTheme, ColorPreviewMode mode) {
+  Widget _buildModeDot(Color color) {
+    return Container(
+      width: 12,
+      height: 12,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+      ),
+    );
+  }
+
+  String _getCurrentModeLabel(ColorPreviewMode mode) {
     switch (mode) {
       case ColorPreviewMode.pure:
         return '纯色';
@@ -960,213 +1102,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
       case ColorPreviewMode.blackwhite:
         return '黑白';
     }
-  }
-
-  Widget _buildThemeCard({
-    required String title,
-    required bool isLight,
-    required bool isCurrentTheme,
-    required ColorPreviewMode mode,
-    required ValueChanged<ColorPreviewMode> onModeChanged,
-  }) {
-    final bgColor = isLight ? lightBackground : darkBackground;
-    final textColor = isLight ? Colors.black87 : Colors.white;
-    // 当前选中的主题卡片使用蓝色边框，否则使用灰色边框
-    final borderColor = isCurrentTheme
-        ? Colors.blue.shade600
-        : Theme.of(context).colorScheme.outlineVariant;
-    final borderWidth = isCurrentTheme ? 3.0 : 2.0;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: borderWidth),
-        boxShadow: [
-          BoxShadow(
-            color: isCurrentTheme
-                ? Colors.blue.withValues(alpha: 0.2)
-                : Colors.black.withValues(alpha: 0.1),
-            blurRadius: isCurrentTheme ? 8 : 6,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              if (isCurrentTheme)
-                Icon(
-                  Icons.radio_button_checked,
-                  color: Colors.blue.shade600,
-                  size: 20,
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // 纯色选项
-          _buildModeOption(
-            label: '纯色',
-            isSelected: mode == ColorPreviewMode.pure,
-            textColor: isLight ? Colors.black87 : Colors.white, // 纯色选项文字
-            circleColor: isLight ? Colors.black87 : Colors.white, // 纯色选项色块
-            onTap: () => onModeChanged(ColorPreviewMode.pure),
-          ),
-          const SizedBox(height: 10),
-
-          // 彩色选项
-          _buildModeOption(
-            label: '彩色',
-            isSelected: mode == ColorPreviewMode.colorful,
-            textColor: isLight
-                ? _firstOrFallback(
-                    colorMapperDataModelNotifier.value.pureLightMapper,
-                    Colors.black87,
-                  )
-                : _firstOrFallback(
-                    colorMapperDataModelNotifier.value.pureDarkMapper,
-                    Colors.white,
-                  ),
-            circleColor: isLight
-                ? _firstOrFallback(
-                    colorMapperDataModelNotifier.value.colorfulLightMapper,
-                    Colors.black87,
-                  )
-                : _firstOrFallback(
-                    colorMapperDataModelNotifier.value.colorfulDarkMapper,
-                    Colors.white,
-                  ),
-            onTap: () => onModeChanged(ColorPreviewMode.colorful),
-          ),
-          const SizedBox(height: 10),
-          _buildModeOption(
-            label: '黑白',
-            isSelected: mode == ColorPreviewMode.blackwhite,
-            textColor: colorMapperDataModelNotifier.value.getBy(
-              theme: isLight ? Brightness.light : Brightness.dark,
-              mode: ColorPreviewMode.blackwhite,
-              content: null,
-            ),
-            circleColor: colorMapperDataModelNotifier.value.getBy(
-              theme: isLight ? Brightness.light : Brightness.dark,
-              mode: ColorPreviewMode.blackwhite,
-              content: null,
-            ),
-            onTap: () => onModeChanged(ColorPreviewMode.blackwhite),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 构建卡片样式的主题选择项（包装版）。
-  /// 功能：为原有的 `_buildThemeCard` 增加 Card 外观（圆角、描边、阴影）
-  /// 参数：
-  /// - [title] 标题文案（如“浅色”、“深色”）
-  /// - [isLight] 是否浅色主题预览
-  /// - [isCurrentTheme] 是否为当前选中的主题，用于高亮
-  /// - [mode] 当前颜色预览模式
-  /// - [onModeChanged] 切换预览模式时的回调
-  /// 返回：卡片样式的主题选择 Widget
-  Widget _buildThemeCardV2({
-    required String title,
-    required bool isLight,
-    required bool isCurrentTheme,
-    required ColorPreviewMode mode,
-    required ValueChanged<ColorPreviewMode> onModeChanged,
-  }) {
-    // 包装为卡片外观：圆角与主题描边，选中态提升层次
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isCurrentTheme
-              ? Colors.blue.shade600
-              : Theme.of(context).colorScheme.outlineVariant,
-          width: isCurrentTheme ? 2 : 1,
-        ),
-      ),
-      child: _buildThemeCard(
-        title: title,
-        isLight: isLight,
-        isCurrentTheme: isCurrentTheme,
-        mode: mode,
-        onModeChanged: onModeChanged,
-      ),
-    );
-  }
-
-  Widget _buildModeOption({
-    required String label,
-    required bool isSelected,
-    required Color textColor,
-    required Color circleColor,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? Colors.blue.shade600 : Colors.transparent,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          color: isSelected
-              ? Colors.blue.shade50.withValues(alpha: 0.3)
-              : Colors.transparent,
-        ),
-        // 防溢出：当父约束过窄时整体按比例缩放；常规宽度保持原样
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: Alignment.centerLeft,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 18,
-                height: 18,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: circleColor,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Text(
-                label,
-                overflow: TextOverflow.fade,
-                softWrap: false,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                ),
-              ),
-              if (isSelected) ...[
-                const SizedBox(width: 6),
-                Icon(Icons.check_circle, color: Colors.blue.shade600, size: 18),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
   }
 
   Widget _buildBlackwhiteStrengthEditor() {
@@ -1306,216 +1241,216 @@ class _ColorfulTextStyleEditorV2EnhancedState
     );
   }
 
-  Widget _buildGanZhiColorPicker(Brightness currentTheme) {
+  Widget _buildGanZhiColorPicker(Brightness theme, ColorPreviewMode mode) {
     final List<String> list = widget.values!;
 
-    final textColor =
-        currentTheme == Brightness.light ? Colors.black87 : Colors.white;
-    final borderColor = currentTheme == Brightness.light
-        ? Colors.grey.shade700
-        : Colors.grey.shade300;
+    final textColor = theme == Brightness.light ? Colors.black87 : Colors.white;
+    final borderColor =
+        theme == Brightness.light ? Colors.grey.shade700 : Colors.grey.shade300;
 
     return ValueListenableBuilder(
         valueListenable: colorMapperDataModelNotifier,
         builder: (ctx, mapper, _) {
-          return ValueListenableBuilder(
-              valueListenable: charPreviewNotifier,
-              builder: (ctx, tuple2, _) {
-                final bgColor = tuple2.item1 == Brightness.light
-                    ? lightBackground
-                    : darkBackground;
+          final bgColor =
+              theme == Brightness.light ? lightBackground : darkBackground;
 
-                final isPure = tuple2.item2 == ColorPreviewMode.pure;
-                final pureBatchColor = !isPure
-                    ? null
-                    : (tuple2.item1 == Brightness.light
-                        ? (_pureBatchColorLight ??
-                            mapper.getBy(
-                              theme: tuple2.item1,
-                              mode: ColorPreviewMode.pure,
-                              content: null,
-                            ))
-                        : (_pureBatchColorDark ??
-                            mapper.getBy(
-                              theme: tuple2.item1,
-                              mode: ColorPreviewMode.pure,
-                              content: null,
-                            )));
-                final hasMismatch = !isPure
-                    ? false
-                    : list.any(
-                        (char) =>
-                            mapper.getBy(
-                              theme: tuple2.item1,
-                              mode: ColorPreviewMode.pure,
-                              content: char,
-                            ) !=
-                            pureBatchColor,
-                      );
+          final isPure = mode == ColorPreviewMode.pure;
+          final pureBatchColor = !isPure
+              ? null
+              : (theme == Brightness.light
+                  ? (_pureBatchColorLight ??
+                      mapper.getBy(
+                        theme: theme,
+                        mode: ColorPreviewMode.pure,
+                        content: null,
+                      ))
+                  : (_pureBatchColorDark ??
+                      mapper.getBy(
+                        theme: theme,
+                        mode: ColorPreviewMode.pure,
+                        content: null,
+                      )));
+          final hasMismatch = !isPure
+              ? false
+              : list.any(
+                  (char) =>
+                      mapper.getBy(
+                        theme: theme,
+                        mode: ColorPreviewMode.pure,
+                        content: char,
+                      ) !=
+                      pureBatchColor,
+                );
+          final batchColor = pureBatchColor ?? Colors.transparent;
 
-                return Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: bgColor,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: borderColor, width: 2),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          return Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: bgColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: borderColor, width: 2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (isPure) ...[
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      if (isPure) ...[
-                        Row(
-                          children: [
-                            SizedBox(
-                              width: 72,
-                              child: Text(
-                                '选择颜色',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                  color: textColor,
-                                ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () async {
-                                final result = await showAppPalettePickerDialog(
-                                  context,
-                                  initialColor: pureBatchColor!,
-                                  title: '选择色块',
-                                );
-                                if (result == null) return;
+                      Text(
+                        '选择色块',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: textColor,
+                        ),
+                      ),
+                      _withColorTooltip(
+                        batchColor,
+                        GestureDetector(
+                          onTap: () async {
+                            final result = await showAppPalettePickerDialog(
+                              context,
+                              initialColor: batchColor,
+                              title: '选择色块',
+                            );
+                            if (result == null) return;
 
-                                final oldColor = pureBatchColor;
-                                var next = mapper;
-                                for (final char in list) {
-                                  final current = mapper.getBy(
-                                    theme: tuple2.item1,
-                                    mode: ColorPreviewMode.pure,
-                                    content: char,
-                                  );
-                                  if (current == oldColor) {
+                            final oldColor = batchColor;
+                            var next = mapper;
+                            for (final char in list) {
+                              final current = mapper.getBy(
+                                theme: theme,
+                                mode: ColorPreviewMode.pure,
+                                content: char,
+                              );
+                              if (current == oldColor) {
+                                next = next.update(
+                                  brightness: theme,
+                                  mode: ColorPreviewMode.pure,
+                                  char: char,
+                                  color: result,
+                                );
+                              }
+                            }
+
+                            setState(() {
+                              if (theme == Brightness.light) {
+                                _pureBatchColorLight = result;
+                              } else {
+                                _pureBatchColorDark = result;
+                              }
+                            });
+                            colorMapperDataModelNotifier.value = next;
+                          },
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              color: pureBatchColor,
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(
+                                color: Colors.grey.shade400,
+                                width: 1.5,
+                              ),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 2,
+                                  offset: Offset(0, 1),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (widget.showPureAllConsistentButton)
+                        TextButton(
+                          onPressed: !hasMismatch
+                              ? null
+                              : () {
+                                  var next = mapper;
+                                  for (final char in list) {
                                     next = next.update(
-                                      brightness: tuple2.item1,
+                                      brightness: theme,
                                       mode: ColorPreviewMode.pure,
                                       char: char,
-                                      color: result,
+                                      color: batchColor,
                                     );
                                   }
-                                }
-
-                                setState(() {
-                                  if (tuple2.item1 == Brightness.light) {
-                                    _pureBatchColorLight = result;
-                                  } else {
-                                    _pureBatchColorDark = result;
-                                  }
-                                });
-                                colorMapperDataModelNotifier.value = next;
-                              },
-                              child: Container(
-                                width: 18,
-                                height: 18,
-                                decoration: BoxDecoration(
-                                  color: pureBatchColor,
-                                  borderRadius: BorderRadius.circular(4),
-                                  border: Border.all(
-                                    color: Colors.grey.shade400,
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      color: Colors.black12,
-                                      blurRadius: 2,
-                                      offset: Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            TextButton(
-                              onPressed: !hasMismatch
-                                  ? null
-                                  : () {
-                                      var next = mapper;
-                                      for (final char in list) {
-                                        next = next.update(
-                                          brightness: tuple2.item1,
-                                          mode: ColorPreviewMode.pure,
-                                          char: char,
-                                          color: pureBatchColor!,
-                                        );
-                                      }
-                                      colorMapperDataModelNotifier.value = next;
-                                    },
-                              child: const Text('全部'),
-                            ),
-                          ],
+                                  colorMapperDataModelNotifier.value = next;
+                                },
+                          child: const Text('全部一致'),
                         ),
-                        const SizedBox(height: 12),
-                      ],
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.start,
-                        children: list.map((char) {
-                          final currentColor = mapper.getBy(
-                            theme: tuple2.item1,
-                            mode: tuple2.item2,
-                            content: char,
-                          );
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 18,
-                                child: Text(
-                                  char,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: textColor,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              GestureDetector(
-                                onTap: () => _pickGanColor(
-                                  char,
-                                  currentColor,
-                                  tuple2.item1,
-                                  tuple2.item2,
-                                ),
-                                child: Container(
-                                  width: 18,
-                                  height: 18,
-                                  decoration: BoxDecoration(
-                                    color: currentColor,
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(
-                                      color: Colors.grey.shade400,
-                                      width: 1.5,
-                                    ),
-                                    boxShadow: const [
-                                      BoxShadow(
-                                        color: Colors.black12,
-                                        blurRadius: 2,
-                                        offset: Offset(0, 1),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }).toList(),
-                      ),
                     ],
                   ),
-                );
-              });
+                  const SizedBox(height: 12),
+                ],
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.start,
+                  children: list.map((char) {
+                    final currentColor = mapper.getBy(
+                      theme: theme,
+                      mode: mode,
+                      content: char,
+                    );
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 18,
+                          child: Text(
+                            char,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: textColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        _withColorTooltip(
+                          currentColor,
+                          GestureDetector(
+                            onTap: () => _pickGanColor(
+                              char,
+                              currentColor,
+                              theme,
+                              mode,
+                            ),
+                            child: Container(
+                              width: 18,
+                              height: 18,
+                              decoration: BoxDecoration(
+                                color: currentColor,
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(
+                                  color: Colors.grey.shade400,
+                                  width: 1.5,
+                                ),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 2,
+                                    offset: Offset(0, 1),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          );
         });
   }
 
