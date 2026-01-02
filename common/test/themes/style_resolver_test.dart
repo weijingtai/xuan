@@ -27,11 +27,20 @@ void main() {
         type: RowType.heavenlyStem,
         isVisible: true,
         isTitleVisible: true,
-        textStyleConfig: const TextStyleConfig(
-          fontFamily: 'Foo',
-          fontSize: 18.0,
-          colorHex: '#123456',
-          fontWeightValue: 600,
+        textStyleConfig: TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: const {},
+            colorfulLightMapper: const {},
+            pureDarkMapper: const {},
+            colorfulDarkMapper: const {},
+          ),
+          textShadowDataModel: TextShadowDataModel(),
+          fontStyleDataModel: FontStyleDataModel(
+            fontFamily: 'Foo',
+            fontSize: 18.0,
+            fontWeight: FontWeight.w600,
+            height: 1.2,
+          ),
         ),
       );
 
@@ -60,8 +69,7 @@ void main() {
       expect(resolved.fontWeight, FontWeight.w800);
     });
 
-    testWidgets('Old row fields used when TextStyleConfig is null',
-        (tester) async {
+    testWidgets('Row config beats cardStyle when provided', (tester) async {
       final resolver = const DefaultStyleResolver();
       final card = const CardStyle(
         dividerType: BorderType.solid,
@@ -72,15 +80,25 @@ void main() {
         globalFontColorHex: '#111111',
       );
 
-      final row = const RowConfig(
+      final row = RowConfig(
         type: RowType.earthlyBranch,
         isVisible: true,
         isTitleVisible: true,
-        // No textStyleConfig
-        fontFamily: 'LegacyFam',
-        fontSize: 16.0,
-        textColorHex: '#223344',
-        fontWeight: 'w500',
+        textStyleConfig: TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: const {},
+            colorfulLightMapper: const {},
+            pureDarkMapper: const {},
+            colorfulDarkMapper: const {},
+          ),
+          textShadowDataModel: TextShadowDataModel(),
+          fontStyleDataModel: FontStyleDataModel(
+            fontFamily: 'RowFam',
+            fontSize: 16.0,
+            fontWeight: FontWeight.w400,
+            height: 1.2,
+          ),
+        ),
       );
 
       late TextStyle resolved;
@@ -100,11 +118,9 @@ void main() {
         ),
       );
 
-      expect(resolved.fontFamily, 'LegacyFam');
+      expect(resolved.fontFamily, 'RowFam');
       expect(resolved.fontSize, 16.0);
-      // Parsed from old hex field
-      expect(resolved.color, const Color(0xFF223344));
-      // Old fontWeight string is not used by resolver; defaults to w400
+      expect(resolved.color, const Color(0xFF111111));
       expect(resolved.fontWeight, FontWeight.w400);
     });
 
@@ -153,12 +169,25 @@ void main() {
     testWidgets('Uses TextStyleConfig.fontSize over legacy fontSize',
         (tester) async {
       final metrics = const DefaultLayoutMetricsResolver();
-      final row = const RowConfig(
+      final row = RowConfig(
         type: RowType.heavenlyStem,
         isVisible: true,
         isTitleVisible: true,
-        textStyleConfig: TextStyleConfig(fontSize: 18.0),
-        fontSize: 10.0,
+        textStyleConfig: TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: const {},
+            colorfulLightMapper: const {},
+            pureDarkMapper: const {},
+            colorfulDarkMapper: const {},
+          ),
+          textShadowDataModel: TextShadowDataModel(),
+          fontStyleDataModel: FontStyleDataModel(
+            fontFamily: 'Foo',
+            fontSize: 18.0,
+            fontWeight: FontWeight.w400,
+            height: 1.2,
+          ),
+        ),
       );
 
       late double h;
@@ -177,14 +206,28 @@ void main() {
       expect(h, 36.0);
     });
 
-    testWidgets('Uses legacy fontSize when TextStyleConfig is null',
+    testWidgets('Uses TextStyleConfig.fontSize when configured',
         (tester) async {
       final metrics = const DefaultLayoutMetricsResolver();
-      final row = const RowConfig(
+      final row = RowConfig(
         type: RowType.earthlyBranch,
         isVisible: true,
         isTitleVisible: true,
-        fontSize: 12.0,
+        textStyleConfig: TextStyleConfig(
+          colorMapperDataModel: ColorMapperDataModel(
+            pureLightMapper: const {},
+            colorfulLightMapper: const {},
+            pureDarkMapper: const {},
+            colorfulDarkMapper: const {},
+          ),
+          textShadowDataModel: TextShadowDataModel(),
+          fontStyleDataModel: FontStyleDataModel(
+            fontFamily: 'Foo',
+            fontSize: 12.0,
+            fontWeight: FontWeight.w400,
+            height: 1.2,
+          ),
+        ),
       );
 
       late double h;

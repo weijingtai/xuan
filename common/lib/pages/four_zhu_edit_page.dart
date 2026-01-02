@@ -43,18 +43,81 @@ class FourZhuEditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<FourZhuEditorViewModel>(
-      create: (_) {
-        final repository = LayoutTemplateRepositoryImpl(
-          const LayoutTemplateLocalDataSource(),
-        );
-        return FourZhuEditorViewModel(
-          getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
-          getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
-          saveTemplateUseCase: SaveTemplateUseCase(repository),
-          deleteTemplateUseCase: DeleteTemplateUseCase(repository),
-        )..initialize(collectionId: _defaultCollectionId);
-      },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider<FourZhuEditorViewModel>(
+          create: (_) {
+            final repository = LayoutTemplateRepositoryImpl(
+              const LayoutTemplateLocalDataSource(),
+            );
+            return FourZhuEditorViewModel(
+              getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
+              getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
+              saveTemplateUseCase: SaveTemplateUseCase(repository),
+              deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+            )..initialize(collectionId: _defaultCollectionId);
+          },
+        ),
+        ChangeNotifierProxyProvider<FourZhuEditorViewModel,
+            FourZhuCardDemoViewModel>(
+          create: (_) => FourZhuCardDemoViewModel(),
+          update: (context, editorVm, demoVm) {
+            final vm = demoVm ?? FourZhuCardDemoViewModel();
+
+            final desiredBrightness =
+                editorVm.isDarkMode ? Brightness.dark : Brightness.light;
+            if (vm.cardBrightnessNotifier.value != desiredBrightness) {
+              vm.cardBrightnessNotifier.value = desiredBrightness;
+            }
+
+            final insets = editorVm.cardStyle?.contentPadding;
+            if (insets != null && vm.paddingNotifier.value != insets) {
+              vm.paddingNotifier.value = insets;
+            }
+
+            final cardStyle = editorVm.cardStyle;
+            if (cardStyle != null) {
+              final theme = vm.themeNotifier.value;
+              var nextTheme = theme;
+
+              if (theme.card.padding != cardStyle.contentPadding) {
+                nextTheme = nextTheme.copyWith(
+                  card: nextTheme.card
+                      .copyWith(padding: cardStyle.contentPadding),
+                );
+              }
+
+              final family = (cardStyle.globalFontFamily.trim().isEmpty)
+                  ? 'System'
+                  : cardStyle.globalFontFamily;
+              final size = cardStyle.globalFontSize;
+              final currentTypography = nextTheme.typography;
+              final currentFont =
+                  currentTypography.globalContent.fontStyleDataModel;
+              if (currentFont.fontFamily != family ||
+                  currentFont.fontSize != size) {
+                final updatedGlobalContent =
+                    currentTypography.globalContent.copyWith(
+                  fontStyleDataModel: currentFont.copyWith(
+                    fontFamily: family,
+                    fontSize: size,
+                  ),
+                );
+                nextTheme = nextTheme.copyWith(
+                  typography: currentTypography.copyWith(
+                      globalContent: updatedGlobalContent),
+                );
+              }
+
+              if (nextTheme != theme) {
+                vm.themeNotifier.value = nextTheme;
+              }
+            }
+
+            return vm;
+          },
+        ),
+      ],
       child: const _FourZhuEditView(),
     );
   }

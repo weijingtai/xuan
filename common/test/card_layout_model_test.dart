@@ -16,16 +16,29 @@ void main() {
       expect(h, 6);
     });
 
-    test('payload.rowHeight 显式覆盖优先', () {
-      final payload = TextRowPayload(rowType: RowType.naYin, rowHeight: 40);
+    test('payload 驱动高度解析（忽略入参 rowType）', () {
+      final payload = TextRowPayload(
+        rowType: RowType.separator,
+        uuid: 'sep-row',
+        titleInCell: false,
+        rowLabel: '分隔符',
+      );
       final model = CardLayoutModel(dividerHeight: 8);
-      final h = model.resolveRowHeight(RowType.naYin,
-          payload: payload, defaultCellHeight: 28);
-      expect(h, 40);
+      final h = model.resolveRowHeight(
+        RowType.naYin,
+        payload: payload,
+        defaultCellHeight: 28,
+      );
+      expect(h, 8);
     });
 
     test('表头行返回默认 header（由 defaultCellHeight 传入）', () {
-      final payload = const TextRowPayload(rowType: RowType.columnHeaderRow);
+      final payload = TextRowPayload(
+        rowType: RowType.columnHeaderRow,
+        uuid: 'header-row',
+        titleInCell: false,
+        rowLabel: '表头',
+      );
       final model = CardLayoutModel();
       final h = model.resolveRowHeight(RowType.columnHeaderRow,
           payload: payload, defaultCellHeight: 24);

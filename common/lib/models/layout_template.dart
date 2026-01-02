@@ -476,11 +476,6 @@ class RowConfig {
         ? TextStyleConfig.fromJson(styleJson)
         : _generateDefaultTextStyleConfig(rowType);
 
-    // 调试日志：验证颜色映射数量
-    print('🔍 [RowConfig.fromJson] type=$rowType, '
-        'pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色, '
-        'colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
-
     return RowConfig(
       type: rowType,
       isVisible: json['isVisible'] as bool? ?? true,

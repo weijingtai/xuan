@@ -44,6 +44,8 @@ class _EditableFourZhuStyleEditorPanelState
     extends State<EditableFourZhuStyleEditorPanel> {
   _EditableFourZhuStyleEditorPanelState();
   late final ValueNotifier<CardStyleConfig> _cardStyleConfig;
+  late final TextEditingController _preferredFamiliesController;
+  late final VoidCallback _demoVmListener;
 
   // Cached scalar controls for convenience (uniform values)
   // double _cardPadding = 0;
@@ -77,9 +79,14 @@ class _EditableFourZhuStyleEditorPanelState
     super.initState();
     warmupPaletteNameIndex();
     final vm = context.read<FourZhuCardDemoViewModel>();
-    vm.addListener(() {
-      _cardStyleConfig.value = vm.themeNotifier.value.card;
-    });
+
+    final typography = vm.themeNotifier.value.typography;
+    final font = typography.globalContent.fontStyleDataModel;
+    _globalFontFamily = font.fontFamily == 'System' ? '' : font.fontFamily;
+    _globalFontSize = font.fontSize;
+    _preferredFamiliesController =
+        TextEditingController(text: _preferredFamiliesText);
+
     _cardStyleConfig =
         ValueNotifier<CardStyleConfig>(vm.themeNotifier.value.card)
           ..addListener(() {
@@ -88,6 +95,14 @@ class _EditableFourZhuStyleEditorPanelState
             final editorVm = context.read<FourZhuEditorViewModel>();
             editorVm.updateCardContentInsets(_cardStyleConfig.value.padding);
           });
+
+    _demoVmListener = () {
+      final next = vm.themeNotifier.value.card;
+      if (_cardStyleConfig.value != next) {
+        _cardStyleConfig.value = next;
+      }
+    };
+    vm.addListener(_demoVmListener);
   }
 
   @override
@@ -117,14 +132,22 @@ class _EditableFourZhuStyleEditorPanelState
   /// 返回：
   /// - `void`：触发回调与重建，无额外返回值。
   void _emit(EditableFourZhuCardTheme next) {
-    // setState(() => _theme = next);
-    // _cardStyleConfig.value = cardStyleConfigFromEditableTheme(next);
-    // widget.onChanged(next);
+    final demoVm = context.read<FourZhuCardDemoViewModel>();
+    demoVm.updateEditableFourZhuCardTheme(next);
+
+    final editorVm = context.read<FourZhuEditorViewModel>();
+    editorVm.updateCardContentInsets(next.card.padding);
+
+    final font = next.typography.globalContent.fontStyleDataModel;
+    editorVm.updateGlobalFontFamily(font.fontFamily);
+    editorVm.updateGlobalFontSize(font.fontSize);
   }
 
   @override
   void dispose() {
-    // _cardStyleConfig.dispose();
+    vm.removeListener(_demoVmListener);
+    _cardStyleConfig.dispose();
+    _preferredFamiliesController.dispose();
     super.dispose();
   }
 
@@ -270,8 +293,22 @@ class _EditableFourZhuStyleEditorPanelState
                 ],
                 onChanged: (v) {
                   _globalFontFamily = (v ?? '').trim();
-                  _emit(vm.themeNotifier.value.copyWith(
-                      typography: TypographySection.defaultTypographySection));
+                  final theme = vm.themeNotifier.value;
+                  final typography = theme.typography;
+                  final currentFont =
+                      typography.globalContent.fontStyleDataModel;
+                  final family =
+                      _globalFontFamily.isEmpty ? 'System' : _globalFontFamily;
+                  _emit(
+                    theme.copyWith(
+                      typography: typography.copyWith(
+                        globalContent: typography.globalContent.copyWith(
+                          fontStyleDataModel:
+                              currentFont.copyWith(fontFamily: family),
+                        ),
+                      ),
+                    ),
+                  );
                 },
               ),
               const widgets.SizedBox(height: 8),
@@ -282,9 +319,19 @@ class _EditableFourZhuStyleEditorPanelState
                 max: 72,
                 onChanged: (v) {
                   _globalFontSize = v;
+                  final theme = vm.themeNotifier.value;
+                  final typography = theme.typography;
+                  final currentFont =
+                      typography.globalContent.fontStyleDataModel;
                   _emit(
-                    vm.themeNotifier.value.copyWith(
-                        typography: TypographySection.defaultTypographySection),
+                    theme.copyWith(
+                      typography: typography.copyWith(
+                        globalContent: typography.globalContent.copyWith(
+                          fontStyleDataModel:
+                              currentFont.copyWith(fontSize: _globalFontSize),
+                        ),
+                      ),
+                    ),
                   );
                 },
               ),
@@ -294,11 +341,11 @@ class _EditableFourZhuStyleEditorPanelState
                   labelText: '备选字体家族(逗号分隔)',
                   helperText: '优先级：行 → 全局 → 列表 → 系统默认',
                 ),
-                controller: TextEditingController(text: _preferredFamiliesText),
+                controller: _preferredFamiliesController,
                 onChanged: (v) {
                   _preferredFamiliesText = v;
-                  _emit(vm.themeNotifier.value.copyWith(
-                      typography: TypographySection.defaultTypographySection));
+                  final theme = vm.themeNotifier.value;
+                  _emit(theme);
                 },
               ),
             ],

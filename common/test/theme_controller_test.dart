@@ -5,6 +5,8 @@ import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:common/viewmodels/editable_four_zhu_theme_controller.dart';
 import 'package:common/models/layout_template.dart';
 import 'package:common/enums/layout_template_enums.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
 
 /// 主题控制器单元测试：验证字体回退顺序与参数非负校验
 ///
@@ -16,23 +18,29 @@ import 'package:common/enums/layout_template_enums.dart';
 void main() {
   group('EditableFourZhuThemeController - font fallback', () {
     test('Row family overrides theme family', () {
-      // 构造主题：提供主题默认字体与偏好列表
-      final theme = EditableFourZhuCardTheme(
-        typography: const TypographySection(
-          globalFontFamily: 'ThemeFamily',
-          globalFontSize: 16,
-          preferredFamilies: ['PreferredA', 'PreferredB'],
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final typography = baseTheme.typography.copyWith(
+        globalContent: baseTheme.typography.globalContent.copyWith(
+          fontStyleDataModel:
+              baseTheme.typography.globalContent.fontStyleDataModel.copyWith(
+            fontFamily: 'ThemeFamily',
+            fontSize: 16,
+          ),
         ),
       );
+
+      final theme = baseTheme.copyWith(typography: typography);
       final controller = EditableFourZhuThemeController(theme);
 
       // 行配置提供局部字体，应优先生效
-      final row = const RowConfig(
-        type: RowType.heavenlyStem,
-        isVisible: true,
-        isTitleVisible: true,
-        fontFamily: 'RowFamily',
-      );
+      final row = RowConfig(
+          type: RowType.heavenlyStem,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: typography.globalContent.copyWith(
+            fontStyleDataModel: typography.globalContent.fontStyleDataModel
+                .copyWith(fontFamily: 'RowFamily'),
+          ));
       final (family, size, colorHex) = controller.resolveRowText(row);
       expect(family, 'RowFamily');
       expect(size, 16);
@@ -40,11 +48,16 @@ void main() {
     });
 
     test('Theme family used when row family is null', () {
-      final theme = EditableFourZhuCardTheme(
-        typography: const TypographySection(
-          globalFontFamily: 'ThemeFamily',
-          globalFontSize: 14,
-          preferredFamilies: ['PreferredA', 'PreferredB'],
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final theme = baseTheme.copyWith(
+        typography: baseTheme.typography.copyWith(
+          globalContent: baseTheme.typography.globalContent.copyWith(
+            fontStyleDataModel:
+                baseTheme.typography.globalContent.fontStyleDataModel.copyWith(
+              fontFamily: 'ThemeFamily',
+              fontSize: 14,
+            ),
+          ),
         ),
       );
       final controller = EditableFourZhuThemeController(theme);
@@ -55,12 +68,17 @@ void main() {
       expect(colorHex, isNull);
     });
 
-    test('Preferred list used when theme family is null', () {
-      final theme = EditableFourZhuCardTheme(
-        typography: const TypographySection(
-          globalFontFamily: null,
-          globalFontSize: 12,
-          preferredFamilies: ['PreferredA', 'PreferredB'],
+    test('Base family used when theme family is empty', () {
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final theme = baseTheme.copyWith(
+        typography: baseTheme.typography.copyWith(
+          globalContent: baseTheme.typography.globalContent.copyWith(
+            fontStyleDataModel:
+                baseTheme.typography.globalContent.fontStyleDataModel.copyWith(
+              fontFamily: '',
+              fontSize: 12,
+            ),
+          ),
         ),
       );
       final controller = EditableFourZhuThemeController(theme);
@@ -74,14 +92,26 @@ void main() {
         globalFontColorHex: '#FF111111',
       );
       final resolved = controller.resolveCardStyle(base);
-      expect(resolved.globalFontFamily, 'PreferredA');
+      expect(resolved.globalFontFamily, 'BaseFamily');
       expect(resolved.globalFontSize, 12);
     });
 
     test('Global color resolves to #AARRGGBB', () {
-      final theme = EditableFourZhuCardTheme(
-        typography: const TypographySection(
-          globalFontColor: Color(0xFF112233),
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final oldMapper = baseTheme.typography.globalContent.colorMapperDataModel;
+      final theme = baseTheme.copyWith(
+        typography: baseTheme.typography.copyWith(
+          globalContent: baseTheme.typography.globalContent.copyWith(
+            colorMapperDataModel: ColorMapperDataModel(
+              pureLightMapper: oldMapper.pureLightMapper,
+              colorfulLightMapper: oldMapper.colorfulLightMapper,
+              pureDarkMapper: oldMapper.pureDarkMapper,
+              colorfulDarkMapper: oldMapper.colorfulDarkMapper,
+              defaultColor: const Color(0xFF112233),
+              blackwhiteLightStrength: oldMapper.blackwhiteLightStrength,
+              blackwhiteDarkStrength: oldMapper.blackwhiteDarkStrength,
+            ),
+          ),
         ),
       );
       final controller = EditableFourZhuThemeController(theme);
@@ -100,51 +130,51 @@ void main() {
   });
 
   group('EditableFourZhuCardTheme - non-negative validation', () {
-    test('ensureValidOrThrow throws on negative card borderWidth', () {
-      final theme = EditableFourZhuCardTheme(
-        card: const CardSection(borderWidth: -1),
+    test('ensureValidOrThrow throws on negative cell border width', () {
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final cell = baseTheme.cell.copyWith(
+        globalCellConfig: baseTheme.cell.globalCellConfig.copyWith(
+          border: baseTheme.cell.globalCellConfig.border
+              ?.copyWith(width: -1, enabled: true),
+        ),
       );
+      final theme = baseTheme.copyWith(cell: cell);
       expect(() => EditableFourZhuThemeController(theme), throwsArgumentError);
     });
 
     test('ensureValidOrThrow passes on non-negative values', () {
-      final theme = EditableFourZhuCardTheme(
-        card: const CardSection(
-          borderWidth: 1,
-          elevation: 2,
-          cornerRadius: 8,
-          padding: const EdgeInsets.all(4),
-          margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-        ),
-        pillar: const PillarSection(
-          defaultMargin: const EdgeInsets.all(2),
-          defaultPadding: const EdgeInsets.all(1),
-          borderWidth: 0,
-          cornerRadius: 0,
-          perPillarMargin: const {
-            PillarType.year: EdgeInsets.only(left: 10),
-          },
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final theme = baseTheme.copyWith(
+        cell: baseTheme.cell.copyWith(
+          globalCellConfig: baseTheme.cell.globalCellConfig.copyWith(
+            border: baseTheme.cell.globalCellConfig.border
+                ?.copyWith(width: 1, enabled: true),
+          ),
         ),
       );
-
       expect(() => EditableFourZhuThemeController(theme), returnsNormally);
     });
   });
 
   group('EditableFourZhuThemeController - pillar margin resolution', () {
     test('resolvePillarMargin returns specific first then default', () {
-      final theme = EditableFourZhuCardTheme(
-        pillar: const PillarSection(
-          defaultMargin: const EdgeInsets.all(8),
-          perPillarMargin: const {
-            PillarType.year: EdgeInsets.only(left: 12),
-          },
-        ),
+      final baseTheme = EditableCardThemeBuilder.createDefaultTheme();
+      final global = PillarStyleConfig.defaultPillarStyleConfig.copyWith(
+        margin: const EdgeInsets.all(8),
       );
+      final year = PillarStyleConfig.defaultPillarStyleConfig.copyWith(
+        margin: const EdgeInsets.only(left: 12),
+      );
+      final pillar = PillarSection(
+        global: global,
+        mapper: {PillarType.year: year},
+        defaultSeparatorConfig: baseTheme.pillar.defaultSeparatorConfig,
+      );
+      final theme = baseTheme.copyWith(pillar: pillar);
       final controller = EditableFourZhuThemeController(theme);
-      final year = controller.resolvePillarMargin(PillarType.year);
+      final yearMargin = controller.resolvePillarMargin(PillarType.year);
       final month = controller.resolvePillarMargin(PillarType.month);
-      expect(year, const EdgeInsets.only(left: 12));
+      expect(yearMargin, const EdgeInsets.only(left: 12));
       expect(month, const EdgeInsets.all(8));
     });
   });

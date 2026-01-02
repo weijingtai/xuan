@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -43,6 +44,23 @@ class TextStyleConfig {
     required this.fontStyleDataModel,
     // 基础属性（当前已支持）
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is TextStyleConfig &&
+        other.colorMapperDataModel == colorMapperDataModel &&
+        other.textShadowDataModel == textShadowDataModel &&
+        other.fontStyleDataModel == fontStyleDataModel;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        colorMapperDataModel,
+        textShadowDataModel,
+        fontStyleDataModel,
+      );
 
   TextStyle toTextStyleWithoutContent({
     required Brightness brightness,
@@ -668,6 +686,34 @@ class ColorMapperDataModel {
     this.blackwhiteDarkStrength = 1.0,
   });
 
+  static const DeepCollectionEquality _mapEquality =
+      DeepCollectionEquality.unordered();
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is ColorMapperDataModel &&
+        other.defaultColor == defaultColor &&
+        other.blackwhiteLightStrength == blackwhiteLightStrength &&
+        other.blackwhiteDarkStrength == blackwhiteDarkStrength &&
+        _mapEquality.equals(other.pureLightMapper, pureLightMapper) &&
+        _mapEquality.equals(other.colorfulLightMapper, colorfulLightMapper) &&
+        _mapEquality.equals(other.pureDarkMapper, pureDarkMapper) &&
+        _mapEquality.equals(other.colorfulDarkMapper, colorfulDarkMapper);
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        defaultColor,
+        blackwhiteLightStrength,
+        blackwhiteDarkStrength,
+        _mapEquality.hash(pureLightMapper),
+        _mapEquality.hash(colorfulLightMapper),
+        _mapEquality.hash(pureDarkMapper),
+        _mapEquality.hash(colorfulDarkMapper),
+      );
+
   Color _blackwhiteColor(Brightness theme) {
     final s = (theme == Brightness.light
             ? blackwhiteLightStrength
@@ -819,6 +865,31 @@ class TextShadowDataModel {
     this.shadowOffsetX = 5.0,
     this.shadowOffsetY = 5.0,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is TextShadowDataModel &&
+        other.shadowEnabled == shadowEnabled &&
+        other.followTextColor == followTextColor &&
+        other.shadowBlurRadius == shadowBlurRadius &&
+        other.lightShadowColor == lightShadowColor &&
+        other.darkShadowColor == darkShadowColor &&
+        other.shadowOffsetX == shadowOffsetX &&
+        other.shadowOffsetY == shadowOffsetY;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        shadowEnabled,
+        followTextColor,
+        shadowBlurRadius,
+        lightShadowColor,
+        darkShadowColor,
+        shadowOffsetX,
+        shadowOffsetY,
+      );
   TextShadowDataModel copyWith({
     bool? shadowEnabled,
     bool? followTextColor,
@@ -902,6 +973,25 @@ class FontStyleDataModel {
     required this.fontWeight,
     required this.height,
   });
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other.runtimeType != runtimeType) return false;
+    return other is FontStyleDataModel &&
+        other.fontFamily == fontFamily &&
+        other.fontSize == fontSize &&
+        other.fontWeight == fontWeight &&
+        other.height == height;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+        fontFamily,
+        fontSize,
+        fontWeight,
+        height,
+      );
 
   FontStyleDataModel copyWith({
     String? fontFamily,

@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../enums/layout_template_enums.dart';
-import '../../models/drag_payloads.dart';
 import '../../models/eight_chars.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
-import '../editable_fourzhu_card/text_groups.dart';
 
 class EditorWorkspace extends StatefulWidget {
   /// 组件内部展示的八字数据，用于填充四柱内容。
@@ -29,10 +27,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 本地主题开关：true 为 Dark，false 为 Light。
   bool _didInitWorkspaceBrightness = false;
 
-  /// V3 卡片数据源：柱/行/内边距。
-  // late final ValueNotifier<List<PillarPayload>> _pillarsNotifier;
-  late final ValueNotifier<List<TextRowPayload>> _rowListNotifier;
-  late final ValueNotifier<EdgeInsets> _paddingNotifier;
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
   // ValueNotifier<bool>(true);
@@ -45,8 +39,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   @override
   void initState() {
     super.initState();
-    _rowListNotifier = ValueNotifier<List<TextRowPayload>>([]);
-    _paddingNotifier = ValueNotifier<EdgeInsets>(EdgeInsets.zero);
     // 注意：不要在 initState 中调用 Theme.of(context)
   }
 
@@ -82,8 +74,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   void dispose() {
     // 释放 Notifier 资源
     // _pillarsNotifier.dispose();
-    _rowListNotifier.dispose();
-    _paddingNotifier.dispose();
     _showGripNotifier.dispose();
     // _showGripColumnsNotifier.dispose();
     _cardNameController.dispose();
@@ -100,8 +90,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       builder: (context, viewModel, _) {
         final demoVm =
             Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-        // 在构建时将 ViewModel 的行配置映射到工作区 Notifier
-        // _applyViewModelToNotifiers(viewModel);
 
         return ValueListenableBuilder<Brightness>(
           valueListenable: demoVm.cardBrightnessNotifier,
@@ -268,7 +256,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                               cardPayloadNotifier: demoVm.cardPayloadNotifier,
                               showGrip: _showGripNotifier.value,
                               // showGripColumns: _showGripColumnsNotifier.value,
-                              paddingNotifier: _paddingNotifier,
+                              paddingNotifier: demoVm.paddingNotifier,
                               themeNotifier: demoVm.themeNotifier,
                               gender: Gender.male,
                             ),
@@ -284,104 +272,5 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
         );
       },
     );
-  }
-
-  /// 构建柱载荷：行标题列 + 年月日时四柱
-  /// 参数：ec 八字数据
-  /// 返回：柱载荷列表
-
-  /// 将 ViewModel 的行配置映射到工作区的行 Notifier。
-  ///
-  /// 参数：
-  /// - [viewModel]：编辑页的 `FourZhuEditorViewModel`。
-  ///
-  /// 返回：无。副作用为更新 `_rowListNotifier.value`，始终在首位插入表头行。
-  void applyViewModelToNotifiers(FourZhuEditorViewModel viewModel) {
-    final configs = viewModel.rowConfigs;
-    if (configs.isEmpty) {
-      return;
-    }
-
-    for (final config in configs) {
-      final textGroup = _rowTypeToTextGroup(config.type);
-      if (textGroup != null) {
-        // Logic for text groups if needed
-      }
-    }
-    // _groupTextStyles = groupStyles.isNotEmpty ? groupStyles : null;
-
-    final rows = <TextRowPayload>[
-      TextRowPayload(
-          rowType: RowType.columnHeaderRow, uuid: 'header', titleInCell: false),
-      for (final c in configs)
-        if (c.isVisible)
-          TextRowPayload(
-            rowType: c.type,
-            uuid: c.type.name,
-            titleInCell: false,
-            rowLabel: c.isTitleVisible ? _defaultRowLabel(c.type) : null,
-          ),
-    ];
-
-    _rowListNotifier.value = rows;
-
-    final insets = viewModel.cardStyle?.contentPadding;
-    if (insets != null) {
-      _paddingNotifier.value = insets;
-    }
-  }
-
-  /// 根据行类型返回默认标题文案。
-  ///
-  /// 参数：
-  /// - [type]：行类型 `RowType`。
-  /// 返回：默认标题字符串；若未知类型返回空字符串。
-  String _defaultRowLabel(RowType type) {
-    switch (type) {
-      case RowType.heavenlyStem:
-        return '天干';
-      case RowType.earthlyBranch:
-        return '地支';
-      case RowType.tenGod:
-        return '十神';
-      case RowType.hiddenStems:
-        return '藏干';
-      case RowType.naYin:
-        return '纳音';
-      case RowType.kongWang:
-        return '空亡';
-      case RowType.columnHeaderRow:
-        return '表头';
-      case RowType.xunShou:
-        return '旬首';
-      case RowType.separator:
-        return '';
-      default:
-        return '';
-    }
-  }
-
-  /// 将 RowType 映射到 TextGroup（用于 groupTextStyles）
-  ///
-  /// 参数：
-  /// - [type]：行类型
-  /// 返回：对应的 TextGroup，若无映射则返回 null
-  TextGroup? _rowTypeToTextGroup(RowType type) {
-    switch (type) {
-      case RowType.heavenlyStem:
-        return TextGroup.tianGan;
-      case RowType.earthlyBranch:
-        return TextGroup.diZhi;
-      case RowType.naYin:
-        return TextGroup.naYin;
-      case RowType.kongWang:
-        return TextGroup.kongWang;
-      case RowType.tenGod:
-        return TextGroup.tenGod;
-      case RowType.columnHeaderRow:
-        return TextGroup.columnTitle;
-      default:
-        return null; // 其他行类型暂不映射
-    }
   }
 }

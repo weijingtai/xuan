@@ -95,14 +95,14 @@ void main() {
 
     test('历史记录限制在maxHistorySize', () {
       final history = CommandHistory(maxHistorySize: 3);
-      final template = _createTestTemplate();
+      var template = _createTestTemplate();
+      final groupId = template.chartGroups.first.id;
 
       for (var i = 0; i < 5; i++) {
-        final command = UpdateTemplateNameCommand(
-          oldName: i == 0 ? template.name : '名称${i - 1}',
-          newName: '名称$i',
+        template = history.executeCommand(
+          ToggleGroupExpandedCommand(groupId: groupId),
+          template,
         );
-        history.executeCommand(command, template);
       }
 
       expect(history.undoCount, equals(3));
