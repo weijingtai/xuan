@@ -39,13 +39,9 @@ class CardMetricsCalculator {
     double w = s.totals.totalWidth;
     double h = s.totals.totalHeight;
 
-    print("=== computeFinalSize START ===");
-    print("基础size totalWidth: $w, totalHeight: $h");
-
     if (options.includeGrip) {
       final gripW = _normalizeDouble(options.gripColWidth) * 2;
       w += gripW;
-      print("+ Grip cols: $gripW, 累计: $w");
     }
     if (options.includeGrip) {
       h += _normalizeDouble(options.gripRowHeight) * 2;
@@ -57,18 +53,12 @@ class CardMetricsCalculator {
     final hasTitleRowInPayload =
         payload.rowMap.values.any((r) => r.rowType == RowType.columnHeaderRow);
 
-    print("hasTitleColInPayload: $hasTitleColInPayload");
-    print("rowTitleWidth: ${options.rowTitleWidth}");
-
-    if (options.showTitleCol && !hasTitleColInPayload) {
+    if (options.showTitleCol && !options.cellShowsTitle && !hasTitleColInPayload) {
       final titleW = _normalizeDouble(options.rowTitleWidth);
       w += titleW;
-      print("+ Row title width: $titleW, 累计: $w");
-    } else {
-      print("跳过 row title (已在payload中)");
     }
 
-    if (options.showTitleRow && !hasTitleRowInPayload) {
+    if (options.showTitleRow && !options.cellShowsTitle && !hasTitleRowInPayload) {
       h += _normalizeDouble(options.columnTitleHeight);
     }
 
@@ -77,21 +67,15 @@ class CardMetricsCalculator {
     final padW = _normalizeDouble(pad.left + pad.right);
     w += padW;
     h += _normalizeDouble(pad.top + pad.bottom);
-    print("+ Padding: $padW, 累计: $w");
 
     final bw = _normalizeDouble(options.cardBorderWidth ?? 0.0);
     if (options.withCardBorder && bw > 0.0) {
       final borderW = bw * 2;
       w += borderW;
       h += bw * 2;
-      print("+ Border: $borderW, 累计: $w");
-    } else {
-      print("+ Border: 0 (disabled), 累计: $w");
     }
     w = w.ceilToDouble();
     h = h.ceilToDouble();
-    print("=== 最终尺寸(ceil): $w x $h ===\n");
-
     return Size(w, h);
   }
 
@@ -119,10 +103,10 @@ class CardMetricsCalculator {
     double h = baseH;
 
     if (options.includeGrip) {
-      w += _normalizeDouble(options.gripColWidth);
+      w += _normalizeDouble(options.gripColWidth) * 2;
     }
     if (options.includeGrip) {
-      h += _normalizeDouble(options.gripRowHeight);
+      h += _normalizeDouble(options.gripRowHeight) * 2;
     }
     if (options.showTitleCol &&
         !options.cellShowsTitle &&
@@ -687,14 +671,11 @@ class CardMetricsCalculator {
       return extras > max ? extras : max;
     });
     // print("maxPillarVerticalExtras: $maxPillarVerticalExtras");
-    final totalHeight =
-        _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras)
-            .toInt()
-            .toDouble();
+    final totalHeight = _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
 
     // 构建最终快照
     final totals = CardTotals(
-      totalWidth: _normalizeDouble(totalWidth + 1),
+      totalWidth: _normalizeDouble(totalWidth),
       totalHeight: _normalizeDouble(totalHeight),
       columnCount: pillarOrder.length,
       rowCount: rowOrder.length,

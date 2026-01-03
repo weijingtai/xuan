@@ -1100,10 +1100,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             ValueListenableBuilder<EditableFourZhuCardTheme>(
               valueListenable: widget.themeNotifier,
               builder: (context, theme, child) {
-                final padding = theme.card.padding;
-                final borderWidth = (theme.card.border?.enabled ?? false)
-                    ? _resolveUniformCardBorderWidth()
-                    : 0.0;
+                final padding = widget.paddingNotifier.value;
                 // print(
                 // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
                 // DEBUG: Print size info
@@ -1115,16 +1112,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   curve: Curves.easeInOutCubic,
                   key: _cardKey,
                   padding: padding,
-                  width: _pixelCeil(size.width +
-                      padding.left +
-                      padding.right +
-                      borderWidth * 2 +
-                      extraColWidth),
-                  height: _pixelCeil(size.height +
-                      padding.top +
-                      padding.bottom +
-                      borderWidth * 2 +
-                      extraRowHeight),
+                  width: _pixelCeil(size.width + extraColWidth),
+                  height: _pixelCeil(size.height + extraRowHeight),
                   alignment: _preferCenterAlignment
                       ? Alignment.center
                       : AlignmentDirectional.topStart,
