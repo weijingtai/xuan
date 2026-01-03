@@ -1,4 +1,4 @@
-(function(){if(typeof WebAssembly!=="undefined"&&WebAssembly.instantiateStreaming){var o=WebAssembly.instantiateStreaming;WebAssembly.instantiateStreaming=async function(r,i){try{return await o(r,i)}catch(e){var s=await r;var b=await s.arrayBuffer();return await WebAssembly.instantiate(b,i)}}}})();
+(function(){if(typeof WebAssembly==="undefined")return;if(WebAssembly.instantiateStreaming){var o=WebAssembly.instantiateStreaming;WebAssembly.instantiateStreaming=async function(r,i){try{return await o(r,i)}catch(e){var s=await r;var b=await s.arrayBuffer();return await WebAssembly.instantiate(b,i)}}}if(WebAssembly.compileStreaming){var c=WebAssembly.compileStreaming;WebAssembly.compileStreaming=async function(r){try{return await c(r)}catch(e){var s=await r;var b=await s.arrayBuffer();return await WebAssembly.compile(b)}}}})();
 (function dartProgram(){function copyProperties(a,b){var s=Object.keys(a)
 for(var r=0;r<s.length;r++){var q=s[r]
 b[q]=a[q]}}function mixinPropertiesHard(a,b){var s=Object.keys(a)

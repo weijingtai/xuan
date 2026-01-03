@@ -4767,8 +4767,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     if (key == null) {
       // 如果 key 不存在，使用回退方案
-      debugPrint(
-          'Warning: Pillar GlobalKey not found for index $pillarIndex, using fallback');
       return fallbackBuilder();
     }
 
@@ -4777,22 +4775,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     final widget = key.currentWidget;
 
     if (context == null || widget == null) {
-      debugPrint(
-          'Warning: Pillar Widget not available for index $pillarIndex, using fallback');
       return fallbackBuilder();
     }
 
     final element = context as Element;
     if (!element.mounted) {
-      debugPrint(
-          'Warning: Pillar Element inactive for index $pillarIndex, using fallback');
       return fallbackBuilder();
     }
 
     final renderBox = element.renderObject as RenderBox?;
     if (renderBox == null || !renderBox.hasSize) {
-      debugPrint(
-          'Warning: Pillar RenderBox not laid out for index $pillarIndex, using fallback');
       return fallbackBuilder();
     }
 

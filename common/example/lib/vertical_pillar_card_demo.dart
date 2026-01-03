@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 
 /// 垂直柱式卡片演示页面
 class VerticalPillarCardDemo extends StatelessWidget {
-  const VerticalPillarCardDemo({Key? key}) : super(key: key);
+  const VerticalPillarCardDemo({super.key});
 
   @override
   Widget build(BuildContext context) {
