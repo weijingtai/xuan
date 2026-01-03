@@ -7,24 +7,29 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:drift/native.dart';
 
-import 'package:example/main.dart';
+import 'package:common/database/app_database.dart';
+import 'package:common/pages/four_zhu_edit_page.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('FourZhuEditPage smoke test', (WidgetTester tester) async {
+    final db = AppDatabase(NativeDatabase.memory(), false);
+    addTearDown(() async => db.close());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.binding.setSurfaceSize(const Size(1400, 900));
+    addTearDown(() async => tester.binding.setSurfaceSize(null));
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpWidget(
+      Provider<AppDatabase>.value(
+        value: db,
+        child: const MaterialApp(home: FourZhuEditPage()),
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FourZhuEditPage), findsOneWidget);
   });
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:drift/native.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,6 +10,7 @@ import 'package:common/domain/usecases/layout_templates/get_all_templates_use_ca
 import 'package:common/domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/save_template_use_case.dart';
 import 'package:common/enums/layout_template_enums.dart';
+import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 
@@ -49,6 +51,44 @@ void main() {
       expect(viewModel.currentTemplate, isNotNull);
       expect(viewModel.currentTemplate?.collectionId, equals(collectionId));
       expect(viewModel.hasUnsavedChanges, isFalse);
+    });
+
+    test('initialize keeps card padding consistent with template', () async {
+      final viewModel = buildViewModel();
+
+      await viewModel.initialize(collectionId: collectionId);
+
+      final template = viewModel.currentTemplate;
+      expect(template, isNotNull);
+      expect(
+          viewModel.paddingNotifier.value, template!.cardStyle.contentPadding);
+      expect(viewModel.paddingNotifier.value, const EdgeInsets.all(16.0));
+    });
+
+    test('CardStyle.fromJson defaults contentPadding to 16 when missing',
+        () async {
+      final style = CardStyle.fromJson(const <String, dynamic>{});
+      expect(style.contentPadding, const EdgeInsets.all(16.0));
+    });
+
+    test(
+        'resetTemplatesToDefault clears stored templates and rebuilds fallback',
+        () async {
+      final viewModel = buildViewModel();
+      await viewModel.initialize(collectionId: collectionId);
+
+      viewModel.updateCardContentInsets(EdgeInsets.zero);
+      await viewModel.saveCurrentTemplate();
+      expect(viewModel.currentTemplate?.cardStyle.contentPadding,
+          equals(EdgeInsets.zero));
+
+      await viewModel.resetTemplatesToDefault();
+
+      expect(viewModel.templates, hasLength(1));
+      expect(viewModel.currentTemplate, isNotNull);
+      expect(viewModel.currentTemplate?.cardStyle.contentPadding,
+          const EdgeInsets.all(16.0));
+      expect(viewModel.paddingNotifier.value, const EdgeInsets.all(16.0));
     });
 
     test('updateTemplateName marks template dirty and save persists changes',

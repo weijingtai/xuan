@@ -221,7 +221,7 @@ class CardStyle {
     required this.globalFontFamily,
     required this.globalFontSize,
     required this.globalFontColorHex,
-    this.contentPadding = const EdgeInsets.all(0),
+    this.contentPadding = const EdgeInsets.all(16.0),
   });
 
   final BorderType dividerType;
@@ -287,7 +287,7 @@ class CardStyle {
       globalFontColorHex: json['globalFontColorHex'] as String? ?? '#FF000000',
       contentPadding: () {
         final m = json['contentPadding'] as Map<String, dynamic>?;
-        if (m == null) return const EdgeInsets.all(0);
+        if (m == null) return const EdgeInsets.all(16.0);
         double pick(String k) => (m[k] as num?)?.toDouble() ?? 0.0;
         return EdgeInsets.fromLTRB(
           pick('left'),

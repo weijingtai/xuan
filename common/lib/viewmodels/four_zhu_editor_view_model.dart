@@ -1252,6 +1252,37 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     clearSelection();
   }
 
+  Future<void> resetTemplatesToDefault() async {
+    await _withLoading(() async {
+      final existing = await getAllTemplatesUseCase(collectionId: _collectionId);
+      for (final template in existing) {
+        await deleteTemplateUseCase(
+          collectionId: _collectionId,
+          templateId: template.id,
+        );
+      }
+
+      final fallback = _buildDefaultTemplate(collectionId: _collectionId);
+      await saveTemplateUseCase(template: fallback);
+
+      final refreshed =
+          await getAllTemplatesUseCase(collectionId: _collectionId);
+      _templates = refreshed.isEmpty ? [fallback] : refreshed;
+      _currentTemplate = _templates.first;
+      _hasUnsavedChanges = false;
+      _errorMessage = null;
+      _favoriteTemplateIds.clear();
+      _selectedTemplateIds.clear();
+      _selectedPresetId = null;
+      _resetRecentTemplates();
+    });
+
+    final template = _currentTemplate;
+    if (template != null) {
+      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+    }
+  }
+
   Future<void> duplicateSelectedTemplates() async {
     if (_selectedTemplateIds.isEmpty) {
       return;
@@ -1398,6 +1429,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         globalFontFamily: 'NotoSans',
         globalFontSize: 14,
         globalFontColorHex: '#FF0F172A',
+        contentPadding: EdgeInsets.all(16.0),
       ),
       chartGroups: [
         ChartGroup(

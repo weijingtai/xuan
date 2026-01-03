@@ -105,6 +105,12 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                     icon: const Icon(Icons.save),
                     onPressed: () => _saveWithFeedback(context, viewModel),
                   ),
+                  IconButton(
+                    icon: const Icon(Icons.restart_alt),
+                    onPressed: viewModel.isLoading
+                        ? null
+                        : () => _confirmResetTemplates(context, viewModel),
+                  ),
                 ],
               ),
               // appBar: EditorTopBar(
@@ -427,6 +433,38 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
 
     if (confirmed == true) {
       await viewModel.deleteCurrentTemplate();
+    }
+  }
+
+  Future<void> _confirmResetTemplates(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('重置模板'),
+          content: const Text('将删除本地所有模板并重建默认模板。此操作不可撤销。'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              style: FilledButton.styleFrom(
+                backgroundColor: Colors.red.withValues(alpha: 0.9),
+              ),
+              child: const Text('重置'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed == true) {
+      await viewModel.resetTemplatesToDefault();
     }
   }
 

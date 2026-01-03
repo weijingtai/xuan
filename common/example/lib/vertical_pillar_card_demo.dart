@@ -11,7 +11,7 @@ class VerticalPillarCardDemo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 创建示例数据 - 符合设计稿中的流年盘
-    final pillars = [
+    const pillars = <PillarData>[
       PillarData(
         pillarId: 'day',
         pillarType: PillarType.day,
@@ -49,18 +49,18 @@ class VerticalPillarCardDemo extends StatelessWidget {
         title: const Text('垂直柱式八字卡片演示'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: SingleChildScrollView(
+      body: const SingleChildScrollView(
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            const Padding(
+            SizedBox(height: 20),
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 '符合设计稿的垂直柱布局',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
 
             // 示例1：完整功能展示
             VerticalPillarCard(
@@ -76,15 +76,15 @@ class VerticalPillarCardDemo extends StatelessWidget {
               showNaYin: true,
             ),
 
-            const SizedBox(height: 20),
-            const Padding(
+            SizedBox(height: 20),
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 '简化版本（仅显示天干地支）',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
 
             // 示例2：简化版
             VerticalPillarCard(
@@ -126,15 +126,15 @@ class VerticalPillarCardDemo extends StatelessWidget {
               showNaYin: false,
             ),
 
-            const SizedBox(height: 20),
-            const Padding(
+            SizedBox(height: 20),
+            Padding(
               padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
                 '完整版本（所有信息）',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(height: 10),
+            SizedBox(height: 10),
 
             // 示例3：完整版
             VerticalPillarCard(
@@ -179,7 +179,7 @@ class VerticalPillarCardDemo extends StatelessWidget {
               showXunShou: true,
             ),
 
-            const SizedBox(height: 40),
+            SizedBox(height: 40),
           ],
         ),
       ),
