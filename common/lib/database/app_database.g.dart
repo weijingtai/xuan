@@ -887,6 +887,461 @@ class SkillClassesCompanion extends UpdateCompanion<SkillClass> {
   }
 }
 
+class $LayoutTemplatesTable extends LayoutTemplates
+    with TableInfo<$LayoutTemplatesTable, LayoutTemplateRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LayoutTemplatesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
+  @override
+  late final GeneratedColumn<String> uuid =
+      GeneratedColumn<String>('uuid', aliasedName, false,
+          additionalChecks: GeneratedColumn.checkTextLength(
+            minTextLength: 1,
+          ),
+          type: DriftSqlType.string,
+          requiredDuringInsert: true);
+  static const VerificationMeta _collectionIdMeta =
+      const VerificationMeta('collectionId');
+  @override
+  late final GeneratedColumn<String> collectionId =
+      GeneratedColumn<String>('collection_id', aliasedName, false,
+          additionalChecks: GeneratedColumn.checkTextLength(
+            minTextLength: 1,
+          ),
+          type: DriftSqlType.string,
+          requiredDuringInsert: true);
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name =
+      GeneratedColumn<String>('name', aliasedName, false,
+          additionalChecks: GeneratedColumn.checkTextLength(
+            minTextLength: 1,
+          ),
+          type: DriftSqlType.string,
+          requiredDuringInsert: true);
+  static const VerificationMeta _descriptionMeta =
+      const VerificationMeta('description');
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+      'description', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _templateJsonMeta =
+      const VerificationMeta('templateJson');
+  @override
+  late final GeneratedColumn<String> templateJson = GeneratedColumn<String>(
+      'template_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _versionMeta =
+      const VerificationMeta('version');
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+      'version', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        uuid,
+        collectionId,
+        name,
+        description,
+        templateJson,
+        version,
+        updatedAt,
+        deletedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 't_layout_templates';
+  @override
+  VerificationContext validateIntegrity(Insertable<LayoutTemplateRow> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
+    } else if (isInserting) {
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('collection_id')) {
+      context.handle(
+          _collectionIdMeta,
+          collectionId.isAcceptableOrUnknown(
+              data['collection_id']!, _collectionIdMeta));
+    } else if (isInserting) {
+      context.missing(_collectionIdMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+          _nameMeta, name.isAcceptableOrUnknown(data['name']!, _nameMeta));
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+          _descriptionMeta,
+          description.isAcceptableOrUnknown(
+              data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('template_json')) {
+      context.handle(
+          _templateJsonMeta,
+          templateJson.isAcceptableOrUnknown(
+              data['template_json']!, _templateJsonMeta));
+    } else if (isInserting) {
+      context.missing(_templateJsonMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(_versionMeta,
+          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
+    } else if (isInserting) {
+      context.missing(_versionMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {uuid};
+  @override
+  LayoutTemplateRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LayoutTemplateRow(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      collectionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}collection_id'])!,
+      name: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}name'])!,
+      description: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      templateJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_json'])!,
+      version: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+    );
+  }
+
+  @override
+  $LayoutTemplatesTable createAlias(String alias) {
+    return $LayoutTemplatesTable(attachedDatabase, alias);
+  }
+}
+
+class LayoutTemplateRow extends DataClass
+    implements Insertable<LayoutTemplateRow> {
+  final String uuid;
+  final String collectionId;
+  final String name;
+  final String? description;
+  final String templateJson;
+  final int version;
+  final DateTime updatedAt;
+  final DateTime? deletedAt;
+  const LayoutTemplateRow(
+      {required this.uuid,
+      required this.collectionId,
+      required this.name,
+      this.description,
+      required this.templateJson,
+      required this.version,
+      required this.updatedAt,
+      this.deletedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['uuid'] = Variable<String>(uuid);
+    map['collection_id'] = Variable<String>(collectionId);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['template_json'] = Variable<String>(templateJson);
+    map['version'] = Variable<int>(version);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  LayoutTemplatesCompanion toCompanion(bool nullToAbsent) {
+    return LayoutTemplatesCompanion(
+      uuid: Value(uuid),
+      collectionId: Value(collectionId),
+      name: Value(name),
+      description: description == null && nullToAbsent
+          ? const Value.absent()
+          : Value(description),
+      templateJson: Value(templateJson),
+      version: Value(version),
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory LayoutTemplateRow.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LayoutTemplateRow(
+      uuid: serializer.fromJson<String>(json['uuid']),
+      collectionId: serializer.fromJson<String>(json['collectionId']),
+      name: serializer.fromJson<String>(json['name']),
+      description: serializer.fromJson<String?>(json['description']),
+      templateJson: serializer.fromJson<String>(json['templateJson']),
+      version: serializer.fromJson<int>(json['version']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'uuid': serializer.toJson<String>(uuid),
+      'collectionId': serializer.toJson<String>(collectionId),
+      'name': serializer.toJson<String>(name),
+      'description': serializer.toJson<String?>(description),
+      'templateJson': serializer.toJson<String>(templateJson),
+      'version': serializer.toJson<int>(version),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  LayoutTemplateRow copyWith(
+          {String? uuid,
+          String? collectionId,
+          String? name,
+          Value<String?> description = const Value.absent(),
+          String? templateJson,
+          int? version,
+          DateTime? updatedAt,
+          Value<DateTime?> deletedAt = const Value.absent()}) =>
+      LayoutTemplateRow(
+        uuid: uuid ?? this.uuid,
+        collectionId: collectionId ?? this.collectionId,
+        name: name ?? this.name,
+        description: description.present ? description.value : this.description,
+        templateJson: templateJson ?? this.templateJson,
+        version: version ?? this.version,
+        updatedAt: updatedAt ?? this.updatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+      );
+  LayoutTemplateRow copyWithCompanion(LayoutTemplatesCompanion data) {
+    return LayoutTemplateRow(
+      uuid: data.uuid.present ? data.uuid.value : this.uuid,
+      collectionId: data.collectionId.present
+          ? data.collectionId.value
+          : this.collectionId,
+      name: data.name.present ? data.name.value : this.name,
+      description:
+          data.description.present ? data.description.value : this.description,
+      templateJson: data.templateJson.present
+          ? data.templateJson.value
+          : this.templateJson,
+      version: data.version.present ? data.version.value : this.version,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LayoutTemplateRow(')
+          ..write('uuid: $uuid, ')
+          ..write('collectionId: $collectionId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('templateJson: $templateJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(uuid, collectionId, name, description,
+      templateJson, version, updatedAt, deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LayoutTemplateRow &&
+          other.uuid == this.uuid &&
+          other.collectionId == this.collectionId &&
+          other.name == this.name &&
+          other.description == this.description &&
+          other.templateJson == this.templateJson &&
+          other.version == this.version &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class LayoutTemplatesCompanion extends UpdateCompanion<LayoutTemplateRow> {
+  final Value<String> uuid;
+  final Value<String> collectionId;
+  final Value<String> name;
+  final Value<String?> description;
+  final Value<String> templateJson;
+  final Value<int> version;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const LayoutTemplatesCompanion({
+    this.uuid = const Value.absent(),
+    this.collectionId = const Value.absent(),
+    this.name = const Value.absent(),
+    this.description = const Value.absent(),
+    this.templateJson = const Value.absent(),
+    this.version = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LayoutTemplatesCompanion.insert({
+    required String uuid,
+    required String collectionId,
+    required String name,
+    this.description = const Value.absent(),
+    required String templateJson,
+    required int version,
+    required DateTime updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        collectionId = Value(collectionId),
+        name = Value(name),
+        templateJson = Value(templateJson),
+        version = Value(version),
+        updatedAt = Value(updatedAt);
+  static Insertable<LayoutTemplateRow> custom({
+    Expression<String>? uuid,
+    Expression<String>? collectionId,
+    Expression<String>? name,
+    Expression<String>? description,
+    Expression<String>? templateJson,
+    Expression<int>? version,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (uuid != null) 'uuid': uuid,
+      if (collectionId != null) 'collection_id': collectionId,
+      if (name != null) 'name': name,
+      if (description != null) 'description': description,
+      if (templateJson != null) 'template_json': templateJson,
+      if (version != null) 'version': version,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LayoutTemplatesCompanion copyWith(
+      {Value<String>? uuid,
+      Value<String>? collectionId,
+      Value<String>? name,
+      Value<String?>? description,
+      Value<String>? templateJson,
+      Value<int>? version,
+      Value<DateTime>? updatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<int>? rowid}) {
+    return LayoutTemplatesCompanion(
+      uuid: uuid ?? this.uuid,
+      collectionId: collectionId ?? this.collectionId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      templateJson: templateJson ?? this.templateJson,
+      version: version ?? this.version,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
+    }
+    if (collectionId.present) {
+      map['collection_id'] = Variable<String>(collectionId.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (templateJson.present) {
+      map['template_json'] = Variable<String>(templateJson.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LayoutTemplatesCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('collectionId: $collectionId, ')
+          ..write('name: $name, ')
+          ..write('description: $description, ')
+          ..write('templateJson: $templateJson, ')
+          ..write('version: $version, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DivinationTypesTable extends DivinationTypes
     with TableInfo<$DivinationTypesTable, DivinationTypeDataModel> {
   @override
@@ -5184,6 +5639,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $SkillsTable skills = $SkillsTable(this);
   late final $SkillClassesTable skillClasses = $SkillClassesTable(this);
+  late final $LayoutTemplatesTable layoutTemplates =
+      $LayoutTemplatesTable(this);
   late final $DivinationTypesTable divinationTypes =
       $DivinationTypesTable(this);
   late final $SeekersTable seekers = $SeekersTable(this);
@@ -5214,6 +5671,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final SkillsDao skillsDao = SkillsDao(this as AppDatabase);
   late final SkillClassesDao skillClassesDao =
       SkillClassesDao(this as AppDatabase);
+  late final LayoutTemplatesDao layoutTemplatesDao =
+      LayoutTemplatesDao(this as AppDatabase);
   late final DivinationTypesDao divinationTypesDao =
       DivinationTypesDao(this as AppDatabase);
   late final SeekersDao seekersDao = SeekersDao(this as AppDatabase);
@@ -5233,6 +5692,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
         skills,
         skillClasses,
+        layoutTemplates,
         divinationTypes,
         seekers,
         divinations,
@@ -6014,6 +6474,227 @@ typedef $$SkillClassesTableProcessedTableManager = ProcessedTableManager<
     (SkillClass, $$SkillClassesTableReferences),
     SkillClass,
     PrefetchHooks Function({bool skillId, bool panelSkillClassMappersRefs})>;
+typedef $$LayoutTemplatesTableCreateCompanionBuilder = LayoutTemplatesCompanion
+    Function({
+  required String uuid,
+  required String collectionId,
+  required String name,
+  Value<String?> description,
+  required String templateJson,
+  required int version,
+  required DateTime updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$LayoutTemplatesTableUpdateCompanionBuilder = LayoutTemplatesCompanion
+    Function({
+  Value<String> uuid,
+  Value<String> collectionId,
+  Value<String> name,
+  Value<String?> description,
+  Value<String> templateJson,
+  Value<int> version,
+  Value<DateTime> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+class $$LayoutTemplatesTableFilterComposer
+    extends Composer<_$AppDatabase, $LayoutTemplatesTable> {
+  $$LayoutTemplatesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get collectionId => $composableBuilder(
+      column: $table.collectionId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateJson => $composableBuilder(
+      column: $table.templateJson, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get version => $composableBuilder(
+      column: $table.version, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$LayoutTemplatesTableOrderingComposer
+    extends Composer<_$AppDatabase, $LayoutTemplatesTable> {
+  $$LayoutTemplatesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get collectionId => $composableBuilder(
+      column: $table.collectionId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get name => $composableBuilder(
+      column: $table.name, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateJson => $composableBuilder(
+      column: $table.templateJson,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get version => $composableBuilder(
+      column: $table.version, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$LayoutTemplatesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LayoutTemplatesTable> {
+  $$LayoutTemplatesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
+
+  GeneratedColumn<String> get collectionId => $composableBuilder(
+      column: $table.collectionId, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+      column: $table.description, builder: (column) => column);
+
+  GeneratedColumn<String> get templateJson => $composableBuilder(
+      column: $table.templateJson, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$LayoutTemplatesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $LayoutTemplatesTable,
+    LayoutTemplateRow,
+    $$LayoutTemplatesTableFilterComposer,
+    $$LayoutTemplatesTableOrderingComposer,
+    $$LayoutTemplatesTableAnnotationComposer,
+    $$LayoutTemplatesTableCreateCompanionBuilder,
+    $$LayoutTemplatesTableUpdateCompanionBuilder,
+    (
+      LayoutTemplateRow,
+      BaseReferences<_$AppDatabase, $LayoutTemplatesTable, LayoutTemplateRow>
+    ),
+    LayoutTemplateRow,
+    PrefetchHooks Function()> {
+  $$LayoutTemplatesTableTableManager(
+      _$AppDatabase db, $LayoutTemplatesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LayoutTemplatesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LayoutTemplatesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LayoutTemplatesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> uuid = const Value.absent(),
+            Value<String> collectionId = const Value.absent(),
+            Value<String> name = const Value.absent(),
+            Value<String?> description = const Value.absent(),
+            Value<String> templateJson = const Value.absent(),
+            Value<int> version = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LayoutTemplatesCompanion(
+            uuid: uuid,
+            collectionId: collectionId,
+            name: name,
+            description: description,
+            templateJson: templateJson,
+            version: version,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String uuid,
+            required String collectionId,
+            required String name,
+            Value<String?> description = const Value.absent(),
+            required String templateJson,
+            required int version,
+            required DateTime updatedAt,
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              LayoutTemplatesCompanion.insert(
+            uuid: uuid,
+            collectionId: collectionId,
+            name: name,
+            description: description,
+            templateJson: templateJson,
+            version: version,
+            updatedAt: updatedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$LayoutTemplatesTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $LayoutTemplatesTable,
+    LayoutTemplateRow,
+    $$LayoutTemplatesTableFilterComposer,
+    $$LayoutTemplatesTableOrderingComposer,
+    $$LayoutTemplatesTableAnnotationComposer,
+    $$LayoutTemplatesTableCreateCompanionBuilder,
+    $$LayoutTemplatesTableUpdateCompanionBuilder,
+    (
+      LayoutTemplateRow,
+      BaseReferences<_$AppDatabase, $LayoutTemplatesTable, LayoutTemplateRow>
+    ),
+    LayoutTemplateRow,
+    PrefetchHooks Function()>;
 typedef $$DivinationTypesTableCreateCompanionBuilder = DivinationTypesCompanion
     Function({
   required String uuid,
@@ -10689,6 +11370,8 @@ class $AppDatabaseManager {
       $$SkillsTableTableManager(_db, _db.skills);
   $$SkillClassesTableTableManager get skillClasses =>
       $$SkillClassesTableTableManager(_db, _db.skillClasses);
+  $$LayoutTemplatesTableTableManager get layoutTemplates =>
+      $$LayoutTemplatesTableTableManager(_db, _db.layoutTemplates);
   $$DivinationTypesTableTableManager get divinationTypes =>
       $$DivinationTypesTableTableManager(_db, _db.divinationTypes);
   $$SeekersTableTableManager get seekers =>

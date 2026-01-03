@@ -7,10 +7,17 @@ import '../enums/enum_tian_gan.dart';
 import '../enums/enum_di_zhi.dart';
 import '../enums/layout_template_enums.dart';
 
+class _Unset {
+  const _Unset();
+}
+
 class LayoutTemplate {
+  static const _Unset _unset = _Unset();
+
   LayoutTemplate({
     required this.id,
     required this.name,
+    this.description,
     required this.collectionId,
     required this.cardStyle,
     required List<ChartGroup> chartGroups,
@@ -22,6 +29,7 @@ class LayoutTemplate {
 
   final String id;
   final String name;
+  final String? description;
   final String collectionId;
   final CardStyle cardStyle;
   final List<ChartGroup> chartGroups;
@@ -32,6 +40,7 @@ class LayoutTemplate {
   LayoutTemplate copyWith({
     String? id,
     String? name,
+    Object? description = _unset,
     String? collectionId,
     CardStyle? cardStyle,
     List<ChartGroup>? chartGroups,
@@ -42,6 +51,9 @@ class LayoutTemplate {
     return LayoutTemplate(
       id: id ?? this.id,
       name: name ?? this.name,
+      description: identical(description, _unset)
+          ? this.description
+          : description as String?,
       collectionId: collectionId ?? this.collectionId,
       cardStyle: cardStyle ?? this.cardStyle,
       chartGroups: chartGroups ?? this.chartGroups,
@@ -55,6 +67,7 @@ class LayoutTemplate {
     return {
       'id': id,
       'name': name,
+      'description': description,
       'collectionId': collectionId,
       'cardStyle': cardStyle.toJson(),
       'chartGroups': chartGroups.map((group) => group.toJson()).toList(),
@@ -68,6 +81,7 @@ class LayoutTemplate {
     return LayoutTemplate(
       id: json['id'] as String,
       name: json['name'] as String,
+      description: json['description'] as String?,
       collectionId: json['collectionId'] as String,
       cardStyle: CardStyle.fromJson(json['cardStyle'] as Map<String, dynamic>),
       chartGroups: (json['chartGroups'] as List<dynamic>)
@@ -89,6 +103,7 @@ class LayoutTemplate {
     return other is LayoutTemplate &&
         other.id == id &&
         other.name == name &&
+        other.description == description &&
         other.collectionId == collectionId &&
         other.cardStyle == cardStyle &&
         const ListEquality<ChartGroup>()
@@ -102,6 +117,7 @@ class LayoutTemplate {
   int get hashCode => Object.hash(
         id,
         name,
+        description,
         collectionId,
         cardStyle,
         const ListEquality<ChartGroup>().hash(chartGroups),

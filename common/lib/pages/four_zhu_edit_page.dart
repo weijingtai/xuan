@@ -1,38 +1,20 @@
+import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/save_template_use_case.dart';
-import 'package:common/enums/layout_template_enums.dart';
-import 'package:common/models/layout_template.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
-import 'package:common/widgets/editor_top_bar.dart';
 import 'package:common/widgets/row_tag_bar.dart';
-// import 'package:common/widgets/editor_sidebar_v2.dart';
 import 'package:common/widgets/style_editor/sidebar_explorer.dart';
-import 'package:common/widgets/template_board_view.dart';
-import 'package:common/widgets/template_gallery_view.dart';
 import 'package:common/widgets/pillar_tag_bar.dart';
-import 'package:common/widgets/generic_pillar_card.dart';
-import 'package:common/models/pillar_data.dart';
 import 'package:common/enums/enum_jia_zi.dart';
-import 'package:day_night_themed_switcher/day_night_themed_switcher.dart';
 import 'package:provider/provider.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/widgets/eight_chars_picker_bottom_sheet.dart';
-import 'package:common/features/tai_yuan/tai_yuan_model.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 import 'package:flutter/material.dart';
 
-import '../datasource/layout_template_local_data_source.dart';
-import '../enums.dart';
-import '../features/tai_yuan/enum_calculate_strategy.dart';
-import '../models/drag_payloads.dart';
-import '../models/pillar_content.dart';
-import '../models/row_strategy.dart';
-import '../widgets/card_row.dart';
-import '../widgets/editable_fourzhu_card.dart';
 import '../widgets/four_zhu_card_editor_page/editor_workspace.dart';
 
 const _defaultCollectionId = 'four_zhu_templates';
@@ -45,9 +27,9 @@ class FourZhuEditPage extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<FourZhuEditorViewModel>(
-          create: (_) {
+          create: (ctx) {
             final repository = LayoutTemplateRepositoryImpl(
-              const LayoutTemplateLocalDataSource(),
+              LayoutTemplateLocalDataSource(ctx.read<AppDatabase>()),
             );
             return FourZhuEditorViewModel(
               getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
@@ -72,10 +54,13 @@ class _FourZhuEditView extends StatefulWidget {
 
 class _FourZhuEditViewState extends State<_FourZhuEditView> {
   final TextEditingController _templateNameController = TextEditingController();
+  final TextEditingController _templateDescriptionController =
+      TextEditingController();
 
   @override
   void dispose() {
     _templateNameController.dispose();
+    _templateDescriptionController.dispose();
     super.dispose();
   }
 
@@ -88,11 +73,20 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
             : EditorTheme.lightTheme;
         final currentTemplate = viewModel.currentTemplate;
         final templateName = currentTemplate?.name ?? '';
+        final templateDescription = currentTemplate?.description ?? '';
 
         if (_templateNameController.text != templateName) {
           _templateNameController.value = TextEditingValue(
             text: templateName,
             selection: TextSelection.collapsed(offset: templateName.length),
+          );
+        }
+
+        if (_templateDescriptionController.text != templateDescription) {
+          _templateDescriptionController.value = TextEditingValue(
+            text: templateDescription,
+            selection:
+                TextSelection.collapsed(offset: templateDescription.length),
           );
         }
 
@@ -132,7 +126,8 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                     decoration: BoxDecoration(
                       color: themeData.colorScheme.surfaceContainerHighest,
                       border: Border.all(
-                          color: themeData.dividerColor.withOpacity(0.12)),
+                        color: themeData.dividerColor.withValues(alpha: 0.12),
+                      ),
                     ),
                     child: const SidebarExplorer(),
                   ),
@@ -142,7 +137,158 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            // const TemplateGalleryView(),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: themeData
+                                      .colorScheme.surfaceContainerHighest,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: themeData.dividerColor
+                                        .withValues(alpha: 0.12),
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child:
+                                                DropdownButtonFormField<String>(
+                                              key:
+                                                  ValueKey(currentTemplate?.id),
+                                              initialValue: currentTemplate?.id,
+                                              items: viewModel.templates
+                                                  .map(
+                                                    (template) =>
+                                                        DropdownMenuItem(
+                                                      value: template.id,
+                                                      child: Text(
+                                                        template.name,
+                                                        overflow: TextOverflow
+                                                            .ellipsis,
+                                                      ),
+                                                    ),
+                                                  )
+                                                  .toList(growable: false),
+                                              onChanged: viewModel.isLoading
+                                                  ? null
+                                                  : (id) {
+                                                      if (id == null) return;
+                                                      viewModel
+                                                          .selectTemplate(id);
+                                                    },
+                                              decoration: const InputDecoration(
+                                                labelText: '模板',
+                                                border: OutlineInputBorder(),
+                                                isDense: true,
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: viewModel.isLoading
+                                                ? null
+                                                : () =>
+                                                    _showCreateTemplateDialog(
+                                                        context, viewModel),
+                                            icon: const Icon(Icons.add),
+                                            label: const Text('新建'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: viewModel.isLoading ||
+                                                    currentTemplate == null
+                                                ? null
+                                                : viewModel
+                                                    .duplicateCurrentTemplate,
+                                            icon: const Icon(Icons.copy),
+                                            label: const Text('复制'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: viewModel.isLoading ||
+                                                    currentTemplate == null
+                                                ? null
+                                                : () => _showSaveAsDialog(
+                                                    context, viewModel),
+                                            icon: const Icon(
+                                                Icons.save_as_outlined),
+                                            label: const Text('另存为'),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          OutlinedButton.icon(
+                                            onPressed: viewModel.isLoading ||
+                                                    currentTemplate == null
+                                                ? null
+                                                : () => _confirmDelete(
+                                                    context, viewModel),
+                                            icon: const Icon(
+                                                Icons.delete_outline),
+                                            label: const Text('删除'),
+                                            style: OutlinedButton.styleFrom(
+                                              foregroundColor:
+                                                  themeData.colorScheme.error,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: TextField(
+                                              controller:
+                                                  _templateNameController,
+                                              enabled: !viewModel.isLoading &&
+                                                  currentTemplate != null,
+                                              onChanged:
+                                                  viewModel.updateTemplateName,
+                                              decoration: const InputDecoration(
+                                                labelText: '名称',
+                                                border: OutlineInputBorder(),
+                                                isDense: true,
+                                                suffixIcon: Icon(
+                                                  Icons.edit,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: TextField(
+                                              controller:
+                                                  _templateDescriptionController,
+                                              enabled: !viewModel.isLoading &&
+                                                  currentTemplate != null,
+                                              onChanged: (value) => viewModel
+                                                  .updateTemplateDescription(
+                                                      value),
+                                              maxLines: 2,
+                                              decoration: const InputDecoration(
+                                                labelText: '描述(可选)',
+                                                border: OutlineInputBorder(),
+                                                isDense: true,
+                                                suffixIcon: Icon(
+                                                  Icons.notes_outlined,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                             const SizedBox(height: 8),
                             // 移除旧的PillarPresetList,已被TemplateGalleryView替代
                             if (viewModel.errorMessage != null)
@@ -175,7 +321,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                   borderRadius: BorderRadius.circular(8),
                                   border: Border.all(
                                     color: themeData.dividerColor
-                                        .withOpacity(0.12),
+                                        .withValues(alpha: 0.12),
                                   ),
                                 ),
                                 padding: const EdgeInsets.all(12),
@@ -395,19 +541,42 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
     );
   }
 
-  // Legacy bottom-sheet template gallery removed; using TemplateGalleryView instead.
-
-  Future<void> _openEightCharsPicker(
+  Future<void> _showSaveAsDialog(
     BuildContext context,
     FourZhuEditorViewModel viewModel,
   ) async {
-    final result = await showEightCharsPickerBottomSheet(
+    final controller = TextEditingController();
+    final newName = await showDialog<String>(
       context: context,
-      eightChars: viewModel.previewEightChars,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('另存为新模板'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(
+              hintText: '输入新模板名称',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('取消'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(controller.text.trim()),
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
     );
-    if (result is EightChars && context.mounted) {
-      viewModel.updatePreviewData(eightChars: result);
+
+    if (!context.mounted || newName == null) {
+      return;
     }
+    await viewModel.saveTemplateAs(newName);
   }
 }
 
@@ -453,16 +622,5 @@ class _UnsavedBanner extends StatelessWidget {
         title: Text('有未保存的更改，按 Ctrl/⌘+S 保存'),
       ),
     );
-  }
-}
-
-String _rowTextAlignLabel(RowTextAlign value) {
-  switch (value) {
-    case RowTextAlign.left:
-      return '左对齐';
-    case RowTextAlign.center:
-      return '居中';
-    case RowTextAlign.right:
-      return '右对齐';
   }
 }

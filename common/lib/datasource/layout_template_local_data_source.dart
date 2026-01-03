@@ -1,42 +1,42 @@
 import 'dart:convert';
 
-import 'package:shared_preferences/shared_preferences.dart';
-
+import '../database/app_database.dart';
 import '../models/layout_template_dto.dart';
 
+import '../database/daos/layout_templates_dao.dart';
+
 class LayoutTemplateLocalDataSource {
-  const LayoutTemplateLocalDataSource();
+  LayoutTemplateLocalDataSource(this._db) : _dao = LayoutTemplatesDao(_db);
 
-  static const _storagePrefix = 'layout_templates';
-
-  String _collectionKey(String collectionId) => '$_storagePrefix:$collectionId';
+  final AppDatabase _db;
+  final LayoutTemplatesDao _dao;
 
   Future<List<LayoutTemplateDto>> loadTemplates(String collectionId) async {
-    final prefs = await SharedPreferences.getInstance();
-    final stored = prefs.getString(_collectionKey(collectionId));
-    if (stored == null || stored.isEmpty) {
-      return [];
-    }
-
-    final decoded = jsonDecode(stored) as List<dynamic>;
-    return decoded
+    final rows = await _dao.getAllByCollection(collectionId);
+    return rows
+        .map((row) => jsonDecode(row.templateJson))
         .whereType<Map<String, dynamic>>()
         .map(LayoutTemplateDto.fromJson)
-        .toList();
+        .toList(growable: false);
   }
 
   Future<void> persistTemplates(
     String collectionId,
     List<LayoutTemplateDto> templates,
   ) async {
-    final prefs = await SharedPreferences.getInstance();
-    final payload = jsonEncode(
-        templates.map((dto) => dto.toJson()).toList(growable: false));
-    await prefs.setString(_collectionKey(collectionId), payload);
+    final domainTemplates =
+        templates.map((dto) => dto.toDomain()).toList(growable: false);
+
+    await _db.transaction(() async {
+      await _dao.upsertAllTemplates(domainTemplates);
+      await _dao.softDeleteMissing(
+        collectionId,
+        domainTemplates.map((t) => t.id).toSet(),
+      );
+    });
   }
 
   Future<void> removeCollection(String collectionId) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_collectionKey(collectionId));
+    await _dao.softDeleteByCollection(collectionId);
   }
 }

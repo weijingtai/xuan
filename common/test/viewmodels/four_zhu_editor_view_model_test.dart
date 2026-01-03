@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:drift/native.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
@@ -11,25 +13,27 @@ import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 
 void main() {
+  late AppDatabase db;
+  late LayoutTemplateRepositoryImpl repository;
+
   setUp(() {
     SharedPreferences.setMockInitialValues({});
+    db = AppDatabase(NativeDatabase.memory(), false);
+    repository = LayoutTemplateRepositoryImpl(
+      LayoutTemplateLocalDataSource(db),
+    );
+  });
+
+  tearDown(() async {
+    await db.close();
   });
 
   FourZhuEditorViewModel buildViewModel() {
-    final repository = LayoutTemplateRepositoryImpl(
-      const LayoutTemplateLocalDataSource(),
-    );
     return FourZhuEditorViewModel(
       getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
       getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
       saveTemplateUseCase: SaveTemplateUseCase(repository),
       deleteTemplateUseCase: DeleteTemplateUseCase(repository),
-    );
-  }
-
-  LayoutTemplateRepositoryImpl buildRepository() {
-    return LayoutTemplateRepositoryImpl(
-      const LayoutTemplateLocalDataSource(),
     );
   }
 
@@ -49,7 +53,6 @@ void main() {
 
     test('updateTemplateName marks template dirty and save persists changes',
         () async {
-      final repository = buildRepository();
       final viewModel = FourZhuEditorViewModel(
         getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
         getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
@@ -380,7 +383,8 @@ void main() {
         expect(updatedSourceGroup.pillarOrder.length, equals(2));
         expect(updatedSourceGroup.pillarOrder, contains(PillarType.year));
         expect(updatedSourceGroup.pillarOrder, contains(PillarType.day));
-        expect(updatedSourceGroup.pillarOrder, isNot(contains(PillarType.month)));
+        expect(
+            updatedSourceGroup.pillarOrder, isNot(contains(PillarType.month)));
 
         expect(updatedTargetGroup.pillarOrder.length, equals(1));
         expect(updatedTargetGroup.pillarOrder.first, equals(PillarType.month));

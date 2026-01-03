@@ -191,6 +191,26 @@ class SkillClasses extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
+@DataClassName('LayoutTemplateRow')
+class LayoutTemplates extends Table {
+  @override
+  String get tableName => 't_layout_templates';
+
+  TextColumn get uuid => text().withLength(min: 1).named('uuid')();
+  TextColumn get collectionId =>
+      text().withLength(min: 1).named('collection_id')();
+  TextColumn get name => text().withLength(min: 1).named('name')();
+  TextColumn get description => text().nullable().named('description')();
+
+  TextColumn get templateJson => text().named('template_json')();
+  IntColumn get version => integer().named('version')();
+  DateTimeColumn get updatedAt => dateTime().named('updated_at')();
+  DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
+
+  @override
+  Set<Column> get primaryKey => {uuid};
+}
+
 @UseRowClass(DivinationTypeDataModel)
 class DivinationTypes extends Table {
   @override

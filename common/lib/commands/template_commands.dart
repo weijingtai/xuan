@@ -43,6 +43,46 @@ class UpdateTemplateNameCommand extends EditorCommand {
   }
 }
 
+class UpdateTemplateDescriptionCommand extends EditorCommand {
+  UpdateTemplateDescriptionCommand({
+    required this.oldDescription,
+    required this.newDescription,
+  });
+
+  final String? oldDescription;
+  final String? newDescription;
+
+  @override
+  String get description => '更新模板描述';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(description: newDescription);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(description: oldDescription);
+  }
+
+  @override
+  bool canMergeWith(EditorCommand other) {
+    return other is UpdateTemplateDescriptionCommand &&
+        other.oldDescription == newDescription;
+  }
+
+  @override
+  EditorCommand mergeWith(EditorCommand other) {
+    if (other is UpdateTemplateDescriptionCommand) {
+      return UpdateTemplateDescriptionCommand(
+        oldDescription: oldDescription,
+        newDescription: other.newDescription,
+      );
+    }
+    return this;
+  }
+}
+
 /// 添加柱位到分组命令
 class AddPillarToGroupCommand extends EditorCommand {
   AddPillarToGroupCommand({

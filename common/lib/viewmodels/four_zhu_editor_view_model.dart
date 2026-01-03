@@ -491,15 +491,39 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   void updateTemplateName(String name) {
+    final trimmed = name.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
     final template = _currentTemplate;
-    if (template == null || template.name == name) {
+    if (template == null || template.name == trimmed) {
       return;
     }
 
     // M4.3.2 - 使用Command模式
     final command = UpdateTemplateNameCommand(
       oldName: template.name,
-      newName: name,
+      newName: trimmed,
+    );
+    _executeCommand(command);
+  }
+
+  void updateTemplateDescription(String? description) {
+    final normalized = () {
+      final raw = description;
+      if (raw == null) return null;
+      final trimmed = raw.trim();
+      if (trimmed.isEmpty) return null;
+      return trimmed;
+    }();
+    final template = _currentTemplate;
+    if (template == null || template.description == normalized) {
+      return;
+    }
+
+    final command = UpdateTemplateDescriptionCommand(
+      oldDescription: template.description,
+      newDescription: normalized,
     );
     _executeCommand(command);
   }
