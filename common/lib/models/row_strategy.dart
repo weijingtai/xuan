@@ -211,12 +211,20 @@ class TenGodRowStrategy extends RowComputationStrategy {
   @override
   String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
 
+  String _dayPillarTenGodPlaceholder(Gender gender) {
+    return FourZhuText.zaoLabelForGender(gender);
+  }
+
   @override
   RowComputationResult compute(RowComputationInput input) {
     final Map<String, String> values = {};
     for (final pillar in input.pillars) {
       final pillarJiaZi = pillar.jiaZi;
       final pillarId = pillar.id;
+      if (pillar.pillarType == PillarType.day) {
+        values[pillarId] = _dayPillarTenGodPlaceholder(input.gender);
+        continue;
+      }
       final tenGods = pillarJiaZi.tianGan.getTenGods(input.dayJiaZi.tianGan);
       values[pillarId] = tenGods.name;
     }

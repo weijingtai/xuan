@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:common/utils/constant_values_utils.dart';
 
 import 'theme_color_mode.dart';
 
@@ -24,20 +25,20 @@ class TextStyleConfig {
   static TextStyleConfig defaultConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       colorfulLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       pureDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
       colorfulDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
     ),
     textShadowDataModel: TextShadowDataModel(),

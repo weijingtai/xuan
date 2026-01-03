@@ -238,6 +238,20 @@ class RowItem extends StatelessWidget {
       case RowType.hiddenStemsTertiary:
         return DiZhi.values.take(12).map((e) => e.name).toList(growable: false);
       case RowType.tenGod:
+        return const [
+          '正印',
+          '偏印',
+          '正官',
+          '七杀',
+          '食神',
+          '伤官',
+          '比肩',
+          '劫财',
+          '正财',
+          '偏财',
+          FourZhuText.qianZao,
+          FourZhuText.kunZao,
+        ];
       case RowType.hiddenStemsTenGod:
       case RowType.hiddenStemsPrimaryGods:
       case RowType.hiddenStemsSecondaryGods:

@@ -1,4 +1,5 @@
 import 'package:common/models/pillar_data.dart';
+import 'package:common/utils/constant_values_utils.dart';
 import 'package:flutter/material.dart';
 
 class PillarCard extends StatelessWidget {
@@ -37,7 +38,9 @@ class PillarCard extends StatelessWidget {
                     style: TextStyle(fontSize: 60, fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
                   ),
                 ),
-                Text('日元', style: theme.textTheme.titleMedium?.copyWith(color: theme.colorScheme.secondary)),
+                Text(FourZhuText.riYuan,
+                    style: theme.textTheme.titleMedium
+                        ?.copyWith(color: theme.colorScheme.secondary)),
                 const Divider(height: 24),
                 FittedBox(
                   child: Text(

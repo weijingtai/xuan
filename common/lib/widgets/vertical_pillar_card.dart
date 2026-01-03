@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/models/pillar_data.dart';
+import 'package:common/utils/constant_values_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/themes/gan_zhi_gua_colors.dart';
@@ -110,7 +111,8 @@ class VerticalPillarCard extends StatelessWidget {
 
   Widget _buildVerticalPillarLayout(ThemeData theme) {
     // 过滤掉separator类型的柱
-    final validPillars = pillars.where((p) => p.pillarId != 'separator').toList();
+    final validPillars =
+        pillars.where((p) => p.pillarId != 'separator').toList();
 
     if (validPillars.isEmpty) {
       return Center(
@@ -246,8 +248,7 @@ class VerticalPillarCard extends StatelessWidget {
       children: [
         if (showKongWang)
           _buildBottomInfoLine('空亡', _getKongWangText(jiaZi), theme),
-        if (showNaYin)
-          _buildBottomInfoLine('纳音', jiaZi.naYin.name, theme),
+        if (showNaYin) _buildBottomInfoLine('纳音', jiaZi.naYin.name, theme),
         if (showXunShou)
           _buildBottomInfoLine('旬首', jiaZi.getXunHeader().ganZhiStr, theme),
       ],
@@ -272,7 +273,7 @@ class VerticalPillarCard extends StatelessWidget {
 
   String _getTenGodText(String pillarLabel, JiaZi jiaZi) {
     if (isBenMing && pillarLabel == '日') {
-      return '日元';
+      return FourZhuText.zaoLabelForGender(gender ?? Gender.unknown);
     }
     return jiaZi.tianGan.getTenGods(dayMaster).name;
   }

@@ -165,10 +165,7 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
                     ),
                   ),
                   // 底部 TagBar：占用剩余 20% 高度（通过 Flexible 实现相对比例）
-                  const Flexible(
-                    flex: 1,
-                    child: RowTagBar(),
-                  ),
+                  RowTagBar(),
                   const Flexible(
                     flex: 1,
                     child: PillarTagBar(),

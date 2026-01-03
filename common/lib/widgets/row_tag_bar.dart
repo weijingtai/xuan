@@ -52,7 +52,7 @@ class RowTagBar extends StatelessWidget {
         RowData(
           rowId: 'hidden_stems_ten_god',
           rowType: RowType.hiddenStemsTenGod,
-          label: '藏干十神',
+          label: '藏神',
         ),
         RowData(
           rowId: 'hidden_stems_primary',
@@ -115,7 +115,7 @@ class RowTagBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+      // padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         border: Border(
@@ -123,7 +123,7 @@ class RowTagBar extends StatelessWidget {
         ),
       ),
       child: SizedBox(
-        height: 36, // 标签高度 48 + 上下内边距与分隔留白
+        height: 32, // 标签高度 32 + 上下内边距与分隔留白
         child: ListView.separated(
           primary: false,
           shrinkWrap: true,
@@ -169,9 +169,10 @@ class _RowTagWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 108,
-      height: 48,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      width: 80,
+      height: 32,
+      alignment: Alignment.center,
+      // padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color:
             theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),

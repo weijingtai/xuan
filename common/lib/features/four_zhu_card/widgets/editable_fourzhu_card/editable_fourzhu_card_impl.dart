@@ -429,8 +429,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           cc = 1;
         } else if (rt != RowType.separator) {
           final pjz = _pillarJiaZiFromPayload(p);
-          final text = rowStrategyMapper[rt]
-              ?.computeSingleValue(pjz, dayJiaZi ?? pjz, widget.gender);
+          final text = (rt == RowType.tenGod && p.pillarType == PillarType.day)
+              ? FourZhuText.zaoLabelForGender(widget.gender)
+              : rowStrategyMapper[rt]
+                  ?.computeSingleValue(pjz, dayJiaZi ?? pjz, widget.gender);
           cc = (text ?? '').length;
         }
         specMap['${r.uuid}|${p.uuid}'] = CellTextSpec(
@@ -3315,9 +3317,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
           break;
         default:
-          final text = rowStrategyMapper[rowType]
-                  ?.computeSingleValue(pillarJiaZi, dayJiaZi, gender) ??
-              "-";
+          final text =
+              (rowType == RowType.tenGod && pillarType == PillarType.day)
+                  ? FourZhuText.zaoLabelForGender(gender)
+                  : rowStrategyMapper[rowType]
+                          ?.computeSingleValue(pillarJiaZi, dayJiaZi, gender) ??
+                      "-";
           final theme = widget.themeNotifier.value;
           final cellStyleConfig = theme.cell.getBy(rowType);
           final typography = theme.typography;
@@ -5407,7 +5412,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Text _genderText(Gender gender) {
     final theme = widget.themeNotifier.value;
     final typography = theme.typography;
-    final label = gender == Gender.male ? '乾造' : '坤造';
+    final label = FourZhuText.zaoLabelForGender(gender);
     final style = typography.rowTitle.toTextStyle(
       char: label,
       brightness: widget.brightnessNotifier.value,

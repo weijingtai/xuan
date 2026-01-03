@@ -11,6 +11,7 @@ import 'style_editor/theme_edit_preview_sidebar.dart';
 import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
 import '../themes/editable_four_zhu_card_theme.dart';
 import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/cell_style_config.dart';
+import '../utils/constant_values_utils.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
 ///
@@ -949,7 +950,22 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
     final label = _getRowTypeName(type);
 
     final List<String>? values;
-    if (type == RowType.tenGod || type == RowType.hiddenStemsTenGod) {
+    if (type == RowType.tenGod) {
+      values = const [
+        '正印',
+        '偏印',
+        '正官',
+        '七杀',
+        '食神',
+        '伤官',
+        '比肩',
+        '劫财',
+        '正财',
+        '偏财',
+        FourZhuText.qianZao,
+        FourZhuText.kunZao,
+      ];
+    } else if (type == RowType.hiddenStemsTenGod) {
       values = const [
         '正印',
         '偏印',

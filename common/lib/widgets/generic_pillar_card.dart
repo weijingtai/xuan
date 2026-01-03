@@ -4,6 +4,7 @@ import 'package:common/models/pillar_data.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:common/themes/gan_zhi_gua_colors.dart';
+import 'package:common/utils/constant_values_utils.dart';
 import 'package:common/widgets/card_row.dart';
 import 'package:common/widgets/card_row_widget.dart';
 import 'eight_chars_card.dart';
@@ -320,7 +321,8 @@ class _GenericPillarCardState extends State<GenericPillarCard>
             pillarOrder: pillarOrder,
             pillars: pillars,
             dayMaster: widget.dayMaster,
-            isBenMing: widget.isBenMing);
+            isBenMing: widget.isBenMing,
+            gender: widget.gender);
       case CardRow.diZhi:
         return _buildDiZhiRow(
             key: key, pillarOrder: pillarOrder, pillars: pillars);
@@ -435,9 +437,7 @@ class _GenericPillarCardState extends State<GenericPillarCard>
       label: _buildLabel(
           rowType: CardRow.pillarHeader,
           defaultText: isBenMing
-              ? (gender == Gender.male
-                  ? '乾造'
-                  : (gender == Gender.female ? '坤造' : ''))
+              ? FourZhuText.zaoLabelOrEmptyForGender(gender ?? Gender.unknown)
               : '流运'),
       cells: pillarOrder.map((pillarLabel) {
         return Text(pillarLabel,
@@ -506,6 +506,7 @@ class _GenericPillarCardState extends State<GenericPillarCard>
     required Map<String, JiaZi> pillars,
     required TianGan dayMaster,
     required bool isBenMing,
+    Gender? gender,
   }) {
     return CardRowWidget(
       key: key,
@@ -515,7 +516,8 @@ class _GenericPillarCardState extends State<GenericPillarCard>
         if (jiaZi == null) return const SizedBox.shrink();
         String tenGodText;
         if (isBenMing && pillarLabel == '日') {
-          tenGodText = '日元';
+          tenGodText =
+              FourZhuText.zaoLabelForGender(gender ?? Gender.unknown);
         } else {
           tenGodText = jiaZi.tianGan.getTenGods(dayMaster).name;
         }

@@ -175,7 +175,10 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
                       if (!out.contains(label)) out.add(label);
                     }
                     final values = <String>[
-                      if (hasHeaderRow) ...['乾造', '坤造'],
+                      if (hasHeaderRow) ...[
+                        FourZhuText.qianZao,
+                        FourZhuText.kunZao,
+                      ],
                       ...out,
                     ];
 

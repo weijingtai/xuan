@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 import '../enums/layout_template_enums.dart';
 import '../enums/enum_gender.dart';
+import '../utils/constant_values_utils.dart';
 import 'pillar_styles.dart';
 import 'pillar_content.dart';
 import 'row_strategy.dart';
@@ -73,11 +74,11 @@ class ColumnHeaderRowPayload extends TextRowPayload {
     required super.uuid,
   }) : super(
           rowType: RowType.columnHeaderRow,
-          rowLabel: gender == Gender.male ? '乾造' : '坤造',
+          rowLabel: FourZhuText.zaoLabelForGender(gender),
           titleInCell: false,
         );
   final Gender gender;
-  String get genderLabel => gender == Gender.male ? '乾造' : '坤造';
+  String get genderLabel => FourZhuText.zaoLabelForGender(gender);
   factory ColumnHeaderRowPayload.fromJson(Map<String, dynamic> json) =>
       _$ColumnHeaderRowPayloadFromJson(json);
   @override

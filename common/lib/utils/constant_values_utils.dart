@@ -1,4 +1,5 @@
 import '../enums/layout_template_enums.dart';
+import '../enums/enum_gender.dart';
 
 class ConstantValuesUtils {
   /// Maps a `RowType` to its default display label.
@@ -22,21 +23,21 @@ class ConstantValuesUtils {
       case RowType.xunShou:
         return '旬首';
       case RowType.hiddenStems:
-        return '地支藏干';
+        return '藏干';
       case RowType.hiddenStemsTenGod:
-        return '藏干十神';
+        return '藏神';
       case RowType.hiddenStemsPrimary:
-        return '藏干主气';
+        return '主气';
       case RowType.hiddenStemsSecondary:
-        return '藏干中气';
+        return '中气';
       case RowType.hiddenStemsTertiary:
-        return '藏干余气';
+        return '余气';
       case RowType.hiddenStemsPrimaryGods:
-        return '藏干主神';
+        return '主神';
       case RowType.hiddenStemsSecondaryGods:
-        return '藏干中神';
+        return '中神';
       case RowType.hiddenStemsTertiaryGods:
-        return '藏干余神';
+        return '余神';
       case RowType.starYun:
         return '星运';
       case RowType.selfSiting:
@@ -45,6 +46,34 @@ class ConstantValuesUtils {
         return '表头行';
       case RowType.separator:
         return '分割线';
+    }
+  }
+}
+
+class FourZhuText {
+  static const String qianZao = '乾造';
+  static const String kunZao = '坤造';
+  static const String riYuan = '日元';
+
+  static String zaoLabelForGender(Gender gender) {
+    switch (gender) {
+      case Gender.male:
+        return qianZao;
+      case Gender.female:
+        return kunZao;
+      case Gender.unknown:
+        return riYuan;
+    }
+  }
+
+  static String zaoLabelOrEmptyForGender(Gender gender) {
+    switch (gender) {
+      case Gender.male:
+        return qianZao;
+      case Gender.female:
+        return kunZao;
+      case Gender.unknown:
+        return '';
     }
   }
 }

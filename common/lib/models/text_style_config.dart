@@ -3,6 +3,7 @@ import 'package:common/module.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'package:common/utils/constant_values_utils.dart';
 
 import '../const_resources_mapper.dart';
 import '../dev_constant.dart';
@@ -170,14 +171,27 @@ class TextStyleConfig {
       }();
   static TextStyleConfig defaultTenGodsConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
-        colorfulLightMapper: Map.fromEntries(EnumTenGods.values
-            .map((zs) => MapEntry(zs.name, Colors.purpleAccent))),
-        pureLightMapper: Map.fromEntries(
-            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.black87))),
-        colorfulDarkMapper: Map.fromEntries(
-            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.purple))),
-        pureDarkMapper: Map.fromEntries(
-            EnumTenGods.values.map((zs) => MapEntry(zs.name, Colors.white)))),
+      colorfulLightMapper: {
+        for (final zs in EnumTenGods.values) zs.name: Colors.purpleAccent,
+        FourZhuText.qianZao: Colors.purpleAccent,
+        FourZhuText.kunZao: Colors.purpleAccent,
+      },
+      pureLightMapper: {
+        for (final zs in EnumTenGods.values) zs.name: Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
+      },
+      colorfulDarkMapper: {
+        for (final zs in EnumTenGods.values) zs.name: Colors.purple,
+        FourZhuText.qianZao: Colors.purple,
+        FourZhuText.kunZao: Colors.purple,
+      },
+      pureDarkMapper: {
+        for (final zs in EnumTenGods.values) zs.name: Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
+      },
+    ),
     textShadowDataModel: TextShadowDataModel(),
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
@@ -209,20 +223,20 @@ class TextStyleConfig {
   static TextStyleConfig defaultConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       colorfulLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       pureDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
       colorfulDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
     ),
     textShadowDataModel: TextShadowDataModel(),
@@ -237,20 +251,20 @@ class TextStyleConfig {
   static TextStyleConfig defaultOthersConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       colorfulLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       pureDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
       colorfulDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
     ),
     textShadowDataModel: TextShadowDataModel(),
@@ -264,20 +278,20 @@ class TextStyleConfig {
   static TextStyleConfig defaultOthersTitleConfig = TextStyleConfig(
     colorMapperDataModel: ColorMapperDataModel(
       pureLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       colorfulLightMapper: {
-        "乾造": Colors.black87,
-        "坤造": Colors.black87,
+        FourZhuText.qianZao: Colors.black87,
+        FourZhuText.kunZao: Colors.black87,
       },
       pureDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
       colorfulDarkMapper: {
-        "乾造": Colors.white,
-        "坤造": Colors.white,
+        FourZhuText.qianZao: Colors.white,
+        FourZhuText.kunZao: Colors.white,
       },
     ),
     textShadowDataModel: TextShadowDataModel(),
