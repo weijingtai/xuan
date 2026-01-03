@@ -3,7 +3,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 import 'package:flutter/material.dart';
 
-import '../../editable_fourzhu_card/models/base_style_config.dart';
+import '../../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 
 class BoxStyleConfigEditor extends StatelessWidget {
   final ValueNotifier<BaseBoxStyleConfig> boxStyleConfigNotifier;

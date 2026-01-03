@@ -1,4 +1,4 @@
-import '../../../enums/layout_template_enums.dart';
+import 'package:common/enums/layout_template_enums.dart';
 
 /// CardUtils
 ///

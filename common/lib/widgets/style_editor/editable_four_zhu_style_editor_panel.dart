@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart' as widgets;
 import 'package:provider/provider.dart';
 
+import '../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
+import '../../features/four_zhu_card/widgets/editable_fourzhu_card/models/card_style_config.dart';
 import 'widgets/app_palette_picker_dialog.dart';
 
 import '../../enums/layout_template_enums.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
-import '../editable_fourzhu_card/models/base_style_config.dart';
-import '../editable_fourzhu_card/models/card_style_config.dart';
 
 /// EditableFourZhuStyleEditorPanel
 /// Lightweight editor panel for `EditableFourZhuCardTheme`.

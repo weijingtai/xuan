@@ -8,7 +8,7 @@ import '../enums/enum_gender.dart';
 import 'pillar_styles.dart';
 import 'pillar_content.dart';
 import 'row_strategy.dart';
-import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 part 'drag_payloads.g.dart';
 
 /// Payload representing a draggable title item for either columns or rows.

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'text_groups.dart';
-import '../../palette/card_palette.dart';
-import '../../enums/enum_tian_gan.dart' as tg;
-import '../../enums/enum_di_zhi.dart' as dz;
+import 'package:common/enums/enum_di_zhi.dart' as dz;
+import 'package:common/enums/enum_tian_gan.dart' as tg;
+import 'package:common/palette/card_palette.dart';
 
 /// ColorfulCellWidget
 /// Renders a single token with either uniform style or per-token palette color

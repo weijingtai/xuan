@@ -1,5 +1,32 @@
 # Code Review: Editable Eight Char Page (`FourZhuEditPage`)
 
+## 0. 迁移执行进度 (Migration Progress)
+本文件已从“仅评审”更新为“迁移执行中的评审 + 进度记录”，用于跟踪 `refactor_dir_arch.md` 目录重构计划的落地情况。
+
+### 0.1 已完成
+*   **已清理 `.bak/.bakv1` import 依赖**：
+    *   `EditorSidebarV2` 不再 import `theme_edit_preview_sidebar.dart.bak`
+    *   `GroupTextStyleEditorPanel` 不再 import `colorful_text_style_editor_widget.dart.bakv1`
+*   **已补齐正式文件替代备份文件**：新增 `common/lib/widgets/style_editor/theme_edit_preview_sidebar.dart`，承接原 `.bak` 文件中的 `ThemeEditPreviewSidebar`。
+*   **已建立 features/shared 目录骨架（不迁移源码，仅提供兼容导出）**：
+    *   `common/lib/features/four_zhu_card/four_zhu_card.dart`
+    *   `common/lib/features/four_zhu_card_style_editor/four_zhu_card_style_editor.dart`
+    *   `common/lib/shared/four_zhu_card/four_zhu_card_shared.dart`
+*   **已完成 EditableFourZhuCard 目录迁移（阶段 3）**：
+    *   `common/lib/widgets/editable_fourzhu_card/**` → `common/lib/features/four_zhu_card/widgets/editable_fourzhu_card/**`
+    *   保留 `common/lib/widgets/editable_fourzhu_card.dart` 作为兼容层（re-export 到新路径）
+    *   为测试与历史引用补齐 `common/lib/widgets/editable_fourzhu_card/**` 兼容导出（旧 import 仍可用）
+*   **已建立回归基线（common 子项目）**：
+    *   `flutter test`：通过（All tests passed）
+    *   `flutter analyze`：存在大量历史告警/提示（当前统计 1893 issues），本轮迁移不在范围内做全量清理
+
+### 0.2 待执行
+*   迁移 `editable_four_zhu_card_theme.dart` 到 `features/four_zhu_card/themes/` 并更新引用。
+*   迁移 `widgets/style_editor/**` 到 `features/four_zhu_card_style_editor/widgets/style_editor/**` 并更新引用。
+*   迁移 `FourZhuEditPage/EditorWorkspace/EditorSidebarV2` 等到 `features/four_zhu_card_style_editor/`。
+*   抽取 `shared/four_zhu_card/*`（drag_payloads/row_strategy/layout_template_enums/TextStyleConfig 统一来源）。
+*   扫尾：全局替换旧路径引用并删除已迁移旧文件。
+
 ## 1. 概述 (Overview)
 本次 Code Review 针对 `FourZhuEditPage` 及其相关组件（`EditorWorkspace`, `SidebarExplorer`, `FourZhuEditorViewModel`）进行。该模块主要功能为四柱卡片样式的可视化编辑，支持模板管理、撤销/重做、样式实时预览等功能。
 
@@ -15,27 +42,8 @@
 
 ### 2.2 关键架构问题 (Critical Architectural Issues)
 
-#### 🔴 依赖混乱: `FourZhuCardDemoViewModel` vs `FourZhuEditorViewModel`
-在 `FourZhuEditPage` 中，我们显式提供了 `FourZhuEditorViewModel`：
-```dart
-// FourZhuEditPage.dart
-ChangeNotifierProvider<FourZhuEditorViewModel>(
-  create: (_) { ... },
-  child: const _FourZhuEditView(),
-)
-```
-然而，在子组件 `EditorWorkspace` 和 `SidebarExplorer` 中，却大量依赖了 **`FourZhuCardDemoViewModel`**：
-```dart
-// EditorWorkspace.dart
-cardPayloadNotifier: Provider.of<FourZhuCardDemoViewModel>(context, listen: true).cardPayloadNotifier,
-
-// SidebarExplorer.dart
-Provider.of<FourZhuCardDemoViewModel>(context, listen: false).themeNotifier
-```
-**风险**:
-1.  如果 `FourZhuCardDemoViewModel` 未在 `FourZhuEditPage` 的父级（如 `main.dart`）提供，进入该页面将直接导致 `ProviderNotFoundException` 崩溃。
-2.  即使父级提供了，`FourZhuEditPage` 作为一个独立的编辑器功能模块，严重依赖外部/全局的 "Demo" ViewModel 是不合理的。它应该完全由自己的 `FourZhuEditorViewModel` 驱动，或者 `FourZhuEditorViewModel` 应该包含/继承相关逻辑。
-3.  目前代码处于“过渡期”状态：`FourZhuEditorViewModel` 管理模板保存/加载，而 `FourZhuCardDemoViewModel` 管理实时样式状态。这导致状态双源（Source of Truth Split），增加了维护难度。
+#### ✅ 已解决：编辑页对 `FourZhuCardDemoViewModel` 的依赖
+当前 `common/lib` 下，`FourZhuCardDemoViewModel` 的引用仅出现在演示入口（例如 Demo Page / main），`FourZhuEditPage` 及其编辑链路（Workspace/Sidebar）已不再依赖 Demo ViewModel，编辑器模块的“自包含性”显著提升。
 
 ## 3. 代码质量与细节 (Code Quality & Details)
 
@@ -80,8 +88,8 @@ Provider.of<FourZhuCardDemoViewModel>(context, listen: false).themeNotifier
 2.  **UI 细节**: `EditorWorkspace` 右侧的 `Switch` 使用了系统默认样式，建议封装统一的 `LabelledSwitch` 组件以保持风格一致。
 
 ## 5. 总结
-`FourZhuEditPage` 功能框架搭建完成度较高，但目前处于“新旧 ViewModel 交替”的中间状态。最核心的任务是**解耦对 `FourZhuCardDemoViewModel` 的依赖**，确保编辑器是一个自包含（Self-contained）的模块。
+`FourZhuEditPage` 的编辑链路目前已完成“编辑器自包含”的关键整改，并已进入目录迁移（高内聚/低耦合）的执行阶段。下一步的核心风险在于“移动文件导致大范围 import 变更”和“shared 类型抽取引发的同名类型冲突”，需要用分阶段迁移 + 兼容 re-export + 回归门禁来控制。
 
 ---
 *Reviewer: AI Assistant*
-*Date: 2025-11-30*
+*Date: 2026-01-03*

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../../enums/layout_template_enums.dart';
-import '../../../models/drag_payloads.dart';
-import '../../../models/text_style_config.dart';
-import '../../../models/row_strategy.dart';
+import 'package:common/enums/layout_template_enums.dart';
+import 'package:common/models/drag_payloads.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/models/row_strategy.dart';
 import '../size_calculator/metrics.dart';
-import '../../../themes/editable_four_zhu_card_theme.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
 
 /// CardDataAdapter
 ///

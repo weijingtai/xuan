@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../enums/layout_template_enums.dart';
-import '../../../themes/editable_four_zhu_card_theme.dart';
+import 'package:common/enums/layout_template_enums.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
 
 /// CardDecoration
 ///

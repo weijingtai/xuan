@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../editable_fourzhu_card/text_groups.dart';
-import '../style_editor/colorful_text_style_editor_widget.dart.bakv1';
+import '../style_editor/colorful_text_style_editor_widget.dart';
 
 /// 分组文本样式编辑面板（统一导出组件）
 ///

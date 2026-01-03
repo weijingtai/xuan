@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 
-import '../../editable_fourzhu_card/models/base_style_config.dart';
+import '../../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'title_slider_widget.dart';
 
 class ShadowEditorWidget extends StatelessWidget {

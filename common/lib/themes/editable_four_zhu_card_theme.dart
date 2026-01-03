@@ -1,14 +1,14 @@
 import 'package:common/models/pillar_styles.dart';
-import 'package:common/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
+import 'package:common/features/four_zhu_card/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../enums/layout_template_enums.dart';
 import '../models/text_style_config.dart';
-import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
-import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
-import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 
 part 'editable_four_zhu_card_theme.g.dart';
 

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
-import '../widgets/editable_fourzhu_card/models/card_style_config.dart';
-import '../widgets/editable_fourzhu_card/models/pillar_style_config.dart';
-import '../widgets/editable_fourzhu_card/models/base_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/card_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/pillar_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 
 /// EditableFourZhuThemeController
 /// Provides read-only resolution helpers that translate EditableFourZhuCardTheme

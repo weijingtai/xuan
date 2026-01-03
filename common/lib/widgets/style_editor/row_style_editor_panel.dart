@@ -7,7 +7,7 @@ import '../../models/text_style_config.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../utils/constant_values_utils.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
-import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
+import '../../features/four_zhu_card/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../../enums/enum_tian_gan.dart';
 import '../../enums/enum_di_zhi.dart';
 import '../../enums/enum_jia_zi.dart';

@@ -7,10 +7,10 @@ import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
 import '../viewmodels/four_zhu_editor_view_model.dart';
 import 'row_style_editor_form.dart';
-import 'style_editor/theme_edit_preview_sidebar.dart.bak';
+import 'style_editor/theme_edit_preview_sidebar.dart';
 import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
 import '../themes/editable_four_zhu_card_theme.dart';
-import '../widgets/editable_fourzhu_card/models/cell_style_config.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
 ///

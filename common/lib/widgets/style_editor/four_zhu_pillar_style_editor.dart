@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../enums/layout_template_enums.dart';
+import '../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import '../../models/drag_payloads.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../utils/constant_values_utils.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
-import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/pillar_style_config.dart';
 import 'widgets/box_border_style_editor.dart';
 import 'widgets/box_shadow_style_editor.dart';

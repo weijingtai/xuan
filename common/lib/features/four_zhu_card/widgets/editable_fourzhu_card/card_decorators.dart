@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../viewmodels/editable_four_zhu_theme_controller.dart';
+import 'package:common/viewmodels/editable_four_zhu_theme_controller.dart';
 
 /// 装饰与主题适配层：为 EditableFourZhuCard 提供通用装饰生成函数。
 ///

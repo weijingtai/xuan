@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../../models/drag_payloads.dart';
-import '../../../models/text_style_config.dart';
-import '../../../themes/editable_four_zhu_card_theme.dart';
+import 'package:common/models/drag_payloads.dart';
+import 'package:common/models/text_style_config.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'card_data_adapter.dart';
 import 'card_decoration.dart';
 import 'card_drag_handler.dart';
