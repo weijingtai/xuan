@@ -8,7 +8,6 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/eight_chars.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 
 class EditorWorkspace extends StatefulWidget {
   /// 组件内部展示的八字数据，用于填充四柱内容。
@@ -51,9 +50,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     if (_didInitWorkspaceBrightness) return;
     _didInitWorkspaceBrightness = true;
     final brightness = Theme.of(context).brightness;
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-    demoVm.cardBrightnessNotifier.value = brightness;
+    final editorVm = context.read<FourZhuEditorViewModel>();
+    editorVm.cardBrightnessNotifier.value = brightness;
   }
 
   /// 响应外部八字数据变化，更新柱载荷
@@ -88,11 +86,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   Widget build(BuildContext context) {
     return Consumer<FourZhuEditorViewModel>(
       builder: (context, viewModel, _) {
-        final demoVm =
-            Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-
         return ValueListenableBuilder<Brightness>(
-          valueListenable: demoVm.cardBrightnessNotifier,
+          valueListenable: viewModel.cardBrightnessNotifier,
           builder: (context, workspaceBrightness, _) {
             final workspaceLocalTheme = workspaceBrightness == Brightness.dark
                 ? ThemeData.dark()
@@ -132,7 +127,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                     value:
                                         workspaceBrightness == Brightness.dark,
                                     onChanged: (v) {
-                                      demoVm.cardBrightnessNotifier.value = v
+                                      viewModel.cardBrightnessNotifier.value = v
                                           ? Brightness.dark
                                           : Brightness.light;
                                     },
@@ -142,7 +137,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                               const SizedBox(height: 8),
                               ValueListenableBuilder<ColorPreviewMode>(
                                 valueListenable:
-                                    demoVm.colorPreviewModeNotifier,
+                                    viewModel.colorPreviewModeNotifier,
                                 builder: (context, mode, _) {
                                   return Row(
                                     children: [
@@ -170,7 +165,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                           } else if (index == 2) {
                                             next = ColorPreviewMode.blackwhite;
                                           }
-                                          demoVm.colorPreviewModeNotifier
+                                          viewModel.colorPreviewModeNotifier
                                               .value = next;
                                         },
                                         constraints: const BoxConstraints(
@@ -250,14 +245,16 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                             ),
                             EditableFourZhuCardV3(
                               dayGanZhi: JiaZi.JIA_ZI,
-                              brightnessNotifier: demoVm.cardBrightnessNotifier,
+                              brightnessNotifier:
+                                  viewModel.cardBrightnessNotifier,
                               colorPreviewModeNotifier:
-                                  demoVm.colorPreviewModeNotifier,
-                              cardPayloadNotifier: demoVm.cardPayloadNotifier,
+                                  viewModel.colorPreviewModeNotifier,
+                              cardPayloadNotifier: viewModel.cardPayloadNotifier,
                               showGrip: _showGripNotifier.value,
                               // showGripColumns: _showGripColumnsNotifier.value,
-                              paddingNotifier: demoVm.paddingNotifier,
-                              themeNotifier: demoVm.themeNotifier,
+                              paddingNotifier: viewModel.paddingNotifier,
+                              themeNotifier: viewModel.editableThemeNotifier,
+                              rowStrategyMapper: viewModel.rowStrategyMapper,
                               gender: Gender.male,
                             ),
                           ],

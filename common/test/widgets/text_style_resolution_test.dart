@@ -15,9 +15,25 @@ import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.da
 import 'package:common/widgets/editable_fourzhu_card/text_groups.dart';
 import 'package:common/utils/style_resolver.dart';
 import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
-import 'package:provider/provider.dart';
 
-import 'package:common/viewmodels/four_zhu_card_demo_viewmodel.dart';
+Map<RowType, RowComputationStrategy> _defaultRowStrategyMapper() {
+  return <RowType, RowComputationStrategy>{
+    RowType.tenGod: TenGodRowStrategy(),
+    RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
+    RowType.hiddenStems: HiddenStemsRowStrategy(),
+    RowType.kongWang: KongWangRowStrategy(),
+    RowType.naYin: NaYinRowStrategy(),
+    RowType.xunShou: XunShouRowStrategy(),
+    RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
+    RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
+    RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
+    RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
+    RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
+    RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
+    RowType.starYun: StarYunRowStrategy(),
+    RowType.selfSiting: SelfSitingRowStrategy(),
+  };
+}
 
 /// A test-only style probe that mirrors the card's style resolution precedence.
 /// It renders a single Text using centralized defaults and global/group overrides.
@@ -389,6 +405,7 @@ void main() {
           ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
       final paddingNotifier =
           ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+      final rowStrategyMapper = _defaultRowStrategyMapper();
       final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
       await tester.pumpWidget(
@@ -398,17 +415,15 @@ void main() {
               child: SizedBox(
                 width: 920,
                 height: 360,
-                child: ChangeNotifierProvider(
-                  create: (_) => FourZhuCardDemoViewModel(),
-                  child: EditableFourZhuCardV3(
-                    dayGanZhi: JiaZi.JIA_ZI,
-                    brightnessNotifier: brightnessNotifier,
-                    colorPreviewModeNotifier: colorPreviewModeNotifier,
-                    themeNotifier: themeNotifier,
-                    cardPayloadNotifier: cardPayloadNotifier,
-                    paddingNotifier: paddingNotifier,
-                    gender: Gender.male,
-                  ),
+                child: EditableFourZhuCardV3(
+                  dayGanZhi: JiaZi.JIA_ZI,
+                  brightnessNotifier: brightnessNotifier,
+                  colorPreviewModeNotifier: colorPreviewModeNotifier,
+                  themeNotifier: themeNotifier,
+                  cardPayloadNotifier: cardPayloadNotifier,
+                  paddingNotifier: paddingNotifier,
+                  rowStrategyMapper: rowStrategyMapper,
+                  gender: Gender.male,
                 ),
               ),
             ),
@@ -519,6 +534,7 @@ void main() {
           ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
       final paddingNotifier =
           ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+      final rowStrategyMapper = _defaultRowStrategyMapper();
       final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
       await tester.pumpWidget(
@@ -528,17 +544,15 @@ void main() {
               child: SizedBox(
                 width: 920,
                 height: 360,
-                child: ChangeNotifierProvider(
-                  create: (_) => FourZhuCardDemoViewModel(),
-                  child: EditableFourZhuCardV3(
-                    dayGanZhi: JiaZi.JIA_ZI,
-                    brightnessNotifier: brightnessNotifier,
-                    colorPreviewModeNotifier: colorPreviewModeNotifier,
-                    themeNotifier: themeNotifier,
-                    cardPayloadNotifier: cardPayloadNotifier,
-                    paddingNotifier: paddingNotifier,
-                    gender: Gender.male,
-                  ),
+                child: EditableFourZhuCardV3(
+                  dayGanZhi: JiaZi.JIA_ZI,
+                  brightnessNotifier: brightnessNotifier,
+                  colorPreviewModeNotifier: colorPreviewModeNotifier,
+                  themeNotifier: themeNotifier,
+                  cardPayloadNotifier: cardPayloadNotifier,
+                  paddingNotifier: paddingNotifier,
+                  rowStrategyMapper: rowStrategyMapper,
+                  gender: Gender.male,
                 ),
               ),
             ),

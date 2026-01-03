@@ -8,7 +8,6 @@ import 'package:common/models/pillar_content.dart'; // Changed from relative imp
 import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'package:tuple/tuple.dart';
 import 'package:uuid/uuid.dart';
 import 'package:uuid/v4.dart';
@@ -27,7 +26,6 @@ import '../../models/row_strategy.dart';
 import '../../utils/constant_values_utils.dart';
 import '../../utils/style_resolver.dart';
 import '../../palette/card_palette.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import 'card_grid_painter.dart';
 import 'cells/multi_text_cell.dart';
 import 'dimension_models.dart'; // 新增：尺寸管理模型
@@ -64,7 +62,7 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 
 class EditableFourZhuCardV3 extends StatefulWidget {
   final JiaZi dayGanZhi;
-  // final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  final Map<RowType, RowComputationStrategy> rowStrategyMapper;
   final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
   final ValueNotifier<CardPayload> cardPayloadNotifier;
 
@@ -102,7 +100,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.themeNotifier,
     required this.cardPayloadNotifier,
     required this.paddingNotifier,
-    // required this.rowStrategyMapper,
+    required this.rowStrategyMapper,
     required this.gender,
     this.onRowsReordered,
     this.dragFeedbackBuilder,
@@ -169,8 +167,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   List<double>? _rowSpansCache;
 
   Map<RowType, RowComputationStrategy> get rowStrategyMapper =>
-      Provider.of<FourZhuCardDemoViewModel>(context, listen: false)
-          .rowStrategyMapper;
+      widget.rowStrategyMapper;
 
   /// 批处理重建调度：在微任务中合并多次状态更新为一次 setState。
   ///

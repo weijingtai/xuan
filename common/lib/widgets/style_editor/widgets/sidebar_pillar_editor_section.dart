@@ -1,7 +1,6 @@
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../../models/drag_payloads.dart';
 
@@ -62,16 +61,10 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
     return ValueListenableBuilder(
         valueListenable: _pillarStyleConfigNotifier,
         builder: (context, config, child) {
-          final demoVm =
-              Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-          FourZhuEditorViewModel? editorVm;
-          try {
-            editorVm =
-                Provider.of<FourZhuEditorViewModel>(context, listen: false);
-          } catch (_) {}
+          final editorVm = context.read<FourZhuEditorViewModel>();
 
           return ValueListenableBuilder<CardPayload>(
-              valueListenable: demoVm.cardPayloadNotifier,
+              valueListenable: editorVm.cardPayloadNotifier,
               builder: (context, payload, _) {
                 final theme = Theme.of(context);
                 final orderedUuids = payload.pillarOrderUuid.toList();
@@ -112,21 +105,18 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
                           final item = newUuids.removeAt(oldIndex);
                           newUuids.insert(newIndex, item);
 
-                          final newTypes = newUuids
+                        final newTypes = newUuids
                               .map((id) => payload.pillarMap[id]!.pillarType)
                               .toList();
 
-                          if (editorVm != null) {
-                            final groupId = editorVm.selectedGroupId ??
-                                editorVm.currentTemplate?.chartGroups
-                                    .firstOrNull?.id;
-                            if (groupId != null) {
-                              editorVm.updatePillarOrderInGroup(
-                                  groupId, newTypes);
-                            }
+                          final groupId = editorVm.selectedGroupId ??
+                              editorVm
+                                  .currentTemplate?.chartGroups.firstOrNull?.id;
+                          if (groupId != null) {
+                            editorVm.updatePillarOrderInGroup(groupId, newTypes);
                           }
 
-                          demoVm.updatePillarOrderFromTypes(newTypes);
+                          editorVm.updatePillarOrderFromTypes(newTypes);
                         },
                         children: [
                           for (int i = 0; i < orderedUuids.length; i++)

@@ -7,7 +7,6 @@ import '../../models/text_style_config.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../utils/constant_values_utils.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../../widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../../enums/enum_tian_gan.dart';
 import '../../enums/enum_di_zhi.dart';
@@ -19,10 +18,9 @@ class RowStyleEditorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final editorVm = context.read<FourZhuEditorViewModel>();
     return ValueListenableBuilder<CardPayload>(
-      valueListenable: demoVm.cardPayloadNotifier,
+      valueListenable: editorVm.cardPayloadNotifier,
       builder: (context, payload, _) {
         // final vm = Provider.of<FourZhuEditorViewModel>(context, listen: false);
         final all = payload.rowOrderUuid;
@@ -56,7 +54,7 @@ class RowStyleEditorPanel extends StatelessWidget {
         // rows.sort((a, b) =>
         // (orderMap[a.type] ?? 999).compareTo(orderMap[b.type] ?? 999));
         return ValueListenableBuilder<EditableFourZhuCardTheme>(
-          valueListenable: demoVm.themeNotifier,
+          valueListenable: editorVm.editableThemeNotifier,
           builder: (ctx, theme, __) {
             return ReorderableListView(
               shrinkWrap: true,
@@ -71,10 +69,8 @@ class RowStyleEditorPanel extends StatelessWidget {
                 newRows.insert(newIndex, item);
                 final newTypes = newRows.map((r) => r.rowType).toList();
 
-                final editorVm =
-                    Provider.of<FourZhuEditorViewModel>(context, listen: false);
                 editorVm.reorderRowsByTypes(newTypes);
-                demoVm.updateRowOrderFromTypes(newTypes);
+                editorVm.updateRowOrderFromTypes(newTypes);
               },
               children: [
                 for (int i = 0; i < validRows.length; i++)
@@ -117,7 +113,7 @@ class RowStyleEditorPanel extends StatelessWidget {
                             newTextStyle);
                       },
                     ),
-                  )
+                  ),
               ],
             );
           },
@@ -128,9 +124,8 @@ class RowStyleEditorPanel extends StatelessWidget {
 
   onInCellTitleTextStyleChanged(BuildContext context, String rowUUID,
       RowType type, TextStyleConfig newTextStyle) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-    final oldTheme = demoVm.themeNotifier.value;
+    final editorVm = context.read<FourZhuEditorViewModel>();
+    final oldTheme = editorVm.editableThemeNotifier.value;
 
     final mappr = Map.fromEntries(
         oldTheme.typography.cellTitleMapper.entries.map((e) => e));
@@ -142,14 +137,13 @@ class RowStyleEditorPanel extends StatelessWidget {
         // cellContentMapper: mappr,
       ),
     );
-    demoVm.updateEditableFourZhuCardTheme(newTheme);
+    editorVm.updateEditableFourZhuCardTheme(newTheme);
   }
 
   onTextStyleChanged(BuildContext context, String rowUUID, RowType type,
       TextStyleConfig newTextStyle) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-    final oldTheme = demoVm.themeNotifier.value;
+    final editorVm = context.read<FourZhuEditorViewModel>();
+    final oldTheme = editorVm.editableThemeNotifier.value;
 
     final mappr = Map.fromEntries(
         oldTheme.typography.cellContentMapper.entries.map((e) => e));
@@ -167,14 +161,13 @@ class RowStyleEditorPanel extends StatelessWidget {
         ),
       );
     }
-    demoVm.updateEditableFourZhuCardTheme(newTheme);
+    editorVm.updateEditableFourZhuCardTheme(newTheme);
   }
 
   onCellStyleChanged(BuildContext context, String rowUUID, RowType type,
       CellStyleConfig newCellStyle) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
-    final oldTheme = demoVm.themeNotifier.value;
+    final editorVm = context.read<FourZhuEditorViewModel>();
+    final oldTheme = editorVm.editableThemeNotifier.value;
 
     final rowTypeCellConfigMapper = Map.fromEntries(
         oldTheme.cell.rowTypeCellConfigMapper.entries.map((e) => e));
@@ -193,7 +186,7 @@ class RowStyleEditorPanel extends StatelessWidget {
       cell: newCell,
     );
 
-    demoVm.updateEditableFourZhuCardTheme(newTheme);
+    editorVm.updateEditableFourZhuCardTheme(newTheme);
   }
 }
 
@@ -286,8 +279,7 @@ class RowItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final editorVm = context.read<FourZhuEditorViewModel>();
     // print(cfg.type);
     // if (cfg.type == RowType.earthlyBranch) {
     //   print(json.encode(cfg
@@ -433,10 +425,10 @@ class RowItem extends StatelessWidget {
               lable: '字体',
               type: payload.rowType,
               initialConfig: txtCfg,
-              brightnessNotifier: demoVm.cardBrightnessNotifier,
-              colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+              brightnessNotifier: editorVm.cardBrightnessNotifier,
+              colorPreviewModeNotifier: editorVm.colorPreviewModeNotifier,
               values: _valuesForRowType(
-                demoVm.cardPayloadNotifier.value,
+                editorVm.cardPayloadNotifier.value,
                 payload.rowType,
               ),
               showPureAllConsistentButton: false,
@@ -448,8 +440,8 @@ class RowItem extends StatelessWidget {
                 lable: '内标题字体',
                 type: payload.rowType,
                 initialConfig: inCellTitleTextCfg,
-                brightnessNotifier: demoVm.cardBrightnessNotifier,
-                colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+                brightnessNotifier: editorVm.cardBrightnessNotifier,
+                colorPreviewModeNotifier: editorVm.colorPreviewModeNotifier,
                 values: [getRowTypeLabel(payload.rowType)],
                 enableColorEditing: true,
                 showPureAllConsistentButton: false,

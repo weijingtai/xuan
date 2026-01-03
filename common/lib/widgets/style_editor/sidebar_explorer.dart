@@ -2,7 +2,7 @@ import 'package:common/models/pillar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../viewmodels/four_zhu_editor_view_model.dart';
 import 'editable_four_zhu_style_editor_panel.dart';
 import 'row_style_editor_panel.dart';
 import 'cell_style_editor_panel.dart';
@@ -15,7 +15,6 @@ class SidebarExplorer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    // final demoVm = Provider.of<FourZhuCardDemoViewModel>(context, listen: true);
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -37,17 +36,15 @@ class SidebarExplorer extends StatelessWidget {
             const SizedBox(height: 12),
             ValueListenableBuilder(
               valueListenable:
-                  Provider.of<FourZhuCardDemoViewModel>(context, listen: false)
-                      .themeNotifier,
+                  context.read<FourZhuEditorViewModel>().editableThemeNotifier,
               builder: (context, theme, child) => SidebarPillarEditorSection(
                   pillarSection: theme.pillar,
                   title: '柱样式',
                   icon: Icons.view_column,
                   onChanged: (config) {
-                    Provider.of<FourZhuCardDemoViewModel>(context,
-                            listen: false)
-                        .updateEditableFourZhuCardTheme(
-                            theme.copyWith(pillar: config));
+                    context.read<FourZhuEditorViewModel>().updateEditableFourZhuCardTheme(
+                          theme.copyWith(pillar: config),
+                        );
                   }),
             ),
             const SizedBox(height: 12),

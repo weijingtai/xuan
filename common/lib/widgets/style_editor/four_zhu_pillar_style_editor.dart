@@ -6,7 +6,7 @@ import '../../enums/layout_template_enums.dart';
 import '../../models/drag_payloads.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
 import '../../utils/constant_values_utils.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/pillar_style_config.dart';
 import 'widgets/box_border_style_editor.dart';
@@ -123,8 +123,7 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final editorVm = context.read<FourZhuEditorViewModel>();
     return ValueListenableBuilder(
       valueListenable: _pillarStyleConfigNotifier,
       builder: (context, config, child) => Column(
@@ -155,10 +154,10 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
           ],
           if (widget.showTitleColumnFontEditor) ...[
             ValueListenableBuilder<CardPayload>(
-              valueListenable: demoVm.cardPayloadNotifier,
+              valueListenable: editorVm.cardPayloadNotifier,
               builder: (ctx, payload, _) {
                 return ValueListenableBuilder<EditableFourZhuCardTheme>(
-                  valueListenable: demoVm.themeNotifier,
+                  valueListenable: editorVm.editableThemeNotifier,
                   builder: (ctx, theme, _) {
                     final out = <String>[];
                     bool hasHeaderRow = false;
@@ -184,11 +183,12 @@ class _FourZhuPillarStyleEditorState extends State<FourZhuPillarStyleEditor> {
                       type: RowType.columnHeaderRow,
                       lable: '字体',
                       initialConfig: theme.typography.rowTitle,
-                      brightnessNotifier: demoVm.cardBrightnessNotifier,
-                      colorPreviewModeNotifier: demoVm.colorPreviewModeNotifier,
+                      brightnessNotifier: editorVm.cardBrightnessNotifier,
+                      colorPreviewModeNotifier:
+                          editorVm.colorPreviewModeNotifier,
                       values: values,
                       onChanged: (style) {
-                        demoVm.updateEditableFourZhuCardTheme(
+                        editorVm.updateEditableFourZhuCardTheme(
                           theme.copyWith(
                             typography:
                                 theme.typography.copyWith(rowTitle: style),

@@ -11,12 +11,18 @@ import '../domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import '../domain/usecases/layout_templates/save_template_use_case.dart';
 import '../enums/enum_tian_gan.dart';
 import '../enums/enum_di_zhi.dart';
+import '../enums/enum_gender.dart';
+import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
 import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
 import '../models/eight_chars.dart';
 import '../models/template_preset.dart';
+import '../models/drag_payloads.dart';
+import '../models/pillar_content.dart';
+import '../models/row_strategy.dart';
 import '../features/tai_yuan/tai_yuan_model.dart';
+import '../themes/editable_four_zhu_card_theme.dart';
 
 enum EditorViewMode { canvas, table, preview }
 
@@ -71,7 +77,9 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     required this.getTemplateByIdUseCase,
     required this.saveTemplateUseCase,
     required this.deleteTemplateUseCase,
-  });
+  }) {
+    _initRuntimeNotifiers();
+  }
 
   final GetAllTemplatesUseCase getAllTemplatesUseCase;
   final GetTemplateByIdUseCase getTemplateByIdUseCase;
@@ -80,6 +88,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
   final Uuid _uuid = const Uuid();
   final CommandHistory _commandHistory = CommandHistory(maxHistorySize: 50);
+
+  late final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  late final ValueNotifier<EditableFourZhuCardTheme> editableThemeNotifier;
+  late final ValueNotifier<Brightness> cardBrightnessNotifier;
+  late final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
+  late final ValueNotifier<EdgeInsets> paddingNotifier;
+  late final ValueNotifier<CardPayload> cardPayloadNotifier;
 
   static const _themePreferenceKey = 'four_zhu_editor:dark_mode';
 
@@ -158,6 +173,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     var changed = false;
     if (eightChars != null && eightChars != _previewEightChars) {
       _previewEightChars = eightChars;
+      cardPayloadNotifier.value = _buildDefaultCardPayload(
+        eightChars: eightChars,
+        gender: cardPayloadNotifier.value.gender,
+      );
       changed = true;
     }
     if (taiYuan != null && taiYuan != _previewTaiYuan) {
@@ -279,6 +298,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   Future<void> initialize({required String collectionId}) async {
     _collectionId = collectionId;
     await _loadThemePreference();
+    cardBrightnessNotifier.value =
+        _isDarkMode ? Brightness.dark : Brightness.light;
     await _withLoading(() async {
       final templates =
           await getAllTemplatesUseCase(collectionId: collectionId);
@@ -295,11 +316,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _errorMessage = null;
       _resetRecentTemplates();
     });
+
+    final template = _currentTemplate;
+    if (template != null) {
+      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+    }
   }
 
   void toggleTheme(bool value) {
     if (value == _isDarkMode) return;
     _isDarkMode = value;
+    cardBrightnessNotifier.value =
+        _isDarkMode ? Brightness.dark : Brightness.light;
     notifyListeners();
     unawaited(_persistThemePreference(value));
   }
@@ -329,6 +357,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         _errorMessage = '模板不存在($templateId)';
       }
     });
+
+    final template = _currentTemplate;
+    if (template != null) {
+      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+    }
   }
 
   Future<void> selectTemplateByTab(String templateId) async {
@@ -1422,6 +1455,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates.add(template);
     }
     _markRecent(template.id);
+    _syncRuntimeThemeFromCardStyle(template.cardStyle);
     notifyListeners();
   }
 
@@ -1433,6 +1467,285 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (template == null) return;
     final style = template.cardStyle.copyWith(contentPadding: insets);
     _applyCurrentTemplate(template.copyWith(cardStyle: style));
+  }
+
+  void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
+    editableThemeNotifier.value = newTheme;
+    paddingNotifier.value = newTheme.card.padding;
+    notifyListeners();
+  }
+
+  void updatePillarOrderFromTypes(List<PillarType> types) {
+    final currentPayload = cardPayloadNotifier.value;
+    final pillarMap = currentPayload.pillarMap;
+    final usedUuids = <String>{};
+    final newOrderUuid = <String>[];
+
+    for (final type in types) {
+      String? foundUuid;
+      for (final entry in pillarMap.entries) {
+        if (entry.value.pillarType == type && !usedUuids.contains(entry.key)) {
+          foundUuid = entry.key;
+          break;
+        }
+      }
+      if (foundUuid != null) {
+        newOrderUuid.add(foundUuid);
+        usedUuids.add(foundUuid);
+      }
+    }
+
+    for (final uuid in currentPayload.pillarOrderUuid) {
+      if (!usedUuids.contains(uuid)) {
+        newOrderUuid.add(uuid);
+      }
+    }
+
+    cardPayloadNotifier.value =
+        currentPayload.copyWith(pillarOrderUuid: newOrderUuid);
+    notifyListeners();
+  }
+
+  void updateRowOrderFromTypes(List<RowType> orderedTypes) {
+    final currentPayload = cardPayloadNotifier.value;
+    final rowMap = currentPayload.rowMap;
+    final oldOrderUuid = currentPayload.rowOrderUuid;
+
+    final newOrderUuid = <String>[];
+    final typesSet = orderedTypes.toSet();
+
+    final availableUuidsByType = <RowType, List<String>>{};
+    for (final uuid in oldOrderUuid) {
+      final payload = rowMap[uuid];
+      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
+        availableUuidsByType.putIfAbsent(payload.rowType, () => []).add(uuid);
+      }
+    }
+
+    for (final type in orderedTypes) {
+      final list = availableUuidsByType[type];
+      if (list != null && list.isNotEmpty) {
+        newOrderUuid.add(list.removeAt(0));
+      }
+    }
+
+    for (final uuid in oldOrderUuid) {
+      if (newOrderUuid.contains(uuid)) continue;
+      final payload = rowMap[uuid];
+      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
+        continue;
+      }
+      newOrderUuid.add(uuid);
+    }
+
+    cardPayloadNotifier.value =
+        currentPayload.copyWith(rowOrderUuid: newOrderUuid);
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    editableThemeNotifier.dispose();
+    cardBrightnessNotifier.dispose();
+    colorPreviewModeNotifier.dispose();
+    paddingNotifier.dispose();
+    cardPayloadNotifier.dispose();
+    super.dispose();
+  }
+
+  void _initRuntimeNotifiers() {
+    rowStrategyMapper = {
+      RowType.tenGod: TenGodRowStrategy(),
+      RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
+      RowType.hiddenStems: HiddenStemsRowStrategy(),
+      RowType.kongWang: KongWangRowStrategy(),
+      RowType.naYin: NaYinRowStrategy(),
+      RowType.xunShou: XunShouRowStrategy(),
+      RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
+      RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
+      RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
+      RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
+      RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
+      RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
+      RowType.starYun: StarYunRowStrategy(),
+      RowType.selfSiting: SelfSitingRowStrategy(),
+    };
+
+    final theme = EditableCardThemeBuilder.createDefaultTheme();
+    editableThemeNotifier = ValueNotifier<EditableFourZhuCardTheme>(theme);
+    cardBrightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+    colorPreviewModeNotifier =
+        ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
+    paddingNotifier = ValueNotifier<EdgeInsets>(theme.card.padding);
+    cardPayloadNotifier = ValueNotifier<CardPayload>(
+      _buildDefaultCardPayload(
+        eightChars: EightChars(
+          year: JiaZi.JIA_ZI,
+          month: JiaZi.YI_CHOU,
+          day: JiaZi.BING_YIN,
+          time: JiaZi.DING_MAO,
+        ),
+        gender: Gender.male,
+      ),
+    );
+  }
+
+  CardPayload _buildDefaultCardPayload({
+    required EightChars eightChars,
+    required Gender gender,
+  }) {
+    final titleUuid = _uuid.v4();
+    final yearUuid = _uuid.v4();
+    final monthUuid = _uuid.v4();
+    final dayUuid = _uuid.v4();
+    final hourUuid = _uuid.v4();
+
+    final titleRowUuid = _uuid.v4();
+    final heavenlyStemUuid = _uuid.v4();
+    final earthlyBranchUuid = _uuid.v4();
+    final naYinUuid = _uuid.v4();
+    final kongWangUuid = _uuid.v4();
+    final tenGodUuid = _uuid.v4();
+
+    return CardPayload(
+      gender: gender,
+      pillarMap: {
+        titleUuid: RowTitleColumnPayload(uuid: titleUuid),
+        yearUuid: ContentPillarPayload(
+          uuid: yearUuid,
+          pillarLabel: '年',
+          pillarType: PillarType.year,
+          pillarContent: PillarContent(
+            id: 'pillar-year',
+            pillarType: PillarType.year,
+            label: '年',
+            jiaZi: eightChars.year,
+            description: '示例年柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        monthUuid: ContentPillarPayload(
+          uuid: monthUuid,
+          pillarLabel: '月',
+          pillarType: PillarType.month,
+          pillarContent: PillarContent(
+            id: 'pillar-month',
+            pillarType: PillarType.month,
+            label: '月',
+            jiaZi: eightChars.month,
+            description: '示例月柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        dayUuid: ContentPillarPayload(
+          uuid: dayUuid,
+          pillarLabel: '日',
+          pillarType: PillarType.day,
+          pillarContent: PillarContent(
+            id: 'pillar-day',
+            pillarType: PillarType.day,
+            label: '日',
+            jiaZi: eightChars.day,
+            description: '示例日柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+        hourUuid: ContentPillarPayload(
+          uuid: hourUuid,
+          pillarLabel: '时',
+          pillarType: PillarType.hour,
+          pillarContent: PillarContent(
+            id: 'pillar-hour',
+            pillarType: PillarType.hour,
+            label: '时',
+            jiaZi: eightChars.time,
+            description: '示例时柱',
+            version: '1',
+            sourceKind: PillarSourceKind.userInput,
+          ),
+        ),
+      },
+      pillarOrderUuid: [yearUuid, monthUuid, dayUuid, hourUuid, titleUuid],
+      rowMap: {
+        titleRowUuid: TitleRowPayload(uuid: titleRowUuid),
+        tenGodUuid: TextRowPayload(
+          rowType: RowType.tenGod,
+          rowLabel: '十神',
+          uuid: tenGodUuid,
+          titleInCell: false,
+        ),
+        heavenlyStemUuid: TextRowPayload(
+          rowType: RowType.heavenlyStem,
+          rowLabel: '天干',
+          uuid: heavenlyStemUuid,
+          titleInCell: false,
+        ),
+        earthlyBranchUuid: TextRowPayload(
+          rowType: RowType.earthlyBranch,
+          rowLabel: '地支',
+          uuid: earthlyBranchUuid,
+          titleInCell: false,
+        ),
+        naYinUuid: TextRowPayload(
+          rowType: RowType.naYin,
+          rowLabel: '纳音',
+          uuid: naYinUuid,
+          titleInCell: false,
+        ),
+        kongWangUuid: TextRowPayload(
+          rowType: RowType.kongWang,
+          rowLabel: '空亡',
+          uuid: kongWangUuid,
+          titleInCell: false,
+        ),
+      },
+      rowOrderUuid: [
+        titleRowUuid,
+        tenGodUuid,
+        heavenlyStemUuid,
+        earthlyBranchUuid,
+        naYinUuid,
+        kongWangUuid,
+      ],
+    );
+  }
+
+  void _syncRuntimeThemeFromCardStyle(CardStyle cardStyle) {
+    final theme = editableThemeNotifier.value;
+    var nextTheme = theme;
+
+    if (theme.card.padding != cardStyle.contentPadding) {
+      nextTheme = nextTheme.copyWith(
+        card: nextTheme.card.copyWith(padding: cardStyle.contentPadding),
+      );
+    }
+
+    final family = (cardStyle.globalFontFamily.trim().isEmpty)
+        ? 'System'
+        : cardStyle.globalFontFamily;
+    final size = cardStyle.globalFontSize;
+    final currentTypography = nextTheme.typography;
+    final currentFont = currentTypography.globalContent.fontStyleDataModel;
+    if (currentFont.fontFamily != family || currentFont.fontSize != size) {
+      final updatedGlobalContent = currentTypography.globalContent.copyWith(
+        fontStyleDataModel: currentFont.copyWith(
+          fontFamily: family,
+          fontSize: size,
+        ),
+      );
+      nextTheme = nextTheme.copyWith(
+        typography:
+            currentTypography.copyWith(globalContent: updatedGlobalContent),
+      );
+    }
+
+    if (nextTheme != theme) {
+      editableThemeNotifier.value = nextTheme;
+      paddingNotifier.value = nextTheme.card.padding;
+    }
   }
 
   LayoutTemplate? _findTemplateById(String templateId) {

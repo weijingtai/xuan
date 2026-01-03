@@ -7,7 +7,6 @@ import 'widgets/app_palette_picker_dialog.dart';
 
 import '../../enums/layout_template_enums.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
 import '../editable_fourzhu_card/models/base_style_config.dart';
 import '../editable_fourzhu_card/models/card_style_config.dart';
 
@@ -67,8 +66,6 @@ class _EditableFourZhuStyleEditorPanelState
 
   // 分组字符设计功能已移除
 
-  FourZhuCardDemoViewModel get vm => context.read<FourZhuCardDemoViewModel>();
-
   @override
 
   /// 初始化状态：从外部传入的主题加载控件值并建立本地缓存。
@@ -78,31 +75,32 @@ class _EditableFourZhuStyleEditorPanelState
   void initState() {
     super.initState();
     warmupPaletteNameIndex();
-    final vm = context.read<FourZhuCardDemoViewModel>();
+    final editorVm = context.read<FourZhuEditorViewModel>();
 
-    final typography = vm.themeNotifier.value.typography;
+    final typography = editorVm.editableThemeNotifier.value.typography;
     final font = typography.globalContent.fontStyleDataModel;
     _globalFontFamily = font.fontFamily == 'System' ? '' : font.fontFamily;
     _globalFontSize = font.fontSize;
     _preferredFamiliesController =
         TextEditingController(text: _preferredFamiliesText);
 
-    _cardStyleConfig =
-        ValueNotifier<CardStyleConfig>(vm.themeNotifier.value.card)
-          ..addListener(() {
-            vm.updateEditableFourZhuCardTheme(
-                vm.themeNotifier.value.copyWith(card: _cardStyleConfig.value));
-            final editorVm = context.read<FourZhuEditorViewModel>();
-            editorVm.updateCardContentInsets(_cardStyleConfig.value.padding);
-          });
+    _cardStyleConfig = ValueNotifier<CardStyleConfig>(
+      editorVm.editableThemeNotifier.value.card,
+    )..addListener(() {
+        editorVm.updateEditableFourZhuCardTheme(
+          editorVm.editableThemeNotifier.value
+              .copyWith(card: _cardStyleConfig.value),
+        );
+        editorVm.updateCardContentInsets(_cardStyleConfig.value.padding);
+      });
 
     _demoVmListener = () {
-      final next = vm.themeNotifier.value.card;
+      final next = editorVm.editableThemeNotifier.value.card;
       if (_cardStyleConfig.value != next) {
         _cardStyleConfig.value = next;
       }
     };
-    vm.addListener(_demoVmListener);
+    editorVm.addListener(_demoVmListener);
   }
 
   @override
@@ -132,10 +130,8 @@ class _EditableFourZhuStyleEditorPanelState
   /// 返回：
   /// - `void`：触发回调与重建，无额外返回值。
   void _emit(EditableFourZhuCardTheme next) {
-    final demoVm = context.read<FourZhuCardDemoViewModel>();
-    demoVm.updateEditableFourZhuCardTheme(next);
-
     final editorVm = context.read<FourZhuEditorViewModel>();
+    editorVm.updateEditableFourZhuCardTheme(next);
     editorVm.updateCardContentInsets(next.card.padding);
 
     final font = next.typography.globalContent.fontStyleDataModel;
@@ -145,9 +141,9 @@ class _EditableFourZhuStyleEditorPanelState
 
   @override
   void dispose() {
-    vm.removeListener(_demoVmListener);
-    _cardStyleConfig.dispose();
+    context.read<FourZhuEditorViewModel>().removeListener(_demoVmListener);
     _preferredFamiliesController.dispose();
+    _cardStyleConfig.dispose();
     super.dispose();
   }
 
@@ -293,7 +289,10 @@ class _EditableFourZhuStyleEditorPanelState
                 ],
                 onChanged: (v) {
                   _globalFontFamily = (v ?? '').trim();
-                  final theme = vm.themeNotifier.value;
+                  final theme = context
+                      .read<FourZhuEditorViewModel>()
+                      .editableThemeNotifier
+                      .value;
                   final typography = theme.typography;
                   final currentFont =
                       typography.globalContent.fontStyleDataModel;
@@ -319,7 +318,10 @@ class _EditableFourZhuStyleEditorPanelState
                 max: 72,
                 onChanged: (v) {
                   _globalFontSize = v;
-                  final theme = vm.themeNotifier.value;
+                  final theme = context
+                      .read<FourZhuEditorViewModel>()
+                      .editableThemeNotifier
+                      .value;
                   final typography = theme.typography;
                   final currentFont =
                       typography.globalContent.fontStyleDataModel;
@@ -344,7 +346,10 @@ class _EditableFourZhuStyleEditorPanelState
                 controller: _preferredFamiliesController,
                 onChanged: (v) {
                   _preferredFamiliesText = v;
-                  final theme = vm.themeNotifier.value;
+                  final theme = context
+                      .read<FourZhuEditorViewModel>()
+                      .editableThemeNotifier
+                      .value;
                   _emit(theme);
                 },
               ),

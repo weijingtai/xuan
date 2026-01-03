@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../themes/editable_four_zhu_card_theme.dart';
-import '../../viewmodels/four_zhu_card_demo_viewmodel.dart';
+import '../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../models/drag_payloads.dart';
 import '../../enums/layout_template_enums.dart';
 import '../editable_fourzhu_card/models/base_style_config.dart';
@@ -15,13 +15,12 @@ class CellStyleEditorPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final demoVm =
-        Provider.of<FourZhuCardDemoViewModel>(context, listen: false);
+    final editorVm = context.read<FourZhuEditorViewModel>();
     return ValueListenableBuilder<CardPayload>(
-      valueListenable: demoVm.cardPayloadNotifier,
+      valueListenable: editorVm.cardPayloadNotifier,
       builder: (context, payload, _) {
         return ValueListenableBuilder<EditableFourZhuCardTheme>(
-          valueListenable: demoVm.themeNotifier,
+          valueListenable: editorVm.editableThemeNotifier,
           builder: (context, theme, __) {
             final cell = theme.cell;
             final activeRowTypes = payload.rowOrderUuid
@@ -34,21 +33,21 @@ class CellStyleEditorPanel extends StatelessWidget {
             final List<Widget> items = [];
 
             items.add(_eachEditor(context, '全局', cell.globalCellConfig, (cfg) {
-              demoVm.updateEditableFourZhuCardTheme(
+              editorVm.updateEditableFourZhuCardTheme(
                 theme.copyWith(cell: cell.copyWith(globalCellConfig: cfg)),
               );
             }));
 
             items.add(_eachEditor(context, '列标题单元格', cell.pillarTitleCellConfig,
                 (cfg) {
-              demoVm.updateEditableFourZhuCardTheme(
+              editorVm.updateEditableFourZhuCardTheme(
                 theme.copyWith(cell: cell.copyWith(pillarTitleCellConfig: cfg)),
               );
             }));
 
             items.add(
                 _eachEditor(context, '行标题单元格', cell.rowTitleCellConfig, (cfg) {
-              demoVm.updateEditableFourZhuCardTheme(
+              editorVm.updateEditableFourZhuCardTheme(
                 theme.copyWith(cell: cell.copyWith(rowTitleCellConfig: cfg)),
               );
             }));
@@ -59,7 +58,7 @@ class CellStyleEditorPanel extends StatelessWidget {
                 final mapper = Map<RowType, CellStyleConfig>.of(
                     cell.rowTypeCellConfigMapper);
                 mapper[rt] = cfg;
-                demoVm.updateEditableFourZhuCardTheme(
+                editorVm.updateEditableFourZhuCardTheme(
                   theme.copyWith(
                     cell: cell.copyWith(rowTypeCellConfigMapper: mapper),
                   ),
