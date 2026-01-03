@@ -602,16 +602,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     double? shadowOffsetY,
     double? shadowBlurRadius,
   }) {
-    print('🔍 [ViewModel.updateRowStyle] 更新行样式: type=$type');
-    if (padding != null) {
-      print('🔍 [ViewModel.updateRowStyle] padding=$padding');
-    }
-    if (textStyleConfig != null) {
-      print(
-          '🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.pureLightMapper 包含 ${textStyleConfig.colorMapperDataModel.pureLightMapper.length} 个颜色');
-      print(
-          '🔍 [ViewModel.updateRowStyle] 新 textStyleConfig.colorMapperDataModel.colorfulLightMapper 包含 ${textStyleConfig.colorMapperDataModel.colorfulLightMapper.length} 个颜色');
-    }
     final template = _currentTemplate;
     if (template == null) return;
     final updated = template.rowConfigs
@@ -632,13 +622,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
             : config)
         .toList(growable: false);
 
-    // 打印更新后的 padding 值
     final updatedConfig = updated.firstWhere((c) => c.type == type);
-    print(
-        '🔍 [ViewModel.updateRowStyle] 更新后的 config.padding=${updatedConfig.paddingVertical}');
-
-    print('🔍 [ViewModel.updateRowStyle] 调用 _applyCurrentTemplate');
     _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
+
+    final theme = editableThemeNotifier.value;
+    final typo = theme.typography;
+    final mapper = Map<RowType, TextStyleConfig>.of(typo.cellContentMapper);
+    mapper[type] = updatedConfig.textStyleConfig;
+    editableThemeNotifier.value = theme.copyWith(
+      typography: typo.copyWith(cellContentMapper: mapper),
+    );
   }
 
   void resetRowConfigs() {

@@ -13,6 +13,7 @@ import 'package:common/models/pillar_content.dart' as model;
 import 'package:common/models/row_strategy.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:common/models/text_style_config.dart';
+import 'test_editable_fourzhu_card_defaults.dart';
 
 /// Builds a minimal `PillarContent` instance for a four pillars chart.
 ///
@@ -149,22 +150,7 @@ Future<void> _pumpCard(
   final colorPreviewModeNotifier =
       ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
   final paddingNotifier = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
-  final rowStrategyMapper = <RowType, RowComputationStrategy>{
-    RowType.tenGod: TenGodRowStrategy(),
-    RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
-    RowType.hiddenStems: HiddenStemsRowStrategy(),
-    RowType.kongWang: KongWangRowStrategy(),
-    RowType.naYin: NaYinRowStrategy(),
-    RowType.xunShou: XunShouRowStrategy(),
-    RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
-    RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
-    RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
-    RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
-    RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
-    RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
-    RowType.starYun: StarYunRowStrategy(),
-    RowType.selfSiting: SelfSitingRowStrategy(),
-  };
+  final rowStrategyMapper = defaultRowStrategyMapper();
 
   final cardPayload = CardPayload(
     gender: Gender.male,

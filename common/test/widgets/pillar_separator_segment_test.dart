@@ -6,10 +6,10 @@ import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/pillar_content.dart';
-import 'package:common/models/row_strategy.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
 import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
+import '../test_editable_fourzhu_card_defaults.dart';
 
 void main() {
   testWidgets('pillar segmented rendering inserts gap between sections',
@@ -82,25 +82,7 @@ void main() {
               themeNotifier: ValueNotifier(theme),
               cardPayloadNotifier: ValueNotifier(cardPayload),
               paddingNotifier: ValueNotifier(EdgeInsets.zero),
-              rowStrategyMapper: <RowType, RowComputationStrategy>{
-                RowType.tenGod: TenGodRowStrategy(),
-                RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
-                RowType.hiddenStems: HiddenStemsRowStrategy(),
-                RowType.kongWang: KongWangRowStrategy(),
-                RowType.naYin: NaYinRowStrategy(),
-                RowType.xunShou: XunShouRowStrategy(),
-                RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
-                RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
-                RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
-                RowType.hiddenStemsPrimaryGods:
-                    HiddenStemsPrimaryGodsRowStrategy(),
-                RowType.hiddenStemsSecondaryGods:
-                    HiddenStemsSecondaryGodsRowStrategy(),
-                RowType.hiddenStemsTertiaryGods:
-                    HiddenStemsTertiaryGodsRowStrategy(),
-                RowType.starYun: StarYunRowStrategy(),
-                RowType.selfSiting: SelfSitingRowStrategy(),
-              },
+              rowStrategyMapper: defaultRowStrategyMapper(),
               gender: Gender.male,
               showGrip: false,
             ),

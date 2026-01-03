@@ -15,25 +15,7 @@ import 'package:common/widgets/editable_fourzhu_card/models/cell_style_config.da
 import 'package:common/widgets/editable_fourzhu_card/text_groups.dart';
 import 'package:common/utils/style_resolver.dart';
 import 'package:common/widgets/editable_fourzhu_card/editable_fourzhu_card_impl.dart';
-
-Map<RowType, RowComputationStrategy> _defaultRowStrategyMapper() {
-  return <RowType, RowComputationStrategy>{
-    RowType.tenGod: TenGodRowStrategy(),
-    RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
-    RowType.hiddenStems: HiddenStemsRowStrategy(),
-    RowType.kongWang: KongWangRowStrategy(),
-    RowType.naYin: NaYinRowStrategy(),
-    RowType.xunShou: XunShouRowStrategy(),
-    RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
-    RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
-    RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
-    RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
-    RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
-    RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
-    RowType.starYun: StarYunRowStrategy(),
-    RowType.selfSiting: SelfSitingRowStrategy(),
-  };
-}
+import '../test_editable_fourzhu_card_defaults.dart';
 
 /// A test-only style probe that mirrors the card's style resolution precedence.
 /// It renders a single Text using centralized defaults and global/group overrides.
@@ -405,7 +387,7 @@ void main() {
           ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
       final paddingNotifier =
           ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
-      final rowStrategyMapper = _defaultRowStrategyMapper();
+      final rowStrategyMapper = defaultRowStrategyMapper();
       final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
       await tester.pumpWidget(
@@ -534,7 +516,7 @@ void main() {
           ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
       final paddingNotifier =
           ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
-      final rowStrategyMapper = _defaultRowStrategyMapper();
+      final rowStrategyMapper = defaultRowStrategyMapper();
       final cardPayloadNotifier = ValueNotifier<CardPayload>(cardPayload);
 
       await tester.pumpWidget(
