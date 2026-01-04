@@ -126,7 +126,7 @@ class TextStyleConfig {
           fontStyleDataModel: FontStyleDataModel(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            fontFamily: 'NotoSansSC',
+            fontFamily: 'NotoSansSC-Regular',
             height: 1.2,
           ),
         );
@@ -164,7 +164,7 @@ class TextStyleConfig {
           fontStyleDataModel: FontStyleDataModel(
             fontWeight: FontWeight.bold,
             fontSize: 18,
-            fontFamily: 'NotoSansSC',
+            fontFamily: 'NotoSansSC-Regular',
             height: 1.2,
           ),
         );
@@ -196,7 +196,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
       fontSize: 12,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
       height: 1.2,
     ),
   );
@@ -215,7 +215,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
       fontSize: 12,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
       height: 1.2,
     ),
   );
@@ -243,7 +243,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
       fontSize: 14,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
       height: 1.2,
     ),
   );
@@ -271,7 +271,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
       fontSize: 12,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
       height: 1.2,
     ),
   );
@@ -298,7 +298,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.normal,
       fontSize: 8,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
       height: 1.2,
     ),
   );
@@ -1023,7 +1023,10 @@ class FontStyleDataModel {
 
   /// 使用数字 100–900 进行 `fontWeight` 的 JSON 读写
   factory FontStyleDataModel.fromJson(Map<String, dynamic> json) {
-    final family = (json['fontFamily'] as String?) ?? 'System';
+    var family = (json['fontFamily'] as String?) ?? 'System';
+    if (family == 'NotoSansSC' || family == 'NotoSans') {
+      family = 'NotoSansSC-Regular';
+    }
     final size = (json['fontSize'] as num?)?.toDouble() ?? 14.0;
     final weightNum = (json['fontWeight'] as num?)?.toInt();
     final weight =

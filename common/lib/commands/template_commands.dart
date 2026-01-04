@@ -230,25 +230,31 @@ class ReorderPillarCommand extends EditorCommand {
 class AddGroupCommand extends EditorCommand {
   AddGroupCommand({
     required this.group,
+    this.index,
   });
 
   final ChartGroup group;
+  final int? index;
 
   @override
   String get description => '添加分组: ${group.title}';
 
   @override
   LayoutTemplate execute(LayoutTemplate currentTemplate) {
-    final updated = List<ChartGroup>.of(currentTemplate.chartGroups)
-      ..add(group);
+    final updated = List<ChartGroup>.of(currentTemplate.chartGroups);
+    if (index != null) {
+      final clamped = index!.clamp(0, updated.length);
+      updated.insert(clamped, group);
+    } else {
+      updated.add(group);
+    }
     return currentTemplate.copyWith(chartGroups: updated);
   }
 
   @override
   LayoutTemplate undo(LayoutTemplate currentTemplate) {
-    final updated = currentTemplate.chartGroups
-        .where((g) => g.id != group.id)
-        .toList();
+    final updated =
+        currentTemplate.chartGroups.where((g) => g.id != group.id).toList();
     return currentTemplate.copyWith(chartGroups: updated);
   }
 }
@@ -270,9 +276,8 @@ class RemoveGroupCommand extends EditorCommand {
 
   @override
   LayoutTemplate execute(LayoutTemplate currentTemplate) {
-    final updated = currentTemplate.chartGroups
-        .where((g) => g.id != groupId)
-        .toList();
+    final updated =
+        currentTemplate.chartGroups.where((g) => g.id != groupId).toList();
     return currentTemplate.copyWith(chartGroups: updated);
   }
 
@@ -312,9 +317,8 @@ class UpdateGroupTitleCommand extends EditorCommand {
 
   LayoutTemplate _updateTitle(LayoutTemplate template, String title) {
     final updated = template.chartGroups
-        .map((group) => group.id == groupId
-            ? group.copyWith(title: title)
-            : group)
+        .map((group) =>
+            group.id == groupId ? group.copyWith(title: title) : group)
         .toList(growable: false);
     return template.copyWith(chartGroups: updated);
   }
@@ -353,8 +357,7 @@ class UpdateRowVisibilityCommand extends EditorCommand {
   final bool newVisibility;
 
   @override
-  String get description =>
-      '${newVisibility ? "显示" : "隐藏"}行: ${rowType.name}';
+  String get description => '${newVisibility ? "显示" : "隐藏"}行: ${rowType.name}';
 
   @override
   LayoutTemplate execute(LayoutTemplate currentTemplate) {
@@ -373,6 +376,143 @@ class UpdateRowVisibilityCommand extends EditorCommand {
             : config)
         .toList(growable: false);
     return template.copyWith(rowConfigs: configs);
+  }
+}
+
+class UpdateRowTitleVisibilityCommand extends EditorCommand {
+  UpdateRowTitleVisibilityCommand({
+    required this.rowType,
+    required this.oldVisibility,
+    required this.newVisibility,
+  });
+
+  final RowType rowType;
+  final bool oldVisibility;
+  final bool newVisibility;
+
+  @override
+  String get description =>
+      '${newVisibility ? "显示" : "隐藏"}行标题: ${rowType.name}';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return _updateVisibility(currentTemplate, newVisibility);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return _updateVisibility(currentTemplate, oldVisibility);
+  }
+
+  LayoutTemplate _updateVisibility(LayoutTemplate template, bool isVisible) {
+    final configs = template.rowConfigs
+        .map((config) => config.type == rowType
+            ? config.copyWith(isTitleVisible: isVisible)
+            : config)
+        .toList(growable: false);
+    return template.copyWith(rowConfigs: configs);
+  }
+}
+
+class ReorderRowConfigsCommand extends EditorCommand {
+  ReorderRowConfigsCommand({
+    required this.oldRowConfigs,
+    required this.newRowConfigs,
+  });
+
+  final List<RowConfig> oldRowConfigs;
+  final List<RowConfig> newRowConfigs;
+
+  @override
+  String get description => '重排行配置';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(rowConfigs: newRowConfigs);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(rowConfigs: oldRowConfigs);
+  }
+}
+
+class UpdateDividerTypeCommand extends EditorCommand {
+  UpdateDividerTypeCommand({
+    required this.oldType,
+    required this.newType,
+  });
+
+  final BorderType oldType;
+  final BorderType newType;
+
+  @override
+  String get description => '更新分割线类型';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final style = currentTemplate.cardStyle.copyWith(dividerType: newType);
+    return currentTemplate.copyWith(cardStyle: style);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final style = currentTemplate.cardStyle.copyWith(dividerType: oldType);
+    return currentTemplate.copyWith(cardStyle: style);
+  }
+}
+
+class UpdateDividerColorCommand extends EditorCommand {
+  UpdateDividerColorCommand({
+    required this.oldColorHex,
+    required this.newColorHex,
+  });
+
+  final String oldColorHex;
+  final String newColorHex;
+
+  @override
+  String get description => '更新分割线颜色';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final style =
+        currentTemplate.cardStyle.copyWith(dividerColorHex: newColorHex);
+    return currentTemplate.copyWith(cardStyle: style);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final style =
+        currentTemplate.cardStyle.copyWith(dividerColorHex: oldColorHex);
+    return currentTemplate.copyWith(cardStyle: style);
+  }
+}
+
+class UpdateDividerThicknessCommand extends EditorCommand {
+  UpdateDividerThicknessCommand({
+    required this.oldThickness,
+    required this.newThickness,
+  });
+
+  final double oldThickness;
+  final double newThickness;
+
+  @override
+  String get description => '更新分割线粗细';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final style = currentTemplate.cardStyle
+        .copyWith(dividerThickness: newThickness.clamp(0.5, 8));
+    return currentTemplate.copyWith(cardStyle: style);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final style = currentTemplate.cardStyle
+        .copyWith(dividerThickness: oldThickness.clamp(0.5, 8));
+    return currentTemplate.copyWith(cardStyle: style);
   }
 }
 
@@ -404,5 +544,264 @@ class ToggleGroupExpandedCommand extends EditorCommand {
       return group.copyWith(expanded: !group.expanded);
     }).toList(growable: false);
     return template.copyWith(chartGroups: updated);
+  }
+}
+
+/// 重排分组命令
+class ReorderGroupsCommand extends EditorCommand {
+  ReorderGroupsCommand({
+    required this.oldIndex,
+    required this.newIndex,
+  });
+
+  final int oldIndex;
+  final int newIndex;
+
+  @override
+  String get description => '重排分组: $oldIndex -> $newIndex';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return _reorder(currentTemplate, oldIndex, newIndex);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return _reorder(currentTemplate, newIndex, oldIndex);
+  }
+
+  LayoutTemplate _reorder(LayoutTemplate template, int from, int to) {
+    final list = List<ChartGroup>.of(template.chartGroups);
+    if (from < 0 || from >= list.length) return template;
+
+    final item = list.removeAt(from);
+    final target = to.clamp(0, list.length);
+    list.insert(target, item);
+
+    return template.copyWith(chartGroups: list);
+  }
+}
+
+/// 更新行配置命令（通用）
+class UpdateRowConfigCommand extends EditorCommand {
+  UpdateRowConfigCommand({
+    required this.rowType,
+    required this.oldConfig,
+    required this.newConfig,
+  });
+
+  final RowType rowType;
+  final RowConfig oldConfig;
+  final RowConfig newConfig;
+
+  @override
+  String get description => '更新行配置: ${rowType.name}';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return _update(currentTemplate, newConfig);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return _update(currentTemplate, oldConfig);
+  }
+
+  LayoutTemplate _update(LayoutTemplate template, RowConfig config) {
+    final updated = template.rowConfigs
+        .map((c) => c.type == rowType ? config : c)
+        .toList(growable: false);
+    return template.copyWith(rowConfigs: updated);
+  }
+}
+
+/// 更新卡片整体样式命令
+class UpdateCardStyleCommand extends EditorCommand {
+  UpdateCardStyleCommand({
+    required this.oldStyle,
+    required this.newStyle,
+  });
+
+  final CardStyle oldStyle;
+  final CardStyle newStyle;
+
+  @override
+  String get description => '更新卡片样式';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(cardStyle: newStyle);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(cardStyle: oldStyle);
+  }
+}
+
+/// 更新分组信息命令（通用）
+class UpdateGroupCommand extends EditorCommand {
+  UpdateGroupCommand({
+    required this.groupId,
+    required this.oldGroup,
+    required this.newGroup,
+    this.customDescription,
+  });
+
+  final String groupId;
+  final ChartGroup oldGroup;
+  final ChartGroup newGroup;
+  final String? customDescription;
+
+  @override
+  String get description => customDescription ?? '更新分组信息';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final updated = currentTemplate.chartGroups
+        .map((g) => g.id == groupId ? newGroup : g)
+        .toList(growable: false);
+    return currentTemplate.copyWith(chartGroups: updated);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final updated = currentTemplate.chartGroups
+        .map((g) => g.id == groupId ? oldGroup : g)
+        .toList(growable: false);
+    return currentTemplate.copyWith(chartGroups: updated);
+  }
+}
+
+/// 跨分组移动柱位命令
+class MovePillarBetweenGroupsCommand extends EditorCommand {
+  MovePillarBetweenGroupsCommand({
+    required this.sourceGroupId,
+    required this.targetGroupId,
+    required this.sourceIndex,
+    required this.targetIndex,
+    required this.pillar,
+  });
+
+  final String sourceGroupId;
+  final String targetGroupId;
+  final int sourceIndex;
+  final int targetIndex;
+  final PillarType pillar;
+
+  @override
+  String get description => '移动柱位 ${pillar.name}';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return _move(currentTemplate, sourceGroupId, targetGroupId, sourceIndex,
+        targetIndex);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    // 撤销：从目标移回源（注意索引可能需要反向计算，但这里我们尽量还原）
+    // 简单起见，如果移动是：源移除 -> 目标插入
+    // 撤销是：目标移除（新位置） -> 源插入（旧位置）
+    // 注意 targetIndex 是插入位置。
+    return _move(currentTemplate, targetGroupId, sourceGroupId, targetIndex,
+        sourceIndex);
+  }
+
+  LayoutTemplate _move(
+    LayoutTemplate template,
+    String fromId,
+    String toId,
+    int fromIndex,
+    int toIndex,
+  ) {
+    final groups = template.chartGroups.map((g) => g).toList();
+
+    // 1. Remove from source
+    final sourceGroupIndex = groups.indexWhere((g) => g.id == fromId);
+    if (sourceGroupIndex == -1) return template;
+
+    var sourceGroup = groups[sourceGroupIndex];
+    var sourcePillars = List<PillarType>.from(sourceGroup.pillarOrder);
+
+    // 如果 fromIndex 无效，可能无法移除，直接返回
+    if (fromIndex < 0 || fromIndex >= sourcePillars.length) return template;
+
+    final item = sourcePillars.removeAt(fromIndex);
+    groups[sourceGroupIndex] = sourceGroup.copyWith(pillarOrder: sourcePillars);
+
+    // 2. Insert to target
+    final targetGroupIndex = groups.indexWhere((g) => g.id == toId);
+    if (targetGroupIndex == -1) return template; // 应该不会发生，除非分组被删
+
+    var targetGroup = groups[targetGroupIndex];
+    var targetPillars = List<PillarType>.from(targetGroup.pillarOrder);
+
+    // 目标位置 clamp
+    final insertIdx = toIndex.clamp(0, targetPillars.length);
+    targetPillars.insert(insertIdx, item);
+    groups[targetGroupIndex] = targetGroup.copyWith(pillarOrder: targetPillars);
+
+    return template.copyWith(chartGroups: groups);
+  }
+}
+
+/// 应用预设命令
+class ApplyPresetCommand extends EditorCommand {
+  ApplyPresetCommand({
+    required this.oldGroups,
+    required this.newGroups,
+    required this.oldRowConfigs,
+    required this.newRowConfigs,
+    required this.presetName,
+  });
+
+  final List<ChartGroup> oldGroups;
+  final List<ChartGroup> newGroups;
+  final List<RowConfig> oldRowConfigs;
+  final List<RowConfig> newRowConfigs;
+  final String presetName;
+
+  @override
+  String get description => '应用预设: $presetName';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(
+      chartGroups: newGroups,
+      rowConfigs: newRowConfigs,
+    );
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(
+      chartGroups: oldGroups,
+      rowConfigs: oldRowConfigs,
+    );
+  }
+}
+
+/// 替换所有行配置命令
+class ReplaceRowConfigsCommand extends EditorCommand {
+  ReplaceRowConfigsCommand({
+    required this.oldConfigs,
+    required this.newConfigs,
+  });
+
+  final List<RowConfig> oldConfigs;
+  final List<RowConfig> newConfigs;
+
+  @override
+  String get description => '重置/替换所有行配置';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(rowConfigs: newConfigs);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(rowConfigs: oldConfigs);
   }
 }

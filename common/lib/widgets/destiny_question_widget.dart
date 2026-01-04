@@ -419,7 +419,7 @@ class _DestinyQuestionWidgetState extends State<DestinyQuestionWidget>
         fontSize: 18,
         fontWeight: FontWeight.normal,
         color: Colors.black87,
-        fontFamily: "NotoSansSC"
+        fontFamily: "NotoSansSC-Regular"
         // color: AppTheme.secondaryText,
         );
   }
@@ -430,7 +430,7 @@ class _DestinyQuestionWidgetState extends State<DestinyQuestionWidget>
         fontSize: 16,
         fontWeight: FontWeight.bold,
         color: color,
-        fontFamily: "NotoSansSC"
+        fontFamily: "NotoSansSC-Regular"
         // color: AppTheme.primaryColor,
         );
   }

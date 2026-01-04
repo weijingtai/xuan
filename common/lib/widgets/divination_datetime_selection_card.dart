@@ -48,9 +48,9 @@ class _DivinationDatetimeSelectionCardWidgetState
       fontSize: 18,
       color: Colors.black87,
       fontWeight: FontWeight.w600,
-      fontFamily: "NotoSansSC");
-  TextStyle lngLatTextStyle = const TextStyle(
-      fontSize: 14, color: Colors.grey, fontFamily: "NotoSansSC");
+      fontFamily: "NotoSansSC-Regular");
+    TextStyle lngLatTextStyle = const TextStyle(
+        fontSize: 14, color: Colors.grey, fontFamily: "NotoSansSC-Regular");
 
   final ValueNotifier<SPTimezoneDataModel?> _spTimezoneDataModelNotifier =
       ValueNotifier<SPTimezoneDataModel?>(null);

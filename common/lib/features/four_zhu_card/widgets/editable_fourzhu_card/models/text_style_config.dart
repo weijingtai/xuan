@@ -45,7 +45,7 @@ class TextStyleConfig {
     fontStyleDataModel: FontStyleDataModel(
       fontWeight: FontWeight.bold,
       fontSize: 16,
-      fontFamily: 'NotoSansSC',
+      fontFamily: 'NotoSansSC-Regular',
     ),
   );
   // ==================== JSON 序列化 ====================

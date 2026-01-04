@@ -356,11 +356,27 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                 ),
                                 const SizedBox(width: 12),
                                 OutlinedButton.icon(
+                                  onPressed: viewModel.canUndo
+                                      ? viewModel.undoLastChange
+                                      : null,
+                                  icon: const Icon(Icons.undo),
+                                  label: const Text('撤销一步'),
+                                ),
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  onPressed: viewModel.canRedo
+                                      ? viewModel.redoLastChange
+                                      : null,
+                                  icon: const Icon(Icons.redo),
+                                  label: const Text('重做一步'),
+                                ),
+                                const SizedBox(width: 12),
+                                OutlinedButton.icon(
                                   onPressed: viewModel.canRevert
                                       ? viewModel.revertChanges
                                       : null,
-                                  icon: const Icon(Icons.undo),
-                                  label: const Text('撤销更改'),
+                                  icon: const Icon(Icons.restore),
+                                  label: const Text('放弃更改'),
                                 ),
                                 const Spacer(),
                                 OutlinedButton.icon(

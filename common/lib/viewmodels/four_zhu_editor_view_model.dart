@@ -14,6 +14,7 @@ import '../enums/enum_di_zhi.dart';
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
 import '../models/eight_chars.dart';
@@ -223,43 +224,36 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
   void reorderPillarsInGroup(String groupId, int oldIndex, int newIndex) {
     if (_currentTemplate == null) return;
-    final updatedGroups = _currentTemplate!.chartGroups.map((group) {
-      if (group.id == groupId) {
-        final newPillarOrder = List<PillarType>.from(group.pillarOrder);
-        if (oldIndex < 0 || oldIndex >= newPillarOrder.length) return group;
 
-        if (oldIndex < newIndex) {
-          newIndex -= 1;
-        }
+    // 适配 ReorderableListView 的行为：如果向下拖动，newIndex 会包含被移动项原本的空间
+    if (oldIndex < newIndex) {
+      newIndex -= 1;
+    }
 
-        // Fix: Ensure newIndex is within bounds
-        if (newIndex < 0) newIndex = 0;
-        if (newIndex > newPillarOrder.length) newIndex = newPillarOrder.length;
-
-        final item = newPillarOrder.removeAt(oldIndex);
-        newPillarOrder.insert(newIndex, item);
-        return group.copyWith(pillarOrder: newPillarOrder);
-      }
-      return group;
-    }).toList();
-
-    _currentTemplate = _currentTemplate!.copyWith(chartGroups: updatedGroups);
-    _hasUnsavedChanges = true;
-    notifyListeners();
+    reorderPillar(
+      groupId: groupId,
+      oldIndex: oldIndex,
+      newIndex: newIndex,
+    );
   }
 
   void updatePillarOrderInGroup(String groupId, List<PillarType> newOrder) {
-    if (_currentTemplate == null) return;
-    final updatedGroups = _currentTemplate!.chartGroups.map((group) {
-      if (group.id == groupId) {
-        return group.copyWith(pillarOrder: newOrder);
-      }
-      return group;
-    }).toList();
+    final template = _currentTemplate;
+    if (template == null) return;
 
-    _currentTemplate = _currentTemplate!.copyWith(chartGroups: updatedGroups);
-    _hasUnsavedChanges = true;
-    notifyListeners();
+    final oldGroup = _findGroupById(template, groupId);
+    if (oldGroup == null) return;
+
+    final newGroup = oldGroup.copyWith(pillarOrder: newOrder);
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateGroupCommand(
+      groupId: groupId,
+      oldGroup: oldGroup,
+      newGroup: newGroup,
+      customDescription: '更新分组排序',
+    );
+    _executeCommand(command);
   }
 
   void clearSelection() {
@@ -309,8 +303,15 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         _templates = [template];
         _currentTemplate = template;
       } else {
-        _templates = templates;
-        _currentTemplate = templates.first;
+        _templates = List.of(templates);
+        var current = _templates.first;
+        // Auto-migrate legacy default template to fix style issues
+        final migrated = await _migrateLegacyDefaultTemplate(current);
+        if (migrated != current) {
+          _templates[0] = migrated;
+          current = migrated;
+        }
+        _currentTemplate = current;
       }
       _hasUnsavedChanges = false;
       _errorMessage = null;
@@ -319,7 +320,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
     final template = _currentTemplate;
     if (template != null) {
-      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+      _syncRuntimeStateFromTemplate(template);
     }
   }
 
@@ -360,7 +361,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
     final template = _currentTemplate;
     if (template != null) {
-      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+      _syncRuntimeStateFromTemplate(template);
     }
   }
 
@@ -428,14 +429,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       }).toList(growable: false);
     }
 
-    // 应用更新后的模板
-    final updatedTemplate = template.copyWith(
-      chartGroups: [newGroup],
-      rowConfigs: updatedRowConfigs,
+    // M4.3.2 - 使用Command模式
+    final command = ApplyPresetCommand(
+      oldGroups: template.chartGroups,
+      newGroups: [newGroup],
+      oldRowConfigs: template.rowConfigs,
+      newRowConfigs: updatedRowConfigs,
+      presetName: preset.name,
     );
+    _executeCommand(command);
 
     _selectedPresetId = preset.id;
-    _applyCurrentTemplate(updatedTemplate);
   }
 
   Future<void> duplicateTemplateAsNew(String templateId) async {
@@ -531,23 +535,38 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateDividerType(BorderType type) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle = template.cardStyle.copyWith(dividerType: type);
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+    if (template.cardStyle.dividerType == type) return;
+
+    final command = UpdateDividerTypeCommand(
+      oldType: template.cardStyle.dividerType,
+      newType: type,
+    );
+    _executeCommand(command);
   }
 
   void updateDividerColor(String colorHex) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle = template.cardStyle.copyWith(dividerColorHex: colorHex);
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+    if (template.cardStyle.dividerColorHex == colorHex) return;
+
+    final command = UpdateDividerColorCommand(
+      oldColorHex: template.cardStyle.dividerColorHex,
+      newColorHex: colorHex,
+    );
+    _executeCommand(command);
   }
 
   void updateDividerThickness(double thickness) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle =
-        template.cardStyle.copyWith(dividerThickness: thickness.clamp(0.5, 8));
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+    final next = thickness.clamp(0.5, 8.0);
+    if (template.cardStyle.dividerThickness == next) return;
+
+    final command = UpdateDividerThicknessCommand(
+      oldThickness: template.cardStyle.dividerThickness,
+      newThickness: next,
+    );
+    _executeCommand(command);
   }
 
   void updateRowVisibility(RowType type, bool isVisible) {
@@ -579,12 +598,24 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateRowTitleVisibility(RowType type, bool isVisible) {
     final template = _currentTemplate;
     if (template == null) return;
-    final configs = template.rowConfigs
-        .map((config) => config.type == type
-            ? config.copyWith(isTitleVisible: isVisible)
-            : config)
-        .toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(rowConfigs: configs));
+    final oldConfig = template.rowConfigs.firstWhere(
+      (c) => c.type == type,
+      orElse: () => RowConfig(
+        type: type,
+        isVisible: true,
+        isTitleVisible: !isVisible,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      ),
+    );
+
+    if (oldConfig.isTitleVisible == isVisible) return;
+
+    final command = UpdateRowTitleVisibilityCommand(
+      rowType: type,
+      oldVisibility: oldConfig.isTitleVisible,
+      newVisibility: isVisible,
+    );
+    _executeCommand(command);
   }
 
   /// 更新指定 `RowType` 的文本样式与相关展示属性。
@@ -628,34 +659,34 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updated = template.rowConfigs
-        .map((config) => config.type == type
-            ? config.copyWith(
-                // 新版样式优先：同步 TextStyleConfig
-                textStyleConfig: textStyleConfig ?? config.textStyleConfig,
-                // 同步旧字段,确保向后兼容
-                textAlign: textAlign ?? config.textAlign,
-                padding: padding ?? config.paddingVertical,
-                marginVertical: marginVertical ?? config.marginVertical,
-                marginHorizontal: marginHorizontal ?? config.marginHorizontal,
-                paddingHorizontal:
-                    paddingHorizontal ?? config.paddingHorizontal,
-                borderType: borderType ?? config.borderType,
-                borderColorHex: borderColorHex ?? config.borderColorHex,
-              )
-            : config)
-        .toList(growable: false);
 
-    final updatedConfig = updated.firstWhere((c) => c.type == type);
-    _applyCurrentTemplate(template.copyWith(rowConfigs: updated));
+    // 查找现有配置
+    final exists = template.rowConfigs.any((c) => c.type == type);
+    if (!exists) return;
 
-    final theme = editableThemeNotifier.value;
-    final typo = theme.typography;
-    final mapper = Map<RowType, TextStyleConfig>.of(typo.cellContentMapper);
-    mapper[type] = updatedConfig.textStyleConfig;
-    editableThemeNotifier.value = theme.copyWith(
-      typography: typo.copyWith(cellContentMapper: mapper),
+    final oldConfig = template.rowConfigs.firstWhere((c) => c.type == type);
+    final newConfig = oldConfig.copyWith(
+      // 新版样式优先：同步 TextStyleConfig
+      textStyleConfig: textStyleConfig ?? oldConfig.textStyleConfig,
+      // 同步旧字段,确保向后兼容
+      textAlign: textAlign ?? oldConfig.textAlign,
+      padding: padding ?? oldConfig.paddingVertical,
+      marginVertical: marginVertical ?? oldConfig.marginVertical,
+      marginHorizontal: marginHorizontal ?? oldConfig.marginHorizontal,
+      paddingHorizontal: paddingHorizontal ?? oldConfig.paddingHorizontal,
+      borderType: borderType ?? oldConfig.borderType,
+      borderColorHex: borderColorHex ?? oldConfig.borderColorHex,
     );
+
+    if (oldConfig == newConfig) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateRowConfigCommand(
+      rowType: type,
+      oldConfig: oldConfig,
+      newConfig: newConfig,
+    );
+    _executeCommand(command);
   }
 
   void resetRowConfigs() {
@@ -663,13 +694,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (template == null) return;
     final defaults =
         _buildDefaultTemplate(collectionId: template.collectionId).rowConfigs;
-    _applyCurrentTemplate(template.copyWith(rowConfigs: defaults));
+
+    // M4.3.2 - 使用Command模式
+    final command = ReplaceRowConfigsCommand(
+      oldConfigs: template.rowConfigs,
+      newConfigs: defaults,
+    );
+    _executeCommand(command);
   }
 
   void ensureRowConfig(RowType type) {
     final template = _currentTemplate;
     if (template == null) return;
     if (template.rowConfigs.any((c) => c.type == type)) return;
+
     final cfg = RowConfig(
       type: type,
       isVisible: true,
@@ -677,7 +715,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       textStyleConfig: TextStyleConfig.defaultConfig,
     );
     final list = List<RowConfig>.of(template.rowConfigs)..add(cfg);
-    _applyCurrentTemplate(template.copyWith(rowConfigs: list));
+
+    // M4.3.2 - 使用Command模式
+    final command = ReplaceRowConfigsCommand(
+      oldConfigs: template.rowConfigs,
+      newConfigs: list,
+    );
+    _executeCommand(command);
   }
 
   // Task 1.3.2 - 全局字体方法
@@ -693,8 +737,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateGlobalFontFamily(String family) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle = template.cardStyle.copyWith(globalFontFamily: family);
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+
+    final oldStyle = template.cardStyle;
+    final newStyle = oldStyle.copyWith(globalFontFamily: family);
+
+    if (oldStyle == newStyle) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateCardStyleCommand(
+      oldStyle: oldStyle,
+      newStyle: newStyle,
+    );
+    _executeCommand(command);
   }
 
   /// 更新当前模板的全局字号。
@@ -710,9 +764,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateGlobalFontSize(double size) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle =
-        template.cardStyle.copyWith(globalFontSize: size.clamp(10, 32));
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+
+    final oldStyle = template.cardStyle;
+    final newStyle = oldStyle.copyWith(globalFontSize: size.clamp(10, 32));
+
+    if (oldStyle == newStyle) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateCardStyleCommand(
+      oldStyle: oldStyle,
+      newStyle: newStyle,
+    );
+    _executeCommand(command);
   }
 
   /// 更新当前模板的全局字体颜色（十六进制字符串）。
@@ -727,9 +790,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateGlobalFontColor(String colorHex) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedStyle =
-        template.cardStyle.copyWith(globalFontColorHex: colorHex);
-    _applyCurrentTemplate(template.copyWith(cardStyle: updatedStyle));
+
+    final oldStyle = template.cardStyle;
+    final newStyle = oldStyle.copyWith(globalFontColorHex: colorHex);
+
+    if (oldStyle == newStyle) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateCardStyleCommand(
+      oldStyle: oldStyle,
+      newStyle: newStyle,
+    );
+    _executeCommand(command);
   }
 
   void updateRowOrder({
@@ -746,7 +818,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final item = list.removeAt(oldIndex);
     list.insert(clampedNew, item);
 
-    _applyCurrentTemplate(template.copyWith(rowConfigs: list));
+    final command = ReorderRowConfigsCommand(
+      oldRowConfigs: template.rowConfigs,
+      newRowConfigs: list,
+    );
+    _executeCommand(command);
   }
 
   /// Reorders rows based on a list of types, preserving the position of types not in the list (e.g. separators).
@@ -763,31 +839,28 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final typesSet = orderedTypes.toSet();
     int orderedIndex = 0;
 
-    // Validate that all orderedTypes exist in currentConfigs
-    // Note: This assumes RowType is unique in currentConfigs for the types being reordered.
-    // If orderedTypes contains duplicates, this logic might need adjustment, but RowTypes are usually unique.
-
     for (final config in currentConfigs) {
       if (typesSet.contains(config.type)) {
-        // This is a slot to be filled by the next item in orderedTypes
         if (orderedIndex < orderedTypes.length) {
           final nextType = orderedTypes[orderedIndex++];
           final nextConfig = currentConfigs.firstWhere(
             (c) => c.type == nextType,
-            orElse: () => config, // Should not happen if valid
+            orElse: () => config,
           );
           reorderedConfigs.add(nextConfig);
         } else {
-          // Should not happen if lists match
           reorderedConfigs.add(config);
         }
       } else {
-        // Keep non-reordered items (e.g. separators) in place
         reorderedConfigs.add(config);
       }
     }
 
-    _applyCurrentTemplate(template.copyWith(rowConfigs: reorderedConfigs));
+    final command = ReorderRowConfigsCommand(
+      oldRowConfigs: template.rowConfigs,
+      newRowConfigs: reorderedConfigs,
+    );
+    _executeCommand(command);
   }
 
   Future<void> refreshRowConfigs() async {
@@ -839,11 +912,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template == null) return;
     if (oldIndex == newIndex) return;
-    final list = List<ChartGroup>.of(template.chartGroups);
-    final item = list.removeAt(oldIndex);
-    final target = newIndex.clamp(0, list.length);
-    list.insert(target, item);
-    _applyCurrentTemplate(template.copyWith(chartGroups: list));
+
+    // M4.3.2 - 使用Command模式
+    final command = ReorderGroupsCommand(
+      oldIndex: oldIndex,
+      newIndex: newIndex,
+    );
+    _executeCommand(command);
   }
 
   void addPillarToGroup({
@@ -852,15 +927,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedGroups = template.chartGroups.map((group) {
-      if (group.id != groupId) return group;
-      // 去重：如已存在则跳过
-      if (group.pillarOrder.contains(pillar)) return group;
-      return group.copyWith(
-        pillarOrder: List<PillarType>.of(group.pillarOrder)..add(pillar),
-      );
-    }).toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+
+    final group = _findGroupById(template, groupId);
+    if (group == null) return;
+
+    // 去重：如已存在则跳过
+    if (group.pillarOrder.contains(pillar)) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = AddPillarToGroupCommand(
+      groupId: groupId,
+      pillar: pillar,
+      index: group.pillarOrder.length, // Add to end
+    );
+    _executeCommand(command);
   }
 
   void addPillarToGroupAtIndex({
@@ -927,14 +1007,24 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updatedGroups = template.chartGroups.map((group) {
-      if (group.id != groupId) return group;
-      final list = List<PillarType>.of(group.pillarOrder);
-      final clamped = index.clamp(0, list.length);
-      list.insert(clamped, PillarType.separator);
-      return group.copyWith(pillarOrder: list);
-    }).toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+
+    final oldGroup = _findGroupById(template, groupId);
+    if (oldGroup == null) return;
+
+    final list = List<PillarType>.of(oldGroup.pillarOrder);
+    final clamped = index.clamp(0, list.length);
+    list.insert(clamped, PillarType.separator);
+
+    final newGroup = oldGroup.copyWith(pillarOrder: list);
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateGroupCommand(
+      groupId: groupId,
+      oldGroup: oldGroup,
+      newGroup: newGroup,
+      customDescription: '插入分隔符',
+    );
+    _executeCommand(command);
   }
 
   void alignPillars(String groupId) {
@@ -949,11 +1039,22 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updated = template.chartGroups
-        .map((group) =>
-            group.id == groupId ? group.copyWith(locked: locked) : group)
-        .toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+
+    final oldGroup = _findGroupById(template, groupId);
+    if (oldGroup == null) return;
+
+    if (oldGroup.locked == locked) return;
+
+    final newGroup = oldGroup.copyWith(locked: locked);
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateGroupCommand(
+      groupId: groupId,
+      oldGroup: oldGroup,
+      newGroup: newGroup,
+      customDescription: locked ? '锁定分组' : '解锁分组',
+    );
+    _executeCommand(command);
   }
 
   void toggleGroupExpanded({required String groupId}) {
@@ -982,22 +1083,46 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       colorHex: null,
       expanded: true,
     );
-    final updated = List<ChartGroup>.of(template.chartGroups)..add(newGroup);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+
+    // M4.3.2 - 使用Command模式
+    final command = AddGroupCommand(group: newGroup);
+    _executeCommand(command);
+
     _selectedGroupId = newGroup.id;
-    notifyListeners();
+    // notifyListeners() is called by _executeCommand
   }
 
   void removeGroup(String groupId) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updated = template.chartGroups.where((g) => g.id != groupId).toList();
-    if (updated.isEmpty) return; // 至少保留一个分组，以免破坏编辑器
-    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+
+    // 查找要删除的分组
+    final index = template.chartGroups.indexWhere((g) => g.id == groupId);
+    if (index < 0) return;
+
+    // 至少保留一个分组
+    if (template.chartGroups.length <= 1) return;
+
+    final removedGroup = template.chartGroups[index];
+
+    // M4.3.2 - 使用Command模式
+    final command = RemoveGroupCommand(
+      groupId: groupId,
+      removedGroup: removedGroup,
+      groupIndex: index,
+    );
+    _executeCommand(command);
+
     if (_selectedGroupId == groupId) {
-      _selectedGroupId = updated.first.id;
+      // 这里的逻辑有点问题，因为command执行后，groupId已经不在了。
+      // _executeCommand会更新 _currentTemplate
+      // 我们需要更新 _selectedGroupId
+      final updated = _currentTemplate?.chartGroups ?? [];
+      if (updated.isNotEmpty) {
+        _selectedGroupId = updated.first.id;
+      }
     }
-    notifyListeners();
+    // notifyListeners() is called by _executeCommand
   }
 
   void setGroupTitle({
@@ -1035,11 +1160,22 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updated = template.chartGroups
-        .map((group) =>
-            group.id == groupId ? group.copyWith(colorHex: colorHex) : group)
-        .toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+
+    final oldGroup = _findGroupById(template, groupId);
+    if (oldGroup == null) return;
+
+    if (oldGroup.colorHex == colorHex) return;
+
+    final newGroup = oldGroup.copyWith(colorHex: colorHex);
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateGroupCommand(
+      groupId: groupId,
+      oldGroup: oldGroup,
+      newGroup: newGroup,
+      customDescription: '设置分组颜色',
+    );
+    _executeCommand(command);
   }
 
   void resetGroupLayout({
@@ -1047,11 +1183,22 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     final template = _currentTemplate;
     if (template == null) return;
-    final updated = template.chartGroups
-        .map((group) =>
-            group.id == groupId ? group.copyWith(pillarOrder: const []) : group)
-        .toList(growable: false);
-    _applyCurrentTemplate(template.copyWith(chartGroups: updated));
+
+    final oldGroup = _findGroupById(template, groupId);
+    if (oldGroup == null) return;
+
+    if (oldGroup.pillarOrder.isEmpty) return;
+
+    final newGroup = oldGroup.copyWith(pillarOrder: const []);
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateGroupCommand(
+      groupId: groupId,
+      oldGroup: oldGroup,
+      newGroup: newGroup,
+      customDescription: '清空分组',
+    );
+    _executeCommand(command);
   }
 
   void clearGroup({required String groupId}) {
@@ -1061,10 +1208,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void duplicateGroup({required String groupId}) {
     final template = _currentTemplate;
     if (template == null) return;
-    final groups = List<ChartGroup>.of(template.chartGroups);
-    final index = groups.indexWhere((g) => g.id == groupId);
+
+    final source = _findGroupById(template, groupId);
+    if (source == null) return;
+
+    final index = template.chartGroups.indexOf(source);
     if (index < 0) return;
-    final source = groups[index];
+
     final copy = ChartGroup(
       id: _uuid.v4(),
       title: _generateGroupName(source.title),
@@ -1073,8 +1223,14 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       colorHex: source.colorHex,
       expanded: source.expanded,
     );
-    groups.insert(index + 1, copy);
-    _applyCurrentTemplate(template.copyWith(chartGroups: groups));
+
+    // M4.3.2 - 使用Command模式
+    final command = AddGroupCommand(
+      group: copy,
+      index: index + 1,
+    );
+    _executeCommand(command);
+
     _selectedGroupId = copy.id;
     notifyListeners();
   }
@@ -1115,35 +1271,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     // 检查目标分组是否已存在该柱位（去重）
     if (targetGroup.pillarOrder.contains(pillar)) {
       // 如果目标分组已存在，仅从源分组移除
-      final updatedGroups = template.chartGroups.map((group) {
-        if (group.id == sourceGroupId) {
-          final list = List<PillarType>.of(group.pillarOrder);
-          list.removeAt(sourceIndex);
-          return group.copyWith(pillarOrder: list);
-        }
-        return group;
-      }).toList(growable: false);
-      _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+      removePillarFromGroup(groupId: sourceGroupId, index: sourceIndex);
       return;
     }
 
     // 跨分组移动：从源移除，向目标添加
-    final updatedGroups = template.chartGroups.map((group) {
-      if (group.id == sourceGroupId) {
-        final list = List<PillarType>.of(group.pillarOrder);
-        list.removeAt(sourceIndex);
-        return group.copyWith(pillarOrder: list);
-      }
-      if (group.id == targetGroupId) {
-        final list = List<PillarType>.of(group.pillarOrder);
-        final clamped = targetIndex.clamp(0, list.length);
-        list.insert(clamped, pillar);
-        return group.copyWith(pillarOrder: list);
-      }
-      return group;
-    }).toList(growable: false);
-
-    _applyCurrentTemplate(template.copyWith(chartGroups: updatedGroups));
+    // M4.3.2 - 使用Command模式
+    final command = MovePillarBetweenGroupsCommand(
+      sourceGroupId: sourceGroupId,
+      targetGroupId: targetGroupId,
+      sourceIndex: sourceIndex,
+      targetIndex: targetIndex,
+      pillar: pillar,
+    );
+    _executeCommand(command);
   }
 
   String _generateGroupName(String base) {
@@ -1254,7 +1395,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
   Future<void> resetTemplatesToDefault() async {
     await _withLoading(() async {
-      final existing = await getAllTemplatesUseCase(collectionId: _collectionId);
+      final existing =
+          await getAllTemplatesUseCase(collectionId: _collectionId);
       for (final template in existing) {
         await deleteTemplateUseCase(
           collectionId: _collectionId,
@@ -1279,7 +1421,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
     final template = _currentTemplate;
     if (template != null) {
-      _syncRuntimeThemeFromCardStyle(template.cardStyle);
+      _syncRuntimeStateFromTemplate(template);
     }
   }
 
@@ -1375,6 +1517,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       if (index >= 0) {
         _templates[index] = newTemplate;
       }
+      _markRecent(newTemplate.id);
+      _syncRuntimeStateFromTemplate(newTemplate);
       notifyListeners();
     }
   }
@@ -1393,6 +1537,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       if (index >= 0) {
         _templates[index] = newTemplate;
       }
+      _markRecent(newTemplate.id);
+      _syncRuntimeStateFromTemplate(newTemplate);
       notifyListeners();
     }
   }
@@ -1410,6 +1556,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (index >= 0) {
       _templates[index] = newTemplate;
     }
+    _markRecent(newTemplate.id);
+    _syncRuntimeStateFromTemplate(newTemplate);
     notifyListeners();
   }
 
@@ -1423,10 +1571,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       name: name ?? '默认模板',
       collectionId: collectionId,
       cardStyle: const CardStyle(
-        dividerType: BorderType.solid,
-        dividerColorHex: '#FF334155',
+        dividerType: BorderType.none,
+        dividerColorHex: '#DD000000',
         dividerThickness: 1.0,
-        globalFontFamily: 'NotoSans',
+        globalFontFamily: 'NotoSansSC-Regular',
         globalFontSize: 14,
         globalFontColorHex: '#FF0F172A',
         contentPadding: EdgeInsets.all(16.0),
@@ -1449,19 +1597,19 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           type: RowType.tenGod,
           isVisible: true,
           isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
+          textStyleConfig: TextStyleConfig.defaultTenGodsConfig,
         ),
         RowConfig(
           type: RowType.heavenlyStem,
           isVisible: true,
           isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
+          textStyleConfig: TextStyleConfig.defaultGanConfig,
         ),
         RowConfig(
           type: RowType.earthlyBranch,
           isVisible: true,
           isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
+          textStyleConfig: TextStyleConfig.defaultZhiConfig,
         ),
         RowConfig(
           type: RowType.xunShou,
@@ -1493,6 +1641,47 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     );
   }
 
+  /// 检查并迁移旧版默认模版（修复样式跳变问题）
+  Future<LayoutTemplate> _migrateLegacyDefaultTemplate(
+      LayoutTemplate template) async {
+    // 识别特征：名称为"默认模板" 且 边框为实线（新版默认为无边框）
+    // 且行配置符合旧版特征（防止误伤用户自定义模板）
+    // 旧版默认模板通常包含7行配置
+    final isLegacyCandidate = template.name == '默认模板' &&
+        template.cardStyle.dividerType == BorderType.solid &&
+        template.rowConfigs.length == 7;
+
+    if (isLegacyCandidate) {
+      final cleanDefault = _buildDefaultTemplate(
+        collectionId: template.collectionId,
+        name: template.name,
+      );
+
+      final migrated = template.copyWith(
+        cardStyle: cleanDefault.cardStyle,
+        rowConfigs: cleanDefault.rowConfigs,
+        version: template.version + 1,
+        updatedAt: DateTime.now(),
+      );
+
+      await saveTemplateUseCase(template: migrated);
+      return migrated;
+    }
+    return template;
+  }
+
+  /// 应用当前模板
+  ///
+  /// **注意**：此方法仅用于模板切换、创建、复制等“整套模板替换”的场景。
+  /// 对于模板内容的编辑（如修改分组、行配置等），**必须**使用 [EditorCommand] 及其子类，
+  /// 并通过 [_executeCommand] 执行，以支持撤销/重做功能。
+  ///
+  /// 此方法会：
+  /// 1. 更新 [_currentTemplate]
+  /// 2. 更新 [_templates] 列表
+  /// 3. 标记为最近使用
+  /// 4. 同步运行时状态 [_syncRuntimeStateFromTemplate]
+  /// 5. 通知监听器
   void _applyCurrentTemplate(LayoutTemplate template) {
     _currentTemplate = template;
     _hasUnsavedChanges = true;
@@ -1504,7 +1693,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates.add(template);
     }
     _markRecent(template.id);
-    _syncRuntimeThemeFromCardStyle(template.cardStyle);
+    _syncRuntimeStateFromTemplate(template);
     notifyListeners();
   }
 
@@ -1514,14 +1703,30 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void updateCardContentInsets(EdgeInsets insets) {
     final template = _currentTemplate;
     if (template == null) return;
-    final style = template.cardStyle.copyWith(contentPadding: insets);
-    _applyCurrentTemplate(template.copyWith(cardStyle: style));
+
+    final oldStyle = template.cardStyle;
+    final newStyle = oldStyle.copyWith(contentPadding: insets);
+
+    if (oldStyle == newStyle) return;
+
+    // M4.3.2 - 使用Command模式
+    final command = UpdateCardStyleCommand(
+      oldStyle: oldStyle,
+      newStyle: newStyle,
+    );
+    _executeCommand(command);
   }
 
   void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
+    // 1. Update runtime state immediately to preserve transient settings (like pillar styles)
+    // and ensure responsive UI.
     editableThemeNotifier.value = newTheme;
     paddingNotifier.value = newTheme.card.padding;
-    notifyListeners();
+
+    // 2. Persist supported styles to LayoutTemplate via Command.
+    // This ensures that subsequent syncs (e.g. from Undo/Redo or Save) don't revert
+    // the persistent parts (Padding, Fonts, RowStyles).
+    _executeCommand(UpdateThemeCommand(newTheme));
   }
 
   void updatePillarOrderFromTypes(List<PillarType> types) {
@@ -1762,13 +1967,53 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     );
   }
 
-  void _syncRuntimeThemeFromCardStyle(CardStyle cardStyle) {
+  void _syncRuntimeStateFromTemplate(LayoutTemplate template) {
     final theme = editableThemeNotifier.value;
     var nextTheme = theme;
+    final cardStyle = template.cardStyle;
 
     if (theme.card.padding != cardStyle.contentPadding) {
       nextTheme = nextTheme.copyWith(
         card: nextTheme.card.copyWith(padding: cardStyle.contentPadding),
+      );
+    }
+
+    // Sync Divider Styles (Border)
+    final currentBorder = theme.card.border;
+    final targetThickness = cardStyle.dividerThickness;
+    // Helper to parse hex color safely
+    Color parseColor(String hex) {
+      var v = hex.trim().toUpperCase();
+      if (v.startsWith('0X')) v = v.substring(2);
+      if (v.startsWith('#')) v = v.substring(1);
+      if (v.length == 6) v = 'FF$v';
+      final val = int.tryParse(v, radix: 16) ?? 0xFF000000;
+      return Color(val);
+    }
+
+    final targetColor = parseColor(cardStyle.dividerColorHex);
+    final targetEnabled = cardStyle.dividerType != BorderType.none;
+
+    // Check if border needs update
+    if (currentBorder == null ||
+        currentBorder.width != targetThickness ||
+        currentBorder.lightColor != targetColor ||
+        currentBorder.enabled != targetEnabled) {
+      final newBorder = (currentBorder ??
+              BoxBorderStyle(
+                  enabled: true,
+                  width: 1,
+                  lightColor: Colors.black,
+                  darkColor: Colors.white,
+                  radius: 0))
+          .copyWith(
+        width: targetThickness,
+        lightColor: targetColor,
+        // Syncing only light color for now as per template limitation
+        enabled: targetEnabled,
+      );
+      nextTheme = nextTheme.copyWith(
+        card: nextTheme.card.copyWith(border: newBorder),
       );
     }
 
@@ -1778,6 +2023,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final size = cardStyle.globalFontSize;
     final currentTypography = nextTheme.typography;
     final currentFont = currentTypography.globalContent.fontStyleDataModel;
+
+    var updatedTypography = currentTypography;
+    bool typographyChanged = false;
+
     if (currentFont.fontFamily != family || currentFont.fontSize != size) {
       final updatedGlobalContent = currentTypography.globalContent.copyWith(
         fontStyleDataModel: currentFont.copyWith(
@@ -1785,10 +2034,30 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           fontSize: size,
         ),
       );
-      nextTheme = nextTheme.copyWith(
-        typography:
-            currentTypography.copyWith(globalContent: updatedGlobalContent),
-      );
+      updatedTypography =
+          updatedTypography.copyWith(globalContent: updatedGlobalContent);
+      typographyChanged = true;
+    }
+
+    // Sync Row Styles
+    final mapper =
+        Map<RowType, TextStyleConfig>.of(updatedTypography.cellContentMapper);
+    bool mapperChanged = false;
+
+    for (final config in template.rowConfigs) {
+      if (mapper[config.type] != config.textStyleConfig) {
+        mapper[config.type] = config.textStyleConfig;
+        mapperChanged = true;
+      }
+    }
+
+    if (mapperChanged) {
+      updatedTypography = updatedTypography.copyWith(cellContentMapper: mapper);
+      typographyChanged = true;
+    }
+
+    if (typographyChanged) {
+      nextTheme = nextTheme.copyWith(typography: updatedTypography);
     }
 
     if (nextTheme != theme) {

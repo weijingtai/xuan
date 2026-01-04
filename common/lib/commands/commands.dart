@@ -5,3 +5,4 @@ library commands;
 
 export 'editor_command.dart';
 export 'template_commands.dart';
+export 'theme_commands.dart';

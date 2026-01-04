@@ -337,7 +337,6 @@ class _ColorfulTextStyleEditorV2EnhancedState
                         'NotoSansSC-Regular',
                         'PingFang SC',
                         'sans-serif',
-                        'NotoSansSC'
                       ]
                           .map((font) => DropdownMenuItem(
                                 value: font,

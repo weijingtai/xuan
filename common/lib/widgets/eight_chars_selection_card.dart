@@ -95,7 +95,7 @@ class EightCharsSelectionCard extends StatelessWidget {
       fontWeight: FontWeight.w600,
       fontSize: 24,
       color: Colors.black87,
-      fontFamily: "NotoSansSC");
+      fontFamily: "NotoSansSC-Regular");
   TextStyle ganZhiTextStyle = TextStyle(
       fontSize: 20,
       color: Colors.black54,

@@ -456,7 +456,7 @@ class _DivinationQuestionWidgetState extends State<DivinationQuestionWidget>
         fontSize: 18,
         fontWeight: FontWeight.normal,
         color: Colors.black87,
-        fontFamily: "NotoSansSC"
+        fontFamily: "NotoSansSC-Regular"
         // color: AppTheme.secondaryText,
         );
   }
@@ -467,7 +467,7 @@ class _DivinationQuestionWidgetState extends State<DivinationQuestionWidget>
         fontSize: 16,
         fontWeight: FontWeight.bold,
         color: color,
-        fontFamily: "NotoSansSC"
+        fontFamily: "NotoSansSC-Regular"
         // color: AppTheme.primaryColor,
         );
   }

@@ -282,8 +282,13 @@ class CardStyle {
       dividerType: dividerType,
       dividerColorHex: json['dividerColorHex'] as String? ?? '#FFFFFFFF',
       dividerThickness: (json['dividerThickness'] as num?)?.toDouble() ?? 1,
-      globalFontFamily: json['globalFontFamily'] as String? ?? 'NotoSans',
-      globalFontSize: (json['globalFontSize'] as num?)?.toDouble() ?? 14,
+      globalFontFamily: () {
+        final f = json['globalFontFamily'] as String? ?? 'NotoSansSC-Regular';
+        return (f == 'NotoSansSC' || f == 'NotoSans')
+            ? 'NotoSansSC-Regular'
+            : f;
+      }(),
+      globalFontSize: (json['globalFontSize'] as num?)?.toDouble() ?? 14.0,
       globalFontColorHex: json['globalFontColorHex'] as String? ?? '#FF000000',
       contentPadding: () {
         final m = json['contentPadding'] as Map<String, dynamic>?;
@@ -455,7 +460,7 @@ class RowConfig {
       fontStyleDataModel: FontStyleDataModel(
         fontWeight: FontWeight.bold,
         fontSize: 16,
-        fontFamily: 'NotoSansSC',
+        fontFamily: 'NotoSansSC-Regular',
         height: 1.2,
       ),
     );

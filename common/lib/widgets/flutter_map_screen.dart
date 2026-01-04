@@ -110,14 +110,14 @@ class _FlutterMapScreenState extends State<FlutterMapScreen>
       fontSize: 14,
       color: Colors.black45,
       fontWeight: FontWeight.w600,
-      fontFamily: "NotoSansSC",
+      fontFamily: "NotoSansSC-Regular",
       shadows: [
         Shadow(
           color: Colors.black38,
         )
       ]);
   TextStyle lngLatTextStyle = const TextStyle(
-      fontSize: 14, color: Colors.black87, fontFamily: "NotoSansSC");
+      fontSize: 14, color: Colors.black87, fontFamily: "NotoSansSC-Regular");
 
   // 执行动画序列
   double iconSize = 48;

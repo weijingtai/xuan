@@ -159,6 +159,47 @@ void main() {
       );
       expect(viewModel.hasUnsavedChanges, isTrue);
     });
+
+    test('undo/redo supports divider style updates', () async {
+      final viewModel = buildViewModel();
+      await viewModel.initialize(collectionId: collectionId);
+
+      final originalType = viewModel.currentTemplate!.cardStyle.dividerType;
+      viewModel.updateDividerType(BorderType.dashed);
+
+      expect(viewModel.currentTemplate!.cardStyle.dividerType,
+          equals(BorderType.dashed));
+      expect(viewModel.canUndo, isTrue);
+
+      viewModel.undoLastChange();
+      expect(viewModel.currentTemplate!.cardStyle.dividerType,
+          equals(originalType));
+      expect(viewModel.canRedo, isTrue);
+
+      viewModel.redoLastChange();
+      expect(viewModel.currentTemplate!.cardStyle.dividerType,
+          equals(BorderType.dashed));
+    });
+
+    test('undo reverts reorderRowsByTypes', () async {
+      final viewModel = buildViewModel();
+      await viewModel.initialize(collectionId: collectionId);
+
+      final original = viewModel.currentTemplate!.rowConfigs
+          .map((e) => e.type)
+          .toList(growable: false);
+      final reordered = original.reversed.toList(growable: false);
+
+      viewModel.reorderRowsByTypes(reordered);
+      expect(viewModel.currentTemplate!.rowConfigs.map((e) => e.type).toList(),
+          equals(reordered));
+      expect(viewModel.canUndo, isTrue);
+
+      viewModel.undoLastChange();
+      expect(viewModel.currentTemplate!.rowConfigs.map((e) => e.type).toList(),
+          equals(original));
+    });
+
     test('revertChanges discards unsaved modifications', () async {
       final viewModel = buildViewModel();
       await viewModel.initialize(collectionId: collectionId);

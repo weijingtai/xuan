@@ -859,20 +859,20 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
       fontSize: 18,
       color: Colors.black87,
       fontWeight: FontWeight.w600,
-      fontFamily: "NotoSansSC");
+      fontFamily: "NotoSansSC-Regular");
 
   TextStyle lngLatTextStyle = const TextStyle(
-      fontSize: 14, color: Colors.grey, fontFamily: "NotoSansSC");
+      fontSize: 14, color: Colors.grey, fontFamily: "NotoSansSC-Regular");
 
   TextStyle titleTextStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 16,
       color: Colors.black87,
-      fontFamily: "NotoSansSC");
+      fontFamily: "NotoSansSC-Regular");
   TextStyle warningSubtitleTextStyle = TextStyle(
       color: Colors.amber[900]!.withAlpha(180),
       fontSize: 14,
-      fontFamily: "NotoSansSC");
+      fontFamily: "NotoSansSC-Regular");
 
   Widget _buildTimeSelectionContent() {
     return Container(
