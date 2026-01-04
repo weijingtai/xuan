@@ -319,7 +319,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             ConstrainedBox(
-                              constraints: const BoxConstraints(maxHeight: 240),
+                              constraints: const BoxConstraints(maxHeight: 104),
                               child: Container(
                                 decoration: BoxDecoration(
                                   color: themeData
@@ -330,22 +330,14 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                         .withValues(alpha: 0.12),
                                   ),
                                 ),
-                                padding: const EdgeInsets.all(12),
+                                padding: const EdgeInsets.all(10),
                                 child: const Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Expanded(
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: RowTagBar(),
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.horizontal,
-                                        child: PillarTagBar(),
-                                      ),
-                                    ),
+                                    SizedBox(height: 28, child: RowTagBar()),
+                                    SizedBox(height: 8),
+                                    SizedBox(height: 28, child: PillarTagBar()),
                                     // 右侧柱样式面板已移除，避免挤压卡片区域
                                   ],
                                 ),

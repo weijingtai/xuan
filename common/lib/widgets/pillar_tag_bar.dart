@@ -12,6 +12,11 @@ import '../enums/layout_template_enums.dart';
 /// - 标签内提供抓手图标（drag_indicator），更直观的拖拽提示
 class PillarTagBar extends StatelessWidget {
   const PillarTagBar({super.key});
+
+  static const double _barHeight = 28;
+  static const double _tagHeight = 28;
+  static const double _tagWidth = 92;
+
   List<PillarData> get pillars => [
         const PillarData(
             pillarId: "separator_pillar",
@@ -118,7 +123,7 @@ class PillarTagBar extends StatelessWidget {
       ),
       child: SizedBox(
         // 为横向 ListVie6 提供有界高度，避免出现 "Horizontal viewport was given unbounded height" 错误
-        height: 32, // 标签高度 48 + 上下内边距与分隔留白
+        height: _barHeight,
         child: ListView.separated(
           // 关闭默认主滚动控制并启用收缩以避免未绑定高度错误
           primary: false,
@@ -145,14 +150,6 @@ class PillarTagBar extends StatelessWidget {
   }
 }
 
-/// 标签规格（数据结构）
-class _TagSpec {
-  const _TagSpec(this.id, this.label, this.icon);
-  final String id;
-  final String label;
-  final IconData icon;
-}
-
 /// 标签的常态样式：小型卡片 + 抓手图标
 class _Tag extends StatelessWidget {
   const _Tag({required this.label, required this.icon});
@@ -163,25 +160,24 @@ class _Tag extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 108,
-      height: 24,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      width: PillarTagBar._tagWidth,
+      height: PillarTagBar._tagHeight,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color:
             theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
         border: Border.all(color: theme.dividerColor),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.drag_indicator,
-              size: 16, color: theme.colorScheme.primary),
-          const SizedBox(width: 6),
+          Icon(icon, size: 14, color: theme.colorScheme.primary),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
-              style: theme.textTheme.labelLarge,
+              style: theme.textTheme.labelMedium,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -204,13 +200,13 @@ class _TagFeedback extends StatelessWidget {
       elevation: 8,
       color: Colors.transparent,
       child: Container(
-        width: 128,
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        width: 112,
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border.all(color: theme.colorScheme.primary, width: 2),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: theme.colorScheme.primary.withValues(alpha: 0.3),
@@ -222,13 +218,12 @@ class _TagFeedback extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.drag_indicator,
-                size: 18, color: theme.colorScheme.primary),
-            const SizedBox(width: 6),
+            Icon(icon, size: 16, color: theme.colorScheme.primary),
+            const SizedBox(width: 4),
             Flexible(
               child: Text(
                 label,
-                style: theme.textTheme.labelLarge
+                style: theme.textTheme.labelMedium
                     ?.copyWith(fontWeight: FontWeight.w600),
                 overflow: TextOverflow.ellipsis,
               ),

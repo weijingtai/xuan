@@ -12,6 +12,10 @@ import '../models/row_data.dart';
 class RowTagBar extends StatelessWidget {
   const RowTagBar({super.key});
 
+  static const double _barHeight = 28;
+  static const double _tagHeight = 28;
+  static const double _tagWidth = 76;
+
   /// 定义可拖拽的行类型及其显示标签
   List<RowData> get rows => const [
         RowData(
@@ -123,7 +127,7 @@ class RowTagBar extends StatelessWidget {
         ),
       ),
       child: SizedBox(
-        height: 32, // 标签高度 32 + 上下内边距与分隔留白
+        height: _barHeight,
         child: ListView.separated(
           primary: false,
           shrinkWrap: true,
@@ -169,29 +173,29 @@ class _RowTagWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
-      width: 80,
-      height: 32,
+      width: RowTagBar._tagWidth,
+      height: RowTagBar._tagHeight,
       alignment: Alignment.center,
-      // padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
         color:
             theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.15),
         border: Border.all(color: theme.dividerColor),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.drag_indicator,
-            size: 16,
+            icon,
+            size: 14,
             color: theme.colorScheme.secondary, // 使用不同颜色区分行/列
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
-              style: theme.textTheme.labelLarge,
+              style: theme.textTheme.labelMedium,
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -215,16 +219,16 @@ class _RowTagFeedback extends StatelessWidget {
       elevation: 8,
       color: Colors.transparent,
       child: Container(
-        width: 128,
-        height: 52,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        width: 112,
+        height: 44,
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
           border: Border.all(
             color: theme.colorScheme.secondary, // 使用不同颜色区分行/列
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(
               color: theme.colorScheme.secondary.withValues(alpha: 0.3),
@@ -237,15 +241,15 @@ class _RowTagFeedback extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.drag_indicator,
-              size: 18,
+              icon,
+              size: 16,
               color: theme.colorScheme.secondary,
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 4),
             Flexible(
               child: Text(
                 label,
-                style: theme.textTheme.labelLarge?.copyWith(
+                style: theme.textTheme.labelMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
