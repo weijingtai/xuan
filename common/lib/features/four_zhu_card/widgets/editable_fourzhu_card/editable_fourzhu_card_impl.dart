@@ -91,6 +91,24 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   /// 参数：按当前顺序排列的行载荷列表。
   final void Function(List<RowPayload> rows)? onRowsReordered;
 
+  /// 回调：请求重排行
+  final void Function(int oldIndex, int newIndex)? onReorderRow;
+
+  /// 回调：请求插入行
+  final void Function(int index, RowPayload payload)? onInsertRow;
+
+  /// 回调：请求删除行
+  final void Function(int index)? onDeleteRow;
+
+  /// 回调：请求重排柱（全局索引）
+  final void Function(int oldIndex, int newIndex)? onReorderPillar;
+
+  /// 回调：请求插入柱
+  final void Function(int index, PillarType type)? onInsertPillar;
+
+  /// 回调：请求删除柱（全局索引）
+  final void Function(int index)? onDeletePillar;
+
   EditableFourZhuCardV3({
     super.key,
     required this.dayGanZhi,
@@ -102,6 +120,12 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.rowStrategyMapper,
     required this.gender,
     this.onRowsReordered,
+    this.onReorderRow,
+    this.onInsertRow,
+    this.onDeleteRow,
+    this.onReorderPillar,
+    this.onInsertPillar,
+    this.onDeletePillar,
     this.dragFeedbackBuilder,
     this.columnInsertDecorationBuilder,
     this.rowInsertDecorationBuilder,
@@ -3844,136 +3868,67 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // 删除列
   void _deleteColumn(int index) {
-    final list = List<PillarPayload>.of(_currentPillars());
-    if (index < 0 || index >= list.length) return;
-    list.removeAt(index);
-    _setPillars(list);
-    _pillarGlobalKeys.clear();
-    _scheduleRebuild();
+    if (widget.onDeletePillar != null) {
+      widget.onDeletePillar!(index);
+      _pillarGlobalKeys.clear();
+      _scheduleRebuild();
+      return;
+    }
   }
 
   // 删除行（允许删除标题行与任意索引）
   void _deleteRow(int absIndex) {
-    final rows = List<RowPayload>.of(_currentRows());
-    if (absIndex < 0 || absIndex >= rows.length) return;
-    rows.removeAt(absIndex);
-    _setRows(rows);
+    if (widget.onDeleteRow != null) {
+      widget.onDeleteRow!(absIndex);
 
-    if (_rowHeightOverrides.isNotEmpty) {
-      final Map<int, double> next = {};
-      for (final entry in _rowHeightOverrides.entries) {
-        final k = entry.key;
-        if (k == absIndex) continue;
-        final nk = k > absIndex ? k - 1 : k;
-        next[nk] = entry.value;
+      if (_rowHeightOverrides.isNotEmpty) {
+        final Map<int, double> next = {};
+        for (final entry in _rowHeightOverrides.entries) {
+          final k = entry.key;
+          if (k == absIndex) continue;
+          final nk = k > absIndex ? k - 1 : k;
+          next[nk] = entry.value;
+        }
+        _rowHeightOverrides
+          ..clear()
+          ..addAll(next);
       }
-      _rowHeightOverrides
-        ..clear()
-        ..addAll(next);
+      return;
     }
   }
 
   // 接受外部行信息载荷并插入到指定位置（支持例如「空亡」行）
   void _insertExternalRow(int insertIndex, RowPayload payload) {
-    var oldRowUUIDList =
-        widget.cardPayloadNotifier.value.rowOrderUuid.map((s) => s).toList();
-    var oldRowMapper = Map.fromEntries(
-        widget.cardPayloadNotifier.value.rowMap.entries.map((e) => e));
+    if (widget.onInsertRow != null) {
+      widget.onInsertRow!(insertIndex, payload);
 
-    print("------- _insertExternalRow");
-    print(payload.toJson());
-
-    // final rows = List<RowPayload>.of(_currentRows());
-    // 行插入索引范围：[0..rows.length]，允许插入到表头行之前
-    final target = insertIndex.clamp(0, oldRowUUIDList.length);
-    oldRowUUIDList.insert(target, payload.uuid);
-
-    // 更新行映射
-    oldRowMapper[payload.uuid] = payload;
-
-    // rows.insert(target, payload);
-    widget.cardPayloadNotifier.value =
-        widget.cardPayloadNotifier.value.copyWith(
-      rowOrderUuid: oldRowUUIDList,
-      rowMap: oldRowMapper,
-    );
-
-    // Commented out to prevent red border issue caused by theme update during drag/drop
-    // final rowTypeCellConfigMapper = Map.fromEntries(widget
-    //     .themeNotifier.value.cell.rowTypeCellConfigMapper.entries
-    //     .map((e) => e));
-    // rowTypeCellConfigMapper[payload.rowType] =
-    //     widget.themeNotifier.value.cell.globalCellConfig;
-    // final cellContentMapper = Map.fromEntries(widget
-    //     .themeNotifier.value.typography.cellContentMapper.entries
-    //     .map((e) => e));
-    // cellContentMapper[payload.rowType] =
-    //     widget.themeNotifier.value.typography.globalContent;
-
-    // widget.themeNotifier.value = widget.themeNotifier.value.copyWith(
-    //   cell: widget.themeNotifier.value.cell
-    //       .copyWith(rowTypeCellConfigMapper: rowTypeCellConfigMapper),
-    //   typography: widget.themeNotifier.value.typography
-    //       .copyWith(cellContentMapper: cellContentMapper),
-    // );
-
-    _externalRowHoverHeight = 0.0;
-    // 🔑 立即重新计算 metricsSnapshot，确保后续使用的是包含新行的最新数据
-    _metricsSnapshotNotifier.value = _computeMetricsSnapshot();
-
-    // 更新行高覆盖索引：插入新行后，所有后续行的索引都需要向后移动
-    final Map<int, double> updatedOverrides = {};
-    for (final entry in _rowHeightOverrides.entries) {
-      final idx = entry.key;
-      final height = entry.value;
-      if (idx >= target) {
-        // 后续行索引向后移动一位
-        updatedOverrides[idx + 1] = height;
-      } else {
-        // 前面的行索引不变
-        updatedOverrides[idx] = height;
+      // 更新行高覆盖索引：插入新行后，所有后续行的索引都需要向后移动
+      final Map<int, double> updatedOverrides = {};
+      final target = insertIndex;
+      for (final entry in _rowHeightOverrides.entries) {
+        final idx = entry.key;
+        final height = entry.value;
+        if (idx >= target) {
+          updatedOverrides[idx + 1] = height;
+        } else {
+          updatedOverrides[idx] = height;
+        }
       }
+
+      if (payload is! RowSeparatorPayload) {
+        final double overrideH =
+            _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
+        updatedOverrides[target] = overrideH;
+      }
+
+      _rowHeightOverrides
+        ..clear()
+        ..addAll(updatedOverrides);
+
+      // UI feedback and animations
+      _triggerInsertAnimation(insertIndex);
+      return;
     }
-
-    // 持久化行高覆盖：使用 NEW snapshot 的 defaultGlobalRowMetric.totalHeight
-    // 注意：分隔符行 (RowSeparatorPayload) 不应应用默认行高覆盖，
-    // 而是应由 _rowHeightByPayload 根据 _rowDividerHeightEffective 自动计算。
-    if (payload is! RowSeparatorPayload) {
-      final double overrideH =
-          _metricsSnapshotNotifier.value.defaultGlobalRowMetric.totalHeight;
-      updatedOverrides[target] = overrideH;
-    }
-
-    _rowHeightOverrides
-      ..clear()
-      ..addAll(updatedOverrides);
-
-    // 触发与内部重排一致的插入淡入动画
-    setState(() {
-      _draggingRowIndex = null;
-      _hoverRowInsertIndex = null;
-      _lastRowInsertIndex = null;
-      _dropAnimatingRowIndex = target;
-      _dropRowFadeActive = true;
-
-      // 🔑 在插入完成后清零 _externalRowHoverHeight
-      // 确保 AnimatedContainer 正确收缩到新的 size（已包含新行）
-      _externalRowHoverHeight = 0.0;
-    });
-    // 下一帧关闭淡入标记
-    Future.microtask(() {
-      if (!mounted) return;
-      setState(() {
-        _dropRowFadeActive = false;
-      });
-    });
-    // 动画结束后清理索引
-    Future.delayed(const Duration(milliseconds: 240), () {
-      if (!mounted) return;
-      setState(() {
-        _dropAnimatingRowIndex = null;
-      });
-    });
   }
 
   // 已移除：卡片右上角删除提示徽标；仅保留拖拽物上的动态徽标
@@ -4173,44 +4128,35 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 // Keep class open; painter classes are defined at file end.
 
   void _reorderColumns(int fromIdx, int insertIndex) {
-    // Current columns length
-    final list = List<PillarPayload>.of(_currentPillars());
-    if (fromIdx < 0 || fromIdx >= list.length) return;
-    // Insert index refers to gap positions: 0..length
-    // If dragging forward, remove then insert at adjusted index
-    final item = list.removeAt(fromIdx);
-    var target = insertIndex;
-    if (insertIndex > fromIdx) {
-      target = insertIndex - 1; // account for removal shift
+    if (widget.onReorderPillar != null) {
+      var target = insertIndex;
+      if (insertIndex > fromIdx) {
+        target = insertIndex - 1;
+      }
+      widget.onReorderPillar!(fromIdx, target);
+      _remapColumnOverridesOnMove(fromIdx, target);
+      // 触发动画反馈
+      setState(() {
+        _draggingColumnIndex = null;
+        _hoverColumnInsertIndex = null;
+        _lastColInsertIndex = null;
+        _dropAnimatingColIndex = target;
+        _dropColFadeActive = true;
+      });
+      Future.microtask(() {
+        if (!mounted) return;
+        setState(() {
+          _dropColFadeActive = false;
+        });
+      });
+      Future.delayed(const Duration(milliseconds: 240), () {
+        if (!mounted) return;
+        setState(() {
+          _dropAnimatingColIndex = null;
+        });
+      });
+      return;
     }
-    target = target.clamp(0, list.length);
-    list.insert(target, item);
-    _setPillars(List<PillarPayload>.of(list));
-
-    // 根据移动行为重映射列宽覆盖索引，保持覆盖与列位置一致
-    _remapColumnOverridesOnMove(fromIdx, target);
-    // 统一清理拖拽状态 + 触发插入淡入动画
-    setState(() {
-      _draggingColumnIndex = null;
-      _hoverColumnInsertIndex = null;
-      _lastColInsertIndex = null;
-      _dropAnimatingColIndex = target;
-      _dropColFadeActive = true;
-    });
-    // 下一帧开始淡入
-    Future.microtask(() {
-      if (!mounted) return;
-      setState(() {
-        _dropColFadeActive = false;
-      });
-    });
-    // 动画结束后清理索引
-    Future.delayed(const Duration(milliseconds: 240), () {
-      if (!mounted) return;
-      setState(() {
-        _dropAnimatingColIndex = null;
-      });
-    });
   }
 
   // 基于列 TitlePayload（按 PillarType）进行列重排
@@ -4251,72 +4197,30 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   void _insertExternalPillar(int insertIndex, PillarPayload payload) {
-    PillarPayload next = payload;
-    if (payload is ContentPillarPayload) {
-      // 保持已有内容；若未来支持空内容的 ContentPillarPayload，这里可补齐。
-    } else if (payload.pillarType == PillarType.separator) {
-      next = SeparatorPillarPayload(uuid: payload.uuid);
-    } else if (payload.pillarType == PillarType.rowTitleColumn) {
-      next = RowTitleColumnPayload(uuid: payload.uuid);
-    } else {
-      // final id = _allocatePillarId(payload.pillarType);
-      // final label = _pillarLabelFromPayload(payload);
-      final jz = _pillarJiaZiFromPayload(payload);
-      final content = PillarContent(
-        id: payload.uuid,
-        pillarType: payload.pillarType,
-        label: payload.pillarLabel!,
-        jiaZi: jz,
-        description: null,
-        version: '1',
-        sourceKind: PillarSourceKind.userInput,
-        operationType: null,
-      );
-      next = ContentPillarPayload(
-        uuid: payload.uuid,
-        pillarType: payload.pillarType,
-        pillarLabel: payload.pillarLabel,
-        pillarContent: content,
-      );
-    }
-
-    final list = List<PillarPayload>.of(_currentPillars());
-    final target = insertIndex.clamp(0, list.length);
-    list.insert(target, next);
-    Map<String, PillarPayload> newPillarMap =
-        Map.from(widget.cardPayloadNotifier.value.pillarMap);
-    newPillarMap[next.uuid] = next;
-
-    _setPillars(list);
-
-    // 持久化列宽覆盖：非分隔列按载荷提供的宽度（若有）记录覆盖，用于重排反馈
-    if (next.pillarType != PillarType.separator) {
-      final double w = next.pillarType == PillarType.rowTitleColumn
-          ? rowTitleWidth
-          : pillarWidth;
-      _columnWidthOverrides[target] = w;
-    }
-
-    // Trigger drop animation similar to internal reorder
-    setState(() {
-      _draggingColumnIndex = null;
-      _hoverColumnInsertIndex = null;
-      _lastColInsertIndex = null;
-      _dropAnimatingColIndex = target;
-      _dropColFadeActive = true;
-    });
-    Future.microtask(() {
-      if (!mounted) return;
+    if (widget.onInsertPillar != null) {
+      widget.onInsertPillar!(insertIndex, payload.pillarType);
+      // 触发动画反馈
       setState(() {
-        _dropColFadeActive = false;
+        _draggingColumnIndex = null;
+        _hoverColumnInsertIndex = null;
+        _lastColInsertIndex = null;
+        _dropAnimatingColIndex = insertIndex;
+        _dropColFadeActive = true;
       });
-    });
-    Future.delayed(const Duration(milliseconds: 240), () {
-      if (!mounted) return;
-      setState(() {
-        _dropAnimatingColIndex = null;
+      Future.microtask(() {
+        if (!mounted) return;
+        setState(() {
+          _dropColFadeActive = false;
+        });
       });
-    });
+      Future.delayed(const Duration(milliseconds: 240), () {
+        if (!mounted) return;
+        setState(() {
+          _dropAnimatingColIndex = null;
+        });
+      });
+      return;
+    }
   }
 
   /// 根据 `PillarType` 插入外部柱（简单映射标签与默认甲子）。
@@ -4327,111 +4231,58 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   /// 返回：
   /// - 无返回值。函数会直接更新 `jiaZiNotifier` 并触发一次轻量的淡入动画。
   void _insertExternalPillarFromType(int insertIndex, PillarType type) {
-    String label;
-    switch (type) {
-      case PillarType.year:
-        label = '年';
-        break;
-      case PillarType.month:
-        label = '月';
-        break;
-      case PillarType.day:
-        label = '日';
-        break;
-      case PillarType.hour:
-        label = '时';
-        break;
-      case PillarType.separator:
-        label = '列分隔符';
-        break;
-      default:
-        label = type.name;
-        break;
-    }
-    final list = List<PillarPayload>.of(_currentPillars());
-    final target = insertIndex.clamp(0, list.length);
-    // 直接根据类型创建基础 PillarContent，默认 JiaZi 使用甲子占位，确保策略可运行。
-    PillarPayload created;
-    if (type == PillarType.separator) {
-      created = SeparatorPillarPayload(uuid: _allocatePillarId(type));
-    } else if (type == PillarType.rowTitleColumn) {
-      created = RowTitleColumnPayload(uuid: _allocatePillarId(type));
-    } else {
-      final content = PillarContent(
-        id: _allocatePillarId(type),
-        pillarType: type,
-        label: label,
-        jiaZi: JiaZi.JIA_ZI,
-        description: null,
-        version: '1',
-        sourceKind: PillarSourceKind.userInput,
-        operationType:
-            type == PillarType.luckCycle ? PillarOperationType.daYun : null,
-      );
-      created = ContentPillarPayload(
-        uuid: content.id,
-        pillarType: type,
-        pillarLabel: label,
-        pillarContent: content,
-      );
-    }
-    list.insert(target, created);
-    _setPillars(list);
-
-    // 触发与内部重排一致的插入淡入动画
-    setState(() {
-      _draggingColumnIndex = null;
-      _hoverColumnInsertIndex = null;
-      _lastColInsertIndex = null;
-      _dropAnimatingColIndex = target;
-      _dropColFadeActive = true;
-    });
-    Future.microtask(() {
-      if (!mounted) return;
+    if (widget.onInsertPillar != null) {
+      widget.onInsertPillar!(insertIndex, type);
+      // 触发动画反馈
       setState(() {
-        _dropColFadeActive = false;
+        _draggingColumnIndex = null;
+        _hoverColumnInsertIndex = null;
+        _lastColInsertIndex = null;
+        _dropAnimatingColIndex = insertIndex;
+        _dropColFadeActive = true;
       });
-    });
-    Future.delayed(const Duration(milliseconds: 240), () {
-      if (!mounted) return;
-      setState(() {
-        _dropAnimatingColIndex = null;
+      Future.microtask(() {
+        if (!mounted) return;
+        setState(() {
+          _dropColFadeActive = false;
+        });
       });
-    });
+      Future.delayed(const Duration(milliseconds: 240), () {
+        if (!mounted) return;
+        setState(() {
+          _dropAnimatingColIndex = null;
+        });
+      });
+      return;
+    }
   }
 
   void _reorderRows(int fromAbsIdx, int insertIndex) {
-    // Rows include header row at index 0; now allow reordering from index 0
-    final rows = List<RowPayload>.of(_currentRows());
-    if (fromAbsIdx < 0 || fromAbsIdx >= rows.length) return; // 允许索引0
-    // Insert index in [0..rows.length]
-    final item = rows.removeAt(fromAbsIdx);
-    var target = insertIndex;
-    if (insertIndex > fromAbsIdx) {
-      target = insertIndex - 1;
-    }
-    target = target.clamp(0, rows.length); // 允许插入到索引0
-    rows.insert(target, item);
-    _setRows(rows);
-    debugPrint(
-        '[RowReorder] from=$fromAbsIdx -> insert=$insertIndex -> target=$target');
-    final labels = _currentRows().map((e) => e.rowType.name).toList();
-    debugPrint('[RowReorder] new order=${labels.join(' | ')}');
-    // 通知外部行顺序更新（例如测试用例观察）
-    if (widget.onRowsReordered != null) {
-      widget.onRowsReordered!(_currentRows());
-    }
-    debugPrint('[RowReorder] onRowsReordered fired');
+    if (widget.onReorderRow != null) {
+      var target = insertIndex;
+      if (insertIndex > fromAbsIdx) {
+        target = insertIndex - 1;
+      }
+      widget.onReorderRow!(fromAbsIdx, target);
 
-    // 根据移动行为重映射行高覆盖索引，保持覆盖与行位置一致
-    _remapRowOverridesOnMove(fromAbsIdx, target);
-    // 统一清理拖拽状态 + 触发插入淡入动画
+      _remapRowOverridesOnMove(fromAbsIdx, target);
+
+      _triggerInsertAnimation(target);
+      return;
+    }
+  }
+
+  /// 触发插入动画（抽取公共逻辑）
+  void _triggerInsertAnimation(int targetIndex) {
     setState(() {
       _draggingRowIndex = null;
       _hoverRowInsertIndex = null;
       _lastRowInsertIndex = null;
-      _dropAnimatingRowIndex = target;
+      _dropAnimatingRowIndex = targetIndex;
       _dropRowFadeActive = true;
+      
+      // Clear external hover height if it was set
+      _externalRowHoverHeight = 0.0;
     });
     // 下一帧开始淡入
     Future.microtask(() {

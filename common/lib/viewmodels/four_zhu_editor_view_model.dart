@@ -884,6 +884,132 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     });
   }
 
+  // ----------------------------------------------------------------------
+  // Pillar Operations (Global Index)
+  // ----------------------------------------------------------------------
+
+  /// Handle pillar reordering from UI which provides global indices across all groups
+  void reorderPillarGlobal(int oldGlobalIndex, int newGlobalIndex) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    String? sourceGroupId;
+    int sourceLocalIndex = -1;
+    PillarType? sourcePillar;
+
+    String? targetGroupId;
+    int targetLocalIndex = -1;
+
+    // Find source
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      if (oldGlobalIndex < currentIndex + group.pillarOrder.length) {
+        sourceGroupId = group.id;
+        sourceLocalIndex = oldGlobalIndex - currentIndex;
+        sourcePillar = group.pillarOrder[sourceLocalIndex];
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
+
+    if (sourceGroupId == null || sourcePillar == null) return;
+
+    // Find target
+    currentIndex = 0;
+    for (final group in template.chartGroups) {
+      // Allow target to be at the end of the group
+      if (newGlobalIndex <= currentIndex + group.pillarOrder.length) {
+        targetGroupId = group.id;
+        targetLocalIndex = newGlobalIndex - currentIndex;
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
+
+    // Fallback to last group if target is at end
+    if (targetGroupId == null && template.chartGroups.isNotEmpty) {
+      targetGroupId = template.chartGroups.last.id;
+      targetLocalIndex = template.chartGroups.last.pillarOrder.length;
+    }
+
+    if (targetGroupId == null) return;
+
+    if (sourceGroupId == targetGroupId) {
+      reorderPillar(
+        groupId: sourceGroupId,
+        oldIndex: sourceLocalIndex,
+        newIndex: targetLocalIndex,
+      );
+    } else {
+      // Cross-group move: Remove then Add
+      // Ideally this should be an atomic command, but for now using two commands
+      // Note: executing remove first doesn't affect target index since groups are distinct
+      removePillarFromGroup(groupId: sourceGroupId, index: sourceLocalIndex);
+      addPillarToGroupAtIndex(
+        groupId: targetGroupId,
+        pillar: sourcePillar,
+        index: targetLocalIndex,
+      );
+    }
+  }
+
+  void insertPillarGlobal(int globalIndex, PillarType pillar) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    String? targetGroupId;
+    int targetLocalIndex = -1;
+
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      if (globalIndex <= currentIndex + group.pillarOrder.length) {
+        targetGroupId = group.id;
+        targetLocalIndex = globalIndex - currentIndex;
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
+
+    // Fallback to last group
+    if (targetGroupId == null && template.chartGroups.isNotEmpty) {
+      targetGroupId = template.chartGroups.last.id;
+      targetLocalIndex = template.chartGroups.last.pillarOrder.length;
+    }
+
+    if (targetGroupId != null) {
+      addPillarToGroupAtIndex(
+        groupId: targetGroupId,
+        pillar: pillar,
+        index: targetLocalIndex,
+      );
+    }
+  }
+
+  void deletePillarGlobal(int globalIndex) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    String? targetGroupId;
+    int targetLocalIndex = -1;
+
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      if (globalIndex < currentIndex + group.pillarOrder.length) {
+        targetGroupId = group.id;
+        targetLocalIndex = globalIndex - currentIndex;
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
+
+    if (targetGroupId != null) {
+      removePillarFromGroup(
+        groupId: targetGroupId,
+        index: targetLocalIndex,
+      );
+    }
+  }
+
   void reorderPillar({
     required String groupId,
     required int oldIndex,
@@ -1594,6 +1720,12 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       ],
       rowConfigs: [
         RowConfig(
+          type: RowType.columnHeaderRow,
+          isVisible: true,
+          isTitleVisible: true,
+          textStyleConfig: TextStyleConfig.defaultConfig,
+        ),
+        RowConfig(
           type: RowType.tenGod,
           isVisible: true,
           isTitleVisible: true,
@@ -1730,71 +1862,228 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   void updatePillarOrderFromTypes(List<PillarType> types) {
-    final currentPayload = cardPayloadNotifier.value;
-    final pillarMap = currentPayload.pillarMap;
-    final usedUuids = <String>{};
-    final newOrderUuid = <String>[];
+    final template = _currentTemplate;
+    if (template == null) return;
 
-    for (final type in types) {
-      String? foundUuid;
-      for (final entry in pillarMap.entries) {
-        if (entry.value.pillarType == type && !usedUuids.contains(entry.key)) {
-          foundUuid = entry.key;
-          break;
+    // Reconstruct groups with new order, preserving group membership
+    final newGroups = template.chartGroups.map((group) {
+      // Find pillars in this group
+      final groupPillars = group.pillarOrder.toSet();
+
+      // Filter the input types to find ones belonging to this group, in their new order
+      final newGroupOrder =
+          types.where((t) => groupPillars.contains(t)).toList();
+
+      // Append any missing pillars (if any were not in input types) to avoid data loss
+      for (final p in group.pillarOrder) {
+        if (!newGroupOrder.contains(p)) {
+          newGroupOrder.add(p);
         }
       }
-      if (foundUuid != null) {
-        newOrderUuid.add(foundUuid);
-        usedUuids.add(foundUuid);
-      }
-    }
 
-    for (final uuid in currentPayload.pillarOrderUuid) {
-      if (!usedUuids.contains(uuid)) {
-        newOrderUuid.add(uuid);
-      }
-    }
+      return group.copyWith(pillarOrder: newGroupOrder);
+    }).toList();
 
-    cardPayloadNotifier.value =
-        currentPayload.copyWith(pillarOrderUuid: newOrderUuid);
-    notifyListeners();
+    // Use command to update
+    _executeCommand(UpdateChartGroupsCommand(
+      oldGroups: template.chartGroups,
+      newGroups: newGroups,
+    ));
   }
 
-  void updateRowOrderFromTypes(List<RowType> orderedTypes) {
-    final currentPayload = cardPayloadNotifier.value;
-    final rowMap = currentPayload.rowMap;
-    final oldOrderUuid = currentPayload.rowOrderUuid;
+  void reorderRow(int oldIndex, int newIndex) {
+    _executeCommand(ReorderRowCommand(
+      oldIndex: oldIndex,
+      newIndex: newIndex,
+    ));
+  }
 
-    final newOrderUuid = <String>[];
-    final typesSet = orderedTypes.toSet();
+  void insertRow(int index, RowPayload payload) {
+    final template = _currentTemplate;
+    if (template == null) return;
 
-    final availableUuidsByType = <RowType, List<String>>{};
-    for (final uuid in oldOrderUuid) {
-      final payload = rowMap[uuid];
-      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
-        availableUuidsByType.putIfAbsent(payload.rowType, () => []).add(uuid);
-      }
+    RowConfig config;
+    if (payload is RowSeparatorPayload) {
+      config = RowConfig(
+        type: RowType.separator,
+        isVisible: true,
+        isTitleVisible: false,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      );
+    } else {
+      config = RowConfig(
+        type: payload.rowType,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      );
     }
+
+    _executeCommand(InsertRowCommand(
+      rowConfig: config,
+      index: index,
+    ));
+  }
+
+  void deleteRow(int index) {
+    final template = _currentTemplate;
+    if (template == null) return;
+    if (index < 0 || index >= template.rowConfigs.length) return;
+
+    final config = template.rowConfigs[index];
+    _executeCommand(DeleteRowCommand(
+      index: index,
+      rowConfig: config,
+    ));
+  }
+
+  // void reorderPillarGlobal(int oldGlobalIndex, int newGlobalIndex) {
+  //   final template = _currentTemplate;
+  //   if (template == null) return;
+
+  //   String? sourceGroupId;
+  //   int sourceLocalIndex = -1;
+  //   PillarType? sourcePillar;
+
+  //   String? targetGroupId;
+  //   int targetLocalIndex = -1;
+
+  //   // Find source
+  //   int currentIndex = 0;
+  //   for (final group in template.chartGroups) {
+  //     if (oldGlobalIndex < currentIndex + group.pillarOrder.length) {
+  //       sourceGroupId = group.id;
+  //       sourceLocalIndex = oldGlobalIndex - currentIndex;
+  //       sourcePillar = group.pillarOrder[sourceLocalIndex];
+  //       break;
+  //     }
+  //     currentIndex += group.pillarOrder.length;
+  //   }
+
+  //   if (sourceGroupId == null || sourcePillar == null) return;
+
+  //   // Find target
+  //   currentIndex = 0;
+  //   for (final group in template.chartGroups) {
+  //     // Allow target to be at the end of the group
+  //     if (newGlobalIndex <= currentIndex + group.pillarOrder.length) {
+  //       targetGroupId = group.id;
+  //       targetLocalIndex = newGlobalIndex - currentIndex;
+  //       break;
+  //     }
+  //     currentIndex += group.pillarOrder.length;
+  //   }
+
+  //   // Fallback to last group if target is at end
+  //   if (targetGroupId == null && template.chartGroups.isNotEmpty) {
+  //     targetGroupId = template.chartGroups.last.id;
+  //     targetLocalIndex = template.chartGroups.last.pillarOrder.length;
+  //   }
+
+  //   if (targetGroupId == null) return;
+
+  //   if (sourceGroupId == targetGroupId) {
+  //     reorderPillar(
+  //       groupId: sourceGroupId,
+  //       oldIndex: sourceLocalIndex,
+  //       newIndex: targetLocalIndex,
+  //     );
+  //   } else {
+  //     // Cross-group move: Remove then Add
+  //     // Ideally this should be an atomic command, but for now using two commands
+  //     // Note: executing remove first doesn't affect target index since groups are distinct
+  //     removePillarFromGroup(groupId: sourceGroupId, index: sourceLocalIndex);
+  //     addPillarToGroupAtIndex(
+  //       groupId: targetGroupId,
+  //       pillar: sourcePillar,
+  //       index: targetLocalIndex,
+  //     );
+  //   }
+  // }
+
+  // void insertPillarGlobal(int globalIndex, PillarType type) {
+  //   final template = _currentTemplate;
+  //   if (template == null) return;
+
+  //   int currentIndex = 0;
+  //   for (final group in template.chartGroups) {
+  //     final groupLen = group.pillarOrder.length;
+  //     if (globalIndex <= currentIndex + groupLen) {
+  //       final localIndex = globalIndex - currentIndex;
+  //       addPillarToGroupAtIndex(
+  //         groupId: group.id,
+  //         pillar: type,
+  //         index: localIndex,
+  //       );
+  //       return;
+  //     }
+  //     currentIndex += groupLen;
+  //   }
+
+  //   if (template.chartGroups.isNotEmpty) {
+  //     final lastGroup = template.chartGroups.last;
+  //     addPillarToGroupAtIndex(
+  //       groupId: lastGroup.id,
+  //       pillar: type,
+  //       index: lastGroup.pillarOrder.length,
+  //     );
+  //   }
+  // }
+
+  // void deletePillarGlobal(int globalIndex) {
+  //   final template = _currentTemplate;
+  //   if (template == null) return;
+
+  //   int currentIndex = 0;
+  //   for (final group in template.chartGroups) {
+  //     final groupLen = group.pillarOrder.length;
+  //     if (globalIndex < currentIndex + groupLen) {
+  //       final localIndex = globalIndex - currentIndex;
+  //       removePillarFromGroup(
+  //         groupId: group.id,
+  //         index: localIndex,
+  //       );
+  //       return;
+  //     }
+  //     currentIndex += groupLen;
+  //   }
+  // }
+
+  void updateRowOrderFromTypes(List<RowType> orderedTypes) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    final oldConfigs = template.rowConfigs;
+    final newConfigs = <RowConfig>[];
+
+    // Create a list of remaining configs to pick from
+    final remaining = List<RowConfig>.of(oldConfigs);
 
     for (final type in orderedTypes) {
-      final list = availableUuidsByType[type];
-      if (list != null && list.isNotEmpty) {
-        newOrderUuid.add(list.removeAt(0));
+      final index = remaining.indexWhere((c) => c.type == type);
+      if (index != -1) {
+        newConfigs.add(remaining.removeAt(index));
       }
     }
 
-    for (final uuid in oldOrderUuid) {
-      if (newOrderUuid.contains(uuid)) continue;
-      final payload = rowMap[uuid];
-      if (payload is TextRowPayload && typesSet.contains(payload.rowType)) {
-        continue;
-      }
-      newOrderUuid.add(uuid);
-    }
+    // Add any remaining configs (those not in orderedTypes)
+    newConfigs.addAll(remaining);
 
-    cardPayloadNotifier.value =
-        currentPayload.copyWith(rowOrderUuid: newOrderUuid);
-    notifyListeners();
+    // Use command to update
+    if (!_areRowConfigsEqual(oldConfigs, newConfigs)) {
+      _executeCommand(ReorderRowConfigsCommand(
+        oldRowConfigs: oldConfigs,
+        newRowConfigs: newConfigs,
+      ));
+    }
+  }
+
+  bool _areRowConfigsEqual(List<RowConfig> a, List<RowConfig> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   @override
@@ -2063,6 +2352,190 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (nextTheme != theme) {
       editableThemeNotifier.value = nextTheme;
       paddingNotifier.value = nextTheme.card.padding;
+    }
+
+    _syncStructureFromTemplate(template);
+  }
+
+  void _syncStructureFromTemplate(LayoutTemplate template) {
+    final currentPayload = cardPayloadNotifier.value;
+    var nextPayload = currentPayload;
+    bool payloadChanged = false;
+
+    // 1. Sync Row Order
+    // Map RowType to existing UUIDs
+    final typeToUuidMap = <RowType, String>{};
+    currentPayload.rowMap.forEach((uuid, payload) {
+      if (payload is TextRowPayload) {
+        typeToUuidMap[payload.rowType] = uuid;
+      }
+    });
+
+    final newRowOrderUuid = <String>[];
+    final newRowMap = Map<String, RowPayload>.from(currentPayload.rowMap);
+
+    // Preserve TitleRow if it exists at the top AND not present in rowConfigs
+    // This handles legacy templates that don't have columnHeaderRow in config
+    final hasHeaderInConfig =
+        template.rowConfigs.any((c) => c.type == RowType.columnHeaderRow);
+
+    if (!hasHeaderInConfig && currentPayload.rowOrderUuid.isNotEmpty) {
+      final firstUuid = currentPayload.rowOrderUuid.first;
+      if (newRowMap[firstUuid] is TitleRowPayload) {
+        newRowOrderUuid.add(firstUuid);
+      }
+    }
+
+    for (final config in template.rowConfigs) {
+      if (!config.isVisible) continue;
+
+      final type = config.type;
+      if (type == RowType.separator) {
+        // Always create new UUID for separators or try to reuse?
+        // Separators don't have unique type identity, they are structural.
+        // For now, let's create new to avoid complexity of tracking multiple separators.
+        // Or better: we can't easily map old separators to new ones without IDs.
+        // But CardPayload doesn't strictly require reusing UUIDs if we rebuild the list.
+        final newUuid = _uuid.v4();
+        final newRowPayload = RowSeparatorPayload(uuid: newUuid);
+        newRowMap[newUuid] = newRowPayload;
+        newRowOrderUuid.add(newUuid);
+      } else if (typeToUuidMap.containsKey(type)) {
+        newRowOrderUuid.add(typeToUuidMap[type]!);
+      } else {
+        // Create new payload for this row type
+        final newUuid = _uuid.v4();
+        if (type == RowType.columnHeaderRow) {
+          final newRowPayload = ColumnHeaderRowPayload(
+            gender: currentPayload.gender,
+            uuid: newUuid,
+          );
+          newRowMap[newUuid] = newRowPayload;
+          newRowOrderUuid.add(newUuid);
+        } else {
+          final label = _getRowLabel(type);
+          final newRowPayload = TextRowPayload(
+            rowType: type,
+            rowLabel: label,
+            uuid: newUuid,
+            titleInCell: !config.isTitleVisible,
+          );
+          newRowMap[newUuid] = newRowPayload;
+          newRowOrderUuid.add(newUuid);
+        }
+      }
+    }
+
+    if (!_areListsEqual(currentPayload.rowOrderUuid, newRowOrderUuid) ||
+        newRowMap.length != currentPayload.rowMap.length) {
+      nextPayload = nextPayload.copyWith(
+        rowOrderUuid: newRowOrderUuid,
+        rowMap: newRowMap,
+      );
+      payloadChanged = true;
+    }
+
+    // 2. Sync Pillar Order (Flattened from Groups)
+    final flattenedPillars = <PillarType>[];
+    for (final group in template.chartGroups) {
+      flattenedPillars.addAll(group.pillarOrder);
+    }
+
+    final pillarTypeToUuidMap = <PillarType, String>{};
+    currentPayload.pillarMap.forEach((uuid, payload) {
+      pillarTypeToUuidMap[payload.pillarType] = uuid;
+    });
+
+    final newPillarOrderUuid = <String>[];
+    final newPillarMap =
+        Map<String, PillarPayload>.from(currentPayload.pillarMap);
+
+    // Preserve Title Column if it exists (usually it's the first one in payload but not in groups)
+    // Actually, LayoutTemplate might not track rowTitleColumn in groups?
+    // Let's check if rowTitleColumn is in payload but not in groups.
+    // If so, we should preserve it.
+    // Typically rowTitleColumn is handled separately.
+    // Let's look for rowTitleColumn in existing payload.
+    String? titleColumnUuid;
+    currentPayload.pillarMap.forEach((uuid, payload) {
+      if (payload.pillarType == PillarType.rowTitleColumn) {
+        titleColumnUuid = uuid;
+      }
+    });
+
+    if (titleColumnUuid != null) {
+      newPillarOrderUuid.add(titleColumnUuid!);
+    }
+
+    for (final type in flattenedPillars) {
+      if (pillarTypeToUuidMap.containsKey(type)) {
+        newPillarOrderUuid.add(pillarTypeToUuidMap[type]!);
+      } else {
+        // If a new pillar type appears in template (e.g. from undo), we might need to restore it.
+        // For now, if we can't find it in map, we skip or create placeholder?
+        // Creating a proper payload requires data.
+        // Ideally, we shouldn't delete payloads from map when hiding/removing, just remove from order.
+        // But here we see sync logic.
+      }
+    }
+
+    if (!_areListsEqual(currentPayload.pillarOrderUuid, newPillarOrderUuid)) {
+      nextPayload = nextPayload.copyWith(
+        pillarOrderUuid: newPillarOrderUuid,
+        pillarMap: newPillarMap,
+      );
+      payloadChanged = true;
+    }
+
+    if (payloadChanged) {
+      cardPayloadNotifier.value = nextPayload;
+    }
+  }
+
+  bool _areListsEqual(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  String _getRowLabel(RowType type) {
+    switch (type) {
+      case RowType.tenGod:
+        return '十神';
+      case RowType.heavenlyStem:
+        return '天干';
+      case RowType.earthlyBranch:
+        return '地支';
+      case RowType.naYin:
+        return '纳音';
+      case RowType.kongWang:
+        return '空亡';
+      case RowType.xunShou:
+        return '旬首';
+      case RowType.hiddenStems:
+        return '藏干';
+      case RowType.hiddenStemsTenGod:
+        return '藏干十神';
+      case RowType.hiddenStemsPrimary:
+        return '藏干(主)';
+      case RowType.hiddenStemsSecondary:
+        return '藏干(中)';
+      case RowType.hiddenStemsTertiary:
+        return '藏干(余)';
+      case RowType.hiddenStemsPrimaryGods:
+        return '藏干十神(主)';
+      case RowType.hiddenStemsSecondaryGods:
+        return '藏干十神(中)';
+      case RowType.hiddenStemsTertiaryGods:
+        return '藏干十神(余)';
+      case RowType.starYun:
+        return '星运';
+      case RowType.selfSiting:
+        return '自坐';
+      default:
+        return type.name;
     }
   }
 

@@ -103,12 +103,15 @@ class AddPillarToGroupCommand extends EditorCommand {
     final updatedGroups = currentTemplate.chartGroups.map((group) {
       if (group.id != groupId) return group;
 
-      // 检查是否已存在
-      if (group.pillarOrder.contains(pillar)) return group;
-
       final list = List<PillarType>.of(group.pillarOrder);
-      final clamped = index.clamp(0, list.length);
-      list.insert(clamped, pillar);
+
+      // 允许分隔符重复添加，或者是新元素
+      if (pillar == PillarType.separator || !list.contains(pillar)) {
+        // 使用 clamp 确保索引在有效范围内 [0, length]
+        final target = index.clamp(0, list.length);
+        list.insert(target, pillar);
+      }
+
       return group.copyWith(pillarOrder: list);
     }).toList(growable: false);
 
@@ -121,10 +124,12 @@ class AddPillarToGroupCommand extends EditorCommand {
       if (group.id != groupId) return group;
 
       final list = List<PillarType>.of(group.pillarOrder);
-      // 找到并移除该柱位
-      final pillarIndex = list.indexOf(pillar);
-      if (pillarIndex >= 0) {
-        list.removeAt(pillarIndex);
+      // 撤销插入：移除在插入位置的元素
+      // 插入时使用了 index.clamp(0, oldLength)
+      // 现在的 list 长度比插入前大 1，所以 oldLength = list.length - 1
+      final target = index.clamp(0, list.length - 1);
+      if (target >= 0 && target < list.length) {
+        list.removeAt(target);
       }
       return group.copyWith(pillarOrder: list);
     }).toList(growable: false);
@@ -486,6 +491,131 @@ class UpdateDividerColorCommand extends EditorCommand {
     final style =
         currentTemplate.cardStyle.copyWith(dividerColorHex: oldColorHex);
     return currentTemplate.copyWith(cardStyle: style);
+  }
+}
+
+class UpdateChartGroupsCommand extends EditorCommand {
+  UpdateChartGroupsCommand({
+    required this.oldGroups,
+    required this.newGroups,
+  });
+
+  final List<ChartGroup> oldGroups;
+  final List<ChartGroup> newGroups;
+
+  @override
+  String get description => '更新图表分组';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(chartGroups: newGroups);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    return currentTemplate.copyWith(chartGroups: oldGroups);
+  }
+}
+
+class ReorderRowCommand extends EditorCommand {
+  ReorderRowCommand({
+    required this.oldIndex,
+    required this.newIndex,
+  });
+
+  final int oldIndex;
+  final int newIndex;
+
+  @override
+  String get description => '重排行: $oldIndex -> $newIndex';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    if (oldIndex < 0 || oldIndex >= configs.length) return currentTemplate;
+
+    final item = configs.removeAt(oldIndex);
+    final target = newIndex.clamp(0, configs.length);
+    configs.insert(target, item);
+
+    return currentTemplate.copyWith(rowConfigs: configs);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    if (newIndex < 0 || newIndex >= configs.length) return currentTemplate;
+
+    final item = configs.removeAt(newIndex);
+    final target = oldIndex.clamp(0, configs.length);
+    configs.insert(target, item);
+
+    return currentTemplate.copyWith(rowConfigs: configs);
+  }
+}
+
+class InsertRowCommand extends EditorCommand {
+  InsertRowCommand({
+    required this.rowConfig,
+    required this.index,
+  });
+
+  final RowConfig rowConfig;
+  final int index;
+
+  @override
+  String get description => '插入行: ${rowConfig.type.name}';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    final target = index.clamp(0, configs.length);
+    configs.insert(target, rowConfig);
+    return currentTemplate.copyWith(rowConfigs: configs);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    // Undo insertion: remove the item at the index where it was inserted.
+    // Since currentTemplate has the item, length is greater by 1.
+    // The insertion index was index.clamp(0, old_length).
+    // old_length = configs.length - 1.
+    final target = index.clamp(0, configs.length - 1);
+    if (target >= 0 && target < configs.length) {
+      configs.removeAt(target);
+    }
+    return currentTemplate.copyWith(rowConfigs: configs);
+  }
+}
+
+class DeleteRowCommand extends EditorCommand {
+  DeleteRowCommand({
+    required this.index,
+    required this.rowConfig,
+  });
+
+  final int index;
+  final RowConfig rowConfig;
+
+  @override
+  String get description => '删除行: ${rowConfig.type.name}';
+
+  @override
+  LayoutTemplate execute(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    if (index >= 0 && index < configs.length) {
+      configs.removeAt(index);
+    }
+    return currentTemplate.copyWith(rowConfigs: configs);
+  }
+
+  @override
+  LayoutTemplate undo(LayoutTemplate currentTemplate) {
+    final configs = List<RowConfig>.of(currentTemplate.rowConfigs);
+    final target = index.clamp(0, configs.length);
+    configs.insert(target, rowConfig);
+    return currentTemplate.copyWith(rowConfigs: configs);
   }
 }
 
