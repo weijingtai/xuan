@@ -884,131 +884,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     });
   }
 
-  // ----------------------------------------------------------------------
-  // Pillar Operations (Global Index)
-  // ----------------------------------------------------------------------
 
-  /// Handle pillar reordering from UI which provides global indices across all groups
-  void reorderPillarGlobal(int oldGlobalIndex, int newGlobalIndex) {
-    final template = _currentTemplate;
-    if (template == null) return;
-
-    String? sourceGroupId;
-    int sourceLocalIndex = -1;
-    PillarType? sourcePillar;
-
-    String? targetGroupId;
-    int targetLocalIndex = -1;
-
-    // Find source
-    int currentIndex = 0;
-    for (final group in template.chartGroups) {
-      if (oldGlobalIndex < currentIndex + group.pillarOrder.length) {
-        sourceGroupId = group.id;
-        sourceLocalIndex = oldGlobalIndex - currentIndex;
-        sourcePillar = group.pillarOrder[sourceLocalIndex];
-        break;
-      }
-      currentIndex += group.pillarOrder.length;
-    }
-
-    if (sourceGroupId == null || sourcePillar == null) return;
-
-    // Find target
-    currentIndex = 0;
-    for (final group in template.chartGroups) {
-      // Allow target to be at the end of the group
-      if (newGlobalIndex <= currentIndex + group.pillarOrder.length) {
-        targetGroupId = group.id;
-        targetLocalIndex = newGlobalIndex - currentIndex;
-        break;
-      }
-      currentIndex += group.pillarOrder.length;
-    }
-
-    // Fallback to last group if target is at end
-    if (targetGroupId == null && template.chartGroups.isNotEmpty) {
-      targetGroupId = template.chartGroups.last.id;
-      targetLocalIndex = template.chartGroups.last.pillarOrder.length;
-    }
-
-    if (targetGroupId == null) return;
-
-    if (sourceGroupId == targetGroupId) {
-      reorderPillar(
-        groupId: sourceGroupId,
-        oldIndex: sourceLocalIndex,
-        newIndex: targetLocalIndex,
-      );
-    } else {
-      // Cross-group move: Remove then Add
-      // Ideally this should be an atomic command, but for now using two commands
-      // Note: executing remove first doesn't affect target index since groups are distinct
-      removePillarFromGroup(groupId: sourceGroupId, index: sourceLocalIndex);
-      addPillarToGroupAtIndex(
-        groupId: targetGroupId,
-        pillar: sourcePillar,
-        index: targetLocalIndex,
-      );
-    }
-  }
-
-  void insertPillarGlobal(int globalIndex, PillarType pillar) {
-    final template = _currentTemplate;
-    if (template == null) return;
-
-    String? targetGroupId;
-    int targetLocalIndex = -1;
-
-    int currentIndex = 0;
-    for (final group in template.chartGroups) {
-      if (globalIndex <= currentIndex + group.pillarOrder.length) {
-        targetGroupId = group.id;
-        targetLocalIndex = globalIndex - currentIndex;
-        break;
-      }
-      currentIndex += group.pillarOrder.length;
-    }
-
-    // Fallback to last group
-    if (targetGroupId == null && template.chartGroups.isNotEmpty) {
-      targetGroupId = template.chartGroups.last.id;
-      targetLocalIndex = template.chartGroups.last.pillarOrder.length;
-    }
-
-    if (targetGroupId != null) {
-      addPillarToGroupAtIndex(
-        groupId: targetGroupId,
-        pillar: pillar,
-        index: targetLocalIndex,
-      );
-    }
-  }
-
-  void deletePillarGlobal(int globalIndex) {
-    final template = _currentTemplate;
-    if (template == null) return;
-
-    String? targetGroupId;
-    int targetLocalIndex = -1;
-
-    int currentIndex = 0;
-    for (final group in template.chartGroups) {
-      if (globalIndex < currentIndex + group.pillarOrder.length) {
-        targetGroupId = group.id;
-        targetLocalIndex = globalIndex - currentIndex;
-        break;
-      }
-      currentIndex += group.pillarOrder.length;
-    }
-
-    if (targetGroupId != null) {
-      removePillarFromGroup(
-        groupId: targetGroupId,
-        index: targetLocalIndex,
-      );
-    }
-  }
 
   void reorderPillar({
     required String groupId,
@@ -1779,9 +1655,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     // 识别特征：名称为"默认模板" 且 边框为实线（新版默认为无边框）
     // 且行配置符合旧版特征（防止误伤用户自定义模板）
     // 旧版默认模板通常包含7行配置
+    // M4.3.3 - 增加版本检查，防止用户修改后的模板被反复迁移
     final isLegacyCandidate = template.name == '默认模板' &&
         template.cardStyle.dividerType == BorderType.solid &&
-        template.rowConfigs.length == 7;
+        template.rowConfigs.length == 7 &&
+        template.version < 1; // 仅迁移版本号小于1的旧模板
 
     if (isLegacyCandidate) {
       final cleanDefault = _buildDefaultTemplate(
@@ -1891,14 +1769,57 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     ));
   }
 
-  void reorderRow(int oldIndex, int newIndex) {
+  void reorderRow(int oldVisibleIndex, int newVisibleIndex) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    // Helper to find config index from visible index
+    int configIndex(int visibleIndex) {
+      int visibleCount = 0;
+      for (int i = 0; i < template.rowConfigs.length; i++) {
+        if (template.rowConfigs[i].isVisible) {
+          if (visibleCount == visibleIndex) return i;
+          visibleCount++;
+        }
+      }
+      return -1;
+    }
+
+    final oldConfigIdx = configIndex(oldVisibleIndex);
+    if (oldConfigIdx == -1) return;
+
+    int targetConfigIdx;
+    final visibleRowsCount =
+        template.rowConfigs.where((c) => c.isVisible).length;
+
+    if (newVisibleIndex >= visibleRowsCount) {
+      // Insert after the last visible row
+      int lastVisibleIdx = -1;
+      for (int i = template.rowConfigs.length - 1; i >= 0; i--) {
+        if (template.rowConfigs[i].isVisible) {
+          lastVisibleIdx = i;
+          break;
+        }
+      }
+      targetConfigIdx = lastVisibleIdx + 1;
+    } else {
+      targetConfigIdx = configIndex(newVisibleIndex);
+    }
+
+    if (targetConfigIdx == -1) targetConfigIdx = template.rowConfigs.length;
+
+    // Fix for disordered sequence: adjust index if moving downwards
+    if (oldConfigIdx < targetConfigIdx) {
+      targetConfigIdx -= 1;
+    }
+
     _executeCommand(ReorderRowCommand(
-      oldIndex: oldIndex,
-      newIndex: newIndex,
+      oldIndex: oldConfigIdx,
+      newIndex: targetConfigIdx,
     ));
   }
 
-  void insertRow(int index, RowPayload payload) {
+  void insertRow(int visibleIndex, RowPayload payload) {
     final template = _currentTemplate;
     if (template == null) return;
 
@@ -1919,135 +1840,214 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       );
     }
 
+    // Map visibleIndex to configIndex
+    int targetConfigIdx;
+    final visibleRowsCount =
+        template.rowConfigs.where((c) => c.isVisible).length;
+
+    if (visibleIndex >= visibleRowsCount) {
+      int lastVisibleIdx = -1;
+      for (int i = template.rowConfigs.length - 1; i >= 0; i--) {
+        if (template.rowConfigs[i].isVisible) {
+          lastVisibleIdx = i;
+          break;
+        }
+      }
+      targetConfigIdx = lastVisibleIdx + 1;
+    } else {
+      int visibleCount = 0;
+      targetConfigIdx = template.rowConfigs.length; // Default to end
+      for (int i = 0; i < template.rowConfigs.length; i++) {
+        if (template.rowConfigs[i].isVisible) {
+          if (visibleCount == visibleIndex) {
+            targetConfigIdx = i;
+            break;
+          }
+          visibleCount++;
+        }
+      }
+    }
+
     _executeCommand(InsertRowCommand(
       rowConfig: config,
-      index: index,
+      index: targetConfigIdx,
     ));
   }
 
-  void deleteRow(int index) {
+  void deleteRow(int visibleIndex) {
     final template = _currentTemplate;
     if (template == null) return;
-    if (index < 0 || index >= template.rowConfigs.length) return;
 
-    final config = template.rowConfigs[index];
+    int configIndex = -1;
+    int visibleCount = 0;
+    for (int i = 0; i < template.rowConfigs.length; i++) {
+      if (template.rowConfigs[i].isVisible) {
+        if (visibleCount == visibleIndex) {
+          configIndex = i;
+          break;
+        }
+        visibleCount++;
+      }
+    }
+
+    if (configIndex == -1) return;
+
+    final config = template.rowConfigs[configIndex];
     _executeCommand(DeleteRowCommand(
-      index: index,
+      index: configIndex,
       rowConfig: config,
     ));
   }
 
-  // void reorderPillarGlobal(int oldGlobalIndex, int newGlobalIndex) {
-  //   final template = _currentTemplate;
-  //   if (template == null) return;
+  /// 计算实际的数据索引（考虑 UI 上可能存在的额外 Title Column）
+  /// 如果 UI 有 Title Column 但 ChartGroups 没有，则 index - 1
+  int _adjustPillarIndex(LayoutTemplate template, int uiIndex) {
+    final uiHasTitle = cardPayloadNotifier.value.pillarOrderUuid.isNotEmpty &&
+        cardPayloadNotifier.value
+                .pillarMap[cardPayloadNotifier.value.pillarOrderUuid.first]
+            is RowTitleColumnPayload;
 
-  //   String? sourceGroupId;
-  //   int sourceLocalIndex = -1;
-  //   PillarType? sourcePillar;
+    bool groupsHaveTitle = false;
+    if (template.chartGroups.isNotEmpty &&
+        template.chartGroups.first.pillarOrder.isNotEmpty) {
+      groupsHaveTitle = template.chartGroups.first.pillarOrder.first ==
+          PillarType.rowTitleColumn;
+    }
 
-  //   String? targetGroupId;
-  //   int targetLocalIndex = -1;
+    // 如果 UI 有标题列，但数据源没有，则 UI index 0 对应无效数据索引，后续索引需 -1
+    if (uiHasTitle && !groupsHaveTitle) {
+      return uiIndex - 1;
+    }
+    return uiIndex;
+  }
 
-  //   // Find source
-  //   int currentIndex = 0;
-  //   for (final group in template.chartGroups) {
-  //     if (oldGlobalIndex < currentIndex + group.pillarOrder.length) {
-  //       sourceGroupId = group.id;
-  //       sourceLocalIndex = oldGlobalIndex - currentIndex;
-  //       sourcePillar = group.pillarOrder[sourceLocalIndex];
-  //       break;
-  //     }
-  //     currentIndex += group.pillarOrder.length;
-  //   }
+  void reorderPillarGlobal(int oldGlobalIndex, int newGlobalIndex) {
+    final template = _currentTemplate;
+    if (template == null) return;
 
-  //   if (sourceGroupId == null || sourcePillar == null) return;
+    final adjOldIndex = _adjustPillarIndex(template, oldGlobalIndex);
+    final adjNewIndex = _adjustPillarIndex(template, newGlobalIndex);
 
-  //   // Find target
-  //   currentIndex = 0;
-  //   for (final group in template.chartGroups) {
-  //     // Allow target to be at the end of the group
-  //     if (newGlobalIndex <= currentIndex + group.pillarOrder.length) {
-  //       targetGroupId = group.id;
-  //       targetLocalIndex = newGlobalIndex - currentIndex;
-  //       break;
-  //     }
-  //     currentIndex += group.pillarOrder.length;
-  //   }
+    if (adjOldIndex < 0 || adjNewIndex < 0) return; // 试图移动不存在的标题列
 
-  //   // Fallback to last group if target is at end
-  //   if (targetGroupId == null && template.chartGroups.isNotEmpty) {
-  //     targetGroupId = template.chartGroups.last.id;
-  //     targetLocalIndex = template.chartGroups.last.pillarOrder.length;
-  //   }
+    String? sourceGroupId;
+    int sourceLocalIndex = -1;
+    PillarType? sourcePillar;
 
-  //   if (targetGroupId == null) return;
+    String? targetGroupId;
+    int targetLocalIndex = -1;
 
-  //   if (sourceGroupId == targetGroupId) {
-  //     reorderPillar(
-  //       groupId: sourceGroupId,
-  //       oldIndex: sourceLocalIndex,
-  //       newIndex: targetLocalIndex,
-  //     );
-  //   } else {
-  //     // Cross-group move: Remove then Add
-  //     // Ideally this should be an atomic command, but for now using two commands
-  //     // Note: executing remove first doesn't affect target index since groups are distinct
-  //     removePillarFromGroup(groupId: sourceGroupId, index: sourceLocalIndex);
-  //     addPillarToGroupAtIndex(
-  //       groupId: targetGroupId,
-  //       pillar: sourcePillar,
-  //       index: targetLocalIndex,
-  //     );
-  //   }
-  // }
+    // Find source
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      if (adjOldIndex < currentIndex + group.pillarOrder.length) {
+        sourceGroupId = group.id;
+        sourceLocalIndex = adjOldIndex - currentIndex;
+        sourcePillar = group.pillarOrder[sourceLocalIndex];
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
 
-  // void insertPillarGlobal(int globalIndex, PillarType type) {
-  //   final template = _currentTemplate;
-  //   if (template == null) return;
+    if (sourceGroupId == null || sourcePillar == null) return;
 
-  //   int currentIndex = 0;
-  //   for (final group in template.chartGroups) {
-  //     final groupLen = group.pillarOrder.length;
-  //     if (globalIndex <= currentIndex + groupLen) {
-  //       final localIndex = globalIndex - currentIndex;
-  //       addPillarToGroupAtIndex(
-  //         groupId: group.id,
-  //         pillar: type,
-  //         index: localIndex,
-  //       );
-  //       return;
-  //     }
-  //     currentIndex += groupLen;
-  //   }
+    // Find target
+    currentIndex = 0;
+    for (final group in template.chartGroups) {
+      // Allow target to be at the end of the group
+      if (adjNewIndex <= currentIndex + group.pillarOrder.length) {
+        targetGroupId = group.id;
+        targetLocalIndex = adjNewIndex - currentIndex;
+        break;
+      }
+      currentIndex += group.pillarOrder.length;
+    }
 
-  //   if (template.chartGroups.isNotEmpty) {
-  //     final lastGroup = template.chartGroups.last;
-  //     addPillarToGroupAtIndex(
-  //       groupId: lastGroup.id,
-  //       pillar: type,
-  //       index: lastGroup.pillarOrder.length,
-  //     );
-  //   }
-  // }
+    // Fallback to last group if target is at end
+    if (targetGroupId == null && template.chartGroups.isNotEmpty) {
+      targetGroupId = template.chartGroups.last.id;
+      targetLocalIndex = template.chartGroups.last.pillarOrder.length;
+    }
 
-  // void deletePillarGlobal(int globalIndex) {
-  //   final template = _currentTemplate;
-  //   if (template == null) return;
+    if (targetGroupId == null) return;
 
-  //   int currentIndex = 0;
-  //   for (final group in template.chartGroups) {
-  //     final groupLen = group.pillarOrder.length;
-  //     if (globalIndex < currentIndex + groupLen) {
-  //       final localIndex = globalIndex - currentIndex;
-  //       removePillarFromGroup(
-  //         groupId: group.id,
-  //         index: localIndex,
-  //       );
-  //       return;
-  //     }
-  //     currentIndex += groupLen;
-  //   }
-  // }
+    if (sourceGroupId == targetGroupId) {
+      // Fix for disordered sequence in same group
+      if (sourceLocalIndex < targetLocalIndex) {
+        targetLocalIndex -= 1;
+      }
+      reorderPillar(
+        groupId: sourceGroupId,
+        oldIndex: sourceLocalIndex,
+        newIndex: targetLocalIndex,
+      );
+    } else {
+      // Cross-group move: Use atomic command
+      _executeCommand(MovePillarBetweenGroupsCommand(
+        sourceGroupId: sourceGroupId,
+        targetGroupId: targetGroupId,
+        sourceIndex: sourceLocalIndex,
+        targetIndex: targetLocalIndex,
+        pillar: sourcePillar,
+      ));
+    }
+  }
+
+  void insertPillarGlobal(int globalIndex, PillarType type) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    final adjIndex = _adjustPillarIndex(template, globalIndex);
+    if (adjIndex < 0) return;
+
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      final groupLen = group.pillarOrder.length;
+      if (adjIndex <= currentIndex + groupLen) {
+        final localIndex = adjIndex - currentIndex;
+        addPillarToGroupAtIndex(
+          groupId: group.id,
+          pillar: type,
+          index: localIndex,
+        );
+        return;
+      }
+      currentIndex += groupLen;
+    }
+
+    if (template.chartGroups.isNotEmpty) {
+      final lastGroup = template.chartGroups.last;
+      addPillarToGroupAtIndex(
+        groupId: lastGroup.id,
+        pillar: type,
+        index: lastGroup.pillarOrder.length,
+      );
+    }
+  }
+
+  void deletePillarGlobal(int globalIndex) {
+    final template = _currentTemplate;
+    if (template == null) return;
+
+    final adjIndex = _adjustPillarIndex(template, globalIndex);
+    if (adjIndex < 0) return;
+
+    int currentIndex = 0;
+    for (final group in template.chartGroups) {
+      final groupLen = group.pillarOrder.length;
+      if (adjIndex < currentIndex + groupLen) {
+        final localIndex = adjIndex - currentIndex;
+        removePillarFromGroup(
+          groupId: group.id,
+          index: localIndex,
+        );
+        return;
+      }
+      currentIndex += groupLen;
+    }
+  }
+
+
 
   void updateRowOrderFromTypes(List<RowType> orderedTypes) {
     final template = _currentTemplate;
@@ -2464,7 +2464,12 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     });
 
     if (titleColumnUuid != null) {
-      newPillarOrderUuid.add(titleColumnUuid!);
+      // Only add title column if it is NOT present in the template's pillars.
+      // This prevents duplication when the template explicitly includes the title column.
+      bool templateHasTitle = flattenedPillars.contains(PillarType.rowTitleColumn);
+      if (!templateHasTitle) {
+        newPillarOrderUuid.add(titleColumnUuid!);
+      }
     }
 
     for (final type in flattenedPillars) {
