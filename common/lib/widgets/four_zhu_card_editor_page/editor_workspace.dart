@@ -1,5 +1,10 @@
 import 'package:common/enums/enum_gender.dart';
 import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/models/drag_payloads.dart';
+import 'package:common/models/pillar_content.dart';
+import 'package:common/models/row_strategy.dart';
+import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'package:common/widgets/editable_fourzhu_card.dart';
 import 'package:common/widgets/pillar_tag_bar.dart';
 import 'package:common/widgets/row_tag_bar.dart';
@@ -90,7 +95,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     );
     await viewModel.refreshRowConfigs();
   }
-
 
   Future<void> _showCreateTemplateDialog(
     BuildContext context,
@@ -428,8 +432,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     return SafeArea(
       bottom: false,
       child: Container(
-        height: 64,
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+        height: 104,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border(
@@ -516,8 +520,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                           value: workspaceBrightness ==
                                               Brightness.dark,
                                           onChanged: (v) {
-                                            viewModel
-                                                    .cardBrightnessNotifier
+                                            viewModel.cardBrightnessNotifier
                                                     .value =
                                                 v
                                                     ? Brightness.dark
@@ -553,11 +556,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                               onPressed: (index) {
                                                 ColorPreviewMode next = mode;
                                                 if (index == 0) {
-                                                  next =
-                                                      ColorPreviewMode.pure;
+                                                  next = ColorPreviewMode.pure;
                                                 } else if (index == 1) {
-                                                  next = ColorPreviewMode
-                                                      .colorful;
+                                                  next =
+                                                      ColorPreviewMode.colorful;
                                                 } else if (index == 2) {
                                                   next = ColorPreviewMode
                                                       .blackwhite;
@@ -572,21 +574,18 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                               ),
                                               children: const [
                                                 Padding(
-                                                  padding: EdgeInsets
-                                                      .symmetric(
-                                                          horizontal: 10),
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10),
                                                   child: Text('纯色'),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets
-                                                      .symmetric(
-                                                          horizontal: 10),
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10),
                                                   child: Text('色彩'),
                                                 ),
                                                 Padding(
-                                                  padding: EdgeInsets
-                                                      .symmetric(
-                                                          horizontal: 10),
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 10),
                                                   child: Text('黑白'),
                                                 ),
                                               ],
@@ -631,18 +630,18 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                       viewModel.cardPayloadNotifier,
                                   showGrip: _showGripNotifier.value,
                                   paddingNotifier: viewModel.paddingNotifier,
-                                  themeNotifier: viewModel.editableThemeNotifier,
-                                  rowStrategyMapper: viewModel.rowStrategyMapper,
+                                  themeNotifier:
+                                      viewModel.editableThemeNotifier,
+                                  rowStrategyMapper:
+                                      viewModel.rowStrategyMapper,
                                   gender: Gender.male,
                                   onReorderRow: viewModel.reorderRow,
                                   onInsertRow: viewModel.insertRow,
                                   onDeleteRow: viewModel.deleteRow,
                                   onReorderPillar:
                                       viewModel.reorderPillarGlobal,
-                                  onInsertPillar:
-                                      viewModel.insertPillarGlobal,
-                                  onDeletePillar:
-                                      viewModel.deletePillarGlobal,
+                                  onInsertPillar: viewModel.insertPillarGlobal,
+                                  onDeletePillar: viewModel.deletePillarGlobal,
                                 ),
                               ),
                             ),
@@ -840,47 +839,466 @@ class _TemplateGalleryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _TemplateThumbnailCard(
+      template: template,
+      selected: selected,
+      favorite: favorite,
+      width: 168,
+      height: 84,
+      showCaption: false,
+      onTap: onTap,
+    );
+  }
+}
+
+class _TemplateThumbnailCard extends StatelessWidget {
+  const _TemplateThumbnailCard({
+    required this.template,
+    required this.selected,
+    required this.favorite,
+    required this.width,
+    required this.height,
+    required this.showCaption,
+    required this.onTap,
+  });
+
+  final LayoutTemplate template;
+  final bool selected;
+  final bool favorite;
+  final double width;
+  final double height;
+  final bool showCaption;
+  final VoidCallback onTap;
+
+  Color? _tryParseHexColor(String? hex) {
+    if (hex == null) return null;
+    try {
+      final h = hex.replaceAll('#', '').trim();
+      if (h.length == 6) {
+        return Color(int.parse('FF$h', radix: 16));
+      }
+      if (h.length == 8) {
+        return Color(int.parse(h, radix: 16));
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  EditableFourZhuCardTheme _buildPreviewTheme(LayoutTemplate template) {
+    var nextTheme = EditableCardThemeBuilder.createDefaultTheme();
+    final cardStyle = template.cardStyle;
+
+    if (nextTheme.card.padding != cardStyle.contentPadding) {
+      nextTheme = nextTheme.copyWith(
+        card: nextTheme.card.copyWith(padding: cardStyle.contentPadding),
+      );
+    }
+
+    final targetThickness = cardStyle.dividerThickness;
+    final targetEnabled = cardStyle.dividerType != BorderType.none;
+    final targetColor =
+        _tryParseHexColor(cardStyle.dividerColorHex) ?? Colors.black;
+
+    final currentBorder = nextTheme.card.border;
+    final newBorder = (currentBorder ??
+            BoxBorderStyle(
+              enabled: true,
+              width: 1,
+              lightColor: Colors.black,
+              darkColor: Colors.white,
+              radius: 0,
+            ))
+        .copyWith(
+      width: targetThickness,
+      lightColor: targetColor,
+      enabled: targetEnabled,
+    );
+
+    nextTheme = nextTheme.copyWith(
+      card: nextTheme.card.copyWith(border: newBorder),
+    );
+
+    final family = (cardStyle.globalFontFamily.trim().isEmpty)
+        ? 'System'
+        : cardStyle.globalFontFamily;
+    final size = cardStyle.globalFontSize;
+
+    var typography = nextTheme.typography;
+    final currentGlobal = typography.globalContent;
+    final currentFont = currentGlobal.fontStyleDataModel;
+
+    if (currentFont.fontFamily != family || currentFont.fontSize != size) {
+      typography = typography.copyWith(
+        globalContent: currentGlobal.copyWith(
+          fontStyleDataModel: currentFont.copyWith(
+            fontFamily: family,
+            fontSize: size,
+          ),
+        ),
+      );
+    }
+
+    final mapper =
+        Map<RowType, TextStyleConfig>.of(typography.cellContentMapper);
+    for (final config in template.rowConfigs) {
+      mapper[config.type] = config.textStyleConfig;
+    }
+    typography = typography.copyWith(cellContentMapper: mapper);
+
+    final visibleRows = template.rowConfigs.where((e) => e.isVisible);
+    final hasHeaderRow =
+        visibleRows.any((e) => e.type == RowType.columnHeaderRow);
+
+    final pillarTypes = <PillarType>[];
+    for (final g in template.chartGroups) {
+      pillarTypes.addAll(g.pillarOrder);
+    }
+    final hasTitleColumn = pillarTypes.contains(PillarType.rowTitleColumn);
+
+    nextTheme = nextTheme.copyWith(
+      typography: typography,
+      displayHeaderRow: hasHeaderRow,
+      displayRowTitleColumn: hasTitleColumn,
+    );
+
+    return nextTheme;
+  }
+
+  CardPayload _buildPreviewPayload(LayoutTemplate template) {
+    final sample = EightChars(
+      year: JiaZi.JIA_ZI,
+      month: JiaZi.YI_CHOU,
+      day: JiaZi.BING_YIN,
+      time: JiaZi.DING_MAO,
+    );
+
+    final pillarTypes = <PillarType>[];
+    for (final group in template.chartGroups) {
+      pillarTypes.addAll(group.pillarOrder);
+    }
+
+    if (pillarTypes.isEmpty) {
+      pillarTypes.addAll(
+        const [
+          PillarType.rowTitleColumn,
+          PillarType.year,
+          PillarType.month,
+          PillarType.day,
+          PillarType.hour,
+        ],
+      );
+    }
+
+    final pillarCounts = <PillarType, int>{};
+    var sepIndex = 0;
+    final pillarOrderUuid = <String>[];
+    final pillarMap = <String, PillarPayload>{};
+
+    for (final type in pillarTypes) {
+      if (type == PillarType.separator) {
+        final uuid = 'pillar-separator-${sepIndex++}';
+        pillarMap[uuid] = SeparatorPillarPayload(uuid: uuid);
+        pillarOrderUuid.add(uuid);
+        continue;
+      }
+
+      if (type == PillarType.rowTitleColumn) {
+        final uuid = 'pillar-rowTitleColumn';
+        pillarMap[uuid] = RowTitleColumnPayload(uuid: uuid);
+        pillarOrderUuid.add(uuid);
+        continue;
+      }
+
+      final i = (pillarCounts[type] ?? 0);
+      pillarCounts[type] = i + 1;
+
+      final uuid = 'pillar-${type.name}-$i';
+      final label = _pillarLabelFor(type);
+      final jiaZi = _sampleJiaZiFor(type, sample);
+
+      pillarMap[uuid] = ContentPillarPayload(
+        uuid: uuid,
+        pillarLabel: label,
+        pillarType: type,
+        pillarContent: PillarContent(
+          id: 'pillar-$uuid',
+          pillarType: type,
+          label: label,
+          jiaZi: jiaZi,
+          description: '缩略图预览',
+          version: '1',
+          sourceKind: PillarSourceKind.userInput,
+        ),
+      );
+      pillarOrderUuid.add(uuid);
+    }
+
+    final visibleRowConfigs =
+        template.rowConfigs.where((c) => c.isVisible).toList(growable: false);
+
+    final rowConfigs = visibleRowConfigs.isEmpty
+        ? [
+            RowConfig(
+              type: RowType.columnHeaderRow,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultConfig,
+            ),
+            RowConfig(
+              type: RowType.tenGod,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultTenGodsConfig,
+            ),
+            RowConfig(
+              type: RowType.heavenlyStem,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultGanConfig,
+            ),
+            RowConfig(
+              type: RowType.earthlyBranch,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultZhiConfig,
+            ),
+            RowConfig(
+              type: RowType.naYin,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultConfig,
+            ),
+            RowConfig(
+              type: RowType.kongWang,
+              isVisible: true,
+              isTitleVisible: true,
+              textStyleConfig: TextStyleConfig.defaultConfig,
+            ),
+          ]
+        : visibleRowConfigs;
+
+    final rowOrderUuid = <String>[];
+    final rowMap = <String, RowPayload>{};
+    var rowSepIndex = 0;
+    final rowTypeCounts = <RowType, int>{};
+
+    for (final config in rowConfigs) {
+      final type = config.type;
+      if (type == RowType.separator) {
+        final uuid = 'row-separator-${rowSepIndex++}';
+        rowMap[uuid] = RowSeparatorPayload(uuid: uuid);
+        rowOrderUuid.add(uuid);
+        continue;
+      }
+
+      if (type == RowType.columnHeaderRow) {
+        final uuid = 'row-columnHeaderRow';
+        rowMap[uuid] = ColumnHeaderRowPayload(
+          gender: Gender.male,
+          uuid: uuid,
+        );
+        rowOrderUuid.add(uuid);
+        continue;
+      }
+
+      final i = (rowTypeCounts[type] ?? 0);
+      rowTypeCounts[type] = i + 1;
+
+      final uuid = 'row-${type.name}-$i';
+      rowMap[uuid] = TextRowPayload(
+        rowType: type,
+        rowLabel: type.name,
+        uuid: uuid,
+        titleInCell: !config.isTitleVisible,
+      );
+      rowOrderUuid.add(uuid);
+    }
+
+    return CardPayload(
+      gender: Gender.male,
+      pillarMap: pillarMap,
+      pillarOrderUuid: pillarOrderUuid,
+      rowMap: rowMap,
+      rowOrderUuid: rowOrderUuid,
+    );
+  }
+
+  JiaZi _sampleJiaZiFor(PillarType type, EightChars sample) {
+    switch (type) {
+      case PillarType.year:
+        return sample.year;
+      case PillarType.month:
+        return sample.month;
+      case PillarType.day:
+        return sample.day;
+      case PillarType.hour:
+        return sample.time;
+      default:
+        return JiaZi.JIA_ZI;
+    }
+  }
+
+  String _pillarLabelFor(PillarType type) {
+    switch (type) {
+      case PillarType.year:
+        return '年';
+      case PillarType.month:
+        return '月';
+      case PillarType.day:
+        return '日';
+      case PillarType.hour:
+        return '时';
+      default:
+        return type.name;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final bg = selected
-        ? theme.colorScheme.primary.withValues(alpha: 0.12)
-        : theme.colorScheme.surfaceContainerHighest;
     final borderColor = selected
         ? theme.colorScheme.primary
-        : theme.dividerColor.withValues(alpha: 0.12);
+        : theme.dividerColor.withValues(alpha: 0.14);
 
-    return Material(
-      color: bg,
-      borderRadius: BorderRadius.circular(14),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(14),
-        onTap: onTap,
-        child: Container(
-          width: 176,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  template.name,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.textTheme.labelLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+    final previewTheme = _buildPreviewTheme(template);
+    final previewPayload = _buildPreviewPayload(template);
+
+    final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(previewTheme);
+    final brightnessNotifier = ValueNotifier<Brightness>(theme.brightness);
+    final colorPreviewModeNotifier =
+        ValueNotifier<ColorPreviewMode>(ColorPreviewMode.colorful);
+    final paddingNotifier =
+        ValueNotifier<EdgeInsets>(previewTheme.card.padding);
+    final cardPayloadNotifier = ValueNotifier<CardPayload>(previewPayload);
+
+    final rowStrategyMapper = <RowType, RowComputationStrategy>{
+      RowType.tenGod: TenGodRowStrategy(),
+      RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
+      RowType.hiddenStems: HiddenStemsRowStrategy(),
+      RowType.kongWang: KongWangRowStrategy(),
+      RowType.naYin: NaYinRowStrategy(),
+      RowType.xunShou: XunShouRowStrategy(),
+      RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
+      RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
+      RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
+      RowType.hiddenStemsPrimaryGods: HiddenStemsPrimaryGodsRowStrategy(),
+      RowType.hiddenStemsSecondaryGods: HiddenStemsSecondaryGodsRowStrategy(),
+      RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
+      RowType.starYun: StarYunRowStrategy(),
+      RowType.selfSiting: SelfSitingRowStrategy(),
+    };
+
+    return Tooltip(
+      message: template.name,
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Container(
+            width: width,
+            height: height,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: borderColor),
+            ),
+            clipBehavior: Clip.antiAlias,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: theme.dividerColor.withValues(alpha: 0.10),
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(6),
+                        child: ClipRect(
+                          child: FittedBox(
+                            fit: BoxFit.contain,
+                            alignment: Alignment.center,
+                            clipBehavior: Clip.hardEdge,
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 920),
+                              child: IgnorePointer(
+                                child: RepaintBoundary(
+                                  child: EditableFourZhuCardV3(
+                                    dayGanZhi: JiaZi.BING_YIN,
+                                    brightnessNotifier: brightnessNotifier,
+                                    colorPreviewModeNotifier:
+                                        colorPreviewModeNotifier,
+                                    themeNotifier: themeNotifier,
+                                    cardPayloadNotifier: cardPayloadNotifier,
+                                    paddingNotifier: paddingNotifier,
+                                    rowStrategyMapper: rowStrategyMapper,
+                                    gender: Gender.male,
+                                    showGrip: false,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-              if (favorite) ...[
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.star,
-                  size: 16,
-                  color: theme.colorScheme.primary,
-                ),
+                if (favorite)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      width: 20,
+                      height: 20,
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.dividerColor.withValues(alpha: 0.12),
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.star,
+                        size: 14,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                if (showCaption)
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent,
+                            theme.colorScheme.surface.withValues(alpha: 0.92),
+                          ],
+                        ),
+                      ),
+                      child: Text(
+                        template.name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
-            ],
+            ),
           ),
         ),
       ),
@@ -925,8 +1343,8 @@ class _TemplateAlbumPage extends StatelessWidget {
 
         final recentSet = recent.map((e) => e.id).toSet();
         final other = templates
-            .where((t) =>
-                !favoriteSet.contains(t.id) && !recentSet.contains(t.id))
+            .where(
+                (t) => !favoriteSet.contains(t.id) && !recentSet.contains(t.id))
             .toList(growable: false)
           ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
 
@@ -945,8 +1363,7 @@ class _TemplateAlbumPage extends StatelessWidget {
                           context: context,
                           builder: (dialogContext) => AlertDialog(
                             title: const Text('重置模板'),
-                            content:
-                                const Text('将删除本地所有模板并重建默认模板。此操作不可撤销。'),
+                            content: const Text('将删除本地所有模板并重建默认模板。此操作不可撤销。'),
                             actions: [
                               TextButton(
                                 onPressed: () =>
@@ -976,8 +1393,7 @@ class _TemplateAlbumPage extends StatelessWidget {
           body: LayoutBuilder(
             builder: (context, constraints) {
               final width = constraints.maxWidth;
-              final crossAxisCount =
-                  (width / 220).floor().clamp(2, 6).toInt();
+              final crossAxisCount = (width / 220).floor().clamp(2, 6).toInt();
               return GridView.builder(
                 padding: const EdgeInsets.all(12),
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -1022,64 +1438,18 @@ class _TemplateAlbumTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final bg = selected
-        ? theme.colorScheme.primary.withValues(alpha: 0.12)
-        : theme.colorScheme.surfaceContainerHighest;
-    final borderColor = selected
-        ? theme.colorScheme.primary
-        : theme.dividerColor.withValues(alpha: 0.12);
-
-    return Material(
-      color: bg,
-      borderRadius: BorderRadius.circular(16),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: borderColor),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      template.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      (template.description ?? '—').trim().isEmpty
-                          ? '—'
-                          : template.description!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              if (favorite) ...[
-                const SizedBox(width: 10),
-                Icon(
-                  Icons.star,
-                  size: 18,
-                  color: theme.colorScheme.primary,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return _TemplateThumbnailCard(
+          template: template,
+          selected: selected,
+          favorite: favorite,
+          width: constraints.maxWidth,
+          height: constraints.maxHeight,
+          showCaption: true,
+          onTap: onTap,
+        );
+      },
     );
   }
 }
@@ -1100,7 +1470,8 @@ class _HoverExpandActionButton extends StatefulWidget {
   final bool destructive;
 
   @override
-  State<_HoverExpandActionButton> createState() => _HoverExpandActionButtonState();
+  State<_HoverExpandActionButton> createState() =>
+      _HoverExpandActionButtonState();
 }
 
 class _HoverExpandActionButtonState extends State<_HoverExpandActionButton> {
@@ -1171,9 +1542,8 @@ class _HoverExpandActionButtonState extends State<_HoverExpandActionButton> {
                     child: Icon(
                       widget.icon,
                       size: 20,
-                      color: enabled
-                          ? fgColor
-                          : fgColor.withValues(alpha: 0.55),
+                      color:
+                          enabled ? fgColor : fgColor.withValues(alpha: 0.55),
                     ),
                   ),
                 ),
@@ -1210,7 +1580,8 @@ class _HoverExpandMenuButtonState extends State<_HoverExpandMenuButton> {
 
   Future<void> _openMenu() async {
     final box = context.findRenderObject() as RenderBox?;
-    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final overlay =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (box == null || overlay == null) return;
 
     final position = RelativeRect.fromRect(
@@ -1288,9 +1659,8 @@ class _HoverExpandMenuButtonState extends State<_HoverExpandMenuButton> {
                     child: Icon(
                       widget.icon,
                       size: 20,
-                      color: enabled
-                          ? fgColor
-                          : fgColor.withValues(alpha: 0.55),
+                      color:
+                          enabled ? fgColor : fgColor.withValues(alpha: 0.55),
                     ),
                   ),
                 ),
