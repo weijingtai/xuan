@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import '../widgets/ghost_pillar_widget.dart';
 import 'card_data_adapter.dart';
 import 'card_decoration.dart';
 import 'card_drag_handler.dart';
@@ -131,13 +132,6 @@ class CardBuilders {
       ));
     }
 
-    // 行标题列顶部的空白 (对应 Row Title Column)
-    if (sizeManager.theme.displayRowTitleColumn) {
-      children.add(SizedBox(
-        width: sizeManager.rowTitleWidth,
-        height: sizeManager.dragHandleRowHeight,
-      ));
-    }
 
     // 各列的抓手
     for (int i = 0; i < pillarOrder.length; i++) {
@@ -179,24 +173,16 @@ class CardBuilders {
           feedback: Material(
             elevation: 4,
             color: Colors.transparent,
-            child: Container(
+            child: GhostPillarWidget.column(
               width: width,
-              height: height, // 应该显示整列的高度?
-              // V3 中 feedback 是整列. sizeManager.calculator.getColumnGhostSize()
-              // 但这里只构建 grip.
-              // 我们暂且只显示 grip 作为 feedback, 或者构建一个简单的 ghost.
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.5),
-                border: Border.all(color: Colors.blue),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.drag_handle, color: Colors.white),
+              height: height,
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+              borderColor: Theme.of(context).primaryColor,
             ),
           ),
-          childWhenDragging: Container(
+          childWhenDragging: GhostPillarWidget.column(
             width: width,
             height: height,
-            color: Colors.grey.withValues(alpha: 0.2), // 占位样式
           ),
           child: Container(
             width: width,
@@ -216,7 +202,18 @@ class CardBuilders {
     required double width,
     required double height,
     required CardDragHandler dragHandler,
+    required RowPayload rowPayload,
   }) {
+    // 禁止拖拽表头行
+    if (rowPayload.rowType == RowType.columnHeaderRow) {
+      return Container(
+        width: width,
+        height: height,
+        alignment: Alignment.center,
+        color: Colors.transparent,
+      );
+    }
+
     return DragTarget<int>(
       onWillAcceptWithDetails: (details) => dragHandler.isDraggingRow,
       onMove: (details) => dragHandler.onRowHover(index),
@@ -230,21 +227,16 @@ class CardBuilders {
           feedback: Material(
             elevation: 4,
             color: Colors.transparent,
-            child: Container(
+            child: GhostPillarWidget.row(
               width: width,
               height: height,
-              decoration: BoxDecoration(
-                color: Colors.blue.withValues(alpha: 0.5),
-                border: Border.all(color: Colors.blue),
-              ),
-              alignment: Alignment.center,
-              child: const Icon(Icons.drag_indicator, color: Colors.white),
+              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
+              borderColor: Theme.of(context).primaryColor,
             ),
           ),
-          childWhenDragging: Container(
+          childWhenDragging: GhostPillarWidget.row(
             width: width,
             height: height,
-            color: Colors.grey.withValues(alpha: 0.2),
           ),
           child: Container(
             width: width,
@@ -284,29 +276,10 @@ class CardBuilders {
         width: sizeManager.dragHandleColWidth,
         height: rowHeight,
         dragHandler: dragHandler,
+        rowPayload: rowPayload,
       ));
     }
 
-    // 2. 行标题列 (Row Title Column)
-    if (sizeManager.theme.displayRowTitleColumn) {
-      String title = '';
-      if (rowPayload is TextRowPayload) {
-        if (rowPayload.rowLabel != null) {
-          title = rowPayload.rowLabel!;
-        }
-      } else if (rowPayload is ColumnHeaderRowPayload) {
-        title = rowPayload.genderLabel;
-      }
-
-      final dpr = MediaQuery.of(context).devicePixelRatio;
-      final titleW = (sizeManager.rowTitleWidth * dpr).floorToDouble() / dpr;
-      children.add(Container(
-        width: titleW,
-        height: rowHeight,
-        alignment: Alignment.center,
-        child: Text(title, style: const TextStyle(fontSize: 12)), // 简单渲染
-      ));
-    }
 
     // 3. 数据单元格
     // 获取该行所有单元格的数据

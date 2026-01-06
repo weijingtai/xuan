@@ -3856,6 +3856,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   // 判断全局点是否在卡片容器内
   bool _isGlobalPointInsideCard(Offset global) {
+    if (_dragWantsDelete.value) return false;
     final ctx = _cardKey.currentContext;
     if (ctx == null) return true; // 默认为在内，避免误删
     final box = ctx.findRenderObject() as RenderBox?;

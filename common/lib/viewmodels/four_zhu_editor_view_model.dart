@@ -1598,7 +1598,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         RowConfig(
           type: RowType.columnHeaderRow,
           isVisible: true,
-          isTitleVisible: true,
+          isTitleVisible: false,
           textStyleConfig: TextStyleConfig.defaultConfig,
         ),
         RowConfig(
@@ -1656,6 +1656,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     // 且行配置符合旧版特征（防止误伤用户自定义模板）
     // 旧版默认模板通常包含7行配置
     // M4.3.3 - 增加版本检查，防止用户修改后的模板被反复迁移
+    /* 
+    // 禁用自动迁移逻辑，防止覆盖用户已有的自定义模板（如 Picture 1 样式）
     final isLegacyCandidate = template.name == '默认模板' &&
         template.cardStyle.dividerType == BorderType.solid &&
         template.rowConfigs.length == 7 &&
@@ -1677,6 +1679,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       await saveTemplateUseCase(template: migrated);
       return migrated;
     }
+    */
     return template;
   }
 
@@ -1902,22 +1905,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   /// 计算实际的数据索引（考虑 UI 上可能存在的额外 Title Column）
   /// 如果 UI 有 Title Column 但 ChartGroups 没有，则 index - 1
   int _adjustPillarIndex(LayoutTemplate template, int uiIndex) {
-    final uiHasTitle = cardPayloadNotifier.value.pillarOrderUuid.isNotEmpty &&
-        cardPayloadNotifier.value
-                .pillarMap[cardPayloadNotifier.value.pillarOrderUuid.first]
-            is RowTitleColumnPayload;
-
-    bool groupsHaveTitle = false;
-    if (template.chartGroups.isNotEmpty &&
-        template.chartGroups.first.pillarOrder.isNotEmpty) {
-      groupsHaveTitle = template.chartGroups.first.pillarOrder.first ==
-          PillarType.rowTitleColumn;
-    }
-
-    // 如果 UI 有标题列，但数据源没有，则 UI index 0 对应无效数据索引，后续索引需 -1
-    if (uiHasTitle && !groupsHaveTitle) {
-      return uiIndex - 1;
-    }
     return uiIndex;
   }
 
@@ -2137,13 +2124,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     required EightChars eightChars,
     required Gender gender,
   }) {
-    final titleUuid = _uuid.v4();
     final yearUuid = _uuid.v4();
     final monthUuid = _uuid.v4();
     final dayUuid = _uuid.v4();
     final hourUuid = _uuid.v4();
 
-    final titleRowUuid = _uuid.v4();
     final heavenlyStemUuid = _uuid.v4();
     final earthlyBranchUuid = _uuid.v4();
     final naYinUuid = _uuid.v4();
@@ -2153,7 +2138,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     return CardPayload(
       gender: gender,
       pillarMap: {
-        titleUuid: RowTitleColumnPayload(uuid: titleUuid),
         yearUuid: ContentPillarPayload(
           uuid: yearUuid,
           pillarLabel: '年',
@@ -2211,9 +2195,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           ),
         ),
       },
-      pillarOrderUuid: [yearUuid, monthUuid, dayUuid, hourUuid, titleUuid],
+      pillarOrderUuid: [yearUuid, monthUuid, dayUuid, hourUuid],
       rowMap: {
-        titleRowUuid: TitleRowPayload(uuid: titleRowUuid),
         tenGodUuid: TextRowPayload(
           rowType: RowType.tenGod,
           rowLabel: '十神',
@@ -2246,7 +2229,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         ),
       },
       rowOrderUuid: [
-        titleRowUuid,
         tenGodUuid,
         heavenlyStemUuid,
         earthlyBranchUuid,
@@ -2374,17 +2356,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final newRowOrderUuid = <String>[];
     final newRowMap = Map<String, RowPayload>.from(currentPayload.rowMap);
 
-    // Preserve TitleRow if it exists at the top AND not present in rowConfigs
-    // This handles legacy templates that don't have columnHeaderRow in config
-    final hasHeaderInConfig =
-        template.rowConfigs.any((c) => c.type == RowType.columnHeaderRow);
-
-    if (!hasHeaderInConfig && currentPayload.rowOrderUuid.isNotEmpty) {
-      final firstUuid = currentPayload.rowOrderUuid.first;
-      if (newRowMap[firstUuid] is TitleRowPayload) {
-        newRowOrderUuid.add(firstUuid);
-      }
-    }
 
     for (final config in template.rowConfigs) {
       if (!config.isVisible) continue;
@@ -2450,38 +2421,55 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final newPillarMap =
         Map<String, PillarPayload>.from(currentPayload.pillarMap);
 
-    // Preserve Title Column if it exists (usually it's the first one in payload but not in groups)
-    // Actually, LayoutTemplate might not track rowTitleColumn in groups?
-    // Let's check if rowTitleColumn is in payload but not in groups.
-    // If so, we should preserve it.
-    // Typically rowTitleColumn is handled separately.
-    // Let's look for rowTitleColumn in existing payload.
-    String? titleColumnUuid;
-    currentPayload.pillarMap.forEach((uuid, payload) {
-      if (payload.pillarType == PillarType.rowTitleColumn) {
-        titleColumnUuid = uuid;
-      }
-    });
-
-    if (titleColumnUuid != null) {
-      // Only add title column if it is NOT present in the template's pillars.
-      // This prevents duplication when the template explicitly includes the title column.
-      bool templateHasTitle = flattenedPillars.contains(PillarType.rowTitleColumn);
-      if (!templateHasTitle) {
-        newPillarOrderUuid.add(titleColumnUuid!);
-      }
-    }
-
     for (final type in flattenedPillars) {
-      if (pillarTypeToUuidMap.containsKey(type)) {
-        newPillarOrderUuid.add(pillarTypeToUuidMap[type]!);
-      } else {
-        // If a new pillar type appears in template (e.g. from undo), we might need to restore it.
-        // For now, if we can't find it in map, we skip or create placeholder?
-        // Creating a proper payload requires data.
-        // Ideally, we shouldn't delete payloads from map when hiding/removing, just remove from order.
-        // But here we see sync logic.
+      var uuid = pillarTypeToUuidMap[type];
+      if (uuid == null) {
+        uuid = _uuid.v4();
+        final String label;
+        switch (type) {
+          case PillarType.year:
+            label = '年';
+            break;
+          case PillarType.month:
+            label = '月';
+            break;
+          case PillarType.day:
+            label = '日';
+            break;
+          case PillarType.hour:
+            label = '时';
+            break;
+          default:
+            label = type.name;
+            break;
+        }
+
+        final PillarPayload payload;
+        if (type == PillarType.rowTitleColumn) {
+          payload = RowTitleColumnPayload(uuid: uuid);
+        } else if (type == PillarType.separator) {
+          payload = SeparatorPillarPayload(uuid: uuid);
+        } else {
+          payload = ContentPillarPayload(
+            uuid: uuid,
+            pillarLabel: label,
+            pillarType: type,
+            pillarContent: PillarContent(
+              id: 'pillar-$uuid',
+              pillarType: type,
+              label: label,
+              jiaZi: JiaZi.JIA_ZI,
+              description: '占位柱',
+              version: '1',
+              sourceKind: PillarSourceKind.userInput,
+            ),
+          );
+        }
+
+        newPillarMap[uuid] = payload;
+        pillarTypeToUuidMap[type] = uuid;
       }
+      newPillarOrderUuid.add(uuid);
     }
 
     if (!_areListsEqual(currentPayload.pillarOrderUuid, newPillarOrderUuid)) {

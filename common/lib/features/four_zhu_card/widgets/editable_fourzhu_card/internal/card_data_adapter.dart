@@ -3,8 +3,10 @@ import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/models/row_strategy.dart';
-import '../size_calculator/metrics.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:common/utils/constant_values_utils.dart';
+import '../size_calculator/metrics.dart';
+import 'card_utils.dart';
 
 /// CardDataAdapter
 ///
@@ -55,39 +57,59 @@ class CardDataAdapter {
     required CardPayload payload,
     required Map<RowType, RowComputationStrategy> rowStrategyMapper,
   }) {
-    // 1. 优先使用 Strategy
+    final values = <String, String>{};
+
+    // 1. 优先使用 Strategy（仅对内容柱计算）
     final strategy = rowStrategyMapper[rowType];
     if (strategy != null) {
-      // 构造 Input
-      final pillars = payload.pillarOrderUuid
+      final contentPillars = payload.pillarOrderUuid
           .map((uuid) => payload.pillarMap[uuid])
-          .whereType<ContentPillarPayload>() // 只处理内容柱
-          .map((p) => p.pillarContent)
-          .toList();
+          .whereType<ContentPillarPayload>()
+          .toList(growable: false);
 
-      // 查找日柱
-      final dayPillar =
-          payload.pillarMap.values.whereType<ContentPillarPayload>().firstWhere(
-                (p) => p.pillarType == PillarType.day,
-                orElse: () => payload.pillarMap.values
-                    .whereType<ContentPillarPayload>()
-                    .first,
-              );
+      if (contentPillars.isNotEmpty) {
+        final pillars =
+            contentPillars.map((p) => p.pillarContent).toList(growable: false);
 
-      final input = RowComputationInput(
-        pillars: pillars,
-        dayJiaZi: dayPillar.pillarContent.jiaZi,
-        gender: payload.gender,
-      );
+        final dayPillar = contentPillars.firstWhere(
+          (p) => p.pillarType == PillarType.day,
+          orElse: () => contentPillars.first,
+        );
 
-      return strategy.compute(input).perPillarValues;
+        final input = RowComputationInput(
+          pillars: pillars,
+          dayJiaZi: dayPillar.pillarContent.jiaZi,
+          gender: payload.gender,
+        );
+
+        final result = strategy.compute(input);
+
+        for (final p in contentPillars) {
+          values[p.uuid] = result.perPillarValues[p.pillarContent.id] ?? '';
+        }
+      }
     }
 
-    // 2. 处理非 Strategy 的基础行
-    final values = <String, String>{};
+    // 2. 补齐非内容柱（行标题列/分隔列），并为未被 strategy 覆盖的内容柱走基础逻辑
     for (final pillarUuid in payload.pillarOrderUuid) {
       final pillar = payload.pillarMap[pillarUuid];
+      if (pillar == null) continue;
+
+      if (pillar.pillarType == PillarType.separator) {
+        values[pillar.uuid] = '';
+        continue;
+      }
+
+      if (pillar.pillarType == PillarType.rowTitleColumn) {
+        final title = (rowType == RowType.columnHeaderRow)
+            ? FourZhuText.zaoLabelForGender(payload.gender)
+            : CardUtils.labelForRowType(rowType);
+        values[pillar.uuid] = title;
+        continue;
+      }
+
       if (pillar is! ContentPillarPayload) continue;
+      if (values.containsKey(pillar.uuid)) continue;
 
       final content = pillar.pillarContent;
       String text = '';
@@ -120,6 +142,7 @@ class CardDataAdapter {
       }
       values[pillar.uuid] = text;
     }
+
     return values;
   }
 
