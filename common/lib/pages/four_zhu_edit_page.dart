@@ -100,18 +100,6 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                   icon: const Icon(Icons.arrow_back),
                   onPressed: () => Navigator.pop(context),
                 ),
-                actions: [
-                  IconButton(
-                    icon: const Icon(Icons.save),
-                    onPressed: () => _saveWithFeedback(context, viewModel),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.restart_alt),
-                    onPressed: viewModel.isLoading
-                        ? null
-                        : () => _confirmResetTemplates(context, viewModel),
-                  ),
-                ],
               ),
               // appBar: EditorTopBar(
               //   nameController: _templateNameController,
@@ -194,52 +182,6 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                                 border: OutlineInputBorder(),
                                                 isDense: true,
                                               ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton.icon(
-                                            onPressed: viewModel.isLoading
-                                                ? null
-                                                : () =>
-                                                    _showCreateTemplateDialog(
-                                                        context, viewModel),
-                                            icon: const Icon(Icons.add),
-                                            label: const Text('新建'),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton.icon(
-                                            onPressed: viewModel.isLoading ||
-                                                    currentTemplate == null
-                                                ? null
-                                                : viewModel
-                                                    .duplicateCurrentTemplate,
-                                            icon: const Icon(Icons.copy),
-                                            label: const Text('复制'),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton.icon(
-                                            onPressed: viewModel.isLoading ||
-                                                    currentTemplate == null
-                                                ? null
-                                                : () => _showSaveAsDialog(
-                                                    context, viewModel),
-                                            icon: const Icon(
-                                                Icons.save_as_outlined),
-                                            label: const Text('另存为'),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          OutlinedButton.icon(
-                                            onPressed: viewModel.isLoading ||
-                                                    currentTemplate == null
-                                                ? null
-                                                : () => _confirmDelete(
-                                                    context, viewModel),
-                                            icon: const Icon(
-                                                Icons.delete_outline),
-                                            label: const Text('删除'),
-                                            style: OutlinedButton.styleFrom(
-                                              foregroundColor:
-                                                  themeData.colorScheme.error,
                                             ),
                                           ),
                                         ],
@@ -346,6 +288,22 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                             const SizedBox(height: 12),
                             Row(
                               children: [
+                                OutlinedButton.icon(
+                                  onPressed: viewModel.canUndo
+                                      ? viewModel.undoLastChange
+                                      : null,
+                                  icon: const Icon(Icons.undo),
+                                  label: const Text('撤销'),
+                                ),
+                                const SizedBox(width: 8),
+                                OutlinedButton.icon(
+                                  onPressed: viewModel.canRedo
+                                      ? viewModel.redoLastChange
+                                      : null,
+                                  icon: const Icon(Icons.redo),
+                                  label: const Text('重做'),
+                                ),
+                                const Spacer(),
                                 FilledButton.icon(
                                   onPressed: viewModel.canSave
                                       ? () =>
@@ -354,23 +312,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                   icon: const Icon(Icons.save),
                                   label: const Text('保存更改'),
                                 ),
-                                const SizedBox(width: 12),
-                                OutlinedButton.icon(
-                                  onPressed: viewModel.canUndo
-                                      ? viewModel.undoLastChange
-                                      : null,
-                                  icon: const Icon(Icons.undo),
-                                  label: const Text('撤销一步'),
-                                ),
-                                const SizedBox(width: 8),
-                                OutlinedButton.icon(
-                                  onPressed: viewModel.canRedo
-                                      ? viewModel.redoLastChange
-                                      : null,
-                                  icon: const Icon(Icons.redo),
-                                  label: const Text('重做一步'),
-                                ),
-                                const SizedBox(width: 12),
+                                const Spacer(),
                                 OutlinedButton.icon(
                                   onPressed: viewModel.canRevert
                                       ? viewModel.revertChanges
@@ -378,7 +320,63 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                   icon: const Icon(Icons.restore),
                                   label: const Text('放弃更改'),
                                 ),
-                                const Spacer(),
+                                const SizedBox(width: 8),
+                                PopupMenuButton<String>(
+                                  enabled: !viewModel.isLoading,
+                                  icon: const Icon(Icons.more_horiz),
+                                  tooltip: '模板操作',
+                                  onSelected: (value) {
+                                    if (value == 'create') {
+                                      _showCreateTemplateDialog(
+                                          context, viewModel);
+                                      return;
+                                    }
+                                    if (currentTemplate == null) return;
+                                    if (value == 'duplicate') {
+                                      viewModel.duplicateCurrentTemplate();
+                                    } else if (value == 'save_as') {
+                                      _showSaveAsDialog(context, viewModel);
+                                    } else if (value == 'delete') {
+                                      _confirmDelete(context, viewModel);
+                                    } else if (value == 'reset') {
+                                      _confirmResetTemplates(context, viewModel);
+                                    }
+                                  },
+                                  itemBuilder: (context) => [
+                                    const PopupMenuItem(
+                                      value: 'create',
+                                      child: Text('新建模板'),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'duplicate',
+                                      child: Text('复制模板'),
+                                    ),
+                                    const PopupMenuItem(
+                                      value: 'save_as',
+                                      child: Text('另存为'),
+                                    ),
+                                    PopupMenuItem(
+                                      enabled: currentTemplate != null,
+                                      value: 'delete',
+                                      child: Text(
+                                        '删除模板',
+                                        style: TextStyle(
+                                          color: themeData.colorScheme.error,
+                                        ),
+                                      ),
+                                    ),
+                                    PopupMenuItem(
+                                      value: 'reset',
+                                      child: Text(
+                                        '重置模板',
+                                        style: TextStyle(
+                                          color: themeData.colorScheme.error,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(width: 12),
                                 OutlinedButton.icon(
                                   onPressed: () => _promptCreateGroup(context),
                                   icon: const Icon(Icons.add),

@@ -29,8 +29,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
   // ValueNotifier<bool>(true);
-  final TextEditingController _cardNameController = TextEditingController();
-  final ValueNotifier<String> _cardNameNotifier = ValueNotifier<String>('');
 
   /// 初始化卡片数据源（不访问 Theme）
   /// 参数：无
@@ -74,8 +72,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     // _pillarsNotifier.dispose();
     _showGripNotifier.dispose();
     // _showGripColumnsNotifier.dispose();
-    _cardNameController.dispose();
-    _cardNameNotifier.dispose();
     super.dispose();
   }
 
@@ -223,26 +219,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            SizedBox(
-                              height: 48,
-                              width: 200,
-                              child: TextField(
-                                controller: _cardNameController,
-                                onChanged: (v) => _cardNameNotifier.value = v,
-                                decoration: InputDecoration(
-                                  labelText: '卡片名称',
-                                  hintText: '请输入卡片名称',
-                                  border: UnderlineInputBorder(),
-                                  suffixIcon: Icon(
-                                    Icons.edit,
-                                    size: 16,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 24,
-                            ),
                             EditableFourZhuCardV3(
                               dayGanZhi: JiaZi.JIA_ZI,
                               brightnessNotifier:
