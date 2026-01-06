@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import '../../../../../enums/layout_template_enums.dart';
 import '../widgets/ghost_pillar_widget.dart';
 import 'card_data_adapter.dart';
 import 'card_decoration.dart';
@@ -132,7 +133,6 @@ class CardBuilders {
       ));
     }
 
-
     // 各列的抓手
     for (int i = 0; i < pillarOrder.length; i++) {
       final dpr = MediaQuery.of(context).devicePixelRatio;
@@ -160,37 +160,49 @@ class CardBuilders {
     required CardDragHandler dragHandler,
     required CardSizeManager sizeManager,
   }) {
-    return DragTarget<int>(
-      onWillAcceptWithDetails: (details) => dragHandler.isDraggingColumn,
-      onMove: (details) => dragHandler.onColumnHover(index),
-      builder: (context, candidateData, rejectedData) {
-        return LongPressDraggable<int>(
-          data: index,
-          axis: Axis.horizontal,
-          maxSimultaneousDrags: 1,
-          onDragStarted: () => dragHandler.onColumnDragStart(index),
-          onDragEnd: (_) => dragHandler.onColumnDragEnd(),
-          feedback: Material(
-            elevation: 4,
-            color: Colors.transparent,
-            child: GhostPillarWidget.column(
-              width: width,
-              height: height,
-              backgroundColor: Theme.of(context).primaryColor.withOpacity(0.2),
-              borderColor: Theme.of(context).primaryColor,
-            ),
-          ),
-          childWhenDragging: GhostPillarWidget.column(
-            width: width,
-            height: height,
-          ),
-          child: Container(
-            width: width,
-            height: height,
-            alignment: Alignment.center,
-            color: Colors.transparent, // 响应点击
-            child: const Icon(Icons.drag_handle, size: 12, color: Colors.grey),
-          ),
+    return Builder(
+      builder: (gripContext) {
+        return DragTarget<int>(
+          onWillAcceptWithDetails: (details) => dragHandler.isDraggingColumn,
+          onMove: (details) {
+            final box = gripContext.findRenderObject() as RenderBox?;
+            if (box == null) return;
+            final local = box.globalToLocal(details.offset);
+            final insertionIndex = (local.dx < width / 2) ? index : index + 1;
+            dragHandler.onColumnHover(insertionIndex);
+          },
+          builder: (context, candidateData, rejectedData) {
+            return LongPressDraggable<int>(
+              data: index,
+              axis: Axis.horizontal,
+              maxSimultaneousDrags: 1,
+              onDragStarted: () => dragHandler.onColumnDragStart(index),
+              onDragEnd: (_) => dragHandler.onColumnDragEnd(),
+              feedback: Material(
+                elevation: 4,
+                color: Colors.transparent,
+                child: GhostPillarWidget.column(
+                  width: width,
+                  height: height,
+                  backgroundColor:
+                      Theme.of(context).primaryColor.withOpacity(0.2),
+                  borderColor: Theme.of(context).primaryColor,
+                ),
+              ),
+              childWhenDragging: GhostPillarWidget.column(
+                width: width,
+                height: height,
+              ),
+              child: Container(
+                width: width,
+                height: height,
+                alignment: Alignment.center,
+                color: Colors.transparent, // 响应点击
+                child:
+                    const Icon(Icons.drag_handle, size: 12, color: Colors.grey),
+              ),
+            );
+          },
         );
       },
     );
@@ -279,7 +291,6 @@ class CardBuilders {
         rowPayload: rowPayload,
       ));
     }
-
 
     // 3. 数据单元格
     // 获取该行所有单元格的数据

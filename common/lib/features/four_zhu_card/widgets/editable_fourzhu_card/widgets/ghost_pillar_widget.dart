@@ -43,14 +43,16 @@ class GhostPillarWidget extends StatelessWidget {
   factory GhostPillarWidget.column({
     required double width,
     required double height,
+    Color? backgroundColor,
+    Color? borderColor,
     double borderWidth = 1.5,
     double borderRadius = 0,
   }) {
     return GhostPillarWidget(
       width: width,
       height: height,
-      backgroundColor: Colors.blue.withAlpha(20),
-      borderColor: Colors.blue.withAlpha(128),
+      backgroundColor: backgroundColor ?? Colors.blue.withAlpha(20),
+      borderColor: borderColor ?? Colors.blue.withAlpha(128),
       borderWidth: borderWidth,
       borderRadius: borderRadius,
     );
@@ -60,14 +62,16 @@ class GhostPillarWidget extends StatelessWidget {
   factory GhostPillarWidget.row({
     required double width,
     required double height,
+    Color? backgroundColor,
+    Color? borderColor,
     double borderWidth = 1.5,
     double borderRadius = 0,
   }) {
     return GhostPillarWidget(
       width: width,
       height: height,
-      backgroundColor: Colors.green.withAlpha(20),
-      borderColor: Colors.green.withAlpha(128),
+      backgroundColor: backgroundColor ?? Colors.green.withAlpha(20),
+      borderColor: borderColor ?? Colors.green.withAlpha(128),
       borderWidth: borderWidth,
       borderRadius: borderRadius,
     );

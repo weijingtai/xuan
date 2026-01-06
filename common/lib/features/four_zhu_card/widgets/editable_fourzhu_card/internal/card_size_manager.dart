@@ -51,12 +51,14 @@ class CardSizeManager {
   void updatePayload(CardPayload newPayload) {
     payload = newPayload;
     _cachedSnapshot = null;
+    _calculator = null;
   }
 
   /// 更新 theme 并清除缓存
   void updateTheme(EditableFourZhuCardTheme newTheme) {
     theme = newTheme;
     _cachedSnapshot = null;
+    _calculator = null;
   }
 
   /// 计算并缓存 metrics snapshot
@@ -65,49 +67,14 @@ class CardSizeManager {
       return _cachedSnapshot!;
     }
 
-    final specMap = CardDataAdapter.buildCellTextSpecMap(
-      payload: payload,
-      rowStrategyMapper: rowStrategyMapper,
-      typography: theme.typography,
-    );
-
-    final calc = EnhancedCardMetricsCalculator(
-      theme: theme,
-      payload: payload,
-      defaultPillarWidth: defaultPillarWidth,
-      lineHeightFactor: lineHeightFactor,
-      cellTextSpecMap: specMap,
-      avgGlyphWidthScale: avgGlyphWidthScale,
-    );
-
-    _cachedSnapshot = calc.compute();
+    _ensureCalculator();
+    _cachedSnapshot = _calculator!.compute();
     return _cachedSnapshot!;
   }
 
-  /// 获取当前的 Calculator (用于拖拽操作)
-  /// 注意: 每次调用都会创建一个新的 Calculator 实例, 但会复用当前的 snapshot
   EnhancedCardMetricsCalculator get calculator {
-    final specMap = CardDataAdapter.buildCellTextSpecMap(
-      payload: payload,
-      rowStrategyMapper: rowStrategyMapper,
-      typography: theme.typography,
-    );
-
-    final calc = EnhancedCardMetricsCalculator(
-      theme: theme,
-      payload: payload,
-      defaultPillarWidth: defaultPillarWidth,
-      lineHeightFactor: lineHeightFactor,
-      cellTextSpecMap: specMap,
-      avgGlyphWidthScale: avgGlyphWidthScale,
-    );
-
-    // 如果有缓存的 snapshot, 注入到 calculator 中
-    // 注意: EnhancedCardMetricsCalculator 没有直接注入 snapshot 的方法
-    // 但我们可以通过继承或修改 EnhancedCardMetricsCalculator 来支持
-    // 或者, 我们直接使用 calculator 的方法来生成新的 snapshot 并更新 _cachedSnapshot
-
-    return calc;
+    _ensureCalculator();
+    return _calculator!;
   }
 
   // ===========================================================================
@@ -115,7 +82,8 @@ class CardSizeManager {
   // ===========================================================================
 
   void startColumnDrag(int index) {
-    _cachedSnapshot = calculator.startColumnDrag(index);
+    _ensureCalculator();
+    _cachedSnapshot = _calculator!.startColumnDrag(index);
   }
 
   void updateColumnDrag(int newIndex) {
@@ -185,13 +153,9 @@ class CardSizeManager {
       avgGlyphWidthScale: avgGlyphWidthScale,
     );
 
-    // 如果已有 snapshot (比如从 payload 计算出来的), 注入到 calculator
-    // 但 calculator 没有注入方法.
-    // 不过 calculator.compute() 会计算初始 snapshot.
-    // 如果我们在拖拽过程中, _cachedSnapshot 可能已经包含了拖拽状态.
-    // 如果 _calculator 是新建的, 它会丢失这个状态.
-    // 所以 _calculator 必须在整个拖拽过程中保持一致.
-    // 当 payload/theme 更新时, 我们清除 _calculator.
+    if (_cachedSnapshot != null) {
+      _calculator!.adoptSnapshot(_cachedSnapshot!);
+    }
   }
 
   /// 计算卡片最终尺寸

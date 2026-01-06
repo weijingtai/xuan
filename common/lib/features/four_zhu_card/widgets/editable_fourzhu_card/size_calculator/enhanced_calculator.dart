@@ -15,8 +15,11 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
     super.avgGlyphWidthScale,
   });
 
-  // 缓存的快照
   EnhancedCardMetricsSnapshot? _enhancedSnapshot;
+
+  void adoptSnapshot(EnhancedCardMetricsSnapshot snapshot) {
+    _enhancedSnapshot = snapshot;
+  }
 
   @override
   EnhancedCardMetricsSnapshot compute() {
@@ -471,13 +474,7 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
 
     final drag = current.dragState as ColumnDragging;
     if (newIndex != drag.currentIndex) {
-      // reorderColumn 使用 ReorderableListView 语义 (insertion index)
-      // 如果向下拖拽 (newIndex > currentIndex)，插入点应该是 newIndex + 1
-      int to = newIndex;
-      if (newIndex > drag.currentIndex) {
-        to = newIndex + 1;
-      }
-      return reorderColumn(drag.currentIndex, to);
+      return reorderColumn(drag.currentIndex, newIndex);
     }
     return current;
   }
