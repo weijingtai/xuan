@@ -3,11 +3,13 @@ import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/widgets/editable_fourzhu_card.dart';
 import 'package:common/widgets/pillar_tag_bar.dart';
 import 'package:common/widgets/row_tag_bar.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../enums/layout_template_enums.dart';
 import '../../models/eight_chars.dart';
+import '../../models/layout_template.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
 
@@ -238,6 +240,228 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
   }
 
+  Future<void> _selectTemplateWithGuard(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+    String templateId,
+  ) async {
+    if (viewModel.currentTemplate?.id == templateId) {
+      return;
+    }
+
+    if (viewModel.hasUnsavedChanges) {
+      final action = await showDialog<String>(
+        context: context,
+        builder: (dialogContext) {
+          return AlertDialog(
+            title: const Text('切换模板'),
+            content: const Text('当前模板有未保存更改，是否先处理再切换？'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop('cancel'),
+                child: const Text('取消'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop('revert'),
+                child: const Text('重置并切换'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop('save'),
+                child: const Text('保存并切换'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!context.mounted) return;
+
+      if (action == 'save') {
+        await _saveWithFeedback(context, viewModel);
+      } else if (action == 'revert') {
+        viewModel.revertChanges();
+      } else {
+        return;
+      }
+    }
+
+    await viewModel.selectTemplate(templateId);
+  }
+
+  Future<void> _openTemplateAlbum(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+  ) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => _TemplateAlbumPage(
+          onOpenSheet: (sheetContext, template) => _showTemplateActionSheet(
+            sheetContext,
+            viewModel,
+            template,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showTemplateActionSheet(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+    LayoutTemplate template,
+  ) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      useSafeArea: true,
+      isScrollControlled: true,
+      builder: (sheetContext) {
+        final isCurrent = viewModel.currentTemplate?.id == template.id;
+        final isFav = viewModel.isFavorite(template.id);
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  template.name,
+                  style: Theme.of(sheetContext)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                if ((template.description ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    template.description!,
+                    style: Theme.of(sheetContext).textTheme.bodyMedium,
+                  ),
+                ],
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () async {
+                    Navigator.of(sheetContext).pop();
+                    await _selectTemplateWithGuard(
+                      context,
+                      viewModel,
+                      template.id,
+                    );
+                  },
+                  child: Text(isCurrent ? '已在使用' : '使用此模板'),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    viewModel.toggleFavorite(template.id);
+                    Navigator.of(sheetContext).pop();
+                  },
+                  icon: Icon(isFav ? Icons.star : Icons.star_border),
+                  label: Text(isFav ? '取消最喜欢' : '标记为最喜欢'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildTemplateGalleryBar(
+    BuildContext context,
+    FourZhuEditorViewModel viewModel,
+  ) {
+    final templates = viewModel.templates;
+    final recentIds = viewModel.recentTemplateIds;
+    final recentIndex = <String, int>{
+      for (var i = 0; i < recentIds.length; i++) recentIds[i]: i,
+    };
+
+    final favorite = templates
+        .where((t) => viewModel.isFavorite(t.id))
+        .toList(growable: false)
+      ..sort((a, b) {
+        final ai = recentIndex[a.id];
+        final bi = recentIndex[b.id];
+        if (ai != null && bi != null) return ai.compareTo(bi);
+        if (ai != null) return -1;
+        if (bi != null) return 1;
+        return b.updatedAt.compareTo(a.updatedAt);
+      });
+
+    final favoriteSet = favorite.map((e) => e.id).toSet();
+    final recent = recentIds
+        .map((id) => templates.firstWhereOrNull((t) => t.id == id))
+        .whereType<LayoutTemplate>()
+        .where((t) => !favoriteSet.contains(t.id))
+        .toList(growable: false);
+
+    final recentSet = recent.map((e) => e.id).toSet();
+    final other = templates
+        .where((t) => !favoriteSet.contains(t.id) && !recentSet.contains(t.id))
+        .toList(growable: false)
+      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+    final entries = <Widget>[];
+
+    void addSection(String title, List<LayoutTemplate> items) {
+      if (items.isEmpty) return;
+      entries.add(_GalleryTag(title));
+      for (final t in items) {
+        entries.add(
+          _TemplateGalleryChip(
+            template: t,
+            selected: viewModel.currentTemplate?.id == t.id,
+            favorite: viewModel.isFavorite(t.id),
+            onTap: () => _selectTemplateWithGuard(context, viewModel, t.id),
+          ),
+        );
+      }
+    }
+
+    addSection('最喜欢', favorite);
+    addSection('常用', recent);
+    addSection('其他', other);
+
+    return SafeArea(
+      bottom: false,
+      child: Container(
+        height: 64,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          border: Border(
+            bottom: BorderSide(
+              color: Theme.of(context).dividerColor.withValues(alpha: 0.12),
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: entries.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (ctx, i) => entries[i],
+              ),
+            ),
+            const SizedBox(width: 8),
+            _HoverExpandActionButton(
+              icon: Icons.grid_view,
+              label: '更多',
+              onPressed: viewModel.isLoading
+                  ? null
+                  : () => _openTemplateAlbum(context, viewModel),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   /// 构建工作区：顶部 DayNightSwitch 切换本地主题，内容区使用单视图重叠显示
   /// 参数：context 构建上下文
   /// 返回：组件树
@@ -263,6 +487,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                   color: workspaceLocalTheme.colorScheme.surface,
                   child: Column(
                     children: [
+                      _buildTemplateGalleryBar(context, viewModel),
                       Expanded(
                         child: Stack(
                           alignment: Alignment.center,
@@ -544,22 +769,15 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                       destructive: true,
                                     ),
                                     const SizedBox(width: 8),
-                                    _HoverExpandMenuButton(
-                                      icon: Icons.more_horiz,
+                                    _HoverExpandActionButton(
+                                      icon: Icons.grid_view,
                                       label: '更多',
-                                      enabled: !viewModel.isLoading,
-                                      onSelected: (value) {
-                                        if (value == 'reset_templates') {
-                                          _confirmResetTemplates(
-                                              context, viewModel);
-                                        }
-                                      },
-                                      items: (context) => [
-                                        const PopupMenuItem(
-                                          value: 'reset_templates',
-                                          child: Text('重置模板'),
-                                        ),
-                                      ],
+                                      onPressed: viewModel.isLoading
+                                          ? null
+                                          : () => _openTemplateAlbum(
+                                                context,
+                                                viewModel,
+                                              ),
                                     ),
                                   ],
                                 ),
@@ -576,6 +794,293 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           },
         );
       },
+    );
+  }
+}
+
+class _GalleryTag extends StatelessWidget {
+  const _GalleryTag(this.title);
+
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Text(
+        title,
+        style: theme.textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateGalleryChip extends StatelessWidget {
+  const _TemplateGalleryChip({
+    required this.template,
+    required this.selected,
+    required this.favorite,
+    required this.onTap,
+  });
+
+  final LayoutTemplate template;
+  final bool selected;
+  final bool favorite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bg = selected
+        ? theme.colorScheme.primary.withValues(alpha: 0.12)
+        : theme.colorScheme.surfaceContainerHighest;
+    final borderColor = selected
+        ? theme.colorScheme.primary
+        : theme.dividerColor.withValues(alpha: 0.12);
+
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          constraints: const BoxConstraints(minWidth: 140),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: Text(
+                  template.name,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              if (favorite) ...[
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.star,
+                  size: 16,
+                  color: theme.colorScheme.primary,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TemplateAlbumPage extends StatelessWidget {
+  const _TemplateAlbumPage({required this.onOpenSheet});
+
+  final Future<void> Function(BuildContext context, LayoutTemplate template)
+      onOpenSheet;
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<FourZhuEditorViewModel>(
+      builder: (context, viewModel, _) {
+        final templates = viewModel.templates;
+        final recentIds = viewModel.recentTemplateIds;
+        final recentIndex = <String, int>{
+          for (var i = 0; i < recentIds.length; i++) recentIds[i]: i,
+        };
+
+        final favorite = templates
+            .where((t) => viewModel.isFavorite(t.id))
+            .toList(growable: false)
+          ..sort((a, b) {
+            final ai = recentIndex[a.id];
+            final bi = recentIndex[b.id];
+            if (ai != null && bi != null) return ai.compareTo(bi);
+            if (ai != null) return -1;
+            if (bi != null) return 1;
+            return b.updatedAt.compareTo(a.updatedAt);
+          });
+
+        final favoriteSet = favorite.map((e) => e.id).toSet();
+        final recent = recentIds
+            .map((id) => templates.firstWhereOrNull((t) => t.id == id))
+            .whereType<LayoutTemplate>()
+            .where((t) => !favoriteSet.contains(t.id))
+            .toList(growable: false);
+
+        final recentSet = recent.map((e) => e.id).toSet();
+        final other = templates
+            .where((t) =>
+                !favoriteSet.contains(t.id) && !recentSet.contains(t.id))
+            .toList(growable: false)
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+
+        final ordered = <LayoutTemplate>[...favorite, ...recent, ...other];
+
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('模板'),
+            actions: [
+              IconButton(
+                tooltip: '重置模板',
+                onPressed: viewModel.isLoading
+                    ? null
+                    : () async {
+                        final ok = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('重置模板'),
+                            content:
+                                const Text('将删除本地所有模板并重建默认模板。此操作不可撤销。'),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(false),
+                                child: const Text('取消'),
+                              ),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.of(dialogContext).pop(true),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor:
+                                      Colors.red.withValues(alpha: 0.9),
+                                ),
+                                child: const Text('重置'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (ok == true) {
+                          await viewModel.resetTemplatesToDefault();
+                        }
+                      },
+                icon: const Icon(Icons.restart_alt),
+              ),
+            ],
+          ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final width = constraints.maxWidth;
+              final crossAxisCount =
+                  (width / 220).floor().clamp(2, 6).toInt();
+              return GridView.builder(
+                padding: const EdgeInsets.all(12),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: crossAxisCount,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.8,
+                ),
+                itemCount: ordered.length,
+                itemBuilder: (context, index) {
+                  final t = ordered[index];
+                  final selected = viewModel.currentTemplate?.id == t.id;
+                  final fav = viewModel.isFavorite(t.id);
+                  return _TemplateAlbumTile(
+                    template: t,
+                    selected: selected,
+                    favorite: fav,
+                    onTap: () => onOpenSheet(context, t),
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TemplateAlbumTile extends StatelessWidget {
+  const _TemplateAlbumTile({
+    required this.template,
+    required this.selected,
+    required this.favorite,
+    required this.onTap,
+  });
+
+  final LayoutTemplate template;
+  final bool selected;
+  final bool favorite;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bg = selected
+        ? theme.colorScheme.primary.withValues(alpha: 0.12)
+        : theme.colorScheme.surfaceContainerHighest;
+    final borderColor = selected
+        ? theme.colorScheme.primary
+        : theme.dividerColor.withValues(alpha: 0.12);
+
+    return Material(
+      color: bg,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      template.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      (template.description ?? '—').trim().isEmpty
+                          ? '—'
+                          : template.description!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              if (favorite) ...[
+                const SizedBox(width: 10),
+                Icon(
+                  Icons.star,
+                  size: 18,
+                  color: theme.colorScheme.primary,
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -619,14 +1124,43 @@ class _HoverExpandActionButtonState extends State<_HoverExpandActionButton> {
             : theme.colorScheme.onSurface);
 
     return MouseRegion(
-      onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+      onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: SizedBox(
         width: 44,
         height: 44,
         child: Stack(
           clipBehavior: Clip.none,
+          alignment: Alignment.center,
           children: [
+            Positioned(
+              top: -30,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeOut,
+                  child: Material(
+                    color: theme.colorScheme.inverseSurface,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      child: Text(
+                        widget.label,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onInverseSurface,
+                        ),
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Positioned.fill(
               child: Material(
                 color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
@@ -641,37 +1175,6 @@ class _HoverExpandActionButtonState extends State<_HoverExpandActionButton> {
                       color: enabled
                           ? fgColor
                           : fgColor.withValues(alpha: 0.55),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 52,
-              top: 0,
-              bottom: 0,
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: _hovered ? 1 : 0,
-                  duration: const Duration(milliseconds: 140),
-                  curve: Curves.easeOut,
-                  child: Material(
-                    color:
-                        enabled ? fillColor : fillColor.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(22),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Center(
-                        child: Text(
-                          widget.label,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color:
-                                enabled ? fgColor : fgColor.withValues(alpha: 0.55),
-                          ),
-                          overflow: TextOverflow.fade,
-                          softWrap: false,
-                        ),
-                      ),
                     ),
                   ),
                 ),
@@ -738,14 +1241,43 @@ class _HoverExpandMenuButtonState extends State<_HoverExpandMenuButton> {
     final fgColor = theme.colorScheme.onSurface;
 
     return MouseRegion(
-      onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
+      onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
       child: SizedBox(
         width: 44,
         height: 44,
         child: Stack(
           clipBehavior: Clip.none,
+          alignment: Alignment.center,
           children: [
+            Positioned(
+              top: -30,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeOut,
+                  child: Material(
+                    color: theme.colorScheme.inverseSurface,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      child: Text(
+                        widget.label,
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: theme.colorScheme.onInverseSurface,
+                        ),
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
             Positioned.fill(
               child: Material(
                 color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
@@ -760,37 +1292,6 @@ class _HoverExpandMenuButtonState extends State<_HoverExpandMenuButton> {
                       color: enabled
                           ? fgColor
                           : fgColor.withValues(alpha: 0.55),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 52,
-              top: 0,
-              bottom: 0,
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  opacity: _hovered ? 1 : 0,
-                  duration: const Duration(milliseconds: 140),
-                  curve: Curves.easeOut,
-                  child: Material(
-                    color:
-                        enabled ? fillColor : fillColor.withValues(alpha: 0.55),
-                    borderRadius: BorderRadius.circular(22),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
-                      child: Center(
-                        child: Text(
-                          widget.label,
-                          style: theme.textTheme.labelLarge?.copyWith(
-                            color:
-                                enabled ? fgColor : fgColor.withValues(alpha: 0.55),
-                          ),
-                          overflow: TextOverflow.fade,
-                          softWrap: false,
-                        ),
-                      ),
                     ),
                   ),
                 ),

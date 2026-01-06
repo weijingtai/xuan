@@ -133,6 +133,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   List<RowConfig> get rowConfigs => _currentTemplate?.rowConfigs ?? const [];
   List<LayoutTemplate> get templateTabs => _templates;
   TemplateFilterState get filterState => _filterState;
+  List<String> get recentTemplateIds => List.unmodifiable(_recentTemplateIds);
 
   Set<String> get selectedTemplateIds => Set.unmodifiable(_selectedTemplateIds);
   bool get hasSelection => _selectedTemplateIds.isNotEmpty;

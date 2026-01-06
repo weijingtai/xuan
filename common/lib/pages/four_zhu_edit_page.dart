@@ -150,44 +150,6 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                                       Row(
                                         children: [
                                           Expanded(
-                                            child:
-                                                DropdownButtonFormField<String>(
-                                              key:
-                                                  ValueKey(currentTemplate?.id),
-                                              initialValue: currentTemplate?.id,
-                                              items: viewModel.templates
-                                                  .map(
-                                                    (template) =>
-                                                        DropdownMenuItem(
-                                                      value: template.id,
-                                                      child: Text(
-                                                        template.name,
-                                                        overflow: TextOverflow
-                                                            .ellipsis,
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .toList(growable: false),
-                                              onChanged: viewModel.isLoading
-                                                  ? null
-                                                  : (id) {
-                                                      if (id == null) return;
-                                                      viewModel
-                                                          .selectTemplate(id);
-                                                    },
-                                              decoration: const InputDecoration(
-                                                labelText: '模板',
-                                                border: OutlineInputBorder(),
-                                                isDense: true,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Row(
-                                        children: [
-                                          Expanded(
                                             child: TextField(
                                               controller:
                                                   _templateNameController,
