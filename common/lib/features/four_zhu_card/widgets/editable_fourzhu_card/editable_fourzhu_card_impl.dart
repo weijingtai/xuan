@@ -4130,18 +4130,17 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   void _reorderColumns(int fromIdx, int insertIndex) {
     if (widget.onReorderPillar != null) {
-      var target = insertIndex;
-      if (insertIndex > fromIdx) {
-        target = insertIndex - 1;
-      }
-      widget.onReorderPillar!(fromIdx, target);
-      _remapColumnOverridesOnMove(fromIdx, target);
+      final targetIndexInCurrentList =
+          (insertIndex > fromIdx) ? insertIndex - 1 : insertIndex;
+
+      widget.onReorderPillar!(fromIdx, insertIndex);
+      _remapColumnOverridesOnMove(fromIdx, targetIndexInCurrentList);
       // 触发动画反馈
       setState(() {
         _draggingColumnIndex = null;
         _hoverColumnInsertIndex = null;
         _lastColInsertIndex = null;
-        _dropAnimatingColIndex = target;
+        _dropAnimatingColIndex = targetIndexInCurrentList;
         _dropColFadeActive = true;
       });
       Future.microtask(() {
@@ -4260,15 +4259,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   void _reorderRows(int fromAbsIdx, int insertIndex) {
     if (widget.onReorderRow != null) {
-      var target = insertIndex;
-      if (insertIndex > fromAbsIdx) {
-        target = insertIndex - 1;
-      }
-      widget.onReorderRow!(fromAbsIdx, target);
+      final targetIndexInCurrentList =
+          (insertIndex > fromAbsIdx) ? insertIndex - 1 : insertIndex;
 
-      _remapRowOverridesOnMove(fromAbsIdx, target);
+      widget.onReorderRow!(fromAbsIdx, insertIndex);
 
-      _triggerInsertAnimation(target);
+      _remapRowOverridesOnMove(fromAbsIdx, targetIndexInCurrentList);
+
+      _triggerInsertAnimation(targetIndexInCurrentList);
       return;
     }
   }
@@ -4281,7 +4279,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       _lastRowInsertIndex = null;
       _dropAnimatingRowIndex = targetIndex;
       _dropRowFadeActive = true;
-      
+
       // Clear external hover height if it was set
       _externalRowHoverHeight = 0.0;
     });
