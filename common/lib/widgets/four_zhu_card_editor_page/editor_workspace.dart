@@ -89,64 +89,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     await viewModel.refreshRowConfigs();
   }
 
-  Future<void> _promptCreateGroup(BuildContext context) async {
-    final controller = TextEditingController();
-    final name = await showDialog<String>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('创建分组'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(hintText: '输入分组名称'),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('取消')),
-          FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(controller.text.trim()),
-              child: const Text('确定')),
-        ],
-      ),
-    );
-    if (!context.mounted) return;
-    if (name != null) {
-      context.read<FourZhuEditorViewModel>().addGroup(title: name);
-    }
-  }
-
-  Future<void> _promptDeleteSelectedGroup(BuildContext context) async {
-    final vm = context.read<FourZhuEditorViewModel>();
-    final groups = vm.currentTemplate?.chartGroups ?? const [];
-    if (groups.length <= 1) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('至少需要保留一个分组')),
-      );
-      return;
-    }
-    final selectedId = vm.selectedGroupId ?? groups.first.id;
-    final selected = groups.firstWhere((g) => g.id == selectedId,
-        orElse: () => groups.first);
-    final ok = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('删除分组'),
-        content: Text('确认删除分组“${selected.title}”？该操作不可撤销。'),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.of(ctx).pop(false),
-              child: const Text('取消')),
-          FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(true),
-              child: const Text('删除')),
-        ],
-      ),
-    );
-    if (ok == true) {
-      vm.removeGroup(selected.id);
-    }
-  }
 
   Future<void> _showCreateTemplateDialog(
     BuildContext context,
@@ -571,20 +513,35 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                     const SizedBox(width: 8),
                                     _HoverExpandActionButton(
                                       icon: Icons.add,
-                                      label: '创建',
+                                      label: '新建模板',
                                       onPressed: viewModel.isLoading
                                           ? null
-                                          : () => _promptCreateGroup(context),
+                                          : () => _showCreateTemplateDialog(
+                                                context,
+                                                viewModel,
+                                              ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    _HoverExpandActionButton(
+                                      icon: Icons.copy,
+                                      label: '复制',
+                                      onPressed: viewModel.isLoading ||
+                                              currentTemplate == null
+                                          ? null
+                                          : viewModel.duplicateCurrentTemplate,
                                     ),
                                     const SizedBox(width: 8),
                                     _HoverExpandActionButton(
                                       icon: Icons.delete_outline,
-                                      label: '删除分组',
-                                      onPressed: viewModel.isLoading
+                                      label: '删除',
+                                      onPressed: viewModel.isLoading ||
+                                              currentTemplate == null
                                           ? null
-                                          : () =>
-                                              _promptDeleteSelectedGroup(
-                                                  context),
+                                          : () => _confirmDelete(
+                                                context,
+                                                viewModel,
+                                              ),
+                                      destructive: true,
                                     ),
                                     const SizedBox(width: 8),
                                     _HoverExpandMenuButton(
@@ -592,43 +549,12 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                       label: '更多',
                                       enabled: !viewModel.isLoading,
                                       onSelected: (value) {
-                                        if (value == 'create_template') {
-                                          _showCreateTemplateDialog(
-                                              context, viewModel);
-                                          return;
-                                        }
-                                        if (currentTemplate == null) return;
-                                        if (value == 'duplicate_template') {
-                                          viewModel.duplicateCurrentTemplate();
-                                        } else if (value == 'delete_template') {
-                                          _confirmDelete(context, viewModel);
-                                        } else if (value == 'reset_templates') {
+                                        if (value == 'reset_templates') {
                                           _confirmResetTemplates(
                                               context, viewModel);
                                         }
                                       },
                                       items: (context) => [
-                                        const PopupMenuItem(
-                                          value: 'create_template',
-                                          child: Text('新建模板'),
-                                        ),
-                                        PopupMenuItem(
-                                          enabled: currentTemplate != null,
-                                          value: 'duplicate_template',
-                                          child: const Text('复制模板'),
-                                        ),
-                                        PopupMenuItem(
-                                          enabled: currentTemplate != null,
-                                          value: 'delete_template',
-                                          child: Text(
-                                            '删除模板',
-                                            style: TextStyle(
-                                              color: Theme.of(context)
-                                                  .colorScheme
-                                                  .error,
-                                            ),
-                                          ),
-                                        ),
                                         const PopupMenuItem(
                                           value: 'reset_templates',
                                           child: Text('重置模板'),
@@ -660,12 +586,14 @@ class _HoverExpandActionButton extends StatefulWidget {
     required this.label,
     required this.onPressed,
     this.emphasized = false,
+    this.destructive = false,
   });
 
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
   final bool emphasized;
+  final bool destructive;
 
   @override
   State<_HoverExpandActionButton> createState() => _HoverExpandActionButtonState();
@@ -679,62 +607,77 @@ class _HoverExpandActionButtonState extends State<_HoverExpandActionButton> {
     final enabled = widget.onPressed != null;
     final theme = Theme.of(context);
 
-    final fillColor = widget.emphasized
-        ? theme.colorScheme.primary
-        : theme.colorScheme.surfaceContainerHighest;
-    final fgColor = widget.emphasized
-        ? theme.colorScheme.onPrimary
-        : theme.colorScheme.onSurface;
+    final fillColor = widget.destructive
+        ? theme.colorScheme.error
+        : (widget.emphasized
+            ? theme.colorScheme.primary
+            : theme.colorScheme.surfaceContainerHighest);
+    final fgColor = widget.destructive
+        ? theme.colorScheme.onError
+        : (widget.emphasized
+            ? theme.colorScheme.onPrimary
+            : theme.colorScheme.onSurface);
 
     return MouseRegion(
       onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
       onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        curve: Curves.easeOut,
-        width: _hovered ? 120 : 44,
+      child: SizedBox(
+        width: 44,
         height: 44,
-        child: Material(
-          color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(22),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: widget.onPressed,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.icon,
-                    size: 20,
-                    color: enabled ? fgColor : fgColor.withValues(alpha: 0.55),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: Material(
+                color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(22),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: widget.onPressed,
+                  child: Center(
+                    child: Icon(
+                      widget.icon,
+                      size: 20,
+                      color: enabled
+                          ? fgColor
+                          : fgColor.withValues(alpha: 0.55),
+                    ),
                   ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 140),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    child: _hovered
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              widget.label,
-                              key: ValueKey(widget.label),
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: enabled
-                                    ? fgColor
-                                    : fgColor.withValues(alpha: 0.55),
-                              ),
-                              overflow: TextOverflow.fade,
-                              softWrap: false,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            Positioned(
+              left: 52,
+              top: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  curve: Curves.easeOut,
+                  child: Material(
+                    color:
+                        enabled ? fillColor : fillColor.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Center(
+                        child: Text(
+                          widget.label,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color:
+                                enabled ? fgColor : fgColor.withValues(alpha: 0.55),
+                          ),
+                          overflow: TextOverflow.fade,
+                          softWrap: false,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -797,52 +740,63 @@ class _HoverExpandMenuButtonState extends State<_HoverExpandMenuButton> {
     return MouseRegion(
       onEnter: enabled ? (_) => setState(() => _hovered = true) : null,
       onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 140),
-        curve: Curves.easeOut,
-        width: _hovered ? 120 : 44,
+      child: SizedBox(
+        width: 44,
         height: 44,
-        child: Material(
-          color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
-          borderRadius: BorderRadius.circular(22),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(22),
-            onTap: enabled ? _openMenu : null,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    widget.icon,
-                    size: 20,
-                    color: enabled ? fgColor : fgColor.withValues(alpha: 0.55),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Positioned.fill(
+              child: Material(
+                color: enabled ? fillColor : fillColor.withValues(alpha: 0.55),
+                borderRadius: BorderRadius.circular(22),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(22),
+                  onTap: enabled ? _openMenu : null,
+                  child: Center(
+                    child: Icon(
+                      widget.icon,
+                      size: 20,
+                      color: enabled
+                          ? fgColor
+                          : fgColor.withValues(alpha: 0.55),
+                    ),
                   ),
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 140),
-                    switchInCurve: Curves.easeOut,
-                    switchOutCurve: Curves.easeIn,
-                    child: _hovered
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 8),
-                            child: Text(
-                              widget.label,
-                              key: ValueKey(widget.label),
-                              style: theme.textTheme.labelLarge?.copyWith(
-                                color: enabled
-                                    ? fgColor
-                                    : fgColor.withValues(alpha: 0.55),
-                              ),
-                              overflow: TextOverflow.fade,
-                              softWrap: false,
-                            ),
-                          )
-                        : const SizedBox.shrink(),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            Positioned(
+              left: 52,
+              top: 0,
+              bottom: 0,
+              child: IgnorePointer(
+                child: AnimatedOpacity(
+                  opacity: _hovered ? 1 : 0,
+                  duration: const Duration(milliseconds: 140),
+                  curve: Curves.easeOut,
+                  child: Material(
+                    color:
+                        enabled ? fillColor : fillColor.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(22),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      child: Center(
+                        child: Text(
+                          widget.label,
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            color:
+                                enabled ? fgColor : fgColor.withValues(alpha: 0.55),
+                          ),
+                          overflow: TextOverflow.fade,
+                          softWrap: false,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
