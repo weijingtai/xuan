@@ -855,14 +855,13 @@ class _TemplateGalleryChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         onTap: onTap,
         child: Container(
-          constraints: const BoxConstraints(minWidth: 140),
+          width: 176,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: borderColor),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min,
             children: [
               Expanded(
                 child: Text(
