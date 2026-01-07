@@ -88,6 +88,7 @@ class CardDataAdapter {
           pillars: pillars,
           dayJiaZi: dayPillar.pillarContent.jiaZi,
           gender: payload.gender,
+          isShortName: tenGodLabelType == 'singleName',
         );
 
         final result = strategy.compute(input);

@@ -454,8 +454,9 @@ class _EditableFourZhuStyleEditorPanelState
           min: 0,
           max: 8,
           onChanged: (v) {
+            final currentBorder = config.border ?? BoxBorderStyle.defaultBorder;
             final newConfig = config.copyWith(
-              border: config.border?.copyWith(width: v),
+              border: currentBorder.copyWith(width: v),
             );
             _cardStyleConfig.value = newConfig;
             // _emit(applyCardStyleConfigToTheme(_theme, newConfig));

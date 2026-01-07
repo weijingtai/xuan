@@ -83,6 +83,7 @@ class CellStyleEditorPanel extends StatelessWidget {
 
   Widget _eachEditor(BuildContext context, String title, CellStyleConfig config,
       ValueChanged<CellStyleConfig> onChanged) {
+    final theme = Theme.of(context);
     final cfgNotifier = ValueNotifier<CellStyleConfig>(config);
     cfgNotifier.addListener(() => onChanged(cfgNotifier.value));
 
@@ -99,19 +100,31 @@ class CellStyleEditorPanel extends StatelessWidget {
           cfgNotifier.value.copyWith(shadow: shadowNotifier.value);
     });
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 8),
-        BoxStyleConfigEditor(boxStyleConfigNotifier: cfgNotifier),
-        const SizedBox(height: 8),
-        BoxBorderStyleEditor(
-            borderNotifier: borderNotifier, styleConfigNotifier: cfgNotifier),
-        const SizedBox(height: 8),
-        ShadowEditorWidget(
-            shadowNotifier: shadowNotifier, styleConfigNotifier: cfgNotifier),
-      ],
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: theme.dividerColor.withValues(alpha: 0.08),
+        ),
+      ),
+      child: ExpansionTile(
+        title: Text(title, style: theme.textTheme.titleMedium),
+        childrenPadding: const EdgeInsets.all(12),
+        children: [
+          BoxStyleConfigEditor(boxStyleConfigNotifier: cfgNotifier),
+          const SizedBox(height: 8),
+          BoxBorderStyleEditor(
+            borderNotifier: borderNotifier,
+            styleConfigNotifier: cfgNotifier,
+          ),
+          const SizedBox(height: 8),
+          ShadowEditorWidget(
+            shadowNotifier: shadowNotifier,
+            styleConfigNotifier: cfgNotifier,
+          ),
+        ],
+      ),
     );
   }
 }

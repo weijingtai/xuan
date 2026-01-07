@@ -2291,9 +2291,16 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         final titleWidget = isHeaderRow && rPayload is ColumnHeaderRowPayload
             ? _genderText(rPayload.gender)
             : _rowTitlePillarText(rPayload);
-        return Center(child: titleWidget);
+        return SizedBox(
+          width: rowTitleWidth,
+          height: rowSize.height,
+          child: Center(child: titleWidget),
+        );
       } else {
-        return const SizedBox.shrink();
+        return SizedBox(
+          width: rowTitleWidth,
+          height: rowSize.height,
+        );
       }
     }
   }
@@ -5040,6 +5047,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           8.0,
       rowTitleWidth: rowTitleWidth,
     );
+    final cardBorder = widget.themeNotifier.value.card.border;
+    final double cardBorderWidth =
+        (cardBorder != null && (cardBorder.enabled ?? false))
+            ? (cardBorder.width ?? 0.0)
+            : 0.0;
+
     final opts = MetricsComputeOptions(
       includeGrip: widget.showGrip,
       showTitleRow: false,
@@ -5052,12 +5065,12 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
         return widget.themeNotifier.value.cell.getBy(rt).showsTitleInCell;
       }),
       cardPadding: widget.paddingNotifier.value,
-      cardBorderWidth: widget.themeNotifier.value.card.border?.width ?? 0.0,
+      cardBorderWidth: cardBorderWidth,
       gripRowHeight: _effectiveDragHandleRowHeight,
       gripColWidth: _effectiveDragHandleColWidth,
       columnTitleHeight: columnTitleHeight,
       rowTitleWidth: rowTitleWidth,
-      withCardBorder: false,
+      withCardBorder: cardBorderWidth > 0.0,
     );
     final size = calc.computeFinalSize(opts);
 

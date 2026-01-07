@@ -342,6 +342,15 @@ class TextRowPayload extends RowPayload {
     }
     return otherHeight;
   }
+
+  @override
+  List<Object?> get props => [
+        rowType,
+        uuid,
+        titleInCell,
+        rowLabel,
+        tenGodLabelType,
+      ];
 }
 
 @JsonSerializable()

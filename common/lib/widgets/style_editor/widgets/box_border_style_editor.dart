@@ -49,6 +49,8 @@ class BoxBorderStyleEditor extends StatelessWidget {
             max: 8,
             onChanged: (v) {
               borderNotifier.value = border.copyWith(width: v);
+              // 清除CardSizeManager缓存，确保尺寸重新计算
+              _clearCardSizeCache(context);
             },
           ));
           xs.add(TitleSliderWidget(
@@ -58,6 +60,8 @@ class BoxBorderStyleEditor extends StatelessWidget {
             max: 32,
             onChanged: (v) {
               borderNotifier.value = border.copyWith(radius: v);
+              // 清除CardSizeManager缓存，确保尺寸重新计算
+              _clearCardSizeCache(context);
             },
           ));
           xs.add(ValueListenableBuilder<Brightness>(
@@ -116,6 +120,8 @@ class BoxBorderStyleEditor extends StatelessWidget {
     borderNotifier.value = border.copyWith(
       darkColor: picked,
     );
+    // 清除CardSizeManager缓存，确保尺寸重新计算
+    _clearCardSizeCache(context);
   }
 
   void updateLightBorderColor(
@@ -128,5 +134,19 @@ class BoxBorderStyleEditor extends StatelessWidget {
     borderNotifier.value = border.copyWith(
       lightColor: picked,
     );
+    // 清除CardSizeManager缓存，确保尺寸重新计算
+    _clearCardSizeCache(context);
+  }
+
+  /// 清除CardSizeManager缓存，触发尺寸重新计算
+  void _clearCardSizeCache(BuildContext context) {
+    try {
+      // 通过ViewModel访问CardSizeManager
+      final viewModel = context.read<FourZhuEditorViewModel>();
+      // 调用CardSizeManager的clearCache方法
+      viewModel.cardSizeManager?.clearCache();
+    } catch (e) {
+      // 忽略错误，可能在某些上下文中不可用
+    }
   }
 }

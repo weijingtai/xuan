@@ -97,11 +97,6 @@ class ShadowEditorWidget extends StatelessWidget {
                         );
                         if (picked != null) {
                           shadowNotifier.value = shadowNotifier.value.copyWith(
-                            lightThemeColor: isLight ? picked : null,
-                            darkThemeColor: isLight ? null : picked,
-                          );
-                          // Preserve the other mode's color
-                          shadowNotifier.value = shadowNotifier.value.copyWith(
                             lightThemeColor: isLight
                                 ? picked
                                 : shadowNotifier.value.lightThemeColor,

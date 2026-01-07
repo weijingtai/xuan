@@ -112,6 +112,7 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
               //   onNameChanged: viewModel.updateTemplateName,
               // ),
               body: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Container(
                     width: 320,

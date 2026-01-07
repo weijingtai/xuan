@@ -16,6 +16,7 @@ import '../enums/enum_di_zhi.dart';
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
+import '../features/four_zhu_card/widgets/editable_fourzhu_card/internal/card_size_manager.dart';
 import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
@@ -83,6 +84,9 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }) {
     _initRuntimeNotifiers();
   }
+
+  /// Card尺寸管理器，用于清除缓存和触发尺寸重新计算
+  CardSizeManager? cardSizeManager;
 
   final GetAllTemplatesUseCase getAllTemplatesUseCase;
   final GetTemplateByIdUseCase getTemplateByIdUseCase;
@@ -353,10 +357,12 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         templateId: templateId,
       );
       if (template != null) {
-        _currentTemplate = template;
+        // Auto-migrate legacy template to fix style issues
+        final migrated = await _migrateLegacyDefaultTemplate(template);
+        _currentTemplate = migrated;
         _hasUnsavedChanges = false;
         _commandHistory.clear(); // M4.3.2 - 切换模板时清空历史
-        _markRecent(template.id);
+        _markRecent(migrated.id);
       } else {
         _errorMessage = '模板不存在($templateId)';
       }
@@ -2518,7 +2524,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         newRowMap[newUuid] = newRowPayload;
         newRowOrderUuid.add(newUuid);
       } else if (typeToUuidMap.containsKey(type)) {
-        newRowOrderUuid.add(typeToUuidMap[type]!);
+        final uuid = typeToUuidMap[type]!;
+        newRowOrderUuid.add(uuid);
+
+        // Update existing payload if properties changed
+        final existingPayload = newRowMap[uuid];
+        if (existingPayload is TextRowPayload) {
+          if (existingPayload.tenGodLabelType != config.tenGodLabelType ||
+              existingPayload.titleInCell != !config.isTitleVisible) {
+            newRowMap[uuid] = existingPayload.copyWith(
+              tenGodLabelType: config.tenGodLabelType,
+              titleInCell: !config.isTitleVisible,
+            );
+          }
+        }
       } else {
         // Create new payload for this row type
         final newUuid = _uuid.v4();
@@ -2536,6 +2555,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
             rowLabel: label,
             uuid: newUuid,
             titleInCell: !config.isTitleVisible,
+            tenGodLabelType: config.tenGodLabelType,
           );
           newRowMap[newUuid] = newRowPayload;
           newRowOrderUuid.add(newUuid);

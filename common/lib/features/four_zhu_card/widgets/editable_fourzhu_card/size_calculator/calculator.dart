@@ -53,12 +53,16 @@ class CardMetricsCalculator {
     final hasTitleRowInPayload =
         payload.rowMap.values.any((r) => r.rowType == RowType.columnHeaderRow);
 
-    if (options.showTitleCol && !options.cellShowsTitle && !hasTitleColInPayload) {
+    if (options.showTitleCol &&
+        !options.cellShowsTitle &&
+        !hasTitleColInPayload) {
       final titleW = _normalizeDouble(options.rowTitleWidth);
       w += titleW;
     }
 
-    if (options.showTitleRow && !options.cellShowsTitle && !hasTitleRowInPayload) {
+    if (options.showTitleRow &&
+        !options.cellShowsTitle &&
+        !hasTitleRowInPayload) {
       h += _normalizeDouble(options.columnTitleHeight);
     }
 
@@ -528,7 +532,8 @@ class CardMetricsCalculator {
       final rowMarginH = 0.0;
 
       // 2.2 行contentHeight兜底逻辑（无单元格时用默认值，仅内容高度）
-      final defaultRowIntrinsicContentH = _normalizeDouble(defaultRowContentHeight);
+      final defaultRowIntrinsicContentH =
+          _normalizeDouble(defaultRowContentHeight);
 
       double rowContentH = _normalizeDouble(
         maxIntrinsicContentH > 0.0
@@ -671,7 +676,8 @@ class CardMetricsCalculator {
       return extras > max ? extras : max;
     });
     // print("maxPillarVerticalExtras: $maxPillarVerticalExtras");
-    final totalHeight = _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
+    final totalHeight =
+        _normalizeDouble(totalRowTotalHeight + maxPillarVerticalExtras);
 
     // 构建最终快照
     final totals = CardTotals(
@@ -939,6 +945,19 @@ class CardMetricsCalculator {
       return _normalizeDouble(cellConfig.separatorHeight ?? 0.0);
     }
 
+    // 标题柱：始终用 rowTitle 字体参与“行高取最大值”的比较
+    if (pillarUuid != null) {
+      final pillar = payload.pillarMap[pillarUuid];
+      if (pillar != null && pillar.pillarType == PillarType.rowTitleColumn) {
+        final ts = theme.typography.rowTitle;
+        final fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
+        final contentLineHeight =
+            ts.fontStyleDataModel.height ?? lineHeightFactor;
+        final h = (fontSize * contentLineHeight).ceilToDouble();
+        return _normalizeDouble(h);
+      }
+    }
+
     double? fontSize;
 
     if (pillarUuid != null) {
@@ -949,19 +968,6 @@ class CardMetricsCalculator {
     }
 
     if (fontSize == null) {
-      // Special-case: title column cells use Typography.rowTitle
-      if (pillarUuid != null) {
-        final pillar = payload.pillarMap[pillarUuid];
-        if (pillar != null && pillar.pillarType == PillarType.rowTitleColumn) {
-          final ts = theme.typography.rowTitle;
-          fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
-          final contentLineHeight =
-              ts.fontStyleDataModel.height ?? lineHeightFactor;
-          double h = (fontSize * contentLineHeight).ceilToDouble();
-          return _normalizeDouble(h);
-        }
-      }
-
       final ts = theme.typography.getCellContentBy(rt);
       fontSize = ts.fontStyleDataModel.fontSize ?? 16.0;
 

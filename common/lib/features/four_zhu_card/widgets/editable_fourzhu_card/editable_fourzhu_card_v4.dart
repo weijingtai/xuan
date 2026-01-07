@@ -6,6 +6,8 @@ import 'package:common/models/drag_payloads.dart';
 import 'package:common/models/row_strategy.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:common/themes/editable_four_zhu_card_theme.dart';
+import 'package:provider/provider.dart';
+import '../../../../viewmodels/four_zhu_editor_view_model.dart';
 import 'drag_controller.dart';
 import 'internal/card_builders.dart';
 import 'internal/card_drag_handler.dart';
@@ -92,6 +94,14 @@ class _EditableFourZhuCardV4State extends State<EditableFourZhuCardV4> {
       showGripColumns: widget.showGripColumns,
       cardPadding: widget.paddingNotifier.value,
     );
+
+    // 设置CardSizeManager到ViewModel，供边框编辑器清除缓存
+    try {
+      final viewModel = context.read<FourZhuEditorViewModel>();
+      viewModel.cardSizeManager = _sizeManager;
+    } catch (e) {
+      // 忽略错误，可能在某些上下文中不可用
+    }
 
     // 初始化拖拽处理器
     _dragHandler = CardDragHandler(
