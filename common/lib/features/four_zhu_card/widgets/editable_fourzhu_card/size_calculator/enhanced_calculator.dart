@@ -474,7 +474,11 @@ class EnhancedCardMetricsCalculator extends CardMetricsCalculator {
 
     final drag = current.dragState as ColumnDragging;
     if (newIndex != drag.currentIndex) {
-      return reorderColumn(drag.currentIndex, newIndex);
+      int to = newIndex;
+      if (newIndex > drag.currentIndex) {
+        to = newIndex + 1;
+      }
+      return reorderColumn(drag.currentIndex, to);
     }
     return current;
   }

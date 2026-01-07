@@ -10,7 +10,9 @@ import '../models/row_data.dart';
 /// - 支持将标签拖拽到卡片（DragTarget）以添加对应行
 /// - 标签内提供抓手图标（drag_indicator），直观的拖拽提示
 class RowTagBar extends StatelessWidget {
-  const RowTagBar({super.key});
+  const RowTagBar({super.key, this.disabledTypes = const {}});
+
+  final Set<RowType> disabledTypes;
 
   static const double _barHeight = 28;
   static const double _tagHeight = 28;
@@ -118,6 +120,15 @@ class RowTagBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Sort items: enabled first, disabled last.
+    // Use stable partitioning to maintain relative order within groups.
+    final enabledRows =
+        rows.where((r) => !disabledTypes.contains(r.rowType)).toList();
+    final disabledRowsList =
+        rows.where((r) => disabledTypes.contains(r.rowType)).toList();
+    final sortedRows = [...enabledRows, ...disabledRowsList];
+
     return Container(
       // padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
       decoration: BoxDecoration(
@@ -132,10 +143,21 @@ class RowTagBar extends StatelessWidget {
           primary: false,
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          itemCount: rows.length,
+          itemCount: sortedRows.length,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
-            final rowData = rows[index];
+            final rowData = sortedRows[index];
+            final isDisabled = disabledTypes.contains(rowData.rowType);
+
+            if (isDisabled) {
+              return Opacity(
+                opacity: 0.5,
+                child: _RowTagWidget(
+                  label: rowData.label,
+                  icon: Icons.drag_indicator,
+                ),
+              );
+            }
 
             return Draggable<RowData>(
               data: rowData,

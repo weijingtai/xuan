@@ -8,7 +8,6 @@ import 'package:common/features/four_zhu_card/widgets/editable_fourzhu_card/mode
 import 'package:common/widgets/editable_fourzhu_card.dart';
 import 'package:common/widgets/pillar_tag_bar.dart';
 import 'package:common/widgets/row_tag_bar.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -17,6 +16,13 @@ import '../../models/eight_chars.dart';
 import '../../models/layout_template.dart';
 import '../../models/text_style_config.dart';
 import '../../viewmodels/four_zhu_editor_view_model.dart';
+
+T? _firstWhereOrNull<T>(Iterable<T> items, bool Function(T) test) {
+  for (final item in items) {
+    if (test(item)) return item;
+  }
+  return null;
+}
 
 class EditorWorkspace extends StatefulWidget {
   /// 组件内部展示的八字数据，用于填充四柱内容。
@@ -212,38 +218,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     }
   }
 
-  Future<void> _confirmResetTemplates(
-    BuildContext context,
-    FourZhuEditorViewModel viewModel,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('重置模板'),
-          content: const Text('将删除本地所有模板并重建默认模板。此操作不可撤销。'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: const Text('取消'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: FilledButton.styleFrom(
-                backgroundColor: Colors.red.withValues(alpha: 0.9),
-              ),
-              child: const Text('重置'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed == true) {
-      await viewModel.resetTemplatesToDefault();
-    }
-  }
-
   Future<void> _selectTemplateWithGuard(
     BuildContext context,
     FourZhuEditorViewModel viewModel,
@@ -397,7 +371,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
 
     final favoriteSet = favorite.map((e) => e.id).toSet();
     final recent = recentIds
-        .map((id) => templates.firstWhereOrNull((t) => t.id == id))
+        .map((id) => _firstWhereOrNull(templates, (t) => t.id == id))
         .whereType<LayoutTemplate>()
         .where((t) => !favoriteSet.contains(t.id))
         .toList(growable: false);
@@ -617,29 +591,39 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                             ),
                             Padding(
                               padding: const EdgeInsets.only(bottom: 156),
-                              child: Center(
-                                child: EditableFourZhuCardV3(
-                                  dayGanZhi: JiaZi.JIA_ZI,
-                                  brightnessNotifier:
-                                      viewModel.cardBrightnessNotifier,
-                                  colorPreviewModeNotifier:
-                                      viewModel.colorPreviewModeNotifier,
-                                  cardPayloadNotifier:
-                                      viewModel.cardPayloadNotifier,
-                                  showGrip: _showGripNotifier.value,
-                                  paddingNotifier: viewModel.paddingNotifier,
-                                  themeNotifier:
-                                      viewModel.editableThemeNotifier,
-                                  rowStrategyMapper:
-                                      viewModel.rowStrategyMapper,
-                                  gender: Gender.male,
-                                  onReorderRow: viewModel.reorderRow,
-                                  onInsertRow: viewModel.insertRow,
-                                  onDeleteRow: viewModel.deleteRow,
-                                  onReorderPillar:
-                                      viewModel.reorderPillarGlobal,
-                                  onInsertPillar: viewModel.insertPillarGlobal,
-                                  onDeletePillar: viewModel.deletePillarGlobal,
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 252),
+                                child: Scrollbar(
+                                  child: SingleChildScrollView(
+                                    child: Center(
+                                      child: EditableFourZhuCardV3(
+                                        dayGanZhi: JiaZi.JIA_ZI,
+                                        brightnessNotifier:
+                                            viewModel.cardBrightnessNotifier,
+                                        colorPreviewModeNotifier:
+                                            viewModel.colorPreviewModeNotifier,
+                                        cardPayloadNotifier:
+                                            viewModel.cardPayloadNotifier,
+                                        showGrip: _showGripNotifier.value,
+                                        paddingNotifier:
+                                            viewModel.paddingNotifier,
+                                        themeNotifier:
+                                            viewModel.editableThemeNotifier,
+                                        rowStrategyMapper:
+                                            viewModel.rowStrategyMapper,
+                                        gender: Gender.male,
+                                        onReorderRow: viewModel.reorderRow,
+                                        onInsertRow: viewModel.insertRow,
+                                        onDeleteRow: viewModel.deleteRow,
+                                        onReorderPillar:
+                                            viewModel.reorderPillarGlobal,
+                                        onInsertPillar:
+                                            viewModel.insertPillarGlobal,
+                                        onDeletePillar:
+                                            viewModel.deletePillarGlobal,
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -667,16 +651,44 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                     ),
                                   ),
                                   padding: const EdgeInsets.all(10),
-                                  child: const Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(height: 28, child: RowTagBar()),
-                                      SizedBox(height: 8),
-                                      SizedBox(
-                                          height: 28, child: PillarTagBar()),
-                                    ],
+                                  child: ValueListenableBuilder<CardPayload>(
+                                    valueListenable:
+                                        viewModel.cardPayloadNotifier,
+                                    builder: (context, payload, _) {
+                                      final disabledRowTypes = payload
+                                          .rowMap.values
+                                          .map((e) => e.rowType)
+                                          .where((t) => t != RowType.separator)
+                                          .toSet();
+                                      final disabledPillarTypes = payload
+                                          .pillarMap.values
+                                          .map((e) => e.pillarType)
+                                          .where(
+                                              (t) => t != PillarType.separator)
+                                          .toSet();
+
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            height: 28,
+                                            child: RowTagBar(
+                                              disabledTypes: disabledRowTypes,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          SizedBox(
+                                            height: 28,
+                                            child: PillarTagBar(
+                                              disabledTypes:
+                                                  disabledPillarTypes,
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -791,33 +803,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           },
         );
       },
-    );
-  }
-}
-
-class _GalleryTag extends StatelessWidget {
-  const _GalleryTag(this.title);
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: theme.dividerColor.withValues(alpha: 0.12),
-        ),
-      ),
-      child: Text(
-        title,
-        style: theme.textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
     );
   }
 }
@@ -1162,9 +1147,6 @@ class _TemplateThumbnailCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final borderColor = selected
-        ? theme.colorScheme.primary
-        : theme.dividerColor.withValues(alpha: 0.14);
 
     final previewTheme = _buildPreviewTheme(template);
     final previewPayload = _buildPreviewPayload(template);
@@ -1318,7 +1300,7 @@ class _TemplateAlbumPage extends StatelessWidget {
 
         final favoriteSet = favorite.map((e) => e.id).toSet();
         final recent = recentIds
-            .map((id) => templates.firstWhereOrNull((t) => t.id == id))
+            .map((id) => _firstWhereOrNull(templates, (t) => t.id == id))
             .whereType<LayoutTemplate>()
             .where((t) => !favoriteSet.contains(t.id))
             .toList(growable: false);

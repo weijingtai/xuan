@@ -238,6 +238,11 @@ class CardStyle {
     this.contentPadding = const EdgeInsets.all(16.0),
   });
 
+  static String _normalizeFontFamily(String value) {
+    if (value == 'NotoSansSC' || value == 'NotoSans') return 'NotoSansSC-Regular';
+    return value;
+  }
+
   final BorderType dividerType;
   final String dividerColorHex;
   final double dividerThickness;
@@ -271,7 +276,7 @@ class CardStyle {
       'dividerType': dividerType.name,
       'dividerColorHex': dividerColorHex,
       'dividerThickness': dividerThickness,
-      'globalFontFamily': globalFontFamily,
+      'globalFontFamily': _normalizeFontFamily(globalFontFamily),
       'globalFontSize': globalFontSize,
       'globalFontColorHex': globalFontColorHex,
       'contentPadding': {
@@ -326,7 +331,8 @@ class CardStyle {
         other.dividerType == dividerType &&
         other.dividerColorHex == dividerColorHex &&
         other.dividerThickness == dividerThickness &&
-        other.globalFontFamily == globalFontFamily &&
+        _normalizeFontFamily(other.globalFontFamily) ==
+            _normalizeFontFamily(globalFontFamily) &&
         other.globalFontSize == globalFontSize &&
         other.globalFontColorHex == globalFontColorHex &&
         other.contentPadding == contentPadding;
@@ -337,7 +343,7 @@ class CardStyle {
         dividerType,
         dividerColorHex,
         dividerThickness,
-        globalFontFamily,
+        _normalizeFontFamily(globalFontFamily),
         globalFontSize,
         globalFontColorHex,
         contentPadding,

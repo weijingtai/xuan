@@ -11,7 +11,9 @@ import '../enums/layout_template_enums.dart';
 /// - 支持将标签拖拽到画布（DragTarget）以添加对应柱
 /// - 标签内提供抓手图标（drag_indicator），更直观的拖拽提示
 class PillarTagBar extends StatelessWidget {
-  const PillarTagBar({super.key});
+  const PillarTagBar({super.key, this.disabledTypes = const {}});
+
+  final Set<PillarType> disabledTypes;
 
   static const double _barHeight = 28;
   static const double _tagHeight = 28;
@@ -112,6 +114,15 @@ class PillarTagBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
+    // Sort items: enabled first, disabled last.
+    // Use stable partitioning to maintain relative order within groups.
+    final enabledPillars =
+        pillars.where((p) => !disabledTypes.contains(p.pillarType)).toList();
+    final disabledPillarsList =
+        pillars.where((p) => disabledTypes.contains(p.pillarType)).toList();
+    final sortedPillars = [...enabledPillars, ...disabledPillarsList];
+
     return Container(
       // 高度由外层 Flexible 控制，此处填充可用空间
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
@@ -129,10 +140,19 @@ class PillarTagBar extends StatelessWidget {
           primary: false,
           shrinkWrap: true,
           scrollDirection: Axis.horizontal,
-          itemCount: pillars.length,
+          itemCount: sortedPillars.length,
           separatorBuilder: (_, __) => const SizedBox(width: 8),
           itemBuilder: (context, index) {
-            final t = pillars[index];
+            final t = sortedPillars[index];
+            final isDisabled = disabledTypes.contains(t.pillarType);
+
+            if (isDisabled) {
+              return Opacity(
+                opacity: 0.5,
+                child: _Tag(label: t.label, icon: Icons.drag_indicator),
+              );
+            }
+
             return Draggable<PillarData>(
               data: t,
               feedback:

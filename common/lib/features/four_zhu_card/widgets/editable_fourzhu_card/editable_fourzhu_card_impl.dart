@@ -176,6 +176,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   // 批处理重建采样：记录一次交互期间的重建次数与调度请求次数
   int _rebuildCount = 0;
   int _rebuildScheduleRequests = 0;
+  // Flag to delay hover reset until data update to prevent size shrinking
+  bool _waitingForInsertUpdate = false;
   double dragIconOffset = 16.0;
   Widget get drag_icon => Icon(
         Icons.drag_indicator,
@@ -204,6 +206,10 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     _rebuildScheduleRequests++;
     scheduleMicrotask(() {
       if (!mounted) return;
+
+      // 在每一帧重建前刷新尺寸，确保拖拽引起的幽灵行列（External）能撑开容器
+      _sizeNotifier.value = _computeSizeWithDecorationsV2();
+
       setState(() {
         _rebuildScheduled = false;
         _rebuildCount++;
@@ -928,6 +934,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     // 统一监听器：同步更新布局模型和尺寸
     _layoutModelSyncListener = () {
+      if (_waitingForInsertUpdate) {
+        _waitingForInsertUpdate = false;
+        _hoveringExternalPillar = false;
+        _hoveringExternalRow = false;
+        _externalColHoverWidth = 0.0;
+        _externalRowHoverHeight = 0.0;
+      }
+
       _layoutNotifier.value = CardLayoutModel.fromNotifiers(
         pillars: _currentPillars(),
         rows: _currentRows(),
@@ -1120,13 +1134,18 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           );
           effectiveDeco = baseDeco.copyWith(borderRadius: clamped);
         }
-        // print("effectiveDeco: ${effectiveDeco?.boxShadow}");
-        return Stack(
+        final contentWidth = _pixelCeil(size.width + extraColWidth);
+        final contentHeight = _pixelCeil(size.height + extraRowHeight);
+        final stack = Stack(
           children: [
             ValueListenableBuilder<EditableFourZhuCardTheme>(
               valueListenable: widget.themeNotifier,
               builder: (context, theme, child) {
                 final padding = widget.paddingNotifier.value;
+                final innerSize = Size(
+                  math.max(0.0, size.width - padding.left - padding.right),
+                  math.max(0.0, size.height - padding.top - padding.bottom),
+                );
                 // print(
                 // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
                 // DEBUG: Print size info
@@ -1138,14 +1157,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   curve: Curves.easeInOutCubic,
                   key: _cardKey,
                   padding: padding,
-                  width: _pixelCeil(size.width + extraColWidth),
-                  height: _pixelCeil(size.height + extraRowHeight),
+                  width: contentWidth,
+                  height: contentHeight,
                   alignment: _preferCenterAlignment
                       ? Alignment.center
                       : AlignmentDirectional.topStart,
                   clipBehavior: Clip.none,
                   decoration: effectiveDeco,
-                  child: _buildGrid(size),
+                  child: _buildGrid(innerSize),
                 );
               },
             ),
@@ -1461,13 +1480,27 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                   _hoverColumnInsertIndex = null;
                   _lastColInsertIndex = null;
                   _draggingColumnIndex = null;
-                  _hoveringExternalPillar = false;
-                  _externalColHoverWidth = 0.0;
+                  // _hoveringExternalPillar = false; // Delayed
+                  // _externalColHoverWidth = 0.0;
 
                   _hoverRowInsertIndex = null;
                   _lastRowInsertIndex = null;
                   _draggingRowIndex = null;
-                  _hoveringExternalRow = false;
+                  // _hoveringExternalRow = false; // Delayed
+
+                  _waitingForInsertUpdate = true;
+                  Future.delayed(const Duration(milliseconds: 500), () {
+                    if (mounted && _waitingForInsertUpdate) {
+                      setState(() {
+                        _waitingForInsertUpdate = false;
+                        _hoveringExternalPillar = false;
+                        _hoveringExternalRow = false;
+                        _externalColHoverWidth = 0.0;
+                        _externalRowHoverHeight = 0.0;
+                        _sizeNotifier.value = _computeSizeWithDecorationsV2();
+                      });
+                    }
+                  });
 
                   _scheduleRebuild();
                   _dragWantsInsert.value = false;
@@ -1655,6 +1688,29 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 ),
               ),
           ],
+        );
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final needsVScroll = constraints.hasBoundedHeight &&
+                constraints.maxHeight.isFinite &&
+                contentHeight > constraints.maxHeight;
+            final needsHScroll = constraints.hasBoundedWidth &&
+                constraints.maxWidth.isFinite &&
+                contentWidth > constraints.maxWidth;
+
+            Widget wrapped = stack;
+            if (needsVScroll) {
+              wrapped = SingleChildScrollView(primary: false, child: wrapped);
+            }
+            if (needsHScroll) {
+              wrapped = SingleChildScrollView(
+                primary: false,
+                scrollDirection: Axis.horizontal,
+                child: wrapped,
+              );
+            }
+            return wrapped;
+          },
         );
       },
     );
@@ -2827,23 +2883,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             _dragWantsDelete.value = false;
                           },
                           dragAnchorStrategy: pointerDragAnchorStrategy,
-                          feedback: _offsetFeedbackRight(
-                            widget.dragFeedbackBuilder?.call(
-                                  context,
-                                  _buildFullRowFeedback(
-                                    rowName,
-                                    pillarPayloads,
-                                    absRowIndex: absRowIdx,
+                          feedback: _offsetFeedbackUp(
+                            _offsetFeedbackRight(
+                              widget.dragFeedbackBuilder?.call(
+                                    context,
+                                    _buildFullRowFeedback(
+                                      rowName,
+                                      pillarPayloads,
+                                      absRowIndex: absRowIdx,
+                                    ),
+                                  ) ??
+                                  _statusFeedback(
+                                    _buildFullRowFeedback(
+                                      rowName,
+                                      pillarPayloads,
+                                      absRowIndex: absRowIdx,
+                                    ),
                                   ),
-                                ) ??
-                                _statusFeedback(
-                                  _buildFullRowFeedback(
-                                    rowName,
-                                    pillarPayloads,
-                                    absRowIndex: absRowIdx,
-                                  ),
-                                ),
-                            _effectiveDragHandleColWidth,
+                              _effectiveDragHandleColWidth,
+                            ),
+                            rowSize.height * 0.5,
                           ),
                           childWhenDragging: const SizedBox.shrink(),
                           child: MouseRegion(
@@ -2966,23 +3025,26 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                             _dragWantsDelete.value = false;
                           },
                           dragAnchorStrategy: pointerDragAnchorStrategy,
-                          feedback: _offsetFeedbackLeft(
-                            widget.dragFeedbackBuilder?.call(
-                                  context,
-                                  _buildFullRowFeedback(
-                                    rowName,
-                                    pillarPayloads,
-                                    absRowIndex: absRowIdx,
+                          feedback: _offsetFeedbackUp(
+                            _offsetFeedbackLeft(
+                              widget.dragFeedbackBuilder?.call(
+                                    context,
+                                    _buildFullRowFeedback(
+                                      rowName,
+                                      pillarPayloads,
+                                      absRowIndex: absRowIdx,
+                                    ),
+                                  ) ??
+                                  _statusFeedback(
+                                    _buildFullRowFeedback(
+                                      rowName,
+                                      pillarPayloads,
+                                      absRowIndex: absRowIdx,
+                                    ),
                                   ),
-                                ) ??
-                                _statusFeedback(
-                                  _buildFullRowFeedback(
-                                    rowName,
-                                    pillarPayloads,
-                                    absRowIndex: absRowIdx,
-                                  ),
-                                ),
-                            _rowFeedbackTotalWidth(pillarPayloads),
+                              _rowFeedbackTotalWidth(pillarPayloads),
+                            ),
+                            rowSize.height * 0.5,
                           ),
                           child: MouseRegion(
                             cursor: SystemMouseCursors.grab,
@@ -4129,34 +4191,42 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 // Keep class open; painter classes are defined at file end.
 
   void _reorderColumns(int fromIdx, int insertIndex) {
-    if (widget.onReorderPillar != null) {
-      final targetIndexInCurrentList =
-          (insertIndex > fromIdx) ? insertIndex - 1 : insertIndex;
+    final list = List<PillarPayload>.of(_currentPillars());
+    if (fromIdx < 0 || fromIdx >= list.length) return;
+    final clampedInsert = insertIndex.clamp(0, list.length);
+    final targetIndexInCurrentList =
+        (clampedInsert > fromIdx) ? clampedInsert - 1 : clampedInsert;
+    if (targetIndexInCurrentList == fromIdx) return;
 
-      widget.onReorderPillar!(fromIdx, insertIndex);
-      _remapColumnOverridesOnMove(fromIdx, targetIndexInCurrentList);
-      // 触发动画反馈
-      setState(() {
-        _draggingColumnIndex = null;
-        _hoverColumnInsertIndex = null;
-        _lastColInsertIndex = null;
-        _dropAnimatingColIndex = targetIndexInCurrentList;
-        _dropColFadeActive = true;
-      });
-      Future.microtask(() {
-        if (!mounted) return;
-        setState(() {
-          _dropColFadeActive = false;
-        });
-      });
-      Future.delayed(const Duration(milliseconds: 240), () {
-        if (!mounted) return;
-        setState(() {
-          _dropAnimatingColIndex = null;
-        });
-      });
-      return;
+    final moved = list.removeAt(fromIdx);
+    list.insert(targetIndexInCurrentList, moved);
+
+    if (widget.onReorderPillar != null) {
+      widget.onReorderPillar!(fromIdx, clampedInsert);
+    } else {
+      _setPillars(list);
     }
+
+    _remapColumnOverridesOnMove(fromIdx, targetIndexInCurrentList);
+    setState(() {
+      _draggingColumnIndex = null;
+      _hoverColumnInsertIndex = null;
+      _lastColInsertIndex = null;
+      _dropAnimatingColIndex = targetIndexInCurrentList;
+      _dropColFadeActive = true;
+    });
+    Future.microtask(() {
+      if (!mounted) return;
+      setState(() {
+        _dropColFadeActive = false;
+      });
+    });
+    Future.delayed(const Duration(milliseconds: 240), () {
+      if (!mounted) return;
+      setState(() {
+        _dropAnimatingColIndex = null;
+      });
+    });
   }
 
   // 基于列 TitlePayload（按 PillarType）进行列重排
@@ -4258,17 +4328,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   }
 
   void _reorderRows(int fromAbsIdx, int insertIndex) {
+    final rows = List<RowPayload>.of(_currentRows());
+    if (fromAbsIdx < 0 || fromAbsIdx >= rows.length) return;
+    final clampedInsert = insertIndex.clamp(0, rows.length);
+    final targetIndexInCurrentList =
+        (clampedInsert > fromAbsIdx) ? clampedInsert - 1 : clampedInsert;
+    if (targetIndexInCurrentList == fromAbsIdx) return;
+
+    final moved = rows.removeAt(fromAbsIdx);
+    rows.insert(targetIndexInCurrentList, moved);
+
     if (widget.onReorderRow != null) {
-      final targetIndexInCurrentList =
-          (insertIndex > fromAbsIdx) ? insertIndex - 1 : insertIndex;
-
-      widget.onReorderRow!(fromAbsIdx, insertIndex);
-
-      _remapRowOverridesOnMove(fromAbsIdx, targetIndexInCurrentList);
-
-      _triggerInsertAnimation(targetIndexInCurrentList);
-      return;
+      widget.onReorderRow!(fromAbsIdx, clampedInsert);
+    } else {
+      _setRows(rows);
     }
+
+    widget.onRowsReordered?.call(rows);
+    _remapRowOverridesOnMove(fromAbsIdx, targetIndexInCurrentList);
+    _triggerInsertAnimation(targetIndexInCurrentList);
   }
 
   /// 触发插入动画（抽取公共逻辑）
@@ -4281,7 +4359,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       _dropRowFadeActive = true;
 
       // Clear external hover height if it was set
-      _externalRowHoverHeight = 0.0;
+      if (!_waitingForInsertUpdate) {
+        _externalRowHoverHeight = 0.0;
+      }
     });
     // 下一帧开始淡入
     Future.microtask(() {
@@ -4980,7 +5060,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       withCardBorder: false,
     );
     final size = calc.computeFinalSize(opts);
-    return Size(size.width, size.height);
+
+    // 针对外部拖拽（External Drag）：
+    // 此时数据源 _currentRows/_currentPillars 尚未包含新元素，
+    // 但 UI 层已渲染幽灵占位，需手动叠加幽灵尺寸以防溢出。
+    double w = size.width;
+    double h = size.height;
+
+    if (_hoveringExternalPillar) {
+      w += _getGhostColumnWidth();
+    }
+    if (_hoveringExternalRow) {
+      h += _getGhostRowHeight();
+    }
+
+    return Size(w, h);
   }
 
   /// 计算包含装饰的 Card 尺寸
