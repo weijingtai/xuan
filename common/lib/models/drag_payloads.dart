@@ -220,6 +220,7 @@ class TextRowPayload extends RowPayload {
     required super.uuid,
     required this.titleInCell,
     this.rowLabel,
+    this.tenGodLabelType = 'name',
   });
   factory TextRowPayload.fromJson(Map<String, dynamic> json) =>
       _$TextRowPayloadFromJson(json);
@@ -234,6 +235,7 @@ class TextRowPayload extends RowPayload {
   /// Optional custom label to display for the inserted row.
   final String? rowLabel;
   final bool titleInCell;
+  final String tenGodLabelType;
 
   /// Optional overrides for each pillar in this row.
   /// Keys are pillar unique `id`, e.g. {'year#1': '戌亥', 'month#1': '戌亥'}.
@@ -301,12 +303,14 @@ class TextRowPayload extends RowPayload {
     RowType? rowType,
     String? rowLabel,
     bool? titleInCell,
+    String? tenGodLabelType,
   }) {
     return TextRowPayload(
       uuid: uuid ?? this.uuid,
       rowType: rowType ?? this.rowType,
       rowLabel: rowLabel ?? this.rowLabel,
       titleInCell: titleInCell ?? this.titleInCell,
+      tenGodLabelType: tenGodLabelType ?? this.tenGodLabelType,
     );
   }
 

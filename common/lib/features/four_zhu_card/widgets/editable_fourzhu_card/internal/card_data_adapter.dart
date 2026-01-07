@@ -76,6 +76,14 @@ class CardDataAdapter {
           orElse: () => contentPillars.first,
         );
 
+        final textRowPayloads = payload.rowMap.values
+            .whereType<TextRowPayload>()
+            .where((r) => r.rowType == rowType);
+
+        final tenGodLabelType = textRowPayloads.isNotEmpty
+            ? textRowPayloads.first.tenGodLabelType
+            : 'name';
+
         final input = RowComputationInput(
           pillars: pillars,
           dayJiaZi: dayPillar.pillarContent.jiaZi,

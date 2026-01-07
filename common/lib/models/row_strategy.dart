@@ -21,6 +21,7 @@ class RowComputationInput {
     required this.pillars,
     required this.dayJiaZi,
     required this.gender,
+    this.isShortName = false,
     this.referenceDateTime,
     this.context = const {},
   });
@@ -36,6 +37,8 @@ class RowComputationInput {
 
   /// 可选：参考时间（用于涉及具体日期/节气的策略）。
   final DateTime? referenceDateTime;
+  // 是否为短名（如是什么中，印、枭 之类）
+  final bool isShortName;
 
   /// 扩展上下文：用于未来新增参数，提升复用性。
   final Map<String, dynamic> context;
@@ -226,7 +229,7 @@ class TenGodRowStrategy extends RowComputationStrategy {
         continue;
       }
       final tenGods = pillarJiaZi.tianGan.getTenGods(input.dayJiaZi.tianGan);
-      values[pillarId] = tenGods.name;
+      values[pillarId] = input.isShortName ? tenGods.singleName : tenGods.name;
     }
     return RowComputationResult(
       rowType: rowType,
@@ -440,6 +443,7 @@ class HiddenStemsPrimaryGodsRowStrategy extends RowComputationStrategy {
       final primaryGod = _computeHiddenStemsPrimaryGodPlaceholder(
         pillarJiaZi,
         input.dayJiaZi,
+        input.isShortName,
       );
       values[pillarId] = primaryGod;
     }
@@ -453,12 +457,13 @@ class HiddenStemsPrimaryGodsRowStrategy extends RowComputationStrategy {
   String _computeHiddenStemsPrimaryGodPlaceholder(
     JiaZi pillarJiaZi,
     JiaZi dayJiaZi,
+    bool isShortName,
   ) {
     // 占位实现：取藏干主气的十神
     final hiddenStems = pillarJiaZi.diZhi.cangGan;
     if (hiddenStems.isEmpty) return '';
     final tenGod = hiddenStems.first.getTenGods(dayJiaZi.tianGan);
-    return tenGod.singleName;
+    return isShortName ? tenGod.singleName : tenGod.name;
   }
 
   @override
@@ -487,6 +492,7 @@ class HiddenStemsSecondaryGodsRowStrategy extends RowComputationStrategy {
       final secondaryGod = _computeHiddenStemsSecondaryGodPlaceholder(
         pillarJiaZi,
         input.dayJiaZi,
+        input.isShortName,
       );
       values[pillarId] = secondaryGod;
     }
@@ -500,12 +506,13 @@ class HiddenStemsSecondaryGodsRowStrategy extends RowComputationStrategy {
   String _computeHiddenStemsSecondaryGodPlaceholder(
     JiaZi pillarJiaZi,
     JiaZi dayJiaZi,
+    bool isShortName,
   ) {
     // 占位实现：取藏干中气的十神
     final hiddenStems = pillarJiaZi.diZhi.cangGan;
     if (hiddenStems.length <= 1) return '';
     final tenGod = hiddenStems[1].getTenGods(dayJiaZi.tianGan);
-    return tenGod.singleName;
+    return isShortName ? tenGod.singleName : tenGod.name;
   }
 
   @override
@@ -534,6 +541,7 @@ class HiddenStemsTertiaryGodsRowStrategy extends RowComputationStrategy {
       final tertiaryGod = _computeHiddenStemsTertiaryGodPlaceholder(
         pillarJiaZi,
         input.dayJiaZi,
+        input.isShortName,
       );
       values[pillarId] = tertiaryGod;
     }
@@ -547,12 +555,13 @@ class HiddenStemsTertiaryGodsRowStrategy extends RowComputationStrategy {
   String _computeHiddenStemsTertiaryGodPlaceholder(
     JiaZi pillarJiaZi,
     JiaZi dayJiaZi,
+    bool isShortName,
   ) {
     // 占位实现：取藏干余气的十神
     final hiddenStems = pillarJiaZi.diZhi.cangGan;
     if (hiddenStems.length <= 2) return '';
     final tenGod = hiddenStems[2].getTenGods(dayJiaZi.tianGan);
-    return tenGod.singleName;
+    return isShortName ? tenGod.singleName : tenGod.name;
   }
 
   @override

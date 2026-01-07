@@ -173,21 +173,25 @@ class TextStyleConfig {
     colorMapperDataModel: ColorMapperDataModel(
       colorfulLightMapper: {
         for (final zs in EnumTenGods.values) zs.name: Colors.purpleAccent,
+        for (final zs in EnumTenGods.values) zs.singleName: Colors.purpleAccent,
         FourZhuText.qianZao: Colors.purpleAccent,
         FourZhuText.kunZao: Colors.purpleAccent,
       },
       pureLightMapper: {
         for (final zs in EnumTenGods.values) zs.name: Colors.black87,
+        for (final zs in EnumTenGods.values) zs.singleName: Colors.black87,
         FourZhuText.qianZao: Colors.black87,
         FourZhuText.kunZao: Colors.black87,
       },
       colorfulDarkMapper: {
         for (final zs in EnumTenGods.values) zs.name: Colors.purple,
+        for (final zs in EnumTenGods.values) zs.singleName: Colors.purple,
         FourZhuText.qianZao: Colors.purple,
         FourZhuText.kunZao: Colors.purple,
       },
       pureDarkMapper: {
         for (final zs in EnumTenGods.values) zs.name: Colors.white,
+        for (final zs in EnumTenGods.values) zs.singleName: Colors.white,
         FourZhuText.qianZao: Colors.white,
         FourZhuText.kunZao: Colors.white,
       },
@@ -425,6 +429,7 @@ class TextStyleConfig {
     double? shadowBlurRadius,
   }) {
     // 兼容旧字段：将离散字段映射到三大子模型
+    final color = _parseColor(textColorHex);
     final shadowColor = _parseColor(shadowColorHex) ?? Colors.black;
     final weight =
         _parseFontWeight(_parseFontWeightString(fontWeight)) ?? FontWeight.w400;
@@ -435,6 +440,7 @@ class TextStyleConfig {
         colorfulLightMapper: const {},
         pureDarkMapper: const {},
         colorfulDarkMapper: const {},
+        defaultColor: color ?? Colors.blueGrey,
       ),
       textShadowDataModel: TextShadowDataModel(
         shadowEnabled: (shadowColorHex != null) ||

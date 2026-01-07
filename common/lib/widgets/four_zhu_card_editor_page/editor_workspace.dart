@@ -1183,11 +1183,6 @@ class _TemplateThumbnailCard extends StatelessWidget {
         child: Container(
           width: width,
           height: height,
-          // decoration: BoxDecoration(
-          //   color: Colors.black.withAlpha(10),
-          //   borderRadius: BorderRadius.circular(16),
-          // ),
-          // clipBehavior: Clip.antiAlias,
           alignment: Alignment.center,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

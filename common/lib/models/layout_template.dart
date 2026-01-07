@@ -239,7 +239,8 @@ class CardStyle {
   });
 
   static String _normalizeFontFamily(String value) {
-    if (value == 'NotoSansSC' || value == 'NotoSans') return 'NotoSansSC-Regular';
+    if (value == 'NotoSansSC' || value == 'NotoSans')
+      return 'NotoSansSC-Regular';
     return value;
   }
 
@@ -363,6 +364,7 @@ class RowConfig {
     this.marginHorizontal,
     this.borderType,
     this.borderColorHex,
+    this.tenGodLabelType = 'name',
   });
 
   final RowType type;
@@ -383,6 +385,9 @@ class RowConfig {
   final BorderType? borderType;
   final String? borderColorHex;
 
+  /// 'name' (2 chars) or 'shortName' (1 char)
+  final String tenGodLabelType;
+
   RowConfig copyWith({
     RowType? type,
     bool? isVisible,
@@ -395,6 +400,7 @@ class RowConfig {
     double? paddingHorizontal,
     BorderType? borderType,
     String? borderColorHex,
+    String? tenGodLabelType,
   }) {
     return RowConfig(
       type: type ?? this.type,
@@ -408,6 +414,7 @@ class RowConfig {
       paddingHorizontal: paddingHorizontal ?? this.paddingHorizontal,
       borderType: borderType ?? this.borderType,
       borderColorHex: borderColorHex ?? this.borderColorHex,
+      tenGodLabelType: tenGodLabelType ?? this.tenGodLabelType,
     );
   }
 
@@ -425,6 +432,7 @@ class RowConfig {
       'paddingHorizontal': paddingHorizontal,
       'borderType': borderType?.name,
       'borderColorHex': borderColorHex,
+      'tenGodLabelType': tenGodLabelType,
     };
   }
 
@@ -437,6 +445,9 @@ class RowConfig {
 
     switch (rowType) {
       case RowType.heavenlyStem:
+      case RowType.hiddenStemsPrimary:
+      case RowType.hiddenStemsSecondary:
+      case RowType.hiddenStemsTertiary:
         // 天干：10 个颜色映射
         pureLightMapper = Map.fromEntries(
           TianGan.values.take(10).map((g) => MapEntry(g.name, Colors.black87)),
@@ -463,6 +474,14 @@ class RowConfig {
         );
         colorfulDarkMapper = colorfulLightMapper;
         break;
+
+      case RowType.tenGod:
+      case RowType.hiddenStemsTenGod:
+      case RowType.hiddenStemsPrimaryGods:
+      case RowType.hiddenStemsSecondaryGods:
+      case RowType.hiddenStemsTertiaryGods:
+        // 十神 & 藏干(神)：使用十神颜色
+        return TextStyleConfig.defaultTenGodsConfig;
 
       default:
         // 其他行类型使用现有的默认配置
@@ -529,6 +548,7 @@ class RowConfig {
       paddingHorizontal: (json['paddingHorizontal'] as num?)?.toDouble(),
       borderType: borderType,
       borderColorHex: json['borderColorHex'] as String?,
+      tenGodLabelType: json['tenGodLabelType'] as String? ?? 'name',
     );
   }
 
@@ -547,7 +567,8 @@ class RowConfig {
         other.marginHorizontal == marginHorizontal &&
         other.paddingHorizontal == paddingHorizontal &&
         other.borderType == borderType &&
-        other.borderColorHex == borderColorHex;
+        other.borderColorHex == borderColorHex &&
+        other.tenGodLabelType == tenGodLabelType;
   }
 
   @override
@@ -563,6 +584,7 @@ class RowConfig {
         paddingHorizontal,
         borderType,
         borderColorHex,
+        tenGodLabelType,
         // 阴影字段
       );
 }

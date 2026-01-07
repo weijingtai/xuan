@@ -32,17 +32,6 @@ class RowStyleEditorPanel extends StatelessWidget {
             .where((p) => p != null)
             .cast<RowPayload>()
             .toList();
-        // final missing =
-        // activeTypes.where((t) => !all.any((c) => c.type == t)).toList();
-        // if (missing.isNotEmpty) {
-        //   WidgetsBinding.instance.addPostFrameCallback((_) {
-        //     for (final t in missing) {
-        //       vm.ensureRowConfig(t);
-        //     }
-        //   });
-        // }
-        // final rows =
-        // vm.rowConfigs.where((c) => activeTypes.contains(c.type)).toList();
         final orderMap = <RowType, int>{};
         for (int i = 0; i < payload.rowOrderUuid.length; i++) {
           final rp = payload.rowMap[payload.rowOrderUuid[i]];
@@ -51,8 +40,6 @@ class RowStyleEditorPanel extends StatelessWidget {
           }
         }
 
-        // rows.sort((a, b) =>
-        // (orderMap[a.type] ?? 999).compareTo(orderMap[b.type] ?? 999));
         return ValueListenableBuilder<EditableFourZhuCardTheme>(
           valueListenable: editorVm.editableThemeNotifier,
           builder: (ctx, theme, __) {
@@ -294,12 +281,6 @@ class RowItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final editorVm = context.read<FourZhuEditorViewModel>();
-    // print(cfg.type);
-    // if (cfg.type == RowType.earthlyBranch) {
-    //   print(json.encode(cfg
-    //       .textStyleConfig.colorMapperDataModel.colorfulLightMapper
-    //       .map((k, v) => MapEntry(k, v.toString()))));
-    // }
 
     return Container(
       decoration: BoxDecoration(

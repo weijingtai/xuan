@@ -44,6 +44,7 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
   BorderType? _selectedBorderType;
   String? _selectedBorderColor;
   double? _selectedPadding;
+  String? _selectedTenGodLabelType;
 
   @override
   void initState() {
@@ -52,6 +53,34 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
     _selectedBorderType = widget.config.borderType;
     _selectedBorderColor = widget.config.borderColorHex;
     _selectedPadding = widget.config.paddingVertical;
+    _selectedTenGodLabelType = widget.config.tenGodLabelType;
+
+    final style = widget.config.textStyleConfig;
+    _selectedFontFamily = style.fontStyleDataModel.fontFamily;
+    _selectedFontSize = style.fontStyleDataModel.fontSize;
+
+    // 尝试解析初始颜色（优先从 Mapper 中获取）
+    if (style.colorMapperDataModel.colorfulLightMapper.isNotEmpty) {
+      _selectedTextColor = _colorToHex(
+          style.colorMapperDataModel.colorfulLightMapper.values.first);
+    } else if (style.colorMapperDataModel.pureLightMapper.isNotEmpty) {
+      _selectedTextColor =
+          _colorToHex(style.colorMapperDataModel.pureLightMapper.values.first);
+    } else if (style.colorMapperDataModel.defaultColor != Colors.blueGrey) {
+      _selectedTextColor = _colorToHex(style.colorMapperDataModel.defaultColor);
+    }
+  }
+
+  String _colorToHex(Color color) {
+    return '#${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}';
+  }
+
+  bool _isTenGodRow(RowType type) {
+    return type == RowType.tenGod ||
+        type == RowType.hiddenStemsTenGod ||
+        type == RowType.hiddenStemsPrimaryGods ||
+        type == RowType.hiddenStemsSecondaryGods ||
+        type == RowType.hiddenStemsTertiaryGods;
   }
 
   @override
@@ -115,6 +144,28 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
           padding: _selectedPadding,
         ),
         const Divider(height: 24),
+        if (_isTenGodRow(widget.config.type)) ...[
+          Text('标签设置', style: theme.textTheme.titleMedium),
+          const SizedBox(height: 8),
+          SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(
+                value: 'name',
+                label: Text('全名(2字)'),
+                icon: Icon(Icons.short_text),
+              ),
+              ButtonSegment(
+                value: 'singleName',
+                label: Text('简称(1字)'),
+                icon: Icon(Icons.text_fields),
+              ),
+            ],
+            selected: {_selectedTenGodLabelType ?? 'name'},
+            onSelectionChanged: (s) =>
+                setState(() => _selectedTenGodLabelType = s.first),
+          ),
+          const SizedBox(height: 12),
+        ],
         Text('字体设置', style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Row(
@@ -215,6 +266,10 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
           spacing: 8,
           runSpacing: 8,
           children: [
+            _ColorChip(
+                color: '#FFE040FB',
+                label: '紫',
+                onTap: () => setState(() => _selectedTextColor = '#FFE040FB')),
             _ColorChip(
                 color: '#FF000000',
                 label: '黑',
@@ -342,6 +397,7 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
       borderType: _selectedBorderType,
       borderColorHex: _selectedBorderColor,
       padding: _selectedPadding,
+      tenGodLabelType: _selectedTenGodLabelType,
     );
     widget.onSave(updated);
   }
@@ -359,6 +415,7 @@ class _RowStyleEditorFormState extends State<RowStyleEditorForm> {
       _selectedBorderType = null;
       _selectedBorderColor = null;
       _selectedPadding = null;
+      _selectedTenGodLabelType = null;
     });
   }
 
