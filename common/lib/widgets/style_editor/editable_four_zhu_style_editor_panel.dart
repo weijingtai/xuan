@@ -394,27 +394,31 @@ class _EditableFourZhuStyleEditorPanelState
           },
         ),
         // 卡片背景色控件
-        _buildColorPickerRow2(
-          label: 'Light 卡片背景色',
-          color: config.lightBackgroundColor,
-          onColorChanged: (color) {
-            final newConfig = config.copyWith(
-              lightBackgroundColor: color,
+        ValueListenableBuilder<Brightness>(
+          valueListenable:
+              context.read<FourZhuEditorViewModel>().cardBrightnessNotifier,
+          builder: (context, brightness, child) {
+            final isLight = brightness == Brightness.light;
+            return _buildColorPickerRow2(
+              label: '${isLight ? "Light" : "Dark"} 卡片背景色',
+              color: isLight
+                  ? config.lightBackgroundColor
+                  : config.darkBackgroundColor,
+              onColorChanged: (color) {
+                final newConfig = config.copyWith(
+                  lightBackgroundColor: isLight ? color : null,
+                  darkBackgroundColor: isLight ? null : color,
+                );
+                // Preserve the other mode's color
+                final preservedConfig = newConfig.copyWith(
+                  lightBackgroundColor:
+                      isLight ? color : config.lightBackgroundColor,
+                  darkBackgroundColor:
+                      isLight ? config.darkBackgroundColor : color,
+                );
+                _cardStyleConfig.value = preservedConfig;
+              },
             );
-            _cardStyleConfig.value = newConfig;
-            // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
-          },
-        ),
-        // 卡片背景色控件
-        _buildColorPickerRow2(
-          label: 'Dark 卡片背景色',
-          color: config.darkBackgroundColor,
-          onColorChanged: (color) {
-            final newConfig = config.copyWith(
-              darkBackgroundColor: color,
-            );
-            _cardStyleConfig.value = newConfig;
-            // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
           },
         ),
         // 边框分区标题
@@ -458,31 +462,26 @@ class _EditableFourZhuStyleEditorPanelState
           },
         ),
         // 边框颜色控件
-        _buildColorPickerRow2(
-          label: 'light 边框颜色',
-          color: config.border?.lightColor,
-          onColorChanged: (color) {
-            final newConfig = config.copyWith(
-              border: config.border?.copyWith(
-                lightColor: color,
-              ),
+        ValueListenableBuilder<Brightness>(
+          valueListenable:
+              context.read<FourZhuEditorViewModel>().cardBrightnessNotifier,
+          builder: (context, brightness, child) {
+            final isLight = brightness == Brightness.light;
+            return _buildColorPickerRow2(
+              label: '${isLight ? "Light" : "Dark"} 边框颜色',
+              color: isLight
+                  ? config.border?.lightColor
+                  : config.border?.darkColor,
+              onColorChanged: (color) {
+                final newConfig = config.copyWith(
+                  border: config.border?.copyWith(
+                    lightColor: isLight ? color : config.border?.lightColor,
+                    darkColor: isLight ? config.border?.darkColor : color,
+                  ),
+                );
+                _cardStyleConfig.value = newConfig;
+              },
             );
-            _cardStyleConfig.value = newConfig;
-            // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
-          },
-        ),
-        // 边框颜色控件
-        _buildColorPickerRow2(
-          label: 'dark 边框颜色',
-          color: config.border?.darkColor,
-          onColorChanged: (color) {
-            final newConfig = config.copyWith(
-              border: config.border?.copyWith(
-                darkColor: color,
-              ),
-            );
-            _cardStyleConfig.value = newConfig;
-            // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
           },
         ),
 
@@ -566,17 +565,28 @@ class _EditableFourZhuStyleEditorPanelState
                 },
               ),
               // 阴影颜色控件
-              _buildColorPickerRow2(
-                label: '阴影颜色',
-                color: config.shadow?.lightThemeColor,
-                onColorChanged: (color) {
-                  final newConfig = config.copyWith(
-                    shadow: config.shadow?.copyWith(
-                      lightThemeColor: color,
-                    ),
+              ValueListenableBuilder<Brightness>(
+                valueListenable: context
+                    .read<FourZhuEditorViewModel>()
+                    .cardBrightnessNotifier,
+                builder: (context, brightness, child) {
+                  final isLight = brightness == Brightness.light;
+                  return _buildColorPickerRow2(
+                    label: '${isLight ? "Light" : "Dark"} 阴影颜色',
+                    color: isLight
+                        ? config.shadow?.lightThemeColor
+                        : config.shadow?.darkThemeColor,
+                    onColorChanged: (color) {
+                      final newConfig = config.copyWith(
+                        shadow: config.shadow?.copyWith(
+                          lightThemeColor: isLight ? color : null,
+                          darkThemeColor: isLight ? null : color,
+                        ),
+                      );
+                      _cardStyleConfig.value = newConfig;
+                      // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
+                    },
                   );
-                  _cardStyleConfig.value = newConfig;
-                  // _emit(applyCardStyleConfigToTheme(_theme, newConfig));
                 },
               ),
               // 阴影跟随背景色复选框

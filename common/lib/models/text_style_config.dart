@@ -46,6 +46,18 @@ class TextStyleConfig {
     // 基础属性（当前已支持）
   });
 
+  TextStyleConfig copyWith({
+    ColorMapperDataModel? colorMapperDataModel,
+    TextShadowDataModel? textShadowDataModel,
+    FontStyleDataModel? fontStyleDataModel,
+  }) {
+    return TextStyleConfig(
+      colorMapperDataModel: colorMapperDataModel ?? this.colorMapperDataModel,
+      textShadowDataModel: textShadowDataModel ?? this.textShadowDataModel,
+      fontStyleDataModel: fontStyleDataModel ?? this.fontStyleDataModel,
+    );
+  }
+
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
@@ -465,17 +477,17 @@ class TextStyleConfig {
 
   // ==================== copyWith ====================
 
-  TextStyleConfig copyWith({
-    ColorMapperDataModel? colorMapperDataModel,
-    TextShadowDataModel? textShadowDataModel,
-    FontStyleDataModel? fontStyleDataModel,
-  }) {
-    return TextStyleConfig(
-      colorMapperDataModel: colorMapperDataModel ?? this.colorMapperDataModel,
-      textShadowDataModel: textShadowDataModel ?? this.textShadowDataModel,
-      fontStyleDataModel: fontStyleDataModel ?? this.fontStyleDataModel,
-    );
-  }
+  // TextStyleConfig copyWith({
+  //   ColorMapperDataModel? colorMapperDataModel,
+  //   TextShadowDataModel? textShadowDataModel,
+  //   FontStyleDataModel? fontStyleDataModel,
+  // }) {
+  //   return TextStyleConfig(
+  //     colorMapperDataModel: colorMapperDataModel ?? this.colorMapperDataModel,
+  //     textShadowDataModel: textShadowDataModel ?? this.textShadowDataModel,
+  //     fontStyleDataModel: fontStyleDataModel ?? this.fontStyleDataModel,
+  //   );
+  // }
 
   /// 解析颜色字符串为 Color
   static Color? _parseColor(String? hex) {
@@ -705,6 +717,28 @@ class ColorMapperDataModel {
     this.blackwhiteLightStrength = 1.0,
     this.blackwhiteDarkStrength = 1.0,
   });
+
+  ColorMapperDataModel copyWith({
+    Map<String, Color>? pureLightMapper,
+    Map<String, Color>? colorfulLightMapper,
+    Map<String, Color>? pureDarkMapper,
+    Map<String, Color>? colorfulDarkMapper,
+    Color? defaultColor,
+    double? blackwhiteLightStrength,
+    double? blackwhiteDarkStrength,
+  }) {
+    return ColorMapperDataModel(
+      pureLightMapper: pureLightMapper ?? this.pureLightMapper,
+      colorfulLightMapper: colorfulLightMapper ?? this.colorfulLightMapper,
+      pureDarkMapper: pureDarkMapper ?? this.pureDarkMapper,
+      colorfulDarkMapper: colorfulDarkMapper ?? this.colorfulDarkMapper,
+      defaultColor: defaultColor ?? this.defaultColor,
+      blackwhiteLightStrength:
+          blackwhiteLightStrength ?? this.blackwhiteLightStrength,
+      blackwhiteDarkStrength:
+          blackwhiteDarkStrength ?? this.blackwhiteDarkStrength,
+    );
+  }
 
   static const DeepCollectionEquality _mapEquality =
       DeepCollectionEquality.unordered();

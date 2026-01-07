@@ -9,7 +9,9 @@ import '../domain/usecases/layout_templates/delete_template_use_case.dart';
 import '../domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import '../domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import '../domain/usecases/layout_templates/save_template_use_case.dart';
+import '../enums/enum_ten_gods.dart';
 import '../enums/enum_tian_gan.dart';
+import '../const_resources_mapper.dart';
 import '../enums/enum_di_zhi.dart';
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
@@ -885,8 +887,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     });
   }
 
-
-
   void reorderPillar({
     required String groupId,
     required int oldIndex,
@@ -1653,35 +1653,175 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   /// 检查并迁移旧版默认模版（修复样式跳变问题）
   Future<LayoutTemplate> _migrateLegacyDefaultTemplate(
       LayoutTemplate template) async {
-    // 识别特征：名称为"默认模板" 且 边框为实线（新版默认为无边框）
-    // 且行配置符合旧版特征（防止误伤用户自定义模板）
-    // 旧版默认模板通常包含7行配置
-    // M4.3.3 - 增加版本检查，防止用户修改后的模板被反复迁移
-    /* 
-    // 禁用自动迁移逻辑，防止覆盖用户已有的自定义模板（如 Picture 1 样式）
-    final isLegacyCandidate = template.name == '默认模板' &&
-        template.cardStyle.dividerType == BorderType.solid &&
-        template.rowConfigs.length == 7 &&
-        template.version < 1; // 仅迁移版本号小于1的旧模板
+    // 修复：确保十神和藏干神行包含 singleName 的颜色配置
+    // 修复：确保主气/中气/余气行包含天干颜色配置
+    var updatedRowConfigs = List<RowConfig>.of(template.rowConfigs);
+    bool changed = false;
 
-    if (isLegacyCandidate) {
-      final cleanDefault = _buildDefaultTemplate(
-        collectionId: template.collectionId,
-        name: template.name,
-      );
+    for (int i = 0; i < updatedRowConfigs.length; i++) {
+      final row = updatedRowConfigs[i];
+      if (_isTenGodOrHiddenStemGodRow(row.type)) {
+        final newTextStyle = _fixTenGodsColorConfig(row.textStyleConfig);
+        if (newTextStyle != row.textStyleConfig) {
+          updatedRowConfigs[i] = row.copyWith(textStyleConfig: newTextStyle);
+          changed = true;
+        }
+      } else if (_isTianGanRow(row.type)) {
+        final newTextStyle = _fixTianGanColorConfig(row.textStyleConfig);
+        if (newTextStyle != row.textStyleConfig) {
+          updatedRowConfigs[i] = row.copyWith(textStyleConfig: newTextStyle);
+          changed = true;
+        }
+      }
+    }
 
+    if (changed) {
       final migrated = template.copyWith(
-        cardStyle: cleanDefault.cardStyle,
-        rowConfigs: cleanDefault.rowConfigs,
-        version: template.version + 1,
+        rowConfigs: updatedRowConfigs,
         updatedAt: DateTime.now(),
       );
-
       await saveTemplateUseCase(template: migrated);
       return migrated;
     }
-    */
+
     return template;
+  }
+
+  bool _isTenGodOrHiddenStemGodRow(RowType type) {
+    return type == RowType.tenGod ||
+        type == RowType.hiddenStemsPrimaryGods ||
+        type == RowType.hiddenStemsSecondaryGods ||
+        type == RowType.hiddenStemsTertiaryGods ||
+        type == RowType.hiddenStemsTenGod;
+  }
+
+  bool _isTianGanRow(RowType type) {
+    return type == RowType.heavenlyStem ||
+        type == RowType.hiddenStemsPrimary ||
+        type == RowType.hiddenStemsSecondary ||
+        type == RowType.hiddenStemsTertiary;
+  }
+
+  TextStyleConfig _fixTenGodsColorConfig(TextStyleConfig config) {
+    final colorMapper = config.colorMapperDataModel;
+    final defaultTenGods =
+        TextStyleConfig.defaultTenGodsConfig.colorMapperDataModel;
+
+    // Helper to merge default Ten Gods config if keys are missing
+    Map<String, Color> mergeDefaults(
+        Map<String, Color> current, Map<String, Color> defaults) {
+      final newMap = Map<String, Color>.of(current);
+      bool modified = false;
+
+      // Check if we are missing Ten God keys (using BiJian as a proxy)
+      // If missing, it implies this row was using generic config, so we should apply defaults
+      final hasTenGods = newMap.containsKey(EnumTenGods.BiJian.name);
+
+      if (!hasTenGods) {
+        // Apply all defaults
+        for (final entry in defaults.entries) {
+          newMap[entry.key] = entry.value;
+        }
+        modified = true;
+      }
+
+      // Also ensure singleName exists for all keys
+      for (final tenGod in EnumTenGods.values) {
+        if (!newMap.containsKey(tenGod.singleName)) {
+          // Try to find full name color, otherwise use default from config or fallback
+          final fullNameColor = newMap[tenGod.name];
+          if (fullNameColor != null) {
+            newMap[tenGod.singleName] = fullNameColor;
+            modified = true;
+          } else if (defaults.containsKey(tenGod.singleName)) {
+            newMap[tenGod.singleName] = defaults[tenGod.singleName]!;
+            modified = true;
+          }
+        }
+      }
+
+      return modified ? newMap : current;
+    }
+
+    final newPureLight = mergeDefaults(
+        colorMapper.pureLightMapper, defaultTenGods.pureLightMapper);
+    final newColorfulLight = mergeDefaults(
+        colorMapper.colorfulLightMapper, defaultTenGods.colorfulLightMapper);
+    final newPureDark = mergeDefaults(
+        colorMapper.pureDarkMapper, defaultTenGods.pureDarkMapper);
+    final newColorfulDark = mergeDefaults(
+        colorMapper.colorfulDarkMapper, defaultTenGods.colorfulDarkMapper);
+
+    if (newPureLight == colorMapper.pureLightMapper &&
+        newColorfulLight == colorMapper.colorfulLightMapper &&
+        newPureDark == colorMapper.pureDarkMapper &&
+        newColorfulDark == colorMapper.colorfulDarkMapper) {
+      return config;
+    }
+
+    return config.copyWith(
+      colorMapperDataModel: colorMapper.copyWith(
+        pureLightMapper: newPureLight,
+        colorfulLightMapper: newColorfulLight,
+        pureDarkMapper: newPureDark,
+        colorfulDarkMapper: newColorfulDark,
+      ),
+    );
+  }
+
+  TextStyleConfig _fixTianGanColorConfig(TextStyleConfig config) {
+    final colorMapper = config.colorMapperDataModel;
+
+    // Helper to fill missing keys from a source map
+    Map<String, Color> fillMissing(
+        Map<String, Color> target, Map<String, Color> source) {
+      final newMap = Map<String, Color>.of(target);
+      bool modified = false;
+      for (final entry in source.entries) {
+        if (!newMap.containsKey(entry.key)) {
+          newMap[entry.key] = entry.value;
+          modified = true;
+        }
+      }
+      return modified ? newMap : target;
+    }
+
+    // Default maps
+    final defaultColorful = ConstResourcesMapper.zodiacGanColors.map(
+      (k, v) => MapEntry(k.name, v),
+    );
+
+    final defaultPureLight = Map.fromEntries(
+      TianGan.values.take(10).map((g) => MapEntry(g.name, Colors.black87)),
+    );
+    final defaultPureDark = Map.fromEntries(
+      TianGan.values.take(10).map((g) => MapEntry(g.name, Colors.white70)),
+    );
+
+    final newColorfulLight =
+        fillMissing(colorMapper.colorfulLightMapper, defaultColorful);
+    final newColorfulDark =
+        fillMissing(colorMapper.colorfulDarkMapper, defaultColorful);
+    final newPureLight =
+        fillMissing(colorMapper.pureLightMapper, defaultPureLight);
+    final newPureDark =
+        fillMissing(colorMapper.pureDarkMapper, defaultPureDark);
+
+    if (newColorfulLight == colorMapper.colorfulLightMapper &&
+        newColorfulDark == colorMapper.colorfulDarkMapper &&
+        newPureLight == colorMapper.pureLightMapper &&
+        newPureDark == colorMapper.pureDarkMapper) {
+      return config;
+    }
+
+    return config.copyWith(
+      colorMapperDataModel: colorMapper.copyWith(
+        colorfulLightMapper: newColorfulLight,
+        colorfulDarkMapper: newColorfulDark,
+        pureLightMapper: newPureLight,
+        pureDarkMapper: newPureDark,
+      ),
+    );
   }
 
   /// 应用当前模板
@@ -2035,8 +2175,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     }
   }
 
-
-
   void updateRowOrderFromTypes(List<RowType> orderedTypes) {
     final template = _currentTemplate;
     if (template == null) return;
@@ -2364,7 +2502,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
     final newRowOrderUuid = <String>[];
     final newRowMap = Map<String, RowPayload>.from(currentPayload.rowMap);
-
 
     for (final config in template.rowConfigs) {
       if (!config.isVisible) continue;

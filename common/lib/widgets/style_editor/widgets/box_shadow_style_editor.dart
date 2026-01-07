@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 
+import 'package:provider/provider.dart';
+import '../../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 import 'title_slider_widget.dart';
 
@@ -69,79 +71,67 @@ class ShadowEditorWidget extends StatelessWidget {
             },
           ));
           if (!_pillarShadowFollowBackground) {
-            xs.add(Row(
-              children: [
-                const Text('Light 阴影颜色'),
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showAppPalettePickerDialog(
-                      context,
-                      initialColor: _pillarShadowFollowBackground
-                          ? (config.lightBackgroundColor ?? Colors.white)
-                          : _pillarShadowLightColor,
-                      title: '选择阴影颜色',
-                    );
-                    if (picked != null) {
-                      shadowNotifier.value = shadowNotifier.value.copyWith(
-                        lightThemeColor: picked,
-                      );
-                    }
-                  },
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: lightPillarShadowColor,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .dividerColor
-                            .withValues(alpha: 0.4),
+            xs.add(ValueListenableBuilder<Brightness>(
+              valueListenable:
+                  context.read<FourZhuEditorViewModel>().cardBrightnessNotifier,
+              builder: (context, brightness, child) {
+                final isLight = brightness == Brightness.light;
+                return Row(
+                  children: [
+                    Text('${isLight ? "Light" : "Dark"} 阴影颜色'),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () async {
+                        final picked = await showAppPalettePickerDialog(
+                          context,
+                          initialColor: _pillarShadowFollowBackground
+                              ? (isLight
+                                  ? (config.lightBackgroundColor ??
+                                      Colors.white)
+                                  : (config.darkBackgroundColor ??
+                                      Colors.black))
+                              : (isLight
+                                  ? _pillarShadowLightColor
+                                  : _pillarShadowDarkColor),
+                          title: '选择阴影颜色',
+                        );
+                        if (picked != null) {
+                          shadowNotifier.value = shadowNotifier.value.copyWith(
+                            lightThemeColor: isLight ? picked : null,
+                            darkThemeColor: isLight ? null : picked,
+                          );
+                          // Preserve the other mode's color
+                          shadowNotifier.value = shadowNotifier.value.copyWith(
+                            lightThemeColor: isLight
+                                ? picked
+                                : shadowNotifier.value.lightThemeColor,
+                            darkThemeColor: isLight
+                                ? shadowNotifier.value.darkThemeColor
+                                : picked,
+                          );
+                        }
+                      },
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          color: isLight
+                              ? lightPillarShadowColor
+                              : darkPillarShadowColor,
+                          borderRadius: BorderRadius.circular(4),
+                          border: Border.all(
+                            color: Theme.of(context)
+                                .dividerColor
+                                .withValues(alpha: 0.4),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text('选择颜色'),
-              ],
-            ));
-            xs.add(Row(
-              children: [
-                const Text('Dark 阴影颜色'),
-                const SizedBox(width: 8),
-                InkWell(
-                  onTap: () async {
-                    final picked = await showAppPalettePickerDialog(
-                      context,
-                      initialColor: _pillarShadowFollowBackground
-                          ? (config.darkBackgroundColor ?? Colors.black)
-                          : _pillarShadowDarkColor,
-                      title: '选择阴影颜色',
-                    );
-                    if (picked != null) {
-                      shadowNotifier.value = shadowNotifier.value.copyWith(
-                        darkThemeColor: picked,
-                      );
-                    }
-                  },
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      color: darkPillarShadowColor,
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: Theme.of(context)
-                            .dividerColor
-                            .withValues(alpha: 0.4),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                const Text('选择颜色'),
-              ],
+                    const SizedBox(width: 12),
+                    const Text('选择颜色'),
+                  ],
+                );
+              },
             ));
           }
           xs.add(TitleSliderWidget(

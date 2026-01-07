@@ -104,8 +104,10 @@ class _LayoutEditorPageState extends State<LayoutEditorPage> {
           ],
         ),
         body: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            // Left Sidebar
+            // Left Sideba
             const LayoutEditorSidebar(),
             // Main Content
             Expanded(

@@ -586,50 +586,38 @@ class _ColorfulTextStyleEditorV2EnhancedState
           const SizedBox(height: 16),
 
           // 阴影颜色
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Light 阴影颜色',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              GestureDetector(
-                onTap: () =>
-                    _pickLightShadowColor(shadowDataModel.lightShadowColor),
-                child: Container(
-                  width: 60,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: shadowDataModel.lightShadowColor,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.grey.shade400, width: 2),
+          ValueListenableBuilder<Brightness>(
+            valueListenable: selectedThemeNotifier,
+            builder: (ctx, theme, _) {
+              final isLight = theme == Brightness.light;
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    '阴影颜色',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                   ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Dark 阴影颜色',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              GestureDetector(
-                onTap: () =>
-                    _pickDarkShadowColor(shadowDataModel.darkShadowColor),
-                child: Container(
-                  width: 60,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: shadowDataModel.darkShadowColor,
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(color: Colors.grey.shade400, width: 2),
+                  GestureDetector(
+                    onTap: () => isLight
+                        ? _pickLightShadowColor(
+                            shadowDataModel.lightShadowColor)
+                        : _pickDarkShadowColor(shadowDataModel.darkShadowColor),
+                    child: Container(
+                      width: 60,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isLight
+                            ? shadowDataModel.lightShadowColor
+                            : shadowDataModel.darkShadowColor,
+                        borderRadius: BorderRadius.circular(6),
+                        border:
+                            Border.all(color: Colors.grey.shade400, width: 2),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ],
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           Row(
@@ -1042,37 +1030,39 @@ class _ColorfulTextStyleEditorV2EnhancedState
                     }
                   },
                 ),
-                const SizedBox(height: 12),
-                SegmentedButton<Brightness>(
-                  style: const ButtonStyle(
-                    visualDensity: VisualDensity.compact,
+                if (_ownsThemeNotifier) ...[
+                  const SizedBox(height: 12),
+                  SegmentedButton<Brightness>(
+                    style: const ButtonStyle(
+                      visualDensity: VisualDensity.compact,
+                    ),
+                    segments: const [
+                      ButtonSegment<Brightness>(
+                        value: Brightness.light,
+                        icon: Icon(Icons.wb_sunny_outlined, size: 16),
+                        label: Text('浅色'),
+                        tooltip: '浅色',
+                      ),
+                      ButtonSegment<Brightness>(
+                        value: Brightness.dark,
+                        icon: Icon(Icons.nightlight_round, size: 16),
+                        label: Text('深色'),
+                        tooltip: '深色',
+                      ),
+                    ],
+                    selected: <Brightness>{selectedTheme},
+                    onSelectionChanged: (values) {
+                      if (values.isNotEmpty) {
+                        selectedThemeNotifier.value = values.first;
+                      }
+                    },
                   ),
-                  segments: const [
-                    ButtonSegment<Brightness>(
-                      value: Brightness.light,
-                      icon: Icon(Icons.wb_sunny_outlined, size: 16),
-                      label: Text('浅色'),
-                      tooltip: '浅色',
-                    ),
-                    ButtonSegment<Brightness>(
-                      value: Brightness.dark,
-                      icon: Icon(Icons.nightlight_round, size: 16),
-                      label: Text('深色'),
-                      tooltip: '深色',
-                    ),
-                  ],
-                  selected: <Brightness>{selectedTheme},
-                  onSelectionChanged: (values) {
-                    if (values.isNotEmpty) {
-                      selectedThemeNotifier.value = values.first;
-                    }
-                  },
-                ),
+                ],
               ],
             ),
             const SizedBox(height: 20),
             if (mode == ColorPreviewMode.blackwhite)
-              _buildBlackwhiteStrengthEditor(),
+              _buildBlackwhiteStrengthEditor(selectedTheme),
             if (mode != ColorPreviewMode.blackwhite && widget.values != null)
               _buildGanZhiColorPicker(selectedTheme, mode),
           ],
@@ -1103,10 +1093,11 @@ class _ColorfulTextStyleEditorV2EnhancedState
     }
   }
 
-  Widget _buildBlackwhiteStrengthEditor() {
+  Widget _buildBlackwhiteStrengthEditor(Brightness currentTheme) {
     return ValueListenableBuilder<ColorMapperDataModel>(
       valueListenable: colorMapperDataModelNotifier,
       builder: (ctx, mapper, _) {
+        final isLight = currentTheme == Brightness.light;
         final light = mapper.blackwhiteLightStrength.clamp(0.0, 1.0).toDouble();
         final dark = mapper.blackwhiteDarkStrength.clamp(0.0, 1.0).toDouble();
         final lightColor = mapper.getBy(
@@ -1214,25 +1205,27 @@ class _ColorfulTextStyleEditorV2EnhancedState
                 ],
               ),
               const SizedBox(height: 12),
-              slider(
-                title: '浅色',
-                value: light,
-                preview: lightColor,
-                onChanged: (v) {
-                  final s = v.clamp(0.0, 1.0).toDouble();
-                  write(nextLight: s, nextDark: _bwStrengthLinked ? s : dark);
-                },
-              ),
-              const SizedBox(height: 12),
-              slider(
-                title: '深色',
-                value: dark,
-                preview: darkColor,
-                onChanged: (v) {
-                  final s = v.clamp(0.0, 1.0).toDouble();
-                  write(nextLight: _bwStrengthLinked ? s : light, nextDark: s);
-                },
-              ),
+              if (isLight)
+                slider(
+                  title: '浅色',
+                  value: light,
+                  preview: lightColor,
+                  onChanged: (v) {
+                    final s = v.clamp(0.0, 1.0).toDouble();
+                    write(nextLight: s, nextDark: _bwStrengthLinked ? s : dark);
+                  },
+                ),
+              if (!isLight)
+                slider(
+                  title: '深色',
+                  value: dark,
+                  preview: darkColor,
+                  onChanged: (v) {
+                    final s = v.clamp(0.0, 1.0).toDouble();
+                    write(
+                        nextLight: _bwStrengthLinked ? s : light, nextDark: s);
+                  },
+                ),
             ],
           ),
         );

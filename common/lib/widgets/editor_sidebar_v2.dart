@@ -10,7 +10,6 @@ import 'row_style_editor_form.dart';
 import 'style_editor/theme_edit_preview_sidebar.dart';
 import 'style_editor/colorful_text_style_editor_widget_v2.dart'; // 增强版 V2 编辑器
 import '../themes/editable_four_zhu_card_theme.dart';
-import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/cell_style_config.dart';
 import '../utils/constant_values_utils.dart';
 
 /// 编辑器左侧边栏 V2 - 完全连接到 ViewModel
@@ -31,6 +30,7 @@ class EditorSidebarV2 extends StatelessWidget {
 
         return Container(
           width: 320,
+          alignment: Alignment.topCenter,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             border: Border(

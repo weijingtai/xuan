@@ -3,6 +3,8 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+import '../../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 
 class BoxBorderStyleEditor extends StatelessWidget {
@@ -58,58 +60,45 @@ class BoxBorderStyleEditor extends StatelessWidget {
               borderNotifier.value = border.copyWith(radius: v);
             },
           ));
-          xs.add(Row(
-            children: [
-              const Text('Light柱边框颜色'),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => updateLightBorderColor(context, border),
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: _pillarBorderColorLight,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color:
-                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
+          xs.add(ValueListenableBuilder<Brightness>(
+            valueListenable:
+                context.read<FourZhuEditorViewModel>().cardBrightnessNotifier,
+            builder: (context, brightness, child) {
+              final isLight = brightness == Brightness.light;
+              return Row(
+                children: [
+                  Text('${isLight ? "Light" : "Dark"} 柱边框颜色'),
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: () => isLight
+                        ? updateLightBorderColor(context, border)
+                        : updateDarkBorderColor(context, border),
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        color: isLight
+                            ? _pillarBorderColorLight
+                            : _pillarBorderColorDark,
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: Theme.of(context)
+                              .dividerColor
+                              .withValues(alpha: 0.4),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              TextButton(
-                onPressed: () => updateLightBorderColor(context, border),
-                child: const Text('选择颜色'),
-              ),
-            ],
-          ));
-          xs.add(const SizedBox(height: 8));
-          xs.add(Row(
-            children: [
-              const Text('Dark 柱边框颜色'),
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => updateDarkBorderColor(context, border),
-                child: Container(
-                  width: 22,
-                  height: 22,
-                  decoration: BoxDecoration(
-                    color: _pillarBorderColorDark,
-                    borderRadius: BorderRadius.circular(4),
-                    border: Border.all(
-                      color:
-                          Theme.of(context).dividerColor.withValues(alpha: 0.4),
-                    ),
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: () => isLight
+                        ? updateLightBorderColor(context, border)
+                        : updateDarkBorderColor(context, border),
+                    child: const Text('选择颜色'),
                   ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              TextButton(
-                onPressed: () => updateDarkBorderColor(context, border),
-                child: const Text('选择颜色'),
-              ),
-            ],
+                ],
+              );
+            },
           ));
           return xs;
         })(),

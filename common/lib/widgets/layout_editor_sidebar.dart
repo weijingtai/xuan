@@ -29,10 +29,13 @@ class _LayoutEditorSidebarState extends State<LayoutEditorSidebar> {
     final theme = Theme.of(context);
     return Container(
       width: 300,
-      color: theme.cardColor,
+      // color: theme.cardColor,
       padding: const EdgeInsets.all(16.0),
+      alignment: Alignment.topCenter,
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           _buildSection(
             context,
@@ -140,7 +143,10 @@ class _LayoutEditorSidebarState extends State<LayoutEditorSidebar> {
     );
   }
 
-  Widget _buildSection(BuildContext context, {required String title, required String description, required Widget child}) {
+  Widget _buildSection(BuildContext context,
+      {required String title,
+      required String description,
+      required Widget child}) {
     final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

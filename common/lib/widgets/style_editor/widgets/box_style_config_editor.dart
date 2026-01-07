@@ -3,6 +3,8 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:common/widgets/style_editor/widgets/app_palette_picker_dialog.dart';
 import 'package:flutter/material.dart';
 
+import 'package:provider/provider.dart';
+import '../../../viewmodels/four_zhu_editor_view_model.dart';
 import '../../../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
 
 class BoxStyleConfigEditor extends StatelessWidget {
@@ -84,70 +86,52 @@ class BoxStyleConfigEditor extends StatelessWidget {
                 },
               ),
               // 柱背景色控制
-              Row(
-                children: [
-                  const Text('light 柱背景色'),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => updateLightBackgroundColor(context, config),
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: config.lightBackgroundColor ??
-                            Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerHighest,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .dividerColor
-                              .withValues(alpha: 0.4),
+              ValueListenableBuilder<Brightness>(
+                valueListenable: context
+                    .read<FourZhuEditorViewModel>()
+                    .cardBrightnessNotifier,
+                builder: (context, brightness, child) {
+                  final isLight = brightness == Brightness.light;
+                  return Row(
+                    children: [
+                      Text('${isLight ? "Light" : "Dark"} 柱背景色'),
+                      const SizedBox(width: 8),
+                      InkWell(
+                        onTap: () => isLight
+                            ? updateLightBackgroundColor(context, config)
+                            : updateDarkBackgroundolor(context, config),
+                        child: Container(
+                          width: 22,
+                          height: 22,
+                          decoration: BoxDecoration(
+                            color: isLight
+                                ? (config.lightBackgroundColor ??
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerHighest)
+                                : (config.darkBackgroundColor ??
+                                    Theme.of(context)
+                                        .colorScheme
+                                        .surfaceContainerLowest),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: Theme.of(context)
+                                  .dividerColor
+                                  .withValues(alpha: 0.4),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: () =>
-                        updateLightBackgroundColor(context, config),
-                    child: const Text('选择颜色'),
-                  ),
-                ],
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              // 柱背景色控制
-              Row(
-                children: [
-                  const Text('dark 柱背景色'),
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: () => updateDarkBackgroundolor(context, config),
-                    child: Container(
-                      width: 22,
-                      height: 22,
-                      decoration: BoxDecoration(
-                        color: config.darkBackgroundColor ??
-                            Theme.of(context)
-                                .colorScheme
-                                .surfaceContainerLowest,
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(
-                          color: Theme.of(context)
-                              .dividerColor
-                              .withValues(alpha: 0.4),
-                        ),
+                      const SizedBox(width: 12),
+                      TextButton(
+                        onPressed: () => isLight
+                            ? updateLightBackgroundColor(context, config)
+                            : updateDarkBackgroundolor(context, config),
+                        child: const Text('选择颜色'),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  TextButton(
-                    onPressed: () => updateDarkBackgroundolor(context, config),
-                    child: const Text('选择颜色'),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
             ],
           );
