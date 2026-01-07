@@ -430,8 +430,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
     return SafeArea(
       bottom: false,
       child: Container(
-        height: 128,
-        padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+        height: 180,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border(
@@ -841,8 +841,8 @@ class _TemplateGalleryChip extends StatelessWidget {
       template: template,
       selected: selected,
       favorite: favorite,
-      width: 168,
-      height: 104,
+      width: 180,
+      height: 160,
       showCaption: true,
       onTap: onTap,
     );
@@ -1195,190 +1195,92 @@ class _TemplateThumbnailCard extends StatelessWidget {
     };
     return Tooltip(
       message: template.description ?? template.name,
-      child: Material(
-        color: theme.colorScheme.surfaceContainerHighest,
+      child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Container(
-            width: width,
-            height: height,
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(10),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            alignment: Alignment.center,
-            clipBehavior: Clip.antiAlias,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: width,
-                  height: height - 16,
-                  color: Colors.amber,
+        onTap: onTap,
+        child: Container(
+          width: width,
+          height: height,
+          // decoration: BoxDecoration(
+          //   color: Colors.black.withAlpha(10),
+          //   borderRadius: BorderRadius.circular(16),
+          // ),
+          // clipBehavior: Clip.antiAlias,
+          alignment: Alignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Container(
+                width: width,
+                height: height - 25,
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(4),
+                child: FittedBox(
+                  fit: BoxFit.contain,
                   alignment: Alignment.center,
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    alignment: Alignment.center,
-                    clipBehavior: Clip.hardEdge,
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 920),
-                      child: IgnorePointer(
-                        child: RepaintBoundary(
-                          child: EditableFourZhuCardV3(
-                            dayGanZhi: JiaZi.BING_YIN,
-                            brightnessNotifier: brightnessNotifier,
-                            colorPreviewModeNotifier: colorPreviewModeNotifier,
-                            themeNotifier: themeNotifier,
-                            cardPayloadNotifier: cardPayloadNotifier,
-                            paddingNotifier: paddingNotifier,
-                            rowStrategyMapper: rowStrategyMapper,
-                            gender: Gender.male,
-                            showGrip: false,
-                          ),
+                  clipBehavior: Clip.hardEdge,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 920),
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: EditableFourZhuCardV3(
+                          dayGanZhi: JiaZi.BING_YIN,
+                          brightnessNotifier: brightnessNotifier,
+                          colorPreviewModeNotifier: colorPreviewModeNotifier,
+                          themeNotifier: themeNotifier,
+                          cardPayloadNotifier: cardPayloadNotifier,
+                          paddingNotifier: paddingNotifier,
+                          rowStrategyMapper: rowStrategyMapper,
+                          gender: Gender.male,
+                          showGrip: false,
                         ),
                       ),
                     ),
                   ),
                 ),
-                Container(
+              ),
+              Container(
                   width: width,
-                  height: 16,
-                  color: Colors.blue,
+                  height: 24,
                   alignment: Alignment.center,
-                  child: Text(
-                    '${template.name}',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-    return Tooltip(
-      message: template.name,
-      child: Material(
-        color: theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(16),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: onTap,
-          child: Container(
-            // width: width,
-            // height: height,
-            // decoration: BoxDecoration(
-            // borderRadius: BorderRadius.circular(16),
-            // border: Border.all(color: borderColor),
-            // ),
-            // clipBehavior: Clip.antiAlias,
-            child: Column(
-              children: [
-                SizedBox(
-                  width: width,
-                  height: showCaption ? (height - 30) : height,
-                  child: Stack(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Positioned.fill(
-                        child: Padding(
-                          padding: const EdgeInsets.all(10),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color:
-                                    theme.dividerColor.withValues(alpha: 0.10),
-                              ),
+                      Icon(
+                        Icons.favorite,
+                        color: Colors.red,
+                        size: 20,
+                      ),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Text(
+                        '${template.name}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontSize: 14,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withAlpha(100),
+                              offset: const Offset(0, 1),
+                              blurRadius: 1,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(6),
-                              child: ClipRect(
-                                child: FittedBox(
-                                  fit: BoxFit.contain,
-                                  alignment: Alignment.center,
-                                  clipBehavior: Clip.hardEdge,
-                                  child: ConstrainedBox(
-                                    constraints:
-                                        const BoxConstraints(maxWidth: 920),
-                                    child: IgnorePointer(
-                                      child: RepaintBoundary(
-                                        child: EditableFourZhuCardV3(
-                                          dayGanZhi: JiaZi.BING_YIN,
-                                          brightnessNotifier:
-                                              brightnessNotifier,
-                                          colorPreviewModeNotifier:
-                                              colorPreviewModeNotifier,
-                                          themeNotifier: themeNotifier,
-                                          cardPayloadNotifier:
-                                              cardPayloadNotifier,
-                                          paddingNotifier: paddingNotifier,
-                                          rowStrategyMapper: rowStrategyMapper,
-                                          gender: Gender.male,
-                                          showGrip: false,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          ],
                         ),
                       ),
-                      if (favorite)
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface
-                                  .withValues(alpha: 0.9),
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color:
-                                    theme.dividerColor.withValues(alpha: 0.12),
-                              ),
-                            ),
-                            child: Icon(
-                              Icons.star,
-                              size: 14,
-                              color: theme.colorScheme.primary,
-                            ),
-                          ),
-                        ),
+                      SizedBox(
+                        width: 4,
+                      ),
+                      Icon(
+                        Icons.star,
+                        color: Colors.yellow,
+                        size: 20,
+                      ),
                     ],
-                  ),
-                ),
-                if (showCaption)
-                  SizedBox(
-                    height: 30,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: Text(
-                          template.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+                  )),
+            ],
           ),
         ),
       ),
