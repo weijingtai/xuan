@@ -22,10 +22,14 @@ class LayoutTemplate {
     required this.cardStyle,
     required List<ChartGroup> chartGroups,
     required List<RowConfig> rowConfigs,
+    Map<String, dynamic>? editableTheme,
     this.version = 1,
     required this.updatedAt,
   })  : chartGroups = List.unmodifiable(chartGroups),
-        rowConfigs = List.unmodifiable(rowConfigs);
+        rowConfigs = List.unmodifiable(rowConfigs),
+        editableTheme = editableTheme == null
+            ? null
+            : Map<String, dynamic>.unmodifiable(editableTheme);
 
   final String id;
   final String name;
@@ -34,6 +38,7 @@ class LayoutTemplate {
   final CardStyle cardStyle;
   final List<ChartGroup> chartGroups;
   final List<RowConfig> rowConfigs;
+  final Map<String, dynamic>? editableTheme;
   final int version;
   final DateTime updatedAt;
 
@@ -45,6 +50,7 @@ class LayoutTemplate {
     CardStyle? cardStyle,
     List<ChartGroup>? chartGroups,
     List<RowConfig>? rowConfigs,
+    Object? editableTheme = _unset,
     int? version,
     DateTime? updatedAt,
   }) {
@@ -58,6 +64,9 @@ class LayoutTemplate {
       cardStyle: cardStyle ?? this.cardStyle,
       chartGroups: chartGroups ?? this.chartGroups,
       rowConfigs: rowConfigs ?? this.rowConfigs,
+      editableTheme: identical(editableTheme, _unset)
+          ? this.editableTheme
+          : editableTheme as Map<String, dynamic>?,
       version: version ?? this.version,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -72,6 +81,7 @@ class LayoutTemplate {
       'cardStyle': cardStyle.toJson(),
       'chartGroups': chartGroups.map((group) => group.toJson()).toList(),
       'rowConfigs': rowConfigs.map((config) => config.toJson()).toList(),
+      'editableTheme': editableTheme,
       'version': version,
       'updatedAt': updatedAt.toIso8601String(),
     };
@@ -90,6 +100,7 @@ class LayoutTemplate {
       rowConfigs: (json['rowConfigs'] as List<dynamic>)
           .map((item) => RowConfig.fromJson(item as Map<String, dynamic>))
           .toList(),
+      editableTheme: (json['editableTheme'] as Map?)?.cast<String, dynamic>(),
       version: json['version'] as int? ?? 1,
       updatedAt: DateTime.tryParse(json['updatedAt'] as String? ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
@@ -109,6 +120,8 @@ class LayoutTemplate {
         const ListEquality<ChartGroup>()
             .equals(other.chartGroups, chartGroups) &&
         const ListEquality<RowConfig>().equals(other.rowConfigs, rowConfigs) &&
+        const DeepCollectionEquality()
+            .equals(other.editableTheme, editableTheme) &&
         other.version == version &&
         other.updatedAt == updatedAt;
   }
@@ -122,6 +135,7 @@ class LayoutTemplate {
         cardStyle,
         const ListEquality<ChartGroup>().hash(chartGroups),
         const ListEquality<RowConfig>().hash(rowConfigs),
+        const DeepCollectionEquality().hash(editableTheme),
         version,
         updatedAt,
       );

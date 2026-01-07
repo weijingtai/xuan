@@ -2242,6 +2242,14 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void _syncRuntimeStateFromTemplate(LayoutTemplate template) {
     final theme = editableThemeNotifier.value;
     var nextTheme = theme;
+
+    final rawTheme = template.editableTheme;
+    if (rawTheme != null) {
+      try {
+        nextTheme = EditableFourZhuCardTheme.fromJson(rawTheme);
+      } catch (_) {}
+    }
+
     final cardStyle = template.cardStyle;
 
     if (theme.card.padding != cardStyle.contentPadding) {

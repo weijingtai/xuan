@@ -14,9 +14,10 @@ import 'package:flutter/widgets.dart';
 class UpdateThemeCommand extends EditorCommand {
   final EditableFourZhuCardTheme newTheme;
 
-  // State for Undo
   CardStyle? _oldCardStyle;
   List<RowConfig>? _oldRowConfigs;
+  Map<String, dynamic>? _oldEditableTheme;
+  bool _hasCapturedEditableTheme = false;
 
   UpdateThemeCommand(this.newTheme);
 
@@ -33,10 +34,10 @@ class UpdateThemeCommand extends EditorCommand {
   EditorCommand mergeWith(EditorCommand other) {
     if (other is UpdateThemeCommand) {
       final merged = UpdateThemeCommand(other.newTheme);
-      // Transfer the original state from 'this' (the first command in sequence)
-      // to the new command, so undoing the merged command restores the original state.
       merged._oldCardStyle = _oldCardStyle;
       merged._oldRowConfigs = _oldRowConfigs;
+      merged._oldEditableTheme = _oldEditableTheme;
+      merged._hasCapturedEditableTheme = _hasCapturedEditableTheme;
       return merged;
     }
     return this;
@@ -44,12 +45,15 @@ class UpdateThemeCommand extends EditorCommand {
 
   @override
   LayoutTemplate execute(LayoutTemplate currentTemplate) {
-    // Capture state if not already captured (via merge)
     if (_oldCardStyle == null) {
       _oldCardStyle = currentTemplate.cardStyle;
     }
     if (_oldRowConfigs == null) {
       _oldRowConfigs = currentTemplate.rowConfigs;
+    }
+    if (!_hasCapturedEditableTheme) {
+      _oldEditableTheme = currentTemplate.editableTheme;
+      _hasCapturedEditableTheme = true;
     }
 
     // 1. Update CardStyle (Padding & Global Font)
@@ -125,15 +129,17 @@ class UpdateThemeCommand extends EditorCommand {
     return currentTemplate.copyWith(
       cardStyle: nextCardStyle,
       rowConfigs: rowsChanged ? nextRowConfigs : null,
+      editableTheme: newTheme.toJson(),
     );
   }
 
   @override
   LayoutTemplate undo(LayoutTemplate currentTemplate) {
-    // Restore original state
     return currentTemplate.copyWith(
       cardStyle: _oldCardStyle ?? currentTemplate.cardStyle,
       rowConfigs: _oldRowConfigs ?? currentTemplate.rowConfigs,
+      editableTheme:
+          _hasCapturedEditableTheme ? _oldEditableTheme : currentTemplate.editableTheme,
     );
   }
 }

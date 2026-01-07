@@ -886,6 +886,14 @@ class _TemplateThumbnailCard extends StatelessWidget {
 
   EditableFourZhuCardTheme _buildPreviewTheme(LayoutTemplate template) {
     var nextTheme = EditableCardThemeBuilder.createDefaultTheme();
+
+    final rawTheme = template.editableTheme;
+    if (rawTheme != null) {
+      try {
+        nextTheme = EditableFourZhuCardTheme.fromJson(rawTheme);
+      } catch (_) {}
+    }
+
     final cardStyle = template.cardStyle;
 
     if (nextTheme.card.padding != cardStyle.contentPadding) {
