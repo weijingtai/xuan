@@ -410,9 +410,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
 
     final entries = <Widget>[];
 
-    void addSection(String title, List<LayoutTemplate> items) {
-      if (items.isEmpty) return;
-      entries.add(_GalleryTag(title));
+    void addItems(List<LayoutTemplate> items) {
       for (final t in items) {
         entries.add(
           _TemplateGalleryChip(
@@ -425,14 +423,14 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       }
     }
 
-    addSection('最喜欢', favorite);
-    addSection('常用', recent);
-    addSection('其他', other);
+    addItems(favorite);
+    addItems(recent);
+    addItems(other);
 
     return SafeArea(
       bottom: false,
       child: Container(
-        height: 104,
+        height: 128,
         padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
@@ -844,8 +842,8 @@ class _TemplateGalleryChip extends StatelessWidget {
       selected: selected,
       favorite: favorite,
       width: 168,
-      height: 84,
-      showCaption: false,
+      height: 104,
+      showCaption: true,
       onTap: onTap,
     );
   }
@@ -1195,9 +1193,8 @@ class _TemplateThumbnailCard extends StatelessWidget {
       RowType.starYun: StarYunRowStrategy(),
       RowType.selfSiting: SelfSitingRowStrategy(),
     };
-
     return Tooltip(
-      message: template.name,
+      message: template.description ?? template.name,
       child: Material(
         color: theme.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(16),
@@ -1208,45 +1205,127 @@ class _TemplateThumbnailCard extends StatelessWidget {
             width: width,
             height: height,
             decoration: BoxDecoration(
+              color: Colors.black.withAlpha(10),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: borderColor),
             ),
+            alignment: Alignment.center,
             clipBehavior: Clip.antiAlias,
-            child: Stack(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Positioned.fill(
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: theme.dividerColor.withValues(alpha: 0.10),
+                Container(
+                  width: width,
+                  height: height - 16,
+                  color: Colors.amber,
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    alignment: Alignment.center,
+                    clipBehavior: Clip.hardEdge,
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 920),
+                      child: IgnorePointer(
+                        child: RepaintBoundary(
+                          child: EditableFourZhuCardV3(
+                            dayGanZhi: JiaZi.BING_YIN,
+                            brightnessNotifier: brightnessNotifier,
+                            colorPreviewModeNotifier: colorPreviewModeNotifier,
+                            themeNotifier: themeNotifier,
+                            cardPayloadNotifier: cardPayloadNotifier,
+                            paddingNotifier: paddingNotifier,
+                            rowStrategyMapper: rowStrategyMapper,
+                            gender: Gender.male,
+                            showGrip: false,
+                          ),
                         ),
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: ClipRect(
-                          child: FittedBox(
-                            fit: BoxFit.contain,
-                            alignment: Alignment.center,
-                            clipBehavior: Clip.hardEdge,
-                            child: ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 920),
-                              child: IgnorePointer(
-                                child: RepaintBoundary(
-                                  child: EditableFourZhuCardV3(
-                                    dayGanZhi: JiaZi.BING_YIN,
-                                    brightnessNotifier: brightnessNotifier,
-                                    colorPreviewModeNotifier:
-                                        colorPreviewModeNotifier,
-                                    themeNotifier: themeNotifier,
-                                    cardPayloadNotifier: cardPayloadNotifier,
-                                    paddingNotifier: paddingNotifier,
-                                    rowStrategyMapper: rowStrategyMapper,
-                                    gender: Gender.male,
-                                    showGrip: false,
+                    ),
+                  ),
+                ),
+                Container(
+                  width: width,
+                  height: 16,
+                  color: Colors.blue,
+                  alignment: Alignment.center,
+                  child: Text(
+                    '${template.name}',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    return Tooltip(
+      message: template.name,
+      child: Material(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: Container(
+            // width: width,
+            // height: height,
+            // decoration: BoxDecoration(
+            // borderRadius: BorderRadius.circular(16),
+            // border: Border.all(color: borderColor),
+            // ),
+            // clipBehavior: Clip.antiAlias,
+            child: Column(
+              children: [
+                SizedBox(
+                  width: width,
+                  height: showCaption ? (height - 30) : height,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color:
+                                    theme.dividerColor.withValues(alpha: 0.10),
+                              ),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(6),
+                              child: ClipRect(
+                                child: FittedBox(
+                                  fit: BoxFit.contain,
+                                  alignment: Alignment.center,
+                                  clipBehavior: Clip.hardEdge,
+                                  child: ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 920),
+                                    child: IgnorePointer(
+                                      child: RepaintBoundary(
+                                        child: EditableFourZhuCardV3(
+                                          dayGanZhi: JiaZi.BING_YIN,
+                                          brightnessNotifier:
+                                              brightnessNotifier,
+                                          colorPreviewModeNotifier:
+                                              colorPreviewModeNotifier,
+                                          themeNotifier: themeNotifier,
+                                          cardPayloadNotifier:
+                                              cardPayloadNotifier,
+                                          paddingNotifier: paddingNotifier,
+                                          rowStrategyMapper: rowStrategyMapper,
+                                          gender: Gender.male,
+                                          showGrip: false,
+                                        ),
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -1254,53 +1333,46 @@ class _TemplateThumbnailCard extends StatelessWidget {
                           ),
                         ),
                       ),
-                    ),
+                      if (favorite)
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            width: 20,
+                            height: 20,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface
+                                  .withValues(alpha: 0.9),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color:
+                                    theme.dividerColor.withValues(alpha: 0.12),
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.star,
+                              size: 14,
+                              color: theme.colorScheme.primary,
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                if (favorite)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.dividerColor.withValues(alpha: 0.12),
-                        ),
-                      ),
-                      child: Icon(
-                        Icons.star,
-                        size: 14,
-                        color: theme.colorScheme.primary,
-                      ),
-                    ),
-                  ),
                 if (showCaption)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            theme.colorScheme.surface.withValues(alpha: 0.92),
-                          ],
-                        ),
-                      ),
-                      child: Text(
-                        template.name,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
+                  SizedBox(
+                    height: 30,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          template.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                     ),
