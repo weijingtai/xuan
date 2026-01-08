@@ -567,83 +567,11 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                               left: 12,
                               right: 12,
                               bottom: 96,
-                              child: SafeArea(
-                                top: false,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    ConstrainedBox(
-                                      constraints:
-                                          const BoxConstraints(maxHeight: 104),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: workspaceLocalTheme.colorScheme
-                                              .surfaceContainerHighest,
-                                          borderRadius:
-                                              BorderRadius.circular(12),
-                                          border: Border.all(
-                                            color: workspaceLocalTheme
-                                                .dividerColor
-                                                .withValues(alpha: 0.12),
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: workspaceLocalTheme
-                                                  .colorScheme.shadow
-                                                  .withValues(alpha: 0.12),
-                                              offset: const Offset(0, 6),
-                                              blurRadius: 18,
-                                              spreadRadius: 0,
-                                            ),
-                                          ],
-                                        ),
-                                        padding: const EdgeInsets.all(10),
-                                        child:
-                                            ValueListenableBuilder<CardPayload>(
-                                          valueListenable:
-                                              viewModel.cardPayloadNotifier,
-                                          builder: (context, payload, _) {
-                                            final disabledRowTypes = payload
-                                                .rowMap.values
-                                                .map((e) => e.rowType)
-                                                .where((t) =>
-                                                    t != RowType.separator)
-                                                .toSet();
-                                            final disabledPillarTypes = payload
-                                                .pillarMap.values
-                                                .map((e) => e.pillarType)
-                                                .where((t) =>
-                                                    t != PillarType.separator)
-                                                .toSet();
-
-                                            return Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: [
-                                                SizedBox(
-                                                  height: 28,
-                                                  child: RowTagBar(
-                                                    disabledTypes:
-                                                        disabledRowTypes,
-                                                  ),
-                                                ),
-                                                const SizedBox(height: 8),
-                                                SizedBox(
-                                                  height: 28,
-                                                  child: PillarTagBar(
-                                                    disabledTypes:
-                                                        disabledPillarTypes,
-                                                  ),
-                                                ),
-                                              ],
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
+                              child: buildTagsBar(
+                                workspaceLocalTheme,
+                                workspaceBrightness,
+                                viewModel,
+                                currentTemplate,
                               ),
                             ),
                             Positioned(
@@ -668,6 +596,72 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           },
         );
       },
+    );
+  }
+
+  Widget buildTagsBar(
+    ThemeData workspaceLocalTheme,
+    Brightness workspaceBrightness,
+    FourZhuEditorViewModel viewModel,
+    LayoutTemplate? currentTemplate,
+  ) {
+    return SafeArea(
+      top: false,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 104),
+        child: Container(
+          decoration: BoxDecoration(
+            color: workspaceLocalTheme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: workspaceLocalTheme.dividerColor.withValues(alpha: 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: workspaceLocalTheme.colorScheme.shadow
+                    .withValues(alpha: 0.12),
+                offset: const Offset(0, 6),
+                blurRadius: 18,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(10),
+          child: ValueListenableBuilder<CardPayload>(
+            valueListenable: viewModel.cardPayloadNotifier,
+            builder: (context, payload, _) {
+              final disabledRowTypes = payload.rowMap.values
+                  .map((e) => e.rowType)
+                  .where((t) => t != RowType.separator)
+                  .toSet();
+              final disabledPillarTypes = payload.pillarMap.values
+                  .map((e) => e.pillarType)
+                  .where((t) => t != PillarType.separator)
+                  .toSet();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    height: 28,
+                    child: RowTagBar(
+                      disabledTypes: disabledRowTypes,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SizedBox(
+                    height: 28,
+                    child: PillarTagBar(
+                      disabledTypes: disabledPillarTypes,
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
     );
   }
 
