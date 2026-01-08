@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:common/enums/enum_twelve_zhang_sheng.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -213,47 +214,25 @@ class RowItem extends StatelessWidget {
           if (!out.contains(name)) out.add(name);
         }
         return out;
-      case RowType.heavenlyStem:
-        return TianGan.values
-            .take(10)
-            .map((e) => e.name)
-            .toList(growable: false);
       case RowType.earthlyBranch:
+        return DiZhi.values.take(12).map((e) => e.name).toList(growable: false);
+      case RowType.heavenlyStem:
       case RowType.hiddenStems:
       case RowType.hiddenStemsPrimary:
       case RowType.hiddenStemsSecondary:
       case RowType.hiddenStemsTertiary:
-        return DiZhi.values.take(12).map((e) => e.name).toList(growable: false);
+        return TianGan.values
+            .take(10)
+            .map((e) => e.name)
+            .toList(growable: false);
       case RowType.tenGod:
-        return const [
-          '正印',
-          '偏印',
-          '正官',
-          '七杀',
-          '食神',
-          '伤官',
-          '比肩',
-          '劫财',
-          '正财',
-          '偏财',
-          FourZhuText.qianZao,
-          FourZhuText.kunZao,
-        ];
+        return EnumTenGods.values.map((e) => e.name).toList(growable: true)
+          ..add(FourZhuText.qianZao)
+          ..add(FourZhuText.kunZao);
       case RowType.hiddenStemsTenGod:
       case RowType.hiddenStemsPrimaryGods:
       case RowType.hiddenStemsSecondaryGods:
-        return const [
-          '正印',
-          '偏印',
-          '正官',
-          '七杀',
-          '食神',
-          '伤官',
-          '比肩',
-          '劫财',
-          '正财',
-          '偏财',
-        ];
+        return EnumTenGods.values.map((e) => e.name).toList(growable: true);
       case RowType.xunShou:
         return const [
           JiaZi.JIA_ZI,
