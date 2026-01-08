@@ -45,6 +45,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   final TextEditingController _templateDescriptionController =
       TextEditingController();
 
+  final FocusNode _templateNameFocusNode = FocusNode();
+  bool _isEditingTemplateName = false;
+
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
   // ValueNotifier<bool>(true);
@@ -89,6 +92,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   void dispose() {
     _templateNameController.dispose();
     _templateDescriptionController.dispose();
+    _templateNameFocusNode.dispose();
     _showGripNotifier.dispose();
     super.dispose();
   }
@@ -459,7 +463,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             final templateName = currentTemplate?.name ?? '';
             final templateDescription = currentTemplate?.description ?? '';
 
-            if (_templateNameController.text != templateName) {
+            if (!_isEditingTemplateName &&
+                _templateNameController.text != templateName) {
               _templateNameController.value = TextEditingValue(
                 text: templateName,
                 selection: TextSelection.collapsed(offset: templateName.length),
@@ -488,12 +493,281 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
+                            Padding(
+                              padding:
+                                  const EdgeInsets.fromLTRB(12, 0, 12, 196),
+                              child: Scrollbar(
+                                child: SingleChildScrollView(
+                                  child: Center(
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 720),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Center(
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                const SizedBox(width: 26),
+                                                SizedBox(
+                                                  width: 128,
+                                                  child: TextField(
+                                                    focusNode:
+                                                        _templateNameFocusNode,
+                                                    controller:
+                                                        _templateNameController,
+                                                    enabled:
+                                                        _isEditingTemplateName &&
+                                                            !viewModel
+                                                                .isLoading &&
+                                                            currentTemplate !=
+                                                                null,
+                                                    onChanged: viewModel
+                                                        .updateTemplateName,
+                                                    onEditingComplete: () {
+                                                      setState(() =>
+                                                          _isEditingTemplateName =
+                                                              false);
+                                                      _templateNameFocusNode
+                                                          .unfocus();
+                                                    },
+                                                    decoration:
+                                                        const InputDecoration(
+                                                      labelText: '名称',
+                                                      border:
+                                                          UnderlineInputBorder(),
+                                                      isDense: true,
+                                                    ),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                IconButton(
+                                                  visualDensity:
+                                                      VisualDensity.compact,
+                                                  onPressed: viewModel
+                                                              .isLoading ||
+                                                          currentTemplate ==
+                                                              null
+                                                      ? null
+                                                      : () {
+                                                          setState(() =>
+                                                              _isEditingTemplateName =
+                                                                  !_isEditingTemplateName);
+                                                          WidgetsBinding
+                                                              .instance
+                                                              .addPostFrameCallback(
+                                                                  (_) {
+                                                            if (_isEditingTemplateName) {
+                                                              _templateNameFocusNode
+                                                                  .requestFocus();
+                                                              _templateNameController
+                                                                      .selection =
+                                                                  TextSelection(
+                                                                baseOffset: 0,
+                                                                extentOffset:
+                                                                    _templateNameController
+                                                                        .text
+                                                                        .length,
+                                                              );
+                                                            } else {
+                                                              _templateNameFocusNode
+                                                                  .unfocus();
+                                                            }
+                                                          });
+                                                        },
+                                                  icon: Icon(
+                                                    _isEditingTemplateName
+                                                        ? Icons.check
+                                                        : Icons.edit,
+                                                    size: 18,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          SizedBox(
+                                            height: 16,
+                                          ),
+                                          Center(
+                                            child: EditableFourZhuCardV3(
+                                              dayGanZhi: JiaZi.JIA_ZI,
+                                              brightnessNotifier: viewModel
+                                                  .cardBrightnessNotifier,
+                                              colorPreviewModeNotifier:
+                                                  viewModel
+                                                      .colorPreviewModeNotifier,
+                                              cardPayloadNotifier:
+                                                  viewModel.cardPayloadNotifier,
+                                              showGrip: _showGripNotifier.value,
+                                              paddingNotifier:
+                                                  viewModel.paddingNotifier,
+                                              themeNotifier: viewModel
+                                                  .editableThemeNotifier,
+                                              rowStrategyMapper:
+                                                  viewModel.rowStrategyMapper,
+                                              gender: Gender.male,
+                                              onReorderRow:
+                                                  viewModel.reorderRow,
+                                              onInsertRow: viewModel.insertRow,
+                                              onDeleteRow: viewModel.deleteRow,
+                                              onReorderPillar:
+                                                  viewModel.reorderPillarGlobal,
+                                              onInsertPillar:
+                                                  viewModel.insertPillarGlobal,
+                                              onDeletePillar:
+                                                  viewModel.deletePillarGlobal,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // name & desc
+                            Positioned(
+                              left: 12,
+                              top: 12,
+                              child: SafeArea(
+                                child: ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 256),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: workspaceLocalTheme
+                                          .colorScheme.surfaceContainerHighest,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: workspaceLocalTheme.dividerColor
+                                            .withValues(alpha: 0.12),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: workspaceLocalTheme
+                                              .colorScheme.shadow
+                                              .withValues(alpha: 0.12),
+                                          offset: const Offset(0, 6),
+                                          blurRadius: 18,
+                                          spreadRadius: 0,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: TextField(
+                                                focusNode:
+                                                    _templateNameFocusNode,
+                                                controller:
+                                                    _templateNameController,
+                                                enabled:
+                                                    _isEditingTemplateName &&
+                                                        !viewModel.isLoading &&
+                                                        currentTemplate != null,
+                                                onChanged: viewModel
+                                                    .updateTemplateName,
+                                                onEditingComplete: () {
+                                                  setState(() =>
+                                                      _isEditingTemplateName =
+                                                          false);
+                                                  _templateNameFocusNode
+                                                      .unfocus();
+                                                },
+                                                decoration:
+                                                    const InputDecoration(
+                                                  labelText: '名称',
+                                                  border:
+                                                      UnderlineInputBorder(),
+                                                  isDense: true,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                              onPressed: viewModel.isLoading ||
+                                                      currentTemplate == null
+                                                  ? null
+                                                  : () {
+                                                      setState(() =>
+                                                          _isEditingTemplateName =
+                                                              !_isEditingTemplateName);
+                                                      WidgetsBinding.instance
+                                                          .addPostFrameCallback(
+                                                              (_) {
+                                                        if (_isEditingTemplateName) {
+                                                          _templateNameFocusNode
+                                                              .requestFocus();
+                                                          _templateNameController
+                                                                  .selection =
+                                                              TextSelection(
+                                                            baseOffset: 0,
+                                                            extentOffset:
+                                                                _templateNameController
+                                                                    .text
+                                                                    .length,
+                                                          );
+                                                        } else {
+                                                          _templateNameFocusNode
+                                                              .unfocus();
+                                                        }
+                                                      });
+                                                    },
+                                              icon: Icon(
+                                                _isEditingTemplateName
+                                                    ? Icons.check
+                                                    : Icons.edit,
+                                                size: 18,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 8),
+                                        TextField(
+                                          controller:
+                                              _templateDescriptionController,
+                                          enabled: !viewModel.isLoading &&
+                                              currentTemplate != null,
+                                          onChanged: (value) => viewModel
+                                              .updateTemplateDescription(value),
+                                          minLines: 1,
+                                          maxLines: 3,
+                                          keyboardType: TextInputType.multiline,
+                                          decoration: const InputDecoration(
+                                            labelText: '描述(可选)',
+                                            border: UnderlineInputBorder(),
+                                            alignLabelWithHint: true,
+                                            isDense: true,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
                             Positioned(
                               right: 12,
                               top: 12,
                               child: SafeArea(
                                 child: Container(
-                                  width: 240,
+                                  width: 256,
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: workspaceLocalTheme
@@ -517,13 +791,21 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
+                                      Text(
+                                        "工作区预览",
+                                        style: workspaceLocalTheme
+                                            .textTheme.titleMedium
+                                            ?.copyWith(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                      ),
                                       Row(
                                         children: [
                                           const Icon(Icons.brightness_6),
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              '工作区明暗',
+                                              '明暗',
                                               style: workspaceLocalTheme
                                                   .textTheme.bodyMedium,
                                             ),
@@ -552,7 +834,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                               const SizedBox(width: 8),
                                               Expanded(
                                                 child: Text(
-                                                  '颜色预览模式',
+                                                  '颜色',
                                                   style: workspaceLocalTheme
                                                       .textTheme.bodyMedium,
                                                 ),
@@ -619,7 +901,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                           const SizedBox(width: 8),
                                           Expanded(
                                             child: Text(
-                                              '显示抓手行列',
+                                              '显示抓手',
                                               style: workspaceLocalTheme
                                                   .textTheme.bodyMedium,
                                             ),
@@ -636,271 +918,214 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                 ),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 156),
-                              child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Scrollbar(
-                                  child: SingleChildScrollView(
-                                    child: Center(
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 720),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.stretch,
+                            Positioned(
+                              left: 12,
+                              right: 12,
+                              bottom: 12,
+                              child: SafeArea(
+                                top: false,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxHeight: 104),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: workspaceLocalTheme.colorScheme
+                                              .surfaceContainerHighest,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: workspaceLocalTheme
+                                                .dividerColor
+                                                .withValues(alpha: 0.12),
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: workspaceLocalTheme
+                                                  .colorScheme.shadow
+                                                  .withValues(alpha: 0.12),
+                                              offset: const Offset(0, 6),
+                                              blurRadius: 18,
+                                              spreadRadius: 0,
+                                            ),
+                                          ],
+                                        ),
+                                        padding: const EdgeInsets.all(10),
+                                        child:
+                                            ValueListenableBuilder<CardPayload>(
+                                          valueListenable:
+                                              viewModel.cardPayloadNotifier,
+                                          builder: (context, payload, _) {
+                                            final disabledRowTypes = payload
+                                                .rowMap.values
+                                                .map((e) => e.rowType)
+                                                .where((t) =>
+                                                    t != RowType.separator)
+                                                .toSet();
+                                            final disabledPillarTypes = payload
+                                                .pillarMap.values
+                                                .map((e) => e.pillarType)
+                                                .where((t) =>
+                                                    t != PillarType.separator)
+                                                .toSet();
+
+                                            return Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                SizedBox(
+                                                  height: 28,
+                                                  child: RowTagBar(
+                                                    disabledTypes:
+                                                        disabledRowTypes,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                SizedBox(
+                                                  height: 28,
+                                                  child: PillarTagBar(
+                                                    disabledTypes:
+                                                        disabledPillarTypes,
+                                                  ),
+                                                ),
+                                              ],
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: workspaceLocalTheme.colorScheme
+                                            .surfaceContainerHighest,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: workspaceLocalTheme
+                                              .dividerColor
+                                              .withValues(alpha: 0.12),
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: workspaceLocalTheme
+                                                .colorScheme.shadow
+                                                .withValues(alpha: 0.12),
+                                            offset: const Offset(0, 6),
+                                            blurRadius: 18,
+                                            spreadRadius: 0,
+                                          ),
+                                        ],
+                                      ),
+                                      padding: const EdgeInsets.all(10),
+                                      child: SizedBox(
+                                        height: 44,
+                                        child: Row(
                                           children: [
-                                            TextField(
-                                              controller:
-                                                  _templateNameController,
-                                              enabled: !viewModel.isLoading &&
-                                                  currentTemplate != null,
-                                              onChanged:
-                                                  viewModel.updateTemplateName,
-                                              decoration: const InputDecoration(
-                                                labelText: '名称',
-                                                border: OutlineInputBorder(),
-                                                isDense: true,
-                                                suffixIcon: Icon(
-                                                  Icons.edit,
-                                                  size: 16,
-                                                ),
-                                              ),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.undo,
+                                              label: '撤销',
+                                              onPressed: viewModel.canUndo
+                                                  ? viewModel.undoLastChange
+                                                  : null,
                                             ),
-                                            const SizedBox(height: 12),
-                                            Center(
-                                              child: EditableFourZhuCardV3(
-                                                dayGanZhi: JiaZi.JIA_ZI,
-                                                brightnessNotifier: viewModel
-                                                    .cardBrightnessNotifier,
-                                                colorPreviewModeNotifier:
-                                                    viewModel
-                                                        .colorPreviewModeNotifier,
-                                                cardPayloadNotifier: viewModel
-                                                    .cardPayloadNotifier,
-                                                showGrip:
-                                                    _showGripNotifier.value,
-                                                paddingNotifier:
-                                                    viewModel.paddingNotifier,
-                                                themeNotifier: viewModel
-                                                    .editableThemeNotifier,
-                                                rowStrategyMapper:
-                                                    viewModel.rowStrategyMapper,
-                                                gender: Gender.male,
-                                                onReorderRow:
-                                                    viewModel.reorderRow,
-                                                onInsertRow:
-                                                    viewModel.insertRow,
-                                                onDeleteRow:
-                                                    viewModel.deleteRow,
-                                                onReorderPillar: viewModel
-                                                    .reorderPillarGlobal,
-                                                onInsertPillar: viewModel
-                                                    .insertPillarGlobal,
-                                                onDeletePillar: viewModel
-                                                    .deletePillarGlobal,
-                                              ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.redo,
+                                              label: '重做',
+                                              onPressed: viewModel.canRedo
+                                                  ? viewModel.redoLastChange
+                                                  : null,
                                             ),
-                                            const SizedBox(height: 12),
-                                            TextField(
-                                              controller:
-                                                  _templateDescriptionController,
-                                              enabled: !viewModel.isLoading &&
-                                                  currentTemplate != null,
-                                              onChanged: (value) => viewModel
-                                                  .updateTemplateDescription(
-                                                      value),
-                                              minLines: 3,
-                                              maxLines: 6,
-                                              keyboardType:
-                                                  TextInputType.multiline,
-                                              decoration: const InputDecoration(
-                                                labelText: '描述(可选)',
-                                                border: OutlineInputBorder(),
-                                                alignLabelWithHint: true,
-                                                isDense: true,
-                                                suffixIcon: Icon(
-                                                  Icons.notes_outlined,
-                                                  size: 16,
-                                                ),
-                                              ),
+                                            const Spacer(),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.save,
+                                              label: '保存',
+                                              onPressed: viewModel.canSave
+                                                  ? () => _saveWithFeedback(
+                                                        context,
+                                                        viewModel,
+                                                      )
+                                                  : null,
+                                              emphasized: true,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.save_as_outlined,
+                                              label: '另存为',
+                                              onPressed: viewModel.isLoading ||
+                                                      currentTemplate == null
+                                                  ? null
+                                                  : () => _showSaveAsDialog(
+                                                        context,
+                                                        viewModel,
+                                                      ),
+                                            ),
+                                            const Spacer(),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.restart_alt,
+                                              label: '重置',
+                                              onPressed: viewModel.canRevert
+                                                  ? viewModel.revertChanges
+                                                  : null,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.add,
+                                              label: '新建模板',
+                                              onPressed: viewModel.isLoading
+                                                  ? null
+                                                  : () =>
+                                                      _showCreateTemplateDialog(
+                                                        context,
+                                                        viewModel,
+                                                      ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.copy,
+                                              label: '复制',
+                                              onPressed: viewModel.isLoading ||
+                                                      currentTemplate == null
+                                                  ? null
+                                                  : viewModel
+                                                      .duplicateCurrentTemplate,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.delete_outline,
+                                              label: '删除',
+                                              onPressed: viewModel.isLoading ||
+                                                      currentTemplate == null
+                                                  ? null
+                                                  : () => _confirmDelete(
+                                                        context,
+                                                        viewModel,
+                                                      ),
+                                              destructive: true,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            _HoverExpandActionButton(
+                                              icon: Icons.grid_view,
+                                              label: '更多',
+                                              onPressed: viewModel.isLoading
+                                                  ? null
+                                                  : () => _openTemplateAlbum(
+                                                        context,
+                                                        viewModel,
+                                                      ),
                                             ),
                                           ],
                                         ),
                                       ),
                                     ),
-                                  ),
+                                  ],
                                 ),
                               ),
                             ),
                           ],
-                        ),
-                      ),
-                      SafeArea(
-                        top: false,
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ConstrainedBox(
-                                constraints:
-                                    const BoxConstraints(maxHeight: 104),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: workspaceLocalTheme
-                                        .colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: workspaceLocalTheme.dividerColor
-                                          .withValues(alpha: 0.12),
-                                    ),
-                                  ),
-                                  padding: const EdgeInsets.all(10),
-                                  child: ValueListenableBuilder<CardPayload>(
-                                    valueListenable:
-                                        viewModel.cardPayloadNotifier,
-                                    builder: (context, payload, _) {
-                                      final disabledRowTypes = payload
-                                          .rowMap.values
-                                          .map((e) => e.rowType)
-                                          .where((t) => t != RowType.separator)
-                                          .toSet();
-                                      final disabledPillarTypes = payload
-                                          .pillarMap.values
-                                          .map((e) => e.pillarType)
-                                          .where(
-                                              (t) => t != PillarType.separator)
-                                          .toSet();
-
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(
-                                            height: 28,
-                                            child: RowTagBar(
-                                              disabledTypes: disabledRowTypes,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          SizedBox(
-                                            height: 28,
-                                            child: PillarTagBar(
-                                              disabledTypes:
-                                                  disabledPillarTypes,
-                                            ),
-                                          ),
-                                        ],
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                height: 44,
-                                child: Row(
-                                  children: [
-                                    _HoverExpandActionButton(
-                                      icon: Icons.undo,
-                                      label: '撤销',
-                                      onPressed: viewModel.canUndo
-                                          ? viewModel.undoLastChange
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.redo,
-                                      label: '重做',
-                                      onPressed: viewModel.canRedo
-                                          ? viewModel.redoLastChange
-                                          : null,
-                                    ),
-                                    const Spacer(),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.save,
-                                      label: '保存',
-                                      onPressed: viewModel.canSave
-                                          ? () => _saveWithFeedback(
-                                                context,
-                                                viewModel,
-                                              )
-                                          : null,
-                                      emphasized: true,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.save_as_outlined,
-                                      label: '另存为',
-                                      onPressed: viewModel.isLoading ||
-                                              currentTemplate == null
-                                          ? null
-                                          : () => _showSaveAsDialog(
-                                                context,
-                                                viewModel,
-                                              ),
-                                    ),
-                                    const Spacer(),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.restart_alt,
-                                      label: '重置',
-                                      onPressed: viewModel.canRevert
-                                          ? viewModel.revertChanges
-                                          : null,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.add,
-                                      label: '新建模板',
-                                      onPressed: viewModel.isLoading
-                                          ? null
-                                          : () => _showCreateTemplateDialog(
-                                                context,
-                                                viewModel,
-                                              ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.copy,
-                                      label: '复制',
-                                      onPressed: viewModel.isLoading ||
-                                              currentTemplate == null
-                                          ? null
-                                          : viewModel.duplicateCurrentTemplate,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.delete_outline,
-                                      label: '删除',
-                                      onPressed: viewModel.isLoading ||
-                                              currentTemplate == null
-                                          ? null
-                                          : () => _confirmDelete(
-                                                context,
-                                                viewModel,
-                                              ),
-                                      destructive: true,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    _HoverExpandActionButton(
-                                      icon: Icons.grid_view,
-                                      label: '更多',
-                                      onPressed: viewModel.isLoading
-                                          ? null
-                                          : () => _openTemplateAlbum(
-                                                context,
-                                                viewModel,
-                                              ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ],
