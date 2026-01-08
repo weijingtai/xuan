@@ -469,8 +469,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             if (_templateDescriptionController.text != templateDescription) {
               _templateDescriptionController.value = TextEditingValue(
                 text: templateDescription,
-                selection: TextSelection.collapsed(
-                    offset: templateDescription.length),
+                selection:
+                    TextSelection.collapsed(offset: templateDescription.length),
               );
             }
 
@@ -489,130 +489,158 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                           alignment: Alignment.center,
                           children: [
                             Positioned(
-                              right: 0,
-                              top: 0,
-                              child: Container(
-                                width: 240,
-                                alignment: Alignment.topCenter,
-                                child: Column(
-                                  children: [
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.brightness_6),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            '工作区明暗',
-                                            style: workspaceLocalTheme
-                                                .textTheme.bodyMedium,
-                                          ),
-                                        ),
-                                        Switch(
-                                          value: workspaceBrightness ==
-                                              Brightness.dark,
-                                          onChanged: (v) {
-                                            viewModel.cardBrightnessNotifier
-                                                    .value =
-                                                v
-                                                    ? Brightness.dark
-                                                    : Brightness.light;
-                                          },
-                                        ),
-                                      ],
+                              right: 12,
+                              top: 12,
+                              child: SafeArea(
+                                child: Container(
+                                  width: 240,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: workspaceLocalTheme
+                                        .colorScheme.surfaceContainerHighest,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: workspaceLocalTheme.dividerColor
+                                          .withValues(alpha: 0.12),
                                     ),
-                                    const SizedBox(height: 8),
-                                    ValueListenableBuilder<ColorPreviewMode>(
-                                      valueListenable:
-                                          viewModel.colorPreviewModeNotifier,
-                                      builder: (context, mode, _) {
-                                        return Row(
-                                          children: [
-                                            const Icon(Icons.invert_colors),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                '颜色预览模式',
-                                                style: workspaceLocalTheme
-                                                    .textTheme.bodyMedium,
-                                              ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: workspaceLocalTheme
+                                            .colorScheme.shadow
+                                            .withValues(alpha: 0.12),
+                                        offset: const Offset(0, 6),
+                                        blurRadius: 18,
+                                        spreadRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.brightness_6),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              '工作区明暗',
+                                              style: workspaceLocalTheme
+                                                  .textTheme.bodyMedium,
                                             ),
-                                            ToggleButtons(
-                                              isSelected: [
-                                                mode == ColorPreviewMode.pure,
-                                                mode ==
-                                                    ColorPreviewMode.colorful,
-                                                mode ==
-                                                    ColorPreviewMode.blackwhite,
-                                              ],
-                                              onPressed: (index) {
-                                                ColorPreviewMode next = mode;
-                                                if (index == 0) {
-                                                  next = ColorPreviewMode.pure;
-                                                } else if (index == 1) {
-                                                  next =
-                                                      ColorPreviewMode.colorful;
-                                                } else if (index == 2) {
-                                                  next = ColorPreviewMode
-                                                      .blackwhite;
-                                                }
-                                                viewModel
-                                                    .colorPreviewModeNotifier
-                                                    .value = next;
-                                              },
-                                              constraints: const BoxConstraints(
-                                                minHeight: 32,
-                                                minWidth: 52,
-                                              ),
-                                              children: const [
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 10),
-                                                  child: Text('纯色'),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 10),
-                                                  child: Text('色彩'),
-                                                ),
-                                                Padding(
-                                                  padding: EdgeInsets.symmetric(
-                                                      horizontal: 10),
-                                                  child: Text('黑白'),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.drag_handle),
-                                        const SizedBox(width: 8),
-                                        Expanded(
-                                          child: Text(
-                                            '显示抓手行列',
-                                            style: workspaceLocalTheme
-                                                .textTheme.bodyMedium,
                                           ),
-                                        ),
-                                        Switch(
-                                          value: _showGripNotifier.value,
-                                          onChanged: (v) => setState(() =>
-                                              _showGripNotifier.value = v),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                          Switch(
+                                            value: workspaceBrightness ==
+                                                Brightness.dark,
+                                            onChanged: (v) {
+                                              viewModel.cardBrightnessNotifier
+                                                      .value =
+                                                  v
+                                                      ? Brightness.dark
+                                                      : Brightness.light;
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ValueListenableBuilder<ColorPreviewMode>(
+                                        valueListenable:
+                                            viewModel.colorPreviewModeNotifier,
+                                        builder: (context, mode, _) {
+                                          return Row(
+                                            children: [
+                                              const Icon(Icons.invert_colors),
+                                              const SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text(
+                                                  '颜色预览模式',
+                                                  style: workspaceLocalTheme
+                                                      .textTheme.bodyMedium,
+                                                ),
+                                              ),
+                                              ToggleButtons(
+                                                isSelected: [
+                                                  mode == ColorPreviewMode.pure,
+                                                  mode ==
+                                                      ColorPreviewMode.colorful,
+                                                  mode ==
+                                                      ColorPreviewMode
+                                                          .blackwhite,
+                                                ],
+                                                onPressed: (index) {
+                                                  ColorPreviewMode next = mode;
+                                                  if (index == 0) {
+                                                    next =
+                                                        ColorPreviewMode.pure;
+                                                  } else if (index == 1) {
+                                                    next = ColorPreviewMode
+                                                        .colorful;
+                                                  } else if (index == 2) {
+                                                    next = ColorPreviewMode
+                                                        .blackwhite;
+                                                  }
+                                                  viewModel
+                                                      .colorPreviewModeNotifier
+                                                      .value = next;
+                                                },
+                                                constraints:
+                                                    const BoxConstraints(
+                                                  minHeight: 32,
+                                                  minWidth: 52,
+                                                ),
+                                                children: const [
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 10),
+                                                    child: Text('纯色'),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 10),
+                                                    child: Text('色彩'),
+                                                  ),
+                                                  Padding(
+                                                    padding:
+                                                        EdgeInsets.symmetric(
+                                                            horizontal: 10),
+                                                    child: Text('黑白'),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          );
+                                        },
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Row(
+                                        children: [
+                                          const Icon(Icons.drag_handle),
+                                          const SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              '显示抓手行列',
+                                              style: workspaceLocalTheme
+                                                  .textTheme.bodyMedium,
+                                            ),
+                                          ),
+                                          Switch(
+                                            value: _showGripNotifier.value,
+                                            onChanged: (v) => setState(() =>
+                                                _showGripNotifier.value = v),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(bottom: 156),
                               child: Padding(
-                                padding: const EdgeInsets.only(right: 252),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
                                 child: Scrollbar(
                                   child: SingleChildScrollView(
                                     child: Center(
@@ -625,7 +653,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                               CrossAxisAlignment.stretch,
                                           children: [
                                             TextField(
-                                              controller: _templateNameController,
+                                              controller:
+                                                  _templateNameController,
                                               enabled: !viewModel.isLoading &&
                                                   currentTemplate != null,
                                               onChanged:
@@ -646,11 +675,13 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                                 dayGanZhi: JiaZi.JIA_ZI,
                                                 brightnessNotifier: viewModel
                                                     .cardBrightnessNotifier,
-                                                colorPreviewModeNotifier: viewModel
-                                                    .colorPreviewModeNotifier,
+                                                colorPreviewModeNotifier:
+                                                    viewModel
+                                                        .colorPreviewModeNotifier,
                                                 cardPayloadNotifier: viewModel
                                                     .cardPayloadNotifier,
-                                                showGrip: _showGripNotifier.value,
+                                                showGrip:
+                                                    _showGripNotifier.value,
                                                 paddingNotifier:
                                                     viewModel.paddingNotifier,
                                                 themeNotifier: viewModel
