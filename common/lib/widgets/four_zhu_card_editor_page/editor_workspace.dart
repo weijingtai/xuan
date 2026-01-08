@@ -41,6 +41,10 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 本地主题开关：true 为 Dark，false 为 Light。
   bool _didInitWorkspaceBrightness = false;
 
+  final TextEditingController _templateNameController = TextEditingController();
+  final TextEditingController _templateDescriptionController =
+      TextEditingController();
+
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
   // ValueNotifier<bool>(true);
@@ -83,10 +87,9 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
   /// 返回：无
   @override
   void dispose() {
-    // 释放 Notifier 资源
-    // _pillarsNotifier.dispose();
+    _templateNameController.dispose();
+    _templateDescriptionController.dispose();
     _showGripNotifier.dispose();
-    // _showGripColumnsNotifier.dispose();
     super.dispose();
   }
 
@@ -453,6 +456,23 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                 : ThemeData.light();
 
             final currentTemplate = viewModel.currentTemplate;
+            final templateName = currentTemplate?.name ?? '';
+            final templateDescription = currentTemplate?.description ?? '';
+
+            if (_templateNameController.text != templateName) {
+              _templateNameController.value = TextEditingValue(
+                text: templateName,
+                selection: TextSelection.collapsed(offset: templateName.length),
+              );
+            }
+
+            if (_templateDescriptionController.text != templateDescription) {
+              _templateDescriptionController.value = TextEditingValue(
+                text: templateDescription,
+                selection: TextSelection.collapsed(
+                    offset: templateDescription.length),
+              );
+            }
 
             return SizedBox.expand(
               child: Theme(
@@ -596,31 +616,88 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                 child: Scrollbar(
                                   child: SingleChildScrollView(
                                     child: Center(
-                                      child: EditableFourZhuCardV3(
-                                        dayGanZhi: JiaZi.JIA_ZI,
-                                        brightnessNotifier:
-                                            viewModel.cardBrightnessNotifier,
-                                        colorPreviewModeNotifier:
-                                            viewModel.colorPreviewModeNotifier,
-                                        cardPayloadNotifier:
-                                            viewModel.cardPayloadNotifier,
-                                        showGrip: _showGripNotifier.value,
-                                        paddingNotifier:
-                                            viewModel.paddingNotifier,
-                                        themeNotifier:
-                                            viewModel.editableThemeNotifier,
-                                        rowStrategyMapper:
-                                            viewModel.rowStrategyMapper,
-                                        gender: Gender.male,
-                                        onReorderRow: viewModel.reorderRow,
-                                        onInsertRow: viewModel.insertRow,
-                                        onDeleteRow: viewModel.deleteRow,
-                                        onReorderPillar:
-                                            viewModel.reorderPillarGlobal,
-                                        onInsertPillar:
-                                            viewModel.insertPillarGlobal,
-                                        onDeletePillar:
-                                            viewModel.deletePillarGlobal,
+                                      child: ConstrainedBox(
+                                        constraints:
+                                            const BoxConstraints(maxWidth: 720),
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            TextField(
+                                              controller: _templateNameController,
+                                              enabled: !viewModel.isLoading &&
+                                                  currentTemplate != null,
+                                              onChanged:
+                                                  viewModel.updateTemplateName,
+                                              decoration: const InputDecoration(
+                                                labelText: '名称',
+                                                border: OutlineInputBorder(),
+                                                isDense: true,
+                                                suffixIcon: Icon(
+                                                  Icons.edit,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            Center(
+                                              child: EditableFourZhuCardV3(
+                                                dayGanZhi: JiaZi.JIA_ZI,
+                                                brightnessNotifier: viewModel
+                                                    .cardBrightnessNotifier,
+                                                colorPreviewModeNotifier: viewModel
+                                                    .colorPreviewModeNotifier,
+                                                cardPayloadNotifier: viewModel
+                                                    .cardPayloadNotifier,
+                                                showGrip: _showGripNotifier.value,
+                                                paddingNotifier:
+                                                    viewModel.paddingNotifier,
+                                                themeNotifier: viewModel
+                                                    .editableThemeNotifier,
+                                                rowStrategyMapper:
+                                                    viewModel.rowStrategyMapper,
+                                                gender: Gender.male,
+                                                onReorderRow:
+                                                    viewModel.reorderRow,
+                                                onInsertRow:
+                                                    viewModel.insertRow,
+                                                onDeleteRow:
+                                                    viewModel.deleteRow,
+                                                onReorderPillar: viewModel
+                                                    .reorderPillarGlobal,
+                                                onInsertPillar: viewModel
+                                                    .insertPillarGlobal,
+                                                onDeletePillar: viewModel
+                                                    .deletePillarGlobal,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 12),
+                                            TextField(
+                                              controller:
+                                                  _templateDescriptionController,
+                                              enabled: !viewModel.isLoading &&
+                                                  currentTemplate != null,
+                                              onChanged: (value) => viewModel
+                                                  .updateTemplateDescription(
+                                                      value),
+                                              minLines: 3,
+                                              maxLines: 6,
+                                              keyboardType:
+                                                  TextInputType.multiline,
+                                              decoration: const InputDecoration(
+                                                labelText: '描述(可选)',
+                                                border: OutlineInputBorder(),
+                                                alignLabelWithHint: true,
+                                                isDense: true,
+                                                suffixIcon: Icon(
+                                                  Icons.notes_outlined,
+                                                  size: 16,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
                                       ),
                                     ),
                                   ),

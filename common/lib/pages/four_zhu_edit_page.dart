@@ -51,17 +51,6 @@ class _FourZhuEditView extends StatefulWidget {
 }
 
 class _FourZhuEditViewState extends State<_FourZhuEditView> {
-  final TextEditingController _templateNameController = TextEditingController();
-  final TextEditingController _templateDescriptionController =
-      TextEditingController();
-
-  @override
-  void dispose() {
-    _templateNameController.dispose();
-    _templateDescriptionController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<FourZhuEditorViewModel>(
@@ -69,24 +58,6 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
         final themeData = viewModel.isDarkMode
             ? EditorTheme.darkTheme
             : EditorTheme.lightTheme;
-        final currentTemplate = viewModel.currentTemplate;
-        final templateName = currentTemplate?.name ?? '';
-        final templateDescription = currentTemplate?.description ?? '';
-
-        if (_templateNameController.text != templateName) {
-          _templateNameController.value = TextEditingValue(
-            text: templateName,
-            selection: TextSelection.collapsed(offset: templateName.length),
-          );
-        }
-
-        if (_templateDescriptionController.text != templateDescription) {
-          _templateDescriptionController.value = TextEditingValue(
-            text: templateDescription,
-            selection:
-                TextSelection.collapsed(offset: templateDescription.length),
-          );
-        }
 
         return Theme(
           data: themeData,
@@ -127,95 +98,29 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
                   Expanded(
                     child: Column(
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  color: themeData
-                                      .colorScheme.surfaceContainerHighest,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: themeData.dividerColor
-                                        .withValues(alpha: 0.12),
-                                  ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (viewModel.errorMessage != null)
+                                _ErrorBanner(
+                                  message: viewModel.errorMessage!,
+                                  onDismissed: viewModel.clearError,
                                 ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.stretch,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Expanded(
-                                            child: TextField(
-                                              controller:
-                                                  _templateNameController,
-                                              enabled: !viewModel.isLoading &&
-                                                  currentTemplate != null,
-                                              onChanged:
-                                                  viewModel.updateTemplateName,
-                                              decoration: const InputDecoration(
-                                                labelText: '名称',
-                                                border: OutlineInputBorder(),
-                                                isDense: true,
-                                                suffixIcon: Icon(
-                                                  Icons.edit,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 12),
-                                          Expanded(
-                                            child: TextField(
-                                              controller:
-                                                  _templateDescriptionController,
-                                              enabled: !viewModel.isLoading &&
-                                                  currentTemplate != null,
-                                              onChanged: (value) => viewModel
-                                                  .updateTemplateDescription(
-                                                      value),
-                                              maxLines: 2,
-                                              decoration: const InputDecoration(
-                                                labelText: '描述(可选)',
-                                                border: OutlineInputBorder(),
-                                                isDense: true,
-                                                suffixIcon: Icon(
-                                                  Icons.notes_outlined,
-                                                  size: 16,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // 移除旧的PillarPresetList,已被TemplateGalleryView替代
-                            if (viewModel.errorMessage != null)
-                              _ErrorBanner(
-                                message: viewModel.errorMessage!,
-                                onDismissed: viewModel.clearError,
-                              ),
-                            if (viewModel.hasUnsavedChanges)
-                              const _UnsavedBanner(),
-                          ],
+                              if (viewModel.hasUnsavedChanges)
+                                const _UnsavedBanner(),
+                            ],
+                          ),
                         ),
                         Expanded(
                           child: EditorWorkspace(
                             eightChars: EightChars(
-                                year: JiaZi.JIA_ZI,
-                                month: JiaZi.JIA_ZI,
-                                day: JiaZi.JIA_ZI,
-                                time: JiaZi.JIA_ZI),
+                              year: JiaZi.JIA_ZI,
+                              month: JiaZi.JIA_ZI,
+                              day: JiaZi.JIA_ZI,
+                              time: JiaZi.JIA_ZI,
+                            ),
                           ),
                         ),
                       ],
