@@ -46,7 +46,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       TextEditingController();
 
   final FocusNode _templateNameFocusNode = FocusNode();
-  bool _isEditingTemplateName = false;
 
   final ValueNotifier<bool> _showGripNotifier = ValueNotifier<bool>(true);
   // final ValueNotifier<bool> _showGripColumnsNotifier =
@@ -463,7 +462,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
             final templateName = currentTemplate?.name ?? '';
             final templateDescription = currentTemplate?.description ?? '';
 
-            if (!_isEditingTemplateName &&
+            if (!_templateNameFocusNode.hasFocus &&
                 _templateNameController.text != templateName) {
               _templateNameController.value = TextEditingValue(
                 text: templateName,
@@ -510,93 +509,6 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Center(
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.center,
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                const SizedBox(width: 26),
-                                                SizedBox(
-                                                  width: 128,
-                                                  child: TextField(
-                                                    focusNode:
-                                                        _templateNameFocusNode,
-                                                    controller:
-                                                        _templateNameController,
-                                                    enabled:
-                                                        _isEditingTemplateName &&
-                                                            !viewModel
-                                                                .isLoading &&
-                                                            currentTemplate !=
-                                                                null,
-                                                    onChanged: viewModel
-                                                        .updateTemplateName,
-                                                    onEditingComplete: () {
-                                                      setState(() =>
-                                                          _isEditingTemplateName =
-                                                              false);
-                                                      _templateNameFocusNode
-                                                          .unfocus();
-                                                    },
-                                                    decoration:
-                                                        const InputDecoration(
-                                                      labelText: '名称',
-                                                      border:
-                                                          UnderlineInputBorder(),
-                                                      isDense: true,
-                                                    ),
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 8),
-                                                IconButton(
-                                                  visualDensity:
-                                                      VisualDensity.compact,
-                                                  onPressed: viewModel
-                                                              .isLoading ||
-                                                          currentTemplate ==
-                                                              null
-                                                      ? null
-                                                      : () {
-                                                          setState(() =>
-                                                              _isEditingTemplateName =
-                                                                  !_isEditingTemplateName);
-                                                          WidgetsBinding
-                                                              .instance
-                                                              .addPostFrameCallback(
-                                                                  (_) {
-                                                            if (_isEditingTemplateName) {
-                                                              _templateNameFocusNode
-                                                                  .requestFocus();
-                                                              _templateNameController
-                                                                      .selection =
-                                                                  TextSelection(
-                                                                baseOffset: 0,
-                                                                extentOffset:
-                                                                    _templateNameController
-                                                                        .text
-                                                                        .length,
-                                                              );
-                                                            } else {
-                                                              _templateNameFocusNode
-                                                                  .unfocus();
-                                                            }
-                                                          });
-                                                        },
-                                                  icon: Icon(
-                                                    _isEditingTemplateName
-                                                        ? Icons.check
-                                                        : Icons.edit,
-                                                    size: 18,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            height: 16,
-                                          ),
-                                          Center(
                                             child: EditableFourZhuCardV3(
                                               dayGanZhi: JiaZi.JIA_ZI,
                                               brightnessNotifier: viewModel
@@ -635,293 +547,26 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                             ),
                             // name & desc
                             Positioned(
-                              left: 12,
-                              top: 12,
-                              child: SafeArea(
-                                child: ConstrainedBox(
-                                  constraints:
-                                      const BoxConstraints(maxWidth: 256),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: workspaceLocalTheme
-                                          .colorScheme.surfaceContainerHighest,
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: workspaceLocalTheme.dividerColor
-                                            .withValues(alpha: 0.12),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: workspaceLocalTheme
-                                              .colorScheme.shadow
-                                              .withValues(alpha: 0.12),
-                                          offset: const Offset(0, 6),
-                                          blurRadius: 18,
-                                          spreadRadius: 0,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.center,
-                                          children: [
-                                            Expanded(
-                                              child: TextField(
-                                                focusNode:
-                                                    _templateNameFocusNode,
-                                                controller:
-                                                    _templateNameController,
-                                                enabled:
-                                                    _isEditingTemplateName &&
-                                                        !viewModel.isLoading &&
-                                                        currentTemplate != null,
-                                                onChanged: viewModel
-                                                    .updateTemplateName,
-                                                onEditingComplete: () {
-                                                  setState(() =>
-                                                      _isEditingTemplateName =
-                                                          false);
-                                                  _templateNameFocusNode
-                                                      .unfocus();
-                                                },
-                                                decoration:
-                                                    const InputDecoration(
-                                                  labelText: '名称',
-                                                  border:
-                                                      UnderlineInputBorder(),
-                                                  isDense: true,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                              onPressed: viewModel.isLoading ||
-                                                      currentTemplate == null
-                                                  ? null
-                                                  : () {
-                                                      setState(() =>
-                                                          _isEditingTemplateName =
-                                                              !_isEditingTemplateName);
-                                                      WidgetsBinding.instance
-                                                          .addPostFrameCallback(
-                                                              (_) {
-                                                        if (_isEditingTemplateName) {
-                                                          _templateNameFocusNode
-                                                              .requestFocus();
-                                                          _templateNameController
-                                                                  .selection =
-                                                              TextSelection(
-                                                            baseOffset: 0,
-                                                            extentOffset:
-                                                                _templateNameController
-                                                                    .text
-                                                                    .length,
-                                                          );
-                                                        } else {
-                                                          _templateNameFocusNode
-                                                              .unfocus();
-                                                        }
-                                                      });
-                                                    },
-                                              icon: Icon(
-                                                _isEditingTemplateName
-                                                    ? Icons.check
-                                                    : Icons.edit,
-                                                size: 18,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 8),
-                                        TextField(
-                                          controller:
-                                              _templateDescriptionController,
-                                          enabled: !viewModel.isLoading &&
-                                              currentTemplate != null,
-                                          onChanged: (value) => viewModel
-                                              .updateTemplateDescription(value),
-                                          minLines: 1,
-                                          maxLines: 3,
-                                          keyboardType: TextInputType.multiline,
-                                          decoration: const InputDecoration(
-                                            labelText: '描述(可选)',
-                                            border: UnderlineInputBorder(),
-                                            alignLabelWithHint: true,
-                                            isDense: true,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
+                                left: 12,
+                                top: 12,
+                                child: buildNameDescFloating(
+                                  workspaceLocalTheme,
+                                  workspaceBrightness,
+                                  viewModel,
+                                  currentTemplate,
+                                )),
                             Positioned(
-                              right: 12,
-                              top: 12,
-                              child: SafeArea(
-                                child: Container(
-                                  width: 256,
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: workspaceLocalTheme
-                                        .colorScheme.surfaceContainerHighest,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: workspaceLocalTheme.dividerColor
-                                          .withValues(alpha: 0.12),
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: workspaceLocalTheme
-                                            .colorScheme.shadow
-                                            .withValues(alpha: 0.12),
-                                        offset: const Offset(0, 6),
-                                        blurRadius: 18,
-                                        spreadRadius: 0,
-                                      ),
-                                    ],
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(
-                                        "工作区预览",
-                                        style: workspaceLocalTheme
-                                            .textTheme.titleMedium
-                                            ?.copyWith(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                      ),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.brightness_6),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              '明暗',
-                                              style: workspaceLocalTheme
-                                                  .textTheme.bodyMedium,
-                                            ),
-                                          ),
-                                          Switch(
-                                            value: workspaceBrightness ==
-                                                Brightness.dark,
-                                            onChanged: (v) {
-                                              viewModel.cardBrightnessNotifier
-                                                      .value =
-                                                  v
-                                                      ? Brightness.dark
-                                                      : Brightness.light;
-                                            },
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      ValueListenableBuilder<ColorPreviewMode>(
-                                        valueListenable:
-                                            viewModel.colorPreviewModeNotifier,
-                                        builder: (context, mode, _) {
-                                          return Row(
-                                            children: [
-                                              const Icon(Icons.invert_colors),
-                                              const SizedBox(width: 8),
-                                              Expanded(
-                                                child: Text(
-                                                  '颜色',
-                                                  style: workspaceLocalTheme
-                                                      .textTheme.bodyMedium,
-                                                ),
-                                              ),
-                                              ToggleButtons(
-                                                isSelected: [
-                                                  mode == ColorPreviewMode.pure,
-                                                  mode ==
-                                                      ColorPreviewMode.colorful,
-                                                  mode ==
-                                                      ColorPreviewMode
-                                                          .blackwhite,
-                                                ],
-                                                onPressed: (index) {
-                                                  ColorPreviewMode next = mode;
-                                                  if (index == 0) {
-                                                    next =
-                                                        ColorPreviewMode.pure;
-                                                  } else if (index == 1) {
-                                                    next = ColorPreviewMode
-                                                        .colorful;
-                                                  } else if (index == 2) {
-                                                    next = ColorPreviewMode
-                                                        .blackwhite;
-                                                  }
-                                                  viewModel
-                                                      .colorPreviewModeNotifier
-                                                      .value = next;
-                                                },
-                                                constraints:
-                                                    const BoxConstraints(
-                                                  minHeight: 32,
-                                                  minWidth: 52,
-                                                ),
-                                                children: const [
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 10),
-                                                    child: Text('纯色'),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 10),
-                                                    child: Text('色彩'),
-                                                  ),
-                                                  Padding(
-                                                    padding:
-                                                        EdgeInsets.symmetric(
-                                                            horizontal: 10),
-                                                    child: Text('黑白'),
-                                                  ),
-                                                ],
-                                              ),
-                                            ],
-                                          );
-                                        },
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Row(
-                                        children: [
-                                          const Icon(Icons.drag_handle),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              '显示抓手',
-                                              style: workspaceLocalTheme
-                                                  .textTheme.bodyMedium,
-                                            ),
-                                          ),
-                                          Switch(
-                                            value: _showGripNotifier.value,
-                                            onChanged: (v) => setState(() =>
-                                                _showGripNotifier.value = v),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                                right: 12,
+                                top: 12,
+                                child: buildWorkspaceSettingFloating(
+                                  workspaceLocalTheme,
+                                  workspaceBrightness,
+                                  viewModel,
+                                )),
                             Positioned(
                               left: 12,
                               right: 12,
-                              bottom: 12,
+                              bottom: 96,
                               child: SafeArea(
                                 top: false,
                                 child: Column(
@@ -997,132 +642,19 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: workspaceLocalTheme.colorScheme
-                                            .surfaceContainerHighest,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: workspaceLocalTheme
-                                              .dividerColor
-                                              .withValues(alpha: 0.12),
-                                        ),
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: workspaceLocalTheme
-                                                .colorScheme.shadow
-                                                .withValues(alpha: 0.12),
-                                            offset: const Offset(0, 6),
-                                            blurRadius: 18,
-                                            spreadRadius: 0,
-                                          ),
-                                        ],
-                                      ),
-                                      padding: const EdgeInsets.all(10),
-                                      child: SizedBox(
-                                        height: 44,
-                                        child: Row(
-                                          children: [
-                                            _HoverExpandActionButton(
-                                              icon: Icons.undo,
-                                              label: '撤销',
-                                              onPressed: viewModel.canUndo
-                                                  ? viewModel.undoLastChange
-                                                  : null,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.redo,
-                                              label: '重做',
-                                              onPressed: viewModel.canRedo
-                                                  ? viewModel.redoLastChange
-                                                  : null,
-                                            ),
-                                            const Spacer(),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.save,
-                                              label: '保存',
-                                              onPressed: viewModel.canSave
-                                                  ? () => _saveWithFeedback(
-                                                        context,
-                                                        viewModel,
-                                                      )
-                                                  : null,
-                                              emphasized: true,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.save_as_outlined,
-                                              label: '另存为',
-                                              onPressed: viewModel.isLoading ||
-                                                      currentTemplate == null
-                                                  ? null
-                                                  : () => _showSaveAsDialog(
-                                                        context,
-                                                        viewModel,
-                                                      ),
-                                            ),
-                                            const Spacer(),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.restart_alt,
-                                              label: '重置',
-                                              onPressed: viewModel.canRevert
-                                                  ? viewModel.revertChanges
-                                                  : null,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.add,
-                                              label: '新建模板',
-                                              onPressed: viewModel.isLoading
-                                                  ? null
-                                                  : () =>
-                                                      _showCreateTemplateDialog(
-                                                        context,
-                                                        viewModel,
-                                                      ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.copy,
-                                              label: '复制',
-                                              onPressed: viewModel.isLoading ||
-                                                      currentTemplate == null
-                                                  ? null
-                                                  : viewModel
-                                                      .duplicateCurrentTemplate,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.delete_outline,
-                                              label: '删除',
-                                              onPressed: viewModel.isLoading ||
-                                                      currentTemplate == null
-                                                  ? null
-                                                  : () => _confirmDelete(
-                                                        context,
-                                                        viewModel,
-                                                      ),
-                                              destructive: true,
-                                            ),
-                                            const SizedBox(width: 8),
-                                            _HoverExpandActionButton(
-                                              icon: Icons.grid_view,
-                                              label: '更多',
-                                              onPressed: viewModel.isLoading
-                                                  ? null
-                                                  : () => _openTemplateAlbum(
-                                                        context,
-                                                        viewModel,
-                                                      ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
                                   ],
                                 ),
+                              ),
+                            ),
+                            Positioned(
+                              bottom: 12,
+                              left: 12,
+                              right: 12,
+                              child: buildButtonBar(
+                                workspaceLocalTheme,
+                                workspaceBrightness,
+                                viewModel,
+                                currentTemplate,
                               ),
                             ),
                           ],
@@ -1136,6 +668,332 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
           },
         );
       },
+    );
+  }
+
+  Widget buildButtonBar(
+    ThemeData workspaceLocalTheme,
+    Brightness workspaceBrightness,
+    FourZhuEditorViewModel viewModel,
+    LayoutTemplate? currentTemplate,
+  ) {
+    return SafeArea(
+        top: false,
+        child: Container(
+          decoration: BoxDecoration(
+            color: workspaceLocalTheme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: workspaceLocalTheme.dividerColor.withValues(alpha: 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: workspaceLocalTheme.colorScheme.shadow
+                    .withValues(alpha: 0.12),
+                offset: const Offset(0, 6),
+                blurRadius: 18,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(10),
+          child: SizedBox(
+            height: 44,
+            child: Row(
+              children: [
+                _HoverExpandActionButton(
+                  icon: Icons.undo,
+                  label: '撤销',
+                  onPressed:
+                      viewModel.canUndo ? viewModel.undoLastChange : null,
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.redo,
+                  label: '重做',
+                  onPressed:
+                      viewModel.canRedo ? viewModel.redoLastChange : null,
+                ),
+                const Spacer(),
+                _HoverExpandActionButton(
+                  icon: Icons.save,
+                  label: '保存',
+                  onPressed: viewModel.canSave
+                      ? () => _saveWithFeedback(
+                            context,
+                            viewModel,
+                          )
+                      : null,
+                  emphasized: true,
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.save_as_outlined,
+                  label: '另存为',
+                  onPressed: viewModel.isLoading || currentTemplate == null
+                      ? null
+                      : () => _showSaveAsDialog(
+                            context,
+                            viewModel,
+                          ),
+                ),
+                const Spacer(),
+                _HoverExpandActionButton(
+                  icon: Icons.restart_alt,
+                  label: '重置',
+                  onPressed:
+                      viewModel.canRevert ? viewModel.revertChanges : null,
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.add,
+                  label: '新建模板',
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () => _showCreateTemplateDialog(
+                            context,
+                            viewModel,
+                          ),
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.copy,
+                  label: '复制',
+                  onPressed: viewModel.isLoading || currentTemplate == null
+                      ? null
+                      : viewModel.duplicateCurrentTemplate,
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.delete_outline,
+                  label: '删除',
+                  onPressed: viewModel.isLoading || currentTemplate == null
+                      ? null
+                      : () => _confirmDelete(
+                            context,
+                            viewModel,
+                          ),
+                  destructive: true,
+                ),
+                const SizedBox(width: 8),
+                _HoverExpandActionButton(
+                  icon: Icons.more_horiz,
+                  label: '更多',
+                  onPressed: viewModel.isLoading
+                      ? null
+                      : () => _openTemplateAlbum(
+                            context,
+                            viewModel,
+                          ),
+                ),
+              ],
+            ),
+          ),
+        ));
+  }
+
+  Widget buildNameDescFloating(
+    ThemeData workspaceLocalTheme,
+    Brightness workspaceBrightness,
+    FourZhuEditorViewModel viewModel,
+    LayoutTemplate? currentTemplate,
+  ) {
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 256),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: workspaceLocalTheme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: workspaceLocalTheme.dividerColor.withValues(alpha: 0.12),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: workspaceLocalTheme.colorScheme.shadow
+                    .withValues(alpha: 0.12),
+                offset: const Offset(0, 6),
+                blurRadius: 18,
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      focusNode: _templateNameFocusNode,
+                      controller: _templateNameController,
+                      // enabled: _isEditingTemplateName &&
+                      //     !viewModel.isLoading &&
+                      //     currentTemplate != null,
+                      onChanged: viewModel.updateTemplateName,
+                      onEditingComplete: () {
+                        _templateNameFocusNode.unfocus();
+                      },
+                      decoration: const InputDecoration(
+                        labelText: '名称',
+                        border: UnderlineInputBorder(),
+                        isDense: true,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _templateDescriptionController,
+                enabled: !viewModel.isLoading && currentTemplate != null,
+                onChanged: (value) =>
+                    viewModel.updateTemplateDescription(value),
+                minLines: 1,
+                maxLines: 3,
+                keyboardType: TextInputType.multiline,
+                decoration: const InputDecoration(
+                  labelText: '描述(可选)',
+                  border: UnderlineInputBorder(),
+                  alignLabelWithHint: true,
+                  isDense: true,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildWorkspaceSettingFloating(
+    ThemeData workspaceLocalTheme,
+    Brightness workspaceBrightness,
+    FourZhuEditorViewModel viewModel,
+  ) {
+    return SafeArea(
+      child: Container(
+        width: 256,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: workspaceLocalTheme.colorScheme.surfaceContainerHighest,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: workspaceLocalTheme.dividerColor.withValues(alpha: 0.12),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: workspaceLocalTheme.colorScheme.shadow
+                  .withValues(alpha: 0.12),
+              offset: const Offset(0, 6),
+              blurRadius: 18,
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "工作区预览",
+              style: workspaceLocalTheme.textTheme.titleMedium
+                  ?.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              children: [
+                const Icon(Icons.brightness_6),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '明暗',
+                    style: workspaceLocalTheme.textTheme.bodyMedium,
+                  ),
+                ),
+                Switch(
+                  value: workspaceBrightness == Brightness.dark,
+                  onChanged: (v) {
+                    viewModel.cardBrightnessNotifier.value =
+                        v ? Brightness.dark : Brightness.light;
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ValueListenableBuilder<ColorPreviewMode>(
+              valueListenable: viewModel.colorPreviewModeNotifier,
+              builder: (context, mode, _) {
+                return Row(
+                  children: [
+                    const Icon(Icons.invert_colors),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '颜色',
+                        style: workspaceLocalTheme.textTheme.bodyMedium,
+                      ),
+                    ),
+                    ToggleButtons(
+                      isSelected: [
+                        mode == ColorPreviewMode.pure,
+                        mode == ColorPreviewMode.colorful,
+                        mode == ColorPreviewMode.blackwhite,
+                      ],
+                      onPressed: (index) {
+                        ColorPreviewMode next = mode;
+                        if (index == 0) {
+                          next = ColorPreviewMode.pure;
+                        } else if (index == 1) {
+                          next = ColorPreviewMode.colorful;
+                        } else if (index == 2) {
+                          next = ColorPreviewMode.blackwhite;
+                        }
+                        viewModel.colorPreviewModeNotifier.value = next;
+                      },
+                      constraints: const BoxConstraints(
+                        minHeight: 32,
+                        minWidth: 52,
+                      ),
+                      children: const [
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('纯色'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('色彩'),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text('黑白'),
+                        ),
+                      ],
+                    ),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.drag_handle),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '显示抓手',
+                    style: workspaceLocalTheme.textTheme.bodyMedium,
+                  ),
+                ),
+                Switch(
+                  value: _showGripNotifier.value,
+                  onChanged: (v) => setState(() => _showGripNotifier.value = v),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
