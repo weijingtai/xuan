@@ -50,14 +50,14 @@ class EditableCardThemeBuilder {
 
   /// 创建默认主题实例
   static EditableFourZhuCardTheme createDefaultTheme() {
-    // Separator 专用配置：窄宽度、浅色背景
+    // Separator 专用配置：窄宽度、无边框、无阴影、背景透明
     final defaultSeparatorConfig = PillarStyleConfig(
       border: BoxBorderStyle.defaultBorder.copyWith(enabled: false),
-      lightBackgroundColor: Colors.grey.shade300,
-      darkBackgroundColor: Colors.grey.shade700,
+      lightBackgroundColor: Colors.white.withAlpha(0),
+      darkBackgroundColor: Colors.white.withAlpha(0),
       padding: EdgeInsets.zero,
       margin: EdgeInsets.zero,
-      shadow: BoxShadowStyle.defaultShadow,
+      shadow: BoxShadowStyle.defaultShadow.copyWith(withShadow: false),
       separatorWidth: 32.0,
     );
 
