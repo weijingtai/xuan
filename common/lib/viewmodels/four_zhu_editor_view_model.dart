@@ -26,6 +26,9 @@ import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
 import '../features/tai_yuan/tai_yuan_model.dart';
+import '../database/daos/card_template_skill_usage_dao.dart';
+import '../database/daos/card_template_setting_dao.dart';
+import '../services/card_template_setting_overlay.dart';
 import '../themes/editable_four_zhu_card_theme.dart';
 
 enum EditorViewMode { canvas, table, preview }
@@ -81,6 +84,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     required this.getTemplateByIdUseCase,
     required this.saveTemplateUseCase,
     required this.deleteTemplateUseCase,
+    this.cardTemplateSettingDao,
+    this.cardTemplateSkillUsageDao,
   }) {
     _initRuntimeNotifiers();
   }
@@ -92,6 +97,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   final GetTemplateByIdUseCase getTemplateByIdUseCase;
   final SaveTemplateUseCase saveTemplateUseCase;
   final DeleteTemplateUseCase deleteTemplateUseCase;
+  final CardTemplateSettingDao? cardTemplateSettingDao;
+  final CardTemplateSkillUsageDao? cardTemplateSkillUsageDao;
 
   final Uuid _uuid = const Uuid();
   final CommandHistory _commandHistory = CommandHistory(maxHistorySize: 50);
@@ -119,6 +126,9 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   final List<String> _recentTemplateIds = <String>[];
   final Set<String> _selectedTemplateIds = <String>{};
   String? _selectedPresetId; // 当前选中的预设ID
+
+  String? _usageQueryUuid;
+  int? _usageSkillId;
 
   bool get isLoading => _isLoading;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
@@ -192,6 +202,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       changed = true;
     }
     if (changed) notifyListeners();
+  }
+
+  void setUsageContext({String? queryUuid, int? skillId}) {
+    _usageQueryUuid = queryUuid;
+    _usageSkillId = skillId;
   }
 
   List<LayoutTemplate> get filteredTemplates =>
@@ -328,6 +343,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template != null) {
       _syncRuntimeStateFromTemplate(template);
+      await _loadAndApplyTemplateSetting(
+        templateUuid: template.id,
+        skillId: _usageSkillId,
+      );
     }
   }
 
@@ -363,6 +382,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         _hasUnsavedChanges = false;
         _commandHistory.clear(); // M4.3.2 - 切换模板时清空历史
         _markRecent(migrated.id);
+        unawaited(_tryLogTemplateUsage(migrated.id));
       } else {
         _errorMessage = '模板不存在($templateId)';
       }
@@ -371,6 +391,56 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template != null) {
       _syncRuntimeStateFromTemplate(template);
+      await _loadAndApplyTemplateSetting(
+        templateUuid: template.id,
+        skillId: _usageSkillId,
+      );
+    }
+  }
+
+  Future<void> _tryLogTemplateUsage(String templateUuid) async {
+    final dao = cardTemplateSkillUsageDao;
+    final queryUuid = _usageQueryUuid;
+    final skillId = _usageSkillId;
+    if (dao == null || queryUuid == null || skillId == null) return;
+
+    await dao.insertUsage(
+      queryUuid: queryUuid,
+      templateUuid: templateUuid,
+      skillId: skillId,
+      usedAt: CardTemplateSkillUsageDao.formatUsedAt(DateTime.now()),
+    );
+  }
+
+  Future<void> _loadAndApplyTemplateSetting({
+    required String templateUuid,
+    int? skillId,
+  }) async {
+    final dao = cardTemplateSettingDao;
+    if (dao == null) return;
+
+    final setting = await dao.findByTemplateUuid(templateUuid);
+    if (setting == null) return;
+
+    final baseTheme = editableThemeNotifier.value;
+    final nextTheme = CardTemplateSettingOverlay.applyToTheme(
+      baseTheme: baseTheme,
+      setting: setting,
+      skillId: skillId,
+    );
+
+    final nextMode = CardTemplateSettingOverlay.effectiveColorMode(
+      setting: setting,
+      skillId: skillId,
+    );
+
+    if (nextMode != null && nextMode != colorPreviewModeNotifier.value) {
+      colorPreviewModeNotifier.value = nextMode;
+    }
+
+    if (nextTheme != baseTheme) {
+      editableThemeNotifier.value = nextTheme;
+      paddingNotifier.value = nextTheme.card.padding;
     }
   }
 

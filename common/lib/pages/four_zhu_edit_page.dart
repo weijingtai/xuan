@@ -1,4 +1,6 @@
 import 'package:common/database/app_database.dart';
+import 'package:common/database/daos/card_template_skill_usage_dao.dart';
+import 'package:common/database/daos/card_template_setting_dao.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
@@ -34,6 +36,10 @@ class FourZhuEditPage extends StatelessWidget {
               getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
               saveTemplateUseCase: SaveTemplateUseCase(repository),
               deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+              cardTemplateSettingDao:
+                  CardTemplateSettingDao(ctx.read<AppDatabase>()),
+              cardTemplateSkillUsageDao:
+                  CardTemplateSkillUsageDao(ctx.read<AppDatabase>()),
             )..initialize(collectionId: _defaultCollectionId);
           },
         ),
@@ -132,7 +138,6 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
       },
     );
   }
-
 }
 
 class _ErrorBanner extends StatelessWidget {

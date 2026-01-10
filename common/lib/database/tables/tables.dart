@@ -211,6 +211,75 @@ class LayoutTemplates extends Table {
   Set<Column> get primaryKey => {uuid};
 }
 
+@DataClassName('CardTemplateMeta')
+class CardTemplateMetas extends Table {
+  @override
+  String get tableName => 't_card_template_meta';
+
+  TextColumn get templateUuid => text().named('template_uuid')();
+
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get modifiedAt => dateTime().named('modified_at')();
+  DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
+
+  TextColumn get authorUuid => text().nullable().named('author_uuid')();
+  TextColumn get createFromCardUuid =>
+      text().nullable().named('create_from_card_uuid')();
+  BoolColumn get isCustomized => boolean().nullable().named('is_customized')();
+
+  @override
+  Set<Column> get primaryKey => {templateUuid};
+}
+
+@DataClassName('CardTemplateSettingRecord')
+class CardTemplateSettings extends Table {
+  @override
+  String get tableName => 't_card_template_setting';
+
+  TextColumn get templateUuid => text().named('template_uuid')();
+
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get modifiedAt => dateTime().named('modified_at')();
+  DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
+
+  TextColumn get settingJson => text().named('setting_json')();
+
+  @override
+  Set<Column> get primaryKey => {templateUuid};
+}
+
+@DataClassName('CardTemplateSkillUsage')
+class CardTemplateSkillUsages extends Table with AutoIncrementingPrimaryKey {
+  @override
+  String get tableName => 't_card_template_skill_usage';
+
+  DateTimeColumn get createdAt => dateTime().named('created_at')();
+  DateTimeColumn get lastUpdatedAt => dateTime().named('last_updated_at')();
+  DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
+
+  TextColumn get queryUuid => text().named('query_uuid')();
+  TextColumn get templateUuid => text().named('template_uuid')();
+  IntColumn get skillId => integer().named('skill_id')();
+
+  TextColumn get usedAt => text().named('used_at')();
+
+  @override
+  List<Index> get indexes => [
+        Index(
+          'idx_card_template_skill_usage_query_uuid',
+          'CREATE INDEX idx_card_template_skill_usage_query_uuid ON t_card_template_skill_usage (query_uuid);',
+        ),
+        Index(
+          'idx_card_template_skill_usage_template_uuid',
+          'CREATE INDEX idx_card_template_skill_usage_template_uuid ON t_card_template_skill_usage (template_uuid);',
+        ),
+        Index(
+          'idx_card_template_skill_usage_skill_id',
+          'CREATE INDEX idx_card_template_skill_usage_skill_id ON t_card_template_skill_usage (skill_id);',
+        ),
+      ];
+}
+
 @UseRowClass(DivinationTypeDataModel)
 class DivinationTypes extends Table {
   @override

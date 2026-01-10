@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
+import 'package:common/database/daos/card_template_setting_dao.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_template_by_id_use_case.dart';
@@ -36,6 +37,7 @@ void main() {
       getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
       saveTemplateUseCase: SaveTemplateUseCase(repository),
       deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+      cardTemplateSettingDao: CardTemplateSettingDao(db),
     );
   }
 
@@ -98,6 +100,7 @@ void main() {
         getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
         saveTemplateUseCase: SaveTemplateUseCase(repository),
         deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+        cardTemplateSettingDao: CardTemplateSettingDao(db),
       );
 
       await viewModel.initialize(collectionId: collectionId);

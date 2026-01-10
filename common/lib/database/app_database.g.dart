@@ -1342,6 +1342,1189 @@ class LayoutTemplatesCompanion extends UpdateCompanion<LayoutTemplateRow> {
   }
 }
 
+class $CardTemplateMetasTable extends CardTemplateMetas
+    with TableInfo<$CardTemplateMetasTable, CardTemplateMeta> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardTemplateMetasTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _templateUuidMeta =
+      const VerificationMeta('templateUuid');
+  @override
+  late final GeneratedColumn<String> templateUuid = GeneratedColumn<String>(
+      'template_uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _modifiedAtMeta =
+      const VerificationMeta('modifiedAt');
+  @override
+  late final GeneratedColumn<DateTime> modifiedAt = GeneratedColumn<DateTime>(
+      'modified_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _authorUuidMeta =
+      const VerificationMeta('authorUuid');
+  @override
+  late final GeneratedColumn<String> authorUuid = GeneratedColumn<String>(
+      'author_uuid', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _createFromCardUuidMeta =
+      const VerificationMeta('createFromCardUuid');
+  @override
+  late final GeneratedColumn<String> createFromCardUuid =
+      GeneratedColumn<String>('create_from_card_uuid', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isCustomizedMeta =
+      const VerificationMeta('isCustomized');
+  @override
+  late final GeneratedColumn<bool> isCustomized = GeneratedColumn<bool>(
+      'is_customized', aliasedName, true,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_customized" IN (0, 1))'));
+  @override
+  List<GeneratedColumn> get $columns => [
+        templateUuid,
+        createdAt,
+        modifiedAt,
+        deletedAt,
+        authorUuid,
+        createFromCardUuid,
+        isCustomized
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 't_card_template_meta';
+  @override
+  VerificationContext validateIntegrity(Insertable<CardTemplateMeta> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('template_uuid')) {
+      context.handle(
+          _templateUuidMeta,
+          templateUuid.isAcceptableOrUnknown(
+              data['template_uuid']!, _templateUuidMeta));
+    } else if (isInserting) {
+      context.missing(_templateUuidMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('modified_at')) {
+      context.handle(
+          _modifiedAtMeta,
+          modifiedAt.isAcceptableOrUnknown(
+              data['modified_at']!, _modifiedAtMeta));
+    } else if (isInserting) {
+      context.missing(_modifiedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('author_uuid')) {
+      context.handle(
+          _authorUuidMeta,
+          authorUuid.isAcceptableOrUnknown(
+              data['author_uuid']!, _authorUuidMeta));
+    }
+    if (data.containsKey('create_from_card_uuid')) {
+      context.handle(
+          _createFromCardUuidMeta,
+          createFromCardUuid.isAcceptableOrUnknown(
+              data['create_from_card_uuid']!, _createFromCardUuidMeta));
+    }
+    if (data.containsKey('is_customized')) {
+      context.handle(
+          _isCustomizedMeta,
+          isCustomized.isAcceptableOrUnknown(
+              data['is_customized']!, _isCustomizedMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {templateUuid};
+  @override
+  CardTemplateMeta map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardTemplateMeta(
+      templateUuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_uuid'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      modifiedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}modified_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      authorUuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}author_uuid']),
+      createFromCardUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}create_from_card_uuid']),
+      isCustomized: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_customized']),
+    );
+  }
+
+  @override
+  $CardTemplateMetasTable createAlias(String alias) {
+    return $CardTemplateMetasTable(attachedDatabase, alias);
+  }
+}
+
+class CardTemplateMeta extends DataClass
+    implements Insertable<CardTemplateMeta> {
+  final String templateUuid;
+  final DateTime createdAt;
+  final DateTime modifiedAt;
+  final DateTime? deletedAt;
+  final String? authorUuid;
+  final String? createFromCardUuid;
+  final bool? isCustomized;
+  const CardTemplateMeta(
+      {required this.templateUuid,
+      required this.createdAt,
+      required this.modifiedAt,
+      this.deletedAt,
+      this.authorUuid,
+      this.createFromCardUuid,
+      this.isCustomized});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['template_uuid'] = Variable<String>(templateUuid);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['modified_at'] = Variable<DateTime>(modifiedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || authorUuid != null) {
+      map['author_uuid'] = Variable<String>(authorUuid);
+    }
+    if (!nullToAbsent || createFromCardUuid != null) {
+      map['create_from_card_uuid'] = Variable<String>(createFromCardUuid);
+    }
+    if (!nullToAbsent || isCustomized != null) {
+      map['is_customized'] = Variable<bool>(isCustomized);
+    }
+    return map;
+  }
+
+  CardTemplateMetasCompanion toCompanion(bool nullToAbsent) {
+    return CardTemplateMetasCompanion(
+      templateUuid: Value(templateUuid),
+      createdAt: Value(createdAt),
+      modifiedAt: Value(modifiedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      authorUuid: authorUuid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(authorUuid),
+      createFromCardUuid: createFromCardUuid == null && nullToAbsent
+          ? const Value.absent()
+          : Value(createFromCardUuid),
+      isCustomized: isCustomized == null && nullToAbsent
+          ? const Value.absent()
+          : Value(isCustomized),
+    );
+  }
+
+  factory CardTemplateMeta.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardTemplateMeta(
+      templateUuid: serializer.fromJson<String>(json['templateUuid']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      modifiedAt: serializer.fromJson<DateTime>(json['modifiedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      authorUuid: serializer.fromJson<String?>(json['authorUuid']),
+      createFromCardUuid:
+          serializer.fromJson<String?>(json['createFromCardUuid']),
+      isCustomized: serializer.fromJson<bool?>(json['isCustomized']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'templateUuid': serializer.toJson<String>(templateUuid),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'modifiedAt': serializer.toJson<DateTime>(modifiedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'authorUuid': serializer.toJson<String?>(authorUuid),
+      'createFromCardUuid': serializer.toJson<String?>(createFromCardUuid),
+      'isCustomized': serializer.toJson<bool?>(isCustomized),
+    };
+  }
+
+  CardTemplateMeta copyWith(
+          {String? templateUuid,
+          DateTime? createdAt,
+          DateTime? modifiedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          Value<String?> authorUuid = const Value.absent(),
+          Value<String?> createFromCardUuid = const Value.absent(),
+          Value<bool?> isCustomized = const Value.absent()}) =>
+      CardTemplateMeta(
+        templateUuid: templateUuid ?? this.templateUuid,
+        createdAt: createdAt ?? this.createdAt,
+        modifiedAt: modifiedAt ?? this.modifiedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        authorUuid: authorUuid.present ? authorUuid.value : this.authorUuid,
+        createFromCardUuid: createFromCardUuid.present
+            ? createFromCardUuid.value
+            : this.createFromCardUuid,
+        isCustomized:
+            isCustomized.present ? isCustomized.value : this.isCustomized,
+      );
+  CardTemplateMeta copyWithCompanion(CardTemplateMetasCompanion data) {
+    return CardTemplateMeta(
+      templateUuid: data.templateUuid.present
+          ? data.templateUuid.value
+          : this.templateUuid,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      modifiedAt:
+          data.modifiedAt.present ? data.modifiedAt.value : this.modifiedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      authorUuid:
+          data.authorUuid.present ? data.authorUuid.value : this.authorUuid,
+      createFromCardUuid: data.createFromCardUuid.present
+          ? data.createFromCardUuid.value
+          : this.createFromCardUuid,
+      isCustomized: data.isCustomized.present
+          ? data.isCustomized.value
+          : this.isCustomized,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateMeta(')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('modifiedAt: $modifiedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('authorUuid: $authorUuid, ')
+          ..write('createFromCardUuid: $createFromCardUuid, ')
+          ..write('isCustomized: $isCustomized')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(templateUuid, createdAt, modifiedAt,
+      deletedAt, authorUuid, createFromCardUuid, isCustomized);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardTemplateMeta &&
+          other.templateUuid == this.templateUuid &&
+          other.createdAt == this.createdAt &&
+          other.modifiedAt == this.modifiedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.authorUuid == this.authorUuid &&
+          other.createFromCardUuid == this.createFromCardUuid &&
+          other.isCustomized == this.isCustomized);
+}
+
+class CardTemplateMetasCompanion extends UpdateCompanion<CardTemplateMeta> {
+  final Value<String> templateUuid;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> modifiedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String?> authorUuid;
+  final Value<String?> createFromCardUuid;
+  final Value<bool?> isCustomized;
+  final Value<int> rowid;
+  const CardTemplateMetasCompanion({
+    this.templateUuid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.modifiedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.authorUuid = const Value.absent(),
+    this.createFromCardUuid = const Value.absent(),
+    this.isCustomized = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CardTemplateMetasCompanion.insert({
+    required String templateUuid,
+    required DateTime createdAt,
+    required DateTime modifiedAt,
+    this.deletedAt = const Value.absent(),
+    this.authorUuid = const Value.absent(),
+    this.createFromCardUuid = const Value.absent(),
+    this.isCustomized = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : templateUuid = Value(templateUuid),
+        createdAt = Value(createdAt),
+        modifiedAt = Value(modifiedAt);
+  static Insertable<CardTemplateMeta> custom({
+    Expression<String>? templateUuid,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? modifiedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? authorUuid,
+    Expression<String>? createFromCardUuid,
+    Expression<bool>? isCustomized,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (templateUuid != null) 'template_uuid': templateUuid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (modifiedAt != null) 'modified_at': modifiedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (authorUuid != null) 'author_uuid': authorUuid,
+      if (createFromCardUuid != null)
+        'create_from_card_uuid': createFromCardUuid,
+      if (isCustomized != null) 'is_customized': isCustomized,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CardTemplateMetasCompanion copyWith(
+      {Value<String>? templateUuid,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? modifiedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String?>? authorUuid,
+      Value<String?>? createFromCardUuid,
+      Value<bool?>? isCustomized,
+      Value<int>? rowid}) {
+    return CardTemplateMetasCompanion(
+      templateUuid: templateUuid ?? this.templateUuid,
+      createdAt: createdAt ?? this.createdAt,
+      modifiedAt: modifiedAt ?? this.modifiedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      authorUuid: authorUuid ?? this.authorUuid,
+      createFromCardUuid: createFromCardUuid ?? this.createFromCardUuid,
+      isCustomized: isCustomized ?? this.isCustomized,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (templateUuid.present) {
+      map['template_uuid'] = Variable<String>(templateUuid.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (modifiedAt.present) {
+      map['modified_at'] = Variable<DateTime>(modifiedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (authorUuid.present) {
+      map['author_uuid'] = Variable<String>(authorUuid.value);
+    }
+    if (createFromCardUuid.present) {
+      map['create_from_card_uuid'] = Variable<String>(createFromCardUuid.value);
+    }
+    if (isCustomized.present) {
+      map['is_customized'] = Variable<bool>(isCustomized.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateMetasCompanion(')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('modifiedAt: $modifiedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('authorUuid: $authorUuid, ')
+          ..write('createFromCardUuid: $createFromCardUuid, ')
+          ..write('isCustomized: $isCustomized, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CardTemplateSettingsTable extends CardTemplateSettings
+    with TableInfo<$CardTemplateSettingsTable, CardTemplateSettingRecord> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardTemplateSettingsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _templateUuidMeta =
+      const VerificationMeta('templateUuid');
+  @override
+  late final GeneratedColumn<String> templateUuid = GeneratedColumn<String>(
+      'template_uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _modifiedAtMeta =
+      const VerificationMeta('modifiedAt');
+  @override
+  late final GeneratedColumn<DateTime> modifiedAt = GeneratedColumn<DateTime>(
+      'modified_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _settingJsonMeta =
+      const VerificationMeta('settingJson');
+  @override
+  late final GeneratedColumn<String> settingJson = GeneratedColumn<String>(
+      'setting_json', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns =>
+      [templateUuid, createdAt, modifiedAt, deletedAt, settingJson];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 't_card_template_setting';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<CardTemplateSettingRecord> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('template_uuid')) {
+      context.handle(
+          _templateUuidMeta,
+          templateUuid.isAcceptableOrUnknown(
+              data['template_uuid']!, _templateUuidMeta));
+    } else if (isInserting) {
+      context.missing(_templateUuidMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('modified_at')) {
+      context.handle(
+          _modifiedAtMeta,
+          modifiedAt.isAcceptableOrUnknown(
+              data['modified_at']!, _modifiedAtMeta));
+    } else if (isInserting) {
+      context.missing(_modifiedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('setting_json')) {
+      context.handle(
+          _settingJsonMeta,
+          settingJson.isAcceptableOrUnknown(
+              data['setting_json']!, _settingJsonMeta));
+    } else if (isInserting) {
+      context.missing(_settingJsonMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {templateUuid};
+  @override
+  CardTemplateSettingRecord map(Map<String, dynamic> data,
+      {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardTemplateSettingRecord(
+      templateUuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_uuid'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      modifiedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}modified_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      settingJson: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}setting_json'])!,
+    );
+  }
+
+  @override
+  $CardTemplateSettingsTable createAlias(String alias) {
+    return $CardTemplateSettingsTable(attachedDatabase, alias);
+  }
+}
+
+class CardTemplateSettingRecord extends DataClass
+    implements Insertable<CardTemplateSettingRecord> {
+  final String templateUuid;
+  final DateTime createdAt;
+  final DateTime modifiedAt;
+  final DateTime? deletedAt;
+  final String settingJson;
+  const CardTemplateSettingRecord(
+      {required this.templateUuid,
+      required this.createdAt,
+      required this.modifiedAt,
+      this.deletedAt,
+      required this.settingJson});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['template_uuid'] = Variable<String>(templateUuid);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['modified_at'] = Variable<DateTime>(modifiedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['setting_json'] = Variable<String>(settingJson);
+    return map;
+  }
+
+  CardTemplateSettingsCompanion toCompanion(bool nullToAbsent) {
+    return CardTemplateSettingsCompanion(
+      templateUuid: Value(templateUuid),
+      createdAt: Value(createdAt),
+      modifiedAt: Value(modifiedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      settingJson: Value(settingJson),
+    );
+  }
+
+  factory CardTemplateSettingRecord.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardTemplateSettingRecord(
+      templateUuid: serializer.fromJson<String>(json['templateUuid']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      modifiedAt: serializer.fromJson<DateTime>(json['modifiedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      settingJson: serializer.fromJson<String>(json['settingJson']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'templateUuid': serializer.toJson<String>(templateUuid),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'modifiedAt': serializer.toJson<DateTime>(modifiedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'settingJson': serializer.toJson<String>(settingJson),
+    };
+  }
+
+  CardTemplateSettingRecord copyWith(
+          {String? templateUuid,
+          DateTime? createdAt,
+          DateTime? modifiedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          String? settingJson}) =>
+      CardTemplateSettingRecord(
+        templateUuid: templateUuid ?? this.templateUuid,
+        createdAt: createdAt ?? this.createdAt,
+        modifiedAt: modifiedAt ?? this.modifiedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        settingJson: settingJson ?? this.settingJson,
+      );
+  CardTemplateSettingRecord copyWithCompanion(
+      CardTemplateSettingsCompanion data) {
+    return CardTemplateSettingRecord(
+      templateUuid: data.templateUuid.present
+          ? data.templateUuid.value
+          : this.templateUuid,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      modifiedAt:
+          data.modifiedAt.present ? data.modifiedAt.value : this.modifiedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      settingJson:
+          data.settingJson.present ? data.settingJson.value : this.settingJson,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateSettingRecord(')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('modifiedAt: $modifiedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('settingJson: $settingJson')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(templateUuid, createdAt, modifiedAt, deletedAt, settingJson);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardTemplateSettingRecord &&
+          other.templateUuid == this.templateUuid &&
+          other.createdAt == this.createdAt &&
+          other.modifiedAt == this.modifiedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.settingJson == this.settingJson);
+}
+
+class CardTemplateSettingsCompanion
+    extends UpdateCompanion<CardTemplateSettingRecord> {
+  final Value<String> templateUuid;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> modifiedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> settingJson;
+  final Value<int> rowid;
+  const CardTemplateSettingsCompanion({
+    this.templateUuid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.modifiedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.settingJson = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CardTemplateSettingsCompanion.insert({
+    required String templateUuid,
+    required DateTime createdAt,
+    required DateTime modifiedAt,
+    this.deletedAt = const Value.absent(),
+    required String settingJson,
+    this.rowid = const Value.absent(),
+  })  : templateUuid = Value(templateUuid),
+        createdAt = Value(createdAt),
+        modifiedAt = Value(modifiedAt),
+        settingJson = Value(settingJson);
+  static Insertable<CardTemplateSettingRecord> custom({
+    Expression<String>? templateUuid,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? modifiedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? settingJson,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (templateUuid != null) 'template_uuid': templateUuid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (modifiedAt != null) 'modified_at': modifiedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (settingJson != null) 'setting_json': settingJson,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CardTemplateSettingsCompanion copyWith(
+      {Value<String>? templateUuid,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? modifiedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? settingJson,
+      Value<int>? rowid}) {
+    return CardTemplateSettingsCompanion(
+      templateUuid: templateUuid ?? this.templateUuid,
+      createdAt: createdAt ?? this.createdAt,
+      modifiedAt: modifiedAt ?? this.modifiedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      settingJson: settingJson ?? this.settingJson,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (templateUuid.present) {
+      map['template_uuid'] = Variable<String>(templateUuid.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (modifiedAt.present) {
+      map['modified_at'] = Variable<DateTime>(modifiedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (settingJson.present) {
+      map['setting_json'] = Variable<String>(settingJson.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateSettingsCompanion(')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('modifiedAt: $modifiedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('settingJson: $settingJson, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CardTemplateSkillUsagesTable extends CardTemplateSkillUsages
+    with TableInfo<$CardTemplateSkillUsagesTable, CardTemplateSkillUsage> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CardTemplateSkillUsagesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _queryUuidMeta =
+      const VerificationMeta('queryUuid');
+  @override
+  late final GeneratedColumn<String> queryUuid = GeneratedColumn<String>(
+      'query_uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _templateUuidMeta =
+      const VerificationMeta('templateUuid');
+  @override
+  late final GeneratedColumn<String> templateUuid = GeneratedColumn<String>(
+      'template_uuid', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _skillIdMeta =
+      const VerificationMeta('skillId');
+  @override
+  late final GeneratedColumn<int> skillId = GeneratedColumn<int>(
+      'skill_id', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _usedAtMeta = const VerificationMeta('usedAt');
+  @override
+  late final GeneratedColumn<String> usedAt = GeneratedColumn<String>(
+      'used_at', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        createdAt,
+        lastUpdatedAt,
+        deletedAt,
+        queryUuid,
+        templateUuid,
+        skillId,
+        usedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 't_card_template_skill_usage';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<CardTemplateSkillUsage> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('query_uuid')) {
+      context.handle(_queryUuidMeta,
+          queryUuid.isAcceptableOrUnknown(data['query_uuid']!, _queryUuidMeta));
+    } else if (isInserting) {
+      context.missing(_queryUuidMeta);
+    }
+    if (data.containsKey('template_uuid')) {
+      context.handle(
+          _templateUuidMeta,
+          templateUuid.isAcceptableOrUnknown(
+              data['template_uuid']!, _templateUuidMeta));
+    } else if (isInserting) {
+      context.missing(_templateUuidMeta);
+    }
+    if (data.containsKey('skill_id')) {
+      context.handle(_skillIdMeta,
+          skillId.isAcceptableOrUnknown(data['skill_id']!, _skillIdMeta));
+    } else if (isInserting) {
+      context.missing(_skillIdMeta);
+    }
+    if (data.containsKey('used_at')) {
+      context.handle(_usedAtMeta,
+          usedAt.isAcceptableOrUnknown(data['used_at']!, _usedAtMeta));
+    } else if (isInserting) {
+      context.missing(_usedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CardTemplateSkillUsage map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CardTemplateSkillUsage(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      queryUuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}query_uuid'])!,
+      templateUuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}template_uuid'])!,
+      skillId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}skill_id'])!,
+      usedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}used_at'])!,
+    );
+  }
+
+  @override
+  $CardTemplateSkillUsagesTable createAlias(String alias) {
+    return $CardTemplateSkillUsagesTable(attachedDatabase, alias);
+  }
+}
+
+class CardTemplateSkillUsage extends DataClass
+    implements Insertable<CardTemplateSkillUsage> {
+  final int id;
+  final DateTime createdAt;
+  final DateTime lastUpdatedAt;
+  final DateTime? deletedAt;
+  final String queryUuid;
+  final String templateUuid;
+  final int skillId;
+  final String usedAt;
+  const CardTemplateSkillUsage(
+      {required this.id,
+      required this.createdAt,
+      required this.lastUpdatedAt,
+      this.deletedAt,
+      required this.queryUuid,
+      required this.templateUuid,
+      required this.skillId,
+      required this.usedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    map['query_uuid'] = Variable<String>(queryUuid);
+    map['template_uuid'] = Variable<String>(templateUuid);
+    map['skill_id'] = Variable<int>(skillId);
+    map['used_at'] = Variable<String>(usedAt);
+    return map;
+  }
+
+  CardTemplateSkillUsagesCompanion toCompanion(bool nullToAbsent) {
+    return CardTemplateSkillUsagesCompanion(
+      id: Value(id),
+      createdAt: Value(createdAt),
+      lastUpdatedAt: Value(lastUpdatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      queryUuid: Value(queryUuid),
+      templateUuid: Value(templateUuid),
+      skillId: Value(skillId),
+      usedAt: Value(usedAt),
+    );
+  }
+
+  factory CardTemplateSkillUsage.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CardTemplateSkillUsage(
+      id: serializer.fromJson<int>(json['id']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      queryUuid: serializer.fromJson<String>(json['queryUuid']),
+      templateUuid: serializer.fromJson<String>(json['templateUuid']),
+      skillId: serializer.fromJson<int>(json['skillId']),
+      usedAt: serializer.fromJson<String>(json['usedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'queryUuid': serializer.toJson<String>(queryUuid),
+      'templateUuid': serializer.toJson<String>(templateUuid),
+      'skillId': serializer.toJson<int>(skillId),
+      'usedAt': serializer.toJson<String>(usedAt),
+    };
+  }
+
+  CardTemplateSkillUsage copyWith(
+          {int? id,
+          DateTime? createdAt,
+          DateTime? lastUpdatedAt,
+          Value<DateTime?> deletedAt = const Value.absent(),
+          String? queryUuid,
+          String? templateUuid,
+          int? skillId,
+          String? usedAt}) =>
+      CardTemplateSkillUsage(
+        id: id ?? this.id,
+        createdAt: createdAt ?? this.createdAt,
+        lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+        queryUuid: queryUuid ?? this.queryUuid,
+        templateUuid: templateUuid ?? this.templateUuid,
+        skillId: skillId ?? this.skillId,
+        usedAt: usedAt ?? this.usedAt,
+      );
+  CardTemplateSkillUsage copyWithCompanion(
+      CardTemplateSkillUsagesCompanion data) {
+    return CardTemplateSkillUsage(
+      id: data.id.present ? data.id.value : this.id,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      queryUuid: data.queryUuid.present ? data.queryUuid.value : this.queryUuid,
+      templateUuid: data.templateUuid.present
+          ? data.templateUuid.value
+          : this.templateUuid,
+      skillId: data.skillId.present ? data.skillId.value : this.skillId,
+      usedAt: data.usedAt.present ? data.usedAt.value : this.usedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateSkillUsage(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('queryUuid: $queryUuid, ')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('skillId: $skillId, ')
+          ..write('usedAt: $usedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, createdAt, lastUpdatedAt, deletedAt,
+      queryUuid, templateUuid, skillId, usedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CardTemplateSkillUsage &&
+          other.id == this.id &&
+          other.createdAt == this.createdAt &&
+          other.lastUpdatedAt == this.lastUpdatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.queryUuid == this.queryUuid &&
+          other.templateUuid == this.templateUuid &&
+          other.skillId == this.skillId &&
+          other.usedAt == this.usedAt);
+}
+
+class CardTemplateSkillUsagesCompanion
+    extends UpdateCompanion<CardTemplateSkillUsage> {
+  final Value<int> id;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> lastUpdatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> queryUuid;
+  final Value<String> templateUuid;
+  final Value<int> skillId;
+  final Value<String> usedAt;
+  const CardTemplateSkillUsagesCompanion({
+    this.id = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.queryUuid = const Value.absent(),
+    this.templateUuid = const Value.absent(),
+    this.skillId = const Value.absent(),
+    this.usedAt = const Value.absent(),
+  });
+  CardTemplateSkillUsagesCompanion.insert({
+    this.id = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime lastUpdatedAt,
+    this.deletedAt = const Value.absent(),
+    required String queryUuid,
+    required String templateUuid,
+    required int skillId,
+    required String usedAt,
+  })  : createdAt = Value(createdAt),
+        lastUpdatedAt = Value(lastUpdatedAt),
+        queryUuid = Value(queryUuid),
+        templateUuid = Value(templateUuid),
+        skillId = Value(skillId),
+        usedAt = Value(usedAt);
+  static Insertable<CardTemplateSkillUsage> custom({
+    Expression<int>? id,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? lastUpdatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? queryUuid,
+    Expression<String>? templateUuid,
+    Expression<int>? skillId,
+    Expression<String>? usedAt,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (createdAt != null) 'created_at': createdAt,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (queryUuid != null) 'query_uuid': queryUuid,
+      if (templateUuid != null) 'template_uuid': templateUuid,
+      if (skillId != null) 'skill_id': skillId,
+      if (usedAt != null) 'used_at': usedAt,
+    });
+  }
+
+  CardTemplateSkillUsagesCompanion copyWith(
+      {Value<int>? id,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? lastUpdatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? queryUuid,
+      Value<String>? templateUuid,
+      Value<int>? skillId,
+      Value<String>? usedAt}) {
+    return CardTemplateSkillUsagesCompanion(
+      id: id ?? this.id,
+      createdAt: createdAt ?? this.createdAt,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      queryUuid: queryUuid ?? this.queryUuid,
+      templateUuid: templateUuid ?? this.templateUuid,
+      skillId: skillId ?? this.skillId,
+      usedAt: usedAt ?? this.usedAt,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (queryUuid.present) {
+      map['query_uuid'] = Variable<String>(queryUuid.value);
+    }
+    if (templateUuid.present) {
+      map['template_uuid'] = Variable<String>(templateUuid.value);
+    }
+    if (skillId.present) {
+      map['skill_id'] = Variable<int>(skillId.value);
+    }
+    if (usedAt.present) {
+      map['used_at'] = Variable<String>(usedAt.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CardTemplateSkillUsagesCompanion(')
+          ..write('id: $id, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('queryUuid: $queryUuid, ')
+          ..write('templateUuid: $templateUuid, ')
+          ..write('skillId: $skillId, ')
+          ..write('usedAt: $usedAt')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DivinationTypesTable extends DivinationTypes
     with TableInfo<$DivinationTypesTable, DivinationTypeDataModel> {
   @override
@@ -5641,6 +6824,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $SkillClassesTable skillClasses = $SkillClassesTable(this);
   late final $LayoutTemplatesTable layoutTemplates =
       $LayoutTemplatesTable(this);
+  late final $CardTemplateMetasTable cardTemplateMetas =
+      $CardTemplateMetasTable(this);
+  late final $CardTemplateSettingsTable cardTemplateSettings =
+      $CardTemplateSettingsTable(this);
+  late final $CardTemplateSkillUsagesTable cardTemplateSkillUsages =
+      $CardTemplateSkillUsagesTable(this);
   late final $DivinationTypesTable divinationTypes =
       $DivinationTypesTable(this);
   late final $SeekersTable seekers = $SeekersTable(this);
@@ -5673,6 +6862,12 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       SkillClassesDao(this as AppDatabase);
   late final LayoutTemplatesDao layoutTemplatesDao =
       LayoutTemplatesDao(this as AppDatabase);
+  late final CardTemplateMetaDao cardTemplateMetaDao =
+      CardTemplateMetaDao(this as AppDatabase);
+  late final CardTemplateSettingDao cardTemplateSettingDao =
+      CardTemplateSettingDao(this as AppDatabase);
+  late final CardTemplateSkillUsageDao cardTemplateSkillUsageDao =
+      CardTemplateSkillUsageDao(this as AppDatabase);
   late final DivinationTypesDao divinationTypesDao =
       DivinationTypesDao(this as AppDatabase);
   late final SeekersDao seekersDao = SeekersDao(this as AppDatabase);
@@ -5693,6 +6888,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         skills,
         skillClasses,
         layoutTemplates,
+        cardTemplateMetas,
+        cardTemplateSettings,
+        cardTemplateSkillUsages,
         divinationTypes,
         seekers,
         divinations,
@@ -6695,6 +7893,616 @@ typedef $$LayoutTemplatesTableProcessedTableManager = ProcessedTableManager<
     ),
     LayoutTemplateRow,
     PrefetchHooks Function()>;
+typedef $$CardTemplateMetasTableCreateCompanionBuilder
+    = CardTemplateMetasCompanion Function({
+  required String templateUuid,
+  required DateTime createdAt,
+  required DateTime modifiedAt,
+  Value<DateTime?> deletedAt,
+  Value<String?> authorUuid,
+  Value<String?> createFromCardUuid,
+  Value<bool?> isCustomized,
+  Value<int> rowid,
+});
+typedef $$CardTemplateMetasTableUpdateCompanionBuilder
+    = CardTemplateMetasCompanion Function({
+  Value<String> templateUuid,
+  Value<DateTime> createdAt,
+  Value<DateTime> modifiedAt,
+  Value<DateTime?> deletedAt,
+  Value<String?> authorUuid,
+  Value<String?> createFromCardUuid,
+  Value<bool?> isCustomized,
+  Value<int> rowid,
+});
+
+class $$CardTemplateMetasTableFilterComposer
+    extends Composer<_$AppDatabase, $CardTemplateMetasTable> {
+  $$CardTemplateMetasTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get authorUuid => $composableBuilder(
+      column: $table.authorUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get createFromCardUuid => $composableBuilder(
+      column: $table.createFromCardUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isCustomized => $composableBuilder(
+      column: $table.isCustomized, builder: (column) => ColumnFilters(column));
+}
+
+class $$CardTemplateMetasTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardTemplateMetasTable> {
+  $$CardTemplateMetasTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get authorUuid => $composableBuilder(
+      column: $table.authorUuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get createFromCardUuid => $composableBuilder(
+      column: $table.createFromCardUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isCustomized => $composableBuilder(
+      column: $table.isCustomized,
+      builder: (column) => ColumnOrderings(column));
+}
+
+class $$CardTemplateMetasTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardTemplateMetasTable> {
+  $$CardTemplateMetasTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get authorUuid => $composableBuilder(
+      column: $table.authorUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get createFromCardUuid => $composableBuilder(
+      column: $table.createFromCardUuid, builder: (column) => column);
+
+  GeneratedColumn<bool> get isCustomized => $composableBuilder(
+      column: $table.isCustomized, builder: (column) => column);
+}
+
+class $$CardTemplateMetasTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CardTemplateMetasTable,
+    CardTemplateMeta,
+    $$CardTemplateMetasTableFilterComposer,
+    $$CardTemplateMetasTableOrderingComposer,
+    $$CardTemplateMetasTableAnnotationComposer,
+    $$CardTemplateMetasTableCreateCompanionBuilder,
+    $$CardTemplateMetasTableUpdateCompanionBuilder,
+    (
+      CardTemplateMeta,
+      BaseReferences<_$AppDatabase, $CardTemplateMetasTable, CardTemplateMeta>
+    ),
+    CardTemplateMeta,
+    PrefetchHooks Function()> {
+  $$CardTemplateMetasTableTableManager(
+      _$AppDatabase db, $CardTemplateMetasTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardTemplateMetasTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardTemplateMetasTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CardTemplateMetasTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> templateUuid = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> modifiedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String?> authorUuid = const Value.absent(),
+            Value<String?> createFromCardUuid = const Value.absent(),
+            Value<bool?> isCustomized = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardTemplateMetasCompanion(
+            templateUuid: templateUuid,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt,
+            deletedAt: deletedAt,
+            authorUuid: authorUuid,
+            createFromCardUuid: createFromCardUuid,
+            isCustomized: isCustomized,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String templateUuid,
+            required DateTime createdAt,
+            required DateTime modifiedAt,
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String?> authorUuid = const Value.absent(),
+            Value<String?> createFromCardUuid = const Value.absent(),
+            Value<bool?> isCustomized = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardTemplateMetasCompanion.insert(
+            templateUuid: templateUuid,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt,
+            deletedAt: deletedAt,
+            authorUuid: authorUuid,
+            createFromCardUuid: createFromCardUuid,
+            isCustomized: isCustomized,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CardTemplateMetasTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $CardTemplateMetasTable,
+    CardTemplateMeta,
+    $$CardTemplateMetasTableFilterComposer,
+    $$CardTemplateMetasTableOrderingComposer,
+    $$CardTemplateMetasTableAnnotationComposer,
+    $$CardTemplateMetasTableCreateCompanionBuilder,
+    $$CardTemplateMetasTableUpdateCompanionBuilder,
+    (
+      CardTemplateMeta,
+      BaseReferences<_$AppDatabase, $CardTemplateMetasTable, CardTemplateMeta>
+    ),
+    CardTemplateMeta,
+    PrefetchHooks Function()>;
+typedef $$CardTemplateSettingsTableCreateCompanionBuilder
+    = CardTemplateSettingsCompanion Function({
+  required String templateUuid,
+  required DateTime createdAt,
+  required DateTime modifiedAt,
+  Value<DateTime?> deletedAt,
+  required String settingJson,
+  Value<int> rowid,
+});
+typedef $$CardTemplateSettingsTableUpdateCompanionBuilder
+    = CardTemplateSettingsCompanion Function({
+  Value<String> templateUuid,
+  Value<DateTime> createdAt,
+  Value<DateTime> modifiedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> settingJson,
+  Value<int> rowid,
+});
+
+class $$CardTemplateSettingsTableFilterComposer
+    extends Composer<_$AppDatabase, $CardTemplateSettingsTable> {
+  $$CardTemplateSettingsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get settingJson => $composableBuilder(
+      column: $table.settingJson, builder: (column) => ColumnFilters(column));
+}
+
+class $$CardTemplateSettingsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardTemplateSettingsTable> {
+  $$CardTemplateSettingsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get settingJson => $composableBuilder(
+      column: $table.settingJson, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CardTemplateSettingsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardTemplateSettingsTable> {
+  $$CardTemplateSettingsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get modifiedAt => $composableBuilder(
+      column: $table.modifiedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get settingJson => $composableBuilder(
+      column: $table.settingJson, builder: (column) => column);
+}
+
+class $$CardTemplateSettingsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CardTemplateSettingsTable,
+    CardTemplateSettingRecord,
+    $$CardTemplateSettingsTableFilterComposer,
+    $$CardTemplateSettingsTableOrderingComposer,
+    $$CardTemplateSettingsTableAnnotationComposer,
+    $$CardTemplateSettingsTableCreateCompanionBuilder,
+    $$CardTemplateSettingsTableUpdateCompanionBuilder,
+    (
+      CardTemplateSettingRecord,
+      BaseReferences<_$AppDatabase, $CardTemplateSettingsTable,
+          CardTemplateSettingRecord>
+    ),
+    CardTemplateSettingRecord,
+    PrefetchHooks Function()> {
+  $$CardTemplateSettingsTableTableManager(
+      _$AppDatabase db, $CardTemplateSettingsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardTemplateSettingsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardTemplateSettingsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CardTemplateSettingsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> templateUuid = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> modifiedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> settingJson = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardTemplateSettingsCompanion(
+            templateUuid: templateUuid,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt,
+            deletedAt: deletedAt,
+            settingJson: settingJson,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String templateUuid,
+            required DateTime createdAt,
+            required DateTime modifiedAt,
+            Value<DateTime?> deletedAt = const Value.absent(),
+            required String settingJson,
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              CardTemplateSettingsCompanion.insert(
+            templateUuid: templateUuid,
+            createdAt: createdAt,
+            modifiedAt: modifiedAt,
+            deletedAt: deletedAt,
+            settingJson: settingJson,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CardTemplateSettingsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $CardTemplateSettingsTable,
+        CardTemplateSettingRecord,
+        $$CardTemplateSettingsTableFilterComposer,
+        $$CardTemplateSettingsTableOrderingComposer,
+        $$CardTemplateSettingsTableAnnotationComposer,
+        $$CardTemplateSettingsTableCreateCompanionBuilder,
+        $$CardTemplateSettingsTableUpdateCompanionBuilder,
+        (
+          CardTemplateSettingRecord,
+          BaseReferences<_$AppDatabase, $CardTemplateSettingsTable,
+              CardTemplateSettingRecord>
+        ),
+        CardTemplateSettingRecord,
+        PrefetchHooks Function()>;
+typedef $$CardTemplateSkillUsagesTableCreateCompanionBuilder
+    = CardTemplateSkillUsagesCompanion Function({
+  Value<int> id,
+  required DateTime createdAt,
+  required DateTime lastUpdatedAt,
+  Value<DateTime?> deletedAt,
+  required String queryUuid,
+  required String templateUuid,
+  required int skillId,
+  required String usedAt,
+});
+typedef $$CardTemplateSkillUsagesTableUpdateCompanionBuilder
+    = CardTemplateSkillUsagesCompanion Function({
+  Value<int> id,
+  Value<DateTime> createdAt,
+  Value<DateTime> lastUpdatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> queryUuid,
+  Value<String> templateUuid,
+  Value<int> skillId,
+  Value<String> usedAt,
+});
+
+class $$CardTemplateSkillUsagesTableFilterComposer
+    extends Composer<_$AppDatabase, $CardTemplateSkillUsagesTable> {
+  $$CardTemplateSkillUsagesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get queryUuid => $composableBuilder(
+      column: $table.queryUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get skillId => $composableBuilder(
+      column: $table.skillId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get usedAt => $composableBuilder(
+      column: $table.usedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$CardTemplateSkillUsagesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CardTemplateSkillUsagesTable> {
+  $$CardTemplateSkillUsagesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get queryUuid => $composableBuilder(
+      column: $table.queryUuid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get skillId => $composableBuilder(
+      column: $table.skillId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get usedAt => $composableBuilder(
+      column: $table.usedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$CardTemplateSkillUsagesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CardTemplateSkillUsagesTable> {
+  $$CardTemplateSkillUsagesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get queryUuid =>
+      $composableBuilder(column: $table.queryUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get templateUuid => $composableBuilder(
+      column: $table.templateUuid, builder: (column) => column);
+
+  GeneratedColumn<int> get skillId =>
+      $composableBuilder(column: $table.skillId, builder: (column) => column);
+
+  GeneratedColumn<String> get usedAt =>
+      $composableBuilder(column: $table.usedAt, builder: (column) => column);
+}
+
+class $$CardTemplateSkillUsagesTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $CardTemplateSkillUsagesTable,
+    CardTemplateSkillUsage,
+    $$CardTemplateSkillUsagesTableFilterComposer,
+    $$CardTemplateSkillUsagesTableOrderingComposer,
+    $$CardTemplateSkillUsagesTableAnnotationComposer,
+    $$CardTemplateSkillUsagesTableCreateCompanionBuilder,
+    $$CardTemplateSkillUsagesTableUpdateCompanionBuilder,
+    (
+      CardTemplateSkillUsage,
+      BaseReferences<_$AppDatabase, $CardTemplateSkillUsagesTable,
+          CardTemplateSkillUsage>
+    ),
+    CardTemplateSkillUsage,
+    PrefetchHooks Function()> {
+  $$CardTemplateSkillUsagesTableTableManager(
+      _$AppDatabase db, $CardTemplateSkillUsagesTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CardTemplateSkillUsagesTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CardTemplateSkillUsagesTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CardTemplateSkillUsagesTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> queryUuid = const Value.absent(),
+            Value<String> templateUuid = const Value.absent(),
+            Value<int> skillId = const Value.absent(),
+            Value<String> usedAt = const Value.absent(),
+          }) =>
+              CardTemplateSkillUsagesCompanion(
+            id: id,
+            createdAt: createdAt,
+            lastUpdatedAt: lastUpdatedAt,
+            deletedAt: deletedAt,
+            queryUuid: queryUuid,
+            templateUuid: templateUuid,
+            skillId: skillId,
+            usedAt: usedAt,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required DateTime createdAt,
+            required DateTime lastUpdatedAt,
+            Value<DateTime?> deletedAt = const Value.absent(),
+            required String queryUuid,
+            required String templateUuid,
+            required int skillId,
+            required String usedAt,
+          }) =>
+              CardTemplateSkillUsagesCompanion.insert(
+            id: id,
+            createdAt: createdAt,
+            lastUpdatedAt: lastUpdatedAt,
+            deletedAt: deletedAt,
+            queryUuid: queryUuid,
+            templateUuid: templateUuid,
+            skillId: skillId,
+            usedAt: usedAt,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$CardTemplateSkillUsagesTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $CardTemplateSkillUsagesTable,
+        CardTemplateSkillUsage,
+        $$CardTemplateSkillUsagesTableFilterComposer,
+        $$CardTemplateSkillUsagesTableOrderingComposer,
+        $$CardTemplateSkillUsagesTableAnnotationComposer,
+        $$CardTemplateSkillUsagesTableCreateCompanionBuilder,
+        $$CardTemplateSkillUsagesTableUpdateCompanionBuilder,
+        (
+          CardTemplateSkillUsage,
+          BaseReferences<_$AppDatabase, $CardTemplateSkillUsagesTable,
+              CardTemplateSkillUsage>
+        ),
+        CardTemplateSkillUsage,
+        PrefetchHooks Function()>;
 typedef $$DivinationTypesTableCreateCompanionBuilder = DivinationTypesCompanion
     Function({
   required String uuid,
@@ -11372,6 +13180,13 @@ class $AppDatabaseManager {
       $$SkillClassesTableTableManager(_db, _db.skillClasses);
   $$LayoutTemplatesTableTableManager get layoutTemplates =>
       $$LayoutTemplatesTableTableManager(_db, _db.layoutTemplates);
+  $$CardTemplateMetasTableTableManager get cardTemplateMetas =>
+      $$CardTemplateMetasTableTableManager(_db, _db.cardTemplateMetas);
+  $$CardTemplateSettingsTableTableManager get cardTemplateSettings =>
+      $$CardTemplateSettingsTableTableManager(_db, _db.cardTemplateSettings);
+  $$CardTemplateSkillUsagesTableTableManager get cardTemplateSkillUsages =>
+      $$CardTemplateSkillUsagesTableTableManager(
+          _db, _db.cardTemplateSkillUsages);
   $$DivinationTypesTableTableManager get divinationTypes =>
       $$DivinationTypesTableTableManager(_db, _db.divinationTypes);
   $$SeekersTableTableManager get seekers =>

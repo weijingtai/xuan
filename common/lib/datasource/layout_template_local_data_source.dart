@@ -3,13 +3,17 @@ import 'dart:convert';
 import '../database/app_database.dart';
 import '../models/layout_template_dto.dart';
 
+import '../database/daos/card_template_meta_dao.dart';
 import '../database/daos/layout_templates_dao.dart';
 
 class LayoutTemplateLocalDataSource {
-  LayoutTemplateLocalDataSource(this._db) : _dao = LayoutTemplatesDao(_db);
+  LayoutTemplateLocalDataSource(this._db)
+      : _dao = LayoutTemplatesDao(_db),
+        _metaDao = CardTemplateMetaDao(_db);
 
   final AppDatabase _db;
   final LayoutTemplatesDao _dao;
+  final CardTemplateMetaDao _metaDao;
 
   Future<List<LayoutTemplateDto>> loadTemplates(String collectionId) async {
     final rows = await _dao.getAllByCollection(collectionId);
@@ -29,6 +33,12 @@ class LayoutTemplateLocalDataSource {
 
     await _db.transaction(() async {
       await _dao.upsertAllTemplates(domainTemplates);
+      for (final template in domainTemplates) {
+        await _metaDao.touchModifiedAt(
+          templateUuid: template.id,
+          modifiedAt: template.updatedAt,
+        );
+      }
       await _dao.softDeleteMissing(
         collectionId,
         domainTemplates.map((t) => t.id).toSet(),

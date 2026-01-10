@@ -156,6 +156,7 @@ TextRowPayload _$TextRowPayloadFromJson(Map<String, dynamic> json) =>
       uuid: json['uuid'] as String,
       titleInCell: json['titleInCell'] as bool,
       rowLabel: json['rowLabel'] as String?,
+      tenGodLabelType: json['tenGodLabelType'] as String? ?? 'name',
     );
 
 Map<String, dynamic> _$TextRowPayloadToJson(TextRowPayload instance) =>
@@ -164,6 +165,7 @@ Map<String, dynamic> _$TextRowPayloadToJson(TextRowPayload instance) =>
       'uuid': instance.uuid,
       'rowLabel': instance.rowLabel,
       'titleInCell': instance.titleInCell,
+      'tenGodLabelType': instance.tenGodLabelType,
     };
 
 SeparatorPillarPayload _$SeparatorPillarPayloadFromJson(
