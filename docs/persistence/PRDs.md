@@ -211,6 +211,40 @@ Firestore Rules 验收清单（必须）：
 - RemoteApply 路径只能通过专用入口（例如 LocalApplier.applyRemoteChange），并显式禁止 enqueue outbox。
 - 任意子项目接入新实体时，必须包含“回填不回环”的单元测试与集成用例。
 
+### 7.6 全量同步（Full Sync / Bootstrap）
+
+定义：
+- 全量同步指某个 scope（uid）在某端首次启用同步时，将远端某些 entityType 的当前完整集合回填到本地，使本地进入“可增量维护”的初始一致状态。
+- 全量同步不是一个独立协议：它是 Pull 的一种特殊形态，当 cursor 不存在/被重置时，从“最早位置”开始分页拉取直到追平。
+
+触发条件（落地要求）：
+- 首次登录（该 scope 在本端不存在 sync_state）。
+- 明确执行“重置同步状态”（cursor 损坏、诊断需要、或产品提供的手动修复入口）。
+- schemaVersion 发生需要重建本地聚合快照的变更时（可选，按实体类型配置）。
+
+语义（落地要求）：
+- Pull 必须支持 cursor 为空：`listChanges(sinceCursor: null)` 代表从该 entityType 的最早变更开始扫描。
+- 全量同步必须分页：每次拉取固定上限 `limit`，并返回 `nextCursor` 或等价的“最后一条变更的 cursor”，用于断点续拉。
+- cursor 推进规则不变：仅在本地回填成功后推进；若某页回填失败，不得推进该页的 cursor，避免丢数据。
+
+实现建议（Firestore，落地要求）：
+- 对每个 entityType 使用稳定排序键做分页：优先 `serverUpdatedAt asc, operationId asc`；如果实体选择 revision，则使用 `revision asc` 并定义平局破坏因子。
+- 远端变化流的返回必须包含用于排序与推进的字段（serverUpdatedAt/revision 与 operationId）。
+- 为避免“仅看变更流但漏删”，全量同步期间必须能拉到删除墓碑：deletedAt 必须参与 change 流，且墓碑保留窗口必须覆盖最大离线/全量窗口。
+
+性能与体验（落地要求）：
+- 全量同步过程中调用层仍只读本地；UI 是否提示“首次同步中”由产品决定，但必须能从 SyncStatus 观测到 `state=syncing` 与进度（至少：已拉取条数/预计未知也可）。
+- 全量同步应支持中断与恢复：应用退出/切后台后，重启可从 sync_state 的 cursor 继续，不重复处理已成功回填的页面。
+
+重置与纠偏（落地要求）：
+- 必须提供可控的“重置某 scope 的某些 entityType 的 sync_state cursor”的能力。
+- 重置后不得自动清空业务本地表，除非产品明确要求；默认策略是重新全量 pull 并通过 LocalApplier 以幂等 upsert/softDelete 方式收敛到远端状态。
+
+验收用例（必须）：
+- 新设备首次登录：能从 cursor 为空开始拉取，最终本地与远端在选定实体集合上对齐（至少满足：远端有的本地都有；远端删的本地被软删）。
+- 全量过程中中断（杀进程/断网）后恢复：不丢数据、不无限重复，最终能追平并进入增量模式。
+- 手动重置 cursor 后：能够重新全量对齐，且 pull 回填不入 outbox。
+
 ---
 
 ## 8. 面向子项目的开发指南（如何接入与扩展）
@@ -334,3 +368,126 @@ Firestore Rules 验收清单（必须）：
 
 - DoD6：安全合规  
   rules 限制 uid；设备信息不包含硬件唯一标识；审计不记录敏感字段。
+
+- DoD7：全量同步（首次对齐/重置可恢复）  
+  新设备首次登录或 cursor 为空/重置时，能够分页完成全量 pull 并回填到本地，支持中断恢复，最终进入增量同步模式；全量/回填流程不产生 outbox 回环。
+
+## 11. 补充落地
+下面是一份“落地补充清单”，每条都包含：**推荐决策** → **接口契约（需要在 contracts/实现里明确）** → **最小测试用例**。目标是把 PRD 里最容易踩坑但未定细节的点，一次性定死到可实现、可测试的层面。
+
+**1) 增量游标（Cursor）与排序权威**
+- 推荐决策
+  - 默认用 **serverUpdatedAt（serverTimestamp）+ operationId** 作为稳定排序键；只有当某实体天然有单调递增 revision（且跨端可靠）时才用 revision。
+  - Cursor 统一定义为“最后一条已成功回填的排序键”，避免仅用时间戳导致同毫秒乱序。
+- 接口契约
+  - `Cursor` 必须能表达复合键：`{ primary: Timestamp, tieBreaker: String }` 或等价结构。
+  - `RemoteGateway.listChanges(entityType, scope, cursor, limit)` 返回的 changes 必须按上述键严格升序（或降序+可反转）并且包含用于推进 cursor 的字段：`serverUpdatedAt` 与 `operationId`。
+- 最小测试
+  - 同一 `serverUpdatedAt` 下两条变更（不同 operationId）拉取顺序稳定且可重复。
+  - 本地回填失败时 cursor 不推进；重试后不漏数据也不重复应用。
+
+**2) operationId 的生成与生命周期**
+- 推荐决策
+  - operationId 在本地生成（UUIDv4/ULID 均可），并作为：outbox 主键 + oplog docId + pull 的去重 key。
+- 接口契约
+  - `Operation` 至少包含：`operationId, scope(uid), entityType, entityId, opType, clientTime, deviceIdentity, payloadSummary, payloadHash, schemaVersion`。
+  - `OutboxStore` 必须提供按状态（pending/processing/dead）与时间排序的批量读取，并保证 operationId 全局唯一（在 scope 内唯一也可，但需明确）。
+- 最小测试
+  - 崩溃恢复后重复 push 同一 operationId 不产生额外远端副作用（见第 3 条）。
+
+**3) Push 幂等的“真实边界”（不仅是 oplog 幂等）**
+- 推荐决策
+  - 远端业务写入必须做到“同 operationId 重试不改变最终结果、不会产生重复写副作用”；建议采用 **幂等写策略 +（可选）条件写**。
+- 接口契约
+  - `RemoteGateway.push(Operation op, RemoteMutation mutation)` 必须保证：
+    - 先 `upsertOplog(op, status=pending, attempt+1)`（幂等）
+    - 再 `applyEntityMutation(mutation)`（幂等：upsert/merge，或带 precondition）
+    - 最后 `updateOplog(status=success|failed|dead, error?)`
+  - 明确冲突/旧写处理：`applyEntityMutation` 在“版本落后/被覆盖”时返回可分类错误（例如 `ConflictRejected` vs `TransientError`）。
+- 最小测试
+  - 模拟网络超时导致 client 重试：oplog 只有 1 条 doc（同 id），实体文档最终状态正确，attempt 递增。
+  - 业务写失败时 outbox 不丢；恢复后可继续变为 success。
+
+**4) Outbox 里存“快照”还是“delta/补丁”**
+- 推荐决策（两种都能落地，但必须选一个作为默认）
+  - 默认选 **快照（RemoteDocSnapshot）**：在本地事务内生成“对应远端 schema 的文档快照/必要字段集合”，写入 outbox。这样 push 时不依赖“当前本地最新状态”，避免后续编辑导致 operation 的语义漂移。
+- 接口契约
+  - `OutboxRecord` 必须携带 `mutationPayload`（快照或补丁），以及 `entitySchemaVersion`。
+  - `LocalApplier` 与业务 DAO 必须提供“在同事务内产出快照”的能力（或者先写业务表、再基于写入参数构建快照，避免事务内二次读取成本）。
+- 最小测试
+  - 连续两次离线编辑同一 entity，形成两条 outbox：联网后按入队顺序 push，远端最终状态与本地一致，且两条 oplog 都可追溯到各自快照摘要/hash。
+
+**5) Pull 回填的去重、乱序与部分失败处理**
+- 推荐决策
+  - Pull 以 operationId 去重；对同一 entity 的乱序到达，依赖“排序键 + 冲突策略”决定是否应用。
+  - 回填采用“逐条应用 + 成功才推进 cursor”的策略，但要避免“一条坏数据卡死全量”：引入 **per-change 死信/跳过机制**（只在明确不可恢复错误时）。
+- 接口契约
+  - `LocalApplier.applyRemoteChange(change)` 返回结果需区分：`Applied | SkippedOlder | FailedTransient | FailedFatal`。
+  - `SyncStateStore` 需要额外记录：`lastCursor`, `lastAppliedOperationIds(可选窗口)`, `fatalChangeDeadletters(可选)`。
+- 最小测试
+  - 同一 change 被重复拉取：第二次不重复写本地、不入 outbox。
+  - 构造“旧版本 change”到达：被识别为 `SkippedOlder`，但仍可推进 cursor（避免阻塞）。
+
+**6) “Pull 不回环”的工程约束（必须可被破坏性检测）**
+- 推荐决策
+  - 本地写路径强制区分来源：`UserWrite` 与 `RemoteApply`；RemoteApply 只能走专用入口，底层禁止 enqueue outbox。
+- 接口契约
+  - `LocalApplier.applyRemoteChange` 必须是唯一允许 RemoteApply 的入口；`OutboxStore.enqueue` 必须要求显式 `WriteSource == UserWrite`（或由上层封装保证）。
+- 最小测试
+  - 回填一个远端 upsert：本地数据更新，但 outbox 条数不增加。
+  - 端到端：A 写→上云→B 回填→B 不会把同一变更再 push 回去。
+
+**7) 删除（softDelete）与墓碑（tombstone）保留/补漏**
+- 推荐决策
+  - 远端实体文档保留 `deletedAt`（墓碑），并参与增量拉取；墓碑保留至少覆盖“最大离线窗口”（例如 30/90 天二选一，PRD 已提）。
+  - 硬删除只能在确定所有客户端都不会再需要该 tombstone 的前提下（通常需要 TTL 足够长）。
+- 接口契约
+  - `RemoteChange` 必须能表达 delete：`op=softDelete, deletedAt, serverUpdatedAt`。
+  - `LocalApplier` 需定义 delete 应用语义：软删标记 + 关联表如何处理（级联/保留）。
+- 最小测试
+  - B 端离线 14 天，A 端删除：B 上线后能拉到 tombstone 并删掉本地，不会漏删。
+
+**8) 冲突策略从“默认 LWW”落到“可解释、可观测”**
+- 推荐决策
+  - 保留默认 LWW，但必须把“为什么没应用某条 change”记录到诊断里（至少包含 entityId、排序键、被谁覆盖）。
+  - 对关键实体预留升级路径：支持“冲突副本”或“人工介入标记”。
+- 接口契约
+  - `ConflictPolicy` 输出不仅是 apply/skip，还要给出 reason code（用于诊断面板/日志聚合）。
+- 最小测试
+  - 两端同时编辑同一 entity：最终一致满足 LWW，且本地能查询到冲突诊断记录（哪条被跳过、原因）。
+
+**9) Scope（uid）隔离：数据库形态与迁移策略必须提前定**
+- 推荐决策
+  - 基础设施表（outbox/sync_state/diagnostics）必须按 scope 隔离：推荐 **表加 `scope` 列**；业务表是否加 scope 取决于现状，但需要一个统一策略，避免“切号串数据”。
+- 接口契约
+  - 所有 Store/Gateway 接口都显式带 `AuthScope`（uid），不允许隐式全局变量。
+  - 账号切换流程的状态机：stop→冻结旧 scope outbox→切换 scope→触发 pull→再允许 user writes enqueue。
+- 最小测试
+  - 同设备登录 A→写入→退出→登录 B：B 的 pull 不会污染 A 的本地集合；A 的 outbox 不会被拿去给 B push。
+
+**10) Firestore Rules 与审计可信度（需要明确“审计是调试还是安全证据”）**
+- 推荐决策
+  - 明确审计用途：如果主要用于“排障/自查”，客户端写 oplog 可接受；如果要“不可抵赖/防篡改”，必须走服务器（Cloud Functions/自建服务）写 oplog 或至少服务器补签名。
+- 接口契约
+  - 若客户端直写：Rules 至少限制路径 uid、一致性字段不可任意改（例如禁止改 operationId/entityId/op/clientTime/deviceId），仅允许更新 `result` 子树中的有限字段。
+- 最小测试
+  - Rules 测试（可用 emulator）：跨 uid 读写被拒绝；非法字段更新被拒绝；合法状态流转允许。
+
+**11) 同步调度与资源消耗（电量/流量/前后台）**
+- 推荐决策
+  - SyncCoordinator 需要明确：前台频率、后台暂停、网络恢复触发、批大小与退避上限；并保证“失败不忙等”。
+- 接口契约
+  - `SyncCoordinator.start(policy)`：policy 包含 `wifiOnly/foregroundOnly/maxBatch/backoff` 等。
+  - `SyncStatus` 需包含 `state + lastSuccessAt + lastError + backlogCount(至少 outbox)`。
+- 最小测试
+  - 连续失败时退避生效（间隔递增且有上限）；恢复网络后能自动继续并清空积压。
+
+**12) 端到端验收用例补齐为“可自动化”的最小集合**
+- 推荐决策
+  - 把 PRD 的验收用例固化成最小 E2E 清单（建议用 emulator/抽象 gateway 做集成测试）。
+- 最小测试（建议作为 DoD 之外的“门禁”）
+  - 离线写→本地立即可见→上线自动 push→另一端自动 pull→UI 更新。
+  - 同 operationId 重试：oplog 不重复、实体不重复副作用、outbox 正确出队。
+  - Pull 回填不入 outbox。
+  - 删除补漏（长离线后仍能拉到 tombstone）。
+  - 账号切换隔离。
