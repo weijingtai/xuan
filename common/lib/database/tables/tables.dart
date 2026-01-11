@@ -447,3 +447,81 @@ class Seekers extends Table {
   @override
   Set<Column> get primaryKey => {uuid};
 }
+
+@DataClassName('OutboxRecordRow')
+class OutboxRecords extends Table {
+  @override
+  String get tableName => 't_outbox';
+
+  TextColumn get operationId => text().named('operation_id')();
+  TextColumn get scopeUid => text().named('scope_uid')();
+  TextColumn get entityType => text().named('entity_type')();
+  TextColumn get entityId => text().named('entity_id')();
+  TextColumn get opType => text().named('op_type')();
+
+  TextColumn get payloadJson => text().named('payload_json')();
+  TextColumn get payloadSummary => text().nullable().named('payload_summary')();
+  TextColumn get payloadHash => text().nullable().named('payload_hash')();
+
+  DateTimeColumn get createdAtUtc => dateTime().named('created_at_utc')();
+  IntColumn get attempt =>
+      integer().withDefault(const Constant(0)).named('attempt')();
+  TextColumn get status =>
+      text().withDefault(const Constant('pending')).named('status')();
+
+  TextColumn get lastErrorCode => text().nullable().named('last_error_code')();
+  TextColumn get lastErrorMessage =>
+      text().nullable().named('last_error_message')();
+  DateTimeColumn get lastAttemptAtUtc =>
+      dateTime().nullable().named('last_attempt_at_utc')();
+  DateTimeColumn get succeededAtUtc =>
+      dateTime().nullable().named('succeeded_at_utc')();
+
+  @override
+  Set<Column> get primaryKey => {operationId};
+
+  @override
+  List<Index> get indexes => [
+        Index(
+          'idx_outbox_scope_status_created',
+          'CREATE INDEX idx_outbox_scope_status_created ON t_outbox (scope_uid, status, created_at_utc);',
+        ),
+        Index(
+          'idx_outbox_scope_status',
+          'CREATE INDEX idx_outbox_scope_status ON t_outbox (scope_uid, status);',
+        ),
+      ];
+}
+
+@DataClassName('SyncStateRow')
+class SyncStates extends Table {
+  @override
+  String get tableName => 't_sync_state';
+
+  TextColumn get scopeUid => text().named('scope_uid')();
+  TextColumn get entityType => text().named('entity_type')();
+
+  TextColumn get cursorType => text().named('cursor_type')();
+  IntColumn get revision => integer().nullable().named('revision')();
+  DateTimeColumn get serverUpdatedAtUtc =>
+      dateTime().nullable().named('server_updated_at_utc')();
+  TextColumn get tieBreaker => text().nullable().named('tie_breaker')();
+
+  DateTimeColumn get cursorUpdatedAtUtc =>
+      dateTime().named('cursor_updated_at_utc')();
+  DateTimeColumn get lastPulledAtUtc =>
+      dateTime().nullable().named('last_pulled_at_utc')();
+  DateTimeColumn get lastPushedAtUtc =>
+      dateTime().nullable().named('last_pushed_at_utc')();
+
+  @override
+  Set<Column> get primaryKey => {scopeUid, entityType};
+
+  @override
+  List<Index> get indexes => [
+        Index(
+          'idx_sync_state_scope',
+          'CREATE INDEX idx_sync_state_scope ON t_sync_state (scope_uid);',
+        ),
+      ];
+}

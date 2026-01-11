@@ -1,0 +1,14 @@
+{
+  "name": "xuan-firestore-emulator",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.0",
+    "firebase": "^10.0.0",
+    "firebase-tools": "^14.27.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "emulators:test": "XDG_CONFIG_HOME=./.firebase_config firebase emulators:exec --only firestore --project demo-xuan \"node --test\""
+  }
+}

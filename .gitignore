@@ -36,6 +36,9 @@ migrate_working_dir/
 .pub/
 /build/
 
+# Node tooling (dev-only, e.g. firestore emulator tests)
+**/node_modules/
+
 # Symbolication related
 app.*.symbols
 

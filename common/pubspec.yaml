@@ -70,6 +70,9 @@ dependencies:
   protobuf: ^4.0.0
   drag_and_drop_lists: ^0.4.2
   day_night_themed_switcher: ^2.0.2
+
+  firebase_core: ^4.3.0
+  cloud_firestore: ^6.1.1
 #  drift_native: ^2.10.0
 #  dropdown_button2: ^2.3.9
 

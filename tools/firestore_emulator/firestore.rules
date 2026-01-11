@@ -1,0 +1,149 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function hasOnlyKeys(m, keys) {
+      return m.keys().hasOnly(keys);
+    }
+
+    function isNonEmptyString(v) {
+      return v is string && v.size() > 0;
+    }
+
+    function isNullableString(v) {
+      return v == null || v is string;
+    }
+
+    function isNullableTimestamp(v) {
+      return v == null || v is timestamp;
+    }
+
+    function isValidOplogCreate(operationId) {
+      return hasOnlyKeys(
+            request.resource.data,
+            [
+              "operationId",
+              "entityType",
+              "entityId",
+              "opType",
+              "clientTimeUtc",
+              "device",
+              "result"
+            ]
+          ) &&
+          request.resource.data.operationId == operationId &&
+          isNonEmptyString(request.resource.data.entityType) &&
+          isNonEmptyString(request.resource.data.entityId) &&
+          request.resource.data.opType in ["upsert", "softDelete"] &&
+          request.resource.data.clientTimeUtc is timestamp &&
+          request.resource.data.device is map &&
+          hasOnlyKeys(
+            request.resource.data.device,
+            ["deviceId", "platform", "formFactor", "model", "osVersion", "appVersion"]
+          ) &&
+          isNonEmptyString(request.resource.data.device.deviceId) &&
+          isNonEmptyString(request.resource.data.device.platform) &&
+          isNonEmptyString(request.resource.data.device.formFactor) &&
+          isNullableString(request.resource.data.device.model) &&
+          isNullableString(request.resource.data.device.osVersion) &&
+          isNullableString(request.resource.data.device.appVersion) &&
+          request.resource.data.result is map &&
+          hasOnlyKeys(request.resource.data.result, ["status", "attempt", "errorCode", "errorMessage", "syncedAt"]) &&
+          request.resource.data.result.status == "pending" &&
+          request.resource.data.result.attempt == 0 &&
+          isNullableString(request.resource.data.result.errorCode) &&
+          isNullableString(request.resource.data.result.errorMessage) &&
+          isNullableTimestamp(request.resource.data.result.syncedAt);
+    }
+
+    function isValidOplogUpdate(operationId) {
+      return request.resource.data.operationId == resource.data.operationId &&
+          request.resource.data.entityType == resource.data.entityType &&
+          request.resource.data.entityId == resource.data.entityId &&
+          request.resource.data.opType == resource.data.opType &&
+          request.resource.data.clientTimeUtc == resource.data.clientTimeUtc &&
+          request.resource.data.device == resource.data.device &&
+          request.resource.data.result is map &&
+          hasOnlyKeys(request.resource.data.result, ["status", "attempt", "errorCode", "errorMessage", "syncedAt"]) &&
+          request.resource.data.result.attempt is int &&
+          request.resource.data.result.attempt >= resource.data.result.attempt &&
+          isNullableString(request.resource.data.result.errorCode) &&
+          isNullableString(request.resource.data.result.errorMessage) &&
+          isNullableTimestamp(request.resource.data.result.syncedAt) &&
+          (
+            (resource.data.result.status == "pending" &&
+              request.resource.data.result.status in ["pending", "failed", "success", "dead"]) ||
+            (resource.data.result.status == "failed" &&
+              request.resource.data.result.status in ["failed", "success", "dead"]) ||
+            (resource.data.result.status == "success" &&
+              request.resource.data.result.status == "success") ||
+            (resource.data.result.status == "dead" &&
+              request.resource.data.result.status == "dead")
+          );
+    }
+
+    function isValidLayoutTemplateWrite(templateUuid) {
+      return hasOnlyKeys(
+            request.resource.data,
+            [
+              "schemaVersion",
+              "entityId",
+              "collectionId",
+              "name",
+              "description",
+              "template",
+              "version",
+              "clientUpdatedAt",
+              "serverUpdatedAt",
+              "deletedAt",
+              "lastOperationId",
+              "lastDeviceId"
+            ]
+          ) &&
+          request.resource.data.schemaVersion is int &&
+          request.resource.data.schemaVersion >= 1 &&
+          request.resource.data.entityId == templateUuid &&
+          isNonEmptyString(request.resource.data.collectionId) &&
+          isNonEmptyString(request.resource.data.name) &&
+          isNullableString(request.resource.data.description) &&
+          request.resource.data.template is map &&
+          request.resource.data.version is int &&
+          request.resource.data.clientUpdatedAt is timestamp &&
+          request.resource.data.serverUpdatedAt is timestamp &&
+          isNullableTimestamp(request.resource.data.deletedAt) &&
+          isNonEmptyString(request.resource.data.lastOperationId) &&
+          isNonEmptyString(request.resource.data.lastDeviceId);
+    }
+
+    match /users/{uid}/{document=**} {
+      allow read: if isOwner(uid);
+      allow write: if false;
+    }
+
+    match /users/{uid}/oplog/{operationId} {
+      allow create: if isOwner(uid) && isValidOplogCreate(operationId);
+      allow read: if isOwner(uid);
+      allow update: if isOwner(uid) && isValidOplogUpdate(operationId);
+      allow delete: if false;
+    }
+
+    match /users/{uid}/modules/{module}/layout_templates/{templateUuid} {
+      allow create: if isOwner(uid) && isValidLayoutTemplateWrite(templateUuid);
+      allow read: if isOwner(uid);
+      allow update: if isOwner(uid) && isValidLayoutTemplateWrite(templateUuid);
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

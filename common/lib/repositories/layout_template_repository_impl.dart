@@ -31,36 +31,28 @@ class LayoutTemplateRepositoryImpl implements LayoutTemplateRepository {
   @override
   Future<void> saveTemplate(LayoutTemplate template) async {
     final collectionId = template.collectionId;
-    final existingDtos = List<LayoutTemplateDto>.of(
-        await _localDataSource.loadTemplates(collectionId));
-
-    final index = existingDtos.indexWhere(
-      (dto) => dto.template.id == template.id,
-    );
-
-    final originalVersion =
-        index >= 0 ? existingDtos[index].template.version : 0;
+    final existingDtos = await _localDataSource.loadTemplates(collectionId);
+    final index = existingDtos.indexWhere((dto) => dto.template.id == template.id);
+    final originalVersion = index >= 0 ? existingDtos[index].template.version : 0;
     final updatedTemplate = template.copyWith(
       version: originalVersion + 1,
       updatedAt: DateTime.now(),
     );
 
-    final updatedDto = LayoutTemplateDto.fromDomain(updatedTemplate);
-
-    if (index >= 0) {
-      existingDtos[index] = updatedDto;
-    } else {
-      existingDtos.add(updatedDto);
-    }
-
-    await _localDataSource.persistTemplates(collectionId, existingDtos);
+    await _localDataSource.upsertTemplate(
+      updatedTemplate,
+      enqueueOutbox: true,
+      scopeUid: collectionId,
+    );
   }
 
   @override
   Future<void> deleteTemplate(String collectionId, String templateId) async {
-    final existingDtos = List<LayoutTemplateDto>.of(
-        await _localDataSource.loadTemplates(collectionId));
-    existingDtos.removeWhere((dto) => dto.template.id == templateId);
-    await _localDataSource.persistTemplates(collectionId, existingDtos);
+    await _localDataSource.softDeleteTemplate(
+      collectionId,
+      templateId,
+      enqueueOutbox: true,
+      scopeUid: collectionId,
+    );
   }
 }

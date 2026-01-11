@@ -82,6 +82,17 @@ class LayoutTemplatesDao extends DatabaseAccessor<AppDatabase>
         .write(LayoutTemplatesCompanion(deletedAt: Value(DateTime.now())));
   }
 
+  Future<int> softDeleteByIdAt(
+    String collectionId,
+    String templateId,
+    DateTime deletedAt,
+  ) {
+    return (update(db.layoutTemplates)
+          ..where((t) =>
+              t.collectionId.equals(collectionId) & t.uuid.equals(templateId)))
+        .write(LayoutTemplatesCompanion(deletedAt: Value(deletedAt)));
+  }
+
   Future<int> softDeleteByCollection(String collectionId) {
     return (update(db.layoutTemplates)
           ..where((t) => t.collectionId.equals(collectionId)))

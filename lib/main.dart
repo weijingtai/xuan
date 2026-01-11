@@ -1,15 +1,23 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:common/common_logger.dart';
 import 'package:common/database/app_database.dart' as db;
-import 'package:common/database/world_info_database.dart' as db;
+import 'package:common/database/daos/outbox_records_dao.dart';
+import 'package:common/database/daos/sync_states_dao.dart';
+import 'package:common/database/world_info_database.dart' as world_db;
 import 'package:common/datasource/geo_location_repository.dart';
+import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/datasource/loca_binary/world_country_repository.dart';
+import 'package:common/persistence/firebase_remote_gateway.dart';
+import 'package:common/persistence/outbox_pusher.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
+import 'package:uuid/uuid.dart';
 import 'package:xuan/pages/conditional_route_widget.dart';
 import 'package:xuan/pages/cross_platform_main_page.dart';
 import 'package:xuan/pages/root_page.dart';
@@ -19,19 +27,29 @@ import 'package:timezone/data/latest.dart' as tz;
 
 import 'NavigatorGenerator.dart';
 
+bool _firebaseReady = false;
+String? _firestoreDeviceId;
+
 Future<void> initServices() async {
-  // 在这里可以进行其他异步初始化操作
-  // 例如加载配置文件等
+  WidgetsFlutterBinding.ensureInitialized();
 
   tz.initializeTimeZones();
   if (kIsWeb) {
     usePathUrlStrategy();
   }
 
-  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp();
+    _firebaseReady = true;
+  } catch (e) {
+    _firebaseReady = false;
+    CommonLogger().logger.w('Firebase initializeApp skipped: $e');
+  }
+
+  _firestoreDeviceId ??= const Uuid().v4();
+
   await initSweph([
-    'packages/sweph/assets/ephe/sefstars.txt', // For star position
-    // 'sefstars.txt', // For star position
+    'packages/sweph/assets/ephe/sefstars.txt',
   ]);
 }
 
@@ -52,9 +70,64 @@ void main() async {
             create: (ctx) => db.AppDatabase(),
             dispose: (ctx, db) => db.close(),
           ),
-          Provider<db.WorldInfoDatabase>(
-            create: (ctx) => db.WorldInfoDatabase(),
+          Provider<world_db.WorldInfoDatabase>(
+            create: (ctx) => world_db.WorldInfoDatabase(),
             dispose: (ctx, db) => db.close(),
+          ),
+          Provider<LayoutTemplateLocalDataSource>(
+            create: (ctx) =>
+                LayoutTemplateLocalDataSource(ctx.read<db.AppDatabase>()),
+          ),
+          Provider<FirestoreDeviceIdentity>(
+            create: (ctx) => FirestoreDeviceIdentity(
+              deviceId: _firestoreDeviceId ?? const Uuid().v4(),
+              platform: kIsWeb ? 'web' : defaultTargetPlatform.toString(),
+              formFactor: kIsWeb
+                  ? 'web'
+                  : (defaultTargetPlatform == TargetPlatform.android ||
+                          defaultTargetPlatform == TargetPlatform.iOS)
+                      ? 'mobile'
+                      : 'desktop',
+            ),
+          ),
+          Provider<FirebaseFirestore?>(
+            create: (ctx) => _firebaseReady ? FirebaseFirestore.instance : null,
+          ),
+          Provider<FirestoreRemoteGateway?>(
+            create: (ctx) {
+              final firestore = ctx.read<FirebaseFirestore?>();
+              if (firestore == null) return null;
+
+              return FirestoreRemoteGateway(
+                firestore: firestore,
+                device: ctx.read<FirestoreDeviceIdentity>(),
+                nowUtc: () => DateTime.now().toUtc(),
+              );
+            },
+          ),
+          Provider<SyncCoordinator>(
+            create: (ctx) {
+              final appDb = ctx.read<db.AppDatabase>();
+              final gateway = ctx.read<FirestoreRemoteGateway?>();
+
+              final remotePush = gateway?.remotePush ??
+                  (_) async =>
+                      const SyncError(
+                        code: SyncErrorCode.permission,
+                        message: 'Firestore not initialized',
+                      );
+
+              return SyncCoordinator(
+                outboxDao: OutboxRecordsDao(appDb),
+                syncStatesDao: SyncStatesDao(appDb),
+                remotePush: remotePush,
+                remoteListChanges: gateway?.remoteListChanges,
+                localApply: gateway == null
+                    ? null
+                    : ctx.read<LayoutTemplateLocalDataSource>().applyRemoteChanges,
+                nowUtc: () => DateTime.now().toUtc(),
+              );
+            },
           ),
           Provider<WorldCountryRepository>(
             create: (ctx) => WorldCountryRepository(
