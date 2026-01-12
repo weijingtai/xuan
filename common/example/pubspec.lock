@@ -775,6 +775,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  persistence_core:
+    dependency: transitive
+    description:
+      path: "../../persistence_core"
+      relative: true
+    source: path
+    version: "0.0.1"
   petitparser:
     dependency: transitive
     description:

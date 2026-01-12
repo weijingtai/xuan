@@ -4,13 +4,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:drift/native.dart';
 
 import 'package:common/database/app_database.dart';
-import 'package:common/database/daos/outbox_records_dao.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/layout_template.dart';
 import 'package:common/models/layout_template_dto.dart';
 import 'package:common/models/text_style_config.dart';
-import 'package:common/persistence/outbox_pusher.dart';
+import 'package:persistence_core/persistence_core.dart';
+
 
 void main() {
   const collectionId = 'test-collection';
@@ -94,9 +94,13 @@ void main() {
 
     test('upsertTemplate enqueues outbox record when enabled', () async {
       final template = buildTemplate();
-      final outboxDao = OutboxRecordsDao(db);
+      final outbox = _RecordingOutboxStore();
+      final dataSourceWithOutbox = LayoutTemplateLocalDataSource(
+        db,
+        outboxStore: outbox,
+      );
 
-      await dataSource.upsertTemplate(
+      await dataSourceWithOutbox.upsertTemplate(
         template,
         enqueueOutbox: true,
         scopeUid: collectionId,
@@ -105,24 +109,27 @@ void main() {
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored, hasLength(1));
 
-      final batch =
-          await outboxDao.peekBatch(scopeUid: collectionId, limit: 10);
-      expect(batch, hasLength(1));
-      expect(batch.first.entityType, equals('layout_template'));
-      expect(batch.first.entityId, equals(template.id));
-      expect(batch.first.opType, equals('upsert'));
-      expect(batch.first.payloadHash, isNotEmpty);
+      expect(outbox.enqueued, hasLength(1));
+      final record = outbox.enqueued.single;
+      expect(record.entityType, equals('layout_template'));
+      expect(record.entityId, equals(template.id));
+      expect(record.opType, equals('upsert'));
+      expect(record.payloadJson, isNotEmpty);
     });
 
     test('softDeleteTemplate enqueues outbox record when enabled', () async {
       final template = buildTemplate();
-      final outboxDao = OutboxRecordsDao(db);
+      final outbox = _RecordingOutboxStore();
+      final dataSourceWithOutbox = LayoutTemplateLocalDataSource(
+        db,
+        outboxStore: outbox,
+      );
 
       await dataSource.upsertTemplate(
         template,
         enqueueOutbox: false,
       );
-      await dataSource.softDeleteTemplate(
+      await dataSourceWithOutbox.softDeleteTemplate(
         collectionId,
         template.id,
         enqueueOutbox: true,
@@ -132,18 +139,23 @@ void main() {
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored, isEmpty);
 
-      final batch =
-          await outboxDao.peekBatch(scopeUid: collectionId, limit: 10);
-      expect(batch, hasLength(1));
-      expect(batch.first.entityType, equals('layout_template'));
-      expect(batch.first.entityId, equals(template.id));
-      expect(batch.first.opType, equals('softDelete'));
-      expect(batch.first.payloadHash, isNotEmpty);
+      expect(outbox.enqueued, hasLength(1));
+      final record = outbox.enqueued.single;
+      expect(record.entityType, equals('layout_template'));
+      expect(record.entityId, equals(template.id));
+      expect(record.opType, equals('softDelete'));
+      expect(record.payloadJson, isNotEmpty);
     });
 
     test('applyRemoteChanges upserts without enqueuing outbox', () async {
       final template = buildTemplate(id: 't1');
       final serverAt = DateTime.utc(2026, 1, 10, 12, 0, 0);
+
+      final outbox = _RecordingOutboxStore();
+      final dataSourceWithOutbox = LayoutTemplateLocalDataSource(
+        db,
+        outboxStore: outbox,
+      );
 
       final change = RemoteChange(
         operationId: 'op1',
@@ -166,7 +178,7 @@ void main() {
         serverTimeUtc: serverAt,
       );
 
-      final result = await dataSource.applyRemoteChanges(
+      final result = await dataSourceWithOutbox.applyRemoteChanges(
         scopeUid: 'u1',
         entityType: 'layout_template',
         changes: [change],
@@ -181,8 +193,7 @@ void main() {
       expect(stored, hasLength(1));
       expect(stored.single.template, equals(template));
 
-      final outboxAll = await db.select(db.outboxRecords).get();
-      expect(outboxAll, isEmpty);
+      expect(outbox.enqueued, isEmpty);
     });
 
     test('applyRemoteChanges skips upsert when local is newer (LWW)', () async {
@@ -193,6 +204,12 @@ void main() {
       final local = remote.copyWith(
         name: 'Local',
         updatedAt: DateTime.utc(2024, 1, 2, 0, 0, 0),
+      );
+
+      final outbox = _RecordingOutboxStore();
+      final dataSourceWithOutbox = LayoutTemplateLocalDataSource(
+        db,
+        outboxStore: outbox,
       );
 
       await dataSource.upsertTemplate(local, enqueueOutbox: false);
@@ -219,7 +236,7 @@ void main() {
         serverTimeUtc: serverAt,
       );
 
-      final result = await dataSource.applyRemoteChanges(
+      final result = await dataSourceWithOutbox.applyRemoteChanges(
         scopeUid: 'u1',
         entityType: 'layout_template',
         changes: [change],
@@ -235,14 +252,19 @@ void main() {
       expect(stored.single.template.name, equals('Local'));
       expect(stored.single.template.updatedAt.toUtc(), equals(local.updatedAt.toUtc()));
 
-      final outboxAll = await db.select(db.outboxRecords).get();
-      expect(outboxAll, isEmpty);
+      expect(outbox.enqueued, isEmpty);
     });
 
     test('applyRemoteChanges applies remote softDelete without enqueuing outbox',
         () async {
       final template = buildTemplate(id: 't1');
       await dataSource.upsertTemplate(template, enqueueOutbox: false);
+
+      final outbox = _RecordingOutboxStore();
+      final dataSourceWithOutbox = LayoutTemplateLocalDataSource(
+        db,
+        outboxStore: outbox,
+      );
 
       final deletedAt = DateTime.utc(2026, 1, 10, 13, 0, 0);
       final change = RemoteChange(
@@ -265,7 +287,7 @@ void main() {
         serverTimeUtc: deletedAt,
       );
 
-      final result = await dataSource.applyRemoteChanges(
+      final result = await dataSourceWithOutbox.applyRemoteChanges(
         scopeUid: 'u1',
         entityType: 'layout_template',
         changes: [change],
@@ -279,8 +301,50 @@ void main() {
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored, isEmpty);
 
-      final outboxAll = await db.select(db.outboxRecords).get();
-      expect(outboxAll, isEmpty);
+      expect(outbox.enqueued, isEmpty);
     });
   });
+}
+
+class _RecordingOutboxStore implements OutboxStore {
+  final List<OutboxRecord> enqueued = <OutboxRecord>[];
+
+  @override
+  Future<void> enqueue(OutboxRecord record) async {
+    enqueued.add(record);
+  }
+
+  @override
+  Future<List<OutboxRecord>> peekBatch({
+    required String scopeUid,
+    required int limit,
+  }) async {
+    return enqueued.where((r) => r.scopeUid == scopeUid).take(limit).toList();
+  }
+
+  @override
+  Future<void> markSuccess({
+    required String operationId,
+    required DateTime atUtc,
+  }) async {}
+
+  @override
+  Future<void> markFailed({
+    required String operationId,
+    required int attempt,
+    required String errorCode,
+    required String errorMessage,
+    required DateTime atUtc,
+    required bool isDead,
+  }) async {}
+
+  @override
+  Future<int> backlogCount(String scopeUid) async {
+    return enqueued.where((r) => r.scopeUid == scopeUid).length;
+  }
+
+  @override
+  Future<int> deadCount(String scopeUid) async {
+    return 0;
+  }
 }

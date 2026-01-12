@@ -1,17 +1,15 @@
-import 'package:common/database/app_database.dart';
-import 'package:common/database/daos/sync_states_dao.dart';
-import 'package:common/database/tables/tables.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:persistence_drift/persistence_drift.dart';
 
 void main() {
-  late AppDatabase db;
+  late PersistenceDriftDatabase db;
   late SyncStatesDao dao;
 
   setUp(() {
-    db = AppDatabase(NativeDatabase.memory(), false);
-    dao = SyncStatesDao(db);
+    db = PersistenceDriftDatabase(NativeDatabase.memory());
+    dao = db.syncStatesDao;
   });
 
   tearDown(() async {

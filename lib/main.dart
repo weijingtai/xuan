@@ -1,20 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:common/common_logger.dart';
 import 'package:common/database/app_database.dart' as db;
-import 'package:common/database/daos/outbox_records_dao.dart';
-import 'package:common/database/daos/sync_states_dao.dart';
 import 'package:common/database/world_info_database.dart' as world_db;
 import 'package:common/datasource/geo_location_repository.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/datasource/loca_binary/world_country_repository.dart';
-import 'package:common/persistence/firebase_remote_gateway.dart';
-import 'package:common/persistence/outbox_pusher.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
+import 'package:drift_flutter/drift_flutter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:persistence_core/persistence_core.dart';
+import 'package:persistence_drift/persistence_drift.dart';
+import 'package:persistence_firebase/persistence_firebase.dart';
 import 'package:provider/provider.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 import 'package:uuid/uuid.dart';
@@ -29,6 +30,32 @@ import 'NavigatorGenerator.dart';
 
 bool _firebaseReady = false;
 String? _firestoreDeviceId;
+
+class _UnavailableRemoteGateway implements RemoteGateway {
+  const _UnavailableRemoteGateway();
+
+  @override
+  Future<SyncError?> push(OutboxRecord record) async {
+    return const SyncError(
+      code: SyncErrorCode.permission,
+      message: 'Firestore not initialized',
+    );
+  }
+
+  @override
+  Future<RemoteChangesPage> listChanges({
+    required String scopeUid,
+    required String entityType,
+    required PullCursor? sinceCursor,
+    required int limit,
+  }) async {
+    return const RemoteChangesPage(
+      changes: [],
+      nextCursor: null,
+      hasMore: false,
+    );
+  }
+}
 
 Future<void> initServices() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,12 +101,43 @@ void main() async {
             create: (ctx) => world_db.WorldInfoDatabase(),
             dispose: (ctx, db) => db.close(),
           ),
-          Provider<LayoutTemplateLocalDataSource>(
-            create: (ctx) =>
-                LayoutTemplateLocalDataSource(ctx.read<db.AppDatabase>()),
+          Provider<PersistenceDriftDatabase>(
+            create: (ctx) => PersistenceDriftDatabase(
+              driftDatabase(
+                name: 'persistence_drift',
+                native: const DriftNativeOptions(
+                  databaseDirectory: getApplicationSupportDirectory,
+                ),
+                web: DriftWebOptions(
+                  sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+                  driftWorker: Uri.parse('drift_worker.js'),
+                  onResult: (result) {
+                    if (result.missingFeatures.isNotEmpty) {
+                      if (kDebugMode) {
+                        debugPrint(
+                          'Using ${result.chosenImplementation} due to unsupported '
+                          'browser features: ${result.missingFeatures}',
+                        );
+                      }
+                    }
+                  },
+                ),
+              ),
+            ),
+            dispose: (ctx, db) => db.close(),
           ),
-          Provider<FirestoreDeviceIdentity>(
-            create: (ctx) => FirestoreDeviceIdentity(
+          Provider<OutboxStore>(
+            create: (ctx) => DriftOutboxStore(
+              dao: ctx.read<PersistenceDriftDatabase>().outboxRecordsDao,
+            ),
+          ),
+          Provider<SyncStateStore>(
+            create: (ctx) => DriftSyncStateStore(
+              dao: ctx.read<PersistenceDriftDatabase>().syncStatesDao,
+            ),
+          ),
+          Provider<DeviceIdentity>(
+            create: (ctx) => DeviceIdentity(
               deviceId: _firestoreDeviceId ?? const Uuid().v4(),
               platform: kIsWeb ? 'web' : defaultTargetPlatform.toString(),
               formFactor: kIsWeb
@@ -93,41 +151,32 @@ void main() async {
           Provider<FirebaseFirestore?>(
             create: (ctx) => _firebaseReady ? FirebaseFirestore.instance : null,
           ),
-          Provider<FirestoreRemoteGateway?>(
+          Provider<RemoteGateway>(
             create: (ctx) {
               final firestore = ctx.read<FirebaseFirestore?>();
-              if (firestore == null) return null;
+              if (firestore == null) return const _UnavailableRemoteGateway();
 
               return FirestoreRemoteGateway(
                 firestore: firestore,
-                device: ctx.read<FirestoreDeviceIdentity>(),
+                device: ctx.read<DeviceIdentity>(),
                 nowUtc: () => DateTime.now().toUtc(),
               );
             },
           ),
+          Provider<LayoutTemplateLocalDataSource>(
+            create: (ctx) => LayoutTemplateLocalDataSource(
+              ctx.read<db.AppDatabase>(),
+              outboxStore: ctx.read<OutboxStore>(),
+            ),
+          ),
           Provider<SyncCoordinator>(
-            create: (ctx) {
-              final appDb = ctx.read<db.AppDatabase>();
-              final gateway = ctx.read<FirestoreRemoteGateway?>();
-
-              final remotePush = gateway?.remotePush ??
-                  (_) async =>
-                      const SyncError(
-                        code: SyncErrorCode.permission,
-                        message: 'Firestore not initialized',
-                      );
-
-              return SyncCoordinator(
-                outboxDao: OutboxRecordsDao(appDb),
-                syncStatesDao: SyncStatesDao(appDb),
-                remotePush: remotePush,
-                remoteListChanges: gateway?.remoteListChanges,
-                localApply: gateway == null
-                    ? null
-                    : ctx.read<LayoutTemplateLocalDataSource>().applyRemoteChanges,
-                nowUtc: () => DateTime.now().toUtc(),
-              );
-            },
+            create: (ctx) => SyncCoordinator(
+              outboxStore: ctx.read<OutboxStore>(),
+              syncStateStore: ctx.read<SyncStateStore>(),
+              remoteGateway: ctx.read<RemoteGateway>(),
+              localApplier: ctx.read<LayoutTemplateLocalDataSource>(),
+              nowUtc: () => DateTime.now().toUtc(),
+            ),
           ),
           Provider<WorldCountryRepository>(
             create: (ctx) => WorldCountryRepository(

@@ -66,13 +66,14 @@ dependencies:
   drift: ^2.26.0
   drift_flutter: ^0.2.4
   path_provider: ^2.1.5
+
+  persistence_core:
+    path: ../persistence_core
   flutter_switch: ^0.3.2
   protobuf: ^4.0.0
   drag_and_drop_lists: ^0.4.2
   day_night_themed_switcher: ^2.0.2
 
-  firebase_core: ^4.3.0
-  cloud_firestore: ^6.1.1
 #  drift_native: ^2.10.0
 #  dropdown_button2: ^2.3.9
 
@@ -83,6 +84,8 @@ dev_dependencies:
   flutter_lints: ^2.0.0
   build_runner: ^2.4.11
   drift_dev:  ^2.26.0
+  persistence_drift:
+    path: ../persistence_drift
 #  uses-material-design: true
 #  generator: true
 

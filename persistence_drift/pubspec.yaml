@@ -1,20 +1,25 @@
 name: persistence_drift
-description: "A new Flutter package project."
+description: Drift adapters for persistence_core.
 version: 0.0.1
-homepage:
+publish_to: none
 
 environment:
-  sdk: ^3.9.2
+  sdk: '>=3.0.2 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  drift: ^2.26.0
+  persistence_core:
+    path: ../persistence_core
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.15
+  drift_dev: ^2.26.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

@@ -48,111 +48,135 @@
 
 ---
 
-## 3. ToDo 列表（按优先级与依赖顺序）
+## 3. ToDo 列表（按模块归属执行）
 
-### P0：准备与冻结（必须先完成）
-- [ ] P0.1 冻结 `persistence_core` Public API 清单
-  - 输出：核心类型与 Ports 的命名/职责列表（写在本文件的“API 约定”小节或任务描述里即可）
-  - 验收：后续实现都不得随意改名/改签名；若必须修改需同步更新本文件
-- [ ] P0.2 依赖关系与目录规划
-  - 输出：三个 package 的目录结构草案（lib/src/、test/、pubspec.yaml）
-  - 验收：依赖方向满足“单向依赖”原则
+> 说明：`persistence_*` 三个子模块已创建完成；下面每条任务都明确“在哪个 package/目录内完成”。
 
-### P1：建立 persistence_core（先接口后实现）
-- [ ] P1.1 创建 `persistence_core` package（空实现可接受，但要能被引用）
-  - 验收：`dart analyze` 通过；无 drift/firebase/flutter 依赖
-- [ ] P1.2 定义核心类型（Types）
-  - 包含（但不限于）：SyncError/SyncErrorCode、SyncStatus/SyncRunState、PullCursor（TimestampCursor/RevisionCursor）、RemoteChange、RemoteChangesPage、ApplyOutcome、LocalApplyResult
-  - 验收：类型结构能覆盖现有 SyncCoordinator 行为；不泄露 drift/firestore 类型
-- [ ] P1.3 定义 Ports（接口契约）
-  - OutboxStore：
-    - enqueue(operation)
-    - peekBatch(scopeUid, limit)
-    - markSuccess(operationId, atUtc)
-    - markFailed(operationId, attempt, errorCode, errorMessage, atUtc, isDead)
-    - backlogCount(scopeUid)
-    - deadCount(scopeUid)
-  - SyncStateStore：
-    - get(scopeUid, entityType)
-    - setCursorIfNewer(scopeUid, entityType, cursor, atUtc)
-    - markPulledAt(scopeUid, entityType, atUtc)
-    - markPushedAt(scopeUid, atUtc)
-    - clear(scopeUid, entityType)
-  - RemoteGateway：
-    - push(operation) -> SyncError?
-    - listChanges(scopeUid, entityType, sinceCursor, limit) -> RemoteChangesPage
-  - LocalApplier：
-    - applyRemoteChanges(scopeUid, entityType, changes) -> LocalApplyResult
-  - Providers：
-    - DeviceIdentityProvider（deviceId/platform/formFactor/appVersion 等）
-    - AuthScopeProvider（scopeUid 获取；先定义接口，后续注入实现）
-  - 验收：SyncCoordinator 可只依赖这些接口工作
-- [ ] P1.4 迁移/重写 SyncCoordinator（实现保持现有语义）
-  - Push：消费 Outbox → remotePush → 标记成功/失败/死信 → 更新 SyncStatus
-  - Pull：根据 SyncState cursor 分页 listChanges → localApply → 成功后推进 cursor
-  - 验收：
-    - 通过 core 单测（fake store/gateway/applier）
-    - 行为与当前 common 实现一致（状态更新、错误处理、游标推进条件）
+### 3.1 仓库级（xuan/docs 与 xuan/ 根目录）
+- [x] R0 冻结 `persistence_core` Public API 清单（Types + Ports + 对外 export）
+  - 位置：/Users/jingtaiwei/Git/codex/xuan/docs/persistence/submodule_todo_list.md（本文件的“API 约定”小节）
+  - 验收：后续实现不随意改名/改签名；若必须修改需同步更新本文件
+- [ ] R1 规划并固定三个 package 的目录约定
+  - 位置：xuan/persistence_core、xuan/persistence_drift、xuan/persistence_firebase
+  - 验收：目录分层一致（建议 lib/src + lib/exports），避免把实现散落在根 lib/
 
-### P2：建立 persistence_drift（实现 OutboxStore/SyncStateStore）
-- [ ] P2.1 创建 `persistence_drift` package
-  - 验收：能被 `persistence_core` 使用（依赖 core），不依赖 firebase
-- [ ] P2.2 迁移 Drift 表结构（OutboxRecords / SyncStates）
-  - 目标：把 common 的相关表迁移到 `persistence_drift`（或由 drift 包独立声明）
-  - 验收：表字段/索引/主键保持一致或提供迁移策略说明
-- [ ] P2.3 实现 DriftOutboxStore（适配 OutboxStore）
-  - 复用逻辑：peekBatch / markSuccess / markFailed / backlogCount / deadCount
-  - 验收：最小行为测试覆盖（成功、失败重试、达到 maxAttempts 标 dead）
-- [ ] P2.4 实现 DriftSyncStateStore（适配 SyncStateStore）
-  - 复用逻辑：timestamp cursor 的 compare + tieBreaker、revision cursor、markPulledAt/markPushedAt
-  - 验收：cursor “只增不减”规则单测通过；scope 隔离有效
-- [ ] P2.5 提供最小构造入口（不做注入）
-  - 示例：`PersistenceDriftStores(appDb)` 暴露 outboxStore/syncStateStore
-  - 验收：上层可直接 new 并传给 core
+### 3.2 persistence_core（在 xuan/persistence_core 内完成）
+- [x] C0 把 `persistence_core` 调整为纯 Dart 包（消除 flutter 依赖）
+  - 位置：xuan/persistence_core/pubspec.yaml（移除 flutter 依赖与 flutter: 配置）
+  - 验收：`dart analyze` 通过；不依赖 drift/firebase/flutter
+- [x] C1 定义 core Types（从 common 同步实现抽离并归一）
+  - 位置：xuan/persistence_core/lib/src/
+  - 包含：SyncError/SyncErrorCode、SyncStatus/SyncRunState、PullCursor（TimestampCursor/RevisionCursor）、RemoteChange、RemoteChangesPage、ChangeApplyOutcome、LocalApplyResult
+  - 验收：类型不暴露 drift/firestore 类型；能覆盖现有 SyncCoordinator 行为
+- [x] C2 定义 core Ports（接口契约）
+  - 位置：xuan/persistence_core/lib/src/ports/
+  - 包含：OutboxStore、SyncStateStore、RemoteGateway、LocalApplier、DeviceIdentityProvider、AuthScopeProvider
+  - 验收：SyncCoordinator 仅依赖 Ports + Types 即可工作
+- [x] C3 迁移/重写 SyncCoordinator（保持现有语义）
+  - 位置：xuan/persistence_core/lib/src/sync/
+  - 要求：Push（消费 outbox）+ Pull（增量拉取 + cursor 推进）+ SyncStatus 更新
+  - 验收：核心逻辑不引入具体存储/网络实现
+- [x] C4 core 单测（状态机门禁）
+  - 位置：xuan/persistence_core/test/
+  - 覆盖：push 成功/失败/死信；pull cursor 推进/不推进；apply 失败不推进 cursor
 
-### P3：建立 persistence_firebase（实现 RemoteGateway）
-- [ ] P3.1 创建 `persistence_firebase` package
-  - 验收：依赖 core + cloud_firestore；不依赖 drift
-- [ ] P3.2 迁移 FirestoreRemoteGateway 逻辑并对齐 core 接口
-  - push：幂等（operationId）+ oplog 写入 + entity 写入/软删
-  - listChanges：按 serverUpdatedAt + lastOperationId 排序分页，返回 nextCursor
-  - 验收：不直接依赖 common 的 OutboxRecordRow；只接受 core 的 operation 类型
-- [ ] P3.3 device 信息来源解耦
-  - deviceIdentity 通过 provider 注入（不在 gateway 内部自建）
+### 3.3 persistence_drift（在 xuan/persistence_drift 内完成）
+- [x] D0 配置依赖：依赖 persistence_core + drift
+  - 位置：xuan/persistence_drift/pubspec.yaml
+  - 验收：不依赖 firebase
+- [x] D1 迁移 Drift 表结构（Outbox/SyncState）
+  - 来源：common/lib/database/tables/tables.dart（OutboxRecords/SyncStates）
+  - 位置：xuan/persistence_drift/lib/src/database/
+  - 验收：字段/主键/索引语义保持一致（或提供迁移说明）
+- [x] D2 实现 OutboxStore（DriftOutboxStore）
+  - 来源：common/lib/database/daos/outbox_records_dao.dart
+  - 位置：xuan/persistence_drift/lib/src/stores/
+  - 验收：peekBatch 排序、markSuccess/markFailed、dead/backlog 统计行为与现状一致
+- [x] D3 实现 SyncStateStore（DriftSyncStateStore）
+  - 来源：common/lib/database/daos/sync_states_dao.dart
+  - 位置：xuan/persistence_drift/lib/src/stores/
+  - 验收：timestamp cursor compare + tieBreaker；revision cursor；scope 隔离
+- [x] D4 drift 单测（store 行为门禁）
+  - 位置：xuan/persistence_drift/test/
+  - 覆盖：cursor 只增不减、scope 隔离、dead 标记与统计
+
+### 3.4 persistence_firebase（在 xuan/persistence_firebase 内完成）
+- [x] F0 配置依赖：依赖 persistence_core + cloud_firestore
+  - 位置：xuan/persistence_firebase/pubspec.yaml
+  - 验收：不依赖 drift
+- [x] F1 迁移并实现 RemoteGateway（FirestoreRemoteGateway）
+  - 来源：common/lib/persistence/firebase_remote_gateway.dart
+  - 位置：xuan/persistence_firebase/lib/src/
+  - 要求：push 幂等（operationId）+ oplog + entity upsert/softDelete；listChanges 基于 serverUpdatedAt + lastOperationId 分页
+  - 验收：只接受 core 的 operation/change 类型；不依赖 common 的 OutboxRecordRow
+- [x] F2 device 信息来源解耦
+  - 位置：xuan/persistence_firebase/lib/src/
+  - 要求：deviceIdentity 来自 core 的 DeviceIdentityProvider（不在 gateway 内部自建）
   - 验收：gateway 构造不需要 Flutter API
+- [ ] F3 firebase 单测（最小门禁）
+  - 位置：xuan/persistence_firebase/test/
+  - 备注：若暂不启用 emulator，至少做 contract/mock 测试验证 query/cursor 与 payload 映射
 
-### P4：改造 common（只保留业务与 LocalApplier）
-- [ ] P4.1 将 LayoutTemplateLocalDataSource 的回填能力对齐 core LocalApplier
-  - 目标：保留 applyRemoteChanges 语义（LWW、软删、幂等、回填不入 outbox）
-  - 验收：迁移/复用原有测试：applyRemoteChanges 不产生 outbox
-- [ ] P4.2 业务写入的 outbox 入队解耦
-  - 目标：common 的业务写入不要直接 new DAO；改为通过 OutboxStore/一个注入的 writer
-  - 验收：common 不再 import drift 的 outbox dao（由 drift 包提供 store）
-- [ ] P4.3 scopeUid 通路改造（先留口子，不实现登录）
-  - 目标：去除“collectionId 兜底当 scopeUid”的隐式逻辑，改为由调用方显式传入 scopeUid（后续由 AuthScopeProvider 提供）
-  - 验收：接口层能清晰区分 collectionId 与 scopeUid
+### 3.5 common（在 xuan/common 内完成）
+- [x] M0 试点实体回填对齐 core LocalApplier
+  - 位置：xuan/common/lib/datasource/layout_template_local_data_source.dart
+  - 要求：applyRemoteChanges 的输入/输出类型改为依赖 persistence_core（不依赖 common 内同步实现文件）
+  - 验收：保留 LWW、软删、幂等；回填不入 outbox（复用既有测试）
+- [x] M1 写入路径 outbox 入队解耦
+  - 位置：xuan/common/lib/datasource/layout_template_local_data_source.dart、xuan/common/lib/repositories/layout_template_repository_impl.dart
+  - 要求：业务写入不再直接 new drift DAO；改为通过 OutboxStore（后续由注入提供）
+  - 验收：common 不再 import persistence_drift 的内部 DAO；只依赖 persistence_core 的 OutboxStore 接口
+- [x] M2 scopeUid 与 collectionId 明确分离
+  - 位置：涉及 enqueue 的函数签名与调用方
+  - 要求：去除“collectionId 兜底当 scopeUid”的隐式逻辑；scopeUid 必须显式传入（后续由 AuthScopeProvider 提供）
+  - 验收：接口层可清晰区分 collectionId 与 scopeUid
 
-### P5：测试迁移与门禁（确保迁移不出错）
-- [ ] P5.1 core 单测：SyncCoordinator（push/pull 状态机）
-  - 使用 fake stores/gateway/applier，覆盖：成功、失败重试、dead、cursor 推进/不推进条件
-- [ ] P5.2 drift 单测：OutboxStore/SyncStateStore 行为
-  - 覆盖：peekBatch 排序、失败标记、deadCount/backlogCount、timestamp cursor compare
-- [ ] P5.3 firebase 单测：RemoteGateway（最小可测）
-  - 若暂不启用 emulator：至少用 mock 方式验证 query/cursor 构造与 payload 映射（可后置）
-- 验收：三个包各自 test 通过；迁移期间保持主工程可编译
-
-### P6：清理与切换准备（不做注入，但保证“可被注入”）
-- [ ] P6.1 删除/弃用 common 内旧同步实现（或短期转发导出）
-  - 验收：代码库中 sync 基础设施的“唯一实现源”是三个新包
-- [ ] P6.2 更新依赖引用（pubspec.yaml）
-  - 根工程与 common 改为依赖新包（替换原先 common 内部实现引用）
+### 3.6 仓库根切换（在 xuan/ 根目录完成）
+- [x] R2 更新依赖引用（pubspec.yaml）
+  - 位置：xuan/pubspec.yaml、xuan/common/pubspec.yaml
+  - 要求：让 xuan/common 依赖新包（persistence_core/drift/firebase），逐步移除对 common/lib/persistence/* 的依赖
   - 验收：全仓 `flutter pub get` 后可编译
+- [x] R3 清理/弃用 common 内旧同步实现
+  - 位置：xuan/common/lib/persistence/
+  - 要求：实现源迁移后删除或转发导出（短期兼容）
+  - 验收：sync 基础设施“唯一实现源”为三个新包
+- [ ] R4 分包测试门禁
+  - 位置：各 package 的 test/
+  - 验收：persistence_core / persistence_drift / persistence_firebase 各自测试通过；迁移期间主工程可编译
 
 ---
 
 ## 4. API 约定（冻结区，P0.1 完成后更新）
-- Core Types：待冻结
-- Core Ports：待冻结
+
+- persistence_core exports（对外导出，冻结）
+  - `package:persistence_core/persistence_core.dart`
+    - `src/ports.dart`
+    - `src/types.dart`
+    - `src/sync_coordinator.dart`
+
+- Core Types（冻结）
+  - SyncErrorCode / SyncError
+  - SyncRunState / SyncStatus
+  - PullCursor / TimestampCursor / RevisionCursor
+  - RemoteChange / RemoteChangesPage
+  - ChangeApplyDecision / SkipReasonCode / ChangeApplyOutcome
+  - LocalApplyResult
+  - OutboxRecord
+  - OutboxPushRunResult
+  - PullRunResult
+
+- Core Ports（冻结）
+  - OutboxStore
+  - SyncStateStore
+  - RemoteGateway
+  - LocalApplier
+  - DeviceIdentity / DeviceIdentityProvider
+  - AuthScopeProvider
+
+- Core Sync（冻结）
+  - OutboxPusher
+  - SyncCoordinator
+
 - 实体类型字符串：layout_template（保持不变）
 - Cursor：timestamp + tieBreaker（lastOperationId），保持与现有 Firestore query 一致
 

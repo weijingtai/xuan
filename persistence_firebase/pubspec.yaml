@@ -1,15 +1,18 @@
 name: persistence_firebase
-description: "A new Flutter package project."
+description: Firestore adapters for persistence_core.
 version: 0.0.1
-homepage:
+publish_to: none
 
 environment:
-  sdk: ^3.9.2
+  sdk: '>=3.0.2 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
+  cloud_firestore: ^6.1.1
+  persistence_core:
+    path: ../persistence_core
 
 dev_dependencies:
   flutter_test:

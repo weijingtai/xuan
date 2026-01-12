@@ -61,6 +61,13 @@ dependencies:
   common:
     path: ./common
 
+  persistence_core:
+    path: ./persistence_core
+  persistence_drift:
+    path: ./persistence_drift
+  persistence_firebase:
+    path: ./persistence_firebase
+
   qimendunjia:
     path: ./qimendunjia
   qizhengsiyu:

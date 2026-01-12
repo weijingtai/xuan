@@ -1,44 +1,33 @@
 import 'dart:convert';
 
 import 'package:drift/drift.dart';
+import 'package:persistence_core/persistence_core.dart';
 import 'package:uuid/uuid.dart';
 
 import '../database/app_database.dart';
-import '../database/daos/outbox_records_dao.dart';
 import '../models/layout_template_dto.dart';
-import '../persistence/outbox_pusher.dart';
 
 import '../database/daos/card_template_meta_dao.dart';
 import '../database/daos/layout_templates_dao.dart';
 import '../models/layout_template.dart';
 
-class LayoutTemplateLocalDataSource {
-  LayoutTemplateLocalDataSource(this._db)
-      : _dao = LayoutTemplatesDao(_db),
+class LayoutTemplateLocalDataSource implements LocalApplier {
+  LayoutTemplateLocalDataSource(
+    this._db, {
+    OutboxStore? outboxStore,
+  })  : _dao = LayoutTemplatesDao(_db),
         _metaDao = CardTemplateMetaDao(_db),
-        _outboxDao = OutboxRecordsDao(_db);
+        _outboxStore = outboxStore;
 
   final AppDatabase _db;
   final LayoutTemplatesDao _dao;
   final CardTemplateMetaDao _metaDao;
-  final OutboxRecordsDao _outboxDao;
+  final OutboxStore? _outboxStore;
 
   static const _entityTypeLayoutTemplate = 'layout_template';
   static const _opTypeUpsert = 'upsert';
   static const _opTypeSoftDelete = 'softDelete';
   static const _payloadSchemaVersion = 1;
-
-  static String _fnv1a64Hex(String input) {
-    const fnvOffset = 0xcbf29ce484222325;
-    const fnvPrime = 0x100000001b3;
-    var hash = fnvOffset;
-    final bytes = utf8.encode(input);
-    for (final b in bytes) {
-      hash ^= b;
-      hash = (hash * fnvPrime) & 0xFFFFFFFFFFFFFFFF;
-    }
-    return hash.toRadixString(16).padLeft(16, '0');
-  }
 
   Future<LayoutTemplateRow?> readAnyLocalRow(
     String collectionId,
@@ -66,7 +55,26 @@ class LayoutTemplateLocalDataSource {
     bool enqueueOutbox = false,
     String? scopeUid,
   }) async {
-    final resolvedScopeUid = scopeUid ?? template.collectionId;
+    await _db.transaction(() async {
+      await _dao.upsertTemplate(template);
+      await _metaDao.touchModifiedAt(
+        templateUuid: template.id,
+        modifiedAt: template.updatedAt,
+      );
+    });
+
+    if (!enqueueOutbox) return;
+
+    final resolvedScopeUid = scopeUid;
+    if (resolvedScopeUid == null || resolvedScopeUid.isEmpty) {
+      throw StateError('scopeUid is required when enqueueOutbox is true');
+    }
+
+    final store = _outboxStore;
+    if (store == null) {
+      throw StateError('OutboxStore is required when enqueueOutbox is true');
+    }
+
     final nowUtc = DateTime.now().toUtc();
     final operationId = const Uuid().v4();
     final payloadJson = jsonEncode({
@@ -81,29 +89,19 @@ class LayoutTemplateLocalDataSource {
       'clientUpdatedAt': template.updatedAt.toUtc().toIso8601String(),
       'deletedAt': null,
     });
-    final payloadHash = _fnv1a64Hex(payloadJson);
 
-    await _db.transaction(() async {
-      await _dao.upsertTemplate(template);
-      await _metaDao.touchModifiedAt(
-        templateUuid: template.id,
-        modifiedAt: template.updatedAt,
-      );
-      if (!enqueueOutbox) return;
-      await _outboxDao.enqueue(
-        OutboxRecordsCompanion.insert(
-          operationId: operationId,
-          scopeUid: resolvedScopeUid,
-          entityType: _entityTypeLayoutTemplate,
-          entityId: template.id,
-          opType: _opTypeUpsert,
-          payloadJson: payloadJson,
-          createdAtUtc: nowUtc,
-          payloadSummary: Value(template.name),
-          payloadHash: Value(payloadHash),
-        ),
-      );
-    });
+    await store.enqueue(
+      OutboxRecord(
+        operationId: operationId,
+        scopeUid: resolvedScopeUid,
+        entityType: _entityTypeLayoutTemplate,
+        entityId: template.id,
+        opType: _opTypeUpsert,
+        payloadJson: payloadJson,
+        createdAtUtc: nowUtc,
+        attempt: 0,
+      ),
+    );
   }
 
   Future<void> softDeleteTemplate(
@@ -112,10 +110,16 @@ class LayoutTemplateLocalDataSource {
     bool enqueueOutbox = false,
     String? scopeUid,
   }) async {
-    final resolvedScopeUid = scopeUid ?? collectionId;
+    final resolvedScopeUid = scopeUid;
+    if (enqueueOutbox && (resolvedScopeUid == null || resolvedScopeUid.isEmpty)) {
+      throw StateError('scopeUid is required when enqueueOutbox is true');
+    }
+
     final now = DateTime.now();
     final nowUtc = now.toUtc();
     final operationId = const Uuid().v4();
+
+    String? payloadJson;
 
     await _db.transaction(() async {
       final existing = await _dao.getById(collectionId, templateId);
@@ -127,7 +131,7 @@ class LayoutTemplateLocalDataSource {
           ? null
           : jsonDecode(existing.templateJson) as Object?;
 
-      final payloadJson = jsonEncode({
+      payloadJson = jsonEncode({
         'schemaVersion': _payloadSchemaVersion,
         'entityType': _entityTypeLayoutTemplate,
         'entityId': templateId,
@@ -139,22 +143,32 @@ class LayoutTemplateLocalDataSource {
         'clientUpdatedAt': nowUtc.toIso8601String(),
         'deletedAt': nowUtc.toIso8601String(),
       });
-      final payloadHash = _fnv1a64Hex(payloadJson);
-
-      await _outboxDao.enqueue(
-        OutboxRecordsCompanion.insert(
-          operationId: operationId,
-          scopeUid: resolvedScopeUid,
-          entityType: _entityTypeLayoutTemplate,
-          entityId: templateId,
-          opType: _opTypeSoftDelete,
-          payloadJson: payloadJson,
-          createdAtUtc: nowUtc,
-          payloadSummary: Value(existing?.name ?? templateId),
-          payloadHash: Value(payloadHash),
-        ),
-      );
     });
+
+    if (!enqueueOutbox) return;
+
+    final store = _outboxStore;
+    if (store == null) {
+      throw StateError('OutboxStore is required when enqueueOutbox is true');
+    }
+
+    final resolvedPayload = payloadJson;
+    if (resolvedPayload == null) {
+      throw StateError('payloadJson must be set when enqueueOutbox is true');
+    }
+
+    await store.enqueue(
+      OutboxRecord(
+        operationId: operationId,
+        scopeUid: resolvedScopeUid,
+        entityType: _entityTypeLayoutTemplate,
+        entityId: templateId,
+        opType: _opTypeSoftDelete,
+        payloadJson: resolvedPayload,
+        createdAtUtc: nowUtc,
+        attempt: 0,
+      ),
+    );
   }
 
   Future<LocalApplyResult> applyRemoteChanges({
