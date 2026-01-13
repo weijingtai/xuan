@@ -1,29 +1,29 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'dart:io';
-import 'package:path/path.dart' as path;
 
 void main() {
   test('测试获取项目根路径', () {
-    // 方法1：使用 Directory.current
-    final currentDir = Directory.current;
-    print('当前工作目录：${currentDir.path}');
+    String joinPath(String a, String b) {
+      if (a.endsWith(Platform.pathSeparator)) return '$a$b';
+      return '$a${Platform.pathSeparator}$b';
+    }
 
-    // 方法2：使用 Platform.script 获取当前脚本路径，然后向上查找项目根目录
-    final scriptPath = Platform.script.toFilePath();
-    print('当前脚本路径：$scriptPath');
+    String findProjectRoot() {
+      var dir = Directory.current;
+      while (true) {
+        final pubspecFile = File(joinPath(dir.path, 'pubspec.yaml'));
+        if (pubspecFile.existsSync()) return dir.path;
+        final parent = dir.parent;
+        if (parent.path == dir.path) {
+          throw StateError(
+              'Unable to find pubspec.yaml from ${Directory.current.path}');
+        }
+        dir = parent;
+      }
+    }
 
-    // 方法3：使用 path 包处理路径
-    final projectRoot = path.normalize(path.join(currentDir.path, '..'));
-    print('项目根目录：$projectRoot');
-
-    // 验证路径是否存在
-    final pubspecPath = path.join(projectRoot, 'pubspec.yaml');
-    final pubspecFile = File(pubspecPath);
-    expect(pubspecFile.existsSync(), true, reason: 'pubspec.yaml 文件应该存在');
-
-    // 获取 assets 目录路径
-    final assetsPath = path.join(projectRoot, 'assets');
-    final assetsDir = Directory(assetsPath);
-    expect(assetsDir.existsSync(), true, reason: 'assets 目录应该存在');
+    final projectRoot = findProjectRoot();
+    expect(File(joinPath(projectRoot, 'pubspec.yaml')).existsSync(), true);
+    expect(Directory(joinPath(projectRoot, 'assets')).existsSync(), true);
   });
 }

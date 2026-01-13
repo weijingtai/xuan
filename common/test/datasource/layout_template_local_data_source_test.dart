@@ -11,7 +11,6 @@ import 'package:common/models/layout_template_dto.dart';
 import 'package:common/models/text_style_config.dart';
 import 'package:persistence_core/persistence_core.dart';
 
-
 void main() {
   const collectionId = 'test-collection';
 
@@ -162,7 +161,8 @@ void main() {
         entityType: 'layout_template',
         entityId: template.id,
         opType: 'upsert',
-        cursor: TimestampCursor(serverUpdatedAtUtc: serverAt, tieBreaker: 'op1'),
+        cursor:
+            TimestampCursor(serverUpdatedAtUtc: serverAt, tieBreaker: 'op1'),
         payloadJson: jsonEncode({
           'schemaVersion': 1,
           'entityType': 'layout_template',
@@ -187,7 +187,8 @@ void main() {
       expect(result.lastError, isNull);
       expect(result.canAdvanceCursor, isTrue);
       expect(result.appliedCount, equals(1));
-      expect(result.outcomes.single.decision, equals(ChangeApplyDecision.applied));
+      expect(
+          result.outcomes.single.decision, equals(ChangeApplyDecision.applied));
 
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored, hasLength(1));
@@ -220,7 +221,8 @@ void main() {
         entityType: 'layout_template',
         entityId: remote.id,
         opType: 'upsert',
-        cursor: TimestampCursor(serverUpdatedAtUtc: serverAt, tieBreaker: 'op1'),
+        cursor:
+            TimestampCursor(serverUpdatedAtUtc: serverAt, tieBreaker: 'op1'),
         payloadJson: jsonEncode({
           'schemaVersion': 1,
           'entityType': 'layout_template',
@@ -245,17 +247,21 @@ void main() {
       expect(result.lastError, isNull);
       expect(result.canAdvanceCursor, isTrue);
       expect(result.appliedCount, equals(0));
-      expect(result.outcomes.single.decision, equals(ChangeApplyDecision.skipped));
-      expect(result.outcomes.single.reason, equals(SkipReasonCode.olderThanLocal));
+      expect(
+          result.outcomes.single.decision, equals(ChangeApplyDecision.skipped));
+      expect(
+          result.outcomes.single.reason, equals(SkipReasonCode.olderThanLocal));
 
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored.single.template.name, equals('Local'));
-      expect(stored.single.template.updatedAt.toUtc(), equals(local.updatedAt.toUtc()));
+      expect(stored.single.template.updatedAt.toUtc(),
+          equals(local.updatedAt.toUtc()));
 
       expect(outbox.enqueued, isEmpty);
     });
 
-    test('applyRemoteChanges applies remote softDelete without enqueuing outbox',
+    test(
+        'applyRemoteChanges applies remote softDelete without enqueuing outbox',
         () async {
       final template = buildTemplate(id: 't1');
       await dataSource.upsertTemplate(template, enqueueOutbox: false);
@@ -272,7 +278,8 @@ void main() {
         entityType: 'layout_template',
         entityId: template.id,
         opType: 'softDelete',
-        cursor: TimestampCursor(serverUpdatedAtUtc: deletedAt, tieBreaker: 'op2'),
+        cursor:
+            TimestampCursor(serverUpdatedAtUtc: deletedAt, tieBreaker: 'op2'),
         payloadJson: jsonEncode({
           'schemaVersion': 1,
           'entityType': 'layout_template',
@@ -296,7 +303,8 @@ void main() {
       expect(result.lastError, isNull);
       expect(result.canAdvanceCursor, isTrue);
       expect(result.appliedCount, equals(1));
-      expect(result.outcomes.single.decision, equals(ChangeApplyDecision.applied));
+      expect(
+          result.outcomes.single.decision, equals(ChangeApplyDecision.applied));
 
       final stored = await dataSource.loadTemplates(collectionId);
       expect(stored, isEmpty);

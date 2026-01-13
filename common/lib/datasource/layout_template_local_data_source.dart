@@ -110,11 +110,6 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
     bool enqueueOutbox = false,
     String? scopeUid,
   }) async {
-    final resolvedScopeUid = scopeUid;
-    if (enqueueOutbox && (resolvedScopeUid == null || resolvedScopeUid.isEmpty)) {
-      throw StateError('scopeUid is required when enqueueOutbox is true');
-    }
-
     final now = DateTime.now();
     final nowUtc = now.toUtc();
     final operationId = const Uuid().v4();
@@ -146,6 +141,11 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
     });
 
     if (!enqueueOutbox) return;
+
+    final resolvedScopeUid = scopeUid;
+    if (resolvedScopeUid == null || resolvedScopeUid.isEmpty) {
+      throw StateError('scopeUid is required when enqueueOutbox is true');
+    }
 
     final store = _outboxStore;
     if (store == null) {

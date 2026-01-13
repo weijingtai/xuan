@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/native.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:persistence_core/persistence_core.dart';
 
 import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
@@ -18,12 +19,15 @@ import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 void main() {
   late AppDatabase db;
   late LayoutTemplateRepositoryImpl repository;
+  late OutboxStore outboxStore;
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
     db = AppDatabase(NativeDatabase.memory(), false);
+    outboxStore = _InMemoryOutboxStore();
     repository = LayoutTemplateRepositoryImpl(
-      LayoutTemplateLocalDataSource(db),
+      LayoutTemplateLocalDataSource(db, outboxStore: outboxStore),
+      authScopeProvider: _FixedScopeProvider('test_app_user_id'),
     );
   });
 
@@ -570,4 +574,67 @@ void main() {
       });
     });
   });
+}
+
+class _FixedScopeProvider implements AuthScopeProvider {
+  _FixedScopeProvider(this._scopeUid);
+
+  final String _scopeUid;
+
+  @override
+  Future<String> getScopeUid() async {
+    return _scopeUid;
+  }
+}
+
+class _InMemoryOutboxStore implements OutboxStore {
+  final List<OutboxRecord> _records = [];
+
+  @override
+  Future<void> enqueue(OutboxRecord record) async {
+    _records.add(record);
+  }
+
+  @override
+  Future<List<OutboxRecord>> peekBatch({
+    required String scopeUid,
+    required int limit,
+  }) async {
+    return _records.where((r) => r.scopeUid == scopeUid).take(limit).toList();
+  }
+
+  @override
+  Future<void> markSuccess({
+    required String operationId,
+    required DateTime atUtc,
+  }) async {
+    _records.removeWhere((r) => r.operationId == operationId);
+  }
+
+  @override
+  Future<void> markFailed({
+    required String operationId,
+    required int attempt,
+    required String errorCode,
+    required String errorMessage,
+    required DateTime atUtc,
+    required bool isDead,
+  }) async {
+    final index = _records.indexWhere((r) => r.operationId == operationId);
+    if (index < 0) return;
+    final existing = _records[index];
+    _records[index] = existing.copyWith(
+      attempt: attempt,
+    );
+  }
+
+  @override
+  Future<int> backlogCount(String scopeUid) async {
+    return _records.where((r) => r.scopeUid == scopeUid).length;
+  }
+
+  @override
+  Future<int> deadCount(String scopeUid) async {
+    return 0;
+  }
 }

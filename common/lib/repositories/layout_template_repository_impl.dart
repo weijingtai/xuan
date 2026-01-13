@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:persistence_core/persistence_core.dart';
 
 import '../datasource/layout_template_local_data_source.dart';
 import '../models/layout_template.dart';
@@ -6,9 +7,13 @@ import '../models/layout_template_dto.dart';
 import 'layout_template_repository.dart';
 
 class LayoutTemplateRepositoryImpl implements LayoutTemplateRepository {
-  LayoutTemplateRepositoryImpl(this._localDataSource);
+  LayoutTemplateRepositoryImpl(
+    this._localDataSource, {
+    required AuthScopeProvider authScopeProvider,
+  }) : _authScopeProvider = authScopeProvider;
 
   final LayoutTemplateLocalDataSource _localDataSource;
+  final AuthScopeProvider _authScopeProvider;
 
   @override
   Future<List<LayoutTemplate>> getAllTemplates(String collectionId) async {
@@ -39,20 +44,23 @@ class LayoutTemplateRepositoryImpl implements LayoutTemplateRepository {
       updatedAt: DateTime.now(),
     );
 
+    final scopeUid = await _authScopeProvider.getScopeUid();
+
     await _localDataSource.upsertTemplate(
       updatedTemplate,
       enqueueOutbox: true,
-      scopeUid: collectionId,
+      scopeUid: scopeUid,
     );
   }
 
   @override
   Future<void> deleteTemplate(String collectionId, String templateId) async {
+    final scopeUid = await _authScopeProvider.getScopeUid();
     await _localDataSource.softDeleteTemplate(
       collectionId,
       templateId,
       enqueueOutbox: true,
-      scopeUid: collectionId,
+      scopeUid: scopeUid,
     );
   }
 }

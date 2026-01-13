@@ -8,6 +8,7 @@ import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
 import 'package:common/navigator.dart' as Common;
 import 'package:xuan/pages/one_year_circle.dart';
+import 'package:account/account.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -20,6 +21,7 @@ class NavigatorGenerator {
     "/widget_dev": (context, {arguments}) => MyHomePage(
           title: 'widgets dev',
         ),
+    "/auth": (context, {arguments}) => const AuthPage(),
     ...Common.NavigatorGenerator.routes,
     ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,

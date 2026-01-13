@@ -312,7 +312,7 @@ void main() {
               serverTimeUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             ),
           ],
-          nextCursor: const TimestampCursor(
+          nextCursor: TimestampCursor(
             serverUpdatedAtUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             tieBreaker: 'op_remote_1',
           ),
@@ -377,7 +377,7 @@ void main() {
               entityType: entityType,
               entityId: 't1',
               opType: 'upsert',
-              cursor: const TimestampCursor(
+              cursor: TimestampCursor(
                 serverUpdatedAtUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
                 tieBreaker: 'op_remote_1',
               ),
@@ -385,7 +385,7 @@ void main() {
               serverTimeUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             ),
           ],
-          nextCursor: const TimestampCursor(
+          nextCursor:  TimestampCursor(
             serverUpdatedAtUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             tieBreaker: 'op_remote_1',
           ),

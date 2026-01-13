@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:account/account.dart';
 import 'package:common/common_logger.dart';
 import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as world_db;
@@ -7,7 +8,9 @@ import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/datasource/loca_binary/world_country_repository.dart';
 import 'package:common/viewmodels/dev_enter_page_view_model.dart';
 import 'package:common/viewmodels/timezone_location_viewmodel.dart';
+import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -81,20 +84,144 @@ Future<void> initServices() async {
 }
 
 void main() async {
-  // runApp(
-  //   MultiProvider(
-  //     providers: [
-  //       ChangeNotifierProvider<ShiJiaQiMenViewModel>(create: (context) => ShiJiaQiMenViewModel(context)),
-  //     ],
-  //     child: const MyApp(),
-  //   ),
-  // );
-  initServices().then((_) {
-    runApp(
-      MultiProvider(
+  await initServices();
+  runApp(const _BootstrapApp());
+}
+
+QueryExecutor _driftExecutor(String name) {
+  return driftDatabase(
+    name: name,
+    native: const DriftNativeOptions(
+      databaseDirectory: getApplicationSupportDirectory,
+    ),
+    web: DriftWebOptions(
+      sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+      driftWorker: Uri.parse('drift_worker.js'),
+      onResult: (result) {
+        if (result.missingFeatures.isNotEmpty) {
+          if (kDebugMode) {
+            debugPrint(
+              'Using ${result.chosenImplementation} due to unsupported '
+              'browser features: ${result.missingFeatures}',
+            );
+          }
+        }
+      },
+    ),
+  );
+}
+
+class _ActiveAccountScopeProvider implements AuthScopeProvider {
+  _ActiveAccountScopeProvider(this._store);
+
+  final ActiveAccountStore _store;
+
+  @override
+  Future<String> getScopeUid() async {
+    final uid = _store.activeAppUserId;
+    if (uid == null || uid.isEmpty) {
+      throw StateError('No active appUserId');
+    }
+    return uid;
+  }
+}
+
+class _BootstrapApp extends StatelessWidget {
+  const _BootstrapApp();
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        Provider<Uuid>(create: (_) => const Uuid()),
+        Provider<AccountRegistry>(create: (_) => AccountRegistry()),
+        ChangeNotifierProvider<ActiveAccountStore>(
+          create: (ctx) => ActiveAccountStore(
+            registry: ctx.read<AccountRegistry>(),
+          )..load(),
+        ),
+        Provider<DeviceIdentity>(
+          create: (ctx) => DeviceIdentity(
+            deviceId: _firestoreDeviceId ?? const Uuid().v4(),
+            platform: kIsWeb ? 'web' : defaultTargetPlatform.toString(),
+            formFactor: kIsWeb
+                ? 'web'
+                : (defaultTargetPlatform == TargetPlatform.android ||
+                        defaultTargetPlatform == TargetPlatform.iOS)
+                    ? 'mobile'
+                    : 'desktop',
+          ),
+        ),
+        Provider<FirebaseFirestore?>(
+          create: (_) => _firebaseReady ? FirebaseFirestore.instance : null,
+        ),
+        Provider<FirebaseAuth?>(
+          create: (_) => _firebaseReady ? FirebaseAuth.instance : null,
+        ),
+        Provider<AuthAdapter>(
+          create: (ctx) {
+            final auth = ctx.read<FirebaseAuth?>();
+            if (auth == null) {
+              throw StateError('FirebaseAuth not initialized');
+            }
+            return FirebaseEmailAuthAdapter(auth: auth);
+          },
+        ),
+        Provider<IdentityResolver>(
+          create: (ctx) {
+            final firestore = ctx.read<FirebaseFirestore?>();
+            if (firestore == null) {
+              throw StateError('FirebaseFirestore not initialized');
+            }
+            return FirebaseIdentityResolver(
+              firestore: firestore,
+              uuid: ctx.read<Uuid>(),
+            );
+          },
+        ),
+        Provider<AuthCoordinator>(
+          create: (ctx) => AuthCoordinator(
+            authAdapter: ctx.read<AuthAdapter>(),
+            identityResolver: ctx.read<IdentityResolver>(),
+            accountRegistry: ctx.read<AccountRegistry>(),
+            activeAccountStore: ctx.read<ActiveAccountStore>(),
+          ),
+        ),
+      ],
+      child: const _AuthAwareApp(),
+    );
+  }
+}
+
+class _AuthAwareApp extends StatelessWidget {
+  const _AuthAwareApp();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<ActiveAccountStore>();
+    if (!store.isReady) {
+      return const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      );
+    }
+
+    if (!store.isSignedIn) {
+      return const MaterialApp(home: AuthPage());
+    }
+
+    final appUserId = store.activeAppUserId!;
+    return KeyedSubtree(
+      key: ValueKey(appUserId),
+      child: MultiProvider(
         providers: [
+          Provider<AuthScopeProvider>(
+            create: (ctx) =>
+                _ActiveAccountScopeProvider(ctx.read<ActiveAccountStore>()),
+          ),
           Provider<db.AppDatabase>(
-            create: (ctx) => db.AppDatabase(),
+            create: (ctx) => db.AppDatabase(
+              _driftExecutor('app_database_$appUserId'),
+            ),
             dispose: (ctx, db) => db.close(),
           ),
           Provider<world_db.WorldInfoDatabase>(
@@ -103,26 +230,7 @@ void main() async {
           ),
           Provider<PersistenceDriftDatabase>(
             create: (ctx) => PersistenceDriftDatabase(
-              driftDatabase(
-                name: 'persistence_drift',
-                native: const DriftNativeOptions(
-                  databaseDirectory: getApplicationSupportDirectory,
-                ),
-                web: DriftWebOptions(
-                  sqlite3Wasm: Uri.parse('sqlite3.wasm'),
-                  driftWorker: Uri.parse('drift_worker.js'),
-                  onResult: (result) {
-                    if (result.missingFeatures.isNotEmpty) {
-                      if (kDebugMode) {
-                        debugPrint(
-                          'Using ${result.chosenImplementation} due to unsupported '
-                          'browser features: ${result.missingFeatures}',
-                        );
-                      }
-                    }
-                  },
-                ),
-              ),
+              _driftExecutor('persistence_drift_$appUserId'),
             ),
             dispose: (ctx, db) => db.close(),
           ),
@@ -136,26 +244,10 @@ void main() async {
               dao: ctx.read<PersistenceDriftDatabase>().syncStatesDao,
             ),
           ),
-          Provider<DeviceIdentity>(
-            create: (ctx) => DeviceIdentity(
-              deviceId: _firestoreDeviceId ?? const Uuid().v4(),
-              platform: kIsWeb ? 'web' : defaultTargetPlatform.toString(),
-              formFactor: kIsWeb
-                  ? 'web'
-                  : (defaultTargetPlatform == TargetPlatform.android ||
-                          defaultTargetPlatform == TargetPlatform.iOS)
-                      ? 'mobile'
-                      : 'desktop',
-            ),
-          ),
-          Provider<FirebaseFirestore?>(
-            create: (ctx) => _firebaseReady ? FirebaseFirestore.instance : null,
-          ),
           Provider<RemoteGateway>(
             create: (ctx) {
               final firestore = ctx.read<FirebaseFirestore?>();
               if (firestore == null) return const _UnavailableRemoteGateway();
-
               return FirestoreRemoteGateway(
                 firestore: firestore,
                 device: ctx.read<DeviceIdentity>(),
@@ -180,13 +272,13 @@ void main() async {
           ),
           Provider<WorldCountryRepository>(
             create: (ctx) => WorldCountryRepository(
-              path: "assets/dataset/world_country.pro",
-              regionJsonFilePath: "assets/dataset/regions.json",
+              path: 'assets/dataset/world_country.pro',
+              regionJsonFilePath: 'assets/dataset/regions.json',
             ),
           ),
           Provider<GeoLocationRepository>(
             create: (ctx) => GeoLocationRepository(
-              path: "assets/dataset/province_city_area_lng_lat.json",
+              path: 'assets/dataset/province_city_area_lng_lat.json',
             ),
           ),
           ListenableProvider<TimezoneLocationViewModel>(
@@ -194,15 +286,15 @@ void main() async {
                 appFeatureModule: AppFeatureModule.Golabel),
           ),
           ListenableProvider<DevEnterPageViewModel>(
-              create: (ctx) =>
-                  DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
-                    ..initState()),
+            create: (ctx) =>
+                DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
+                  ..initState(),
+          ),
         ],
         child: const MyApp(),
       ),
     );
-    // runApp(const MyApp());
-  });
+  }
 }
 
 class MyApp extends StatelessWidget {

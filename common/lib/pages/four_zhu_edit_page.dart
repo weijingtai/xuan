@@ -10,6 +10,7 @@ import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/style_editor/sidebar_explorer.dart';
 import 'package:common/enums/enum_jia_zi.dart';
+import 'package:persistence_core/persistence_core.dart';
 import 'package:provider/provider.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
@@ -29,7 +30,8 @@ class FourZhuEditPage extends StatelessWidget {
         ChangeNotifierProvider<FourZhuEditorViewModel>(
           create: (ctx) {
             final repository = LayoutTemplateRepositoryImpl(
-              LayoutTemplateLocalDataSource(ctx.read<AppDatabase>()),
+              ctx.read<LayoutTemplateLocalDataSource>(),
+              authScopeProvider: ctx.read<AuthScopeProvider>(),
             );
             return FourZhuEditorViewModel(
               getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
