@@ -1,9 +1,6 @@
 // lib/domain/enums/gui_ren.dart
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:common/shared/enums/enum_tian_gan.dart';
-import 'package:common/shared/enums/enum_di_zhi.dart';
-import 'package:common/shared/enums/enum_ji_xiong.dart';
 
 enum GuiRen {
   @JsonValue("贵人")

@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 import 'package:common/models/divination_datetime.dart';
-import 'package:common/shared/shared.dart';
 import 'package:daliuren/domain/entities/raw_pan_info_model.dart';
 import 'package:daliuren/domain/enums/gui_ren.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';

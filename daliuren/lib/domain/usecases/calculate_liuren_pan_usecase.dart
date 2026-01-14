@@ -2,8 +2,6 @@
 
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/module.dart';
-import 'package:common/shared/enums/enum_di_zhi.dart';
-import 'package:common/shared/enums/enum_yin_yang.dart';
 import 'package:daliuren/domain/services/calculate_raw_pan_service.dart';
 import 'package:daliuren/model/pan_config.dart';
 import 'package:fpdart/fpdart.dart' hide Failure;

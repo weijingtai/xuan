@@ -1,11 +1,13 @@
+import 'package:daliuren/model/enum_nine_zong_men.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 import '../domain/enums/each_class_zei_ke_type.dart';
-import '../domain/enums/nine_zong_men.dart';
 import '../domain/enums/she_hai_type.dart';
 import '../domain/enums/yao_ke_type.dart';
 import '../domain/enums/zei_ke_type.dart';
 import 'da_liu_ren_ke_pan.dart';
+import 'each_chuan.dart';
+import 'three_chuan.dart';
 
 part 'three_chuan_details.g.dart';
 

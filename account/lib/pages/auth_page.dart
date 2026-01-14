@@ -14,11 +14,136 @@ class AuthPage extends StatefulWidget {
   State<AuthPage> createState() => _AuthPageState();
 }
 
+class _InkWashBackground extends StatelessWidget {
+  const _InkWashBackground();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+
+    return Stack(
+      children: [
+        DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                scheme.surface,
+                scheme.surfaceContainerLow,
+                scheme.surface,
+              ],
+              stops: const [0, 0.55, 1],
+            ),
+          ),
+        ),
+        Positioned(
+          top: -140,
+          left: -80,
+          child: _InkBloom(
+            color: scheme.primary.withValues(alpha: 0.18),
+            size: 320,
+          ),
+        ),
+        Positioned(
+          bottom: -180,
+          right: -100,
+          child: _InkBloom(
+            color: scheme.tertiary.withValues(alpha: 0.14),
+            size: 380,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _InkBloom extends StatelessWidget {
+  const _InkBloom({required this.color, required this.size});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            colors: [color, Colors.transparent],
+            stops: const [0, 1],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _AuthPageState extends State<AuthPage> {
   final _newPasswordController = TextEditingController();
 
   bool _busy = false;
   String? _error;
+
+  ColorScheme _inkWashScheme(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+
+    const paper = Color(0xFFF6F2E9);
+    const ink = Color(0xFF1F2328);
+    const seal = Color(0xFFC2453D);
+    const bamboo = Color(0xFF3D6B4F);
+
+    if (!isDark) {
+      return ColorScheme(
+        brightness: Brightness.light,
+        primary: ink,
+        onPrimary: paper,
+        secondary: bamboo,
+        onSecondary: paper,
+        tertiary: const Color(0xFFB89B4A),
+        onTertiary: paper,
+        error: seal,
+        onError: Colors.white,
+        surface: paper,
+        onSurface: ink,
+        surfaceContainerLow: const Color(0xFFF3EDE1),
+        surfaceContainer: const Color(0xFFEFE7D8),
+        onSurfaceVariant: const Color(0xFF4D4A45),
+        outlineVariant: const Color(0xFFD8D0C1),
+        shadow: Colors.black,
+        scrim: Colors.black,
+        inverseSurface: ink,
+        onInverseSurface: paper,
+        inversePrimary: const Color(0xFFECE3D0),
+      );
+    }
+
+    return const ColorScheme(
+      brightness: Brightness.dark,
+      primary: Color(0xFFECE3D0),
+      onPrimary: Color(0xFF111316),
+      secondary: Color(0xFFA8D3B2),
+      onSecondary: Color(0xFF121513),
+      tertiary: Color(0xFFE2C885),
+      onTertiary: Color(0xFF15120E),
+      error: Color(0xFFD16A64),
+      onError: Color(0xFF1A0E0E),
+      surface: Color(0xFF121415),
+      onSurface: Color(0xFFECE3D0),
+      surfaceContainerLow: Color(0xFF191B1C),
+      surfaceContainer: Color(0xFF1E2022),
+      onSurfaceVariant: Color(0xFFBEB6A6),
+      outlineVariant: Color(0xFF3B3C3E),
+      shadow: Colors.black,
+      scrim: Colors.black,
+      inverseSurface: Color(0xFFF6F2E9),
+      onInverseSurface: Color(0xFF1F2328),
+      inversePrimary: Color(0xFF1F2328),
+    );
+  }
 
   @override
   void dispose() {
@@ -52,50 +177,115 @@ class _AuthPageState extends State<AuthPage> {
     final coordinator = context.read<AuthCoordinator>();
 
     if (!active.isSignedIn) {
-      return FlutterLogin(
-        title: '账号登录',
-        userType: LoginUserType.email,
-        messages: LoginMessages(
-          userHint: '邮箱',
-          passwordHint: '密码',
-          confirmPasswordHint: '确认密码',
-          loginButton: '登录',
-          signupButton: '注册',
-          forgotPasswordButton: '忘记密码？',
-          recoverPasswordButton: '发送重置邮件',
-          goBackButton: '返回',
-          confirmPasswordError: '两次输入的密码不一致',
+      final base = Theme.of(context);
+      final scheme = _inkWashScheme(base.colorScheme.brightness);
+      final theme = base.copyWith(
+        colorScheme: scheme,
+        scaffoldBackgroundColor: scheme.surface,
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: scheme.surfaceContainer,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: scheme.outlineVariant),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: scheme.outlineVariant),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+            borderSide: BorderSide(color: scheme.primary, width: 1.4),
+          ),
         ),
-        onLogin: (data) async {
-          try {
-            await coordinator.signInWithEmailPassword(
-              email: data.name.trim(),
-              password: data.password,
-            );
-            return null;
-          } catch (e) {
-            return coordinator.formatAuthError(e);
-          }
-        },
-        onSignup: (data) async {
-          try {
-            await coordinator.signInOrRegisterWithEmailPassword(
-              email: data.name?.trim() ?? '',
-              password: data.password ?? '',
-            );
-            return null;
-          } catch (e) {
-            return coordinator.formatAuthError(e);
-          }
-        },
-        onRecoverPassword: (email) async {
-          try {
-            await coordinator.sendPasswordResetEmail(email: email.trim());
-            return null;
-          } catch (e) {
-            return coordinator.formatAuthError(e);
-          }
-        },
+      );
+
+      final cardTheme = CardTheme(
+        elevation: 0,
+        color: scheme.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.7)),
+        ),
+      );
+
+      final loginTheme = LoginTheme(
+        primaryColor: scheme.surface,
+        accentColor: scheme.primary,
+        errorColor: scheme.error,
+        cardTheme: cardTheme,
+        titleStyle: base.textTheme.headlineSmall?.copyWith(
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 2.0,
+        ),
+        bodyStyle: base.textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurfaceVariant,
+          height: 1.5,
+        ),
+        textFieldStyle: base.textTheme.bodyMedium?.copyWith(
+          color: scheme.onSurface,
+        ),
+        buttonStyle: base.textTheme.titleMedium?.copyWith(
+          color: scheme.onSurface,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.0,
+        ),
+      );
+
+      return Theme(
+        data: theme,
+        child: Stack(
+          children: [
+            const Positioned.fill(child: _InkWashBackground()),
+            FlutterLogin(
+              title: '玄 · 账号',
+              userType: LoginUserType.email,
+              theme: loginTheme,
+              messages: LoginMessages(
+                userHint: '邮箱',
+                passwordHint: '密码',
+                confirmPasswordHint: '确认密码',
+                loginButton: '登录',
+                signupButton: '注册',
+                forgotPasswordButton: '忘记密码？',
+                recoverPasswordButton: '发送重置邮件',
+                goBackButton: '返回',
+                confirmPasswordError: '两次输入的密码不一致',
+              ),
+              onLogin: (data) async {
+                try {
+                  await coordinator.signInWithEmailPassword(
+                    email: data.name.trim(),
+                    password: data.password,
+                  );
+                  return null;
+                } catch (e) {
+                  return coordinator.formatAuthError(e);
+                }
+              },
+              onSignup: (data) async {
+                try {
+                  await coordinator.signInOrRegisterWithEmailPassword(
+                    email: data.name?.trim() ?? '',
+                    password: data.password ?? '',
+                  );
+                  return null;
+                } catch (e) {
+                  return coordinator.formatAuthError(e);
+                }
+              },
+              onRecoverPassword: (email) async {
+                try {
+                  await coordinator.sendPasswordResetEmail(email: email.trim());
+                  return null;
+                } catch (e) {
+                  return coordinator.formatAuthError(e);
+                }
+              },
+            ),
+          ],
+        ),
       );
     }
 

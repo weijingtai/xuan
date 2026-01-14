@@ -4,5 +4,13 @@ service cloud.firestore {
     match /identity_map/{baasUid} {
       allow read, write: if request.auth != null && request.auth.uid == baasUid;
     }
+
+    function appUserIdForCurrentUser() {
+      return get(/databases/$(database)/documents/identity_map/$(request.auth.uid)).data.appUserId;
+    }
+
+    match /users/{appUserId}/{document=**} {
+      allow read, write: if request.auth != null && appUserIdForCurrentUser() == appUserId;
+    }
   }
 }

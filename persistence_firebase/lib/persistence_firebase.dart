@@ -62,6 +62,35 @@ class FirestoreRemoteGateway implements RemoteGateway {
     return '${value.substring(0, 3)}…${value.substring(value.length - 3)}';
   }
 
+  /// Returns a safe-to-log error summary.
+  ///
+  /// 功能说明：
+  /// - 避免将 FirebaseException 等对象原样写入日志，降低泄露文档路径等信息的风险。
+  ///
+  /// 参数说明：
+  /// - [error]：捕获到的异常。
+  ///
+  /// 返回值：
+  /// - 可用于日志采集的精简信息。
+  Object _errorSummary(Object error) {
+    if (error is FirebaseException) {
+      return <String, Object?>{
+        'type': 'FirebaseException',
+        'plugin': error.plugin,
+        'code': error.code,
+      };
+    }
+    if (error is _RemotePayloadInvalid) {
+      return <String, Object?>{
+        'type': '_RemotePayloadInvalid',
+        'message': error.message,
+      };
+    }
+    return <String, Object?>{
+      'type': error.runtimeType.toString(),
+    };
+  }
+
   @override
 
   /// Pushes one outbox record to Firestore.
@@ -224,7 +253,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
           'errorCode': error.code.name,
           'durationMs': sw.elapsedMilliseconds,
         },
-        error: e,
+        error: _errorSummary(e),
       );
 
       await _tryUpdateOplogFailed(
@@ -248,7 +277,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
           'errorCode': error.code.name,
           'durationMs': sw.elapsedMilliseconds,
         },
-        error: e,
+        error: _errorSummary(e),
       );
       await _tryUpdateOplogFailed(
         oplogRef: oplogRef,
@@ -269,7 +298,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
           'operationId': record.operationId,
           'durationMs': sw.elapsedMilliseconds,
         },
-        error: e,
+        error: _errorSummary(e),
         stackTrace: st,
       );
       await _tryUpdateOplogFailed(
@@ -448,7 +477,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
       if (opType == 'upsert') {
         final template = data['template'];
         if (template is Map) {
-          payload['template'] = Map<String, Object?>.from(template as Map);
+          payload['template'] = Map<String, Object?>.from(template);
         }
       }
 
@@ -692,7 +721,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
       collectionId: collectionId,
       name: name,
       description: description as String?,
-      template: Map<String, Object?>.from(template as Map),
+      template: Map<String, Object?>.from(template),
       version: version,
     );
   }
@@ -782,7 +811,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
           'operationId': record.operationId,
           'errorCode': error.code.name,
         },
-        error: e,
+        error: _errorSummary(e),
         stackTrace: st,
       );
     }

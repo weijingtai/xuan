@@ -1061,29 +1061,29 @@ class _NewEachGongWidgetState extends State<NewEachGongWidget> {
   }
 
   TextStyle getDoorGongTextStyle(GongAndDoorRelationship gongDoorRelationship) {
-    TextStyle doorGongtextStyle = doorGongtextStyle.copyWith(fontSize: 14);
+    TextStyle _doorGongtextStyle = doorGongtextStyle.copyWith(fontSize: 14);
     switch (gongDoorRelationship) {
       case GongAndDoorRelationship.DA_JI:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: ConstResourcesMapper.jiXiongColorMapper[JiXiongEnum.DA_JI]);
         break;
       case GongAndDoorRelationship.XIAO_JI:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color:
                 ConstResourcesMapper.jiXiongColorMapper[JiXiongEnum.XIAO_JI]);
         break;
       case GongAndDoorRelationship.DA_XIONG:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color:
                 ConstResourcesMapper.jiXiongColorMapper[JiXiongEnum.DA_XIONG]);
         break;
       case GongAndDoorRelationship.XIAO_XIONG:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: ConstResourcesMapper
                 .jiXiongColorMapper[JiXiongEnum.XIAO_XIONG]);
         break;
       case GongAndDoorRelationship.RU_MU:
-        doorGongtextStyle = doorGongtextStyle
+        _doorGongtextStyle = doorGongtextStyle
             .copyWith(color: const Color.fromRGBO(81, 0, 0, 1), shadows: [
           Shadow(
               color: Colors.red.withOpacity(.4),
@@ -1093,23 +1093,23 @@ class _NewEachGongWidgetState extends State<NewEachGongWidget> {
         break;
       case GongAndDoorRelationship.BI_HE:
       case GongAndDoorRelationship.SHOU_SHEN:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: const Color.fromRGBO(193, 18, 28, 1));
         break;
       case GongAndDoorRelationship.MEN_PO:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: const Color.fromRGBO(36, 54, 125, 1));
         break;
       case GongAndDoorRelationship.SHENG_WANG:
-        doorGongtextStyle =
+        _doorGongtextStyle =
             doorGongtextStyle.copyWith(color: Colors.purple.shade900);
         break;
       case GongAndDoorRelationship.XIE_QI:
-        doorGongtextStyle = doorGongtextStyle.copyWith(color: Colors.black87);
+        _doorGongtextStyle = doorGongtextStyle.copyWith(color: Colors.black87);
         break;
       case GongAndDoorRelationship.SHOU_ZHI:
       case GongAndDoorRelationship.SHENG_GONG:
-        doorGongtextStyle = doorGongtextStyle.copyWith(
+        _doorGongtextStyle = doorGongtextStyle.copyWith(
             color: const Color.fromRGBO(121, 114, 110, 1));
         break;
       default:
@@ -1188,7 +1188,7 @@ class _NewEachGongWidgetState extends State<NewEachGongWidget> {
 
   void diPanGanTapped(TianGan gan) {
     InteractiveToast.slide(
-      context,
+      context: context,
       // leading: leadingWidget(),
       title: Text("地盘：${gan.name}"),
       // trailing: trailingWidget(),

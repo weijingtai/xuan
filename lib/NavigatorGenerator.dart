@@ -21,7 +21,10 @@ class NavigatorGenerator {
     "/widget_dev": (context, {arguments}) => MyHomePage(
           title: 'widgets dev',
         ),
-    "/auth": (context, {arguments}) => const AuthPage(),
+    AuthPage.routeName: (context, {arguments}) => const AuthPage(),
+    AccountProfilePage.routeName: (context, {arguments}) =>
+        const AccountProfilePage(),
+        
     ...Common.NavigatorGenerator.routes,
     ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,

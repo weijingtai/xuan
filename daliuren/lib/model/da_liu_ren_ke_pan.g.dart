@@ -6,6 +6,8 @@ part of 'da_liu_ren_ke_pan.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+import 'package:daliuren/model/each_chuan.dart';
+
 EachChuan _$EachChuanFromJson(Map<String, dynamic> json) => EachChuan(
       order: (json['order'] as num).toInt(),
       guiRen: $enumDecode(_$GuiRenEnumMap, json['guiRen']),

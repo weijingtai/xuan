@@ -74,7 +74,8 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier<BasePanelModel?>(null);
-  final ValueNotifier<ZhouTianModel?> zhouTianModelNotifier = ValueNotifier(null);
+  final ValueNotifier<ZhouTianModel?> zhouTianModelNotifier =
+      ValueNotifier(null);
   final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
       ValueNotifier<PassageYearPanelModel?>(null);
 
@@ -188,13 +189,15 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 根据观测者位置和时间计算星盘数据。
   /// 这是触发所有计算的主入口。
   /// [observerPosition]: 包含出生信息、行限时间、经纬度、时区等观测者信息。
-  Future<void> calculate(BasePanelConfig config, ObserverPosition observerPosition) async {
+  Future<void> calculate(
+      BasePanelConfig config, ObserverPosition observerPosition) async {
     // 1. Create the engine based on the configuration
     final engine = CalculationEngineFactory.create(config);
 
     // 2. Get the system definition and star positions from the engine
     final zhouTianModel = await engine.getSystemDefinition(config);
-    final starPositions = await engine.calculateStarPositions(observerPosition.dateTime, observerPosition, config);
+    final starPositions = await engine.calculateStarPositions(
+        observerPosition.dateTime, observerPosition, config);
 
     // 3. Update the notifiers with the core data
     zhouTianModelNotifier.value = zhouTianModel;
@@ -227,7 +230,8 @@ class BeautyPageViewModel extends ChangeNotifier {
   }
 
   /// Transforms the raw data from the calculation engine into the map format required by other services.
-  Map<EnumStars, StarAngleSpeed> _transformStarPositions(List<StarPositionRawData> starPositions, BasePanelConfig config) {
+  Map<EnumStars, StarAngleSpeed> _transformStarPositions(
+      List<StarPositionRawData> starPositions, BasePanelConfig config) {
     final Map<EnumStars, StarAngleSpeed> mapper = {};
     for (final pos in starPositions) {
       // Find the angle/speed info that matches the current panel configuration
@@ -235,7 +239,8 @@ class BeautyPageViewModel extends ChangeNotifier {
         (info) =>
             info.panelSystemType == config.panelSystemType &&
             info.coordinateSystem == config.celestialCoordinateSystem,
-        orElse: () => pos.angleRawInfoSet.first, // Fallback to the first available if no exact match
+        orElse: () => pos.angleRawInfoSet
+            .first, // Fallback to the first available if no exact match
       );
       mapper[pos.starType] = StarAngleSpeed(
         angle: matchingInfo.angle,
@@ -245,30 +250,34 @@ class BeautyPageViewModel extends ChangeNotifier {
     return mapper;
   }
 
-
   Future<void> calculateDaXian(DateTime fateLifeTime) async {
     final fateObserver = generateFateObserverPosition(fateLifeTime);
 
     // 1. Create the engine based on the configuration
-    final engine = CalculationEngineFactory.create(panelConfig); // Assuming base panel's config for DaXian
+    final engine = CalculationEngineFactory.create(
+        panelConfig); // Assuming base panel's config for DaXian
 
     // 2. Get the system definition and star positions for the DaXian date
     final zhouTianModel = await engine.getSystemDefinition(panelConfig);
-    final starPositions = await engine.calculateStarPositions(fateObserver.dateTime, fateObserver, panelConfig);
+    final starPositions = await engine.calculateStarPositions(
+        fateObserver.dateTime, fateObserver, panelConfig);
 
     // 3. Adapt the engine's output
     final starAngleMapper = _transformStarPositions(starPositions, panelConfig);
 
     try {
-      PassageYearPanelModel fatePanelModel = await _generateBasePanelService
-          .calculateDaXia(uiBasePanelNotifier.value!, fateObserver,
-          zhouTianModel: zhouTianModel,
-          starAngleMapper: starAngleMapper,
-        );
+      PassageYearPanelModel fatePanelModel =
+          await _generateBasePanelService.calculateDaXia(
+        uiBasePanelNotifier.value!,
+        fateObserver,
+        zhouTianModel: zhouTianModel,
+        starAngleMapper: starAngleMapper,
+      );
 
       _uiFateLifeStars = _calculateUIStarsFromMapper(
           fatePanelModel.starAngleMapper,
-          _fateMiniSafetyAngle, zhouTianModel); // Pass zhouTianModel
+          _fateMiniSafetyAngle,
+          zhouTianModel); // Pass zhouTianModel
 
       uiFateLifeStarsNotifier.value = _uiFateLifeStars;
       uiDaXianPanelNotifier.value = fatePanelModel;
@@ -286,14 +295,18 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// [miniSafetyAngle]: UI 绘制时星体所需的最小安全角度。
   /// 返回: 适用于 UI 绘制的 UIStarModel 列表。
   List<UIStarModel> _calculateUIStarsFromMapper(
-      Map<EnumStars, StarAngleSpeed> starsAngleMapper, double miniSafetyAngle, ZhouTianModel zhouTianModel) {
+      Map<EnumStars, StarAngleSpeed> starsAngleMapper,
+      double miniSafetyAngle,
+      ZhouTianModel zhouTianModel) {
     // 定义星体及其在 UI 调整位置时的优先级。
     // 优先级越高，越不容易被移动。
-    List<UIStarModel> unadjustedStarList = starsAngleMapper.entries.map((entry) {
+    List<UIStarModel> unadjustedStarList =
+        starsAngleMapper.entries.map((entry) {
       final star = entry.key;
       final starAngle = entry.value;
       // Normalize the angle from the native system to a 360-degree system for UI drawing
-      final normalizedAngle = (starAngle.angle / zhouTianModel.totalDegree) * 360.0;
+      final normalizedAngle =
+          (starAngle.angle / zhouTianModel.totalDegree) * 360.0;
 
       return UIStarModel(
         star: star,
@@ -454,11 +467,10 @@ class BeautyPageViewModel extends ChangeNotifier {
     return result;
   }
 
-
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
     BaseDivinationDatetimeDataModel _tmp =
-        divinationInfoModel.divinationDatetime;
+        divinationInfoModel.divinationDatetime.timingInfoListJson;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
@@ -653,11 +665,6 @@ class BeautyPageViewModel extends ChangeNotifier {
       DiZhi.SHEN
     ];
   }
-
-
-
-
-
 
   // late final App74Database _database;
 

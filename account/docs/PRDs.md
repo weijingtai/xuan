@@ -40,7 +40,7 @@
 
 ### 3) `persistence_core`（你现有，保持不动为主）
 - `scopeUid` 的语义升级：**现在 `scopeUid == appUserId`**。
-- 你已有 [AuthScopeProvider](file:///Users/jingtaiwei/Git/codex/xuan/persistence_core/lib/src/ports.dart#L101-L103)，可以让它返回 `appUserId`。
+- 你已有 [AuthScopeProvider](file:///Users/jingtaiwei/Git/codex/xuan/persistence_core/lib/model/ports.dart#L262-L268)，可以让它返回 `appUserId`。
 
 ### 4) `remote_gateway` 可插拔层（每个 BaaS 一个实现）
 - `RemoteGateway` 实现 A：Firebase/Firestore（已有 `persistence_firebase`，需要把路径从 `users/{scopeUid}` 的语义改成 `users/{appUserId}`，本质一样）
@@ -154,4 +154,3 @@
 - `main.dart`：数据库 `name:` 参数从固定值（如 `app_database`）改成拼接 `appUserId`，实现分库（见 [AppDatabase 构造](file:///Users/jingtaiwei/Git/codex/xuan/common/lib/database/app_database.dart#L35-L110) 与 [main.dart 注入](file:///Users/jingtaiwei/Git/codex/xuan/lib/main.dart#L96-L180)）
 
 ---
-

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:account/account.dart';
 import 'package:common/common_logger.dart';
@@ -14,6 +16,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+
+import 'firebase_options.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:persistence_core/persistence_core.dart';
@@ -69,7 +73,9 @@ Future<void> initServices() async {
   }
 
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     _firebaseReady = true;
   } catch (e) {
     _firebaseReady = false;
@@ -291,10 +297,73 @@ class _AuthAwareApp extends StatelessWidget {
                   ..initState(),
           ),
         ],
-        child: const MyApp(),
+        child: const _SignedInSyncShell(child: MyApp()),
       ),
     );
   }
+}
+
+class _SignedInSyncShell extends StatefulWidget {
+  const _SignedInSyncShell({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_SignedInSyncShell> createState() => _SignedInSyncShellState();
+}
+
+class _SignedInSyncShellState extends State<_SignedInSyncShell>
+    with WidgetsBindingObserver {
+  Timer? _timer;
+  bool _running = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
+      _kick();
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _kick();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _kick();
+    }
+  }
+
+  Future<void> _kick() async {
+    if (!mounted) return;
+    if (_running) return;
+    _running = true;
+    try {
+      final scopeUid = await context.read<AuthScopeProvider>().getScopeUid();
+      final coordinator = context.read<SyncCoordinator>();
+      await coordinator.pushOnce(scopeUid: scopeUid);
+      await coordinator.pullOnce(
+        scopeUid: scopeUid,
+        entityType: 'layout_template',
+        maxPages: 3,
+      );
+    } catch (_) {
+    } finally {
+      _running = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class MyApp extends StatelessWidget {

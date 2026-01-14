@@ -6,6 +6,7 @@ import 'package:common/enums.dart';
 import 'package:daliuren/domain/entities/raw_pan_info_model.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
 import 'package:json_annotation/json_annotation.dart';
+import '../../model/each_chuan.dart';
 import '../enums/nine_zong_men.dart';
 import '../enums/pan_type.dart';
 

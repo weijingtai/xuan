@@ -343,7 +343,8 @@ void main() {
 
       final err = await gw.push(record);
       expect(err, isNotNull);
-      expect(err!.message, equals('__debug__'));
+      expect(err!.code, equals(SyncErrorCode.invalidData));
+      expect(err.message, contains('invalid layout_template payload'));
 
       final oplogSnap = await _oplogDoc(firestore, scopeUid, operationId).get();
       expect(oplogSnap.exists, isTrue);
@@ -436,7 +437,8 @@ void main() {
 
       final err = await gw.push(record);
       expect(err, isNotNull);
-      expect(err!.message, equals('__debug__'));
+      expect(err!.code, equals(SyncErrorCode.invalidData));
+      expect(err.message, contains('softDelete requires existing remote doc'));
 
       final oplogSnap = await _oplogDoc(firestore, scopeUid, operationId).get();
       expect(oplogSnap.exists, isTrue);

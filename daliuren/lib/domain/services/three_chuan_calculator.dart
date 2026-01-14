@@ -4,7 +4,6 @@
 
 import 'package:collection/collection.dart';
 import 'package:common/enums.dart';
-import 'package:common/shared/shared.dart';
 import 'package:daliuren/core/constants/da_liu_ren_common_constants.dart';
 import 'package:daliuren/domain/enums/nine_zong_men.dart';
 import 'package:daliuren/domain/enums/pan_type.dart';

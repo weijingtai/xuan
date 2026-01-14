@@ -127,6 +127,7 @@
 - 不依赖 Drift
 
 ### 5.5 persistence_flutter（可选，装配与生命周期层）
+‼️‼ 以️改为`SyncRuntime`在docs/sync 有详细的使用说明
 职责：
 - 与 Provider/应用生命周期集成：启动/暂停、网络恢复、登录切换 scope
 - 提供 DeviceIdentityProvider 的 Flutter 实现（读取平台、屏幕、版本信息）

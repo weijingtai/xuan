@@ -351,6 +351,22 @@ class DriftOutboxStore implements OutboxStore {
     return '${value.substring(0, 3)}…${value.substring(value.length - 3)}';
   }
 
+  /// Returns a safe-to-log error summary.
+  ///
+  /// 功能说明：
+  /// - 避免将异常对象原样写入日志，降低在生产环境中泄露敏感信息的风险。
+  ///
+  /// 参数说明：
+  /// - [error]：捕获到的异常。
+  ///
+  /// 返回值：
+  /// - 可用于日志采集的精简信息。
+  Object _errorSummary(Object error) {
+    return <String, Object?>{
+      'type': error.runtimeType.toString(),
+    };
+  }
+
   OutboxRecord _mapRow(OutboxRecordRow row) {
     return OutboxRecord(
       operationId: row.operationId,
@@ -419,7 +435,7 @@ class DriftOutboxStore implements OutboxStore {
           'operationId': record.operationId,
           'durationMs': sw.elapsedMilliseconds,
         },
-        error: e,
+        error: _errorSummary(e),
         stackTrace: st,
       );
       rethrow;
@@ -473,7 +489,7 @@ class DriftOutboxStore implements OutboxStore {
           'limit': limit,
           'durationMs': sw.elapsedMilliseconds,
         },
-        error: e,
+        error: _errorSummary(e),
         stackTrace: st,
       );
       rethrow;

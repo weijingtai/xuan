@@ -65,15 +65,15 @@
   - 位置：xuan/persistence_core/pubspec.yaml（移除 flutter 依赖与 flutter: 配置）
   - 验收：`dart analyze` 通过；不依赖 drift/firebase/flutter
 - [x] C1 定义 core Types（从 common 同步实现抽离并归一）
-  - 位置：xuan/persistence_core/lib/src/
+  - 位置：xuan/persistence_core/lib/model/
   - 包含：SyncError/SyncErrorCode、SyncStatus/SyncRunState、PullCursor（TimestampCursor/RevisionCursor）、RemoteChange、RemoteChangesPage、ChangeApplyOutcome、LocalApplyResult
   - 验收：类型不暴露 drift/firestore 类型；能覆盖现有 SyncCoordinator 行为
 - [x] C2 定义 core Ports（接口契约）
-  - 位置：xuan/persistence_core/lib/src/ports/
+  - 位置：xuan/persistence_core/lib/model/ports.dart
   - 包含：OutboxStore、SyncStateStore、RemoteGateway、LocalApplier、DeviceIdentityProvider、AuthScopeProvider
   - 验收：SyncCoordinator 仅依赖 Ports + Types 即可工作
 - [x] C3 迁移/重写 SyncCoordinator（保持现有语义）
-  - 位置：xuan/persistence_core/lib/src/sync/
+  - 位置：xuan/persistence_core/lib/core/
   - 要求：Push（消费 outbox）+ Pull（增量拉取 + cursor 推进）+ SyncStatus 更新
   - 验收：核心逻辑不引入具体存储/网络实现
 - [x] C4 core 单测（状态机门禁）
@@ -150,9 +150,9 @@
 
 - persistence_core exports（对外导出，冻结）
   - `package:persistence_core/persistence_core.dart`
-    - `src/ports.dart`
-    - `src/types.dart`
-    - `src/sync_coordinator.dart`
+    - `model/ports.dart`
+    - `model/types.dart`
+    - `core/sync_coordinator.dart`
 
 - Core Types（冻结）
   - SyncErrorCode / SyncError
