@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:persistence_core/persistence_core.dart';
 import 'package:test/test.dart';
 
@@ -16,14 +18,12 @@ class _InMemoryOutboxStore implements OutboxStore {
     required String scopeUid,
     required int limit,
   }) async {
-    final batch = _recordsById.values
-        .where((r) => r.scopeUid == scopeUid)
-        .where((r) {
-          final status = _statusById[r.operationId];
-          return status == 'pending' || status == 'failed';
-        })
-        .toList(growable: false)
-      ..sort((a, b) => a.createdAtUtc.compareTo(b.createdAtUtc));
+    final batch =
+        _recordsById.values.where((r) => r.scopeUid == scopeUid).where((r) {
+      final status = _statusById[r.operationId];
+      return status == 'pending' || status == 'failed';
+    }).toList(growable: false)
+          ..sort((a, b) => a.createdAtUtc.compareTo(b.createdAtUtc));
 
     if (limit <= 0) return const [];
     return batch.length <= limit ? batch : batch.sublist(0, limit);
@@ -84,8 +84,7 @@ class _FakeRemoteGateway implements RemoteGateway {
       String entityType,
       PullCursor? sinceCursor,
       int limit,
-    )?
-        listChangesFn,
+    )? listChangesFn,
   }) : _listChangesFn = listChangesFn;
 
   final SyncError? Function(OutboxRecord record) pushError;
@@ -110,7 +109,8 @@ class _FakeRemoteGateway implements RemoteGateway {
   }) async {
     final fn = _listChangesFn;
     if (fn == null) {
-      return const RemoteChangesPage(changes: [], nextCursor: null, hasMore: false);
+      return const RemoteChangesPage(
+          changes: [], nextCursor: null, hasMore: false);
     }
     return fn(scopeUid, entityType, sinceCursor, limit);
   }
@@ -353,11 +353,13 @@ void main() {
       pullBatchSize: 10,
     );
 
-    final r = await coordinator.pullOnce(scopeUid: scopeUid, entityType: entityType);
+    final r =
+        await coordinator.pullOnce(scopeUid: scopeUid, entityType: entityType);
     expect(r.advanced, isTrue);
     expect(coordinator.status.state, equals(SyncRunState.idle));
 
-    final cursor = await stateStore.getCursor(scopeUid: scopeUid, entityType: entityType);
+    final cursor =
+        await stateStore.getCursor(scopeUid: scopeUid, entityType: entityType);
     expect(cursor, isA<TimestampCursor>());
   });
 
@@ -385,7 +387,7 @@ void main() {
               serverTimeUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             ),
           ],
-          nextCursor:  TimestampCursor(
+          nextCursor: TimestampCursor(
             serverUpdatedAtUtc: DateTime.utc(2026, 1, 10, 8, 0, 0),
             tieBreaker: 'op_remote_1',
           ),
@@ -414,12 +416,108 @@ void main() {
       pullBatchSize: 10,
     );
 
-    final r = await coordinator.pullOnce(scopeUid: scopeUid, entityType: entityType);
+    final r =
+        await coordinator.pullOnce(scopeUid: scopeUid, entityType: entityType);
     expect(r.advanced, isFalse);
     expect(r.lastError, isNotNull);
     expect(coordinator.status.state, equals(SyncRunState.error));
 
-    final cursor = await stateStore.getCursor(scopeUid: scopeUid, entityType: entityType);
+    final cursor =
+        await stateStore.getCursor(scopeUid: scopeUid, entityType: entityType);
     expect(cursor, isNull);
+  });
+
+  test('SyncConfigurationManager loads defaults and can persist updates',
+      () async {
+    final storage = InMemorySyncConfigurationStorage();
+    final manager = SyncConfigurationManager(storage: storage);
+
+    final first = await manager.load(writeBackIfMissing: true);
+    expect(first.pushBatchSize, equals(50));
+    expect(first.pullBatchSize, equals(50));
+    expect(first.pullEntityTypes, isEmpty);
+
+    final rawAfterDefault = await storage.read();
+    expect(rawAfterDefault, isNotNull);
+    expect(rawAfterDefault, contains('"pushBatchSize"'));
+
+    await manager.update(
+      (c) => c.copyWith(
+        pushBatchSize: 10,
+        pullBatchSize: 20,
+        pushInterval: const Duration(milliseconds: 1500),
+        pullEntityTypes: const ['layout_template', 'skill'],
+      ),
+      persist: true,
+    );
+
+    final manager2 = SyncConfigurationManager(storage: storage);
+    final loaded = await manager2.load(writeBackIfMissing: false);
+    expect(loaded.pushBatchSize, equals(10));
+    expect(loaded.pullBatchSize, equals(20));
+    expect(loaded.pushInterval, equals(const Duration(milliseconds: 1500)));
+    expect(loaded.pullEntityTypes,
+        containsAll(<String>['layout_template', 'skill']));
+  });
+
+  test('SyncConfigurationManager can load and persist YAML config', () async {
+    final dir = await Directory.systemTemp.createTemp('persistence_core_yaml_');
+    try {
+      final filePath = '${dir.path}/sync_configuration.yaml';
+      final storage = YamlFileSyncConfigurationStorage(filePath: filePath);
+      final manager = SyncConfigurationManager(
+        storage: storage,
+        codec: YamlSyncConfigurationCodec(),
+      );
+
+      final first = await manager.load(writeBackIfMissing: true);
+      expect(first.pushBatchSize, equals(50));
+
+      final rawAfterDefault = await File(filePath).readAsString();
+      expect(rawAfterDefault, contains('sync:'));
+      expect(rawAfterDefault, contains('  pushBatchSize: 50'));
+
+      await manager.update(
+        (c) => c.copyWith(
+          pushBatchSize: 7,
+          pullEntityTypes: const ['layout_template'],
+        ),
+        persist: true,
+      );
+
+      final rawAfterUpdate = await File(filePath).readAsString();
+      expect(rawAfterUpdate, contains('  pushBatchSize: 7'));
+      expect(rawAfterUpdate, contains('    - layout_template'));
+
+      final manager2 = SyncConfigurationManager(
+        storage: storage,
+        codec: YamlSyncConfigurationCodec(),
+      );
+      final loaded = await manager2.load(writeBackIfMissing: false);
+      expect(loaded.pushBatchSize, equals(7));
+      expect(loaded.pullEntityTypes, equals(const ['layout_template']));
+    } finally {
+      await dir.delete(recursive: true);
+    }
+  });
+
+  test('SyncConfigurationManager emits log events', () async {
+    final sink = InMemoryLogSink();
+    final logger = SyncLogger(sink: sink, minLevel: SyncLogLevel.debug);
+
+    final storage = InMemorySyncConfigurationStorage();
+    final manager = SyncConfigurationManager(
+      storage: storage,
+      logger: logger,
+    );
+
+    await manager.load(writeBackIfMissing: true);
+    await manager.update((c) => c.copyWith(pushBatchSize: 9), persist: true);
+
+    final events = sink.records.map((r) => r.event).toList(growable: false);
+    expect(events, contains('sync_config_load_start'));
+    expect(events, contains('sync_config_load_missing'));
+    expect(events, contains('sync_config_save_success'));
+    expect(events, contains('sync_config_update'));
   });
 }

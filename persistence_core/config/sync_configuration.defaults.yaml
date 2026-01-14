@@ -1,0 +1,14 @@
+sync:
+  pushBatchSize: 50
+  pullBatchSize: 50
+  maxAttemptsBeforeDead: 10
+
+  pullMaxPages: 100
+  pullLimit: null
+
+  pushIntervalMs: 10000
+  pullIntervalMs: 30000
+  minBackoffMs: 2000
+  maxBackoffMs: 120000
+
+  pullEntityTypes: []
