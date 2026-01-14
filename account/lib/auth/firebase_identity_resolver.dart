@@ -18,6 +18,101 @@ class FirebaseIdentityResolver implements IdentityResolver {
   final Uuid _uuid;
 
   @override
+  Future<void> ensureIdentityMapping({
+    required AuthSession session,
+    required String appUserId,
+  }) async {
+    final flowId = AccountLog.newFlowId();
+    final sw = Stopwatch()..start();
+    final baasUid = session.baasUid;
+    final doc = _firestore.collection('identity_map').doc(baasUid);
+
+    AccountLog.log.d({
+      'event': 'identity.ensure.start',
+      'flowId': flowId,
+      'baasUid': AccountLog.maskId(baasUid),
+      'appUserId': AccountLog.maskId(appUserId),
+    });
+
+    try {
+      await _firestore.runTransaction((tx) async {
+        final snapshot = await tx.get(doc);
+        final existing = snapshot.data();
+        final existingAppUserId =
+            existing == null ? null : existing['appUserId'];
+
+        if (existingAppUserId is String && existingAppUserId.isNotEmpty) {
+          if (existingAppUserId != appUserId) {
+            throw IdentityMappingConflict(
+              baasUid: baasUid,
+              expectedAppUserId: appUserId,
+              existingAppUserId: existingAppUserId,
+            );
+          }
+
+          tx.set(
+            doc,
+            {
+              'lastSeenAt': FieldValue.serverTimestamp(),
+              'providerType': session.providerType.name,
+              'schemaVersion': 1,
+            },
+            SetOptions(merge: true),
+          );
+          return;
+        }
+
+        tx.set(
+          doc,
+          {
+            'appUserId': appUserId,
+            'createdAt': FieldValue.serverTimestamp(),
+            'lastSeenAt': FieldValue.serverTimestamp(),
+            'providerType': session.providerType.name,
+            'schemaVersion': 1,
+          },
+        );
+      }).timeout(const Duration(seconds: 12));
+    } on IdentityMappingConflict {
+      rethrow;
+    } on TimeoutException catch (e, st) {
+      AccountLog.log.e(
+        {
+          'event': 'identity.ensure.timeout',
+          'flowId': flowId,
+          'baasUid': AccountLog.maskId(baasUid),
+          'appUserId': AccountLog.maskId(appUserId),
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      throw StateError('写入 identity_map 超时：请检查网络/Firestore 权限');
+    } catch (e, st) {
+      AccountLog.log.e(
+        {
+          'event': 'identity.ensure.fail',
+          'flowId': flowId,
+          'baasUid': AccountLog.maskId(baasUid),
+          'appUserId': AccountLog.maskId(appUserId),
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+
+    AccountLog.log.i({
+      'event': 'identity.ensure.ok',
+      'flowId': flowId,
+      'baasUid': AccountLog.maskId(baasUid),
+      'appUserId': AccountLog.maskId(appUserId),
+      'durationMs': sw.elapsedMilliseconds,
+    });
+  }
+
+  @override
   Future<String> resolveAppUserId(AuthSession session) async {
     final flowId = AccountLog.newFlowId();
     final sw = Stopwatch()..start();

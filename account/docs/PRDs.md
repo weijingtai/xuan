@@ -80,6 +80,29 @@
 
 ## 四、Auth（Register/Login）在方案 B 下的标准流程
 
+### 0) 游客模式（无需注册即可使用）
+
+目标：用户无需注册即可进入主应用并产生可持久化的 `appUserId`；后续注册/登录时可以保留游客期数据。
+
+**核心定义**
+- **游客身份**：一种“临时会话形态”，用于在无注册状态下启动 `appUserId` 分桶与本地分库。
+- **游客期数据**：游客激活的 `appUserId_guest` 下产生的本地数据与待同步操作。
+
+**实现策略（推荐优先级）**
+1. **BaaS 匿名会话（优先，Firebase 现成支持）**
+   - 游客进入时：`AuthAdapter.signInAnonymously()` 获取 `baasUid`；随后走 `resolveAppUserId` 创建/命中 `identity_map/{baasUid}`。
+   - 游客注册（创建新账号）时：在匿名会话上做“账号升级/绑定凭证”，尽量保持同一个 `baasUid` 不变，从而天然保留 `identity_map -> appUserId`。
+   - 依赖约束：要求 BaaS 提供匿名登录与匿名账号升级能力（不同 BaaS 差异较大）。
+2. **本地游客（保底，弱依赖 BaaS）**
+   - 游客进入时：本地生成并持久化 `appUserId_guest`，直接进入主应用并用其分库。
+   - 游客注册/登录后：通过 `ensureIdentityMapping(session, appUserId_guest)` 将现有登录会话绑定到该 `appUserId_guest`。
+   - 依赖约束：需要后端/规则允许安全写入映射（可用云函数代理）。
+
+**验收标准（MVP）**
+- 首次安装打开即可进入主应用（不强制登录）。
+- 游客态产生的数据在重启 App 后仍可见（同一个 `appUserId_guest`）。
+- 游客注册“新账号”后，游客期数据仍可见且后续同步归入该账号。
+
 ### 1) Login（任意第三方）
 1. `AuthAdapter.signIn(provider)` → 得到 `AuthSession(baasUid, idToken, …)`
 2. `IdentityResolver.resolveAppUserId(session)`：
@@ -98,6 +121,41 @@
   1) 当前已登录且已知 `appUserId`
   2) 用 `newProvider` 再登录一次得到 `newBaasUid`
   3) 写 `identity_map/{newBaasUid} -> appUserId`（如需防止冒用，建议用云函数校验当前会话）
+
+### 3) 游客注册与“已有账号登录”的冲突处理
+
+场景：用户在游客态已产生 `appUserId_guest` 并产生数据；之后用户尝试登录一个“已存在账号”（对应 `appUserId_account`）。
+
+**问题本质**
+- `appUserId_guest` 与 `appUserId_account` 两个数据桶需要明确归属。
+- 目标是让用户既能进入已有账号，又不丢失游客期数据。
+
+**产品交互（推荐）**
+- 当检测到“游客态 + 登录既有账号”时，给出三选一：
+  1) **合并到已有账号（推荐）**：游客期数据并入 `appUserId_account`。
+  2) **保留为独立访客空间**：仅切换到已有账号；访客空间保留但不合并。
+  3) **丢弃访客数据并登录**：清除 `appUserId_guest` 的本地数据后登录。
+
+**技术实现（MVP：本地合并 + 重放同步）**
+- 合并目标：让 `users/{appUserId_account}` 成为唯一权威远端桶；不要求迁移/删除 `users/{appUserId_guest}`。
+- 合并方法：
+  - 将游客期产生的本地业务数据写入到账号库（可通过重放“本地写操作”实现）。
+  - 将游客 outbox 中可重试记录重写为账号 outbox 记录并入队：
+    - `scopeUid` 从 `appUserId_guest` 改为 `appUserId_account`
+    - `operationId` 建议重新生成，避免跨桶幂等键语义混淆
+    - 其余字段保持不变（`entityType/entityId/opType/payloadJson/createdAtUtc`）
+
+**冲突策略（默认规则）**
+- 当同一 `entityType + entityId` 在游客与账号均存在：
+  - 默认：游客覆盖账号（更贴近用户“刚刚在本机做的最新意图”）。
+  - 可选增强：对“用户创作型内容”冲突时保留两份（为游客内容生成新 `entityId`）。
+
+**验收标准（MVP）**
+- 游客态产生的数据在登录既有账号并选择“合并”后：
+  - 账号态本地立刻可见
+  - 同步后账号远端可见（落入 `users/{appUserId_account}`）
+- 选择“不合并”时：登录后不显示游客数据；退出后仍可回到游客空间。
+- 选择“丢弃”时：游客本地数据与待同步操作被清理，且不会再同步到任何远端桶。
 
 ---
 

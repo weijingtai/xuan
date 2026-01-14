@@ -18,10 +18,82 @@ class FirebaseEmailAuthAdapter implements AuthAdapter {
         baasUid: user.uid,
         idToken: token,
         email: user.email,
-        providerType: AuthProviderType.emailPassword,
+        providerType: user.isAnonymous
+            ? AuthProviderType.anonymous
+            : AuthProviderType.emailPassword,
         issuedAt: DateTime.now().toUtc(),
       );
     });
+  }
+
+  @override
+  Future<AuthSession> signInAnonymously() async {
+    final flowId = AccountLog.newFlowId();
+    final sw = Stopwatch()..start();
+    AccountLog.log.d({
+      'event': 'firebase_auth.sign_in_anonymous.start',
+      'flowId': flowId,
+    });
+
+    fb.UserCredential credential;
+    try {
+      credential = await _auth.signInAnonymously();
+    } on fb.FirebaseAuthException catch (e, st) {
+      AccountLog.log.e(
+        {
+          'event': 'firebase_auth.sign_in_anonymous.auth_exception',
+          'flowId': flowId,
+          'code': e.code,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    } catch (e, st) {
+      AccountLog.log.e(
+        {
+          'event': 'firebase_auth.sign_in_anonymous.fail',
+          'flowId': flowId,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
+
+    final user = credential.user;
+    if (user == null) {
+      final err = StateError('FirebaseAuth returned null user');
+      AccountLog.log.e(
+        {
+          'event': 'firebase_auth.sign_in_anonymous.fail_null_user',
+          'flowId': flowId,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: err,
+      );
+      throw err;
+    }
+
+    final token = await user.getIdToken();
+    final session = AuthSession(
+      baasUid: user.uid,
+      idToken: token,
+      email: user.email,
+      providerType: AuthProviderType.anonymous,
+      issuedAt: DateTime.now().toUtc(),
+    );
+
+    AccountLog.log.i({
+      'event': 'firebase_auth.sign_in_anonymous.ok',
+      'flowId': flowId,
+      'baasUid': AccountLog.maskId(session.baasUid),
+      'durationMs': sw.elapsedMilliseconds,
+    });
+
+    return session;
   }
 
   @override

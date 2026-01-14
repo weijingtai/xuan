@@ -49,9 +49,14 @@ class AccountExampleApp extends StatelessWidget {
       providers: [
         Provider<Uuid>(create: (_) => const Uuid()),
         Provider<AccountRegistry>(create: (_) => AccountRegistry()),
+        Provider<GuestIdentityStore>(
+          create: (ctx) => GuestIdentityStore(uuid: ctx.read<Uuid>()),
+        ),
         ChangeNotifierProvider<ActiveAccountStore>(
-          create: (ctx) =>
-              ActiveAccountStore(registry: ctx.read<AccountRegistry>())..load(),
+          create: (ctx) => ActiveAccountStore(
+            registry: ctx.read<AccountRegistry>(),
+            guestIdentityStore: ctx.read<GuestIdentityStore>(),
+          )..load(),
         ),
         Provider<FirebaseAuth>(create: (_) => FirebaseAuth.instance),
         Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
@@ -86,6 +91,7 @@ class _ExampleHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = context.watch<ActiveAccountStore>();
+    final coordinator = context.read<AuthCoordinator>();
 
     if (!store.isReady) {
       return const Scaffold(
@@ -93,8 +99,56 @@ class _ExampleHome extends StatelessWidget {
       );
     }
 
+    if (store.isGuest) {
+      final appUserId = store.activeAppUserId ?? '';
+      return Scaffold(
+        appBar: AppBar(title: const Text('Account Example')),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 520),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text('模式: guest'),
+                  const SizedBox(height: 8),
+                  Text('appUserId: $appUserId'),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () async {
+                      try {
+                        await coordinator.signInAnonymously();
+                      } catch (e) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('匿名登录失败: $e')),
+                        );
+                      }
+                    },
+                    child: const Text('Firebase 匿名登录（绑定 guest appUserId）'),
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const AuthPage()),
+                      );
+                    },
+                    child: const Text('打开邮箱登录页'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     if (!store.isSignedIn) {
-      return const AuthPage();
+      return const Scaffold(
+        body: Center(child: Text('No active account')),
+      );
     }
 
     return const AccountProfilePage();

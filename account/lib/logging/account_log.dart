@@ -9,10 +9,10 @@ class AccountLog {
 
   static final Logger log = Logger(
     filter: _filter,
-    level: Level.verbose,
+    level: Level.trace,
     printer: kReleaseMode
-        ? SimplePrinter(colors: false, printTime: true)
-        : PrettyPrinter(methodCount: 0, printTime: true),
+        ? SimplePrinter(colors: false)
+        : PrettyPrinter(methodCount: 0),
   );
 
   static const Uuid _uuid = Uuid();

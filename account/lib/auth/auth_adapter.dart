@@ -3,6 +3,8 @@ import 'auth_session.dart';
 abstract class AuthAdapter {
   Stream<AuthSession?> sessionChanges();
 
+  Future<AuthSession> signInAnonymously();
+
   Future<AuthSession> signInWithEmailPassword({
     required String email,
     required String password,

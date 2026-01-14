@@ -1,5 +1,6 @@
 enum AuthProviderType {
   emailPassword,
+  anonymous,
 }
 
 class AuthSession {
