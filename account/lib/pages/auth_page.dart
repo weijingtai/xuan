@@ -5,6 +5,12 @@ import 'package:provider/provider.dart';
 import '../auth/active_account_store.dart';
 import '../auth/auth_coordinator.dart';
 
+enum _GuestConflictChoice {
+  merge,
+  keep,
+  discard,
+}
+
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
@@ -260,6 +266,60 @@ class _AuthPageState extends State<AuthPage> {
                     password: data.password,
                   );
                   return null;
+                } on GuestAccountConflict catch (c) {
+                  if (!mounted) return '页面已关闭，请重试';
+
+                  final choice = await showDialog<_GuestConflictChoice>(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      title: const Text('检测到游客数据'),
+                      content: const Text(
+                        '登录的账号与本机游客空间不同。请选择：\n\n- 合并：把游客期数据迁移到该账号\n- 保留：账号与游客空间独立\n- 丢弃：清空游客空间后登录',
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () =>
+                              Navigator.of(ctx).pop(_GuestConflictChoice.keep),
+                          child: const Text('保留'),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx)
+                              .pop(_GuestConflictChoice.discard),
+                          child: const Text('丢弃'),
+                        ),
+                        FilledButton(
+                          onPressed: () =>
+                              Navigator.of(ctx).pop(_GuestConflictChoice.merge),
+                          child: const Text('合并'),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (choice == null) return '已取消登录';
+
+                  final delegate = context.read<GuestAccountConflictDelegate?>();
+                  if (delegate == null &&
+                      (choice == _GuestConflictChoice.merge ||
+                          choice == _GuestConflictChoice.discard)) {
+                    return '缺少合并实现：请在主工程注入 GuestAccountConflictDelegate';
+                  }
+
+                  try {
+                    if (choice == _GuestConflictChoice.merge) {
+                      await delegate!.mergeGuestIntoAccount(
+                        guestAppUserId: c.guestAppUserId,
+                        accountAppUserId: c.accountAppUserId,
+                      );
+                    } else if (choice == _GuestConflictChoice.discard) {
+                      await delegate!.discardGuest(guestAppUserId: c.guestAppUserId);
+                    }
+
+                    await coordinator.activateSession(c.session);
+                    return null;
+                  } catch (e) {
+                    return coordinator.formatAuthError(e);
+                  }
                 } catch (e) {
                   return coordinator.formatAuthError(e);
                 }

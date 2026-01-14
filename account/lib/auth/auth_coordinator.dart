@@ -10,6 +10,32 @@ import 'auth_adapter.dart';
 import 'auth_session.dart';
 import 'identity_resolver.dart';
 
+class GuestAccountConflict implements Exception {
+  const GuestAccountConflict({
+    required this.session,
+    required this.guestAppUserId,
+    required this.accountAppUserId,
+  });
+
+  final AuthSession session;
+  final String guestAppUserId;
+  final String accountAppUserId;
+
+  @override
+  String toString() {
+    return 'GuestAccountConflict(guestAppUserId=$guestAppUserId, accountAppUserId=$accountAppUserId)';
+  }
+}
+
+abstract class GuestAccountConflictDelegate {
+  Future<void> mergeGuestIntoAccount({
+    required String guestAppUserId,
+    required String accountAppUserId,
+  });
+
+  Future<void> discardGuest({required String guestAppUserId});
+}
+
 class AuthCoordinator {
   AuthCoordinator({
     required AuthAdapter authAdapter,
@@ -101,8 +127,31 @@ class AuthCoordinator {
             createIfMissing: false,
           )
           .timeout(const Duration(seconds: 20));
-      await _activateFromSession(session, flowId: flowId)
-          .timeout(const Duration(seconds: 20));
+
+      final guestAppUserId = _activeAccountStore.isGuest
+          ? _activeAccountStore.activeAppUserId
+          : null;
+
+      final accountAppUserId = await _identityResolver
+          .resolveAppUserId(session)
+          .timeout(const Duration(seconds: 12));
+
+      if (guestAppUserId != null &&
+          guestAppUserId.isNotEmpty &&
+          accountAppUserId != guestAppUserId) {
+        throw GuestAccountConflict(
+          session: session,
+          guestAppUserId: guestAppUserId,
+          accountAppUserId: accountAppUserId,
+        );
+      }
+
+      await _activateAppUserId(
+        appUserId: accountAppUserId,
+        session: session,
+        flowId: flowId,
+      ).timeout(const Duration(seconds: 20));
+
       AccountLog.log.i({
         'event': 'auth.sign_in.ok',
         'flowId': flowId,
@@ -143,8 +192,26 @@ class AuthCoordinator {
             createIfMissing: true,
           )
           .timeout(const Duration(seconds: 20));
-      await _activateFromSession(session, flowId: flowId)
-          .timeout(const Duration(seconds: 20));
+
+      final guestAppUserId = _activeAccountStore.isGuest
+          ? _activeAccountStore.activeAppUserId
+          : null;
+
+      if (guestAppUserId != null && guestAppUserId.isNotEmpty) {
+        await _identityResolver
+            .ensureIdentityMapping(session: session, appUserId: guestAppUserId)
+            .timeout(const Duration(seconds: 12));
+
+        await _activateAppUserId(
+          appUserId: guestAppUserId,
+          session: session,
+          flowId: flowId,
+        );
+      } else {
+        await _activateFromSession(session, flowId: flowId)
+            .timeout(const Duration(seconds: 20));
+      }
+
       AccountLog.log.i({
         'event': 'auth.sign_in_or_register.ok',
         'flowId': flowId,
@@ -166,6 +233,46 @@ class AuthCoordinator {
 
   Future<void> sendPasswordResetEmail({required String email}) {
     return _authAdapter.sendPasswordResetEmail(email: email);
+  }
+
+  Future<void> activateSession(AuthSession session) async {
+    final flowId = AccountLog.newFlowId();
+    await _activateFromResolvedAppUserId(
+      session: session,
+      appUserId: await _identityResolver.resolveAppUserId(session),
+      flowId: flowId,
+    );
+  }
+
+  Future<void> _activateFromResolvedAppUserId({
+    required AuthSession session,
+    required String appUserId,
+    required String flowId,
+  }) async {
+    final sw = Stopwatch()..start();
+    AccountLog.log.d({
+      'event': 'auth.activate_resolved.start',
+      'flowId': flowId,
+      'baasUid': AccountLog.maskId(session.baasUid),
+      'appUserId': AccountLog.maskId(appUserId),
+    });
+
+    final record = AccountRecord(
+      appUserId: appUserId,
+      baasUid: session.baasUid,
+      providerType: session.providerType,
+      lastLoginAtUtc: DateTime.now().toUtc(),
+      email: session.email,
+    );
+    await _accountRegistry.upsertAccount(record);
+    await _activeAccountStore.setActiveAppUserId(appUserId);
+
+    AccountLog.log.i({
+      'event': 'auth.activate_resolved.ok',
+      'flowId': flowId,
+      'appUserId': AccountLog.maskId(appUserId),
+      'durationMs': sw.elapsedMilliseconds,
+    });
   }
 
   Future<void> _activateFromSession(
@@ -190,22 +297,11 @@ class AuthCoordinator {
         'durationMs': sw.elapsedMilliseconds,
       });
 
-      final record = AccountRecord(
+      await _activateFromResolvedAppUserId(
+        session: session,
         appUserId: appUserId,
-        baasUid: session.baasUid,
-        providerType: session.providerType,
-        lastLoginAtUtc: DateTime.now().toUtc(),
-        email: session.email,
+        flowId: flowId,
       );
-      await _accountRegistry.upsertAccount(record);
-      await _activeAccountStore.setActiveAppUserId(appUserId);
-
-      AccountLog.log.i({
-        'event': 'auth.activate.ok',
-        'flowId': flowId,
-        'appUserId': AccountLog.maskId(appUserId),
-        'durationMs': sw.elapsedMilliseconds,
-      });
     } on TimeoutException catch (e, st) {
       AccountLog.log.e(
         {

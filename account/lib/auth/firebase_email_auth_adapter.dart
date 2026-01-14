@@ -111,6 +111,68 @@ class FirebaseEmailAuthAdapter implements AuthAdapter {
       'createIfMissing': createIfMissing,
     });
 
+    final currentUser = _auth.currentUser;
+    if (createIfMissing && currentUser != null && currentUser.isAnonymous) {
+      try {
+        AccountLog.log.i({
+          'event': 'firebase_auth.link_anon_email.start',
+          'flowId': flowId,
+          'email': AccountLog.maskEmail(email),
+        });
+        final linked = await currentUser.linkWithCredential(
+          fb.EmailAuthProvider.credential(email: email, password: password),
+        );
+
+        final user = linked.user;
+        if (user == null) {
+          throw StateError('FirebaseAuth returned null user after link');
+        }
+
+        final token = await user.getIdToken();
+        final session = AuthSession(
+          baasUid: user.uid,
+          idToken: token,
+          email: user.email,
+          providerType: AuthProviderType.emailPassword,
+          issuedAt: DateTime.now().toUtc(),
+        );
+
+        AccountLog.log.i({
+          'event': 'firebase_auth.link_anon_email.ok',
+          'flowId': flowId,
+          'baasUid': AccountLog.maskId(session.baasUid),
+          'durationMs': sw.elapsedMilliseconds,
+        });
+
+        return session;
+      } on fb.FirebaseAuthException catch (e, st) {
+        AccountLog.log.w(
+          {
+            'event': 'firebase_auth.link_anon_email.auth_exception',
+            'flowId': flowId,
+            'code': e.code,
+            'email': AccountLog.maskEmail(email),
+            'durationMs': sw.elapsedMilliseconds,
+          },
+          error: e,
+          stackTrace: st,
+        );
+        rethrow;
+      } catch (e, st) {
+        AccountLog.log.e(
+          {
+            'event': 'firebase_auth.link_anon_email.fail',
+            'flowId': flowId,
+            'email': AccountLog.maskEmail(email),
+            'durationMs': sw.elapsedMilliseconds,
+          },
+          error: e,
+          stackTrace: st,
+        );
+        rethrow;
+      }
+    }
+
     fb.UserCredential credential;
     try {
       credential = await _auth.signInWithEmailAndPassword(

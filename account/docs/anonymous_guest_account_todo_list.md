@@ -19,21 +19,21 @@
 
 ### M2：本地游客（无网络也可用的底座）
 
-- [ ] 新增本地 GuestIdentityStore 持久化 appUserId_guest
+- [x] 新增本地 GuestIdentityStore 持久化 appUserId_guest
   - 建议：SharedPreferences 存 `guest:app_user_id`（或复用现有 registry 的 key 体系）。
   - 验收：首次启动生成，重启后仍为同一个 appUserId。
 
-- [ ] 扩展 ActiveAccountStore 支持 guest 与 signedIn 区分
+- [x] 扩展 ActiveAccountStore 支持 guest 与 signedIn 区分
   - 输出：能够表达当前处于 guest / signed-in / none（并给 UI 做决策）。
   - 验收：未登录时仍能进入主应用（使用 guest scope）。
 
 ### M3：认证适配层扩展（为 BaaS 匿名做“可插拔能力位”）
 
-- [ ] 扩展 AuthAdapter 支持匿名会话与账号升级能力
+- [x] 扩展 AuthAdapter 支持匿名会话与账号升级能力
   - 输出：抽象出匿名登录、匿名升级（若支持）与常规登录注册。
   - 验收：业务层只依赖接口，不直接引用 FirebaseAuth。
 
-- [ ] 实现 FirebaseAuthAdapter 的匿名登录与升级注册
+- [x] 实现 FirebaseAuthAdapter 的匿名登录与升级注册
   - 输出：
     - 匿名登录：获取 baasUid
     - 注册新账号：优先走“匿名账号升级”（保持 uid）
@@ -42,11 +42,11 @@
 
 ### M4：身份映射（把 guest 的 appUserId 与会话绑定起来）
 
-- [ ] 扩展 IdentityResolver 支持 ensureIdentityMapping 绑定
+- [x] 扩展 IdentityResolver 支持 ensureIdentityMapping 绑定
   - 输出：在“已有 appUserId（guest）”与“新会话（baasUid）”之间建立安全绑定。
   - 验收：本地游客可以在登录后保留 appUserId（不依赖 uid 不变）。
 
-- [ ] 实现 FirebaseIdentityResolver 的绑定与冲突校验
+- [x] 实现 FirebaseIdentityResolver 的绑定与冲突校验
   - 输出：
     - 若 identity_map 不存在：写入 appUserId_guest
     - 若存在且一致：更新 lastSeen
@@ -55,11 +55,11 @@
 
 ### M5：启动流程（默认进入游客空间，并可无感获得匿名会话）
 
-- [ ] 实现启动流程：无账号先进入本地游客空间
+- [x] 实现启动流程：无账号先进入本地游客空间
   - 输出：App 启动时若无 active account，则设置 active=guest appUserId。
   - 验收：首次启动不强制进入登录页。
 
-- [ ] 实现启动流程：后台尝试匿名会话并绑定现有 guest
+- [x] 实现启动流程：后台尝试匿名会话并绑定现有 guest
   - 输出：若 BaaS 可用则后台匿名登录，并调用 ensureIdentityMapping(anonSession, appUserId_guest)。
   - 验收：对用户无感；失败不影响本地使用。
 
@@ -71,7 +71,7 @@
     - 否则：正常注册后 ensureIdentityMapping(session, appUserId_guest)
   - 验收：注册后仍保留游客期数据（同 appUserId）。
 
-- [ ] 实现游客登录既有账号的三选一合并弹窗
+- [x] 实现游客登录既有账号的三选一合并弹窗
   - 输出：合并 / 保留独立游客空间 / 丢弃游客数据 并登录。
   - 验收：三条路径都可走通且可回溯（至少在本机）。
 
@@ -85,12 +85,12 @@
 
 ### M7：合并能力（把游客期数据同步进既有账号）
 
-- [ ] 实现“合并到账号”本地数据迁移与冲突策略
+- [x] 实现“合并到账号”本地数据迁移与冲突策略
   - 默认策略：游客覆盖账号（可选：对创作型内容保留两份）。
   - 输出：账号本地库立即可见游客期内容。
   - 验收：合并后 UI 立刻呈现，且不破坏账号既有数据。
 
-- [ ] 实现 outbox 重写入队并触发账号同步
+- [x] 实现 outbox 重写入队并触发账号同步
   - 输出：将 guest outbox 记录重写 scopeUid=account，并生成新 operationId 后入队。
   - 验收：同步后账号远端桶 `users/{appUserId_account}` 能看到合并结果。
 

@@ -9,6 +9,102 @@ void main() {
     expect(AuthProviderType.emailPassword.name, 'emailPassword');
   });
 
+  test('guest -> register keeps same appUserId', () async {
+    SharedPreferences.setMockInitialValues({});
+    final registry = AccountRegistry();
+    final guestStore = GuestIdentityStore(uuid: const Uuid());
+    final active = ActiveAccountStore(registry: registry, guestIdentityStore: guestStore);
+    await active.load();
+    final guestId = active.activeAppUserId!;
+
+    final fakeAdapter = _FakeAuthAdapter(
+      session: AuthSession(
+        baasUid: 'baas-1',
+        providerType: AuthProviderType.emailPassword,
+        issuedAt: DateTime.now().toUtc(),
+      ),
+    );
+    final fakeResolver = _FakeIdentityResolver(resolvedAppUserId: 'resolved-app-user');
+
+    final coordinator = AuthCoordinator(
+      authAdapter: fakeAdapter,
+      identityResolver: fakeResolver,
+      accountRegistry: registry,
+      activeAccountStore: active,
+    );
+
+    await coordinator.signInOrRegisterWithEmailPassword(email: 'a@b.c', password: 'p');
+
+    expect(active.isSignedIn, isTrue);
+    expect(active.activeAppUserId, guestId);
+  });
+
+  test('guest -> anonymous mapping called', () async {
+    SharedPreferences.setMockInitialValues({});
+    final registry = AccountRegistry();
+    final guestStore = GuestIdentityStore(uuid: const Uuid());
+    final active = ActiveAccountStore(registry: registry, guestIdentityStore: guestStore);
+    await active.load();
+    final guestId = active.activeAppUserId!;
+
+    final fakeAdapter = _FakeAuthAdapter(
+      session: AuthSession(
+        baasUid: 'baas-2',
+        providerType: AuthProviderType.anonymous,
+        issuedAt: DateTime.now().toUtc(),
+      ),
+    );
+    final fakeResolver = _FakeIdentityResolver(resolvedAppUserId: 'resolved-app-user');
+
+    final coordinator = AuthCoordinator(
+      authAdapter: fakeAdapter,
+      identityResolver: fakeResolver,
+      accountRegistry: registry,
+      activeAccountStore: active,
+    );
+
+    await coordinator.signInAnonymously();
+
+    expect(fakeResolver.lastEnsuredAppUserId, guestId);
+    expect(active.isSignedIn, isTrue);
+    expect(active.activeAppUserId, guestId);
+  });
+
+  test('guest -> sign in existing account throws GuestAccountConflict', () async {
+    SharedPreferences.setMockInitialValues({});
+    final registry = AccountRegistry();
+    final guestStore = GuestIdentityStore(uuid: const Uuid());
+    final active = ActiveAccountStore(registry: registry, guestIdentityStore: guestStore);
+    await active.load();
+    final guestId = active.activeAppUserId!;
+
+    final fakeAdapter = _FakeAuthAdapter(
+      session: AuthSession(
+        baasUid: 'baas-3',
+        providerType: AuthProviderType.emailPassword,
+        issuedAt: DateTime.now().toUtc(),
+      ),
+    );
+    final fakeResolver = _FakeIdentityResolver(resolvedAppUserId: 'account-app-user');
+
+    final coordinator = AuthCoordinator(
+      authAdapter: fakeAdapter,
+      identityResolver: fakeResolver,
+      accountRegistry: registry,
+      activeAccountStore: active,
+    );
+
+    try {
+      await coordinator.signInWithEmailPassword(email: 'a@b.c', password: 'p');
+      fail('expected GuestAccountConflict');
+    } on GuestAccountConflict catch (e) {
+      expect(e.guestAppUserId, guestId);
+      expect(e.accountAppUserId, 'account-app-user');
+      expect(active.activeAppUserId, guestId);
+      expect(active.isSignedIn, isFalse);
+    }
+  });
+
   test('GuestIdentityStore creates and persists guest appUserId', () async {
     SharedPreferences.setMockInitialValues({});
     final store = GuestIdentityStore(uuid: const Uuid());
@@ -79,4 +175,53 @@ void main() {
     final active = await registry.getActiveAppUserId();
     expect(active, isNull);
   });
+}
+
+class _FakeAuthAdapter implements AuthAdapter {
+  _FakeAuthAdapter({required this.session});
+  final AuthSession session;
+
+  @override
+  Stream<AuthSession?> sessionChanges() => const Stream.empty();
+
+  @override
+  Future<AuthSession> signInWithEmailPassword({
+    required String email,
+    required String password,
+    required bool createIfMissing,
+  }) async {
+    return session;
+  }
+
+  @override
+  Future<AuthSession> signInAnonymously() async => session;
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) async {}
+
+  @override
+  Future<void> signOut() async {}
+
+  @override
+  Future<void> updatePassword({required String newPassword}) async {}
+
+  @override
+  Future<void> deleteAccount() async {}
+}
+
+class _FakeIdentityResolver implements IdentityResolver {
+  _FakeIdentityResolver({required this.resolvedAppUserId});
+  final String resolvedAppUserId;
+  String? lastEnsuredAppUserId;
+
+  @override
+  Future<String> resolveAppUserId(AuthSession session) async => resolvedAppUserId;
+
+  @override
+  Future<void> ensureIdentityMapping({
+    required AuthSession session,
+    required String appUserId,
+  }) async {
+    lastEnsuredAppUserId = appUserId;
+  }
 }
