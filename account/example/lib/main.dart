@@ -2,6 +2,7 @@ import 'package:account/account.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -13,7 +14,30 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  const useEmulator = bool.fromEnvironment(
+    'USE_FIREBASE_EMULATOR',
+    defaultValue: false,
+  );
+  if (useEmulator) {
+    final host = _emulatorHost();
+    FirebaseAuth.instance.useAuthEmulator(host, 9099);
+    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+  }
+
   runApp(const AccountExampleApp());
+}
+
+String _emulatorHost() {
+  if (kIsWeb) return 'localhost';
+  return switch (defaultTargetPlatform) {
+    TargetPlatform.android => '10.0.2.2',
+    TargetPlatform.iOS => 'localhost',
+    TargetPlatform.macOS => 'localhost',
+    TargetPlatform.windows => 'localhost',
+    TargetPlatform.linux => 'localhost',
+    TargetPlatform.fuchsia => 'localhost',
+  };
 }
 
 class AccountExampleApp extends StatelessWidget {
@@ -51,7 +75,28 @@ class AccountExampleApp extends StatelessWidget {
           ),
         ),
       ],
-      child: const MaterialApp(home: AuthPage()),
+      child: const MaterialApp(home: _ExampleHome()),
     );
+  }
+}
+
+class _ExampleHome extends StatelessWidget {
+  const _ExampleHome();
+
+  @override
+  Widget build(BuildContext context) {
+    final store = context.watch<ActiveAccountStore>();
+
+    if (!store.isReady) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (!store.isSignedIn) {
+      return const AuthPage();
+    }
+
+    return const AccountProfilePage();
   }
 }
