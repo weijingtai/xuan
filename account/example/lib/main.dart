@@ -1,8 +1,18 @@
 import 'package:account/account.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:uuid/uuid.dart';
 
-void main() {
+import 'firebase_options.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const AccountExampleApp());
 }
 
@@ -13,14 +23,24 @@ class AccountExampleApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<Uuid>(create: (_) => const Uuid()),
         Provider<AccountRegistry>(create: (_) => AccountRegistry()),
         ChangeNotifierProvider<ActiveAccountStore>(
           create: (ctx) =>
               ActiveAccountStore(registry: ctx.read<AccountRegistry>())..load(),
         ),
-        Provider<AuthAdapter>(create: (_) => _UnavailableAuthAdapter()),
+        Provider<FirebaseAuth>(create: (_) => FirebaseAuth.instance),
+        Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
+        Provider<AuthAdapter>(
+          create: (ctx) => FirebaseEmailAuthAdapter(
+            auth: ctx.read<FirebaseAuth>(),
+          ),
+        ),
         Provider<IdentityResolver>(
-          create: (_) => _UnavailableIdentityResolver(),
+          create: (ctx) => FirebaseIdentityResolver(
+            firestore: ctx.read<FirebaseFirestore>(),
+            uuid: ctx.read<Uuid>(),
+          ),
         ),
         Provider<AuthCoordinator>(
           create: (ctx) => AuthCoordinator(
@@ -32,44 +52,6 @@ class AccountExampleApp extends StatelessWidget {
         ),
       ],
       child: const MaterialApp(home: AuthPage()),
-    );
-  }
-}
-
-class _UnavailableAuthAdapter implements AuthAdapter {
-  @override
-  Stream<AuthSession?> sessionChanges() => const Stream.empty();
-
-  @override
-  Future<AuthSession> signInWithEmailPassword({
-    required String email,
-    required String password,
-    required bool createIfMissing,
-  }) {
-    throw StateError(
-      'Firebase 未接入：请在 example 工程中初始化 Firebase，并改用 FirebaseEmailAuthAdapter。',
-    );
-  }
-
-  @override
-  Future<void> signOut() async {}
-
-  @override
-  Future<void> updatePassword({required String newPassword}) {
-    throw StateError('Firebase 未接入：updatePassword 不可用');
-  }
-
-  @override
-  Future<void> deleteAccount() {
-    throw StateError('Firebase 未接入：deleteAccount 不可用');
-  }
-}
-
-class _UnavailableIdentityResolver implements IdentityResolver {
-  @override
-  Future<String> resolveAppUserId(AuthSession session) {
-    throw StateError(
-      'Firebase 未接入：请改用 FirebaseIdentityResolver(firestore, uuid)。',
     );
   }
 }

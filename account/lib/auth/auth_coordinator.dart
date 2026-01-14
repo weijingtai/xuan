@@ -25,6 +25,18 @@ class AuthCoordinator {
 
   Stream<AuthSession?> sessionChanges() => _authAdapter.sessionChanges();
 
+  Future<void> signInWithEmailPassword({
+    required String email,
+    required String password,
+  }) async {
+    final session = await _authAdapter.signInWithEmailPassword(
+      email: email,
+      password: password,
+      createIfMissing: false,
+    );
+    await _activateFromSession(session);
+  }
+
   Future<void> signInOrRegisterWithEmailPassword({
     required String email,
     required String password,
@@ -34,6 +46,14 @@ class AuthCoordinator {
       password: password,
       createIfMissing: true,
     );
+    await _activateFromSession(session);
+  }
+
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return _authAdapter.sendPasswordResetEmail(email: email);
+  }
+
+  Future<void> _activateFromSession(AuthSession session) async {
     final appUserId = await _identityResolver.resolveAppUserId(session);
     final record = AccountRecord(
       appUserId: appUserId,

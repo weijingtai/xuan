@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "163917481454",
+    "project_id": "xuan-xue",
+    "storage_bucket": "xuan-xue.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163917481454:android:b40ccaeab1cfb5715afaff",
+        "android_client_info": {
+          "package_name": "com.example.example"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0DbXbUQ-TMrBCT4V58J0MExC4ck59ADI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -37,11 +37,22 @@ class FirebaseEmailAuthAdapter implements AuthAdapter {
       );
     } on fb.FirebaseAuthException catch (e) {
       if (!createIfMissing) rethrow;
-      if (e.code != 'user-not-found') rethrow;
-      credential = await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+
+      final shouldTryCreate =
+          e.code == 'user-not-found' || e.code == 'invalid-credential';
+      if (!shouldTryCreate) rethrow;
+
+      try {
+        credential = await _auth.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } on fb.FirebaseAuthException catch (createError) {
+        if (createError.code == 'email-already-in-use') {
+          throw e;
+        }
+        rethrow;
+      }
     }
 
     final user = credential.user;
@@ -57,6 +68,11 @@ class FirebaseEmailAuthAdapter implements AuthAdapter {
       providerType: AuthProviderType.emailPassword,
       issuedAt: DateTime.now().toUtc(),
     );
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return _auth.sendPasswordResetEmail(email: email);
   }
 
   @override
