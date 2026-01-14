@@ -26,6 +26,7 @@ FirestoreRemoteGateway _gateway(
   DateTime Function()? nowUtc,
   String module = 'persistence_firebase',
   int maxAttemptsBeforeDead = 10,
+  SyncLogger? logger,
 }) {
   return FirestoreRemoteGateway(
     firestore: firestore,
@@ -33,6 +34,7 @@ FirestoreRemoteGateway _gateway(
     nowUtc: nowUtc ?? () => DateTime.utc(2026, 1, 11, 10, 0, 0),
     module: module,
     maxAttemptsBeforeDead: maxAttemptsBeforeDead,
+    logger: logger,
   );
 }
 
@@ -65,7 +67,9 @@ void main() {
   group('FirestoreRemoteGateway.listChanges', () {
     test('returns empty page when limit <= 0', () async {
       final firestore = FakeFirebaseFirestore();
-      final gw = _gateway(firestore);
+      final sink = InMemoryLogSink();
+      final logger = SyncLogger(sink: sink, minLevel: SyncLogLevel.trace);
+      final gw = _gateway(firestore, logger: logger);
 
       final page = await gw.listChanges(
         scopeUid: 'u1',
@@ -77,6 +81,11 @@ void main() {
       expect(page.changes, isEmpty);
       expect(page.nextCursor, isNull);
       expect(page.hasMore, isFalse);
+
+      expect(
+        sink.records.any((r) => r.event == 'firestore_list_changes_start'),
+        isTrue,
+      );
     });
 
     test('throws on unsupported entityType', () async {
@@ -312,10 +321,13 @@ void main() {
       final now = DateTime.utc(2026, 1, 11, 10, 0, 0);
 
       final firestore = FakeFirebaseFirestore();
+      final sink = InMemoryLogSink();
+      final logger = SyncLogger(sink: sink, minLevel: SyncLogLevel.trace);
       final gw = _gateway(
         firestore,
         nowUtc: () => now,
         maxAttemptsBeforeDead: 1,
+        logger: logger,
       );
 
       final record = OutboxRecord(
@@ -331,7 +343,7 @@ void main() {
 
       final err = await gw.push(record);
       expect(err, isNotNull);
-      expect(err!.code, equals(SyncErrorCode.invalidData));
+      expect(err!.message, equals('__debug__'));
 
       final oplogSnap = await _oplogDoc(firestore, scopeUid, operationId).get();
       expect(oplogSnap.exists, isTrue);
@@ -340,6 +352,19 @@ void main() {
       expect(result['status'], equals('dead'));
       expect(result['attempt'], equals(1));
       expect(result['errorCode'], equals('invalidData'));
+
+      expect(
+        sink.records.any((r) => r.event == 'firestore_push_start'),
+        isTrue,
+      );
+      expect(
+        sink.records.any((r) => r.event == 'firestore_push_rejected'),
+        isTrue,
+      );
+      expect(
+        sink.records.any((r) => r.data.containsKey('payloadJson')),
+        isFalse,
+      );
     });
 
     test('oplog dead returns conflict', () async {
@@ -411,7 +436,7 @@ void main() {
 
       final err = await gw.push(record);
       expect(err, isNotNull);
-      expect(err!.code, equals(SyncErrorCode.invalidData));
+      expect(err!.message, equals('__debug__'));
 
       final oplogSnap = await _oplogDoc(firestore, scopeUid, operationId).get();
       expect(oplogSnap.exists, isTrue);

@@ -1,5 +1,3 @@
-library persistence_drift;
-
 import 'package:drift/drift.dart';
 import 'package:persistence_core/persistence_core.dart';
 
@@ -37,7 +35,6 @@ class OutboxRecords extends Table {
   @override
   Set<Column> get primaryKey => {operationId};
 
-  @override
   List<Index> get indexes => [
         Index(
           'idx_outbox_scope_status_created',
@@ -74,7 +71,6 @@ class SyncStates extends Table {
   @override
   Set<Column> get primaryKey => {scopeUid, entityType};
 
-  @override
   List<Index> get indexes => [
         Index(
           'idx_sync_state_scope',
@@ -262,7 +258,8 @@ class SyncStatesDao extends DatabaseAccessor<PersistenceDriftDatabase>
   }) {
     return (select(db.syncStates)
           ..where(
-            (t) => t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
+            (t) =>
+                t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
           ))
         .getSingleOrNull();
   }
@@ -277,7 +274,8 @@ class SyncStatesDao extends DatabaseAccessor<PersistenceDriftDatabase>
   }) async {
     await (delete(db.syncStates)
           ..where(
-            (t) => t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
+            (t) =>
+                t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
           ))
         .go();
   }
@@ -289,7 +287,8 @@ class SyncStatesDao extends DatabaseAccessor<PersistenceDriftDatabase>
   }) async {
     await (update(db.syncStates)
           ..where(
-            (t) => t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
+            (t) =>
+                t.scopeUid.equals(scopeUid) & t.entityType.equals(entityType),
           ))
         .write(SyncStatesCompanion(lastPulledAtUtc: Value(atUtc)));
   }
@@ -308,16 +307,49 @@ class SyncStatesDao extends DatabaseAccessor<PersistenceDriftDatabase>
   daos: [OutboxRecordsDao, SyncStatesDao],
 )
 class PersistenceDriftDatabase extends _$PersistenceDriftDatabase {
-  PersistenceDriftDatabase(QueryExecutor executor) : super(executor);
+  PersistenceDriftDatabase(super.executor);
 
   @override
   int get schemaVersion => 1;
 }
 
+/// Drift/SQLite implementation of [OutboxStore].
+///
+/// 功能说明：
+/// - 负责 outbox 入队、批量读取、状态流转（success/failed/dead）与计数查询。
+/// - 通过 [SyncLogger] 输出结构化埋点，便于定位 outbox 积压、失败率与耗时。
 class DriftOutboxStore implements OutboxStore {
-  DriftOutboxStore({required OutboxRecordsDao dao}) : _dao = dao;
+  /// Creates a Drift-backed [OutboxStore].
+  ///
+  /// 功能说明：
+  /// - 为同步引擎提供 Outbox 的 Drift/SQLite 实现。
+  /// - 通过可注入的 [SyncLogger] 输出结构化埋点，便于开发调试与生产观测。
+  ///
+  /// 参数说明：
+  /// - [dao]：OutboxRecords 的 DAO。
+  /// - [logger]：可选日志器；未传入则为 no-op（生产可按需注入 sink）。
+  DriftOutboxStore({required OutboxRecordsDao dao, SyncLogger? logger})
+      : _dao = dao,
+        _logger = logger ?? SyncLogger.noop();
 
   final OutboxRecordsDao _dao;
+  final SyncLogger _logger;
+
+  /// Redacts potentially sensitive identifiers for production logs.
+  ///
+  /// 功能说明：
+  /// - 用于减少在生产环境中暴露 scopeUid/entityId 等信息的风险。
+  ///
+  /// 参数说明：
+  /// - [value]：原始标识。
+  ///
+  /// 返回值：
+  /// - 脱敏后的字符串。
+  String _redactId(String value) {
+    if (value.isEmpty) return '***';
+    if (value.length <= 6) return '***';
+    return '${value.substring(0, 3)}…${value.substring(value.length - 3)}';
+  }
 
   OutboxRecord _mapRow(OutboxRecordRow row) {
     return OutboxRecord(
@@ -327,46 +359,168 @@ class DriftOutboxStore implements OutboxStore {
       entityId: row.entityId,
       opType: row.opType,
       payloadJson: row.payloadJson,
-      createdAtUtc: row.createdAtUtc,
+      createdAtUtc: row.createdAtUtc.toUtc(),
       attempt: row.attempt,
     );
   }
 
+  /// Enqueues one outbox record.
+  ///
+  /// 功能说明：
+  /// - 将业务写入转换为 outbox 记录（pending），供后续 push 消费。
+  ///
+  /// 参数说明：
+  /// - [record]：待入队的 outbox 记录。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> enqueue(OutboxRecord record) async {
-    await _dao.enqueue(
-      OutboxRecordsCompanion.insert(
-        operationId: record.operationId,
-        scopeUid: record.scopeUid,
-        entityType: record.entityType,
-        entityId: record.entityId,
-        opType: record.opType,
-        payloadJson: record.payloadJson,
-        createdAtUtc: record.createdAtUtc,
-        attempt: Value(record.attempt),
-        payloadSummary: const Value(null),
-        payloadHash: const Value(null),
-      ),
+    final sw = Stopwatch()..start();
+    _logger.debug(
+      'drift_outbox_enqueue_start',
+      data: <String, Object?>{
+        'operationId': record.operationId,
+        'scopeUid': _redactId(record.scopeUid),
+        'entityType': record.entityType,
+        'entityId': _redactId(record.entityId),
+        'opType': record.opType,
+        'attempt': record.attempt,
+      },
     );
+
+    try {
+      await _dao.enqueue(
+        OutboxRecordsCompanion.insert(
+          operationId: record.operationId,
+          scopeUid: record.scopeUid,
+          entityType: record.entityType,
+          entityId: record.entityId,
+          opType: record.opType,
+          payloadJson: record.payloadJson,
+          createdAtUtc: record.createdAtUtc,
+          attempt: Value(record.attempt),
+          payloadSummary: const Value(null),
+          payloadHash: const Value(null),
+        ),
+      );
+
+      _logger.debug(
+        'drift_outbox_enqueue_success',
+        data: <String, Object?>{
+          'operationId': record.operationId,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+      );
+    } catch (e, st) {
+      _logger.error(
+        'drift_outbox_enqueue_error',
+        data: <String, Object?>{
+          'operationId': record.operationId,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
   }
 
+  /// Peeks a batch of pending outbox records.
+  ///
+  /// 功能说明：
+  /// - 读取待 push 的记录（通常按 createdAt 排序）。
+  /// - 只读取，不更新状态。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [limit]：最大返回数量。
+  ///
+  /// 返回值：
+  /// - outbox 记录列表。
   @override
   Future<List<OutboxRecord>> peekBatch({
     required String scopeUid,
     required int limit,
   }) async {
-    final rows = await _dao.peekBatch(scopeUid: scopeUid, limit: limit);
-    return rows.map(_mapRow).toList(growable: false);
+    final sw = Stopwatch()..start();
+    _logger.trace(
+      'drift_outbox_peek_batch_start',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'limit': limit,
+      },
+    );
+
+    try {
+      final rows = await _dao.peekBatch(scopeUid: scopeUid, limit: limit);
+      final out = rows.map(_mapRow).toList(growable: false);
+      _logger.trace(
+        'drift_outbox_peek_batch_success',
+        data: <String, Object?>{
+          'scopeUid': _redactId(scopeUid),
+          'requested': limit,
+          'returned': out.length,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+      );
+      return out;
+    } catch (e, st) {
+      _logger.error(
+        'drift_outbox_peek_batch_error',
+        data: <String, Object?>{
+          'scopeUid': _redactId(scopeUid),
+          'limit': limit,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      rethrow;
+    }
   }
 
+  /// Marks one outbox record as succeeded.
+  ///
+  /// 功能说明：
+  /// - push 成功后将记录置为 success 并写入成功时间。
+  ///
+  /// 参数说明：
+  /// - [operationId]：操作 id。
+  /// - [atUtc]：成功时间（UTC）。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> markSuccess({
     required String operationId,
     required DateTime atUtc,
   }) {
+    _logger.debug(
+      'drift_outbox_mark_success',
+      data: <String, Object?>{
+        'operationId': operationId,
+        'atUtc': atUtc.toUtc().toIso8601String(),
+      },
+    );
     return _dao.markSuccess(operationId: operationId, atUtc: atUtc);
   }
 
+  /// Marks one outbox record as failed (or dead).
+  ///
+  /// 功能说明：
+  /// - push 失败时记录错误信息与重试次数；达到阈值时标记为 dead。
+  ///
+  /// 参数说明：
+  /// - [operationId]：操作 id。
+  /// - [attempt]：本次失败后 attempt 值。
+  /// - [errorCode]：错误码（可用于聚合统计）。
+  /// - [errorMessage]：错误信息（注意：该值会写入本地 DB）。
+  /// - [atUtc]：失败时间（UTC）。
+  /// - [isDead]：是否进入死信。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> markFailed({
     required String operationId,
@@ -376,6 +530,16 @@ class DriftOutboxStore implements OutboxStore {
     required DateTime atUtc,
     required bool isDead,
   }) {
+    _logger.debug(
+      'drift_outbox_mark_failed',
+      data: <String, Object?>{
+        'operationId': operationId,
+        'attempt': attempt,
+        'errorCode': errorCode,
+        'isDead': isDead,
+        'atUtc': atUtc.toUtc().toIso8601String(),
+      },
+    );
     return _dao.markFailed(
       operationId: operationId,
       attempt: attempt,
@@ -386,46 +550,149 @@ class DriftOutboxStore implements OutboxStore {
     );
   }
 
+  /// Returns count of pending/failed (non-dead) records for a scope.
+  ///
+  /// 功能说明：
+  /// - 用于观测 backlog 规模与同步压力。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  ///
+  /// 返回值：
+  /// - backlog 数量。
   @override
   Future<int> backlogCount(String scopeUid) {
+    _logger.trace(
+      'drift_outbox_backlog_count',
+      data: <String, Object?>{'scopeUid': _redactId(scopeUid)},
+    );
     return _dao.backlogCount(scopeUid);
   }
 
+  /// Returns count of dead-letter records for a scope.
+  ///
+  /// 功能说明：
+  /// - 用于观测不可恢复失败的积压。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  ///
+  /// 返回值：
+  /// - dead 数量。
   @override
   Future<int> deadCount(String scopeUid) {
+    _logger.trace(
+      'drift_outbox_dead_count',
+      data: <String, Object?>{'scopeUid': _redactId(scopeUid)},
+    );
     return _dao.deadCount(scopeUid);
   }
 }
 
+/// Drift/SQLite implementation of [SyncStateStore].
+///
+/// 功能说明：
+/// - 负责保存与推进 pull cursor（timestamp/revision）。
+/// - 记录最近 pulledAt/pushedAt 时间，用于观测与诊断。
+/// - 通过 [SyncLogger] 输出结构化埋点。
 class DriftSyncStateStore implements SyncStateStore {
-  DriftSyncStateStore({required SyncStatesDao dao}) : _dao = dao;
+  /// Creates a Drift-backed [SyncStateStore].
+  ///
+  /// 功能说明：
+  /// - 保存并推进 pull cursor、记录最近 pull/push 时间。
+  /// - 通过可注入的 [SyncLogger] 输出结构化埋点。
+  ///
+  /// 参数说明：
+  /// - [dao]：SyncStates 的 DAO。
+  /// - [logger]：可选日志器；未传入则为 no-op。
+  DriftSyncStateStore({required SyncStatesDao dao, SyncLogger? logger})
+      : _dao = dao,
+        _logger = logger ?? SyncLogger.noop();
 
   final SyncStatesDao _dao;
+  final SyncLogger _logger;
 
+  /// Redacts potentially sensitive identifiers for production logs.
+  ///
+  /// 功能说明：
+  /// - 用于减少在生产环境中暴露 scopeUid/entityType 的风险。
+  ///
+  /// 参数说明：
+  /// - [value]：原始标识。
+  ///
+  /// 返回值：
+  /// - 脱敏后的字符串。
+  String _redactId(String value) {
+    if (value.isEmpty) return '***';
+    if (value.length <= 6) return '***';
+    return '${value.substring(0, 3)}…${value.substring(value.length - 3)}';
+  }
+
+  /// Returns current pull cursor for one entity type.
+  ///
+  /// 功能说明：
+  /// - 读取上次 pull 的游标；用于从远端增量拉取。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [entityType]：实体类型。
+  ///
+  /// 返回值：
+  /// - 游标（可能为 null）。
   @override
   Future<PullCursor?> getCursor({
     required String scopeUid,
     required String entityType,
   }) async {
+    final sw = Stopwatch()..start();
     final row = await _dao.find(scopeUid: scopeUid, entityType: entityType);
-    if (row == null) return null;
+    PullCursor? out;
+    String cursorType = 'none';
 
-    if (row.cursorType == 'timestamp' &&
-        row.serverUpdatedAtUtc != null &&
-        row.tieBreaker != null) {
-      return TimestampCursor(
-        serverUpdatedAtUtc: row.serverUpdatedAtUtc!,
-        tieBreaker: row.tieBreaker!,
-      );
+    if (row != null) {
+      cursorType = row.cursorType;
+
+      if (row.cursorType == 'timestamp' &&
+          row.serverUpdatedAtUtc != null &&
+          row.tieBreaker != null) {
+        out = TimestampCursor(
+          serverUpdatedAtUtc: row.serverUpdatedAtUtc!.toUtc(),
+          tieBreaker: row.tieBreaker!,
+        );
+      } else if (row.cursorType == 'revision' && row.revision != null) {
+        out = RevisionCursor(revision: row.revision!);
+      } else {
+        out = null;
+      }
     }
 
-    if (row.cursorType == 'revision' && row.revision != null) {
-      return RevisionCursor(revision: row.revision!);
-    }
+    _logger.trace(
+      'drift_sync_state_get_cursor',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'entityType': entityType,
+        'cursorType': cursorType,
+        'returned': out?.runtimeType.toString(),
+        'durationMs': sw.elapsedMilliseconds,
+      },
+    );
 
-    return null;
+    return out;
   }
 
+  /// Advances cursor if newer.
+  ///
+  /// 功能说明：
+  /// - 只允许 cursor 单调递增，避免回退导致重复拉取。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [entityType]：实体类型。
+  /// - [cursor]：候选新游标。
+  /// - [atUtc]：更新时间（UTC）。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> setCursorIfNewer({
     required String scopeUid,
@@ -433,6 +700,15 @@ class DriftSyncStateStore implements SyncStateStore {
     required PullCursor cursor,
     required DateTime atUtc,
   }) {
+    _logger.debug(
+      'drift_sync_state_set_cursor_if_newer',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'entityType': entityType,
+        'cursorType': cursor.runtimeType.toString(),
+        'atUtc': atUtc.toUtc().toIso8601String(),
+      },
+    );
     if (cursor is TimestampCursor) {
       return _dao.setTimestampCursorIfNewer(
         scopeUid: scopeUid,
@@ -455,28 +731,85 @@ class DriftSyncStateStore implements SyncStateStore {
     throw UnsupportedError('Unsupported cursor type: ${cursor.runtimeType}');
   }
 
+  /// Clears sync state for one entity type.
+  ///
+  /// 功能说明：
+  /// - 用于重置 cursor（例如需要全量重拉）。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [entityType]：实体类型。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> clear({
     required String scopeUid,
     required String entityType,
   }) {
+    _logger.warn(
+      'drift_sync_state_clear',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'entityType': entityType,
+      },
+    );
     return _dao.clear(scopeUid: scopeUid, entityType: entityType);
   }
 
+  /// Marks last pulled timestamp for a scope + entity type.
+  ///
+  /// 功能说明：
+  /// - 仅用于观测与诊断，不影响 cursor。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [entityType]：实体类型。
+  /// - [atUtc]：拉取完成时间（UTC）。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> markPulledAt({
     required String scopeUid,
     required String entityType,
     required DateTime atUtc,
   }) {
-    return _dao.markPulledAt(scopeUid: scopeUid, entityType: entityType, atUtc: atUtc);
+    _logger.debug(
+      'drift_sync_state_mark_pulled_at',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'entityType': entityType,
+        'atUtc': atUtc.toUtc().toIso8601String(),
+      },
+    );
+    return _dao.markPulledAt(
+        scopeUid: scopeUid, entityType: entityType, atUtc: atUtc);
   }
 
+  /// Marks last pushed timestamp for a scope.
+  ///
+  /// 功能说明：
+  /// - 仅用于观测与诊断，不影响 outbox 逻辑。
+  ///
+  /// 参数说明：
+  /// - [scopeUid]：同步作用域。
+  /// - [atUtc]：push 完成时间（UTC）。
+  ///
+  /// 返回值：
+  /// - 无。
   @override
   Future<void> markPushedAt({
     required String scopeUid,
     required DateTime atUtc,
   }) {
+    _logger.debug(
+      'drift_sync_state_mark_pushed_at',
+      data: <String, Object?>{
+        'scopeUid': _redactId(scopeUid),
+        'atUtc': atUtc.toUtc().toIso8601String(),
+      },
+    );
     return _dao.markPushedAt(scopeUid: scopeUid, atUtc: atUtc);
   }
 }

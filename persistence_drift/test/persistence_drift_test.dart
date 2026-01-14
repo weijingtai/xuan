@@ -8,7 +8,9 @@ void main() {
     final db = PersistenceDriftDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
-    final store = DriftOutboxStore(dao: db.outboxRecordsDao);
+    final sink = InMemoryLogSink();
+    final logger = SyncLogger(sink: sink, minLevel: SyncLogLevel.trace);
+    final store = DriftOutboxStore(dao: db.outboxRecordsDao, logger: logger);
 
     const scopeUid = 'u1';
     final now = DateTime.utc(2026, 1, 10, 9, 0, 0);
@@ -59,13 +61,28 @@ void main() {
 
     final batch3 = await store.peekBatch(scopeUid: scopeUid, limit: 10);
     expect(batch3, isEmpty);
+
+    expect(
+      sink.records.any((r) => r.event == 'drift_outbox_enqueue_start'),
+      isTrue,
+    );
+    expect(
+      sink.records.any((r) => r.event == 'drift_outbox_mark_failed'),
+      isTrue,
+    );
+    expect(
+      sink.records.any((r) => r.data.containsKey('payloadJson')),
+      isFalse,
+    );
   });
 
   test('DriftSyncStateStore setCursorIfNewer for TimestampCursor', () async {
     final db = PersistenceDriftDatabase(NativeDatabase.memory());
     addTearDown(db.close);
 
-    final store = DriftSyncStateStore(dao: db.syncStatesDao);
+    final sink = InMemoryLogSink();
+    final logger = SyncLogger(sink: sink, minLevel: SyncLogLevel.trace);
+    final store = DriftSyncStateStore(dao: db.syncStatesDao, logger: logger);
 
     const scopeUid = 'u1';
     const entityType = 'layout_template';
@@ -96,5 +113,14 @@ void main() {
     final ts = cursor as TimestampCursor;
     expect(ts.serverUpdatedAtUtc, equals(DateTime.utc(2026, 1, 10, 1, 0, 0)));
     expect(ts.tieBreaker, equals('a'));
+
+    expect(
+      sink.records.any((r) => r.event == 'drift_sync_state_set_cursor_if_newer'),
+      isTrue,
+    );
+    expect(
+      sink.records.any((r) => r.event == 'drift_sync_state_get_cursor'),
+      isTrue,
+    );
   });
 }
