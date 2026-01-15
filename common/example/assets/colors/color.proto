@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package chinese_color;
+
+message ColorEntry {
+  uint32 id = 1;
+  string name = 2;
+  fixed32 argb = 3;
+}
+message ColorDataset {
+  string dataset_id = 1;
+  string dataset_name = 2;
+  string web_address = 3;
+  repeated ColorEntry entries = 4;
+}
