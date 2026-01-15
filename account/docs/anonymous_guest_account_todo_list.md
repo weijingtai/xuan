@@ -13,9 +13,41 @@
 
 ### M1：身份与状态机（把概念固化为代码边界）
 
-- [ ] 定义游客身份模型与状态机（guest/local/baas）
-  - 输出：明确状态集合与状态转换（首次启动、匿名绑定、注册新账号、登录既有账号、登出、清理）。
-  - 验收：团队对“游客是什么/什么时候切换 appUserId/什么时候合并”无分歧。
+- [x] 定义游客身份模型与状态机（guest/local/baas）
+  - 状态（State）
+    - Booting：ActiveAccountStore 未 ready（尚未决定 activeAppUserId）。
+    - GuestLocal：activeAppUserId=appUserId_guest（本地游客空间，可离线使用）。
+    - GuestBoundAnon：GuestLocal + 已获取匿名会话（providerType=anonymous）并成功 ensureIdentityMapping(session, appUserId_guest)。
+    - AccountSignedIn：activeAppUserId=appUserId_account（账号空间，允许启用远端同步）。
+    - ConflictPending：游客态登录既有账号时，解析出的 accountAppUserId != guestAppUserId，等待用户决策。
+  - 事件（Event）
+    - AppStart：应用启动。
+    - LocalLoaded(appUserId)：ActiveAccountStore.load() 结束并选定 activeAppUserId。
+    - BackgroundAnonOk(session)：后台匿名登录并拿到会话。
+    - BackgroundAnonFail(error)：后台匿名失败（不影响本地使用）。
+    - LoginExistingOk(session, accountAppUserId)：登录既有账号并解析出 appUserId。
+    - LoginExistingConflict(conflict)：抛 GuestAccountConflict，触发三选一。
+    - UserChoiceMerge/Keep/Discard：用户在弹窗中选择。
+    - ActivateAccount(appUserId, session)：激活账号态（写 registry + setActiveAppUserId）。
+    - SignOut：登出回到 guest。
+  - 转换（Transition）
+    - Booting --LocalLoaded(guest)--> GuestLocal
+    - Booting --LocalLoaded(account)--> AccountSignedIn
+    - GuestLocal --BackgroundAnonOk+ensureMappingOk--> GuestBoundAnon
+    - GuestLocal/GuestBoundAnon --LoginExistingConflict--> ConflictPending
+    - ConflictPending --Merge-->（迁移/重放 + 清理 guest）--ActivateAccount--> AccountSignedIn
+    - ConflictPending --Discard-->（清理 guest）--ActivateAccount--> AccountSignedIn
+    - ConflictPending --Keep-->ActivateAccount--> AccountSignedIn（guest 作为独立空间保留，登出可回）
+    - AccountSignedIn --SignOut--> GuestLocal
+  - 不变量（Invariant）
+    - 业务/存储主键永远是 appUserId；baasUid 仅用于会话与映射解析，不可作为分库 key。
+    - 只有 activeAppUserId 变化才触发分库切换（KeyedSubtree 重建）。
+    - identity_map 冲突必须显式暴露（禁止 silent overwrite）。
+  - E3 重试策略（后台匿名失败）
+    - 每次 App 冷启动：若处于 GuestLocal 且 Firebase 可用，则尝试一次匿名绑定；失败不阻塞用户。
+    - 配置错误（例如 admin-restricted-operation / 匿名未启用）：停止自动重试，等待配置修复后再尝试。
+  - 验收
+    - 团队对“游客是什么/什么时候切换 appUserId/什么时候合并”无分歧；并能用上述状态与事件解释所有登录/登出/冲突路径。
 
 ### M2：本地游客（无网络也可用的底座）
 
@@ -65,7 +97,7 @@
 
 ### M6：游客 → 账号（注册新账号、登录既有账号、冲突决策）
 
-- [ ] 实现游客转新账号：优先升级匿名会话保持 uid
+- [x] 实现游客转新账号：优先升级匿名会话保持 uid
   - 输出：
     - 若当前存在 anon 会话：使用升级/绑定凭证
     - 否则：正常注册后 ensureIdentityMapping(session, appUserId_guest)
@@ -75,11 +107,11 @@
   - 输出：合并 / 保留独立游客空间 / 丢弃游客数据 并登录。
   - 验收：三条路径都可走通且可回溯（至少在本机）。
 
-- [ ] 实现“丢弃游客数据并登录”清理与回滚机制
+- [x] 实现“丢弃游客数据并登录”清理与回滚机制
   - 输出：清理 guest 分库与 outbox；若中途失败可重试或回到 guest。
   - 验收：丢弃后不再出现游客数据，也不会被同步。
 
-- [ ] 实现“保留独立游客空间”账号切换与返回入口
+- [x] 实现“保留独立游客空间”账号切换与返回入口
   - 输出：能在账号与 guest 之间切换；guest 数据保持。
   - 验收：切换后数据严格隔离。
 
@@ -119,6 +151,13 @@
     - 登录后同账号换机 → 仍能找到同 appUserId（通过 identity_map）
 
 - [ ] 运行 lint 与 typecheck 并修复所有问题
+
+## 开发计划（建议执行顺序）
+
+- P0 自检：跑全量单测（flutter test）与 analyzer，确保当前改动无回归
+- P1 M8：补齐 identity_map 的远端权限策略（规则或云函数代理写入）
+- P2 M9：补齐单元测试与集成验证（离线/重启/换机/冲突三选一）
+- P3 收尾：跑 lint/typecheck，修复所有告警与格式问题
 
 ## 验收清单（最终交付）
 

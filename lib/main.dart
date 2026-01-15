@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:account/account.dart';
@@ -61,6 +62,68 @@ class _UnavailableRemoteGateway implements RemoteGateway {
       nextCursor: null,
       hasMore: false,
     );
+  }
+}
+
+class _UnavailableAuthAdapter implements AuthAdapter {
+  const _UnavailableAuthAdapter();
+
+  static StateError _err() => StateError('FirebaseAuth not initialized');
+
+  @override
+  Stream<AuthSession?> sessionChanges() => const Stream.empty();
+
+  @override
+  Future<AuthSession> signInWithEmailPassword({
+    required String email,
+    required String password,
+    required bool createIfMissing,
+  }) {
+    return Future<AuthSession>.error(_err());
+  }
+
+  @override
+  Future<AuthSession> signInAnonymously() {
+    return Future<AuthSession>.error(_err());
+  }
+
+  @override
+  Future<void> sendPasswordResetEmail({required String email}) {
+    return Future<void>.error(_err());
+  }
+
+  @override
+  Future<void> signOut() {
+    return Future<void>.error(_err());
+  }
+
+  @override
+  Future<void> updatePassword({required String newPassword}) {
+    return Future<void>.error(_err());
+  }
+
+  @override
+  Future<void> deleteAccount() {
+    return Future<void>.error(_err());
+  }
+}
+
+class _UnavailableIdentityResolver implements IdentityResolver {
+  const _UnavailableIdentityResolver();
+
+  static StateError _err() => StateError('FirebaseFirestore not initialized');
+
+  @override
+  Future<String> resolveAppUserId(AuthSession session) {
+    return Future<String>.error(_err());
+  }
+
+  @override
+  Future<void> ensureIdentityMapping({
+    required AuthSession session,
+    required String appUserId,
+  }) {
+    return Future<void>.error(_err());
   }
 }
 
@@ -141,9 +204,13 @@ class _BootstrapApp extends StatelessWidget {
       providers: [
         Provider<Uuid>(create: (_) => const Uuid()),
         Provider<AccountRegistry>(create: (_) => AccountRegistry()),
+        Provider<GuestIdentityStore>(
+          create: (ctx) => GuestIdentityStore(uuid: ctx.read<Uuid>()),
+        ),
         ChangeNotifierProvider<ActiveAccountStore>(
           create: (ctx) => ActiveAccountStore(
             registry: ctx.read<AccountRegistry>(),
+            guestIdentityStore: ctx.read<GuestIdentityStore>(),
           )..load(),
         ),
         Provider<DeviceIdentity>(
@@ -168,7 +235,7 @@ class _BootstrapApp extends StatelessWidget {
           create: (ctx) {
             final auth = ctx.read<FirebaseAuth?>();
             if (auth == null) {
-              throw StateError('FirebaseAuth not initialized');
+              return const _UnavailableAuthAdapter();
             }
             return FirebaseEmailAuthAdapter(auth: auth);
           },
@@ -177,7 +244,7 @@ class _BootstrapApp extends StatelessWidget {
           create: (ctx) {
             final firestore = ctx.read<FirebaseFirestore?>();
             if (firestore == null) {
-              throw StateError('FirebaseFirestore not initialized');
+              return const _UnavailableIdentityResolver();
             }
             return FirebaseIdentityResolver(
               firestore: firestore,
@@ -211,11 +278,10 @@ class _AuthAwareApp extends StatelessWidget {
       );
     }
 
-    if (!store.isSignedIn) {
+    final appUserId = store.activeAppUserId;
+    if (appUserId == null || appUserId.isEmpty) {
       return const MaterialApp(home: AuthPage());
     }
-
-    final appUserId = store.activeAppUserId!;
     return KeyedSubtree(
       key: ValueKey(appUserId),
       child: MultiProvider(
@@ -252,6 +318,9 @@ class _AuthAwareApp extends StatelessWidget {
           ),
           Provider<RemoteGateway>(
             create: (ctx) {
+              if (!ctx.read<ActiveAccountStore>().isSignedIn) {
+                return const _UnavailableRemoteGateway();
+              }
               final firestore = ctx.read<FirebaseFirestore?>();
               if (firestore == null) return const _UnavailableRemoteGateway();
               return FirestoreRemoteGateway(
@@ -276,6 +345,13 @@ class _AuthAwareApp extends StatelessWidget {
               nowUtc: () => DateTime.now().toUtc(),
             ),
           ),
+          Provider<GuestAccountConflictDelegate>(
+            create: (ctx) => _GuestConflictDelegate(
+              appDb: ctx.read<db.AppDatabase>(),
+              persistenceDb: ctx.read<PersistenceDriftDatabase>(),
+              uuid: ctx.read<Uuid>(),
+            ),
+          ),
           Provider<WorldCountryRepository>(
             create: (ctx) => WorldCountryRepository(
               path: 'assets/dataset/world_country.pro',
@@ -297,9 +373,290 @@ class _AuthAwareApp extends StatelessWidget {
                   ..initState(),
           ),
         ],
-        child: const _SignedInSyncShell(child: MyApp()),
+        child: store.isSignedIn
+            ? const _SignedInSyncShell(child: MyApp())
+            : const _GuestAnonBootstrap(child: MyApp()),
       ),
     );
+  }
+}
+
+class _GuestAnonBootstrap extends StatefulWidget {
+  const _GuestAnonBootstrap({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_GuestAnonBootstrap> createState() => _GuestAnonBootstrapState();
+}
+
+class _GuestAnonBootstrapState extends State<_GuestAnonBootstrap> {
+  bool _attempted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trySignInAnonymously();
+    });
+  }
+
+  Future<void> _trySignInAnonymously() async {
+    if (!mounted) return;
+    if (_attempted) return;
+    _attempted = true;
+
+    final store = context.read<ActiveAccountStore>();
+    if (!store.isGuest || store.isSignedIn) return;
+
+    final auth = context.read<FirebaseAuth?>();
+    final firestore = context.read<FirebaseFirestore?>();
+    if (auth == null || firestore == null) return;
+
+    try {
+      await context.read<AuthCoordinator>().signInAnonymously();
+    } catch (_) {
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
+}
+
+class _GuestConflictDelegate implements GuestAccountConflictDelegate {
+  _GuestConflictDelegate({
+    required db.AppDatabase appDb,
+    required PersistenceDriftDatabase persistenceDb,
+    required Uuid uuid,
+  })  : _appDb = appDb,
+        _persistenceDb = persistenceDb,
+        _uuid = uuid;
+
+  final db.AppDatabase _appDb;
+  final PersistenceDriftDatabase _persistenceDb;
+  final Uuid _uuid;
+
+  @override
+  Future<void> mergeGuestIntoAccount({
+    required String guestAppUserId,
+    required String accountAppUserId,
+  }) async {
+    final accountAppDb = db.AppDatabase(
+      _driftExecutor('app_database_$accountAppUserId'),
+    );
+    final accountPersistenceDb = PersistenceDriftDatabase(
+      _driftExecutor('persistence_drift_$accountAppUserId'),
+    );
+
+    try {
+      final remap = await _mergeLayoutTemplates(
+        from: _appDb,
+        to: accountAppDb,
+      );
+      await _mergeCardTemplateMetas(
+        from: _appDb,
+        to: accountAppDb,
+        remapTemplateUuid: remap,
+      );
+      await _mergeCardTemplateSettings(
+        from: _appDb,
+        to: accountAppDb,
+        remapTemplateUuid: remap,
+      );
+      await _rewriteOutboxIntoAccountDb(
+        from: _persistenceDb,
+        to: accountPersistenceDb,
+        guestAppUserId: guestAppUserId,
+        accountAppUserId: accountAppUserId,
+        remapEntityId: remap,
+      );
+
+      await _wipeAllTables(_appDb);
+      await _wipeAllTables(_persistenceDb);
+    } finally {
+      await accountAppDb.close();
+      await accountPersistenceDb.close();
+    }
+  }
+
+  @override
+  Future<void> discardGuest({required String guestAppUserId}) async {
+    await _wipeAllTables(_appDb);
+    await _wipeAllTables(_persistenceDb);
+  }
+
+  Future<void> _wipeAllTables(GeneratedDatabase db) async {
+    await db.customStatement('PRAGMA foreign_keys = OFF');
+    try {
+      await db.transaction(() async {
+        for (final table in db.allTables) {
+          await db.delete(table).go();
+        }
+      });
+    } finally {
+      await db.customStatement('PRAGMA foreign_keys = ON');
+    }
+  }
+
+  Future<Map<String, String>> _mergeLayoutTemplates({
+    required db.AppDatabase from,
+    required db.AppDatabase to,
+  }) async {
+    final rows = await from.select(from.layoutTemplates).get();
+    if (rows.isEmpty) return const {};
+
+    final ids = rows.map((r) => r.uuid).toSet().toList(growable: false);
+    final existing = await (to.select(to.layoutTemplates)
+          ..where((t) => t.uuid.isIn(ids)))
+        .get();
+    final existingIds = existing.map((r) => r.uuid).toSet();
+
+    final remap = <String, String>{};
+    final inserts = <db.LayoutTemplatesCompanion>[];
+
+    for (final r in rows) {
+      var uuid = r.uuid;
+      var templateJson = r.templateJson;
+      if (existingIds.contains(uuid)) {
+        final newId = _uuid.v4();
+        remap[uuid] = newId;
+        uuid = newId;
+        templateJson = _rewriteLayoutTemplateJsonId(templateJson, newId);
+      }
+
+      inserts.add(
+        db.LayoutTemplatesCompanion.insert(
+          uuid: uuid,
+          collectionId: r.collectionId,
+          name: r.name,
+          description: Value(r.description),
+          templateJson: templateJson,
+          version: r.version,
+          updatedAt: r.updatedAt,
+          deletedAt: Value(r.deletedAt),
+        ),
+      );
+    }
+
+    await to.batch((batch) {
+      batch.insertAllOnConflictUpdate(to.layoutTemplates, inserts);
+    });
+
+    return remap;
+  }
+
+  String _rewriteLayoutTemplateJsonId(String templateJson, String newId) {
+    final decoded = jsonDecode(templateJson);
+    if (decoded is! Map<String, dynamic>) return templateJson;
+    decoded['id'] = newId;
+    return jsonEncode(decoded);
+  }
+
+  String _rewriteLayoutTemplatePayloadJson(String payloadJson, String newId) {
+    final decoded = jsonDecode(payloadJson);
+    if (decoded is! Map<String, dynamic>) return payloadJson;
+    decoded['entityId'] = newId;
+    final template = decoded['template'];
+    if (template is Map<String, dynamic>) {
+      template['id'] = newId;
+    }
+    return jsonEncode(decoded);
+  }
+
+  Future<void> _mergeCardTemplateMetas({
+    required db.AppDatabase from,
+    required db.AppDatabase to,
+    required Map<String, String> remapTemplateUuid,
+  }) async {
+    final rows = await from.select(from.cardTemplateMetas).get();
+    if (rows.isEmpty) return;
+
+    await to.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        to.cardTemplateMetas,
+        rows
+            .map(
+              (r) => db.CardTemplateMetasCompanion.insert(
+                templateUuid: remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
+                createdAt: r.createdAt,
+                modifiedAt: r.modifiedAt,
+                deletedAt: Value(r.deletedAt),
+                authorUuid: Value(r.authorUuid),
+                createFromCardUuid: Value(r.createFromCardUuid),
+                isCustomized: Value(r.isCustomized),
+              ),
+            )
+            .toList(growable: false),
+      );
+    });
+  }
+
+  Future<void> _mergeCardTemplateSettings({
+    required db.AppDatabase from,
+    required db.AppDatabase to,
+    required Map<String, String> remapTemplateUuid,
+  }) async {
+    final rows = await from.select(from.cardTemplateSettings).get();
+    if (rows.isEmpty) return;
+
+    await to.batch((batch) {
+      batch.insertAllOnConflictUpdate(
+        to.cardTemplateSettings,
+        rows
+            .map(
+              (r) => db.CardTemplateSettingsCompanion.insert(
+                templateUuid: remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
+                createdAt: r.createdAt,
+                modifiedAt: r.modifiedAt,
+                deletedAt: Value(r.deletedAt),
+                settingJson: r.settingJson,
+              ),
+            )
+            .toList(growable: false),
+      );
+    });
+  }
+
+  Future<void> _rewriteOutboxIntoAccountDb({
+    required PersistenceDriftDatabase from,
+    required PersistenceDriftDatabase to,
+    required String guestAppUserId,
+    required String accountAppUserId,
+    required Map<String, String> remapEntityId,
+  }) async {
+    final rows = await from.outboxRecordsDao.listRetryable(
+      scopeUid: guestAppUserId,
+    );
+    if (rows.isEmpty) return;
+
+    final nowUtc = DateTime.now().toUtc();
+    final inserts = rows
+        .map((r) {
+          final remapped = r.entityType == 'layout_template'
+              ? (remapEntityId[r.entityId] ?? r.entityId)
+              : r.entityId;
+          final payloadJson = (r.entityType == 'layout_template' &&
+                  remapEntityId.containsKey(r.entityId))
+              ? _rewriteLayoutTemplatePayloadJson(
+                  r.payloadJson,
+                  remapped,
+                )
+              : r.payloadJson;
+
+          return OutboxRecordsCompanion.insert(
+            operationId: _uuid.v4(),
+            scopeUid: accountAppUserId,
+            entityType: r.entityType,
+            entityId: remapped,
+            opType: r.opType,
+            payloadJson: payloadJson,
+            createdAtUtc: nowUtc,
+          );
+        })
+        .toList(growable: false);
+
+    await to.outboxRecordsDao.enqueueMany(inserts);
+    await from.outboxRecordsDao.deleteByScope(scopeUid: guestAppUserId);
   }
 }
 

@@ -105,6 +105,29 @@ class OutboxRecordsDao extends DatabaseAccessor<PersistenceDriftDatabase>
         .get();
   }
 
+  Future<List<OutboxRecordRow>> listRetryable({required String scopeUid}) {
+    return (select(db.outboxRecords)
+          ..where(
+            (t) =>
+                t.scopeUid.equals(scopeUid) &
+                (t.status.equals('pending') | t.status.equals('failed')),
+          )
+          ..orderBy([(t) => OrderingTerm.asc(t.createdAtUtc)]))
+        .get();
+  }
+
+  Future<void> deleteByScope({required String scopeUid}) async {
+    await (delete(db.outboxRecords)..where((t) => t.scopeUid.equals(scopeUid)))
+        .go();
+  }
+
+  Future<void> enqueueMany(List<OutboxRecordsCompanion> companions) async {
+    if (companions.isEmpty) return;
+    await batch((b) {
+      b.insertAllOnConflictUpdate(db.outboxRecords, companions);
+    });
+  }
+
   Future<int> backlogCount(String scopeUid) async {
     final row = await (selectOnly(db.outboxRecords)
           ..addColumns([db.outboxRecords.operationId.count()])

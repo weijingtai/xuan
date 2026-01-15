@@ -88,6 +88,43 @@
 - **游客身份**：一种“临时会话形态”，用于在无注册状态下启动 `appUserId` 分桶与本地分库。
 - **游客期数据**：游客激活的 `appUserId_guest` 下产生的本地数据与待同步操作。
 
+**M1：身份状态机（统一口径）**
+
+- 状态（State）
+  - Booting：本地身份尚未 ready（尚未决定 activeAppUserId）。
+  - GuestLocal：activeAppUserId=appUserId_guest（本地游客空间，可离线使用）。
+  - GuestBoundAnon：GuestLocal + 已获取匿名会话（providerType=anonymous）并成功 ensureIdentityMapping(session, appUserId_guest)。
+  - AccountSignedIn：activeAppUserId=appUserId_account（账号空间，允许启用远端同步）。
+  - ConflictPending：游客态登录既有账号时，解析出的 accountAppUserId != guestAppUserId，等待用户决策。
+
+- 事件（Event）
+  - LocalLoaded(appUserId)：ActiveAccountStore.load() 结束并选定 activeAppUserId。
+  - BackgroundAnonOk(session)：后台匿名登录并拿到会话。
+  - BackgroundAnonFail(error)：后台匿名失败（不影响本地使用）。
+  - LoginExistingOk(session, accountAppUserId)：登录既有账号并解析出 appUserId。
+  - LoginExistingConflict(conflict)：发生冲突并进入三选一。
+  - UserChoiceMerge/Keep/Discard：用户在弹窗中选择。
+  - ActivateAccount(appUserId, session)：激活账号态（写 registry + setActiveAppUserId）。
+  - SignOut：登出回到 guest。
+
+- 转换（Transition）
+  - Booting --LocalLoaded(guest)--> GuestLocal
+  - Booting --LocalLoaded(account)--> AccountSignedIn
+  - GuestLocal --BackgroundAnonOk+ensureMappingOk--> GuestBoundAnon
+  - GuestLocal/GuestBoundAnon --LoginExistingConflict--> ConflictPending
+  - ConflictPending --Merge-->（迁移/重放 + 清理 guest）--ActivateAccount--> AccountSignedIn
+  - ConflictPending --Discard-->（清理 guest）--ActivateAccount--> AccountSignedIn
+  - ConflictPending --Keep-->ActivateAccount--> AccountSignedIn（guest 作为独立空间保留，登出可回）
+  - AccountSignedIn --SignOut--> GuestLocal
+
+- 不变量（Invariant）
+  - 业务/存储主键永远是 appUserId；baasUid 仅用于会话与映射解析，不可作为分库 key。
+  - 只有 activeAppUserId 变化才触发分库切换（装配层 KeyedSubtree 重建）。
+  - identity_map 冲突必须显式暴露（禁止 silent overwrite）。
+
+- E3 重试策略（后台匿名失败）
+  - 每次 App 冷启动：若处于 GuestLocal 且 Firebase 可用，则尝试一次匿名绑定；失败不阻塞用户。
+  - 配置错误（例如 admin-restricted-operation / 匿名未启用）：停止自动重试，等待配置修复后再尝试。
 **实现策略（推荐优先级）**
 1. **BaaS 匿名会话（优先，Firebase 现成支持）**
    - 游客进入时：`AuthAdapter.signInAnonymously()` 获取 `baasUid`；随后走 `resolveAppUserId` 创建/命中 `identity_map/{baasUid}`。

@@ -1,9 +1,65 @@
+import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:persistence_core/persistence_core.dart';
 import 'package:persistence_drift/persistence_drift.dart';
 
 void main() {
+  test('OutboxRecordsDao listRetryable/deleteByScope', () async {
+    final db = PersistenceDriftDatabase(NativeDatabase.memory());
+    addTearDown(db.close);
+
+    const scopeUid = 'u1';
+    final now = DateTime.utc(2026, 1, 10, 9, 0, 0);
+
+    await db.outboxRecordsDao.enqueue(
+      OutboxRecordsCompanion.insert(
+        operationId: 'op_pending',
+        scopeUid: scopeUid,
+        entityType: 'layout_template',
+        entityId: 't1',
+        opType: 'upsert',
+        payloadJson: '{"k":1}',
+        createdAtUtc: now,
+      ),
+    );
+
+    await db.outboxRecordsDao.enqueue(
+      OutboxRecordsCompanion.insert(
+        operationId: 'op_failed',
+        scopeUid: scopeUid,
+        entityType: 'layout_template',
+        entityId: 't2',
+        opType: 'upsert',
+        payloadJson: '{"k":2}',
+        createdAtUtc: now,
+        status: const Value('failed'),
+        attempt: const Value(1),
+      ),
+    );
+
+    await db.outboxRecordsDao.enqueue(
+      OutboxRecordsCompanion.insert(
+        operationId: 'op_dead',
+        scopeUid: scopeUid,
+        entityType: 'layout_template',
+        entityId: 't3',
+        opType: 'upsert',
+        payloadJson: '{"k":3}',
+        createdAtUtc: now,
+        status: const Value('dead'),
+        attempt: const Value(9),
+      ),
+    );
+
+    final rows = await db.outboxRecordsDao.listRetryable(scopeUid: scopeUid);
+    expect(rows.map((r) => r.operationId).toSet(),
+        equals({'op_pending', 'op_failed'}));
+
+    await db.outboxRecordsDao.deleteByScope(scopeUid: scopeUid);
+    expect(await db.outboxRecordsDao.listRetryable(scopeUid: scopeUid), isEmpty);
+  });
+
   test('DriftOutboxStore enqueue/peek/mark transitions', () async {
     final db = PersistenceDriftDatabase(NativeDatabase.memory());
     addTearDown(db.close);
