@@ -31,6 +31,8 @@ dependencies:
     path: ../../account
   persistence_core:
     path: ../../persistence_core
+  persistence_firebase:
+    path: ../../persistence_firebase
 #  flutter_localizations:
 #    sdk: flutter
   intl: ^0.20.0

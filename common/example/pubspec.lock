@@ -930,6 +930,13 @@ packages:
       relative: true
     source: path
     version: "0.0.1"
+  persistence_firebase:
+    dependency: "direct main"
+    description:
+      path: "../../persistence_firebase"
+      relative: true
+    source: path
+    version: "0.0.1"
   petitparser:
     dependency: transitive
     description:

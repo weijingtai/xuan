@@ -4,6 +4,7 @@ import 'package:account/account.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
 import 'package:provider/provider.dart';
@@ -13,6 +14,7 @@ import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/datasource/sync_local_appliers.dart';
 import 'package:persistence_core/persistence_core.dart';
+import 'package:persistence_firebase/persistence_firebase.dart';
 
 import 'firebase_options.dart';
 
@@ -34,6 +36,18 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<Uuid>(create: (ctx) => const Uuid()),
+        Provider<DeviceIdentity>(
+          create: (ctx) => DeviceIdentity(
+            deviceId: const Uuid().v4(),
+            platform: kIsWeb ? 'web' : defaultTargetPlatform.toString(),
+            formFactor: kIsWeb
+                ? 'web'
+                : (defaultTargetPlatform == TargetPlatform.android ||
+                      defaultTargetPlatform == TargetPlatform.iOS)
+                ? 'mobile'
+                : 'desktop',
+          ),
+        ),
         Provider<FirebaseAuth?>(
           create: (_) {
             if (Firebase.apps.isEmpty) return null;
@@ -100,7 +114,21 @@ class MyApp extends StatelessWidget {
         ),
         Provider<OutboxStore>(create: (ctx) => _MemoryOutboxStore()),
         Provider<SyncStateStore>(create: (ctx) => _MemorySyncStateStore()),
-        Provider<RemoteGateway>(create: (ctx) => _NoopRemoteGateway()),
+        Provider<RemoteGateway>(
+          create: (ctx) {
+            final firestore = ctx.read<FirebaseFirestore?>();
+            if (firestore == null) return const _UnavailableRemoteGateway();
+            if (!ctx.read<ActiveAccountStore>().isSignedIn) {
+              return const _UnavailableRemoteGateway();
+            }
+            return FirestoreRemoteGateway(
+              firestore: firestore,
+              device: ctx.read<DeviceIdentity>(),
+              nowUtc: () => DateTime.now().toUtc(),
+              module: 'common',
+            );
+          },
+        ),
         Provider<LayoutTemplateLocalDataSource>(
           create: (ctx) => LayoutTemplateLocalDataSource(
             ctx.read<AppDatabase>(),
@@ -392,7 +420,17 @@ class _NoopGuestAccountConflictDelegate
   Future<void> discardGuest({required String guestAppUserId}) async {}
 }
 
-class _NoopRemoteGateway implements RemoteGateway {
+class _UnavailableRemoteGateway implements RemoteGateway {
+  const _UnavailableRemoteGateway();
+
+  @override
+  Future<SyncError?> push(OutboxRecord record) async {
+    return const SyncError(
+      code: SyncErrorCode.permission,
+      message: 'Firestore not initialized or not signed in',
+    );
+  }
+
   @override
   Future<RemoteChangesPage> listChanges({
     required String scopeUid,
@@ -405,11 +443,6 @@ class _NoopRemoteGateway implements RemoteGateway {
       nextCursor: null,
       hasMore: false,
     );
-  }
-
-  @override
-  Future<SyncError?> push(OutboxRecord record) async {
-    return null;
   }
 }
 
