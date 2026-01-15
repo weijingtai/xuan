@@ -48,6 +48,25 @@ class MyApp extends StatelessWidget {
                 : 'desktop',
           ),
         ),
+        Provider<RingBufferLogSink>(
+          create: (_) => RingBufferLogSink(capacity: kReleaseMode ? 2000 : 4000),
+        ),
+        Provider<SyncLogger>(
+          create: (ctx) {
+            final buffer = ctx.read<RingBufferLogSink>();
+            final sink = kReleaseMode
+                ? buffer
+                : CompositeLogSink(<SyncLogSink>[
+                    PrintLogSink(printer: debugPrint),
+                    buffer,
+                  ]);
+            return SyncLogger(
+              sink: sink,
+              minLevel: kReleaseMode ? SyncLogLevel.info : SyncLogLevel.debug,
+              nowUtc: () => DateTime.now().toUtc(),
+            );
+          },
+        ),
         Provider<FirebaseAuth?>(
           create: (_) {
             if (Firebase.apps.isEmpty) return null;
@@ -115,24 +134,20 @@ class MyApp extends StatelessWidget {
         Provider<OutboxStore>(create: (ctx) => _MemoryOutboxStore()),
         Provider<SyncStateStore>(create: (ctx) => _MemorySyncStateStore()),
         Provider<RemoteGateway>(
-          create: (ctx) {
-            final firestore = ctx.read<FirebaseFirestore?>();
-            if (firestore == null) return const _UnavailableRemoteGateway();
-            if (!ctx.read<ActiveAccountStore>().isSignedIn) {
-              return const _UnavailableRemoteGateway();
-            }
-            return FirestoreRemoteGateway(
-              firestore: firestore,
-              device: ctx.read<DeviceIdentity>(),
-              nowUtc: () => DateTime.now().toUtc(),
-              module: 'common',
-            );
-          },
+          create: (ctx) => _ReactiveRemoteGateway(
+            getFirestore: () => ctx.read<FirebaseFirestore?>(),
+            getActive: () => ctx.read<ActiveAccountStore>(),
+            getDevice: () => ctx.read<DeviceIdentity>(),
+            nowUtc: () => DateTime.now().toUtc(),
+            module: 'common',
+            logger: ctx.read<SyncLogger>(),
+          ),
         ),
         Provider<LayoutTemplateLocalDataSource>(
           create: (ctx) => LayoutTemplateLocalDataSource(
             ctx.read<AppDatabase>(),
             outboxStore: ctx.read<OutboxStore>(),
+            logger: ctx.read<SyncLogger>(),
           ),
         ),
         Provider<LocalApplier>(
@@ -162,27 +177,20 @@ class MyApp extends StatelessWidget {
             remoteGateway: ctx.read<RemoteGateway>(),
             localApplier: ctx.read<LocalApplier>(),
             nowUtc: () => DateTime.now().toUtc(),
+            logger: ctx.read<SyncLogger>(),
           ),
         ),
         Provider<SyncRuntime>(
           create: (ctx) {
-            final runtime = SyncRuntime(
+            return SyncRuntime(
               coordinator: ctx.read<SyncCoordinator>(),
               enablePush: true,
               pushInterval: const Duration(seconds: 10),
               pullInterval: const Duration(seconds: 15),
               minBackoff: const Duration(seconds: 2),
               maxBackoff: const Duration(minutes: 2),
+              logger: ctx.read<SyncLogger>(),
             );
-            runtime.setPullEntityTypes(const <String>[
-              'layout_template',
-              'divination',
-              'seeker',
-              'timing_divination',
-              'seeker_divination_map',
-              'divination_panel_map',
-            ], triggerImmediately: true);
-            return runtime;
           },
           dispose: (ctx, runtime) {
             runtime.stop();
@@ -257,9 +265,7 @@ class _SyncShellState extends State<_SyncShell> {
   void initState() {
     super.initState();
     _runtime = context.read<SyncRuntime>();
-    _runtime
-        .start(scopeUid: widget.scopeUid)
-        .then((_) => _runtime.triggerPullAll());
+    _runtime.start(scopeUid: widget.scopeUid);
   }
 
   @override
@@ -420,15 +426,109 @@ class _NoopGuestAccountConflictDelegate
   Future<void> discardGuest({required String guestAppUserId}) async {}
 }
 
+class _ReactiveRemoteGateway implements RemoteGateway {
+  _ReactiveRemoteGateway({
+    required this.getFirestore,
+    required this.getActive,
+    required this.getDevice,
+    required this.nowUtc,
+    required this.module,
+    required this.logger,
+  });
+
+  final FirebaseFirestore? Function() getFirestore;
+  final ActiveAccountStore Function() getActive;
+  final DeviceIdentity Function() getDevice;
+  final DateTime Function() nowUtc;
+  final String module;
+  final SyncLogger logger;
+
+  String _unavailableReason() {
+    final firestore = getFirestore();
+    if (firestore == null) return 'firestore_null';
+
+    final active = getActive();
+    if (!active.isSignedIn) return 'not_signed_in';
+
+    return 'unknown';
+  }
+
+  _UnavailableRemoteGateway _unavailable() {
+    return _UnavailableRemoteGateway(logger: logger, reason: _unavailableReason());
+  }
+
+  FirestoreRemoteGateway? _delegate() {
+    final firestore = getFirestore();
+    if (firestore == null) return null;
+    final active = getActive();
+    if (!active.isSignedIn) return null;
+    return FirestoreRemoteGateway(
+      firestore: firestore,
+      device: getDevice(),
+      nowUtc: () => nowUtc(),
+      module: module,
+      logger: logger,
+    );
+  }
+
+  @override
+  Future<SyncError?> push(OutboxRecord record) {
+    final gw = _delegate();
+    if (gw == null) return _unavailable().push(record);
+    return gw.push(record);
+  }
+
+  @override
+  Future<RemoteChangesPage> listChanges({
+    required String scopeUid,
+    required String entityType,
+    required PullCursor? sinceCursor,
+    required int limit,
+  }) {
+    final gw = _delegate();
+    if (gw == null) {
+      return _unavailable().listChanges(
+        scopeUid: scopeUid,
+        entityType: entityType,
+        sinceCursor: sinceCursor,
+        limit: limit,
+      );
+    }
+    return gw.listChanges(
+      scopeUid: scopeUid,
+      entityType: entityType,
+      sinceCursor: sinceCursor,
+      limit: limit,
+    );
+  }
+}
+
 class _UnavailableRemoteGateway implements RemoteGateway {
-  const _UnavailableRemoteGateway();
+  _UnavailableRemoteGateway({required SyncLogger logger, required String reason})
+      : _logger = logger,
+        _reason = reason;
+
+  final SyncLogger _logger;
+  final String _reason;
 
   @override
   Future<SyncError?> push(OutboxRecord record) async {
-    return const SyncError(
+    final err = SyncError(
       code: SyncErrorCode.permission,
-      message: 'Firestore not initialized or not signed in',
+      message: 'RemoteGateway unavailable: $_reason',
     );
+    _logger.warn(
+      'remote_gateway_unavailable_push',
+      data: <String, Object?>{
+        'scopeUid': record.scopeUid,
+        'entityType': record.entityType,
+        'entityId': record.entityId,
+        'opType': record.opType,
+        'reason': _reason,
+      },
+      error: err,
+    );
+    return err;
   }
 
   @override
@@ -438,11 +538,22 @@ class _UnavailableRemoteGateway implements RemoteGateway {
     required PullCursor? sinceCursor,
     required int limit,
   }) async {
-    return const RemoteChangesPage(
-      changes: <RemoteChange>[],
-      nextCursor: null,
-      hasMore: false,
+    final err = SyncError(
+      code: SyncErrorCode.permission,
+      message: 'RemoteGateway unavailable: $_reason',
     );
+    _logger.warn(
+      'remote_gateway_unavailable_list_changes',
+      data: <String, Object?>{
+        'scopeUid': scopeUid,
+        'entityType': entityType,
+        'sinceCursorType': sinceCursor?.runtimeType.toString(),
+        'limit': limit,
+        'reason': _reason,
+      },
+      error: err,
+    );
+    throw err;
   }
 }
 

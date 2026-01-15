@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:common/database/app_database.dart';
 import 'package:common/database/daos/card_template_skill_usage_dao.dart';
 import 'package:common/database/daos/card_template_setting_dao.dart';
@@ -59,6 +61,45 @@ class _FourZhuEditView extends StatefulWidget {
 }
 
 class _FourZhuEditViewState extends State<_FourZhuEditView> {
+  StreamSubscription<SyncStatus>? _syncSub;
+  DateTime? _lastLayoutPullAtUtc;
+
+  SyncRuntime? _tryReadSyncRuntime() {
+    try {
+      return context.read<SyncRuntime>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    final runtime = _tryReadSyncRuntime();
+    if (runtime == null) return;
+
+    _syncSub = runtime.statusStream.listen((status) {
+      if (!mounted) return;
+      if (status.lastPullEntityType != 'layout_template') return;
+      if (status.lastError != null) return;
+
+      final at = status.lastPullAtUtc;
+      if (at == null) return;
+      if (_lastLayoutPullAtUtc == at) return;
+      _lastLayoutPullAtUtc = at;
+
+      final vm = context.read<FourZhuEditorViewModel>();
+      unawaited(vm.refreshTemplates());
+    });
+  }
+
+  @override
+  void dispose() {
+    unawaited(_syncSub?.cancel());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<FourZhuEditorViewModel>(

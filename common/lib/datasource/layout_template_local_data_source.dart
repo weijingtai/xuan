@@ -15,14 +15,17 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
   LayoutTemplateLocalDataSource(
     this._db, {
     OutboxStore? outboxStore,
+    SyncLogger? logger,
   })  : _dao = LayoutTemplatesDao(_db),
         _metaDao = CardTemplateMetaDao(_db),
-        _outboxStore = outboxStore;
+        _outboxStore = outboxStore,
+        _logger = logger ?? SyncLogger.noop();
 
   final AppDatabase _db;
   final LayoutTemplatesDao _dao;
   final CardTemplateMetaDao _metaDao;
   final OutboxStore? _outboxStore;
+  final SyncLogger _logger;
 
   static const _entityTypeLayoutTemplate = 'layout_template';
   static const _opTypeUpsert = 'upsert';
@@ -176,15 +179,33 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
     required String entityType,
     required List<RemoteChange> changes,
   }) async {
+    _logger.debug(
+      'layout_template_apply_start',
+      data: <String, Object?>{
+        'scopeUid': scopeUid,
+        'entityType': entityType,
+        'changes': changes.length,
+      },
+    );
+
     if (entityType != _entityTypeLayoutTemplate) {
+      final err = SyncError(
+        code: SyncErrorCode.invalidData,
+        message: 'unsupported entityType: $entityType',
+      );
+      _logger.warn(
+        'layout_template_apply_unsupported_entity',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'entityType': entityType,
+        },
+        error: err,
+      );
       return LocalApplyResult(
         canAdvanceCursor: false,
         appliedCount: 0,
         outcomes: const [],
-        lastError: SyncError(
-          code: SyncErrorCode.invalidData,
-          message: 'unsupported entityType: $entityType',
-        ),
+        lastError: err,
       );
     }
 
@@ -444,18 +465,44 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
         }
       });
 
+      var skipped = 0;
+      for (final o in outcomes) {
+        if (o.decision == ChangeApplyDecision.skipped) skipped += 1;
+      }
+
+      _logger.info(
+        'layout_template_apply_ok',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'changes': changes.length,
+          'applied': appliedCount,
+          'skipped': skipped,
+        },
+      );
+
       return LocalApplyResult(
         canAdvanceCursor: true,
         appliedCount: appliedCount,
         outcomes: outcomes,
         lastError: null,
       );
-    } catch (e) {
+    } catch (e, st) {
+      final err = SyncError(code: SyncErrorCode.unknown, message: '$e');
+      _logger.error(
+        'layout_template_apply_error',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'changes': changes.length,
+          'applied': appliedCount,
+        },
+        error: e,
+        stackTrace: st,
+      );
       return LocalApplyResult(
         canAdvanceCursor: false,
         appliedCount: 0,
         outcomes: outcomes,
-        lastError: SyncError(code: SyncErrorCode.unknown, message: '$e'),
+        lastError: err,
       );
     }
   }

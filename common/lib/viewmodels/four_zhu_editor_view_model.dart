@@ -327,7 +327,6 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       } else {
         _templates = List.of(templates);
         var current = _templates.first;
-        // Auto-migrate legacy default template to fix style issues
         final migrated = await _migrateLegacyDefaultTemplate(current);
         if (migrated != current) {
           _templates[0] = migrated;
@@ -347,6 +346,37 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         templateUuid: template.id,
         skillId: _usageSkillId,
       );
+    }
+  }
+
+  Future<void> refreshTemplates() async {
+    final collectionId = _collectionId;
+    if (collectionId.isEmpty) return;
+
+    await _withLoading(() async {
+      final templates =
+          await getAllTemplatesUseCase(collectionId: collectionId);
+      if (templates.isEmpty) return;
+
+      final currentId = _currentTemplate?.id;
+      _templates = List.of(templates);
+
+      if (_hasUnsavedChanges) return;
+
+      if (currentId == null || currentId.isEmpty) {
+        _currentTemplate = _templates.first;
+        return;
+      }
+
+      _currentTemplate = _templates.firstWhere(
+        (t) => t.id == currentId,
+        orElse: () => _templates.first,
+      );
+    });
+
+    final template = _currentTemplate;
+    if (template != null && !_hasUnsavedChanges) {
+      _syncRuntimeStateFromTemplate(template);
     }
   }
 
