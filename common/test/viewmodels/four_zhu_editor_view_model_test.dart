@@ -1,3 +1,4 @@
+import 'package:common/models/text_style_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:drift/native.dart';
@@ -18,16 +19,104 @@ import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
 
 void main() {
   late AppDatabase db;
+  late LayoutTemplateLocalDataSource localDataSource;
   late LayoutTemplateRepositoryImpl repository;
   late OutboxStore outboxStore;
 
-  setUp(() {
+  const collectionId = 'view-model-tests';
+
+  setUp(() async {
     SharedPreferences.setMockInitialValues({});
     db = AppDatabase(NativeDatabase.memory(), false);
     outboxStore = _InMemoryOutboxStore();
+    localDataSource =
+        LayoutTemplateLocalDataSource(db, outboxStore: outboxStore);
     repository = LayoutTemplateRepositoryImpl(
-      LayoutTemplateLocalDataSource(db, outboxStore: outboxStore),
+      localDataSource,
       authScopeProvider: _FixedScopeProvider('test_app_user_id'),
+    );
+
+    await localDataSource.upsertTemplate(
+      LayoutTemplate(
+        id: 'seed-1',
+        name: 'Seed Layout',
+        collectionId: collectionId,
+        cardStyle: const CardStyle(
+          dividerType: BorderType.none,
+          dividerColorHex: '#DD000000',
+          dividerThickness: 1.0,
+          globalFontFamily: 'NotoSansSC-Regular',
+          globalFontSize: 14,
+          globalFontColorHex: '#FF0F172A',
+          contentPadding: EdgeInsets.all(16.0),
+        ),
+        chartGroups: [
+          ChartGroup(
+            id: 'seed-group-1',
+            title: '流年盘',
+            pillarOrder: const [
+              PillarType.rowTitleColumn,
+              PillarType.year,
+              PillarType.month,
+              PillarType.day,
+              PillarType.hour,
+            ],
+          ),
+        ],
+        rowConfigs: [
+          RowConfig(
+            type: RowType.columnHeaderRow,
+            isVisible: true,
+            isTitleVisible: false,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+          RowConfig(
+            type: RowType.tenGod,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultTenGodsConfig,
+          ),
+          RowConfig(
+            type: RowType.heavenlyStem,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultGanConfig,
+          ),
+          RowConfig(
+            type: RowType.earthlyBranch,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultZhiConfig,
+          ),
+          RowConfig(
+            type: RowType.xunShou,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+          RowConfig(
+            type: RowType.kongWang,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+          RowConfig(
+            type: RowType.naYin,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+          RowConfig(
+            type: RowType.hiddenStems,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+        ],
+        version: 1,
+        updatedAt: DateTime.utc(2026, 1, 1),
+      ),
+      enqueueOutbox: false,
     );
   });
 
@@ -45,10 +134,52 @@ void main() {
     );
   }
 
-  const collectionId = 'view-model-tests';
-
   group('FourZhuEditorViewModel', () {
-    test('initialize loads default template when storage empty', () async {
+    test('initialize imports public templates when user storage empty',
+        () async {
+      await localDataSource.removeCollection(collectionId);
+
+      await localDataSource.upsertTemplate(
+        LayoutTemplate(
+          id: 'public-1',
+          name: '公共模板A',
+          collectionId: '__public_default__',
+          cardStyle: const CardStyle(
+            dividerType: BorderType.none,
+            dividerColorHex: '#DD000000',
+            dividerThickness: 1.0,
+            globalFontFamily: 'NotoSansSC-Regular',
+            globalFontSize: 14,
+            globalFontColorHex: '#FF0F172A',
+            contentPadding: EdgeInsets.all(16.0),
+          ),
+          chartGroups: [
+            ChartGroup(
+              id: 'public-group-1',
+              title: '流年盘',
+              pillarOrder: const [
+                PillarType.rowTitleColumn,
+                PillarType.year,
+                PillarType.month,
+                PillarType.day,
+                PillarType.hour,
+              ],
+            ),
+          ],
+          rowConfigs: [
+            RowConfig(
+              type: RowType.columnHeaderRow,
+              isVisible: true,
+              isTitleVisible: false,
+              textStyleConfig: TextStyleConfig.defaultConfig,
+            ),
+          ],
+          version: 1,
+          updatedAt: DateTime.utc(2026, 1, 1),
+        ),
+        enqueueOutbox: false,
+      );
+
       final viewModel = buildViewModel();
 
       await viewModel.initialize(collectionId: collectionId);
@@ -56,7 +187,9 @@ void main() {
       expect(viewModel.templates, hasLength(1));
       expect(viewModel.currentTemplate, isNotNull);
       expect(viewModel.currentTemplate?.collectionId, equals(collectionId));
+      expect(viewModel.currentTemplate?.name, equals('公共模板A'));
       expect(viewModel.hasUnsavedChanges, isFalse);
+      expect(viewModel.isLoading, isFalse);
     });
 
     test('initialize keeps card padding consistent with template', () async {
@@ -77,9 +210,49 @@ void main() {
       expect(style.contentPadding, const EdgeInsets.all(16.0));
     });
 
-    test(
-        'resetTemplatesToDefault clears stored templates and rebuilds fallback',
+    test('resetTemplatesToDefault clears user templates and re-imports public',
         () async {
+      await localDataSource.upsertTemplate(
+        LayoutTemplate(
+          id: 'public-1',
+          name: '公共模板A',
+          collectionId: '__public_default__',
+          cardStyle: const CardStyle(
+            dividerType: BorderType.none,
+            dividerColorHex: '#DD000000',
+            dividerThickness: 1.0,
+            globalFontFamily: 'NotoSansSC-Regular',
+            globalFontSize: 14,
+            globalFontColorHex: '#FF0F172A',
+            contentPadding: EdgeInsets.all(16.0),
+          ),
+          chartGroups: [
+            ChartGroup(
+              id: 'public-group-1',
+              title: '流年盘',
+              pillarOrder: const [
+                PillarType.rowTitleColumn,
+                PillarType.year,
+                PillarType.month,
+                PillarType.day,
+                PillarType.hour,
+              ],
+            ),
+          ],
+          rowConfigs: [
+            RowConfig(
+              type: RowType.columnHeaderRow,
+              isVisible: true,
+              isTitleVisible: false,
+              textStyleConfig: TextStyleConfig.defaultConfig,
+            ),
+          ],
+          version: 1,
+          updatedAt: DateTime.utc(2026, 1, 1),
+        ),
+        enqueueOutbox: false,
+      );
+
       final viewModel = buildViewModel();
       await viewModel.initialize(collectionId: collectionId);
 
@@ -92,6 +265,7 @@ void main() {
 
       expect(viewModel.templates, hasLength(1));
       expect(viewModel.currentTemplate, isNotNull);
+      expect(viewModel.currentTemplate?.name, equals('公共模板A'));
       expect(viewModel.currentTemplate?.cardStyle.contentPadding,
           const EdgeInsets.all(16.0));
       expect(viewModel.paddingNotifier.value, const EdgeInsets.all(16.0));

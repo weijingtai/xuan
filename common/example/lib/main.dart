@@ -1,9 +1,10 @@
 import 'dart:async';
 
 import 'package:account/account.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
@@ -49,7 +50,8 @@ class MyApp extends StatelessWidget {
           ),
         ),
         Provider<RingBufferLogSink>(
-          create: (_) => RingBufferLogSink(capacity: kReleaseMode ? 2000 : 4000),
+          create: (_) =>
+              RingBufferLogSink(capacity: kReleaseMode ? 2000 : 4000),
         ),
         Provider<SyncLogger>(
           create: (ctx) {
@@ -73,10 +75,10 @@ class MyApp extends StatelessWidget {
             return FirebaseAuth.instance;
           },
         ),
-        Provider<FirebaseFirestore?>(
+        Provider<FirebaseDatabase?>(
           create: (_) {
             if (Firebase.apps.isEmpty) return null;
-            return FirebaseFirestore.instance;
+            return FirebaseDatabase.instance;
           },
         ),
         Provider<AccountRegistry>(create: (ctx) => AccountRegistry()),
@@ -106,12 +108,12 @@ class MyApp extends StatelessWidget {
         ),
         Provider<IdentityResolver>(
           create: (ctx) {
-            final firestore = ctx.read<FirebaseFirestore?>();
-            if (firestore == null) {
+            final database = ctx.read<FirebaseDatabase?>();
+            if (database == null) {
               return _DemoIdentityResolver(uuid: ctx.read<Uuid>());
             }
-            return FirebaseIdentityResolver(
-              firestore: firestore,
+            return FirebaseRealtimeIdentityResolver(
+              database: database,
               uuid: ctx.read<Uuid>(),
             );
           },
@@ -135,7 +137,7 @@ class MyApp extends StatelessWidget {
         Provider<SyncStateStore>(create: (ctx) => _MemorySyncStateStore()),
         Provider<RemoteGateway>(
           create: (ctx) => _ReactiveRemoteGateway(
-            getFirestore: () => ctx.read<FirebaseFirestore?>(),
+            getDatabase: () => ctx.read<FirebaseDatabase?>(),
             getActive: () => ctx.read<ActiveAccountStore>(),
             getDevice: () => ctx.read<DeviceIdentity>(),
             nowUtc: () => DateTime.now().toUtc(),
@@ -185,6 +187,7 @@ class MyApp extends StatelessWidget {
             return SyncRuntime(
               coordinator: ctx.read<SyncCoordinator>(),
               enablePush: true,
+              enablePushTimer: false,
               pushInterval: const Duration(seconds: 10),
               pullInterval: const Duration(seconds: 15),
               minBackoff: const Duration(seconds: 2),
@@ -428,7 +431,7 @@ class _NoopGuestAccountConflictDelegate
 
 class _ReactiveRemoteGateway implements RemoteGateway {
   _ReactiveRemoteGateway({
-    required this.getFirestore,
+    required this.getDatabase,
     required this.getActive,
     required this.getDevice,
     required this.nowUtc,
@@ -436,7 +439,7 @@ class _ReactiveRemoteGateway implements RemoteGateway {
     required this.logger,
   });
 
-  final FirebaseFirestore? Function() getFirestore;
+  final FirebaseDatabase? Function() getDatabase;
   final ActiveAccountStore Function() getActive;
   final DeviceIdentity Function() getDevice;
   final DateTime Function() nowUtc;
@@ -444,8 +447,8 @@ class _ReactiveRemoteGateway implements RemoteGateway {
   final SyncLogger logger;
 
   String _unavailableReason() {
-    final firestore = getFirestore();
-    if (firestore == null) return 'firestore_null';
+    final database = getDatabase();
+    if (database == null) return 'firebase_database_null';
 
     final active = getActive();
     if (!active.isSignedIn) return 'not_signed_in';
@@ -454,16 +457,19 @@ class _ReactiveRemoteGateway implements RemoteGateway {
   }
 
   _UnavailableRemoteGateway _unavailable() {
-    return _UnavailableRemoteGateway(logger: logger, reason: _unavailableReason());
+    return _UnavailableRemoteGateway(
+      logger: logger,
+      reason: _unavailableReason(),
+    );
   }
 
-  FirestoreRemoteGateway? _delegate() {
-    final firestore = getFirestore();
-    if (firestore == null) return null;
+  FirebaseRealtimeRemoteGateway? _delegate() {
+    final database = getDatabase();
+    if (database == null) return null;
     final active = getActive();
     if (!active.isSignedIn) return null;
-    return FirestoreRemoteGateway(
-      firestore: firestore,
+    return FirebaseRealtimeRemoteGateway(
+      database: database,
       device: getDevice(),
       nowUtc: () => nowUtc(),
       module: module,
@@ -504,9 +510,11 @@ class _ReactiveRemoteGateway implements RemoteGateway {
 }
 
 class _UnavailableRemoteGateway implements RemoteGateway {
-  _UnavailableRemoteGateway({required SyncLogger logger, required String reason})
-      : _logger = logger,
-        _reason = reason;
+  _UnavailableRemoteGateway({
+    required SyncLogger logger,
+    required String reason,
+  }) : _logger = logger,
+       _reason = reason;
 
   final SyncLogger _logger;
   final String _reason;

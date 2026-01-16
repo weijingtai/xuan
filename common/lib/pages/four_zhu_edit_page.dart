@@ -62,11 +62,21 @@ class _FourZhuEditView extends StatefulWidget {
 
 class _FourZhuEditViewState extends State<_FourZhuEditView> {
   StreamSubscription<SyncStatus>? _syncSub;
+  StreamSubscription<SyncStatus>? _publicSyncSub;
   DateTime? _lastLayoutPullAtUtc;
+  DateTime? _lastPublicLayoutPullAtUtc;
 
   SyncRuntime? _tryReadSyncRuntime() {
     try {
       return context.read<SyncRuntime>();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  PublicSyncRuntime? _tryReadPublicSyncRuntime() {
+    try {
+      return context.read<PublicSyncRuntime>();
     } catch (_) {
       return null;
     }
@@ -77,26 +87,44 @@ class _FourZhuEditViewState extends State<_FourZhuEditView> {
     super.initState();
 
     final runtime = _tryReadSyncRuntime();
-    if (runtime == null) return;
+    if (runtime != null) {
+      _syncSub = runtime.statusStream.listen((status) {
+        if (!mounted) return;
+        if (status.lastPullEntityType != 'layout_template') return;
+        if (status.lastError != null) return;
 
-    _syncSub = runtime.statusStream.listen((status) {
-      if (!mounted) return;
-      if (status.lastPullEntityType != 'layout_template') return;
-      if (status.lastError != null) return;
+        final at = status.lastPullAtUtc;
+        if (at == null) return;
+        if (_lastLayoutPullAtUtc == at) return;
+        _lastLayoutPullAtUtc = at;
 
-      final at = status.lastPullAtUtc;
-      if (at == null) return;
-      if (_lastLayoutPullAtUtc == at) return;
-      _lastLayoutPullAtUtc = at;
+        final vm = context.read<FourZhuEditorViewModel>();
+        unawaited(vm.refreshTemplates());
+      });
+    }
 
-      final vm = context.read<FourZhuEditorViewModel>();
-      unawaited(vm.refreshTemplates());
-    });
+    final publicRuntime = _tryReadPublicSyncRuntime();
+    if (publicRuntime != null) {
+      _publicSyncSub = publicRuntime.runtime.statusStream.listen((status) {
+        if (!mounted) return;
+        if (status.lastPullEntityType != 'layout_template') return;
+        if (status.lastError != null) return;
+
+        final at = status.lastPullAtUtc;
+        if (at == null) return;
+        if (_lastPublicLayoutPullAtUtc == at) return;
+        _lastPublicLayoutPullAtUtc = at;
+
+        final vm = context.read<FourZhuEditorViewModel>();
+        unawaited(vm.refreshTemplates());
+      });
+    }
   }
 
   @override
   void dispose() {
     unawaited(_syncSub?.cancel());
+    unawaited(_publicSyncSub?.cancel());
     super.dispose();
   }
 

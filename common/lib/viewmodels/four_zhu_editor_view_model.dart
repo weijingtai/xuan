@@ -111,8 +111,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   late final ValueNotifier<CardPayload> cardPayloadNotifier;
 
   static const _themePreferenceKey = 'four_zhu_editor:dark_mode';
+  static const String _publicTemplatesCollectionId = '__public_default__';
 
   bool _isLoading = false;
+  bool _isBootstrappingTemplates = false;
+  bool _bootstrapInFlight = false;
   bool _hasUnsavedChanges = false;
   bool _isDarkMode = false;
   EditorViewMode _viewMode = EditorViewMode.canvas;
@@ -130,7 +133,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   String? _usageQueryUuid;
   int? _usageSkillId;
 
-  bool get isLoading => _isLoading;
+  bool get isLoading => _isLoading || _isBootstrappingTemplates;
   bool get hasUnsavedChanges => _hasUnsavedChanges;
   bool get isDarkMode => _isDarkMode;
   EditorViewMode get viewMode => _viewMode;
@@ -316,14 +319,14 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     await _loadThemePreference();
     cardBrightnessNotifier.value =
         _isDarkMode ? Brightness.dark : Brightness.light;
+
     await _withLoading(() async {
       final templates =
           await getAllTemplatesUseCase(collectionId: collectionId);
       if (templates.isEmpty) {
-        final template = _buildDefaultTemplate(collectionId: collectionId);
-        await saveTemplateUseCase(template: template);
-        _templates = [template];
-        _currentTemplate = template;
+        _templates = const [];
+        _currentTemplate = null;
+        _isBootstrappingTemplates = true;
       } else {
         _templates = List.of(templates);
         var current = _templates.first;
@@ -333,11 +336,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
           current = migrated;
         }
         _currentTemplate = current;
+        _isBootstrappingTemplates = false;
       }
       _hasUnsavedChanges = false;
       _errorMessage = null;
       _resetRecentTemplates();
     });
+
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
 
     final template = _currentTemplate;
     if (template != null) {
@@ -356,10 +364,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     await _withLoading(() async {
       final templates =
           await getAllTemplatesUseCase(collectionId: collectionId);
-      if (templates.isEmpty) return;
+      if (templates.isEmpty) {
+        _templates = const [];
+        _currentTemplate = null;
+        _isBootstrappingTemplates = true;
+        return;
+      }
 
       final currentId = _currentTemplate?.id;
       _templates = List.of(templates);
+      _isBootstrappingTemplates = false;
 
       if (_hasUnsavedChanges) return;
 
@@ -374,9 +388,66 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       );
     });
 
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
+
     final template = _currentTemplate;
     if (template != null && !_hasUnsavedChanges) {
       _syncRuntimeStateFromTemplate(template);
+    }
+  }
+
+  Future<void> _bootstrapFromPublicTemplatesIfNeeded() async {
+    if (!_isBootstrappingTemplates) return;
+    if (_bootstrapInFlight) return;
+
+    _bootstrapInFlight = true;
+    try {
+      await _withLoading(() async {
+        final publicTemplates = await getAllTemplatesUseCase(
+          collectionId: _publicTemplatesCollectionId,
+        );
+        if (publicTemplates.isEmpty) {
+          return;
+        }
+
+        final now = DateTime.now();
+        for (final template in publicTemplates) {
+          final imported = template.copyWith(
+            id: _uuid.v4(),
+            collectionId: _collectionId,
+            name: _generateTemplateName(template.name),
+            version: 0,
+            updatedAt: now,
+          );
+          await saveTemplateUseCase(template: imported);
+        }
+
+        final refreshed =
+            await getAllTemplatesUseCase(collectionId: _collectionId);
+        if (refreshed.isEmpty) {
+          return;
+        }
+
+        _templates = refreshed;
+        _currentTemplate = refreshed.first;
+        _isBootstrappingTemplates = false;
+        _hasUnsavedChanges = false;
+        _errorMessage = null;
+        _resetRecentTemplates();
+      });
+    } finally {
+      _bootstrapInFlight = false;
+    }
+
+    final template = _currentTemplate;
+    if (template != null && !_hasUnsavedChanges) {
+      _syncRuntimeStateFromTemplate(template);
+      await _loadAndApplyTemplateSetting(
+        templateUuid: template.id,
+        skillId: _usageSkillId,
+      );
     }
   }
 
@@ -499,11 +570,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   Future<void> createTemplate({String? name}) async {
-    final template = _buildDefaultTemplate(
-      collectionId: _collectionId,
-      name: name?.trim().isNotEmpty == true
-          ? name!.trim()
-          : _generateTemplateName(),
+    final base = _currentTemplate;
+    if (base == null) return;
+
+    final trimmed = name?.trim();
+    final nextName = trimmed?.isNotEmpty == true ? trimmed! : _generateTemplateName();
+
+    final template = base.copyWith(
+      id: _uuid.v4(),
+      name: nextName,
+      version: 0,
+      updatedAt: DateTime.now(),
     );
     _applyCurrentTemplate(template);
     await saveCurrentTemplate();
@@ -801,10 +878,9 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void resetRowConfigs() {
     final template = _currentTemplate;
     if (template == null) return;
-    final defaults =
-        _buildDefaultTemplate(collectionId: template.collectionId).rowConfigs;
 
-    // M4.3.2 - 使用Command模式
+    final defaults = _defaultRowConfigs();
+
     final command = ReplaceRowConfigsCommand(
       oldConfigs: template.rowConfigs,
       newConfigs: defaults,
@@ -1435,17 +1511,15 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       );
       final refreshed =
           await getAllTemplatesUseCase(collectionId: _collectionId);
-      if (refreshed.isEmpty) {
-        final fallback = _buildDefaultTemplate(collectionId: _collectionId);
-        await saveTemplateUseCase(template: fallback);
-        _templates = [fallback];
-        _currentTemplate = fallback;
-      } else {
-        _templates = refreshed;
-        _currentTemplate = refreshed.first;
-      }
+      _templates = refreshed;
+      _currentTemplate = refreshed.isEmpty ? null : refreshed.first;
+      _isBootstrappingTemplates = refreshed.isEmpty;
       _hasUnsavedChanges = false;
     });
+
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
   }
 
   Future<void> duplicateCurrentTemplate() async {
@@ -1478,27 +1552,26 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       }
       final refreshed =
           await getAllTemplatesUseCase(collectionId: _collectionId);
-      if (refreshed.isEmpty) {
-        final fallback = _buildDefaultTemplate(collectionId: _collectionId);
-        await saveTemplateUseCase(template: fallback);
-        _templates = [fallback];
-        _currentTemplate = fallback;
-      } else {
-        final currentId = _currentTemplate?.id;
-        _templates = refreshed;
-        if (currentId != null) {
-          _currentTemplate = refreshed.firstWhere(
-            (item) => item.id == currentId,
-            orElse: () => refreshed.first,
-          );
-        } else {
-          _currentTemplate = refreshed.first;
-        }
-      }
+
+      final currentId = _currentTemplate?.id;
+      _templates = refreshed;
+
+      final nextCurrent = currentId == null
+          ? (refreshed.isEmpty ? null : refreshed.first)
+          : (_findTemplateInList(refreshed, currentId) ??
+              (refreshed.isEmpty ? null : refreshed.first));
+      _currentTemplate = nextCurrent;
+
+      _isBootstrappingTemplates = refreshed.isEmpty;
       _hasUnsavedChanges = false;
       _errorMessage = null;
       _resetRecentTemplates();
     });
+
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
+
     clearSelection();
   }
 
@@ -1513,13 +1586,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         );
       }
 
-      final fallback = _buildDefaultTemplate(collectionId: _collectionId);
-      await saveTemplateUseCase(template: fallback);
-
       final refreshed =
           await getAllTemplatesUseCase(collectionId: _collectionId);
-      _templates = refreshed.isEmpty ? [fallback] : refreshed;
-      _currentTemplate = _templates.first;
+      _templates = refreshed;
+      _currentTemplate = refreshed.isEmpty ? null : refreshed.first;
+      _isBootstrappingTemplates = refreshed.isEmpty;
       _hasUnsavedChanges = false;
       _errorMessage = null;
       _favoriteTemplateIds.clear();
@@ -1527,6 +1598,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _selectedPresetId = null;
       _resetRecentTemplates();
     });
+
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
 
     final template = _currentTemplate;
     if (template != null) {
@@ -1563,22 +1638,25 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       await saveTemplateUseCase(template: updated);
       final refreshed =
           await getAllTemplatesUseCase(collectionId: _collectionId);
+      _templates = refreshed;
       if (refreshed.isEmpty) {
-        final fallback = _buildDefaultTemplate(collectionId: _collectionId);
-        await saveTemplateUseCase(template: fallback);
-        _templates = [fallback];
-        _currentTemplate = fallback;
+        _currentTemplate = null;
+        _isBootstrappingTemplates = true;
       } else {
-        _templates = refreshed;
         _currentTemplate = refreshed.firstWhere(
           (item) => item.id == (_currentTemplate?.id ?? updated.id),
           orElse: () => refreshed.first,
         );
+        _isBootstrappingTemplates = false;
       }
       _hasUnsavedChanges = false;
       _errorMessage = null;
       _resetRecentTemplates();
     });
+
+    if (_currentTemplate == null) {
+      await _bootstrapFromPublicTemplatesIfNeeded();
+    }
   }
 
   Future<void> revertChanges() async {
@@ -1670,90 +1748,57 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  LayoutTemplate _buildDefaultTemplate({
-    required String collectionId,
-    String? name,
-  }) {
-    final now = DateTime.now();
-    return LayoutTemplate(
-      id: _uuid.v4(),
-      name: name ?? '默认模板',
-      collectionId: collectionId,
-      cardStyle: const CardStyle(
-        dividerType: BorderType.none,
-        dividerColorHex: '#DD000000',
-        dividerThickness: 1.0,
-        globalFontFamily: 'NotoSansSC-Regular',
-        globalFontSize: 14,
-        globalFontColorHex: '#FF0F172A',
-        contentPadding: EdgeInsets.all(16.0),
+  List<RowConfig> _defaultRowConfigs() {
+    return [
+      RowConfig(
+        type: RowType.columnHeaderRow,
+        isVisible: true,
+        isTitleVisible: false,
+        textStyleConfig: TextStyleConfig.defaultConfig,
       ),
-      chartGroups: [
-        ChartGroup(
-          id: _uuid.v4(),
-          title: '流年盘',
-          pillarOrder: const [
-            PillarType.rowTitleColumn,
-            PillarType.year,
-            PillarType.month,
-            PillarType.day,
-            PillarType.hour,
-          ],
-        ),
-      ],
-      rowConfigs: [
-        RowConfig(
-          type: RowType.columnHeaderRow,
-          isVisible: true,
-          isTitleVisible: false,
-          textStyleConfig: TextStyleConfig.defaultConfig,
-        ),
-        RowConfig(
-          type: RowType.tenGod,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultTenGodsConfig,
-        ),
-        RowConfig(
-          type: RowType.heavenlyStem,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultGanConfig,
-        ),
-        RowConfig(
-          type: RowType.earthlyBranch,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultZhiConfig,
-        ),
-        RowConfig(
-          type: RowType.xunShou,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
-        ),
-        RowConfig(
-          type: RowType.kongWang,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
-        ),
-        RowConfig(
-          type: RowType.naYin,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
-        ),
-        RowConfig(
-          type: RowType.hiddenStems,
-          isVisible: true,
-          isTitleVisible: true,
-          textStyleConfig: TextStyleConfig.defaultConfig,
-        ),
-      ],
-      version: 1,
-      updatedAt: now,
-    );
+      RowConfig(
+        type: RowType.tenGod,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultTenGodsConfig,
+      ),
+      RowConfig(
+        type: RowType.heavenlyStem,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultGanConfig,
+      ),
+      RowConfig(
+        type: RowType.earthlyBranch,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultZhiConfig,
+      ),
+      RowConfig(
+        type: RowType.xunShou,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      ),
+      RowConfig(
+        type: RowType.kongWang,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      ),
+      RowConfig(
+        type: RowType.naYin,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      ),
+      RowConfig(
+        type: RowType.hiddenStems,
+        isVisible: true,
+        isTitleVisible: true,
+        textStyleConfig: TextStyleConfig.defaultConfig,
+      ),
+    ];
   }
 
   /// 检查并迁移旧版默认模版（修复样式跳变问题）

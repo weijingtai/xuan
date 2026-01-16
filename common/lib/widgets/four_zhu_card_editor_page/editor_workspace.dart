@@ -585,6 +585,21 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                 currentTemplate,
                               ),
                             ),
+                            if (currentTemplate == null)
+                              Positioned.fill(
+                                child: ColoredBox(
+                                  color: workspaceLocalTheme
+                                      .colorScheme.surface
+                                      .withValues(alpha: 0.86),
+                                  child: const Center(
+                                    child: SizedBox(
+                                      width: 40,
+                                      height: 40,
+                                      child: CircularProgressIndicator(),
+                                    ),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
