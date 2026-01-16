@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -28,10 +30,25 @@ class _FixedScopeProvider implements AuthScopeProvider {
 class _InMemoryOutboxStore implements OutboxStore {
   final List<OutboxRecord> _backlog = <OutboxRecord>[];
   final Set<String> _dead = <String>{};
+  final Map<String, StreamController<int>> _backlogControllersByScopeUid =
+      <String, StreamController<int>>{};
+
+  StreamController<int> _controllerFor(String scopeUid) {
+    return _backlogControllersByScopeUid.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(),
+    );
+  }
+
+  Future<void> _emitBacklog(String scopeUid) async {
+    if (!_backlogControllersByScopeUid.containsKey(scopeUid)) return;
+    _controllerFor(scopeUid).add(await backlogCount(scopeUid));
+  }
 
   @override
   Future<void> enqueue(OutboxRecord record) async {
     _backlog.add(record);
+    await _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -53,8 +70,13 @@ class _InMemoryOutboxStore implements OutboxStore {
     required String operationId,
     required DateTime atUtc,
   }) async {
+    final removed = _backlog.where((r) => r.operationId == operationId).toList();
     _backlog.removeWhere((r) => r.operationId == operationId);
     _dead.remove(operationId);
+
+    if (removed.isNotEmpty) {
+      await _emitBacklog(removed.first.scopeUid);
+    }
   }
 
   @override
@@ -75,6 +97,8 @@ class _InMemoryOutboxStore implements OutboxStore {
     if (isDead) {
       _dead.add(operationId);
     }
+
+    await _emitBacklog(existing.scopeUid);
   }
 
   @override
@@ -82,6 +106,14 @@ class _InMemoryOutboxStore implements OutboxStore {
     return _backlog
         .where((r) => r.scopeUid == scopeUid && !_dead.contains(r.operationId))
         .length;
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return (() async* {
+      yield await backlogCount(scopeUid);
+      yield* _controllerFor(scopeUid).stream;
+    })().distinct();
   }
 
   @override

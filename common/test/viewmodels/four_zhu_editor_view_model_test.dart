@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:common/models/text_style_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
@@ -763,10 +765,25 @@ class _FixedScopeProvider implements AuthScopeProvider {
 
 class _InMemoryOutboxStore implements OutboxStore {
   final List<OutboxRecord> _records = [];
+  final Map<String, StreamController<int>> _backlogControllersByScopeUid =
+      <String, StreamController<int>>{};
+
+  StreamController<int> _controllerFor(String scopeUid) {
+    return _backlogControllersByScopeUid.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(),
+    );
+  }
+
+  Future<void> _emitBacklog(String scopeUid) async {
+    if (!_backlogControllersByScopeUid.containsKey(scopeUid)) return;
+    _controllerFor(scopeUid).add(await backlogCount(scopeUid));
+  }
 
   @override
   Future<void> enqueue(OutboxRecord record) async {
     _records.add(record);
+    await _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -782,7 +799,9 @@ class _InMemoryOutboxStore implements OutboxStore {
     required String operationId,
     required DateTime atUtc,
   }) async {
+    final removed = _records.where((r) => r.operationId == operationId).toList();
     _records.removeWhere((r) => r.operationId == operationId);
+    if (removed.isNotEmpty) await _emitBacklog(removed.first.scopeUid);
   }
 
   @override
@@ -800,11 +819,20 @@ class _InMemoryOutboxStore implements OutboxStore {
     _records[index] = existing.copyWith(
       attempt: attempt,
     );
+    await _emitBacklog(existing.scopeUid);
   }
 
   @override
   Future<int> backlogCount(String scopeUid) async {
     return _records.where((r) => r.scopeUid == scopeUid).length;
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return (() async* {
+      yield await backlogCount(scopeUid);
+      yield* _controllerFor(scopeUid).stream;
+    })().distinct();
   }
 
   @override

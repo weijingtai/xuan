@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:persistence_core/persistence_core.dart';
 
+export 'firebase_realtime_remote_gateway.dart';
+
 /// Firestore implementation of [RemoteGateway].
 ///
 /// 功能说明：
@@ -48,6 +50,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
   final String _module;
   final int _maxAttemptsBeforeDead;
   final SyncLogger _logger;
+  static const String _publicScopeUid = 'public';
 
   /// Redacts potentially sensitive identifiers for production logs.
   ///
@@ -108,6 +111,13 @@ class FirestoreRemoteGateway implements RemoteGateway {
   /// 返回值：
   /// - 成功返回 null；失败返回 [SyncError]。
   Future<SyncError?> push(OutboxRecord record) async {
+    if (record.scopeUid == _publicScopeUid) {
+      return const SyncError(
+        code: SyncErrorCode.permission,
+        message: 'public scope is pull-only',
+      );
+    }
+
     final atUtc = _nowUtc().toUtc();
     final sw = Stopwatch()..start();
 
@@ -176,20 +186,27 @@ class FirestoreRemoteGateway implements RemoteGateway {
         attemptWritten = attemptForWrite;
 
         if (record.opType == 'upsert') {
-          final payload = _parseLayoutTemplatePayload(record.payloadJson);
-          if (payload == null) {
-            throw const _RemotePayloadInvalid(
-                'invalid layout_template payload');
+          if (record.entityType == 'layout_template') {
+            final payload = _parseLayoutTemplatePayload(record.payloadJson);
+            if (payload == null) {
+              throw const _RemotePayloadInvalid(
+                'invalid layout_template payload',
+              );
+            }
+            tx.set(
+              entityRef,
+              _buildLayoutTemplateUpsertData(
+                record: record,
+                atUtc: atUtc,
+                payload: payload,
+              ),
+            );
+          } else {
+            tx.set(
+              entityRef,
+              _buildGenericUpsertData(record: record, atUtc: atUtc),
+            );
           }
-
-          tx.set(
-            entityRef,
-            _buildLayoutTemplateUpsertData(
-              record: record,
-              atUtc: atUtc,
-              payload: payload,
-            ),
-          );
         } else if (record.opType == 'softDelete') {
           if (entitySnap == null || !entitySnap.exists) {
             throw const _RemotePayloadInvalid(
@@ -371,26 +388,10 @@ class FirestoreRemoteGateway implements RemoteGateway {
       return page;
     }
 
-    if (entityType != 'layout_template') {
-      _logger.error(
-        'firestore_list_changes_unsupported_entity',
-        data: <String, Object?>{
-          'module': _module,
-          'scopeUid': _redactId(scopeUid),
-          'entityType': entityType,
-        },
-      );
-      throw _RemotePayloadInvalid('unsupported entityType: $entityType');
-    }
-
-    Query<Map<String, dynamic>> query = _firestore
-        .collection('users')
-        .doc(scopeUid)
-        .collection('modules')
-        .doc(_module)
-        .collection('layout_templates')
-        .orderBy('serverUpdatedAt')
-        .orderBy('lastOperationId');
+    Query<Map<String, dynamic>> query = _entityCollection(
+      scopeUid: scopeUid,
+      entityType: entityType,
+    ).orderBy('serverUpdatedAt').orderBy('lastOperationId');
 
     if (sinceCursor is TimestampCursor) {
       query = query.startAfter([
@@ -415,6 +416,24 @@ class FirestoreRemoteGateway implements RemoteGateway {
     QuerySnapshot<Map<String, dynamic>> snap;
     try {
       snap = await query.limit(limit + 1).get();
+    } on FirebaseException catch (e, st) {
+      final mapped = _mapFirebaseException(e);
+      _logger.warn(
+        'firestore_list_changes_failed',
+        data: <String, Object?>{
+          'module': _module,
+          'scopeUid': _redactId(scopeUid),
+          'entityType': entityType,
+          'limit': limit,
+          'sinceCursorType': sinceCursor?.runtimeType.toString(),
+          'firebaseCode': e.code,
+          'mappedErrorCode': mapped.code.name,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: _errorSummary(e),
+        stackTrace: st,
+      );
+      throw mapped;
     } catch (e, st) {
       _logger.error(
         'firestore_list_changes_error',
@@ -450,36 +469,45 @@ class FirestoreRemoteGateway implements RemoteGateway {
       final deletedAt = data['deletedAt'];
       final opType = deletedAt == null ? 'upsert' : 'softDelete';
 
-      final payload = <String, Object?>{
-        'schemaVersion': 1,
-        'entityType': entityType,
-        'entityId': entityId,
-        'collectionId': data['collectionId'],
-        'name': data['name'],
-        'description': data['description'],
-        'version': data['version'],
-      };
+      final payloadJsonRaw = data['payloadJson'];
+      String? payloadJson;
+      if (payloadJsonRaw is String && payloadJsonRaw.isNotEmpty) {
+        payloadJson = payloadJsonRaw;
+      } else if (entityType == 'layout_template') {
+        final payload = <String, Object?>{
+          'schemaVersion': 1,
+          'entityType': entityType,
+          'entityId': entityId,
+          'collectionId': data['collectionId'],
+          'name': data['name'],
+          'description': data['description'],
+          'version': data['version'],
+        };
 
-      final clientUpdatedAt = data['clientUpdatedAt'];
-      if (clientUpdatedAt is Timestamp) {
-        payload['clientUpdatedAt'] =
-            clientUpdatedAt.toDate().toUtc().toIso8601String();
-      }
-
-      final deletedAtValue = data['deletedAt'];
-      if (deletedAtValue is Timestamp) {
-        payload['deletedAt'] =
-            deletedAtValue.toDate().toUtc().toIso8601String();
-      } else {
-        payload['deletedAt'] = null;
-      }
-
-      if (opType == 'upsert') {
-        final template = data['template'];
-        if (template is Map) {
-          payload['template'] = Map<String, Object?>.from(template);
+        final clientUpdatedAt = data['clientUpdatedAt'];
+        if (clientUpdatedAt is Timestamp) {
+          payload['clientUpdatedAt'] =
+              clientUpdatedAt.toDate().toUtc().toIso8601String();
         }
+
+        final deletedAtValue = data['deletedAt'];
+        if (deletedAtValue is Timestamp) {
+          payload['deletedAt'] =
+              deletedAtValue.toDate().toUtc().toIso8601String();
+        } else {
+          payload['deletedAt'] = null;
+        }
+
+        if (opType == 'upsert') {
+          final template = data['template'];
+          if (template is Map) {
+            payload['template'] = Map<String, Object?>.from(template);
+          }
+        }
+        payloadJson = jsonEncode(payload);
       }
+
+      if (payloadJson == null) continue;
 
       changes.add(
         RemoteChange(
@@ -491,7 +519,7 @@ class FirestoreRemoteGateway implements RemoteGateway {
             serverUpdatedAtUtc: serverUpdatedAt.toDate().toUtc(),
             tieBreaker: lastOperationId,
           ),
-          payloadJson: jsonEncode(payload),
+          payloadJson: payloadJson,
           serverTimeUtc: serverUpdatedAt.toDate().toUtc(),
         ),
       );
@@ -564,17 +592,40 @@ class FirestoreRemoteGateway implements RemoteGateway {
     required String entityType,
     required String entityId,
   }) {
-    if (entityType == 'layout_template') {
+    return _entityCollection(scopeUid: scopeUid, entityType: entityType)
+        .doc(entityId);
+  }
+
+  CollectionReference<Map<String, dynamic>> _entityCollection({
+    required String scopeUid,
+    required String entityType,
+  }) {
+    final collection = _collectionNameForEntityType(entityType);
+    if (scopeUid == _publicScopeUid) {
       return _firestore
-          .collection('users')
-          .doc(scopeUid)
-          .collection('modules')
+          .collection('public')
           .doc(_module)
-          .collection('layout_templates')
-          .doc(entityId);
+          .collection(collection);
     }
 
-    throw _RemotePayloadInvalid('unsupported entityType: $entityType');
+    return _firestore
+        .collection('users')
+        .doc(scopeUid)
+        .collection('modules')
+        .doc(_module)
+        .collection(collection);
+  }
+
+  String _collectionNameForEntityType(String entityType) {
+    if (entityType == 'layout_template') return 'layout_templates';
+    if (entityType == 'divination') return 'divinations';
+    if (entityType == 'seeker') return 'seekers';
+    if (entityType == 'timing_divination') return 'timing_divinations';
+    if (entityType == 'seeker_divination_map') return 'seeker_divination_mappers';
+    if (entityType == 'seeker_divination_mapper') return 'seeker_divination_mappers';
+    if (entityType == 'divination_panel_map') return 'divination_panel_mappers';
+    if (entityType == 'divination_panel_mapper') return 'divination_panel_mappers';
+    return entityType;
   }
 
   /// Converts [DeviceIdentity] to a Firestore-storable map.
@@ -673,11 +724,28 @@ class FirestoreRemoteGateway implements RemoteGateway {
     return {
       'schemaVersion': 1,
       'entityId': record.entityId,
+      'payloadJson': record.payloadJson,
       'collectionId': payload.collectionId,
       'name': payload.name,
       'description': payload.description,
       'template': payload.template,
       'version': payload.version,
+      'clientUpdatedAt': Timestamp.fromDate(record.createdAtUtc.toUtc()),
+      'serverUpdatedAt': Timestamp.fromDate(atUtc),
+      'deletedAt': null,
+      'lastOperationId': record.operationId,
+      'lastDeviceId': _device.deviceId,
+    };
+  }
+
+  Map<String, Object?> _buildGenericUpsertData({
+    required OutboxRecord record,
+    required DateTime atUtc,
+  }) {
+    return {
+      'schemaVersion': 1,
+      'entityId': record.entityId,
+      'payloadJson': record.payloadJson,
       'clientUpdatedAt': Timestamp.fromDate(record.createdAtUtc.toUtc()),
       'serverUpdatedAt': Timestamp.fromDate(atUtc),
       'deletedAt': null,
@@ -739,11 +807,13 @@ class FirestoreRemoteGateway implements RemoteGateway {
   SyncError _mapFirebaseException(FirebaseException e) {
     final code = e.code;
     if (code == 'permission-denied' || code == 'unauthenticated') {
-      return SyncError(
-          code: SyncErrorCode.permission, message: e.message ?? code);
+      return SyncError(code: SyncErrorCode.permission, message: e.message ?? code);
     }
     if (code == 'unavailable' || code == 'deadline-exceeded') {
       return SyncError(code: SyncErrorCode.network, message: e.message ?? code);
+    }
+    if (code == 'failed-precondition') {
+      return SyncError(code: SyncErrorCode.invalidData, message: e.message ?? code);
     }
     return SyncError(code: SyncErrorCode.unknown, message: e.message ?? code);
   }

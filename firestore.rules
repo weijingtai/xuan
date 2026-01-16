@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /identity_map/{baasUid} {
+      allow read, write: if request.auth != null && request.auth.uid == baasUid;
+    }
+
+    function appUserIdForCurrentUser() {
+      return get(/databases/$(database)/documents/identity_map/$(request.auth.uid)).data.appUserId;
+    }
+
+    match /public/{module}/{document=**} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /users/{appUserId}/{document=**} {
+      allow read, write: if request.auth != null && appUserIdForCurrentUser() == appUserId;
+    }
+  }
+}

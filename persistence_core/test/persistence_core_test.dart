@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:persistence_core/persistence_core.dart';
@@ -6,11 +7,26 @@ import 'package:test/test.dart';
 class _InMemoryOutboxStore implements OutboxStore {
   final Map<String, OutboxRecord> _recordsById = <String, OutboxRecord>{};
   final Map<String, String> _statusById = <String, String>{};
+  final Map<String, StreamController<int>> _backlogControllersByScopeUid =
+      <String, StreamController<int>>{};
+
+  StreamController<int> _controllerFor(String scopeUid) {
+    return _backlogControllersByScopeUid.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(),
+    );
+  }
+
+  Future<void> _emitBacklog(String scopeUid) async {
+    if (!_backlogControllersByScopeUid.containsKey(scopeUid)) return;
+    _controllerFor(scopeUid).add(await backlogCount(scopeUid));
+  }
 
   @override
   Future<void> enqueue(OutboxRecord record) async {
     _recordsById[record.operationId] = record;
     _statusById.putIfAbsent(record.operationId, () => 'pending');
+    await _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -35,6 +51,8 @@ class _InMemoryOutboxStore implements OutboxStore {
     required DateTime atUtc,
   }) async {
     _statusById[operationId] = 'success';
+    final r = _recordsById[operationId];
+    if (r != null) await _emitBacklog(r.scopeUid);
   }
 
   @override
@@ -51,6 +69,7 @@ class _InMemoryOutboxStore implements OutboxStore {
       _recordsById[operationId] = existing.copyWith(attempt: attempt);
     }
     _statusById[operationId] = isDead ? 'dead' : 'failed';
+    if (existing != null) await _emitBacklog(existing.scopeUid);
   }
 
   @override
@@ -62,6 +81,15 @@ class _InMemoryOutboxStore implements OutboxStore {
       if (status == 'pending' || status == 'failed') count += 1;
     }
     return count;
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return (() async* {
+      yield await backlogCount(scopeUid);
+      yield* _controllerFor(scopeUid).stream;
+    })()
+        .distinct();
   }
 
   @override
@@ -519,5 +547,38 @@ void main() {
     expect(events, contains('sync_config_load_missing'));
     expect(events, contains('sync_config_save_success'));
     expect(events, contains('sync_config_update'));
+  });
+
+  test('SyncRuntime can disable push', () async {
+    const scopeUid = 'public';
+    final now = DateTime.utc(2026, 1, 10, 9, 0, 0);
+
+    final outbox = _InMemoryOutboxStore();
+    final coordinator = SyncCoordinator(
+      outboxStore: outbox,
+      remoteGateway: _FakeRemoteGateway(
+        pushError: (_) => throw StateError('push should not be called'),
+      ),
+      nowUtc: () => now,
+      maxAttemptsBeforeDead: 10,
+      pushBatchSize: 10,
+    );
+
+    final runtime = SyncRuntime(
+      coordinator: coordinator,
+      enablePush: false,
+      pushInterval: const Duration(milliseconds: 10),
+      pullInterval: const Duration(milliseconds: 10),
+      minBackoff: const Duration(milliseconds: 1),
+      maxBackoff: const Duration(milliseconds: 10),
+      nowUtc: () => now,
+    );
+
+    await runtime.start(scopeUid: scopeUid);
+    await runtime.triggerPush();
+    await runtime.setOnline(false);
+    await runtime.setOnline(true);
+    await runtime.stop();
+    await runtime.dispose();
   });
 }

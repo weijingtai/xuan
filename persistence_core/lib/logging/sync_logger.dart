@@ -173,6 +173,49 @@ class InMemoryLogSink extends SyncLogSink {
   }
 }
 
+class CompositeLogSink extends SyncLogSink {
+  const CompositeLogSink(this._sinks);
+
+  final List<SyncLogSink> _sinks;
+
+  @override
+  void add(SyncLogRecord record) {
+    for (final sink in _sinks) {
+      sink.add(record);
+    }
+  }
+}
+
+class RingBufferLogSink extends SyncLogSink {
+  RingBufferLogSink({required int capacity})
+      : _capacity = capacity <= 0 ? 1 : capacity;
+
+  final int _capacity;
+  final List<SyncLogRecord> _buffer = <SyncLogRecord>[];
+  int _start = 0;
+
+  List<SyncLogRecord> snapshot() {
+    if (_buffer.isEmpty) return const <SyncLogRecord>[];
+    if (_buffer.length < _capacity) return List<SyncLogRecord>.of(_buffer);
+
+    final out = <SyncLogRecord>[];
+    for (var i = 0; i < _buffer.length; i += 1) {
+      out.add(_buffer[(_start + i) % _buffer.length]);
+    }
+    return out;
+  }
+
+  @override
+  void add(SyncLogRecord record) {
+    if (_buffer.length < _capacity) {
+      _buffer.add(record);
+      return;
+    }
+    _buffer[_start] = record;
+    _start = (_start + 1) % _capacity;
+  }
+}
+
 class _NoopLogSink extends SyncLogSink {
   const _NoopLogSink();
 

@@ -1,7 +1,7 @@
 import 'package:account/account.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +22,7 @@ Future<void> main() async {
   if (useEmulator) {
     final host = _emulatorHost();
     FirebaseAuth.instance.useAuthEmulator(host, 9099);
-    FirebaseFirestore.instance.useFirestoreEmulator(host, 8080);
+    FirebaseDatabase.instance.useDatabaseEmulator(host, 9000);
   }
 
   runApp(const AccountExampleApp());
@@ -59,15 +59,15 @@ class AccountExampleApp extends StatelessWidget {
           )..load(),
         ),
         Provider<FirebaseAuth>(create: (_) => FirebaseAuth.instance),
-        Provider<FirebaseFirestore>(create: (_) => FirebaseFirestore.instance),
+        Provider<FirebaseDatabase>(create: (_) => FirebaseDatabase.instance),
         Provider<AuthAdapter>(
           create: (ctx) => FirebaseEmailAuthAdapter(
             auth: ctx.read<FirebaseAuth>(),
           ),
         ),
         Provider<IdentityResolver>(
-          create: (ctx) => FirebaseIdentityResolver(
-            firestore: ctx.read<FirebaseFirestore>(),
+          create: (ctx) => FirebaseRealtimeIdentityResolver(
+            database: ctx.read<FirebaseDatabase>(),
             uuid: ctx.read<Uuid>(),
           ),
         ),

@@ -1,1 +1,51 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"xuan-xue","appId":"1:163917481454:android:acea7881d68990425afaff","fileOutput":"android/app/google-services.json"}},"ios":{"default":{"projectId":"xuan-xue","appId":"1:163917481454:ios:01524531901dd47b5afaff","uploadDebugSymbols":false,"fileOutput":"ios/Runner/GoogleService-Info.plist"}},"macos":{"default":{"projectId":"xuan-xue","appId":"1:163917481454:ios:01524531901dd47b5afaff","uploadDebugSymbols":false,"fileOutput":"macos/Runner/GoogleService-Info.plist"}},"dart":{"lib/firebase_options.dart":{"projectId":"xuan-xue","configurations":{"android":"1:163917481454:android:acea7881d68990425afaff","ios":"1:163917481454:ios:01524531901dd47b5afaff","macos":"1:163917481454:ios:01524531901dd47b5afaff","web":"1:163917481454:web:4cc01a569ac708475afaff","windows":"1:163917481454:web:703fa4208b74233d5afaff"}}}}}}
+{
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "xuan-xue",
+          "appId": "1:163917481454:android:acea7881d68990425afaff",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "ios": {
+        "default": {
+          "projectId": "xuan-xue",
+          "appId": "1:163917481454:ios:01524531901dd47b5afaff",
+          "uploadDebugSymbols": false,
+          "fileOutput": "ios/Runner/GoogleService-Info.plist"
+        }
+      },
+      "macos": {
+        "default": {
+          "projectId": "xuan-xue",
+          "appId": "1:163917481454:ios:01524531901dd47b5afaff",
+          "uploadDebugSymbols": false,
+          "fileOutput": "macos/Runner/GoogleService-Info.plist"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "xuan-xue",
+          "configurations": {
+            "android": "1:163917481454:android:acea7881d68990425afaff",
+            "ios": "1:163917481454:ios:01524531901dd47b5afaff",
+            "macos": "1:163917481454:ios:01524531901dd47b5afaff",
+            "web": "1:163917481454:web:4cc01a569ac708475afaff",
+            "windows": "1:163917481454:web:703fa4208b74233d5afaff"
+          }
+        }
+      }
+    }
+  },
+  "firestore": {
+    "database": "(default)",
+    "location": "us-west4",
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "database": {
+    "rules": "database.rules.json",
+    "instance": "xuan-xue-default-rtdb"
+  }
+}

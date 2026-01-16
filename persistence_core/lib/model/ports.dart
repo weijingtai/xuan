@@ -89,6 +89,16 @@ abstract class OutboxStore {
   /// - 待推送积压数量。
   Future<int> backlogCount(String scopeUid);
 
+  /// Watches count of records eligible for pushing (pending + failed).
+  ///
+  /// 用途：
+  /// - 上层运行时（例如 SyncRuntime）可以订阅该 stream，在 outbox 发生变化时
+  ///   触发一次 push（并配合退避定时器实现“非轮询”的重试）。
+  ///
+  /// 返回值：
+  /// - 广播或单播 stream 均可；建议至少在订阅后尽快发出一次当前值。
+  Stream<int> watchBacklogCount(String scopeUid);
+
   /// Returns count of dead-letter records.
   ///
   /// 参数说明：

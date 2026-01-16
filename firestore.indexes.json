@@ -1,0 +1,119 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "divination_panel_mappers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "divinations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "layout_templates",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "seeker_divination_mappers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "seekers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "timing_divinations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "serverUpdatedAt",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "lastOperationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    }
+  ],
+  "fieldOverrides": []
+}

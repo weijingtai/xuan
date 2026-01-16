@@ -1,3 +1,4 @@
+import 'package:persistence_core/logging/sync_logger.dart';
 import 'package:persistence_core/model/ports.dart';
 import 'package:persistence_core/model/types.dart';
 
@@ -137,12 +138,14 @@ class SyncCoordinator {
     int pushBatchSize = 50,
     int pullBatchSize = 50,
     int maxAttemptsBeforeDead = 10,
+    SyncLogger? logger,
   })  : _outboxStore = outboxStore,
         _syncStateStore = syncStateStore,
         _remoteGateway = remoteGateway,
         _localApplier = localApplier,
         _nowUtc = nowUtc,
         _pullBatchSize = pullBatchSize,
+        _logger = logger ?? SyncLogger.noop(),
         _pusher = OutboxPusher(
           outboxStore: outboxStore,
           remoteGateway: remoteGateway,
@@ -165,6 +168,7 @@ class SyncCoordinator {
   final LocalApplier? _localApplier;
   final DateTime Function() _nowUtc;
   final int _pullBatchSize;
+  final SyncLogger _logger;
   final OutboxPusher _pusher;
   SyncStatus _status;
 
@@ -174,6 +178,14 @@ class SyncCoordinator {
   /// - UI/日志可以读取该字段以显示最新同步状态。
   /// - 如果需要响应式订阅，建议由上层（如 SyncRuntime）把状态转成 stream/notifier。
   SyncStatus get status => _status;
+
+  /// Watches outbox backlog count (pending + failed) for [scopeUid].
+  ///
+  /// 用途：
+  /// - 供上层 runtime 订阅，在 outbox 发生变化时触发 push。
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return _outboxStore.watchBacklogCount(scopeUid);
+  }
 
   /// Runs a single push pass from local outbox to remote.
   ///
@@ -189,11 +201,25 @@ class SyncCoordinator {
   ///   - 若无错误：state=idle，更新 lastSuccessAtUtc/lastPushAtUtc，并可写入 [SyncStateStore.markPushedAt]。
   ///   - 若有错误：state=error，保留 lastSuccessAtUtc/lastPushAtUtc，填充 lastError。
   Future<OutboxPushRunResult> pushOnce({required String scopeUid}) async {
+    final sw = Stopwatch()..start();
+
+    final backlogBefore = await _outboxStore.backlogCount(scopeUid);
+    final deadBefore = await _outboxStore.deadCount(scopeUid);
+
+    _logger.debug(
+      'sync_push_start',
+      data: <String, Object?>{
+        'scopeUid': scopeUid,
+        'backlogBefore': backlogBefore,
+        'deadBefore': deadBefore,
+      },
+    );
+
     _status = _status.copyWith(
       state: SyncRunState.syncing,
       scopeUid: scopeUid,
-      backlogCount: await _outboxStore.backlogCount(scopeUid),
-      deadCount: await _outboxStore.deadCount(scopeUid),
+      backlogCount: backlogBefore,
+      deadCount: deadBefore,
       lastError: null,
     );
 
@@ -218,6 +244,35 @@ class SyncCoordinator {
       lastPushAtUtc: result.hasError ? _status.lastPushAtUtc : atUtc,
       lastError: result.lastError,
     );
+
+    if (result.hasError) {
+      _logger.warn(
+        'sync_push_fail',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'processed': result.processed,
+          'succeeded': result.succeeded,
+          'failed': result.failed,
+          'dead': result.dead,
+          'errorCode': result.lastError?.code.name,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: result.lastError,
+      );
+    } else {
+      _logger.info(
+        'sync_push_ok',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'processed': result.processed,
+          'succeeded': result.succeeded,
+          'failed': result.failed,
+          'dead': result.dead,
+          'backlogAfter': backlog,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+      );
+    }
 
     return result;
   }
@@ -261,6 +316,18 @@ class SyncCoordinator {
     int? limit,
     int maxPages = 100,
   }) async {
+    final sw = Stopwatch()..start();
+
+    _logger.debug(
+      'sync_pull_start',
+      data: <String, Object?>{
+        'scopeUid': scopeUid,
+        'entityType': entityType,
+        'limit': limit,
+        'maxPages': maxPages,
+      },
+    );
+
     final stateStore = _syncStateStore;
     final applier = _localApplier;
 
@@ -340,6 +407,38 @@ class SyncCoordinator {
         scopeUid: scopeUid,
         entityType: entityType,
         atUtc: _nowUtc(),
+      );
+    }
+
+    if (lastError != null) {
+      _logger.warn(
+        'sync_pull_fail',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'entityType': entityType,
+          'pages': pages,
+          'fetched': fetched,
+          'applied': appliedCount,
+          'skipped': skippedCount,
+          'advanced': advanced,
+          'errorCode': lastError.code.name,
+          'durationMs': sw.elapsedMilliseconds,
+        },
+        error: lastError,
+      );
+    } else {
+      _logger.info(
+        'sync_pull_ok',
+        data: <String, Object?>{
+          'scopeUid': scopeUid,
+          'entityType': entityType,
+          'pages': pages,
+          'fetched': fetched,
+          'applied': appliedCount,
+          'skipped': skippedCount,
+          'advanced': advanced,
+          'durationMs': sw.elapsedMilliseconds,
+        },
       );
     }
 

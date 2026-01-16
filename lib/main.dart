@@ -6,6 +6,10 @@ import 'package:account/account.dart';
 import 'package:common/common_logger.dart';
 import 'package:common/database/app_database.dart' as db;
 import 'package:common/database/world_info_database.dart' as world_db;
+import 'package:common/datamodel/divination_request_info_datamodel.dart';
+import 'package:common/datamodel/seeker_model.dart';
+import 'package:common/datamodel/timing_divination_model.dart';
+import 'package:common/enums.dart';
 import 'package:common/datasource/geo_location_repository.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/datasource/loca_binary/world_country_repository.dart';
@@ -15,6 +19,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_flutter/drift_flutter.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
@@ -38,16 +43,43 @@ import 'NavigatorGenerator.dart';
 
 bool _firebaseReady = false;
 String? _firestoreDeviceId;
+const String _publicScopeUid = 'public';
 
 class _UnavailableRemoteGateway implements RemoteGateway {
-  const _UnavailableRemoteGateway();
+  _UnavailableRemoteGateway({
+    required SyncLogger logger,
+    required String reason,
+  })  : _logger = logger,
+        _reason = reason;
+
+  final SyncLogger _logger;
+  final String _reason;
+
+  String _redact(String value) {
+    if (value.isEmpty) return '***';
+    if (value.length <= 6) return '***';
+    return '${value.substring(0, 3)}…${value.substring(value.length - 3)}';
+  }
 
   @override
   Future<SyncError?> push(OutboxRecord record) async {
-    return const SyncError(
+    final err = SyncError(
       code: SyncErrorCode.permission,
-      message: 'Firestore not initialized',
+      message: 'Remote gateway unavailable: $_reason',
     );
+    _logger.warn(
+      'remote_gateway_unavailable',
+      data: <String, Object?>{
+        'op': 'push',
+        'reason': _reason,
+        'scopeUid': _redact(record.scopeUid),
+        'entityType': record.entityType,
+        'entityId': _redact(record.entityId),
+        'operationId': record.operationId,
+      },
+      error: err,
+    );
+    return err;
   }
 
   @override
@@ -57,6 +89,17 @@ class _UnavailableRemoteGateway implements RemoteGateway {
     required PullCursor? sinceCursor,
     required int limit,
   }) async {
+    _logger.warn(
+      'remote_gateway_unavailable',
+      data: <String, Object?>{
+        'op': 'listChanges',
+        'reason': _reason,
+        'scopeUid': _redact(scopeUid),
+        'entityType': entityType,
+        'limit': limit,
+        'sinceCursorType': sinceCursor?.runtimeType.toString(),
+      },
+    );
     return const RemoteChangesPage(
       changes: [],
       nextCursor: null,
@@ -111,7 +154,8 @@ class _UnavailableAuthAdapter implements AuthAdapter {
 class _UnavailableIdentityResolver implements IdentityResolver {
   const _UnavailableIdentityResolver();
 
-  static StateError _err() => StateError('FirebaseFirestore not initialized');
+  static StateError _err() =>
+      StateError('FirebaseDatabase/FirebaseFirestore not initialized');
 
   @override
   Future<String> resolveAppUserId(AuthSession session) {
@@ -195,6 +239,1006 @@ class _ActiveAccountScopeProvider implements AuthScopeProvider {
   }
 }
 
+class _CompositeLocalApplier implements LocalApplier {
+  _CompositeLocalApplier(this._routes);
+
+  final Map<String, LocalApplier> _routes;
+
+  @override
+  Future<LocalApplyResult> applyRemoteChanges({
+    required String scopeUid,
+    required String entityType,
+    required List<RemoteChange> changes,
+  }) async {
+    final applier = _routes[entityType];
+    if (applier == null) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: const [],
+        lastError: SyncError(
+          code: SyncErrorCode.invalidData,
+          message: 'unsupported entityType: $entityType',
+        ),
+      );
+    }
+    return applier.applyRemoteChanges(
+      scopeUid: scopeUid,
+      entityType: entityType,
+      changes: changes,
+    );
+  }
+}
+
+class _DivinationLocalApplier implements LocalApplier {
+  _DivinationLocalApplier(this._db);
+
+  final db.AppDatabase _db;
+
+  static const _entityTypeDivination = 'divination';
+  static const _opTypeUpsert = 'upsert';
+  static const _opTypeSoftDelete = 'softDelete';
+
+  Future<DivinationRequestInfoDataModel?> _readLocal(String uuid) {
+    return (_db.select(_db.divinations)..where((t) => t.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
+  DivinationRequestInfoDataModel? _parseDivination(String payloadJson) {
+    Object? decoded;
+    try {
+      decoded = jsonDecode(payloadJson);
+    } catch (_) {
+      return null;
+    }
+    if (decoded is! Map) return null;
+
+    Object? candidate = decoded;
+    final wrapped = decoded['divination'];
+    if (wrapped is Map) {
+      candidate = wrapped;
+    }
+
+    if (candidate is! Map) return null;
+
+    try {
+      return DivinationRequestInfoDataModel.fromJson(
+        Map<String, dynamic>.from(candidate),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DateTime? _parseUtc(Object? value) {
+    if (value is DateTime) return value.toUtc();
+    if (value is! String) return null;
+    final parsed = DateTime.tryParse(value);
+    return parsed?.toUtc();
+  }
+
+  @override
+  Future<LocalApplyResult> applyRemoteChanges({
+    required String scopeUid,
+    required String entityType,
+    required List<RemoteChange> changes,
+  }) async {
+    if (entityType != _entityTypeDivination) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: const [],
+        lastError: SyncError(
+          code: SyncErrorCode.invalidData,
+          message: 'unsupported entityType: $entityType',
+        ),
+      );
+    }
+
+    if (changes.isEmpty) {
+      return const LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: 0,
+        outcomes: [],
+        lastError: null,
+      );
+    }
+
+    final outcomes = <ChangeApplyOutcome>[];
+    var appliedCount = 0;
+
+    try {
+      await _db.transaction(() async {
+        for (final change in changes) {
+          if (change.opType == _opTypeUpsert) {
+            final remote = _parseDivination(change.payloadJson);
+            if (remote == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'divination parse failed',
+                ),
+              );
+              continue;
+            }
+
+            if (remote.uuid != change.entityId) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'entityId mismatch',
+                ),
+              );
+              continue;
+            }
+
+            final remoteUpdatedAt = remote.lastUpdatedAt?.toUtc();
+            if (remoteUpdatedAt == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'missing lastUpdatedAt',
+                ),
+              );
+              continue;
+            }
+
+            final local = await _readLocal(change.entityId);
+            if (local != null) {
+              final localDeletedAt = local.deletedAt?.toUtc();
+              if (localDeletedAt != null &&
+                  localDeletedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.conflictLwwLost,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+
+              final localUpdatedAt =
+                  local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+              if (localUpdatedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.olderThanLocal,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+            }
+
+            final companion = db.DivinationsCompanion(
+              uuid: Value(remote.uuid),
+              createdAt: Value(remote.createdAt),
+              lastUpdatedAt: Value(remote.lastUpdatedAt!),
+              deletedAt: Value(remote.deletedAt),
+              divinationTypeUuid: Value(remote.divinationTypeUuid),
+              fateYear: Value(remote.fateYear),
+              question: Value(remote.question),
+              detail: Value(remote.detail),
+              ownerSeekerUuid: Value(remote.ownerSeekerUuid),
+              gender: Value(remote.gender),
+              seekerName: Value(remote.seekerName),
+              tinyPredict: Value(remote.tinyPredict),
+              directlyPredict: Value(remote.directlyPredict),
+            );
+
+            await _db.into(_db.divinations).insertOnConflictUpdate(companion);
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          if (change.opType == _opTypeSoftDelete) {
+            Object? decoded;
+            try {
+              decoded = jsonDecode(change.payloadJson);
+            } catch (_) {
+              decoded = null;
+            }
+            DateTime? deletedAtFromPayload;
+            if (decoded is Map) {
+              deletedAtFromPayload = _parseUtc(decoded['deletedAt']);
+              final wrapped = decoded['divination'];
+              if (deletedAtFromPayload == null && wrapped is Map) {
+                deletedAtFromPayload = _parseUtc(wrapped['deletedAt']);
+              }
+            }
+            final remoteDeletedAt = deletedAtFromPayload ??
+                change.serverTimeUtc?.toUtc() ??
+                DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
+            final local = await _readLocal(change.entityId);
+            if (local == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localDeletedAt = local.deletedAt?.toUtc();
+            if (localDeletedAt != null &&
+                !localDeletedAt.isBefore(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localUpdatedAt =
+                local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+            if (localDeletedAt == null &&
+                localUpdatedAt.isAfter(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.conflictLwwLost,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            await (_db.update(_db.divinations)
+                  ..where((t) => t.uuid.equals(change.entityId)))
+                .write(
+              db.DivinationsCompanion(
+                deletedAt: Value(remoteDeletedAt.toLocal()),
+                lastUpdatedAt: Value(remoteDeletedAt.toLocal()),
+              ),
+            );
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          outcomes.add(
+            ChangeApplyOutcome(
+              operationId: change.operationId,
+              entityType: change.entityType,
+              entityId: change.entityId,
+              decision: ChangeApplyDecision.skipped,
+              reason: SkipReasonCode.invalidPayload,
+              message: 'unknown opType: ${change.opType}',
+            ),
+          );
+        }
+      });
+
+      return LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: appliedCount,
+        outcomes: outcomes,
+        lastError: null,
+      );
+    } catch (e) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: outcomes,
+        lastError: SyncError(code: SyncErrorCode.unknown, message: '$e'),
+      );
+    }
+  }
+}
+
+class _SeekerLocalApplier implements LocalApplier {
+  _SeekerLocalApplier(this._db);
+
+  final db.AppDatabase _db;
+
+  static const _entityTypeSeeker = 'seeker';
+  static const _opTypeUpsert = 'upsert';
+  static const _opTypeSoftDelete = 'softDelete';
+
+  Future<SeekerModel?> _readLocal(String uuid) {
+    return (_db.select(_db.seekers)..where((t) => t.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
+  SeekerModel? _parseSeeker(String payloadJson) {
+    Object? decoded;
+    try {
+      decoded = jsonDecode(payloadJson);
+    } catch (_) {
+      return null;
+    }
+    if (decoded is! Map) return null;
+
+    Object? candidate = decoded;
+    final wrapped = decoded['seeker'];
+    if (wrapped is Map) {
+      candidate = wrapped;
+    }
+
+    if (candidate is! Map) return null;
+
+    try {
+      return SeekerModel.fromJson(Map<String, dynamic>.from(candidate));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DateTime? _parseUtc(Object? value) {
+    if (value is DateTime) return value.toUtc();
+    if (value is! String) return null;
+    final parsed = DateTime.tryParse(value);
+    return parsed?.toUtc();
+  }
+
+  @override
+  Future<LocalApplyResult> applyRemoteChanges({
+    required String scopeUid,
+    required String entityType,
+    required List<RemoteChange> changes,
+  }) async {
+    if (entityType != _entityTypeSeeker) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: const [],
+        lastError: SyncError(
+          code: SyncErrorCode.invalidData,
+          message: 'unsupported entityType: $entityType',
+        ),
+      );
+    }
+
+    if (changes.isEmpty) {
+      return const LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: 0,
+        outcomes: [],
+        lastError: null,
+      );
+    }
+
+    final outcomes = <ChangeApplyOutcome>[];
+    var appliedCount = 0;
+
+    try {
+      await _db.transaction(() async {
+        for (final change in changes) {
+          if (change.opType == _opTypeUpsert) {
+            final remote = _parseSeeker(change.payloadJson);
+            if (remote == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'seeker parse failed',
+                ),
+              );
+              continue;
+            }
+
+            if (remote.uuid != change.entityId) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'entityId mismatch',
+                ),
+              );
+              continue;
+            }
+
+            final remoteDivinationUuid = remote.divinationUuid;
+            if (remoteDivinationUuid == null || remoteDivinationUuid.isEmpty) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'missing divinationUuid',
+                ),
+              );
+              continue;
+            }
+
+            final remoteUpdatedAt =
+                remote.lastUpdatedAt?.toUtc() ?? remote.createdAt.toUtc();
+
+            final local = await _readLocal(change.entityId);
+            if (local != null) {
+              final localDeletedAt = local.deletedAt?.toUtc();
+              if (localDeletedAt != null &&
+                  localDeletedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.conflictLwwLost,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+
+              final localUpdatedAt =
+                  local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+              if (localUpdatedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.olderThanLocal,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+            }
+
+            final companion = db.SeekersCompanion(
+              uuid: Value(remote.uuid),
+              username: Value(remote.username),
+              nickname: Value(remote.nickname),
+              gender: Value(remote.gender),
+              createdAt: Value(remote.createdAt),
+              lastUpdatedAt: Value(remote.lastUpdatedAt),
+              deletedAt: Value(remote.deletedAt),
+              timingType: Value(remote.timingType),
+              datetime: Value(remote.datetime),
+              yearGanZhi: Value(remote.yearGanZhi),
+              monthGanZhi: Value(remote.monthGanZhi),
+              dayGanZhi: Value(remote.dayGanZhi),
+              timeGanZhi: Value(remote.timeGanZhi),
+              lunarMonth: Value(remote.lunarMonth),
+              isLeapMonth: Value(remote.isLeapMonth),
+              lunarDay: Value(remote.lunarDay),
+              divinationUuid: Value(remoteDivinationUuid),
+              timingInfoUuid: Value(remote.timingInfoUuid),
+              timingInfoListJson: Value(remote.timingInfoListJson),
+              location: Value(remote.location),
+            );
+
+            await _db.into(_db.seekers).insertOnConflictUpdate(companion);
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          if (change.opType == _opTypeSoftDelete) {
+            Object? decoded;
+            try {
+              decoded = jsonDecode(change.payloadJson);
+            } catch (_) {
+              decoded = null;
+            }
+            DateTime? deletedAtFromPayload;
+            if (decoded is Map) {
+              deletedAtFromPayload = _parseUtc(decoded['deletedAt']);
+              final wrapped = decoded['seeker'];
+              if (deletedAtFromPayload == null && wrapped is Map) {
+                deletedAtFromPayload = _parseUtc(wrapped['deletedAt']);
+              }
+            }
+            final remoteDeletedAt = deletedAtFromPayload ??
+                change.serverTimeUtc?.toUtc() ??
+                DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
+            final local = await _readLocal(change.entityId);
+            if (local == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localDeletedAt = local.deletedAt?.toUtc();
+            if (localDeletedAt != null &&
+                !localDeletedAt.isBefore(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localUpdatedAt =
+                local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+            if (localDeletedAt == null &&
+                localUpdatedAt.isAfter(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.conflictLwwLost,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            await (_db.update(_db.seekers)
+                  ..where((t) => t.uuid.equals(change.entityId)))
+                .write(
+              db.SeekersCompanion(
+                deletedAt: Value(remoteDeletedAt.toLocal()),
+                lastUpdatedAt: Value(remoteDeletedAt.toLocal()),
+              ),
+            );
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          outcomes.add(
+            ChangeApplyOutcome(
+              operationId: change.operationId,
+              entityType: change.entityType,
+              entityId: change.entityId,
+              decision: ChangeApplyDecision.skipped,
+              reason: SkipReasonCode.invalidPayload,
+              message: 'unknown opType: ${change.opType}',
+            ),
+          );
+        }
+      });
+
+      return LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: appliedCount,
+        outcomes: outcomes,
+        lastError: null,
+      );
+    } catch (e) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: outcomes,
+        lastError: SyncError(code: SyncErrorCode.unknown, message: '$e'),
+      );
+    }
+  }
+}
+
+class _TimingDivinationLocalApplier implements LocalApplier {
+  _TimingDivinationLocalApplier(this._db);
+
+  final db.AppDatabase _db;
+
+  static const _entityTypeTimingDivination = 'timing_divination';
+  static const _opTypeUpsert = 'upsert';
+  static const _opTypeSoftDelete = 'softDelete';
+
+  Future<TimingDivinationModel?> _readLocal(String uuid) {
+    return (_db.select(_db.timingDivinations)
+          ..where((t) => t.uuid.equals(uuid)))
+        .getSingleOrNull();
+  }
+
+  TimingDivinationModel? _parseTiming(String payloadJson) {
+    Object? decoded;
+    try {
+      decoded = jsonDecode(payloadJson);
+    } catch (_) {
+      return null;
+    }
+    if (decoded is! Map) return null;
+
+    Object? candidate = decoded;
+    final wrapped = decoded['timingDivination'];
+    if (wrapped is Map) {
+      candidate = wrapped;
+    }
+
+    if (candidate is! Map) return null;
+
+    try {
+      return TimingDivinationModel.fromJson(
+          Map<String, dynamic>.from(candidate));
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DateTime? _parseUtc(Object? value) {
+    if (value is DateTime) return value.toUtc();
+    if (value is! String) return null;
+    final parsed = DateTime.tryParse(value);
+    return parsed?.toUtc();
+  }
+
+  @override
+  Future<LocalApplyResult> applyRemoteChanges({
+    required String scopeUid,
+    required String entityType,
+    required List<RemoteChange> changes,
+  }) async {
+    if (entityType != _entityTypeTimingDivination) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: const [],
+        lastError: SyncError(
+          code: SyncErrorCode.invalidData,
+          message: 'unsupported entityType: $entityType',
+        ),
+      );
+    }
+
+    if (changes.isEmpty) {
+      return const LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: 0,
+        outcomes: [],
+        lastError: null,
+      );
+    }
+
+    final outcomes = <ChangeApplyOutcome>[];
+    var appliedCount = 0;
+
+    try {
+      await _db.transaction(() async {
+        for (final change in changes) {
+          if (change.opType == _opTypeUpsert) {
+            final remote = _parseTiming(change.payloadJson);
+            if (remote == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'timingDivination parse failed',
+                ),
+              );
+              continue;
+            }
+
+            if (remote.uuid != change.entityId) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'entityId mismatch',
+                ),
+              );
+              continue;
+            }
+
+            final remoteDivinationUuid = remote.divinationUuid;
+            if (remoteDivinationUuid == null || remoteDivinationUuid.isEmpty) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'missing divinationUuid',
+                ),
+              );
+              continue;
+            }
+
+            final remoteTimingInfoUuid = remote.timingInfoUuid;
+            if (remoteTimingInfoUuid == null || remoteTimingInfoUuid.isEmpty) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.invalidPayload,
+                  message: 'missing timingInfoUuid',
+                ),
+              );
+              continue;
+            }
+
+            final remoteUpdatedAt =
+                remote.lastUpdatedAt?.toUtc() ?? remote.createdAt.toUtc();
+
+            final local = await _readLocal(change.entityId);
+            if (local != null) {
+              final localDeletedAt = local.deletedAt?.toUtc();
+              if (localDeletedAt != null &&
+                  localDeletedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.conflictLwwLost,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+
+              final localUpdatedAt =
+                  local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+              if (localUpdatedAt.isAfter(remoteUpdatedAt)) {
+                outcomes.add(
+                  ChangeApplyOutcome(
+                    operationId: change.operationId,
+                    entityType: change.entityType,
+                    entityId: change.entityId,
+                    decision: ChangeApplyDecision.skipped,
+                    reason: SkipReasonCode.olderThanLocal,
+                    message: null,
+                  ),
+                );
+                continue;
+              }
+            }
+
+            final companion = db.TimingDivinationsCompanion(
+              uuid: Value(remote.uuid),
+              createdAt: Value(remote.createdAt),
+              lastUpdatedAt: Value(remote.lastUpdatedAt),
+              deletedAt: Value(remote.deletedAt),
+              divinationUuid: Value(remoteDivinationUuid),
+              timingType: Value(remote.timingType),
+              datetime: Value(remote.datetime),
+              isManual: Value(remote.isManual),
+              yearGanZhi: Value(remote.yearGanZhi),
+              monthGanZhi: Value(remote.monthGanZhi),
+              dayGanZhi: Value(remote.dayGanZhi),
+              timeGanZhi: Value(remote.timeGanZhi),
+              lunarMonth: Value(remote.lunarMonth),
+              isLeapMonth: Value(remote.isLeapMonth),
+              lunarDay: Value(remote.lunarDay),
+              timingInfoUuid: Value(remoteTimingInfoUuid),
+              location: Value(remote.location),
+              timingInfoListJson: Value(remote.timingInfoListJson),
+            );
+
+            await _db
+                .into(_db.timingDivinations)
+                .insertOnConflictUpdate(companion);
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          if (change.opType == _opTypeSoftDelete) {
+            Object? decoded;
+            try {
+              decoded = jsonDecode(change.payloadJson);
+            } catch (_) {
+              decoded = null;
+            }
+            DateTime? deletedAtFromPayload;
+            if (decoded is Map) {
+              deletedAtFromPayload = _parseUtc(decoded['deletedAt']);
+              final wrapped = decoded['timingDivination'];
+              if (deletedAtFromPayload == null && wrapped is Map) {
+                deletedAtFromPayload = _parseUtc(wrapped['deletedAt']);
+              }
+            }
+            final remoteDeletedAt = deletedAtFromPayload ??
+                change.serverTimeUtc?.toUtc() ??
+                DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
+
+            final local = await _readLocal(change.entityId);
+            if (local == null) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localDeletedAt = local.deletedAt?.toUtc();
+            if (localDeletedAt != null &&
+                !localDeletedAt.isBefore(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.alreadyApplied,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            final localUpdatedAt =
+                local.lastUpdatedAt?.toUtc() ?? local.createdAt.toUtc();
+            if (localDeletedAt == null &&
+                localUpdatedAt.isAfter(remoteDeletedAt)) {
+              outcomes.add(
+                ChangeApplyOutcome(
+                  operationId: change.operationId,
+                  entityType: change.entityType,
+                  entityId: change.entityId,
+                  decision: ChangeApplyDecision.skipped,
+                  reason: SkipReasonCode.conflictLwwLost,
+                  message: null,
+                ),
+              );
+              continue;
+            }
+
+            await (_db.update(_db.timingDivinations)
+                  ..where((t) => t.uuid.equals(change.entityId)))
+                .write(
+              db.TimingDivinationsCompanion(
+                deletedAt: Value(remoteDeletedAt.toLocal()),
+                lastUpdatedAt: Value(remoteDeletedAt.toLocal()),
+              ),
+            );
+
+            appliedCount += 1;
+            outcomes.add(
+              ChangeApplyOutcome(
+                operationId: change.operationId,
+                entityType: change.entityType,
+                entityId: change.entityId,
+                decision: ChangeApplyDecision.applied,
+                reason: null,
+                message: null,
+              ),
+            );
+            continue;
+          }
+
+          outcomes.add(
+            ChangeApplyOutcome(
+              operationId: change.operationId,
+              entityType: change.entityType,
+              entityId: change.entityId,
+              decision: ChangeApplyDecision.skipped,
+              reason: SkipReasonCode.invalidPayload,
+              message: 'unknown opType: ${change.opType}',
+            ),
+          );
+        }
+      });
+
+      return LocalApplyResult(
+        canAdvanceCursor: true,
+        appliedCount: appliedCount,
+        outcomes: outcomes,
+        lastError: null,
+      );
+    } catch (e) {
+      return LocalApplyResult(
+        canAdvanceCursor: false,
+        appliedCount: 0,
+        outcomes: outcomes,
+        lastError: SyncError(code: SyncErrorCode.unknown, message: '$e'),
+      );
+    }
+  }
+}
+
 class _BootstrapApp extends StatelessWidget {
   const _BootstrapApp();
 
@@ -228,6 +1272,9 @@ class _BootstrapApp extends StatelessWidget {
         Provider<FirebaseFirestore?>(
           create: (_) => _firebaseReady ? FirebaseFirestore.instance : null,
         ),
+        Provider<FirebaseDatabase?>(
+          create: (_) => _firebaseReady ? FirebaseDatabase.instance : null,
+        ),
         Provider<FirebaseAuth?>(
           create: (_) => _firebaseReady ? FirebaseAuth.instance : null,
         ),
@@ -242,14 +1289,23 @@ class _BootstrapApp extends StatelessWidget {
         ),
         Provider<IdentityResolver>(
           create: (ctx) {
-            final firestore = ctx.read<FirebaseFirestore?>();
-            if (firestore == null) {
-              return const _UnavailableIdentityResolver();
+            final database = ctx.read<FirebaseDatabase?>();
+            if (database != null) {
+              return FirebaseRealtimeIdentityResolver(
+                database: database,
+                uuid: ctx.read<Uuid>(),
+              );
             }
-            return FirebaseIdentityResolver(
-              firestore: firestore,
-              uuid: ctx.read<Uuid>(),
-            );
+
+            final firestore = ctx.read<FirebaseFirestore?>();
+            if (firestore != null) {
+              return FirebaseIdentityResolver(
+                firestore: firestore,
+                uuid: ctx.read<Uuid>(),
+              );
+            }
+
+            return const _UnavailableIdentityResolver();
           },
         ),
         Provider<AuthCoordinator>(
@@ -261,9 +1317,64 @@ class _BootstrapApp extends StatelessWidget {
           ),
         ),
       ],
-      child: const _AuthAwareApp(),
+      child: const _AuthSessionBridge(child: _AuthAwareApp()),
     );
   }
+}
+
+class _AuthSessionBridge extends StatefulWidget {
+  const _AuthSessionBridge({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_AuthSessionBridge> createState() => _AuthSessionBridgeState();
+}
+
+class _AuthSessionBridgeState extends State<_AuthSessionBridge> {
+  StreamSubscription<AuthSession?>? _sub;
+  Future<void> _serial = Future<void>.value();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_sub != null) return;
+
+    final coordinator = context.read<AuthCoordinator>();
+    _sub = coordinator.sessionChanges().listen((session) {
+      _serial = _serial.then((_) => _handle(session));
+    });
+  }
+
+  Future<void> _handle(AuthSession? session) async {
+    if (!mounted) return;
+
+    final active = context.read<ActiveAccountStore>();
+    final coordinator = context.read<AuthCoordinator>();
+
+    if (session == null) {
+      if (active.isSignedIn) {
+        await active.switchToGuest();
+      }
+      return;
+    }
+
+    if (session.providerType == AuthProviderType.anonymous) {
+      return;
+    }
+
+    await coordinator.activateSession(session);
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    _sub = null;
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _AuthAwareApp extends StatelessWidget {
@@ -289,6 +1400,25 @@ class _AuthAwareApp extends StatelessWidget {
           Provider<AuthScopeProvider>(
             create: (ctx) =>
                 _ActiveAccountScopeProvider(ctx.read<ActiveAccountStore>()),
+          ),
+          Provider<RingBufferLogSink>(
+            create: (_) => RingBufferLogSink(
+              capacity: kReleaseMode ? 300 : 3000,
+            ),
+          ),
+          Provider<SyncLogger>(
+            create: (ctx) {
+              final buffer = ctx.read<RingBufferLogSink>();
+              final sink = kDebugMode
+                  ? CompositeLogSink(
+                      <SyncLogSink>[PrintLogSink(printer: debugPrint), buffer],
+                    )
+                  : buffer;
+              return SyncLogger(
+                sink: sink,
+                minLevel: kDebugMode ? SyncLogLevel.debug : SyncLogLevel.warn,
+              );
+            },
           ),
           Provider<db.AppDatabase>(
             create: (ctx) => db.AppDatabase(
@@ -318,15 +1448,26 @@ class _AuthAwareApp extends StatelessWidget {
           ),
           Provider<RemoteGateway>(
             create: (ctx) {
+              final log = ctx.read<SyncLogger>();
               if (!ctx.read<ActiveAccountStore>().isSignedIn) {
-                return const _UnavailableRemoteGateway();
+                return _UnavailableRemoteGateway(
+                  logger: log,
+                  reason: 'not_signed_in',
+                );
               }
-              final firestore = ctx.read<FirebaseFirestore?>();
-              if (firestore == null) return const _UnavailableRemoteGateway();
-              return FirestoreRemoteGateway(
-                firestore: firestore,
+              final database = ctx.read<FirebaseDatabase?>();
+              if (database == null) {
+                return _UnavailableRemoteGateway(
+                  logger: log,
+                  reason: 'firebase_database_null',
+                );
+              }
+              return FirebaseRealtimeRemoteGateway(
+                database: database,
                 device: ctx.read<DeviceIdentity>(),
                 nowUtc: () => DateTime.now().toUtc(),
+                module: 'common',
+                logger: log,
               );
             },
           ),
@@ -334,6 +1475,28 @@ class _AuthAwareApp extends StatelessWidget {
             create: (ctx) => LayoutTemplateLocalDataSource(
               ctx.read<db.AppDatabase>(),
               outboxStore: ctx.read<OutboxStore>(),
+              logger: ctx.read<SyncLogger>(),
+            ),
+          ),
+          Provider<_DivinationLocalApplier>(
+            create: (ctx) =>
+                _DivinationLocalApplier(ctx.read<db.AppDatabase>()),
+          ),
+          Provider<_SeekerLocalApplier>(
+            create: (ctx) => _SeekerLocalApplier(ctx.read<db.AppDatabase>()),
+          ),
+          Provider<_TimingDivinationLocalApplier>(
+            create: (ctx) =>
+                _TimingDivinationLocalApplier(ctx.read<db.AppDatabase>()),
+          ),
+          Provider<LocalApplier>(
+            create: (ctx) => _CompositeLocalApplier(
+              <String, LocalApplier>{
+                'layout_template': ctx.read<LayoutTemplateLocalDataSource>(),
+                'divination': ctx.read<_DivinationLocalApplier>(),
+                'seeker': ctx.read<_SeekerLocalApplier>(),
+                'timing_divination': ctx.read<_TimingDivinationLocalApplier>(),
+              },
             ),
           ),
           Provider<SyncCoordinator>(
@@ -341,9 +1504,84 @@ class _AuthAwareApp extends StatelessWidget {
               outboxStore: ctx.read<OutboxStore>(),
               syncStateStore: ctx.read<SyncStateStore>(),
               remoteGateway: ctx.read<RemoteGateway>(),
-              localApplier: ctx.read<LayoutTemplateLocalDataSource>(),
+              localApplier: ctx.read<LocalApplier>(),
               nowUtc: () => DateTime.now().toUtc(),
+              logger: ctx.read<SyncLogger>(),
             ),
+          ),
+          Provider<SyncRuntime>(
+            create: (ctx) {
+              final runtime = SyncRuntime(
+                coordinator: ctx.read<SyncCoordinator>(),
+                authScopeProvider: ctx.read<AuthScopeProvider>(),
+                enablePushTimer: false,
+                pushInterval: const Duration(seconds: 15),
+                pullInterval: const Duration(seconds: 15),
+                minBackoff: const Duration(seconds: 2),
+                maxBackoff: const Duration(minutes: 2),
+                logger: ctx.read<SyncLogger>(),
+              );
+              runtime.setPullEntityTypes(
+                const <String>[
+                  'layout_template',
+                  'divination',
+                  'seeker',
+                  'timing_divination',
+                ],
+                triggerImmediately: false,
+              );
+              return runtime;
+            },
+            dispose: (ctx, runtime) {
+              runtime.stop();
+              runtime.dispose();
+            },
+          ),
+          Provider<PublicSyncRuntime>(
+            create: (ctx) {
+              final log = ctx.read<SyncLogger>();
+              final database = ctx.read<FirebaseDatabase?>();
+              final remoteGateway = database == null
+                  ? _UnavailableRemoteGateway(
+                      logger: log,
+                      reason: 'firebase_database_null',
+                    )
+                  : FirebaseRealtimeRemoteGateway(
+                      database: database,
+                      device: ctx.read<DeviceIdentity>(),
+                      nowUtc: () => DateTime.now().toUtc(),
+                      module: 'common',
+                      logger: log,
+                    );
+
+              final coordinator = SyncCoordinator(
+                outboxStore: ctx.read<OutboxStore>(),
+                syncStateStore: ctx.read<SyncStateStore>(),
+                remoteGateway: remoteGateway,
+                localApplier: ctx.read<LocalApplier>(),
+                nowUtc: () => DateTime.now().toUtc(),
+                logger: log,
+              );
+
+              final runtime = SyncRuntime(
+                coordinator: coordinator,
+                enablePush: false,
+                pushInterval: const Duration(seconds: 15),
+                pullInterval: const Duration(seconds: 15),
+                minBackoff: const Duration(seconds: 2),
+                maxBackoff: const Duration(minutes: 2),
+                logger: log,
+              );
+              runtime.setPullEntityTypes(
+                const <String>['layout_template'],
+                triggerImmediately: false,
+              );
+              return PublicSyncRuntime(runtime);
+            },
+            dispose: (ctx, publicRuntime) {
+              publicRuntime.runtime.stop();
+              publicRuntime.runtime.dispose();
+            },
           ),
           Provider<GuestAccountConflictDelegate>(
             create: (ctx) => _GuestConflictDelegate(
@@ -390,15 +1628,35 @@ class _GuestAnonBootstrap extends StatefulWidget {
   State<_GuestAnonBootstrap> createState() => _GuestAnonBootstrapState();
 }
 
-class _GuestAnonBootstrapState extends State<_GuestAnonBootstrap> {
+class _GuestAnonBootstrapState extends State<_GuestAnonBootstrap>
+    with WidgetsBindingObserver {
   bool _attempted = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      context
+          .read<PublicSyncRuntime>()
+          .runtime
+          .start(scopeUid: _publicScopeUid);
       _trySignInAnonymously();
     });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      context.read<PublicSyncRuntime>().runtime.triggerPullAll();
+    }
+  }
+
+  @override
+  void dispose() {
+    context.read<PublicSyncRuntime>().runtime.stop();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   Future<void> _trySignInAnonymously() async {
@@ -415,8 +1673,7 @@ class _GuestAnonBootstrapState extends State<_GuestAnonBootstrap> {
 
     try {
       await context.read<AuthCoordinator>().signInAnonymously();
-    } catch (_) {
-    }
+    } catch (_) {}
   }
 
   @override
@@ -577,7 +1834,8 @@ class _GuestConflictDelegate implements GuestAccountConflictDelegate {
         rows
             .map(
               (r) => db.CardTemplateMetasCompanion.insert(
-                templateUuid: remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
+                templateUuid:
+                    remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
                 createdAt: r.createdAt,
                 modifiedAt: r.modifiedAt,
                 deletedAt: Value(r.deletedAt),
@@ -605,7 +1863,8 @@ class _GuestConflictDelegate implements GuestAccountConflictDelegate {
         rows
             .map(
               (r) => db.CardTemplateSettingsCompanion.insert(
-                templateUuid: remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
+                templateUuid:
+                    remapTemplateUuid[r.templateUuid] ?? r.templateUuid,
                 createdAt: r.createdAt,
                 modifiedAt: r.modifiedAt,
                 deletedAt: Value(r.deletedAt),
@@ -630,30 +1889,28 @@ class _GuestConflictDelegate implements GuestAccountConflictDelegate {
     if (rows.isEmpty) return;
 
     final nowUtc = DateTime.now().toUtc();
-    final inserts = rows
-        .map((r) {
-          final remapped = r.entityType == 'layout_template'
-              ? (remapEntityId[r.entityId] ?? r.entityId)
-              : r.entityId;
-          final payloadJson = (r.entityType == 'layout_template' &&
-                  remapEntityId.containsKey(r.entityId))
-              ? _rewriteLayoutTemplatePayloadJson(
-                  r.payloadJson,
-                  remapped,
-                )
-              : r.payloadJson;
+    final inserts = rows.map((r) {
+      final remapped = r.entityType == 'layout_template'
+          ? (remapEntityId[r.entityId] ?? r.entityId)
+          : r.entityId;
+      final payloadJson = (r.entityType == 'layout_template' &&
+              remapEntityId.containsKey(r.entityId))
+          ? _rewriteLayoutTemplatePayloadJson(
+              r.payloadJson,
+              remapped,
+            )
+          : r.payloadJson;
 
-          return OutboxRecordsCompanion.insert(
-            operationId: _uuid.v4(),
-            scopeUid: accountAppUserId,
-            entityType: r.entityType,
-            entityId: remapped,
-            opType: r.opType,
-            payloadJson: payloadJson,
-            createdAtUtc: nowUtc,
-          );
-        })
-        .toList(growable: false);
+      return OutboxRecordsCompanion.insert(
+        operationId: _uuid.v4(),
+        scopeUid: accountAppUserId,
+        entityType: r.entityType,
+        entityId: remapped,
+        opType: r.opType,
+        payloadJson: payloadJson,
+        createdAtUtc: nowUtc,
+      );
+    }).toList(growable: false);
 
     await to.outboxRecordsDao.enqueueMany(inserts);
     await from.outboxRecordsDao.deleteByScope(scopeUid: guestAppUserId);
@@ -671,50 +1928,32 @@ class _SignedInSyncShell extends StatefulWidget {
 
 class _SignedInSyncShellState extends State<_SignedInSyncShell>
     with WidgetsBindingObserver {
-  Timer? _timer;
-  bool _running = false;
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _timer = Timer.periodic(const Duration(seconds: 15), (_) {
-      _kick();
-    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _kick();
+      context.read<SyncRuntime>().start();
+      context
+          .read<PublicSyncRuntime>()
+          .runtime
+          .start(scopeUid: _publicScopeUid);
     });
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
-      _kick();
-    }
-  }
-
-  Future<void> _kick() async {
-    if (!mounted) return;
-    if (_running) return;
-    _running = true;
-    try {
-      final scopeUid = await context.read<AuthScopeProvider>().getScopeUid();
-      final coordinator = context.read<SyncCoordinator>();
-      await coordinator.pushOnce(scopeUid: scopeUid);
-      await coordinator.pullOnce(
-        scopeUid: scopeUid,
-        entityType: 'layout_template',
-        maxPages: 3,
-      );
-    } catch (_) {
-    } finally {
-      _running = false;
+      context.read<SyncRuntime>().triggerPush();
+      context.read<SyncRuntime>().triggerPullAll();
+      context.read<PublicSyncRuntime>().runtime.triggerPullAll();
     }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    context.read<SyncRuntime>().stop();
+    context.read<PublicSyncRuntime>().runtime.stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

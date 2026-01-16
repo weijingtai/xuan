@@ -129,15 +129,29 @@ class OutboxRecordsDao extends DatabaseAccessor<PersistenceDriftDatabase>
   }
 
   Future<int> backlogCount(String scopeUid) async {
+    final countExp = db.outboxRecords.operationId.count();
     final row = await (selectOnly(db.outboxRecords)
-          ..addColumns([db.outboxRecords.operationId.count()])
+          ..addColumns([countExp])
           ..where(
             db.outboxRecords.scopeUid.equals(scopeUid) &
                 (db.outboxRecords.status.equals('pending') |
                     db.outboxRecords.status.equals('failed')),
           ))
         .getSingle();
-    return row.read(db.outboxRecords.operationId.count()) ?? 0;
+    return row.read(countExp) ?? 0;
+  }
+
+  Stream<int> watchBacklogCount(String scopeUid) {
+    final countExp = db.outboxRecords.operationId.count();
+    return (selectOnly(db.outboxRecords)
+          ..addColumns([countExp])
+          ..where(
+            db.outboxRecords.scopeUid.equals(scopeUid) &
+                (db.outboxRecords.status.equals('pending') |
+                    db.outboxRecords.status.equals('failed')),
+          ))
+        .watchSingle()
+        .map((row) => row.read(countExp) ?? 0);
   }
 
   Future<int> deadCount(String scopeUid) async {
@@ -606,6 +620,15 @@ class DriftOutboxStore implements OutboxStore {
       data: <String, Object?>{'scopeUid': _redactId(scopeUid)},
     );
     return _dao.backlogCount(scopeUid);
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    _logger.trace(
+      'drift_outbox_watch_backlog_count',
+      data: <String, Object?>{'scopeUid': _redactId(scopeUid)},
+    );
+    return _dao.watchBacklogCount(scopeUid).distinct();
   }
 
   /// Returns count of dead-letter records for a scope.

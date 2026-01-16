@@ -570,6 +570,20 @@ class _MemoryOutboxStore implements OutboxStore {
       <String, OutboxRecord>{};
   final Set<String> _dead = <String>{};
   final Set<String> _success = <String>{};
+  final Map<String, StreamController<int>> _backlogControllersByScopeUid =
+      <String, StreamController<int>>{};
+
+  StreamController<int> _controllerFor(String scopeUid) {
+    return _backlogControllersByScopeUid.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(),
+    );
+  }
+
+  Future<void> _emitBacklog(String scopeUid) async {
+    if (!_backlogControllersByScopeUid.containsKey(scopeUid)) return;
+    _controllerFor(scopeUid).add(await backlogCount(scopeUid));
+  }
 
   @override
   Future<int> backlogCount(String scopeUid) async {
@@ -581,6 +595,14 @@ class _MemoryOutboxStore implements OutboxStore {
       count += 1;
     }
     return count;
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return (() async* {
+      yield await backlogCount(scopeUid);
+      yield* _controllerFor(scopeUid).stream;
+    })().distinct();
   }
 
   @override
@@ -598,6 +620,7 @@ class _MemoryOutboxStore implements OutboxStore {
   @override
   Future<void> enqueue(OutboxRecord record) async {
     _recordsByOperationId.putIfAbsent(record.operationId, () => record);
+    await _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -613,6 +636,7 @@ class _MemoryOutboxStore implements OutboxStore {
     if (existing == null) return;
     _recordsByOperationId[operationId] = existing.copyWith(attempt: attempt);
     if (isDead) _dead.add(operationId);
+    await _emitBacklog(existing.scopeUid);
   }
 
   @override
@@ -620,9 +644,11 @@ class _MemoryOutboxStore implements OutboxStore {
     required String operationId,
     required DateTime atUtc,
   }) async {
-    if (_recordsByOperationId.containsKey(operationId)) {
-      _success.add(operationId);
-    }
+    final existing = _recordsByOperationId[operationId];
+    if (existing == null) return;
+
+    _success.add(operationId);
+    await _emitBacklog(existing.scopeUid);
   }
 
   @override

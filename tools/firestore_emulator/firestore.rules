@@ -142,6 +142,11 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    match /public/{module}/{document=**} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
     match /{document=**} {
       allow read, write: if false;
     }

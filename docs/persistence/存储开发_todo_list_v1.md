@@ -8,11 +8,11 @@
 ## 0. 全局前置（表无关，但所有表依赖）
 
 - [ ] 接入 SyncRuntime（两套）
-  - [ ] UserRuntime：scopeUid = active `appUserId`（支持 guest），push+pull
+  - [x] UserRuntime：scopeUid = active `appUserId`（支持 guest），push+pull
   - [ ] PublicRuntime：scopeUid 固定（建议 `public`），pull-only
-- [ ] 实现 CompositeLocalApplier（entityType → LocalApplier 路由），替换目前只注入 LayoutTemplateLocalDataSource 的单入口回填
+- [x] 实现 CompositeLocalApplier（entityType → LocalApplier 路由），替换目前只注入 LayoutTemplateLocalDataSource 的单入口回填
 - [ ] 扩展 FirestoreRemoteGateway entityType → doc path 映射
-  - [ ] user：`users/{appUserId}/modules/common/{entityType}/{entityId}`
+  - [x] user：`users/{appUserId}/modules/common/{entityType}/{entityId}`
   - [ ] public：`public/modules/common/{entityType}/{entityId}`
 - [ ] Firestore Rules（P0 必做）
   - [ ] public：allow read；deny write（仅管理员/云函数可写）
@@ -149,8 +149,8 @@
 - 远端 entityType：`layout_template`（已存在）
 - 主键策略：uuid（已稳定）
 - 任务：
-  - [ ] 将 LayoutTemplateLocalDataSource 接入 CompositeLocalApplier 路由（保持现有行为）
-  - [ ] 确认 pullEntityTypes 包含 layout_template（user runtime）
+  - [x] 将 LayoutTemplateLocalDataSource 接入 CompositeLocalApplier 路由（保持现有行为）
+  - [x] 确认 pullEntityTypes 包含 layout_template（user runtime）
   - [ ] 验收：A 端保存 → 断网 → 恢复 → 同步 → B 端可见（已有测试基础可复用）
 
 ---

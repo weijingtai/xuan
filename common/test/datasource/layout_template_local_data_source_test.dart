@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -316,10 +317,25 @@ void main() {
 
 class _RecordingOutboxStore implements OutboxStore {
   final List<OutboxRecord> enqueued = <OutboxRecord>[];
+  final Map<String, StreamController<int>> _backlogControllersByScopeUid =
+      <String, StreamController<int>>{};
+
+  StreamController<int> _controllerFor(String scopeUid) {
+    return _backlogControllersByScopeUid.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(),
+    );
+  }
+
+  Future<void> _emitBacklog(String scopeUid) async {
+    if (!_backlogControllersByScopeUid.containsKey(scopeUid)) return;
+    _controllerFor(scopeUid).add(await backlogCount(scopeUid));
+  }
 
   @override
   Future<void> enqueue(OutboxRecord record) async {
     enqueued.add(record);
+    await _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -349,6 +365,14 @@ class _RecordingOutboxStore implements OutboxStore {
   @override
   Future<int> backlogCount(String scopeUid) async {
     return enqueued.where((r) => r.scopeUid == scopeUid).length;
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    return (() async* {
+      yield await backlogCount(scopeUid);
+      yield* _controllerFor(scopeUid).stream;
+    })().distinct();
   }
 
   @override

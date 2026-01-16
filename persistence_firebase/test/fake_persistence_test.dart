@@ -92,19 +92,15 @@ void main() {
       final firestore = FakeFirebaseFirestore();
       final gw = _gateway(firestore);
 
-      expect(
-        () => gw.listChanges(
-          scopeUid: 'u1',
-          entityType: 'unknown_type',
-          sinceCursor: null,
-          limit: 10,
-        ),
-        throwsA(
-          predicate(
-            (e) => e.toString().contains('unsupported entityType'),
-          ),
-        ),
+      final page = await gw.listChanges(
+        scopeUid: 'u1',
+        entityType: 'unknown_type',
+        sinceCursor: null,
+        limit: 10,
       );
+      expect(page.changes, isEmpty);
+      expect(page.nextCursor, isNull);
+      expect(page.hasMore, isFalse);
     });
 
     test('throws on unsupported cursor type', () async {
@@ -313,6 +309,27 @@ void main() {
   });
 
   group('FirestoreRemoteGateway.push', () {
+    test('public scope is pull-only', () async {
+      final firestore = FakeFirebaseFirestore();
+      final gw = _gateway(firestore);
+
+      final record = OutboxRecord(
+        operationId: 'op_public',
+        scopeUid: 'public',
+        entityType: 'layout_template',
+        entityId: 't1',
+        opType: 'upsert',
+        payloadJson:
+            '{"collectionId":"c1","name":"n","description":null,"template":{},"version":1}',
+        createdAtUtc: DateTime.utc(2026, 1, 11, 9, 0, 0),
+        attempt: 0,
+      );
+
+      final err = await gw.push(record);
+      expect(err, isNotNull);
+      expect(err!.code, equals(SyncErrorCode.permission));
+    });
+
     test(
         'upsert invalid payload returns invalidData and marks oplog dead at max',
         () async {

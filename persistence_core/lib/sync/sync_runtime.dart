@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:persistence_core/core/sync_coordinator.dart';
+import 'package:persistence_core/logging/sync_logger.dart';
 import 'package:persistence_core/model/ports.dart';
 import 'package:persistence_core/model/types.dart';
 
@@ -38,25 +39,34 @@ class SyncRuntime {
   SyncRuntime({
     required SyncCoordinator coordinator,
     AuthScopeProvider? authScopeProvider,
+    bool enablePush = true,
+    bool enablePushTimer = true,
     Duration pushInterval = const Duration(seconds: 10),
     Duration pullInterval = const Duration(seconds: 30),
     Duration minBackoff = const Duration(seconds: 2),
     Duration maxBackoff = const Duration(minutes: 2),
     DateTime Function()? nowUtc,
+    SyncLogger? logger,
   })  : _coordinator = coordinator,
         _authScopeProvider = authScopeProvider,
+        _pushEnabled = enablePush,
+        _pushTimerEnabled = enablePushTimer,
         _pushInterval = pushInterval,
         _pullInterval = pullInterval,
         _minBackoff = minBackoff,
         _maxBackoff = maxBackoff,
+        _logger = logger ?? SyncLogger.noop(),
         _nowUtc = nowUtc ?? DateTime.now().toUtc;
 
   final SyncCoordinator _coordinator;
   final AuthScopeProvider? _authScopeProvider;
+  final bool _pushEnabled;
+  final bool _pushTimerEnabled;
   final Duration _pushInterval;
   final Duration _pullInterval;
   final Duration _minBackoff;
   final Duration _maxBackoff;
+  final SyncLogger _logger;
   final DateTime Function() _nowUtc;
 
   final StreamController<SyncStatus> _statusController =
@@ -64,6 +74,11 @@ class SyncRuntime {
 
   Timer? _pushTimer;
   Timer? _pullTimer;
+  Timer? _pushBackoffTimer;
+  DateTime? _pushBackoffFireAtUtc;
+
+  StreamSubscription<int>? _pushBacklogSub;
+  int? _observedBacklogCount;
 
   Future<void> _serial = Future<void>.value();
 
@@ -126,6 +141,18 @@ class SyncRuntime {
     await _enqueue(() async {
       _ensureNotDisposed();
 
+      _logger.debug(
+        'sync_runtime_start',
+        data: <String, Object?>{
+          'scopeUidParam': scopeUid,
+          'startedBefore': _started,
+          'online': _online,
+          'pushEnabled': _pushEnabled,
+          'pushTimerEnabled': _pushTimerEnabled,
+          'pullEntityTypes': List<String>.of(_pullEntityTypes),
+        },
+      );
+
       _started = true;
       if (scopeUid != null) _scopeUid = scopeUid;
 
@@ -139,7 +166,20 @@ class SyncRuntime {
       _armTimers();
       _emitStatus(_coordinator.status);
 
-      await _maybeRunPush(reason: 'start');
+      _logger.debug(
+        'sync_runtime_started',
+        data: <String, Object?>{
+          'scopeUid': _scopeUid,
+          'online': _online,
+          'pushEnabled': _pushEnabled,
+          'pushTimerEnabled': _pushTimerEnabled,
+          'pullEntityTypes': List<String>.of(_pullEntityTypes),
+        },
+      );
+
+      if (_pushEnabled) {
+        await _maybeRunPush(reason: 'start');
+      }
       await _maybeRunPullAll(reason: 'start');
     });
   }
@@ -153,6 +193,14 @@ class SyncRuntime {
   Future<void> stop() async {
     await _enqueue(() async {
       _ensureNotDisposed();
+
+      _logger.debug(
+        'sync_runtime_stop',
+        data: <String, Object?>{
+          'scopeUid': _scopeUid,
+          'online': _online,
+        },
+      );
 
       _started = false;
       _cancelTimers();
@@ -192,12 +240,30 @@ class SyncRuntime {
       _ensureNotDisposed();
 
       final changed = _online != online;
+      final before = _online;
       _online = online;
+
+      _logger.debug(
+        'sync_runtime_online_set',
+        data: <String, Object?>{
+          'before': before,
+          'after': online,
+          'changed': changed,
+          'started': _started,
+          'scopeUid': _scopeUid,
+        },
+      );
 
       _emitStatus(_coordinator.status);
 
+      if (changed && !online) {
+        _cancelPushBackoffTimer();
+      }
+
       if (changed && online) {
-        await _maybeRunPush(reason: 'online');
+        if (_pushEnabled) {
+          await _maybeRunPush(reason: 'online');
+        }
         await _maybeRunPullAll(reason: 'online');
       }
     });
@@ -216,8 +282,20 @@ class SyncRuntime {
     await _enqueue(() async {
       _ensureNotDisposed();
 
+      final before = _scopeUid;
       final changed = _scopeUid != scopeUid;
       _scopeUid = scopeUid;
+
+      _logger.debug(
+        'sync_runtime_scope_set',
+        data: <String, Object?>{
+          'before': before,
+          'after': scopeUid,
+          'changed': changed,
+          'started': _started,
+          'online': _online,
+        },
+      );
 
       if (changed) {
         _resetBackoff();
@@ -229,8 +307,14 @@ class SyncRuntime {
         ),
       );
 
+      if (changed) {
+        _armPushBacklogWatcher();
+      }
+
       if (_started && _online && _scopeUid != null) {
-        await _maybeRunPush(reason: 'scope');
+        if (_pushEnabled) {
+          await _maybeRunPush(reason: 'scope');
+        }
         await _maybeRunPullAll(reason: 'scope');
       }
     });
@@ -276,6 +360,7 @@ class SyncRuntime {
   Future<void> triggerPush() async {
     await _enqueue(() async {
       _ensureNotDisposed();
+      if (!_pushEnabled) return;
       await _maybeRunPush(reason: 'manual');
     });
   }
@@ -306,12 +391,14 @@ class SyncRuntime {
 
     if (!_started) return;
 
-    _pushTimer = Timer.periodic(_pushInterval, (_) {
-      _serial = _serial.then((_) async {
-        if (_disposed) return;
-        await _maybeRunPush(reason: 'timer');
+    if (_pushEnabled && _pushTimerEnabled) {
+      _pushTimer = Timer.periodic(_pushInterval, (_) {
+        _serial = _serial.then((_) async {
+          if (_disposed) return;
+          await _maybeRunPush(reason: 'timer');
+        });
       });
-    });
+    }
 
     _pullTimer = Timer.periodic(_pullInterval, (_) {
       _serial = _serial.then((_) async {
@@ -319,35 +406,180 @@ class SyncRuntime {
         await _maybeRunPullAll(reason: 'timer');
       });
     });
+
+    _armPushBacklogWatcher();
   }
 
   /// Cancels periodic timers if they exist.
   void _cancelTimers() {
     _pushTimer?.cancel();
     _pullTimer?.cancel();
+    _pushBackoffTimer?.cancel();
+
     _pushTimer = null;
     _pullTimer = null;
+    _pushBackoffTimer = null;
+    _pushBackoffFireAtUtc = null;
+
+    _observedBacklogCount = null;
+    unawaited(_pushBacklogSub?.cancel());
+    _pushBacklogSub = null;
+  }
+
+  void _armPushBacklogWatcher() {
+    unawaited(_pushBacklogSub?.cancel());
+    _pushBacklogSub = null;
+    _observedBacklogCount = null;
+
+    if (!_started) return;
+    if (!_pushEnabled) return;
+    if (_pushTimerEnabled) return;
+
+    final uid = _scopeUid;
+    if (uid == null || uid.isEmpty) return;
+
+    _pushBacklogSub = _coordinator
+        .watchBacklogCount(uid)
+        .distinct()
+        .listen((count) {
+          _serial = _serial.then((_) async {
+            if (_disposed) return;
+            if (!_started || !_online) return;
+            if (_scopeUid != uid) return;
+
+            _observedBacklogCount = count;
+
+            if (count <= 0) {
+              _cancelPushBackoffTimer();
+              return;
+            }
+
+            await _maybeRunPush(reason: 'outbox');
+          });
+        }, onError: (e, st) {
+          _logger.error(
+            'sync_runtime_outbox_watch_error',
+            data: <String, Object?>{'scopeUid': uid},
+            error: e,
+            stackTrace: st,
+          );
+        });
+  }
+
+  void _cancelPushBackoffTimer() {
+    _pushBackoffTimer?.cancel();
+    _pushBackoffTimer = null;
+    _pushBackoffFireAtUtc = null;
+  }
+
+  void _schedulePushBackoffTimer() {
+    if (_pushTimerEnabled) return;
+
+    if (!_started || !_online) {
+      _cancelPushBackoffTimer();
+      return;
+    }
+
+    final uid = _scopeUid;
+    if (uid == null || uid.isEmpty) {
+      _cancelPushBackoffTimer();
+      return;
+    }
+
+    final fireAt = _nextPushNotBeforeUtc;
+    if (fireAt == null) {
+      _cancelPushBackoffTimer();
+      return;
+    }
+
+    final now = _nowUtc();
+    if (!now.isBefore(fireAt)) {
+      _cancelPushBackoffTimer();
+      return;
+    }
+
+    final existingAt = _pushBackoffFireAtUtc;
+    if (existingAt != null && !fireAt.isBefore(existingAt)) {
+      return;
+    }
+
+    _cancelPushBackoffTimer();
+    _pushBackoffFireAtUtc = fireAt;
+    _pushBackoffTimer = Timer(fireAt.difference(now), () {
+      _serial = _serial.then((_) async {
+        if (_disposed) return;
+        _cancelPushBackoffTimer();
+        await _maybeRunPush(reason: 'backoff');
+      });
+    });
   }
 
   /// Runs one push attempt if started, online, scope is set, and not in backoff.
   Future<void> _maybeRunPush({required String reason}) async {
-    if (!_started) return;
-    if (!_online) return;
+    if (!_started) {
+      _logger.trace('sync_runtime_push_skip',
+          data: <String, Object?>{'reason': reason, 'skip': 'not_started'});
+      return;
+    }
+    if (!_online) {
+      _logger.trace('sync_runtime_push_skip',
+          data: <String, Object?>{'reason': reason, 'skip': 'offline'});
+      return;
+    }
     final uid = _scopeUid;
-    if (uid == null) return;
+    if (uid == null) {
+      _logger.trace('sync_runtime_push_skip',
+          data: <String, Object?>{'reason': reason, 'skip': 'no_scope'});
+      return;
+    }
 
     final notBefore = _nextPushNotBeforeUtc;
     final now = _nowUtc();
-    if (notBefore != null && now.isBefore(notBefore)) return;
+    if (notBefore != null && now.isBefore(notBefore)) {
+      _schedulePushBackoffTimer();
+      return;
+    }
+
+    _logger.debug(
+      'sync_runtime_push_attempt',
+      data: <String, Object?>{
+        'reason': reason,
+        'scopeUid': uid,
+      },
+    );
 
     final result = await _coordinator.pushOnce(scopeUid: uid);
 
     if (result.hasError) {
       _pushFailureCount += 1;
       _nextPushNotBeforeUtc = now.add(_computeBackoff(_pushFailureCount));
+      _schedulePushBackoffTimer();
+      _logger.warn(
+        'sync_runtime_push_backoff',
+        data: <String, Object?>{
+          'reason': reason,
+          'scopeUid': uid,
+          'failures': _pushFailureCount,
+          'notBeforeUtc': _nextPushNotBeforeUtc?.toIso8601String(),
+          'errorCode': result.lastError?.code.name,
+        },
+        error: result.lastError,
+      );
     } else {
       _pushFailureCount = 0;
       _nextPushNotBeforeUtc = null;
+      _cancelPushBackoffTimer();
+      _logger.info(
+        'sync_runtime_push_done',
+        data: <String, Object?>{
+          'reason': reason,
+          'scopeUid': uid,
+          'processed': result.processed,
+          'succeeded': result.succeeded,
+          'failed': result.failed,
+          'dead': result.dead,
+        },
+      );
     }
 
     _emitStatus(_coordinator.status);
@@ -367,10 +599,31 @@ class SyncRuntime {
     required String entityType,
     required String reason,
   }) async {
-    if (!_started) return;
-    if (!_online) return;
+    if (!_started) {
+      _logger.trace('sync_runtime_pull_skip', data: <String, Object?>{
+        'reason': reason,
+        'entityType': entityType,
+        'skip': 'not_started'
+      });
+      return;
+    }
+    if (!_online) {
+      _logger.trace('sync_runtime_pull_skip', data: <String, Object?>{
+        'reason': reason,
+        'entityType': entityType,
+        'skip': 'offline'
+      });
+      return;
+    }
     final uid = _scopeUid;
-    if (uid == null) return;
+    if (uid == null) {
+      _logger.trace('sync_runtime_pull_skip', data: <String, Object?>{
+        'reason': reason,
+        'entityType': entityType,
+        'skip': 'no_scope'
+      });
+      return;
+    }
 
     final normalized = entityType.trim();
     if (normalized.isEmpty) return;
@@ -382,14 +635,37 @@ class SyncRuntime {
     PullRunResult? result;
     SyncError? error;
 
+    _logger.debug(
+      'sync_runtime_pull_attempt',
+      data: <String, Object?>{
+        'reason': reason,
+        'scopeUid': uid,
+        'entityType': normalized,
+      },
+    );
+
     try {
       result = await _coordinator.pullOnce(
         scopeUid: uid,
         entityType: normalized,
       );
       error = result.lastError;
-    } on Object catch (e) {
-      error = SyncError(code: SyncErrorCode.unknown, message: '$e');
+    } on Object catch (e, st) {
+      _logger.error(
+        'sync_runtime_pull_throw',
+        data: <String, Object?>{
+          'reason': reason,
+          'scopeUid': uid,
+          'entityType': normalized,
+        },
+        error: e,
+        stackTrace: st,
+      );
+      if (e is SyncError) {
+        error = e;
+      } else {
+        error = SyncError(code: SyncErrorCode.unknown, message: '$e');
+      }
     }
 
     if (error != null) {
@@ -397,9 +673,37 @@ class SyncRuntime {
       _pullFailureCountByEntityType[normalized] = failures;
       _nextPullNotBeforeUtcByEntityType[normalized] =
           now.add(_computeBackoff(failures));
+
+      _logger.warn(
+        'sync_runtime_pull_backoff',
+        data: <String, Object?>{
+          'reason': reason,
+          'scopeUid': uid,
+          'entityType': normalized,
+          'failures': failures,
+          'notBeforeUtc':
+              _nextPullNotBeforeUtcByEntityType[normalized]?.toIso8601String(),
+          'errorCode': error.code.name,
+        },
+        error: error,
+      );
     } else {
       _pullFailureCountByEntityType[normalized] = 0;
       _nextPullNotBeforeUtcByEntityType[normalized] = null;
+
+      _logger.info(
+        'sync_runtime_pull_done',
+        data: <String, Object?>{
+          'reason': reason,
+          'scopeUid': uid,
+          'entityType': normalized,
+          'pages': result?.pages,
+          'fetched': result?.fetched,
+          'applied': result?.applied,
+          'skipped': result?.skipped,
+          'advanced': result?.advanced,
+        },
+      );
     }
 
     _emitStatus(_coordinator.status);
@@ -456,4 +760,10 @@ class SyncRuntime {
       throw StateError('SyncRuntime is disposed');
     }
   }
+}
+
+class PublicSyncRuntime {
+  const PublicSyncRuntime(this.runtime);
+
+  final SyncRuntime runtime;
 }

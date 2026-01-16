@@ -61,6 +61,7 @@ dependencies:
   cloud_firestore: ^6.1.1
   firebase_core: ^4.3.0
   firebase_auth: ^6.0.0
+  firebase_database: ^12.1.1
   flutter_login: ^6.0.0
 
 

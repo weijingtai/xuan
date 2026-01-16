@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '163917481454',
     projectId: 'xuan-xue',
     authDomain: 'xuan-xue.firebaseapp.com',
+    databaseURL: 'https://xuan-xue-default-rtdb.firebaseio.com',
     storageBucket: 'xuan-xue.firebasestorage.app',
     measurementId: 'G-CX4JZT7R8M',
   );
@@ -82,6 +83,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '163917481454',
     projectId: 'xuan-xue',
     authDomain: 'xuan-xue.firebaseapp.com',
+    databaseURL: 'https://xuan-xue-default-rtdb.firebaseio.com',
     storageBucket: 'xuan-xue.firebasestorage.app',
     measurementId: 'G-CPYQHB5NFK',
   );

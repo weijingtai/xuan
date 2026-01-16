@@ -6,6 +6,7 @@ export 'auth/auth_coordinator.dart';
 export 'auth/auth_session.dart';
 export 'auth/firebase_email_auth_adapter.dart';
 export 'auth/firebase_identity_resolver.dart';
+export 'auth/firebase_realtime_identity_resolver.dart';
 export 'auth/guest_identity_store.dart';
 export 'auth/identity_resolver.dart';
 export 'logging/account_log.dart';
