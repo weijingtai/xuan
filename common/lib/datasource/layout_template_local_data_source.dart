@@ -57,12 +57,14 @@ class LayoutTemplateLocalDataSource implements LocalApplier {
     LayoutTemplate template, {
     bool enqueueOutbox = false,
     String? scopeUid,
+    bool? isCustomized,
   }) async {
     await _db.transaction(() async {
       await _dao.upsertTemplate(template);
       await _metaDao.touchModifiedAt(
         templateUuid: template.id,
         modifiedAt: template.updatedAt,
+        isCustomized: isCustomized,
       );
     });
 

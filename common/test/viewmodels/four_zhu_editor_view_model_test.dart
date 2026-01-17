@@ -10,14 +10,57 @@ import 'package:persistence_core/persistence_core.dart';
 import 'package:common/database/app_database.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/database/daos/card_template_setting_dao.dart';
+import 'package:common/database/daos/market_template_installs_dao.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/save_template_use_case.dart';
 import 'package:common/enums/layout_template_enums.dart';
+import 'package:common/features/shared_card_template/market/market_dtos.dart';
+import 'package:common/features/shared_card_template/market/market_gateway.dart';
+import 'package:common/features/shared_card_template/usecase/install_market_template_usecase.dart';
 import 'package:common/models/layout_template.dart';
+import 'package:common/models/layout_template_dto.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/viewmodels/four_zhu_editor_view_model.dart';
+
+class _FakeMarketGateway implements MarketGateway {
+  _FakeMarketGateway(this._payload);
+
+  final MarketTemplatePayloadDto _payload;
+
+  @override
+  Future<MarketTemplatesPageDto> listTemplates({
+    String? cursor,
+    int limit = 20,
+    String? query,
+    List<String>? tags,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MarketTemplateDetailDto> getTemplateDetail({
+    required String templateId,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<MarketTemplatePayloadDto> getTemplatePayload({
+    required String templateId,
+    required String versionId,
+  }) async {
+    return _payload;
+  }
+
+  @override
+  Future<MarketTemplateDetailDto> publishTemplate({
+    required PublishMarketTemplateRequestDto request,
+  }) {
+    throw UnimplementedError();
+  }
+}
 
 void main() {
   late AppDatabase db;
@@ -204,6 +247,95 @@ void main() {
       expect(
           viewModel.paddingNotifier.value, template!.cardStyle.contentPadding);
       expect(viewModel.paddingNotifier.value, const EdgeInsets.all(16.0));
+    });
+
+    test('installMarketTemplate installs template and refreshes list',
+        () async {
+      final installsDao = MarketTemplateInstallsDao(db);
+      final now = DateTime.utc(2026, 1, 15, 12, 0, 0);
+
+      final remoteTemplate = LayoutTemplate(
+        id: 'remote-template-uuid',
+        name: 'Market Theme',
+        description: 'From market',
+        collectionId: 'remote-collection',
+        cardStyle: const CardStyle(
+          dividerType: BorderType.solid,
+          dividerColorHex: '#FF334155',
+          dividerThickness: 1.0,
+          globalFontFamily: 'NotoSans',
+          globalFontSize: 14,
+          globalFontColorHex: '#FF0F172A',
+        ),
+        chartGroups: [
+          ChartGroup(
+            id: 'group-1',
+            title: '基础分组',
+            pillarOrder: [PillarType.year, PillarType.month],
+          ),
+        ],
+        rowConfigs: [
+          RowConfig(
+            type: RowType.heavenlyStem,
+            isVisible: true,
+            isTitleVisible: true,
+            textStyleConfig: TextStyleConfig.defaultConfig,
+          ),
+        ],
+        updatedAt: DateTime.utc(2024, 1, 1),
+        version: 1,
+      );
+
+      final payload = MarketTemplatePayloadDto(
+        schemaVersion: 1,
+        templateId: 'mkt-1',
+        versionId: 'ver-1',
+        layoutTemplate: LayoutTemplateDto.fromDomain(remoteTemplate),
+      );
+
+      const scopeUid = 'test_app_user_id';
+
+      final installUseCase = InstallMarketTemplateUseCase(
+        marketGateway: _FakeMarketGateway(payload),
+        localDataSource: localDataSource,
+        marketTemplateInstallsDao: installsDao,
+        authScopeProvider: _FixedScopeProvider(scopeUid),
+        now: () => now,
+      );
+
+      final viewModel = FourZhuEditorViewModel(
+        getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
+        getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
+        saveTemplateUseCase: SaveTemplateUseCase(repository),
+        deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+        installMarketTemplateUseCase: installUseCase,
+        cardTemplateSettingDao: CardTemplateSettingDao(db),
+      );
+
+      await viewModel.initialize(collectionId: collectionId);
+      expect(viewModel.templates, hasLength(1));
+
+      await viewModel.installMarketTemplate(
+        marketTemplateId: 'mkt-1',
+        marketVersionId: 'ver-1',
+      );
+
+      expect(viewModel.templates, hasLength(2));
+      final installed =
+          viewModel.templates.firstWhere((t) => t.name == 'Market Theme');
+      expect(installed.collectionId, equals(collectionId));
+
+      final mapping =
+          await installsDao.findByLocalTemplateUuid(installed.id);
+      expect(mapping, isNotNull);
+      expect(mapping!.marketTemplateId, equals('mkt-1'));
+      expect(mapping.marketVersionId, equals('ver-1'));
+
+      final batch = await outboxStore.peekBatch(scopeUid: scopeUid, limit: 10);
+      expect(batch, hasLength(1));
+      expect(batch.single.entityType, equals('layout_template'));
+      expect(batch.single.entityId, equals(installed.id));
+      expect(batch.single.opType, equals('upsert'));
     });
 
     test('CardStyle.fromJson defaults contentPadding to 16 when missing',
@@ -799,7 +931,8 @@ class _InMemoryOutboxStore implements OutboxStore {
     required String operationId,
     required DateTime atUtc,
   }) async {
-    final removed = _records.where((r) => r.operationId == operationId).toList();
+    final removed =
+        _records.where((r) => r.operationId == operationId).toList();
     _records.removeWhere((r) => r.operationId == operationId);
     if (removed.isNotEmpty) await _emitBacklog(removed.first.scopeUid);
   }
@@ -832,7 +965,8 @@ class _InMemoryOutboxStore implements OutboxStore {
     return (() async* {
       yield await backlogCount(scopeUid);
       yield* _controllerFor(scopeUid).stream;
-    })().distinct();
+    })()
+        .distinct();
   }
 
   @override

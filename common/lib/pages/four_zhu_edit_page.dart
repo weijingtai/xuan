@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:common/database/app_database.dart';
+import 'package:common/database/daos/card_template_meta_dao.dart';
 import 'package:common/database/daos/card_template_skill_usage_dao.dart';
 import 'package:common/database/daos/card_template_setting_dao.dart';
+import 'package:common/database/daos/market_template_installs_dao.dart';
 import 'package:common/datasource/layout_template_local_data_source.dart';
 import 'package:common/domain/usecases/layout_templates/delete_template_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_all_templates_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/get_template_by_id_use_case.dart';
 import 'package:common/domain/usecases/layout_templates/save_template_use_case.dart';
+import 'package:common/features/shared_card_template/market/market_gateway.dart';
+import 'package:common/features/shared_card_template/usecase/install_market_template_usecase.dart';
 import 'package:common/repositories/layout_template_repository_impl.dart';
 import 'package:common/themes/editor_theme.dart';
 import 'package:common/widgets/style_editor/sidebar_explorer.dart';
@@ -31,15 +35,36 @@ class FourZhuEditPage extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<FourZhuEditorViewModel>(
           create: (ctx) {
+            final localDataSource = ctx.read<LayoutTemplateLocalDataSource>();
             final repository = LayoutTemplateRepositoryImpl(
-              ctx.read<LayoutTemplateLocalDataSource>(),
+              localDataSource,
               authScopeProvider: ctx.read<AuthScopeProvider>(),
             );
+
+            MarketGateway? marketGateway;
+            try {
+              marketGateway = ctx.read<MarketGateway>();
+            } catch (_) {
+              marketGateway = null;
+            }
+
+            final installMarketTemplateUseCase = marketGateway == null
+                ? null
+                : InstallMarketTemplateUseCase(
+                    marketGateway: marketGateway,
+                    localDataSource: localDataSource,
+                    marketTemplateInstallsDao:
+                        MarketTemplateInstallsDao(ctx.read<AppDatabase>()),
+                    authScopeProvider: ctx.read<AuthScopeProvider>(),
+                  );
+
             return FourZhuEditorViewModel(
               getAllTemplatesUseCase: GetAllTemplatesUseCase(repository),
               getTemplateByIdUseCase: GetTemplateByIdUseCase(repository),
               saveTemplateUseCase: SaveTemplateUseCase(repository),
               deleteTemplateUseCase: DeleteTemplateUseCase(repository),
+              installMarketTemplateUseCase: installMarketTemplateUseCase,
+              cardTemplateMetaDao: CardTemplateMetaDao(ctx.read<AppDatabase>()),
               cardTemplateSettingDao:
                   CardTemplateSettingDao(ctx.read<AppDatabase>()),
               cardTemplateSkillUsageDao:

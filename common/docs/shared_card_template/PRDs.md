@@ -20,7 +20,7 @@ G4. 冷启动：支持系统内置主题与市场主题并存，展示口径清�
 G5. 不影响现有编辑器：EditableFourZhuCard 的编辑/渲染/保存链路不破坏，不修改模板 JSON schema。
 
 ## 3. 非目标（Out of Scope）
-- 多设备自动同步“市场安装内容”的冲突解决（可后续接入现有 sync/outbox）。
+- 多设备同步的“复杂冲突解决/合并编辑体验”（当前以 LWW 为主，后续可增强冲突提示与回滚）。
 - 付费、订阅、分账等商业化。
 - 完整审核后台（先预留举报/下架能力）。
 
@@ -100,6 +100,12 @@ App 安装流程：
 3) 写入 `t_layout_templates`（template_json）
 4) 写入 `t_card_template_meta`（本地 created/modified；本地派生可选）
 5) 写入 `t_market_template_installs`（market_template_id + version_id）
+6) 入队 outbox（entityType=layout_template, opType=upsert, scopeUid=当前用户 uid），由 SyncRuntime 推送到远端
+
+多端同步说明（用户数据空间）：
+- 写入路径：`users/{scopeUid}/modules/common/layout_templates/{entityId}`（Realtime Database）
+- 同步机制：本地落库后写入 outbox，SyncRuntime 自动 push；其他设备 pull 回填本地后，编辑器列表自动刷新
+- 前置条件：用户已登录且同步运行时启用（未登录仅本地可用，待登录后再同步）
 
 ### 7.3 发布
 - POST /market/templates（创建条目）
@@ -127,3 +133,4 @@ App 安装流程：
 - AC3：发布成功后市场可见，可被其他账号下载并编辑。
 - AC4：系统/用户/市场来源可区分展示（不依赖 isCustomized 三态）。
 - AC5：EditableFourZhuCard 编辑/保存/setting overlay/使用日志功能无回归。
+- AC6：用户下载/安装市场模板后，会同步写入用户远端数据；同一账号在另一设备 pull 后可看到该模板。

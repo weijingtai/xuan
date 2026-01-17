@@ -2525,6 +2525,426 @@ class CardTemplateSkillUsagesCompanion
   }
 }
 
+class $MarketTemplateInstallsTable extends MarketTemplateInstalls
+    with TableInfo<$MarketTemplateInstallsTable, MarketTemplateInstall> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $MarketTemplateInstallsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _localTemplateUuidMeta =
+      const VerificationMeta('localTemplateUuid');
+  @override
+  late final GeneratedColumn<String> localTemplateUuid =
+      GeneratedColumn<String>('local_template_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _marketTemplateIdMeta =
+      const VerificationMeta('marketTemplateId');
+  @override
+  late final GeneratedColumn<String> marketTemplateId = GeneratedColumn<String>(
+      'market_template_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _marketVersionIdMeta =
+      const VerificationMeta('marketVersionId');
+  @override
+  late final GeneratedColumn<String> marketVersionId = GeneratedColumn<String>(
+      'market_version_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _installedAtMeta =
+      const VerificationMeta('installedAt');
+  @override
+  late final GeneratedColumn<DateTime> installedAt = GeneratedColumn<DateTime>(
+      'installed_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _pinnedAtMeta =
+      const VerificationMeta('pinnedAt');
+  @override
+  late final GeneratedColumn<DateTime> pinnedAt = GeneratedColumn<DateTime>(
+      'pinned_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _lastCheckedAtMeta =
+      const VerificationMeta('lastCheckedAt');
+  @override
+  late final GeneratedColumn<DateTime> lastCheckedAt =
+      GeneratedColumn<DateTime>('last_checked_at', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  @override
+  List<GeneratedColumn> get $columns => [
+        localTemplateUuid,
+        marketTemplateId,
+        marketVersionId,
+        installedAt,
+        pinnedAt,
+        lastCheckedAt,
+        deletedAt
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 't_market_template_installs';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<MarketTemplateInstall> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('local_template_uuid')) {
+      context.handle(
+          _localTemplateUuidMeta,
+          localTemplateUuid.isAcceptableOrUnknown(
+              data['local_template_uuid']!, _localTemplateUuidMeta));
+    } else if (isInserting) {
+      context.missing(_localTemplateUuidMeta);
+    }
+    if (data.containsKey('market_template_id')) {
+      context.handle(
+          _marketTemplateIdMeta,
+          marketTemplateId.isAcceptableOrUnknown(
+              data['market_template_id']!, _marketTemplateIdMeta));
+    } else if (isInserting) {
+      context.missing(_marketTemplateIdMeta);
+    }
+    if (data.containsKey('market_version_id')) {
+      context.handle(
+          _marketVersionIdMeta,
+          marketVersionId.isAcceptableOrUnknown(
+              data['market_version_id']!, _marketVersionIdMeta));
+    } else if (isInserting) {
+      context.missing(_marketVersionIdMeta);
+    }
+    if (data.containsKey('installed_at')) {
+      context.handle(
+          _installedAtMeta,
+          installedAt.isAcceptableOrUnknown(
+              data['installed_at']!, _installedAtMeta));
+    } else if (isInserting) {
+      context.missing(_installedAtMeta);
+    }
+    if (data.containsKey('pinned_at')) {
+      context.handle(_pinnedAtMeta,
+          pinnedAt.isAcceptableOrUnknown(data['pinned_at']!, _pinnedAtMeta));
+    }
+    if (data.containsKey('last_checked_at')) {
+      context.handle(
+          _lastCheckedAtMeta,
+          lastCheckedAt.isAcceptableOrUnknown(
+              data['last_checked_at']!, _lastCheckedAtMeta));
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {localTemplateUuid};
+  @override
+  MarketTemplateInstall map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return MarketTemplateInstall(
+      localTemplateUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}local_template_uuid'])!,
+      marketTemplateId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}market_template_id'])!,
+      marketVersionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}market_version_id'])!,
+      installedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}installed_at'])!,
+      pinnedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}pinned_at']),
+      lastCheckedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_checked_at']),
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+    );
+  }
+
+  @override
+  $MarketTemplateInstallsTable createAlias(String alias) {
+    return $MarketTemplateInstallsTable(attachedDatabase, alias);
+  }
+}
+
+class MarketTemplateInstall extends DataClass
+    implements Insertable<MarketTemplateInstall> {
+  final String localTemplateUuid;
+  final String marketTemplateId;
+  final String marketVersionId;
+  final DateTime installedAt;
+  final DateTime? pinnedAt;
+  final DateTime? lastCheckedAt;
+  final DateTime? deletedAt;
+  const MarketTemplateInstall(
+      {required this.localTemplateUuid,
+      required this.marketTemplateId,
+      required this.marketVersionId,
+      required this.installedAt,
+      this.pinnedAt,
+      this.lastCheckedAt,
+      this.deletedAt});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['local_template_uuid'] = Variable<String>(localTemplateUuid);
+    map['market_template_id'] = Variable<String>(marketTemplateId);
+    map['market_version_id'] = Variable<String>(marketVersionId);
+    map['installed_at'] = Variable<DateTime>(installedAt);
+    if (!nullToAbsent || pinnedAt != null) {
+      map['pinned_at'] = Variable<DateTime>(pinnedAt);
+    }
+    if (!nullToAbsent || lastCheckedAt != null) {
+      map['last_checked_at'] = Variable<DateTime>(lastCheckedAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  MarketTemplateInstallsCompanion toCompanion(bool nullToAbsent) {
+    return MarketTemplateInstallsCompanion(
+      localTemplateUuid: Value(localTemplateUuid),
+      marketTemplateId: Value(marketTemplateId),
+      marketVersionId: Value(marketVersionId),
+      installedAt: Value(installedAt),
+      pinnedAt: pinnedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(pinnedAt),
+      lastCheckedAt: lastCheckedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastCheckedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory MarketTemplateInstall.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return MarketTemplateInstall(
+      localTemplateUuid: serializer.fromJson<String>(json['localTemplateUuid']),
+      marketTemplateId: serializer.fromJson<String>(json['marketTemplateId']),
+      marketVersionId: serializer.fromJson<String>(json['marketVersionId']),
+      installedAt: serializer.fromJson<DateTime>(json['installedAt']),
+      pinnedAt: serializer.fromJson<DateTime?>(json['pinnedAt']),
+      lastCheckedAt: serializer.fromJson<DateTime?>(json['lastCheckedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'localTemplateUuid': serializer.toJson<String>(localTemplateUuid),
+      'marketTemplateId': serializer.toJson<String>(marketTemplateId),
+      'marketVersionId': serializer.toJson<String>(marketVersionId),
+      'installedAt': serializer.toJson<DateTime>(installedAt),
+      'pinnedAt': serializer.toJson<DateTime?>(pinnedAt),
+      'lastCheckedAt': serializer.toJson<DateTime?>(lastCheckedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  MarketTemplateInstall copyWith(
+          {String? localTemplateUuid,
+          String? marketTemplateId,
+          String? marketVersionId,
+          DateTime? installedAt,
+          Value<DateTime?> pinnedAt = const Value.absent(),
+          Value<DateTime?> lastCheckedAt = const Value.absent(),
+          Value<DateTime?> deletedAt = const Value.absent()}) =>
+      MarketTemplateInstall(
+        localTemplateUuid: localTemplateUuid ?? this.localTemplateUuid,
+        marketTemplateId: marketTemplateId ?? this.marketTemplateId,
+        marketVersionId: marketVersionId ?? this.marketVersionId,
+        installedAt: installedAt ?? this.installedAt,
+        pinnedAt: pinnedAt.present ? pinnedAt.value : this.pinnedAt,
+        lastCheckedAt:
+            lastCheckedAt.present ? lastCheckedAt.value : this.lastCheckedAt,
+        deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+      );
+  MarketTemplateInstall copyWithCompanion(
+      MarketTemplateInstallsCompanion data) {
+    return MarketTemplateInstall(
+      localTemplateUuid: data.localTemplateUuid.present
+          ? data.localTemplateUuid.value
+          : this.localTemplateUuid,
+      marketTemplateId: data.marketTemplateId.present
+          ? data.marketTemplateId.value
+          : this.marketTemplateId,
+      marketVersionId: data.marketVersionId.present
+          ? data.marketVersionId.value
+          : this.marketVersionId,
+      installedAt:
+          data.installedAt.present ? data.installedAt.value : this.installedAt,
+      pinnedAt: data.pinnedAt.present ? data.pinnedAt.value : this.pinnedAt,
+      lastCheckedAt: data.lastCheckedAt.present
+          ? data.lastCheckedAt.value
+          : this.lastCheckedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MarketTemplateInstall(')
+          ..write('localTemplateUuid: $localTemplateUuid, ')
+          ..write('marketTemplateId: $marketTemplateId, ')
+          ..write('marketVersionId: $marketVersionId, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('pinnedAt: $pinnedAt, ')
+          ..write('lastCheckedAt: $lastCheckedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(localTemplateUuid, marketTemplateId,
+      marketVersionId, installedAt, pinnedAt, lastCheckedAt, deletedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is MarketTemplateInstall &&
+          other.localTemplateUuid == this.localTemplateUuid &&
+          other.marketTemplateId == this.marketTemplateId &&
+          other.marketVersionId == this.marketVersionId &&
+          other.installedAt == this.installedAt &&
+          other.pinnedAt == this.pinnedAt &&
+          other.lastCheckedAt == this.lastCheckedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class MarketTemplateInstallsCompanion
+    extends UpdateCompanion<MarketTemplateInstall> {
+  final Value<String> localTemplateUuid;
+  final Value<String> marketTemplateId;
+  final Value<String> marketVersionId;
+  final Value<DateTime> installedAt;
+  final Value<DateTime?> pinnedAt;
+  final Value<DateTime?> lastCheckedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const MarketTemplateInstallsCompanion({
+    this.localTemplateUuid = const Value.absent(),
+    this.marketTemplateId = const Value.absent(),
+    this.marketVersionId = const Value.absent(),
+    this.installedAt = const Value.absent(),
+    this.pinnedAt = const Value.absent(),
+    this.lastCheckedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  MarketTemplateInstallsCompanion.insert({
+    required String localTemplateUuid,
+    required String marketTemplateId,
+    required String marketVersionId,
+    required DateTime installedAt,
+    this.pinnedAt = const Value.absent(),
+    this.lastCheckedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  })  : localTemplateUuid = Value(localTemplateUuid),
+        marketTemplateId = Value(marketTemplateId),
+        marketVersionId = Value(marketVersionId),
+        installedAt = Value(installedAt);
+  static Insertable<MarketTemplateInstall> custom({
+    Expression<String>? localTemplateUuid,
+    Expression<String>? marketTemplateId,
+    Expression<String>? marketVersionId,
+    Expression<DateTime>? installedAt,
+    Expression<DateTime>? pinnedAt,
+    Expression<DateTime>? lastCheckedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (localTemplateUuid != null) 'local_template_uuid': localTemplateUuid,
+      if (marketTemplateId != null) 'market_template_id': marketTemplateId,
+      if (marketVersionId != null) 'market_version_id': marketVersionId,
+      if (installedAt != null) 'installed_at': installedAt,
+      if (pinnedAt != null) 'pinned_at': pinnedAt,
+      if (lastCheckedAt != null) 'last_checked_at': lastCheckedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  MarketTemplateInstallsCompanion copyWith(
+      {Value<String>? localTemplateUuid,
+      Value<String>? marketTemplateId,
+      Value<String>? marketVersionId,
+      Value<DateTime>? installedAt,
+      Value<DateTime?>? pinnedAt,
+      Value<DateTime?>? lastCheckedAt,
+      Value<DateTime?>? deletedAt,
+      Value<int>? rowid}) {
+    return MarketTemplateInstallsCompanion(
+      localTemplateUuid: localTemplateUuid ?? this.localTemplateUuid,
+      marketTemplateId: marketTemplateId ?? this.marketTemplateId,
+      marketVersionId: marketVersionId ?? this.marketVersionId,
+      installedAt: installedAt ?? this.installedAt,
+      pinnedAt: pinnedAt ?? this.pinnedAt,
+      lastCheckedAt: lastCheckedAt ?? this.lastCheckedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (localTemplateUuid.present) {
+      map['local_template_uuid'] = Variable<String>(localTemplateUuid.value);
+    }
+    if (marketTemplateId.present) {
+      map['market_template_id'] = Variable<String>(marketTemplateId.value);
+    }
+    if (marketVersionId.present) {
+      map['market_version_id'] = Variable<String>(marketVersionId.value);
+    }
+    if (installedAt.present) {
+      map['installed_at'] = Variable<DateTime>(installedAt.value);
+    }
+    if (pinnedAt.present) {
+      map['pinned_at'] = Variable<DateTime>(pinnedAt.value);
+    }
+    if (lastCheckedAt.present) {
+      map['last_checked_at'] = Variable<DateTime>(lastCheckedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('MarketTemplateInstallsCompanion(')
+          ..write('localTemplateUuid: $localTemplateUuid, ')
+          ..write('marketTemplateId: $marketTemplateId, ')
+          ..write('marketVersionId: $marketVersionId, ')
+          ..write('installedAt: $installedAt, ')
+          ..write('pinnedAt: $pinnedAt, ')
+          ..write('lastCheckedAt: $lastCheckedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $DivinationTypesTable extends DivinationTypes
     with TableInfo<$DivinationTypesTable, DivinationTypeDataModel> {
   @override
@@ -6830,6 +7250,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $CardTemplateSettingsTable(this);
   late final $CardTemplateSkillUsagesTable cardTemplateSkillUsages =
       $CardTemplateSkillUsagesTable(this);
+  late final $MarketTemplateInstallsTable marketTemplateInstalls =
+      $MarketTemplateInstallsTable(this);
   late final $DivinationTypesTable divinationTypes =
       $DivinationTypesTable(this);
   late final $SeekersTable seekers = $SeekersTable(this);
@@ -6868,6 +7290,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       CardTemplateSettingDao(this as AppDatabase);
   late final CardTemplateSkillUsageDao cardTemplateSkillUsageDao =
       CardTemplateSkillUsageDao(this as AppDatabase);
+  late final MarketTemplateInstallsDao marketTemplateInstallsDao =
+      MarketTemplateInstallsDao(this as AppDatabase);
   late final DivinationTypesDao divinationTypesDao =
       DivinationTypesDao(this as AppDatabase);
   late final SeekersDao seekersDao = SeekersDao(this as AppDatabase);
@@ -6891,6 +7315,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         cardTemplateMetas,
         cardTemplateSettings,
         cardTemplateSkillUsages,
+        marketTemplateInstalls,
         divinationTypes,
         seekers,
         divinations,
@@ -8502,6 +8927,223 @@ typedef $$CardTemplateSkillUsagesTableProcessedTableManager
               CardTemplateSkillUsage>
         ),
         CardTemplateSkillUsage,
+        PrefetchHooks Function()>;
+typedef $$MarketTemplateInstallsTableCreateCompanionBuilder
+    = MarketTemplateInstallsCompanion Function({
+  required String localTemplateUuid,
+  required String marketTemplateId,
+  required String marketVersionId,
+  required DateTime installedAt,
+  Value<DateTime?> pinnedAt,
+  Value<DateTime?> lastCheckedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$MarketTemplateInstallsTableUpdateCompanionBuilder
+    = MarketTemplateInstallsCompanion Function({
+  Value<String> localTemplateUuid,
+  Value<String> marketTemplateId,
+  Value<String> marketVersionId,
+  Value<DateTime> installedAt,
+  Value<DateTime?> pinnedAt,
+  Value<DateTime?> lastCheckedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+class $$MarketTemplateInstallsTableFilterComposer
+    extends Composer<_$AppDatabase, $MarketTemplateInstallsTable> {
+  $$MarketTemplateInstallsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get localTemplateUuid => $composableBuilder(
+      column: $table.localTemplateUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get marketTemplateId => $composableBuilder(
+      column: $table.marketTemplateId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get marketVersionId => $composableBuilder(
+      column: $table.marketVersionId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get installedAt => $composableBuilder(
+      column: $table.installedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get pinnedAt => $composableBuilder(
+      column: $table.pinnedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+}
+
+class $$MarketTemplateInstallsTableOrderingComposer
+    extends Composer<_$AppDatabase, $MarketTemplateInstallsTable> {
+  $$MarketTemplateInstallsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get localTemplateUuid => $composableBuilder(
+      column: $table.localTemplateUuid,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get marketTemplateId => $composableBuilder(
+      column: $table.marketTemplateId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get marketVersionId => $composableBuilder(
+      column: $table.marketVersionId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get installedAt => $composableBuilder(
+      column: $table.installedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get pinnedAt => $composableBuilder(
+      column: $table.pinnedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+}
+
+class $$MarketTemplateInstallsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $MarketTemplateInstallsTable> {
+  $$MarketTemplateInstallsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get localTemplateUuid => $composableBuilder(
+      column: $table.localTemplateUuid, builder: (column) => column);
+
+  GeneratedColumn<String> get marketTemplateId => $composableBuilder(
+      column: $table.marketTemplateId, builder: (column) => column);
+
+  GeneratedColumn<String> get marketVersionId => $composableBuilder(
+      column: $table.marketVersionId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get installedAt => $composableBuilder(
+      column: $table.installedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get pinnedAt =>
+      $composableBuilder(column: $table.pinnedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastCheckedAt => $composableBuilder(
+      column: $table.lastCheckedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$MarketTemplateInstallsTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $MarketTemplateInstallsTable,
+    MarketTemplateInstall,
+    $$MarketTemplateInstallsTableFilterComposer,
+    $$MarketTemplateInstallsTableOrderingComposer,
+    $$MarketTemplateInstallsTableAnnotationComposer,
+    $$MarketTemplateInstallsTableCreateCompanionBuilder,
+    $$MarketTemplateInstallsTableUpdateCompanionBuilder,
+    (
+      MarketTemplateInstall,
+      BaseReferences<_$AppDatabase, $MarketTemplateInstallsTable,
+          MarketTemplateInstall>
+    ),
+    MarketTemplateInstall,
+    PrefetchHooks Function()> {
+  $$MarketTemplateInstallsTableTableManager(
+      _$AppDatabase db, $MarketTemplateInstallsTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$MarketTemplateInstallsTableFilterComposer(
+                  $db: db, $table: table),
+          createOrderingComposer: () =>
+              $$MarketTemplateInstallsTableOrderingComposer(
+                  $db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$MarketTemplateInstallsTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<String> localTemplateUuid = const Value.absent(),
+            Value<String> marketTemplateId = const Value.absent(),
+            Value<String> marketVersionId = const Value.absent(),
+            Value<DateTime> installedAt = const Value.absent(),
+            Value<DateTime?> pinnedAt = const Value.absent(),
+            Value<DateTime?> lastCheckedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              MarketTemplateInstallsCompanion(
+            localTemplateUuid: localTemplateUuid,
+            marketTemplateId: marketTemplateId,
+            marketVersionId: marketVersionId,
+            installedAt: installedAt,
+            pinnedAt: pinnedAt,
+            lastCheckedAt: lastCheckedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          createCompanionCallback: ({
+            required String localTemplateUuid,
+            required String marketTemplateId,
+            required String marketVersionId,
+            required DateTime installedAt,
+            Value<DateTime?> pinnedAt = const Value.absent(),
+            Value<DateTime?> lastCheckedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
+          }) =>
+              MarketTemplateInstallsCompanion.insert(
+            localTemplateUuid: localTemplateUuid,
+            marketTemplateId: marketTemplateId,
+            marketVersionId: marketVersionId,
+            installedAt: installedAt,
+            pinnedAt: pinnedAt,
+            lastCheckedAt: lastCheckedAt,
+            deletedAt: deletedAt,
+            rowid: rowid,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$MarketTemplateInstallsTableProcessedTableManager
+    = ProcessedTableManager<
+        _$AppDatabase,
+        $MarketTemplateInstallsTable,
+        MarketTemplateInstall,
+        $$MarketTemplateInstallsTableFilterComposer,
+        $$MarketTemplateInstallsTableOrderingComposer,
+        $$MarketTemplateInstallsTableAnnotationComposer,
+        $$MarketTemplateInstallsTableCreateCompanionBuilder,
+        $$MarketTemplateInstallsTableUpdateCompanionBuilder,
+        (
+          MarketTemplateInstall,
+          BaseReferences<_$AppDatabase, $MarketTemplateInstallsTable,
+              MarketTemplateInstall>
+        ),
+        MarketTemplateInstall,
         PrefetchHooks Function()>;
 typedef $$DivinationTypesTableCreateCompanionBuilder = DivinationTypesCompanion
     Function({
@@ -13187,6 +13829,9 @@ class $AppDatabaseManager {
   $$CardTemplateSkillUsagesTableTableManager get cardTemplateSkillUsages =>
       $$CardTemplateSkillUsagesTableTableManager(
           _db, _db.cardTemplateSkillUsages);
+  $$MarketTemplateInstallsTableTableManager get marketTemplateInstalls =>
+      $$MarketTemplateInstallsTableTableManager(
+          _db, _db.marketTemplateInstalls);
   $$DivinationTypesTableTableManager get divinationTypes =>
       $$DivinationTypesTableTableManager(_db, _db.divinationTypes);
   $$SeekersTableTableManager get seekers =>

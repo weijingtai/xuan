@@ -1,0 +1,612 @@
+{
+  "schemaVersion": 1,
+  "entityType": "layout_template",
+  "entityId": "ae27000e-e5c6-4e9b-badb-abf2b9f761e3",
+  "collectionId": "__public_default__",
+  "name": "默认模板",
+  "description": null,
+  "template": {
+    "id": "ae27000e-e5c6-4e9b-badb-abf2b9f761e3",
+    "name": "默认模板",
+    "description": null,
+    "collectionId": "__public_default__",
+    "cardStyle": {
+      "dividerType": "none",
+      "dividerColorHex": "#DD000000",
+      "dividerThickness": 1,
+      "globalFontFamily": "NotoSansSC-Regular",
+      "globalFontSize": 14,
+      "globalFontColorHex": "#FF0F172A",
+      "contentPadding": {
+        "left": 16,
+        "top": 16,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    "chartGroups": [
+      {
+        "id": "32d82e89-76ed-483a-9781-76d00d834306",
+        "title": "流年盘",
+        "pillarOrder": [
+          "行标题列",
+          "年",
+          "月",
+          "日",
+          "时"
+        ],
+        "locked": false,
+        "colorHex": null,
+        "expanded": true
+      }
+    ],
+    "rowConfigs": [
+      {
+        "type": "columnHeaderRow",
+        "isVisible": true,
+        "isTitleVisible": false,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "tenGod",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "正财": "#DD000000",
+              "偏财": "#DD000000",
+              "正印": "#DD000000",
+              "偏印": "#DD000000",
+              "食神": "#DD000000",
+              "伤官": "#DD000000",
+              "正官": "#DD000000",
+              "偏官": "#DD000000",
+              "比肩": "#DD000000",
+              "劫财": "#DD000000",
+              "财": "#DD000000",
+              "才": "#DD000000",
+              "印": "#DD000000",
+              "枭": "#DD000000",
+              "食": "#DD000000",
+              "伤": "#DD000000",
+              "官": "#DD000000",
+              "杀": "#DD000000",
+              "比": "#DD000000",
+              "劫": "#DD000000",
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "正财": "#FFE040FB",
+              "偏财": "#FFE040FB",
+              "正印": "#FFE040FB",
+              "偏印": "#FFE040FB",
+              "食神": "#FFE040FB",
+              "伤官": "#FFE040FB",
+              "正官": "#FFE040FB",
+              "偏官": "#FFE040FB",
+              "比肩": "#FFE040FB",
+              "劫财": "#FFE040FB",
+              "财": "#FFE040FB",
+              "才": "#FFE040FB",
+              "印": "#FFE040FB",
+              "枭": "#FFE040FB",
+              "食": "#FFE040FB",
+              "伤": "#FFE040FB",
+              "官": "#FFE040FB",
+              "杀": "#FFE040FB",
+              "比": "#FFE040FB",
+              "劫": "#FFE040FB",
+              "乾造": "#FFE040FB",
+              "坤造": "#FFE040FB"
+            },
+            "pureDarkMapper": {
+              "正财": "#FFFFFFFF",
+              "偏财": "#FFFFFFFF",
+              "正印": "#FFFFFFFF",
+              "偏印": "#FFFFFFFF",
+              "食神": "#FFFFFFFF",
+              "伤官": "#FFFFFFFF",
+              "正官": "#FFFFFFFF",
+              "偏官": "#FFFFFFFF",
+              "比肩": "#FFFFFFFF",
+              "劫财": "#FFFFFFFF",
+              "财": "#FFFFFFFF",
+              "才": "#FFFFFFFF",
+              "印": "#FFFFFFFF",
+              "枭": "#FFFFFFFF",
+              "食": "#FFFFFFFF",
+              "伤": "#FFFFFFFF",
+              "官": "#FFFFFFFF",
+              "杀": "#FFFFFFFF",
+              "比": "#FFFFFFFF",
+              "劫": "#FFFFFFFF",
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "正财": "#FF9C27B0",
+              "偏财": "#FF9C27B0",
+              "正印": "#FF9C27B0",
+              "偏印": "#FF9C27B0",
+              "食神": "#FF9C27B0",
+              "伤官": "#FF9C27B0",
+              "正官": "#FF9C27B0",
+              "偏官": "#FF9C27B0",
+              "比肩": "#FF9C27B0",
+              "劫财": "#FF9C27B0",
+              "财": "#FF9C27B0",
+              "才": "#FF9C27B0",
+              "印": "#FF9C27B0",
+              "枭": "#FF9C27B0",
+              "食": "#FF9C27B0",
+              "伤": "#FF9C27B0",
+              "官": "#FF9C27B0",
+              "杀": "#FF9C27B0",
+              "比": "#FF9C27B0",
+              "劫": "#FF9C27B0",
+              "乾造": "#FF9C27B0",
+              "坤造": "#FF9C27B0"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "heavenlyStem",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "甲": "#DD000000",
+              "乙": "#DD000000",
+              "丙": "#DD000000",
+              "丁": "#DD000000",
+              "戊": "#DD000000",
+              "己": "#DD000000",
+              "庚": "#DD000000",
+              "辛": "#DD000000",
+              "壬": "#DD000000",
+              "癸": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "甲": "#FF549688",
+              "乙": "#FF549688",
+              "丙": "#FFE95464",
+              "丁": "#FFE95464",
+              "戊": "#FFA88462",
+              "己": "#FFA88462",
+              "庚": "#FFF0A72E",
+              "辛": "#FFEEA63D",
+              "壬": "#FF2775B6",
+              "癸": "#FF2775B6"
+            },
+            "pureDarkMapper": {
+              "甲": "#FFFFFFFF",
+              "乙": "#FFFFFFFF",
+              "丙": "#FFFFFFFF",
+              "丁": "#FFFFFFFF",
+              "戊": "#FFFFFFFF",
+              "己": "#FFFFFFFF",
+              "庚": "#FFFFFFFF",
+              "辛": "#FFFFFFFF",
+              "壬": "#FFFFFFFF",
+              "癸": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "甲": "#FF549688",
+              "乙": "#FF549688",
+              "丙": "#FFE95464",
+              "丁": "#FFE95464",
+              "戊": "#FFA88462",
+              "己": "#FFA88462",
+              "庚": "#FFF0A72E",
+              "辛": "#FFEEA63D",
+              "壬": "#FF2775B6",
+              "癸": "#FF2775B6"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": true,
+            "followTextColor": true,
+            "shadowBlurRadius": 4,
+            "shadowColor": "#B2000000",
+            "lightShadowColor": "#B2000000",
+            "darkShadowColor": "#B2FFFFFF",
+            "shadowOffsetX": 1,
+            "shadowOffsetY": 1
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "earthlyBranch",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "子": "#DD000000",
+              "丑": "#DD000000",
+              "寅": "#DD000000",
+              "卯": "#DD000000",
+              "辰": "#DD000000",
+              "巳": "#DD000000",
+              "午": "#DD000000",
+              "未": "#DD000000",
+              "申": "#DD000000",
+              "酉": "#DD000000",
+              "戌": "#DD000000",
+              "亥": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "亥": "#FF3D59AB",
+              "丑": "#FFD2B48C",
+              "寅": "#FF789262",
+              "卯": "#FF789262",
+              "辰": "#FFE1A95F",
+              "巳": "#FFCD5C5C",
+              "午": "#FFCD5C5C",
+              "未": "#FFF4A460",
+              "申": "#FFF2BE45",
+              "酉": "#FFEACD76",
+              "戌": "#FFA0522D",
+              "子": "#FF3D59AB"
+            },
+            "pureDarkMapper": {
+              "子": "#FFFFFFFF",
+              "丑": "#FFFFFFFF",
+              "寅": "#FFFFFFFF",
+              "卯": "#FFFFFFFF",
+              "辰": "#FFFFFFFF",
+              "巳": "#FFFFFFFF",
+              "午": "#FFFFFFFF",
+              "未": "#FFFFFFFF",
+              "申": "#FFFFFFFF",
+              "酉": "#FFFFFFFF",
+              "戌": "#FFFFFFFF",
+              "亥": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "亥": "#FF3D59AB",
+              "丑": "#FFD2B48C",
+              "寅": "#FF789262",
+              "卯": "#FF789262",
+              "辰": "#FFE1A95F",
+              "巳": "#FFCD5C5C",
+              "午": "#FFCD5C5C",
+              "未": "#FFF4A460",
+              "申": "#FFF2BE45",
+              "酉": "#FFEACD76",
+              "戌": "#FFA0522D",
+              "子": "#FF3D59AB"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": true,
+            "followTextColor": true,
+            "shadowBlurRadius": 4,
+            "shadowColor": "#B2000000",
+            "lightShadowColor": "#B2000000",
+            "darkShadowColor": "#B2FFFFFF",
+            "shadowOffsetX": 1,
+            "shadowOffsetY": 1
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "xunShou",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "kongWang",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "naYin",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "hiddenStems",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#DD000000",
+              "坤造": "#DD000000"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      }
+    ],
+    "editableTheme": null,
+    "version": 1,
+    "updatedAt": "2026-01-15T00:53:42.736"
+  },
+  "version": 1,
+  "clientUpdatedAt": "2026-01-15T08:53:42.736Z",
+  "deletedAt": null
+}

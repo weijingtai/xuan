@@ -424,7 +424,7 @@ packages:
     source: hosted
     version: "3.3.1"
   firebase_database:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: firebase_database
       sha256: "6ef29c00c6c9f636de76aca4a2fd94cf9313bc62fd78bd0fa4cb36635f92b69f"

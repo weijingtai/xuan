@@ -280,6 +280,38 @@ class CardTemplateSkillUsages extends Table with AutoIncrementingPrimaryKey {
       ];
 }
 
+@DataClassName('MarketTemplateInstall')
+class MarketTemplateInstalls extends Table {
+  @override
+  String get tableName => 't_market_template_installs';
+
+  TextColumn get localTemplateUuid => text().named('local_template_uuid')();
+
+  TextColumn get marketTemplateId => text().named('market_template_id')();
+  TextColumn get marketVersionId => text().named('market_version_id')();
+
+  DateTimeColumn get installedAt => dateTime().named('installed_at')();
+  DateTimeColumn get pinnedAt => dateTime().nullable().named('pinned_at')();
+  DateTimeColumn get lastCheckedAt =>
+      dateTime().nullable().named('last_checked_at')();
+  DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
+
+  @override
+  Set<Column> get primaryKey => {localTemplateUuid};
+
+  @override
+  List<Index> get indexes => [
+        Index(
+          'idx_market_template_installs_market_template_id',
+          'CREATE INDEX idx_market_template_installs_market_template_id ON t_market_template_installs (market_template_id);',
+        ),
+        Index(
+          'idx_market_template_installs_market_version_id',
+          'CREATE INDEX idx_market_template_installs_market_version_id ON t_market_template_installs (market_version_id);',
+        ),
+      ];
+}
+
 @UseRowClass(DivinationTypeDataModel)
 class DivinationTypes extends Table {
   @override
@@ -447,4 +479,3 @@ class Seekers extends Table {
   @override
   Set<Column> get primaryKey => {uuid};
 }
-

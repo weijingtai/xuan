@@ -274,4 +274,104 @@ void main() {
       expect(branchAfterTop < stemAfterTop, isTrue);
     }
   });
+
+  testWidgets('EditableFourZhuCardV3 updates when swapping notifiers',
+      (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1000, 700));
+
+    final themeNotifier = ValueNotifier<EditableFourZhuCardTheme>(
+      EditableCardThemeBuilder.createDefaultTheme(),
+    );
+    final brightnessNotifier = ValueNotifier<Brightness>(Brightness.light);
+    final colorPreviewModeNotifier =
+        ValueNotifier<ColorPreviewMode>(ColorPreviewMode.pure);
+    final paddingA = ValueNotifier<EdgeInsets>(const EdgeInsets.all(8));
+    final paddingB = ValueNotifier<EdgeInsets>(const EdgeInsets.all(40));
+    final rowStrategyMapper = defaultRowStrategyMapper();
+
+    final pillarsA = <PillarPayload>[
+      const RowTitleColumnPayload(uuid: 'row-title'),
+      ContentPillarPayload(
+        uuid: 'year-col',
+        pillarType: PillarType.year,
+        pillarLabel: '年',
+        pillarContent:
+            _pillarContent(id: 'year#1', pillarType: PillarType.year, label: '年'),
+      ),
+      ContentPillarPayload(
+        uuid: 'day-col',
+        pillarType: PillarType.day,
+        pillarLabel: '日',
+        pillarContent:
+            _pillarContent(id: 'day#1', pillarType: PillarType.day, label: '日'),
+      ),
+    ];
+    final rowsA = _buildRows(pillarsA);
+    final payloadA = CardPayload(
+      gender: Gender.male,
+      pillarMap: {for (final p in pillarsA) p.uuid: p},
+      pillarOrderUuid: pillarsA.map((e) => e.uuid).toList(),
+      rowMap: {for (final r in rowsA) r.uuid: r},
+      rowOrderUuid: rowsA.map((e) => e.uuid).toList(),
+    );
+
+    final pillarsB = _buildPillars();
+    final rowsB = _buildRows(pillarsB);
+    final payloadB = CardPayload(
+      gender: Gender.male,
+      pillarMap: {for (final p in pillarsB) p.uuid: p},
+      pillarOrderUuid: pillarsB.map((e) => e.uuid).toList(),
+      rowMap: {for (final r in rowsB) r.uuid: r},
+      rowOrderUuid: rowsB.map((e) => e.uuid).toList(),
+    );
+
+    final payloadNotifierA = ValueNotifier<CardPayload>(payloadA);
+    final payloadNotifierB = ValueNotifier<CardPayload>(payloadB);
+
+    var useB = false;
+    late void Function(void Function()) setHarnessState;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: StatefulBuilder(
+              builder: (context, setState) {
+                setHarnessState = setState;
+                return EditableFourZhuCardV3(
+                  dayGanZhi: JiaZi.JIA_ZI,
+                  brightnessNotifier: brightnessNotifier,
+                  colorPreviewModeNotifier: colorPreviewModeNotifier,
+                  themeNotifier: themeNotifier,
+                  cardPayloadNotifier:
+                      useB ? payloadNotifierB : payloadNotifierA,
+                  paddingNotifier: useB ? paddingB : paddingA,
+                  rowStrategyMapper: rowStrategyMapper,
+                  gender: Gender.male,
+                  showGrip: false,
+                );
+              },
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final sizeA = tester.getSize(find.byType(EditableFourZhuCardV3));
+
+    setHarnessState(() {
+      useB = true;
+    });
+    await tester.pumpAndSettle();
+
+    final sizeB = tester.getSize(find.byType(EditableFourZhuCardV3));
+    expect(sizeB.width, greaterThan(sizeA.width));
+
+    final beforePadding = tester.getSize(find.byType(EditableFourZhuCardV3));
+    paddingB.value = const EdgeInsets.all(80);
+    await tester.pumpAndSettle();
+    final afterPadding = tester.getSize(find.byType(EditableFourZhuCardV3));
+    expect(afterPadding.width, greaterThan(beforePadding.width));
+  });
 }

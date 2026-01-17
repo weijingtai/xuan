@@ -18,6 +18,7 @@ import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
 import '../features/four_zhu_card/widgets/editable_fourzhu_card/internal/card_size_manager.dart';
 import '../features/four_zhu_card/widgets/editable_fourzhu_card/models/base_style_config.dart';
+import '../features/shared_card_template/usecase/install_market_template_usecase.dart';
 import '../models/layout_template.dart';
 import '../models/text_style_config.dart';
 import '../models/eight_chars.dart';
@@ -26,6 +27,7 @@ import '../models/drag_payloads.dart';
 import '../models/pillar_content.dart';
 import '../models/row_strategy.dart';
 import '../features/tai_yuan/tai_yuan_model.dart';
+import '../database/daos/card_template_meta_dao.dart';
 import '../database/daos/card_template_skill_usage_dao.dart';
 import '../database/daos/card_template_setting_dao.dart';
 import '../services/card_template_setting_overlay.dart';
@@ -84,6 +86,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     required this.getTemplateByIdUseCase,
     required this.saveTemplateUseCase,
     required this.deleteTemplateUseCase,
+    this.installMarketTemplateUseCase,
+    this.cardTemplateMetaDao,
     this.cardTemplateSettingDao,
     this.cardTemplateSkillUsageDao,
   }) {
@@ -97,6 +101,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   final GetTemplateByIdUseCase getTemplateByIdUseCase;
   final SaveTemplateUseCase saveTemplateUseCase;
   final DeleteTemplateUseCase deleteTemplateUseCase;
+  final InstallMarketTemplateUseCase? installMarketTemplateUseCase;
+  final CardTemplateMetaDao? cardTemplateMetaDao;
   final CardTemplateSettingDao? cardTemplateSettingDao;
   final CardTemplateSkillUsageDao? cardTemplateSkillUsageDao;
 
@@ -398,6 +404,48 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> installMarketTemplate({
+    required String marketTemplateId,
+    required String marketVersionId,
+    String? nameOverride,
+    bool switchToInstalled = false,
+  }) async {
+    final useCase = installMarketTemplateUseCase;
+    if (useCase == null) {
+      _errorMessage = '未配置模板市场能力';
+      notifyListeners();
+      return;
+    }
+
+    final collectionId = _collectionId;
+    if (collectionId.isEmpty) return;
+
+    LayoutTemplate? installed;
+    await _withLoading(() async {
+      installed = await useCase(
+        collectionId: collectionId,
+        marketTemplateId: marketTemplateId,
+        marketVersionId: marketVersionId,
+        nameOverride: nameOverride,
+      );
+    });
+
+    await refreshTemplates();
+
+    if (!switchToInstalled) return;
+
+    final installedTemplate = installed;
+    if (installedTemplate == null) return;
+
+    if (_hasUnsavedChanges) {
+      _errorMessage = '已安装模板，但当前有未保存更改，未自动切换';
+      notifyListeners();
+      return;
+    }
+
+    await selectTemplate(installedTemplate.id);
+  }
+
   Future<void> _bootstrapFromPublicTemplatesIfNeeded() async {
     if (!_isBootstrappingTemplates) return;
     if (_bootstrapInFlight) return;
@@ -428,6 +476,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
             await getAllTemplatesUseCase(collectionId: _collectionId);
         if (refreshed.isEmpty) {
           return;
+        }
+
+        final metaDao = cardTemplateMetaDao;
+        if (metaDao != null) {
+          for (final template in refreshed) {
+            await metaDao.touchModifiedAt(
+              templateUuid: template.id,
+              modifiedAt: template.updatedAt,
+              isCustomized: false,
+            );
+          }
         }
 
         _templates = refreshed;
@@ -574,7 +633,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     if (base == null) return;
 
     final trimmed = name?.trim();
-    final nextName = trimmed?.isNotEmpty == true ? trimmed! : _generateTemplateName();
+    final nextName =
+        trimmed?.isNotEmpty == true ? trimmed! : _generateTemplateName();
 
     final template = base.copyWith(
       id: _uuid.v4(),
@@ -583,7 +643,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     _applyCurrentTemplate(template);
-    await saveCurrentTemplate();
+    await saveCurrentTemplate(isCustomized: true);
   }
 
   Future<void> applyTemplate(String templateId) async {
@@ -643,7 +703,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     _applyCurrentTemplate(duplicated);
-    await saveCurrentTemplate();
+    await saveCurrentTemplate(isCustomized: true);
   }
 
   /// Task 2.2.3 - 另存为新模板
@@ -673,10 +733,19 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates = refreshed;
 
       // 切换到新模板
-      _currentTemplate =
-          _findTemplateInList(refreshed, newTemplate.id) ?? newTemplate;
+      final saved = _findTemplateInList(refreshed, newTemplate.id) ?? newTemplate;
+      _currentTemplate = saved;
       _hasUnsavedChanges = false;
       _markRecent(newTemplate.id);
+
+      final dao = cardTemplateMetaDao;
+      if (dao != null) {
+        await dao.touchModifiedAt(
+          templateUuid: saved.id,
+          modifiedAt: saved.updatedAt,
+          isCustomized: true,
+        );
+      }
     });
   }
 
@@ -1484,7 +1553,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     return '$prefix (副本 $i)';
   }
 
-  Future<void> saveCurrentTemplate() async {
+  Future<void> saveCurrentTemplate({bool? isCustomized}) async {
     final template = _currentTemplate;
     if (template == null) return;
 
@@ -1497,6 +1566,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _templates = refreshed;
       _currentTemplate =
           _findTemplateInList(refreshed, template.id) ?? template;
+
+      final dao = cardTemplateMetaDao;
+      final current = _currentTemplate;
+      if (dao != null && current != null && isCustomized != null) {
+        await dao.touchModifiedAt(
+          templateUuid: current.id,
+          modifiedAt: current.updatedAt,
+          isCustomized: isCustomized,
+        );
+      }
     });
   }
 
@@ -1533,7 +1612,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     _applyCurrentTemplate(duplicated);
-    await saveCurrentTemplate();
+    await saveCurrentTemplate(isCustomized: true);
   }
 
   Future<void> deleteSelectedTemplates() async {

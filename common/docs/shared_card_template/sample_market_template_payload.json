@@ -1,0 +1,196 @@
+{
+  "schemaVersion": 1,
+  "templateId": "tpl_demo_001",
+  "versionId": "v1",
+  "layoutTemplate": {
+    "id": "market-template-uuid-placeholder",
+    "name": "示例主题｜青墨",
+    "description": "用于 Shared Card Template（主题市场）调试的示例模板发布物。",
+    "collectionId": "market",
+    "cardStyle": {
+      "dividerType": "solid",
+      "dividerColorHex": "#FF334155",
+      "dividerThickness": 1,
+      "globalFontFamily": "NotoSansSC-Regular",
+      "globalFontSize": 14,
+      "globalFontColorHex": "#FF0F172A",
+      "contentPadding": {
+        "left": 16,
+        "top": 16,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    "chartGroups": [
+      {
+        "id": "group-1",
+        "title": "基础分组",
+        "pillarOrder": ["行标题列", "年", "月", "日", "时"],
+        "locked": false,
+        "colorHex": null,
+        "expanded": true
+      }
+    ],
+    "rowConfigs": [
+      {
+        "type": "columnHeaderRow",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FF000000",
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "tenGod",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FF000000",
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "heavenlyStem",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": true,
+            "followTextColor": true,
+            "shadowBlurRadius": 4,
+            "shadowColor": "#B2000000",
+            "lightShadowColor": "#B2000000",
+            "darkShadowColor": "#B2FFFFFF",
+            "shadowOffsetX": 1,
+            "shadowOffsetY": 1
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "earthlyBranch",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": true,
+            "followTextColor": true,
+            "shadowBlurRadius": 4,
+            "shadowColor": "#B2000000",
+            "lightShadowColor": "#B2000000",
+            "darkShadowColor": "#B2FFFFFF",
+            "shadowOffsetX": 1,
+            "shadowOffsetY": 1
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      }
+    ],
+    "editableTheme": null,
+    "version": 1,
+    "updatedAt": "2026-01-16T00:00:00.000Z"
+  }
+}

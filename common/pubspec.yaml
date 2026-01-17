@@ -107,6 +107,8 @@ flutter:
     - ../assets/sql/
     - assets/colors/zhongguose.pb
     - assets/colors/forbidden_city.pb
+    - assets/templates/
+    - assets/templates/chinese/
 
   # To add Flutter specific assets to your application, add an assets section,
   # like this:

@@ -21,6 +21,7 @@ class CardTemplateMetaDao extends DatabaseAccessor<AppDatabase>
   Future<void> touchModifiedAt({
     required String templateUuid,
     required DateTime modifiedAt,
+    bool? isCustomized,
   }) async {
     final updated = await (update(db.cardTemplateMetas)
           ..where((t) => t.templateUuid.equals(templateUuid)))
@@ -28,6 +29,8 @@ class CardTemplateMetaDao extends DatabaseAccessor<AppDatabase>
       CardTemplateMetasCompanion(
         modifiedAt: Value(modifiedAt),
         deletedAt: const Value(null),
+        isCustomized:
+            isCustomized == null ? const Value.absent() : Value(isCustomized),
       ),
     );
 
@@ -41,9 +44,8 @@ class CardTemplateMetaDao extends DatabaseAccessor<AppDatabase>
         deletedAt: const Value(null),
         authorUuid: const Value(null),
         createFromCardUuid: const Value(null),
-        isCustomized: const Value(null),
+        isCustomized: Value(isCustomized),
       ),
     );
   }
 }
-

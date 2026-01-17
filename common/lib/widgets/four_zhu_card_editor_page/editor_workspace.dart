@@ -588,8 +588,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                             if (currentTemplate == null)
                               Positioned.fill(
                                 child: ColoredBox(
-                                  color: workspaceLocalTheme
-                                      .colorScheme.surface
+                                  color: workspaceLocalTheme.colorScheme.surface
                                       .withValues(alpha: 0.86),
                                   child: const Center(
                                     child: SizedBox(
@@ -1023,6 +1022,7 @@ class _TemplateGalleryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _TemplateThumbnailCard(
+      key: ValueKey('template-gallery-${template.id}'),
       template: template,
       selected: selected,
       favorite: favorite,
@@ -1036,6 +1036,7 @@ class _TemplateGalleryChip extends StatelessWidget {
 
 class _TemplateThumbnailCard extends StatelessWidget {
   const _TemplateThumbnailCard({
+    super.key,
     required this.template,
     required this.selected,
     required this.favorite,
@@ -1600,6 +1601,7 @@ class _TemplateAlbumTile extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         return _TemplateThumbnailCard(
+          key: ValueKey('template-album-${template.id}'),
           template: template,
           selected: selected,
           favorite: favorite,

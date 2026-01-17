@@ -973,18 +973,21 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     widget.colorPreviewModeNotifier.addListener(_onColorPreviewModeChanged);
   }
 
-  /// 在父组件传入的属性发生变化时同步更新布局模型与尺寸
-  ///
-  /// 功能描述：
-  /// - 当 `showGripRows` 或 `showGripColumns` 开关变化时，实时将抓手的“有效尺寸”置零或恢复，
-  ///   并刷新 `_layoutNotifier` 与 `_sizeNotifier`，使 Card 宽高与 UI 同步更新。
-  /// 参数说明：
-  /// - `oldWidget`: 旧的组件实例，用于对比属性变化。
-  /// 返回值：
-  /// - 无（方法用于触发内部状态与尺寸的同步更新）。
   @override
   void didUpdateWidget(covariant EditableFourZhuCardV3 oldWidget) {
     super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.cardPayloadNotifier != widget.cardPayloadNotifier) {
+      oldWidget.cardPayloadNotifier.removeListener(_layoutModelSyncListener);
+      widget.cardPayloadNotifier.addListener(_layoutModelSyncListener);
+      _layoutModelSyncListener();
+    }
+
+    if (oldWidget.paddingNotifier != widget.paddingNotifier) {
+      oldWidget.paddingNotifier.removeListener(_layoutModelSyncListener);
+      widget.paddingNotifier.addListener(_layoutModelSyncListener);
+      _layoutModelSyncListener();
+    }
 
     if (oldWidget.themeNotifier != widget.themeNotifier) {
       oldWidget.themeNotifier.removeListener(_onThemeChanged);

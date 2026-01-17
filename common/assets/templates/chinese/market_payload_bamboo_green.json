@@ -1,0 +1,822 @@
+{
+  "schemaVersion": 1,
+  "templateId": "tmpl_bamboo_green",
+  "versionId": "v1",
+  "layoutTemplate": {
+    "id": "1bff6c57-9f92-4ec6-8c1e-508d57f075d9",
+    "name": "中国风·竹影青",
+    "description": "淡青底 + 竹叶绿；清新自然、适合长时间阅读。",
+    "collectionId": "four_zhu_templates",
+    "cardStyle": {
+      "dividerType": "solid",
+      "dividerColorHex": "#3331A36A",
+      "dividerThickness": 1,
+      "globalFontFamily": "NotoSansSC-Regular",
+      "globalFontSize": 14,
+      "globalFontColorHex": "#FF14532D",
+      "contentPadding": {
+        "left": 16,
+        "top": 16,
+        "right": 16,
+        "bottom": 16
+      }
+    },
+    "chartGroups": [
+      {
+        "id": "8df65a3a-00bf-47fb-82ef-19d0bdfe4af2",
+        "title": "流年盘",
+        "pillarOrder": [
+          "行标题列",
+          "年",
+          "月",
+          "日",
+          "时"
+        ],
+        "locked": false,
+        "colorHex": null,
+        "expanded": true
+      }
+    ],
+    "rowConfigs": [
+      {
+        "type": "columnHeaderRow",
+        "isVisible": true,
+        "isTitleVisible": false,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#FF1F2937",
+              "坤造": "#FF1F2937"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#FF1F2937",
+              "坤造": "#FF1F2937"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 500,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "tenGod",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "heavenlyStem",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "甲": "#FF111827",
+              "乙": "#FF111827",
+              "丙": "#FF111827",
+              "丁": "#FF111827",
+              "戊": "#FF111827",
+              "己": "#FF111827",
+              "庚": "#FF111827",
+              "辛": "#FF111827",
+              "壬": "#FF111827",
+              "癸": "#FF111827"
+            },
+            "colorfulLightMapper": {
+              "甲": "#FF2F6B4F",
+              "乙": "#FF2F6B4F",
+              "丙": "#FF2E7D32",
+              "丁": "#FF2E7D32",
+              "戊": "#FF7A8F45",
+              "己": "#FF7A8F45",
+              "庚": "#FF355E3B",
+              "辛": "#FF355E3B",
+              "壬": "#FF1B4D3E",
+              "癸": "#FF1B4D3E"
+            },
+            "pureDarkMapper": {
+              "甲": "#FFFFFFFF",
+              "乙": "#FFFFFFFF",
+              "丙": "#FFFFFFFF",
+              "丁": "#FFFFFFFF",
+              "戊": "#FFFFFFFF",
+              "己": "#FFFFFFFF",
+              "庚": "#FFFFFFFF",
+              "辛": "#FFFFFFFF",
+              "壬": "#FFFFFFFF",
+              "癸": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "甲": "#FF86EFAC",
+              "乙": "#FF86EFAC",
+              "丙": "#FF6EE7B7",
+              "丁": "#FF6EE7B7",
+              "戊": "#FFD9F99D",
+              "己": "#FFD9F99D",
+              "庚": "#FFBBF7D0",
+              "辛": "#FFBBF7D0",
+              "壬": "#FF5EEAD4",
+              "癸": "#FF5EEAD4"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "earthlyBranch",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "子": "#FF111827",
+              "丑": "#FF111827",
+              "寅": "#FF111827",
+              "卯": "#FF111827",
+              "辰": "#FF111827",
+              "巳": "#FF111827",
+              "午": "#FF111827",
+              "未": "#FF111827",
+              "申": "#FF111827",
+              "酉": "#FF111827",
+              "戌": "#FF111827",
+              "亥": "#FF111827"
+            },
+            "colorfulLightMapper": {
+              "子": "#FF1B4D3E",
+              "亥": "#FF1B4D3E",
+              "寅": "#FF2F6B4F",
+              "卯": "#FF2F6B4F",
+              "巳": "#FF2E7D32",
+              "午": "#FF2E7D32",
+              "辰": "#FF7A8F45",
+              "戌": "#FF7A8F45",
+              "丑": "#FF7A8F45",
+              "未": "#FF7A8F45",
+              "申": "#FF355E3B",
+              "酉": "#FF355E3B"
+            },
+            "pureDarkMapper": {
+              "子": "#FFFFFFFF",
+              "丑": "#FFFFFFFF",
+              "寅": "#FFFFFFFF",
+              "卯": "#FFFFFFFF",
+              "辰": "#FFFFFFFF",
+              "巳": "#FFFFFFFF",
+              "午": "#FFFFFFFF",
+              "未": "#FFFFFFFF",
+              "申": "#FFFFFFFF",
+              "酉": "#FFFFFFFF",
+              "戌": "#FFFFFFFF",
+              "亥": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "子": "#FF5EEAD4",
+              "亥": "#FF5EEAD4",
+              "寅": "#FF86EFAC",
+              "卯": "#FF86EFAC",
+              "巳": "#FF6EE7B7",
+              "午": "#FF6EE7B7",
+              "辰": "#FFD9F99D",
+              "戌": "#FFD9F99D",
+              "丑": "#FFD9F99D",
+              "未": "#FFD9F99D",
+              "申": "#FFBBF7D0",
+              "酉": "#FFBBF7D0"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 18,
+            "fontWeight": 700,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "xunShou",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "kongWang",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "naYin",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      },
+      {
+        "type": "hiddenStems",
+        "isVisible": true,
+        "isTitleVisible": true,
+        "textStyleConfig": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "textAlign": null,
+        "padding": null,
+        "marginVertical": null,
+        "marginHorizontal": null,
+        "paddingHorizontal": null,
+        "borderType": null,
+        "borderColorHex": null,
+        "tenGodLabelType": "name"
+      }
+    ],
+    "editableTheme": {
+      "displayHeaderRow": true,
+      "displayRowTitleColumn": true,
+      "displayCellTitle": false,
+      "card": {
+        "border": {
+          "enabled": true,
+          "width": 1,
+          "lightColor": "#3331A36A",
+          "darkColor": "#334ADE80",
+          "radius": 16
+        },
+        "lightBackgroundColor": "#FFF2FAF4",
+        "darkBackgroundColor": "#FF07140C",
+        "padding": {
+          "top": 16,
+          "bottom": 16,
+          "left": 16,
+          "right": 16
+        },
+        "margin": {
+          "top": 0,
+          "bottom": 0,
+          "left": 0,
+          "right": 0
+        },
+        "shadow": {
+          "withShadow": true,
+          "followCardBackgroundColor": true,
+          "lightThemeColor": "#14000000",
+          "darkThemeColor": "#14000000",
+          "offset": {
+            "dx": 0,
+            "dy": 6
+          },
+          "blurRadius": 18,
+          "spreadRadius": 0
+        }
+      },
+      "pillar": {
+        "global": {
+          "border": {
+            "enabled": false,
+            "width": 1,
+            "lightColor": "#00000000",
+            "darkColor": "#00000000",
+            "radius": 0
+          },
+          "lightBackgroundColor": "#00000000",
+          "darkBackgroundColor": "#00000000",
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "margin": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "shadow": {
+            "withShadow": false,
+            "followCardBackgroundColor": false,
+            "lightThemeColor": "#00000000",
+            "darkThemeColor": "#00000000",
+            "offset": {
+              "dx": 0,
+              "dy": 0
+            },
+            "blurRadius": 0,
+            "spreadRadius": 0
+          },
+          "separatorWidth": null
+        },
+        "mapper": {},
+        "defaultSeparatorConfig": {
+          "border": {
+            "enabled": false,
+            "width": 1,
+            "lightColor": "#00000000",
+            "darkColor": "#00000000",
+            "radius": 0
+          },
+          "lightBackgroundColor": "#00000000",
+          "darkBackgroundColor": "#00000000",
+          "padding": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "margin": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "shadow": {
+            "withShadow": false,
+            "followCardBackgroundColor": false,
+            "lightThemeColor": "#00000000",
+            "darkThemeColor": "#00000000",
+            "offset": {
+              "dx": 0,
+              "dy": 0
+            },
+            "blurRadius": 0,
+            "spreadRadius": 0
+          },
+          "separatorWidth": 32
+        }
+      },
+      "cell": {
+        "pillarTitleCellConfig": {
+          "border": null,
+          "lightBackgroundColor": "#00000000",
+          "darkBackgroundColor": "#00000000",
+          "padding": {
+            "top": 8,
+            "bottom": 8,
+            "left": 8,
+            "right": 8
+          },
+          "margin": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "shadow": {
+            "withShadow": false,
+            "followCardBackgroundColor": false,
+            "lightThemeColor": "#00000000",
+            "darkThemeColor": "#00000000",
+            "offset": {
+              "dx": 0,
+              "dy": 0
+            },
+            "blurRadius": 0,
+            "spreadRadius": 0
+          },
+          "showsTitleInCell": false,
+          "separatorHeight": null
+        },
+        "rowTitleCellConfig": {
+          "border": null,
+          "lightBackgroundColor": "#1031A36A",
+          "darkBackgroundColor": "#144ADE80",
+          "padding": {
+            "top": 8,
+            "bottom": 8,
+            "left": 8,
+            "right": 8
+          },
+          "margin": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "shadow": {
+            "withShadow": false,
+            "followCardBackgroundColor": false,
+            "lightThemeColor": "#00000000",
+            "darkThemeColor": "#00000000",
+            "offset": {
+              "dx": 0,
+              "dy": 0
+            },
+            "blurRadius": 0,
+            "spreadRadius": 0
+          },
+          "showsTitleInCell": false,
+          "separatorHeight": null
+        },
+        "globalCellConfig": {
+          "border": null,
+          "lightBackgroundColor": "#00000000",
+          "darkBackgroundColor": "#00000000",
+          "padding": {
+            "top": 8,
+            "bottom": 8,
+            "left": 8,
+            "right": 8
+          },
+          "margin": {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          },
+          "shadow": {
+            "withShadow": false,
+            "followCardBackgroundColor": false,
+            "lightThemeColor": "#00000000",
+            "darkThemeColor": "#00000000",
+            "offset": {
+              "dx": 0,
+              "dy": 0
+            },
+            "blurRadius": 0,
+            "spreadRadius": 0
+          },
+          "showsTitleInCell": false,
+          "separatorHeight": null
+        },
+        "rowTypeCellConfigMapper": {}
+      },
+      "typography": {
+        "globalContent": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {
+              "乾造": "#FF14532D",
+              "坤造": "#FF14532D"
+            },
+            "colorfulLightMapper": {
+              "乾造": "#FF14532D",
+              "坤造": "#FF14532D"
+            },
+            "pureDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "colorfulDarkMapper": {
+              "乾造": "#FFFFFFFF",
+              "坤造": "#FFFFFFFF"
+            },
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 14,
+            "fontWeight": 400,
+            "height": 1.2
+          }
+        },
+        "globalTitle": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 16,
+            "fontWeight": 600,
+            "height": 1.2
+          }
+        },
+        "globalCellTitle": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 500,
+            "height": 1.2
+          }
+        },
+        "rowTitle": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 500,
+            "height": 1.2
+          }
+        },
+        "pillarTitle": {
+          "colorMapperDataModel": {
+            "pureLightMapper": {},
+            "colorfulLightMapper": {},
+            "pureDarkMapper": {},
+            "colorfulDarkMapper": {},
+            "blackwhiteLightStrength": 1,
+            "blackwhiteDarkStrength": 1
+          },
+          "textShadowDataModel": {
+            "shadowEnabled": false,
+            "followTextColor": false,
+            "shadowBlurRadius": 10,
+            "shadowColor": "#FF000000",
+            "lightShadowColor": "#FF000000",
+            "darkShadowColor": "#FFFFFFFF",
+            "shadowOffsetX": 5,
+            "shadowOffsetY": 5
+          },
+          "fontStyleDataModel": {
+            "fontFamily": "NotoSansSC-Regular",
+            "fontSize": 12,
+            "fontWeight": 600,
+            "height": 1.2
+          }
+        },
+        "cellContentMapper": {},
+        "cellTitleMapper": {}
+      }
+    },
+    "version": 1,
+    "updatedAt": "2026-01-16T00:00:00.000"
+  }
+}
