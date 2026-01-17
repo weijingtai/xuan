@@ -895,6 +895,8 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
         return '空亡';
       case RowType.xunShou:
         return '旬首';
+      case RowType.yiMa:
+        return '驿马';
       case RowType.hiddenStems:
         return '地支藏干';
       case RowType.hiddenStemsTenGod:

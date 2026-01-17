@@ -2678,6 +2678,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       RowType.kongWang: KongWangRowStrategy(),
       RowType.naYin: NaYinRowStrategy(),
       RowType.xunShou: XunShouRowStrategy(),
+      RowType.yiMa: YiMaRowStrategy(),
       RowType.hiddenStemsPrimary: HiddenStemsPrimaryRowStrategy(),
       RowType.hiddenStemsSecondary: HiddenStemsSecondaryRowStrategy(),
       RowType.hiddenStemsTertiary: HiddenStemsTertiaryRowStrategy(),
@@ -3115,6 +3116,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         return '空亡';
       case RowType.xunShou:
         return '旬首';
+      case RowType.yiMa:
+        return '驿马';
       case RowType.hiddenStems:
         return '藏干';
       case RowType.hiddenStemsTenGod:

@@ -126,6 +126,7 @@ const _$RowTypeEnumMap = {
   RowType.naYin: 'na_yin_row',
   RowType.kongWang: 'kong_wang_row',
   RowType.xunShou: 'xun_shou_row',
+  RowType.yiMa: 'yi_ma_row',
   RowType.hiddenStems: 'hidden_stems_row',
   RowType.hiddenStemsTenGod: 'hidden_stems_ten_god_row',
   RowType.hiddenStemsPrimary: 'hidden_stems_primary_row',

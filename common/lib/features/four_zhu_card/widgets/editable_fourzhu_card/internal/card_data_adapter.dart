@@ -1,3 +1,4 @@
+import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:common/enums/layout_template_enums.dart';
 import 'package:common/models/drag_payloads.dart';
@@ -86,8 +87,9 @@ class CardDataAdapter {
         .whereType<TextRowPayload>()
         .where((r) => r.rowType == rowType);
 
-    final tenGodLabelType =
-        textRowPayloads.isNotEmpty ? textRowPayloads.first.tenGodLabelType : 'name';
+    final tenGodLabelType = textRowPayloads.isNotEmpty
+        ? textRowPayloads.first.tenGodLabelType
+        : 'name';
 
     final isShortName = tenGodLabelType == 'singleName';
 
@@ -129,7 +131,8 @@ class CardDataAdapter {
       if (pillar is! ContentPillarPayload) continue;
 
       if (pillarStrategyMapper != null && dayJiaZi != null) {
-        final override = pillarStrategyMapper[pillar.pillarType]?.computeSingleValue(
+        final override =
+            pillarStrategyMapper[pillar.pillarType]?.computeSingleValue(
           rowType,
           pillar.pillarContent.jiaZi,
           dayJiaZi,
@@ -163,6 +166,18 @@ class CardDataAdapter {
         case RowType.xunShou:
           text = content.jiaZi.xunHeader.name;
           break;
+        case RowType.yiMa:
+          final zhi = content.jiaZi.zhi;
+          if (zhi == DiZhi.SHEN || zhi == DiZhi.ZI || zhi == DiZhi.CHEN) {
+            text = DiZhi.YIN.value;
+          } else if (zhi == DiZhi.YIN || zhi == DiZhi.WU || zhi == DiZhi.XU) {
+            text = DiZhi.SHEN.value;
+          } else if (zhi == DiZhi.SI || zhi == DiZhi.YOU || zhi == DiZhi.CHOU) {
+            text = DiZhi.HAI.value;
+          } else {
+            text = DiZhi.SI.value;
+          }
+          break;
         case RowType.hiddenStems:
           text = content.jiaZi.zhi.cangGan.map((e) => e.name).join('');
           break;
@@ -194,5 +209,4 @@ class CardDataAdapter {
       brightness: brightness,
     );
   }
-
 }

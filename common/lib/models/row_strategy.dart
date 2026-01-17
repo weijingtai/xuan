@@ -173,6 +173,76 @@ class KongWangRowStrategy extends RowComputationStrategy {
   }
 }
 
+/// 驿马行策略：按“每一柱的地支”计算驿马。
+///
+/// 规则：
+/// - 申子辰见寅
+/// - 寅午戌见申
+/// - 巳酉丑见亥
+/// - 亥卯未见巳
+class YiMaRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.yiMa;
+
+  @override
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
+
+  /// 计算各柱的“驿马”文本。
+  ///
+  /// 参数：
+  /// - input: 其中使用每柱的 `PillarContent.jiaZi.zhi`（地支）推导驿马。
+  ///
+  /// 返回：每柱对应的驿马地支（单字）。
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      values[pillar.id] = computeSingleValue(
+        pillar.jiaZi,
+        input.dayJiaZi,
+        input.gender,
+      );
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  /// 计算单柱的驿马展示值。
+  ///
+  /// 参数：
+  /// - pillarJiaZi: 该柱干支（仅使用其地支）。
+  /// - dayJiaZi: 日柱干支（此策略不使用，但保留签名以保持一致）。
+  /// - gender: 性别（此策略不使用，但保留签名以保持一致）。
+  ///
+  /// 返回：驿马地支（单字）。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    return _computeYiMaZhi(pillarJiaZi.zhi).value;
+  }
+
+  /// 根据“该柱地支”推导其驿马地支。
+  ///
+  /// 参数：
+  /// - zhi: 当前柱的地支。
+  ///
+  /// 返回：对应的驿马地支。
+  DiZhi _computeYiMaZhi(DiZhi zhi) {
+    if (zhi == DiZhi.SHEN || zhi == DiZhi.ZI || zhi == DiZhi.CHEN) {
+      return DiZhi.YIN;
+    }
+    if (zhi == DiZhi.YIN || zhi == DiZhi.WU || zhi == DiZhi.XU) {
+      return DiZhi.SHEN;
+    }
+    if (zhi == DiZhi.SI || zhi == DiZhi.YOU || zhi == DiZhi.CHOU) {
+      return DiZhi.HAI;
+    }
+    return DiZhi.SI;
+  }
+}
+
 /// 示例策略：旬首（骨架示例，留给后续开发者填充实际算法）。
 class XunShouRowStrategy extends RowComputationStrategy {
   @override

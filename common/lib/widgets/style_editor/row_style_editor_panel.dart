@@ -246,6 +246,8 @@ class RowItem extends StatelessWidget {
         return NaYinFiveXing.values.map((e) => e.name).toList(growable: false);
       case RowType.kongWang:
         return const ['戌亥', '申酉', '午未', '辰巳', '寅卯', '子丑'];
+      case RowType.yiMa:
+        return const ['寅', '申', '亥', '巳'];
       case RowType.selfSiting:
       case RowType.starYun:
         return TwelveZhangSheng.values

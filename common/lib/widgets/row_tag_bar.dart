@@ -111,6 +111,11 @@ class RowTagBar extends StatelessWidget {
           label: '旬首',
         ),
         RowData(
+          rowId: 'yi_ma',
+          rowType: RowType.yiMa,
+          label: '驿马',
+        ),
+        RowData(
           rowId: 'separator',
           rowType: RowType.separator,
           label: '分隔符',

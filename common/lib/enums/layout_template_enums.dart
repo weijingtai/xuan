@@ -62,6 +62,8 @@ enum RowType {
   kongWang, // 空亡
   @JsonValue('xun_shou_row')
   xunShou, // 旬首
+  @JsonValue('yi_ma_row')
+  yiMa, // 驿马
   @JsonValue('hidden_stems_row')
   hiddenStems, // 藏干
   @JsonValue('hidden_stems_ten_god_row')
