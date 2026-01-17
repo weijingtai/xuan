@@ -518,6 +518,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                                       .colorPreviewModeNotifier,
                                               cardPayloadNotifier:
                                                   viewModel.cardPayloadNotifier,
+                                              referenceDateTime: DateTime.now(),
                                               showGrip: _showGripNotifier.value,
                                               paddingNotifier:
                                                   viewModel.paddingNotifier,
@@ -525,6 +526,8 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
                                                   .editableThemeNotifier,
                                               rowStrategyMapper:
                                                   viewModel.rowStrategyMapper,
+                                              pillarStrategyMapper:
+                                                  viewModel.pillarStrategyMapper,
                                               gender: Gender.male,
                                               onReorderRow:
                                                   viewModel.reorderRow,
@@ -1415,8 +1418,13 @@ class _TemplateThumbnailCard extends StatelessWidget {
                             colorPreviewModeNotifier: colorPreviewModeNotifier,
                             themeNotifier: themeNotifier,
                             cardPayloadNotifier: cardPayloadNotifier,
+                            referenceDateTime: DateTime.now(),
                             paddingNotifier: paddingNotifier,
                             rowStrategyMapper: rowStrategyMapper,
+                            pillarStrategyMapper: const {
+                              PillarType.lifeHouse: const LifeHousePillarStrategy(),
+                              PillarType.bodyHouse: const BodyHousePillarStrategy(),
+                            },
                             gender: Gender.male,
                             showGrip: false,
                           ),

@@ -1,9 +1,12 @@
 import 'package:common/enums.dart';
+import 'package:common/features/four_zhu/four_zhu_engine.dart';
+import 'package:tuple/tuple.dart';
 
 import '../enums/enum_gender.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/layout_template_enums.dart';
 import '../utils/constant_values_utils.dart';
+import 'eight_chars.dart';
 import 'pillar_content.dart';
 
 /// 输入契约：为某一“行策略”提供所需的上下文信息，
@@ -131,8 +134,11 @@ abstract class PillarComputationStrategy {
     RowType rowType,
     JiaZi pillarJiaZi,
     JiaZi dayJiaZi,
-    Gender gender,
-  );
+    Gender gender, {
+    List<PillarContent>? pillars,
+    DateTime? referenceDateTime,
+    Map<String, dynamic> context = const {},
+  });
 }
 
 /// 示例策略：空亡（占位示例，具体算法可在此实现或替换）。
@@ -863,4 +869,194 @@ class SelfSitingRowStrategy extends RowComputationStrategy {
     final selfSiting = _computeSelfSitingPlaceholder(pillarJiaZi, dayJiaZi);
     return selfSiting;
   }
+}
+
+abstract class _BaseHousePillarStrategy implements PillarComputationStrategy {
+  const _BaseHousePillarStrategy();
+
+  bool get isLifeHouse;
+
+  @override
+  PillarComputationResult compute(PillarComputationInput input) {
+    final tuple = _computeHouse(
+      pillars: input.pillars,
+      referenceDateTime: input.referenceDateTime,
+    );
+
+    final perRowValues = <RowType, String>{};
+
+    if (tuple != null) {
+      perRowValues[RowType.columnHeaderRow] = defaultLabel;
+      perRowValues[RowType.heavenlyStem] = tuple.item1.name;
+      perRowValues[RowType.earthlyBranch] = tuple.item2.name;
+
+      if (tuple.item1 != TianGan.KONG_WANG) {
+        final jz = JiaZi.getFromGanZhiEnum(tuple.item1, tuple.item2);
+        perRowValues[RowType.naYin] = jz.naYinStr;
+      }
+    }
+
+    return PillarComputationResult(
+      pillarType: pillarType,
+      pillarLabel: defaultLabel,
+      perRowValues: perRowValues,
+    );
+  }
+
+  @override
+  String? computeSingleValue(
+    RowType rowType,
+    JiaZi pillarJiaZi,
+    JiaZi dayJiaZi,
+    Gender gender, {
+    List<PillarContent>? pillars,
+    DateTime? referenceDateTime,
+    Map<String, dynamic> context = const {},
+  }) {
+    final tuple = _computeHouse(
+      pillars: pillars,
+      referenceDateTime: referenceDateTime,
+    );
+    if (tuple == null) return null;
+
+    final gan = tuple.item1;
+    final zhi = tuple.item2;
+
+    if (rowType == RowType.columnHeaderRow) return defaultLabel;
+
+    final JiaZi? palaceJiaZi = gan == TianGan.KONG_WANG
+        ? null
+        : JiaZi.getFromGanZhiEnum(gan, zhi);
+
+    switch (rowType) {
+      case RowType.heavenlyStem:
+        return gan.name;
+      case RowType.earthlyBranch:
+        return zhi.name;
+      case RowType.naYin:
+        return palaceJiaZi?.naYinStr ?? '';
+      case RowType.kongWang:
+      case RowType.gu:
+        final kw = palaceJiaZi?.getKongWang();
+        return kw == null ? '' : '${kw.item1.name}${kw.item2.name}';
+      case RowType.xu:
+        final kw = palaceJiaZi?.getKongWang();
+        return kw == null
+            ? ''
+            : '${kw.item1.sixChongZhi.name}${kw.item2.sixChongZhi.name}';
+      case RowType.xunShou:
+        return palaceJiaZi?.xunHeader.name ?? '';
+      case RowType.yiMa:
+        final ym = _computeYiMaZhi(zhi);
+        return ym.value;
+      case RowType.hiddenStems:
+        return zhi.cangGan.map((e) => e.name).join('');
+      case RowType.tenGod:
+        return gan == TianGan.KONG_WANG
+            ? ''
+            : gan.getTenGods(dayJiaZi.tianGan).name;
+      case RowType.hiddenStemsTenGod:
+        final tenGods = zhi.cangGan.map((h) => h.getTenGods(dayJiaZi.tianGan));
+        return tenGods.map((e) => e.singleName).join();
+      case RowType.hiddenStemsPrimary:
+        return zhi.cangGan.isNotEmpty ? zhi.cangGan.first.name : '';
+      case RowType.hiddenStemsSecondary:
+        return zhi.cangGan.length > 1 ? zhi.cangGan[1].name : '';
+      case RowType.hiddenStemsTertiary:
+        return zhi.cangGan.length > 2 ? zhi.cangGan[2].name : '';
+      case RowType.hiddenStemsPrimaryGods:
+        return zhi.cangGan.isNotEmpty
+            ? zhi.cangGan.first.getTenGods(dayJiaZi.tianGan).singleName
+            : '';
+      case RowType.hiddenStemsSecondaryGods:
+        return zhi.cangGan.length > 1
+            ? zhi.cangGan[1].getTenGods(dayJiaZi.tianGan).singleName
+            : '';
+      case RowType.hiddenStemsTertiaryGods:
+        return zhi.cangGan.length > 2
+            ? zhi.cangGan[2].getTenGods(dayJiaZi.tianGan).singleName
+            : '';
+      default:
+        return null;
+    }
+  }
+
+  Tuple2<TianGan, DiZhi>? _computeHouse({
+    required List<PillarContent>? pillars,
+    required DateTime? referenceDateTime,
+  }) {
+    if (pillars == null || referenceDateTime == null) return null;
+
+    JiaZi? year;
+    JiaZi? month;
+    JiaZi? day;
+    JiaZi? hour;
+
+    for (final p in pillars) {
+      if (p.pillarType == PillarType.year) year ??= p.jiaZi;
+      if (p.pillarType == PillarType.month) month ??= p.jiaZi;
+      if (p.pillarType == PillarType.day) day ??= p.jiaZi;
+      if (p.pillarType == PillarType.hour) hour ??= p.jiaZi;
+    }
+
+    if (year == null || month == null || day == null || hour == null) {
+      return null;
+    }
+
+    final eightChars = EightChars(
+      year: year,
+      month: month,
+      day: day,
+      time: hour,
+    );
+
+    return isLifeHouse
+        ? LifeBodyHouseCalculator.calculateLifeHouse(
+            birthDateTime: referenceDateTime,
+            eightChars: eightChars,
+          )
+        : LifeBodyHouseCalculator.calculateBodyHouse(
+            birthDateTime: referenceDateTime,
+            eightChars: eightChars,
+          );
+  }
+
+  DiZhi _computeYiMaZhi(DiZhi zhi) {
+    if (zhi == DiZhi.SHEN || zhi == DiZhi.ZI || zhi == DiZhi.CHEN) {
+      return DiZhi.YIN;
+    }
+    if (zhi == DiZhi.YIN || zhi == DiZhi.WU || zhi == DiZhi.XU) {
+      return DiZhi.SHEN;
+    }
+    if (zhi == DiZhi.SI || zhi == DiZhi.YOU || zhi == DiZhi.CHOU) {
+      return DiZhi.HAI;
+    }
+    return DiZhi.SI;
+  }
+}
+
+class LifeHousePillarStrategy extends _BaseHousePillarStrategy {
+  const LifeHousePillarStrategy();
+
+  @override
+  PillarType get pillarType => PillarType.lifeHouse;
+
+  @override
+  String get defaultLabel => '命宫';
+
+  @override
+  bool get isLifeHouse => true;
+}
+
+class BodyHousePillarStrategy extends _BaseHousePillarStrategy {
+  const BodyHousePillarStrategy();
+
+  @override
+  PillarType get pillarType => PillarType.bodyHouse;
+
+  @override
+  String get defaultLabel => '身宫';
+
+  @override
+  bool get isLifeHouse => false;
 }

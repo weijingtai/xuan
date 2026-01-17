@@ -65,6 +65,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
   final Map<PillarType, PillarComputationStrategy> pillarStrategyMapper;
   final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
   final ValueNotifier<CardPayload> cardPayloadNotifier;
+  final DateTime? referenceDateTime;
 
   final ValueNotifier<Brightness> brightnessNotifier;
   final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
@@ -117,6 +118,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.colorPreviewModeNotifier,
     required this.themeNotifier,
     required this.cardPayloadNotifier,
+    this.referenceDateTime,
     required this.paddingNotifier,
     required this.rowStrategyMapper,
     this.pillarStrategyMapper = const <PillarType, PillarComputationStrategy>{},
@@ -453,6 +455,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       dayJiaZi = _pillarJiaZiFromPayload(dayPayload);
     } catch (_) {}
 
+    final pillarContents = pillars
+        .whereType<ContentPillarPayload>()
+        .map((p) => p.pillarContent)
+        .toList(growable: false);
+
     for (final r in rowsLite) {
       final rt = r.rowType;
       for (final p in pillars) {
@@ -464,6 +471,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                       p.pillarContent.jiaZi,
                       dayJiaZi,
                       widget.gender,
+                      pillars: pillarContents,
+                      referenceDateTime: widget.referenceDateTime,
                     ) ??
                   _pillarLabelFromPayload(p))
               : _pillarLabelFromPayload(p);
@@ -477,6 +486,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             pjz,
             dayJiaZi ?? pjz,
             widget.gender,
+            pillars: pillarContents,
+            referenceDateTime: widget.referenceDateTime,
           );
           final text = (rt == RowType.tenGod && p.pillarType == PillarType.day)
               ? FourZhuText.zaoLabelForGender(widget.gender)
@@ -3359,6 +3370,11 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       required JiaZi pillarJiaZi}) {
     Widget cell;
     // print("${rowType?.name} width: ${size.width}, height: ${size.height}");
+    final pillarContents = _currentPillars()
+        .whereType<ContentPillarPayload>()
+        .map((p) => p.pillarContent)
+        .toList(growable: false);
+
     if (_isSeparatorRowAtIndex(absRowIdx)) {
       // 分隔行：不在单元格内绘制横线，由数据网格叠加层统一绘制
       cell = SizedBox.fromSize(
@@ -3375,6 +3391,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             pillarJiaZi,
             dayJiaZi,
             gender,
+            pillars: pillarContents,
+            referenceDateTime: widget.referenceDateTime,
           );
           cell = multiLineCell(
             size: Size(size.width, size.height),
@@ -3442,6 +3460,8 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
             pillarJiaZi,
             dayJiaZi,
             gender,
+            pillars: pillarContents,
+            referenceDateTime: widget.referenceDateTime,
           );
           final text =
               (rowType == RowType.tenGod && pillarType == PillarType.day)

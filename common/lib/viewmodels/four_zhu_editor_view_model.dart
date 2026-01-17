@@ -197,6 +197,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   final LayoutTemplateTelemetry _templateTelemetry;
 
   late final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  late final Map<PillarType, PillarComputationStrategy> pillarStrategyMapper;
   late final ValueNotifier<EditableFourZhuCardTheme> editableThemeNotifier;
   late final ValueNotifier<Brightness> cardBrightnessNotifier;
   late final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
@@ -2689,6 +2690,11 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       RowType.hiddenStemsTertiaryGods: HiddenStemsTertiaryGodsRowStrategy(),
       RowType.starYun: StarYunRowStrategy(),
       RowType.selfSiting: SelfSitingRowStrategy(),
+    };
+
+    pillarStrategyMapper = {
+      PillarType.lifeHouse: const LifeHousePillarStrategy(),
+      PillarType.bodyHouse: const BodyHousePillarStrategy(),
     };
 
     final theme = EditableCardThemeBuilder.createDefaultTheme();
