@@ -269,7 +269,7 @@ class EditorWorkspaceState extends State<EditorWorkspace> {
       }
     }
 
-    await viewModel.selectTemplate(templateId);
+    await viewModel.selectTemplate(templateId, source: 'gallery');
   }
 
   Future<void> _openTemplateAlbum(
@@ -1402,16 +1402,21 @@ class _TemplateThumbnailCard extends StatelessWidget {
                     constraints: const BoxConstraints(maxWidth: 920),
                     child: IgnorePointer(
                       child: RepaintBoundary(
-                        child: EditableFourZhuCardV3(
-                          dayGanZhi: JiaZi.BING_YIN,
-                          brightnessNotifier: brightnessNotifier,
-                          colorPreviewModeNotifier: colorPreviewModeNotifier,
-                          themeNotifier: themeNotifier,
-                          cardPayloadNotifier: cardPayloadNotifier,
-                          paddingNotifier: paddingNotifier,
-                          rowStrategyMapper: rowStrategyMapper,
-                          gender: Gender.male,
-                          showGrip: false,
+                        child: MediaQuery(
+                          data:
+                              MediaQuery.of(context).copyWith(disableAnimations: true),
+                          child: EditableFourZhuCardV3(
+                            key: UniqueKey(),
+                            dayGanZhi: JiaZi.BING_YIN,
+                            brightnessNotifier: brightnessNotifier,
+                            colorPreviewModeNotifier: colorPreviewModeNotifier,
+                            themeNotifier: themeNotifier,
+                            cardPayloadNotifier: cardPayloadNotifier,
+                            paddingNotifier: paddingNotifier,
+                            rowStrategyMapper: rowStrategyMapper,
+                            gender: Gender.male,
+                            showGrip: false,
+                          ),
                         ),
                       ),
                     ),

@@ -95,7 +95,7 @@ class EditableCardThemeBuilder {
 /// - Non-negative values for margins, padding, borderWidth, cornerRadius
 /// - `perPillarMargin` keys limited to {year, month, day, hour, luckCycle}
 /// - Font fallback order: user-specified → theme default → system default
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class EditableFourZhuCardTheme extends Equatable {
   /// Creates a theme with optional sections for card, pillar, cell, and typography.
   /// All numeric values are interpreted in logical pixels.

@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -38,6 +40,89 @@ enum EditorViewMode { canvas, table, preview }
 enum TemplateGalleryCategory { all, favorites, recent }
 
 enum TemplateSortOrder { updatedDesc, nameAsc }
+
+abstract interface class LayoutTemplateTelemetry {
+  void debug(String event, {Map<String, Object?>? data});
+  void info(String event, {Map<String, Object?>? data});
+  void warn(String event, {Map<String, Object?>? data, Object? error});
+  void error(
+    String event, {
+    Map<String, Object?>? data,
+    Object? error,
+    StackTrace? stackTrace,
+  });
+
+  factory LayoutTemplateTelemetry.noop() => _NoopLayoutTemplateTelemetry();
+  factory LayoutTemplateTelemetry.logger() => _LoggerLayoutTemplateTelemetry();
+}
+
+class _NoopLayoutTemplateTelemetry implements LayoutTemplateTelemetry {
+  @override
+  void debug(String event, {Map<String, Object?>? data}) {}
+
+  @override
+  void info(String event, {Map<String, Object?>? data}) {}
+
+  @override
+  void warn(String event, {Map<String, Object?>? data, Object? error}) {}
+
+  @override
+  void error(
+    String event, {
+    Map<String, Object?>? data,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {}
+}
+
+class _LoggerLayoutTemplateTelemetry implements LayoutTemplateTelemetry {
+  _LoggerLayoutTemplateTelemetry()
+      : _logger = Logger(
+          level: kReleaseMode ? Level.info : Level.debug,
+          printer: kReleaseMode
+              ? SimplePrinter(printTime: false)
+              : PrettyPrinter(
+                  methodCount: 1,
+                  errorMethodCount: 8,
+                  lineLength: 140,
+                  colors: true,
+                  printEmojis: true,
+                ),
+        );
+
+  final Logger _logger;
+
+  String _fmt(String event, Map<String, Object?>? data) {
+    if (data == null || data.isEmpty) return '[layout_template] $event';
+    return '[layout_template] $event $data';
+  }
+
+  @override
+  void debug(String event, {Map<String, Object?>? data}) {
+    if (kReleaseMode) return;
+    _logger.d(_fmt(event, data));
+  }
+
+  @override
+  void info(String event, {Map<String, Object?>? data}) {
+    _logger.i(_fmt(event, data));
+  }
+
+  @override
+  void warn(String event, {Map<String, Object?>? data, Object? error}) {
+    _logger.w(_fmt(event, data), error: error);
+  }
+
+  @override
+  void error(
+    String event, {
+    Map<String, Object?>? data,
+    Object? error,
+    StackTrace? stackTrace,
+  }) {
+    _logger.e(_fmt(event, data), error: error, stackTrace: stackTrace);
+  }
+}
 
 @immutable
 class EditorUiState {
@@ -90,7 +175,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     this.cardTemplateMetaDao,
     this.cardTemplateSettingDao,
     this.cardTemplateSkillUsageDao,
-  }) {
+    LayoutTemplateTelemetry? templateTelemetry,
+  }) : _templateTelemetry = templateTelemetry ?? LayoutTemplateTelemetry.logger() {
     _initRuntimeNotifiers();
   }
 
@@ -108,6 +194,7 @@ class FourZhuEditorViewModel extends ChangeNotifier {
 
   final Uuid _uuid = const Uuid();
   final CommandHistory _commandHistory = CommandHistory(maxHistorySize: 50);
+  final LayoutTemplateTelemetry _templateTelemetry;
 
   late final Map<RowType, RowComputationStrategy> rowStrategyMapper;
   late final ValueNotifier<EditableFourZhuCardTheme> editableThemeNotifier;
@@ -525,10 +612,23 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> selectTemplate(String templateId) async {
+  Future<void> selectTemplate(
+    String templateId, {
+    String source = 'unknown',
+  }) async {
     if (_currentTemplate?.id == templateId) {
       return;
     }
+
+    final prevId = _currentTemplate?.id;
+    _templateTelemetry.info(
+      'gallery.active_change_request',
+      data: <String, Object?>{
+        'source': source,
+        'from': prevId,
+        'to': templateId,
+      },
+    );
 
     await _withLoading(() async {
       final template = await getTemplateByIdUseCase(
@@ -536,11 +636,10 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         templateId: templateId,
       );
       if (template != null) {
-        // Auto-migrate legacy template to fix style issues
         final migrated = await _migrateLegacyDefaultTemplate(template);
         _currentTemplate = migrated;
         _hasUnsavedChanges = false;
-        _commandHistory.clear(); // M4.3.2 - 切换模板时清空历史
+        _commandHistory.clear();
         _markRecent(migrated.id);
         unawaited(_tryLogTemplateUsage(migrated.id));
       } else {
@@ -554,6 +653,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       await _loadAndApplyTemplateSetting(
         templateUuid: template.id,
         skillId: _usageSkillId,
+      );
+    }
+
+    final nextId = _currentTemplate?.id;
+    if (prevId != nextId) {
+      _templateTelemetry.info(
+        'gallery.active_changed',
+        data: <String, Object?>{
+          'source': source,
+          'from': prevId,
+          'to': nextId,
+        },
       );
     }
   }
@@ -594,7 +705,8 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       skillId: skillId,
     );
 
-    if (nextMode != null && nextMode != colorPreviewModeNotifier.value) {
+    final prevMode = colorPreviewModeNotifier.value;
+    if (nextMode != null && nextMode != prevMode) {
       colorPreviewModeNotifier.value = nextMode;
     }
 
@@ -602,10 +714,22 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       editableThemeNotifier.value = nextTheme;
       paddingNotifier.value = nextTheme.card.padding;
     }
+
+    if (nextMode != prevMode || nextTheme != baseTheme) {
+      _templateTelemetry.debug(
+        'layout_template.setting_overlay_applied',
+        data: <String, Object?>{
+          'templateId': templateUuid,
+          'skillId': skillId,
+          'modeChanged': nextMode != prevMode,
+          'themeChanged': nextTheme != baseTheme,
+        },
+      );
+    }
   }
 
   Future<void> selectTemplateByTab(String templateId) async {
-    await selectTemplate(templateId);
+    await selectTemplate(templateId, source: 'tab');
   }
 
   Future<void> selectTemplateByOffset(int offset) async {
@@ -1557,10 +1681,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     final template = _currentTemplate;
     if (template == null) return;
 
+    _templateTelemetry.info(
+      'layout_template.save_start',
+      data: <String, Object?>{
+        'templateId': template.id,
+        'collectionId': template.collectionId,
+        'version': template.version,
+        'isCustomized': isCustomized,
+      },
+    );
+
     await _withLoading(() async {
       await saveTemplateUseCase(template: template);
       _hasUnsavedChanges = false;
-      _commandHistory.clear(); // M4.3.2 - 保存后清空历史
+      _commandHistory.clear();
       final refreshed =
           await getAllTemplatesUseCase(collectionId: _collectionId);
       _templates = refreshed;
@@ -1577,11 +1711,29 @@ class FourZhuEditorViewModel extends ChangeNotifier {
         );
       }
     });
+
+    final ok = _errorMessage == null;
+    _templateTelemetry.info(
+      ok ? 'layout_template.save_ok' : 'layout_template.save_failed',
+      data: <String, Object?>{
+        'templateId': template.id,
+        'collectionId': template.collectionId,
+        'error': _errorMessage,
+      },
+    );
   }
 
   Future<void> deleteCurrentTemplate() async {
     final template = _currentTemplate;
     if (template == null) return;
+
+    _templateTelemetry.info(
+      'layout_template.delete_start',
+      data: <String, Object?>{
+        'templateId': template.id,
+        'collectionId': template.collectionId,
+      },
+    );
 
     await _withLoading(() async {
       await deleteTemplateUseCase(
@@ -1595,6 +1747,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _isBootstrappingTemplates = refreshed.isEmpty;
       _hasUnsavedChanges = false;
     });
+
+    final ok = _errorMessage == null;
+    _templateTelemetry.info(
+      ok ? 'layout_template.delete_ok' : 'layout_template.delete_failed',
+      data: <String, Object?>{
+        'templateId': template.id,
+        'collectionId': template.collectionId,
+        'nextTemplateId': _currentTemplate?.id,
+        'error': _errorMessage,
+      },
+    );
 
     if (_currentTemplate == null) {
       await _bootstrapFromPublicTemplatesIfNeeded();
@@ -1620,6 +1783,15 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       return;
     }
     final targets = List<String>.from(_selectedTemplateIds);
+
+    _templateTelemetry.info(
+      'layout_template.bulk_delete_start',
+      data: <String, Object?>{
+        'collectionId': _collectionId,
+        'count': targets.length,
+      },
+    );
+
     await _withLoading(() async {
       for (final templateId in targets) {
         await deleteTemplateUseCase(
@@ -1647,6 +1819,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _resetRecentTemplates();
     });
 
+    final ok = _errorMessage == null;
+    _templateTelemetry.info(
+      ok ? 'layout_template.bulk_delete_ok' : 'layout_template.bulk_delete_failed',
+      data: <String, Object?>{
+        'collectionId': _collectionId,
+        'count': targets.length,
+        'nextTemplateId': _currentTemplate?.id,
+        'error': _errorMessage,
+      },
+    );
+
     if (_currentTemplate == null) {
       await _bootstrapFromPublicTemplatesIfNeeded();
     }
@@ -1655,6 +1838,13 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   Future<void> resetTemplatesToDefault() async {
+    _templateTelemetry.info(
+      'layout_template.reset_to_default_start',
+      data: <String, Object?>{
+        'collectionId': _collectionId,
+      },
+    );
+
     await _withLoading(() async {
       final existing =
           await getAllTemplatesUseCase(collectionId: _collectionId);
@@ -1677,6 +1867,18 @@ class FourZhuEditorViewModel extends ChangeNotifier {
       _selectedPresetId = null;
       _resetRecentTemplates();
     });
+
+    final ok = _errorMessage == null;
+    _templateTelemetry.info(
+      ok
+          ? 'layout_template.reset_to_default_ok'
+          : 'layout_template.reset_to_default_failed',
+      data: <String, Object?>{
+        'collectionId': _collectionId,
+        'nextTemplateId': _currentTemplate?.id,
+        'error': _errorMessage,
+      },
+    );
 
     if (_currentTemplate == null) {
       await _bootstrapFromPublicTemplatesIfNeeded();
@@ -1813,6 +2015,16 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   void _executeCommand(EditorCommand command) {
     final template = _currentTemplate;
     if (template == null) return;
+
+    _templateTelemetry.debug(
+      'editor.command_execute',
+      data: <String, Object?>{
+        'templateId': template.id,
+        'command': command.runtimeType.toString(),
+        'undo': _commandHistory.undoCount,
+        'redo': _commandHistory.redoCount,
+      },
+    );
 
     final newTemplate = _commandHistory.executeCommand(command, template);
     _currentTemplate = newTemplate;
@@ -2102,14 +2314,20 @@ class FourZhuEditorViewModel extends ChangeNotifier {
   }
 
   void updateEditableFourZhuCardTheme(EditableFourZhuCardTheme newTheme) {
-    // 1. Update runtime state immediately to preserve transient settings (like pillar styles)
-    // and ensure responsive UI.
+    _templateTelemetry.debug(
+      'layout_template.edit_theme',
+      data: <String, Object?>{
+        'templateId': _currentTemplate?.id,
+        'padding': newTheme.card.padding.toString(),
+        'displayHeaderRow': newTheme.displayHeaderRow,
+        'displayRowTitleColumn': newTheme.displayRowTitleColumn,
+        'displayCellTitle': newTheme.displayCellTitle,
+      },
+    );
+
     editableThemeNotifier.value = newTheme;
     paddingNotifier.value = newTheme.card.padding;
 
-    // 2. Persist supported styles to LayoutTemplate via Command.
-    // This ensures that subsequent syncs (e.g. from Undo/Redo or Save) don't revert
-    // the persistent parts (Padding, Fonts, RowStyles).
     _executeCommand(UpdateThemeCommand(newTheme));
   }
 
@@ -3044,8 +3262,17 @@ class FourZhuEditorViewModel extends ChangeNotifier {
     notifyListeners();
     try {
       await action();
-    } catch (error) {
+    } catch (error, st) {
       _errorMessage = error.toString();
+      _templateTelemetry.error(
+        'editor.flow_error',
+        data: <String, Object?>{
+          'templateId': _currentTemplate?.id,
+          'collectionId': _collectionId,
+        },
+        error: error,
+        stackTrace: st,
+      );
     } finally {
       _isLoading = false;
       notifyListeners();

@@ -30,12 +30,14 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
   late AnimationController _controller;
 
   late final ValueNotifier<PillarSection> _pillarStyleConfigNotifier;
+  bool _suppressOnChanged = false;
 
   @override
   void initState() {
     super.initState();
     _pillarStyleConfigNotifier = ValueNotifier(widget.pillarSection)
       ..addListener(() {
+        if (_suppressOnChanged) return;
         widget.onChanged?.call(_pillarStyleConfigNotifier.value);
       });
     _controller = AnimationController(vsync: this);
@@ -45,7 +47,9 @@ class _SidebarPillarEditorSectionState extends State<SidebarPillarEditorSection>
   void didUpdateWidget(covariant SidebarPillarEditorSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.pillarSection != widget.pillarSection) {
+      _suppressOnChanged = true;
       _pillarStyleConfigNotifier.value = widget.pillarSection;
+      _suppressOnChanged = false;
     }
   }
 

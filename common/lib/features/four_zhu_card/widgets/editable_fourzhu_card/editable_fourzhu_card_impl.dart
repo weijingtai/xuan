@@ -992,27 +992,22 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     if (oldWidget.themeNotifier != widget.themeNotifier) {
       oldWidget.themeNotifier.removeListener(_onThemeChanged);
       widget.themeNotifier.addListener(_onThemeChanged);
-    }
-    if (oldWidget.themeNotifier.value != widget.themeNotifier.value) {
-      final newTheme = widget.themeNotifier.value;
-      _pillarSectionNotifier.value =
-          EditableCardThemeBuilder.buildPillarSection(newTheme);
-      _cellSectionNotifier.value =
-          EditableCardThemeBuilder.buildCellSection(newTheme);
-      _typographySectionNotifier.value =
-          EditableCardThemeBuilder.buildTypographySection(newTheme);
-      _scheduleRebuild();
+      _onThemeChanged();
+    } else if (oldWidget.themeNotifier.value != widget.themeNotifier.value) {
+      _onThemeChanged();
     }
 
     if (oldWidget.brightnessNotifier != widget.brightnessNotifier) {
       oldWidget.brightnessNotifier.removeListener(_onBrightnessChanged);
       widget.brightnessNotifier.addListener(_onBrightnessChanged);
+      _scheduleRebuild();
     }
 
     if (oldWidget.colorPreviewModeNotifier != widget.colorPreviewModeNotifier) {
       oldWidget.colorPreviewModeNotifier
           .removeListener(_onColorPreviewModeChanged);
       widget.colorPreviewModeNotifier.addListener(_onColorPreviewModeChanged);
+      _scheduleRebuild();
     }
 
     final bool rowsVisibilityChanged = oldWidget.showGrip != widget.showGrip;
@@ -1146,8 +1141,14 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
               builder: (context, theme, child) {
                 final padding = widget.paddingNotifier.value;
                 final innerSize = Size(
-                  math.max(0.0, size.width - padding.left - padding.right),
-                  math.max(0.0, size.height - padding.top - padding.bottom),
+                  math.max(
+                    0.0,
+                    contentWidth - padding.left - padding.right,
+                  ),
+                  math.max(
+                    0.0,
+                    contentHeight - padding.top - padding.bottom,
+                  ),
                 );
                 // print(
                 // "size.width: ${size.width}, padding.left: ${padding.left}, padding.right: ${padding.right}, borderWidth: $borderWidth");
@@ -1155,19 +1156,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                 // print(
                 //     "DEBUG: size=${size.width}x${size.height}, padding=${padding}, extraColWidth=$extraColWidth");
 
-                return AnimatedContainer(
+                return AnimatedSize(
                   duration: const Duration(milliseconds: 240),
                   curve: Curves.easeInOutCubic,
-                  key: _cardKey,
-                  padding: padding,
-                  width: contentWidth,
-                  height: contentHeight,
                   alignment: _preferCenterAlignment
                       ? Alignment.center
                       : AlignmentDirectional.topStart,
-                  clipBehavior: Clip.none,
-                  decoration: effectiveDeco,
-                  child: _buildGrid(innerSize),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 240),
+                    curve: Curves.easeInOutCubic,
+                    key: _cardKey,
+                    padding: padding,
+                    clipBehavior: Clip.none,
+                    decoration: effectiveDeco,
+                    child: SizedBox(
+                      width: innerSize.width,
+                      height: innerSize.height,
+                      child: _buildGrid(innerSize),
+                    ),
+                  ),
                 );
               },
             ),
