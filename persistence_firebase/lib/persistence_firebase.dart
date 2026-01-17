@@ -621,10 +621,13 @@ class FirestoreRemoteGateway implements RemoteGateway {
     if (entityType == 'divination') return 'divinations';
     if (entityType == 'seeker') return 'seekers';
     if (entityType == 'timing_divination') return 'timing_divinations';
-    if (entityType == 'seeker_divination_map') return 'seeker_divination_mappers';
-    if (entityType == 'seeker_divination_mapper') return 'seeker_divination_mappers';
+    if (entityType == 'seeker_divination_map')
+      return 'seeker_divination_mappers';
+    if (entityType == 'seeker_divination_mapper')
+      return 'seeker_divination_mappers';
     if (entityType == 'divination_panel_map') return 'divination_panel_mappers';
-    if (entityType == 'divination_panel_mapper') return 'divination_panel_mappers';
+    if (entityType == 'divination_panel_mapper')
+      return 'divination_panel_mappers';
     return entityType;
   }
 
@@ -807,13 +810,15 @@ class FirestoreRemoteGateway implements RemoteGateway {
   SyncError _mapFirebaseException(FirebaseException e) {
     final code = e.code;
     if (code == 'permission-denied' || code == 'unauthenticated') {
-      return SyncError(code: SyncErrorCode.permission, message: e.message ?? code);
+      return SyncError(
+          code: SyncErrorCode.permission, message: e.message ?? code);
     }
     if (code == 'unavailable' || code == 'deadline-exceeded') {
       return SyncError(code: SyncErrorCode.network, message: e.message ?? code);
     }
     if (code == 'failed-precondition') {
-      return SyncError(code: SyncErrorCode.invalidData, message: e.message ?? code);
+      return SyncError(
+          code: SyncErrorCode.invalidData, message: e.message ?? code);
     }
     return SyncError(code: SyncErrorCode.unknown, message: e.message ?? code);
   }

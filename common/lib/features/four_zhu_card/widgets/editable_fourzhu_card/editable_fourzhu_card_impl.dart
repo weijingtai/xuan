@@ -2297,10 +2297,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       }
 
       if (rPayload is TextRowPayload) {
-        final isHeaderRow = rPayload.rowType == RowType.columnHeaderRow;
-        final titleWidget = isHeaderRow && rPayload is ColumnHeaderRowPayload
-            ? _genderText(rPayload.gender)
-            : _rowTitlePillarText(rPayload);
+        final titleWidget = _rowTitlePillarText(rPayload);
         return SizedBox(
           width: rowTitleWidth,
           height: rowSize.height,
@@ -3177,15 +3174,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
                               rPayload?.rowType == RowType.columnHeaderRow;
                           if (isHeaderRow &&
                               rPayload is ColumnHeaderRowPayload) {
-                            final titleWidget = _genderText(rPayload.gender);
-                            return _cell(
-                              rowSize,
-                              Center(child: titleWidget),
-                              verticalPadding: _getRowPadding(rowName),
-                              horizontalPadding: _getRowHorizontalPadding(
-                                rowName,
-                              ),
-                            );
+                            return _rowTitlePillarText(rPayload);
                           } else if (rPayload is TextRowPayload) {
                             return _rowTitlePillarText(rPayload);
                           } else {
@@ -5370,24 +5359,6 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
     );
   }
 
-  /// Builds gender label text with optional global typography overrides.
-  ///
-  /// Parameters:
-  /// - [gender]: The `Gender` enum to display.
-  ///
-  /// Returns: A `Text` widget styled by `_resolveTextStyle`.
-  Text _genderText(Gender gender) {
-    final theme = widget.themeNotifier.value;
-    final typography = theme.typography;
-    final label = FourZhuText.zaoLabelForGender(gender);
-    final style = typography.rowTitle.toTextStyle(
-      char: label,
-      brightness: widget.brightnessNotifier.value,
-      colorPreviewMode: widget.colorPreviewModeNotifier.value,
-    );
-    return Text(label, style: style);
-  }
-
   /// Builds row title text with optional global typography overrides.
   ///
   /// Parameters:
@@ -5397,7 +5368,25 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _rowTitleText(String s) => EditableSingleTextCell(
       text: s, style: TextStyle(fontSize: 16, color: Colors.pink));
   Widget _rowTitlePillarText(TextRowPayload textRowPayload) {
-    // return multiLineCell(size: , cellStyleConfig: widget.themeNotifier.value.typography.rowTitle, mainTextStyleConfig: mainTextStyleConfig, content: content)
+    if (textRowPayload.rowType == RowType.columnHeaderRow) {
+      final row = _metricsSnapshotNotifier.value.rows.values
+          .where((t) => t.rowType == textRowPayload.rowType)
+          .first;
+      final rowHeight = row.height;
+      final theme = widget.themeNotifier.value;
+      final mainTextStyleConfig = theme.typography.rowTitle;
+      final cellStyleConfig = theme.cell.rowTitleCellConfig;
+      final gender = textRowPayload is ColumnHeaderRowPayload
+          ? textRowPayload.gender
+          : widget.gender;
+
+      return multiLineCell(
+        size: Size(rowTitleWidth, rowHeight),
+        cellStyleConfig: cellStyleConfig,
+        mainTextStyleConfig: mainTextStyleConfig,
+        content: FourZhuText.zaoLabelForGender(gender),
+      );
+    }
 
     var row = _metricsSnapshotNotifier.value.rows.values
         .where((t) => t.rowType == textRowPayload.rowType)

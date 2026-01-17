@@ -33,6 +33,29 @@ class FourZhuEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        Provider<LayoutTemplateLocalDataSource>(
+          create: (ctx) {
+            OutboxStore? outboxStore;
+            try {
+              outboxStore = ctx.read<OutboxStore>();
+            } catch (_) {
+              outboxStore = null;
+            }
+
+            SyncLogger? logger;
+            try {
+              logger = ctx.read<SyncLogger>();
+            } catch (_) {
+              logger = null;
+            }
+
+            return LayoutTemplateLocalDataSource(
+              ctx.read<AppDatabase>(),
+              outboxStore: outboxStore,
+              logger: logger,
+            );
+          },
+        ),
         ChangeNotifierProvider<FourZhuEditorViewModel>(
           create: (ctx) {
             final localDataSource = ctx.read<LayoutTemplateLocalDataSource>();
