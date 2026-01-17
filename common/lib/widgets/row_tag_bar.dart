@@ -106,6 +106,16 @@ class RowTagBar extends StatelessWidget {
           label: '空亡',
         ),
         RowData(
+          rowId: 'gu',
+          rowType: RowType.gu,
+          label: '孤',
+        ),
+        RowData(
+          rowId: 'xu',
+          rowType: RowType.xu,
+          label: '虚',
+        ),
+        RowData(
           rowId: 'xun_shou',
           rowType: RowType.xunShou,
           label: '旬首',

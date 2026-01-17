@@ -243,6 +243,104 @@ class YiMaRowStrategy extends RowComputationStrategy {
   }
 }
 
+/// 孤行策略：按“该柱所在旬”的旬空（空亡）计算。
+///
+/// 定义：旬空的地支即“孤”。
+class GuRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.gu;
+
+  @override
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
+
+  /// 计算各柱的“孤”文本。
+  ///
+  /// 参数：
+  /// - input: 使用每柱的 `PillarContent.jiaZi.getKongWang()` 推导旬空。
+  ///
+  /// 返回：每柱对应的旬空地支（两个字，例如“戌亥”）。
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      values[pillar.id] = computeSingleValue(
+        pillar.jiaZi,
+        input.dayJiaZi,
+        input.gender,
+      );
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  /// 计算单柱的“孤”展示值。
+  ///
+  /// 参数：
+  /// - pillarJiaZi: 该柱干支。
+  /// - dayJiaZi: 日柱干支（此策略不使用，但保留签名以保持一致）。
+  /// - gender: 性别（此策略不使用，但保留签名以保持一致）。
+  ///
+  /// 返回：旬空地支（两个字）。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final kw = pillarJiaZi.getKongWang();
+    return '${kw.item1.value}${kw.item2.value}';
+  }
+}
+
+/// 虚行策略：按“孤位对冲（六冲）”计算。
+///
+/// 定义：虚 = 孤位的六冲。
+class XuRowStrategy extends RowComputationStrategy {
+  @override
+  RowType get rowType => RowType.xu;
+
+  @override
+  String get defaultLabel => ConstantValuesUtils.labelForRowType(rowType);
+
+  /// 计算各柱的“虚”文本。
+  ///
+  /// 参数：
+  /// - input: 先取该柱旬空（孤），再做六冲得到虚。
+  ///
+  /// 返回：每柱对应的虚位地支（两个字，例如“辰巳”）。
+  @override
+  RowComputationResult compute(RowComputationInput input) {
+    final Map<String, String> values = {};
+    for (final pillar in input.pillars) {
+      values[pillar.id] = computeSingleValue(
+        pillar.jiaZi,
+        input.dayJiaZi,
+        input.gender,
+      );
+    }
+    return RowComputationResult(
+      rowType: rowType,
+      rowLabel: defaultLabel,
+      perPillarValues: values,
+    );
+  }
+
+  /// 计算单柱的“虚”展示值。
+  ///
+  /// 参数：
+  /// - pillarJiaZi: 该柱干支。
+  /// - dayJiaZi: 日柱干支（此策略不使用，但保留签名以保持一致）。
+  /// - gender: 性别（此策略不使用，但保留签名以保持一致）。
+  ///
+  /// 返回：虚位地支（两个字）。
+  @override
+  String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender) {
+    final kw = pillarJiaZi.getKongWang();
+    final z1 = kw.item1.sixChongZhi;
+    final z2 = kw.item2.sixChongZhi;
+    return '${z1.value}${z2.value}';
+  }
+}
+
 /// 示例策略：旬首（骨架示例，留给后续开发者填充实际算法）。
 class XunShouRowStrategy extends RowComputationStrategy {
   @override

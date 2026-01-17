@@ -893,6 +893,10 @@ class _OptionalRowItemState extends State<_OptionalRowItem> {
         return '纳音';
       case RowType.kongWang:
         return '空亡';
+      case RowType.gu:
+        return '孤';
+      case RowType.xu:
+        return '虚';
       case RowType.xunShou:
         return '旬首';
       case RowType.yiMa:

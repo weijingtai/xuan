@@ -60,6 +60,10 @@ enum RowType {
   naYin, // 纳音
   @JsonValue('kong_wang_row')
   kongWang, // 空亡
+  @JsonValue('gu_row')
+  gu, // 孤（旬空）
+  @JsonValue('xu_row')
+  xu, // 虚（孤位对冲）
   @JsonValue('xun_shou_row')
   xunShou, // 旬首
   @JsonValue('yi_ma_row')

@@ -163,6 +163,14 @@ class CardDataAdapter {
           final kw = content.jiaZi.getKongWang();
           text = '${kw.item1.name}${kw.item2.name}';
           break;
+        case RowType.gu:
+          final kw = content.jiaZi.getKongWang();
+          text = '${kw.item1.name}${kw.item2.name}';
+          break;
+        case RowType.xu:
+          final kw = content.jiaZi.getKongWang();
+          text = '${kw.item1.sixChongZhi.name}${kw.item2.sixChongZhi.name}';
+          break;
         case RowType.xunShou:
           text = content.jiaZi.xunHeader.name;
           break;

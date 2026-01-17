@@ -98,6 +98,8 @@ class FourZhuCardDemoViewModel extends ChangeNotifier {
       RowType.hiddenStemsTenGod: HiddenStemsTenGodsRowStrategy(),
       RowType.hiddenStems: HiddenStemsRowStrategy(),
       RowType.kongWang: KongWangRowStrategy(),
+      RowType.gu: GuRowStrategy(),
+      RowType.xu: XuRowStrategy(),
       RowType.naYin: NaYinRowStrategy(),
       RowType.xunShou: XunShouRowStrategy(),
       RowType.yiMa: YiMaRowStrategy(),
