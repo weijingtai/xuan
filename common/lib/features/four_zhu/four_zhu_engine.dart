@@ -1,8 +1,11 @@
+import 'package:common/enums/enum_di_zhi.dart';
 import 'package:common/enums/enum_jia_zi.dart';
 import 'package:common/enums/enum_tian_gan.dart';
+import 'package:common/enums/enum_twenty_four_jie_qi.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:lunar/lunar.dart';
+import 'package:tuple/tuple.dart';
 
 import 'strategies/day_pillar_strategy.dart';
 import 'strategies/hour_pillar_strategy.dart';
@@ -119,4 +122,257 @@ enum ChildHourMode {
   distinguishFixed,
   /// 以 0:00 开始的两小时一支全天分段（子0:00–1:59）
   bandsStart0,
+}
+
+class LifeBodyHouseCalculator {
+  static Tuple2<TianGan, DiZhi> calculateLifeHouse({
+    required DateTime birthDateTime,
+    required EightChars eightChars,
+  }) {
+    return _calculateHouse(
+      birthDateTime: birthDateTime,
+      eightChars: eightChars,
+      isLifeHouse: true,
+    );
+  }
+
+  static Tuple2<TianGan, DiZhi> calculateBodyHouse({
+    required DateTime birthDateTime,
+    required EightChars eightChars,
+  }) {
+    return _calculateHouse(
+      birthDateTime: birthDateTime,
+      eightChars: eightChars,
+      isLifeHouse: false,
+    );
+  }
+}
+
+Tuple2<TianGan, DiZhi> _calculateHouse({
+  required DateTime birthDateTime,
+  required EightChars eightChars,
+  required bool isLifeHouse,
+}) {
+  final monthZhi = eightChars.monthDiZhi;
+  final hourZhi = eightChars.hourDiZhi;
+
+  final m = _monthOrderForHouse(
+    birthDateTime: birthDateTime,
+    baziMonthZhi: monthZhi,
+  );
+  final h = _diZhiToHouseOrder(hourZhi);
+
+  final sum = m + h;
+  final raw = isLifeHouse ? (14 - sum) : sum;
+  final palaceOrder = _normalizeHouseOrder(raw);
+  final palaceZhi = _houseOrderToDiZhi(palaceOrder);
+
+  final startGanAtYin = eightChars.yearTianGan.getFiveTiger();
+  final palaceGan = _shiftTianGan(
+    start: startGanAtYin,
+    offset: palaceOrder - 1,
+  );
+
+  final monthKongWang = eightChars.month.getKongWang();
+  final isKongWang =
+      palaceZhi == monthKongWang.item1 || palaceZhi == monthKongWang.item2;
+
+  return Tuple2(isKongWang ? TianGan.KONG_WANG : palaceGan, palaceZhi);
+}
+
+int _monthOrderForHouse({
+  required DateTime birthDateTime,
+  required DiZhi baziMonthZhi,
+}) {
+  final zhongQi = _zhongQiForMonthZhi(baziMonthZhi);
+  final zhongQiAt = _findJieQiTimeNear(
+    around: birthDateTime,
+    target: zhongQi,
+  );
+
+  if (birthDateTime.isBefore(zhongQiAt)) {
+    return _diZhiToHouseOrder(baziMonthZhi);
+  }
+
+  return _diZhiToHouseOrder(_nextHouseMonthZhi(baziMonthZhi));
+}
+
+TwentyFourJieQi _zhongQiForMonthZhi(DiZhi monthZhi) {
+  switch (monthZhi) {
+    case DiZhi.YIN:
+      return TwentyFourJieQi.YU_SHUI;
+    case DiZhi.MAO:
+      return TwentyFourJieQi.CHUN_FEN;
+    case DiZhi.CHEN:
+      return TwentyFourJieQi.GU_YU;
+    case DiZhi.SI:
+      return TwentyFourJieQi.XIAO_MAN;
+    case DiZhi.WU:
+      return TwentyFourJieQi.XIA_ZHI;
+    case DiZhi.WEI:
+      return TwentyFourJieQi.DA_SHU;
+    case DiZhi.SHEN:
+      return TwentyFourJieQi.CHU_SHU;
+    case DiZhi.YOU:
+      return TwentyFourJieQi.QIU_FEN;
+    case DiZhi.XU:
+      return TwentyFourJieQi.SHUANG_JIANG;
+    case DiZhi.HAI:
+      return TwentyFourJieQi.XIAO_XUE;
+    case DiZhi.ZI:
+      return TwentyFourJieQi.DONG_ZHI;
+    case DiZhi.CHOU:
+      return TwentyFourJieQi.DA_HAN;
+  }
+}
+
+DiZhi _nextHouseMonthZhi(DiZhi zhi) {
+  const seq = <DiZhi>[
+    DiZhi.YIN,
+    DiZhi.MAO,
+    DiZhi.CHEN,
+    DiZhi.SI,
+    DiZhi.WU,
+    DiZhi.WEI,
+    DiZhi.SHEN,
+    DiZhi.YOU,
+    DiZhi.XU,
+    DiZhi.HAI,
+    DiZhi.ZI,
+    DiZhi.CHOU,
+  ];
+
+  final idx = seq.indexOf(zhi);
+  if (idx < 0) return zhi;
+
+  return seq[(idx + 1) % seq.length];
+}
+
+DateTime _findJieQiTimeNear({
+  required DateTime around,
+  required TwentyFourJieQi target,
+}) {
+  final matches = <DateTime>[];
+  final pivot = DateTime(around.year, around.month, around.day);
+
+  for (int i = -40; i <= 40; i++) {
+    final d = pivot.add(Duration(days: i));
+    final l = Lunar.fromDate(d);
+    final candidates = [
+      l.getPrevJieQi(),
+      l.getPrevJieQi(true),
+      l.getNextJieQi(),
+      l.getNextJieQi(true),
+    ];
+
+    for (final jq in candidates) {
+      if (jq.getName() != target.name) continue;
+      final str = jq.getSolar().toYmdHms();
+      final at = DateTime.parse(str.replaceFirst(' ', 'T'));
+      matches.add(at);
+    }
+  }
+
+  if (matches.isEmpty) return around;
+
+  matches.sort((a, b) {
+    final da = a.difference(around).inMilliseconds.abs();
+    final db = b.difference(around).inMilliseconds.abs();
+    return da.compareTo(db);
+  });
+  return matches.first;
+}
+
+int _diZhiToHouseOrder(DiZhi zhi) {
+  switch (zhi) {
+    case DiZhi.YIN:
+      return 1;
+    case DiZhi.MAO:
+      return 2;
+    case DiZhi.CHEN:
+      return 3;
+    case DiZhi.SI:
+      return 4;
+    case DiZhi.WU:
+      return 5;
+    case DiZhi.WEI:
+      return 6;
+    case DiZhi.SHEN:
+      return 7;
+    case DiZhi.YOU:
+      return 8;
+    case DiZhi.XU:
+      return 9;
+    case DiZhi.HAI:
+      return 10;
+    case DiZhi.ZI:
+      return 11;
+    case DiZhi.CHOU:
+      return 12;
+  }
+}
+
+DiZhi _houseOrderToDiZhi(int order) {
+  switch (order) {
+    case 1:
+      return DiZhi.YIN;
+    case 2:
+      return DiZhi.MAO;
+    case 3:
+      return DiZhi.CHEN;
+    case 4:
+      return DiZhi.SI;
+    case 5:
+      return DiZhi.WU;
+    case 6:
+      return DiZhi.WEI;
+    case 7:
+      return DiZhi.SHEN;
+    case 8:
+      return DiZhi.YOU;
+    case 9:
+      return DiZhi.XU;
+    case 10:
+      return DiZhi.HAI;
+    case 11:
+      return DiZhi.ZI;
+    case 12:
+      return DiZhi.CHOU;
+  }
+
+  return DiZhi.CHOU;
+}
+
+int _normalizeHouseOrder(int raw) {
+  int out = raw;
+  while (out <= 0) {
+    out += 12;
+  }
+  while (out > 12) {
+    out -= 12;
+  }
+  return out;
+}
+
+TianGan _shiftTianGan({
+  required TianGan start,
+  required int offset,
+}) {
+  const seq = <TianGan>[
+    TianGan.JIA,
+    TianGan.YI,
+    TianGan.BING,
+    TianGan.DING,
+    TianGan.WU,
+    TianGan.JI,
+    TianGan.GENG,
+    TianGan.XIN,
+    TianGan.REN,
+    TianGan.GUI,
+  ];
+
+  final idx = seq.indexOf(start);
+  if (idx < 0) return start;
+
+  return seq[(idx + offset) % seq.length];
 }
