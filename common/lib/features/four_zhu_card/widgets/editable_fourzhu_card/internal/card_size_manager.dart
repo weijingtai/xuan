@@ -16,6 +16,7 @@ class CardSizeManager {
   EditableFourZhuCardTheme theme;
   CardPayload payload;
   final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  final Map<PillarType, PillarComputationStrategy> pillarStrategyMapper;
 
   // 缓存的快照 (使用 EnhancedCardMetricsSnapshot 以支持拖拽)
   EnhancedCardMetricsSnapshot? _cachedSnapshot;
@@ -42,6 +43,7 @@ class CardSizeManager {
     required this.theme,
     required this.payload,
     required this.rowStrategyMapper,
+    this.pillarStrategyMapper = const <PillarType, PillarComputationStrategy>{},
     this.showGripRows = true,
     this.showGripColumns = true,
     this.cardPadding = EdgeInsets.zero,
@@ -141,6 +143,7 @@ class CardSizeManager {
     final specMap = CardDataAdapter.buildCellTextSpecMap(
       payload: payload,
       rowStrategyMapper: rowStrategyMapper,
+      pillarStrategyMapper: pillarStrategyMapper,
       typography: theme.typography,
     );
 

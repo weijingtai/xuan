@@ -88,6 +88,53 @@ abstract class RowComputationStrategy {
   String computeSingleValue(JiaZi pillarJiaZi, JiaZi dayJiaZi, Gender gender);
 }
 
+class PillarComputationInput {
+  const PillarComputationInput({
+    required this.pillar,
+    required this.pillars,
+    required this.dayJiaZi,
+    required this.gender,
+    this.isShortName = false,
+    this.referenceDateTime,
+    this.context = const {},
+  });
+
+  final PillarContent pillar;
+  final List<PillarContent> pillars;
+  final JiaZi dayJiaZi;
+  final Gender gender;
+  final DateTime? referenceDateTime;
+  final bool isShortName;
+  final Map<String, dynamic> context;
+}
+
+class PillarComputationResult {
+  PillarComputationResult({
+    required this.pillarType,
+    required this.pillarLabel,
+    required this.perRowValues,
+  });
+
+  final PillarType pillarType;
+  final String pillarLabel;
+  final Map<RowType, String> perRowValues;
+}
+
+abstract class PillarComputationStrategy {
+  PillarType get pillarType;
+
+  String get defaultLabel;
+
+  PillarComputationResult compute(PillarComputationInput input);
+
+  String? computeSingleValue(
+    RowType rowType,
+    JiaZi pillarJiaZi,
+    JiaZi dayJiaZi,
+    Gender gender,
+  );
+}
+
 /// 示例策略：空亡（占位示例，具体算法可在此实现或替换）。
 class KongWangRowStrategy extends RowComputationStrategy {
   @override

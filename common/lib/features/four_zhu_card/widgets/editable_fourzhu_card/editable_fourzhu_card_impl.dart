@@ -62,6 +62,7 @@ const int _kShadowFollowSentinelRGB = 0x00FEED;
 class EditableFourZhuCardV3 extends StatefulWidget {
   final JiaZi dayGanZhi;
   final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  final Map<PillarType, PillarComputationStrategy> pillarStrategyMapper;
   final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
   final ValueNotifier<CardPayload> cardPayloadNotifier;
 
@@ -118,6 +119,7 @@ class EditableFourZhuCardV3 extends StatefulWidget {
     required this.cardPayloadNotifier,
     required this.paddingNotifier,
     required this.rowStrategyMapper,
+    this.pillarStrategyMapper = const <PillarType, PillarComputationStrategy>{},
     required this.gender,
     this.onRowsReordered,
     this.onReorderRow,
@@ -193,6 +195,9 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
   Map<RowType, RowComputationStrategy> get rowStrategyMapper =>
       widget.rowStrategyMapper;
+
+  Map<PillarType, PillarComputationStrategy> get pillarStrategyMapper =>
+      widget.pillarStrategyMapper;
 
   /// 批处理重建调度：在微任务中合并多次状态更新为一次 setState。
   ///
@@ -453,16 +458,31 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
       for (final p in pillars) {
         int cc = 0;
         if (rt == RowType.columnHeaderRow) {
-          final label = _pillarLabelFromPayload(p);
+          final label = (p is ContentPillarPayload && dayJiaZi != null)
+              ? (pillarStrategyMapper[p.pillarType]?.computeSingleValue(
+                      RowType.columnHeaderRow,
+                      p.pillarContent.jiaZi,
+                      dayJiaZi,
+                      widget.gender,
+                    ) ??
+                  _pillarLabelFromPayload(p))
+              : _pillarLabelFromPayload(p);
           cc = label.length;
         } else if (rt == RowType.heavenlyStem || rt == RowType.earthlyBranch) {
           cc = 1;
         } else if (rt != RowType.separator) {
           final pjz = _pillarJiaZiFromPayload(p);
+          final override = pillarStrategyMapper[p.pillarType]?.computeSingleValue(
+            rt,
+            pjz,
+            dayJiaZi ?? pjz,
+            widget.gender,
+          );
           final text = (rt == RowType.tenGod && p.pillarType == PillarType.day)
               ? FourZhuText.zaoLabelForGender(widget.gender)
-              : rowStrategyMapper[rt]
-                  ?.computeSingleValue(pjz, dayJiaZi ?? pjz, widget.gender);
+              : override ??
+                  rowStrategyMapper[rt]
+                      ?.computeSingleValue(pjz, dayJiaZi ?? pjz, widget.gender);
           cc = (text ?? '').length;
         }
         specMap['${r.uuid}|${p.uuid}'] = CellTextSpec(
@@ -2331,6 +2351,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
     return _buildPillarsEachCell(
       pillarType: pillarPayload.pillarType,
+      pillarTitle: _pillarLabelFromPayload(pillarPayload),
       rowType: rowType,
       size: cm!.size,
       absRowIdx: absRowIdx,
@@ -3329,6 +3350,7 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
   Widget _buildPillarsEachCell(
       {RowType? rowType,
       required PillarType pillarType,
+      required String pillarTitle,
       required Size size,
       required int absRowIdx,
       required List<RowPayload> rowPayloads,
@@ -3348,13 +3370,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
           final theme = widget.themeNotifier.value;
           final typography = theme.typography;
           final cellStyleConfig = theme.cell.getBy(RowType.columnHeaderRow);
+          final override = pillarStrategyMapper[pillarType]?.computeSingleValue(
+            RowType.columnHeaderRow,
+            pillarJiaZi,
+            dayJiaZi,
+            gender,
+          );
           cell = multiLineCell(
             size: Size(size.width, size.height),
             cellStyleConfig: cellStyleConfig,
             mainTextStyleConfig: typography.getCellContentBy(
               RowType.columnHeaderRow,
             ),
-            content: pillarType.name,
+            content: override ?? pillarTitle,
           );
           break;
 
@@ -3409,12 +3437,19 @@ class _EditableFourZhuCardV3State extends State<EditableFourZhuCardV3> {
 
           break;
         default:
+          final override = pillarStrategyMapper[pillarType]?.computeSingleValue(
+            rowType,
+            pillarJiaZi,
+            dayJiaZi,
+            gender,
+          );
           final text =
               (rowType == RowType.tenGod && pillarType == PillarType.day)
                   ? FourZhuText.zaoLabelForGender(gender)
-                  : rowStrategyMapper[rowType]
-                          ?.computeSingleValue(pillarJiaZi, dayJiaZi, gender) ??
-                      "-";
+                  : override ??
+                      rowStrategyMapper[rowType]
+                              ?.computeSingleValue(pillarJiaZi, dayJiaZi, gender) ??
+                          "-";
           final theme = widget.themeNotifier.value;
           final cellStyleConfig = theme.cell.getBy(rowType);
           final typography = theme.typography;

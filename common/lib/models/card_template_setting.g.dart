@@ -9,6 +9,8 @@ part of 'card_template_setting.dart';
 CardTemplateSettingOverride _$CardTemplateSettingOverrideFromJson(
         Map<String, dynamic> json) =>
     CardTemplateSettingOverride(
+      isHiddenTitlePillar: json['isHiddenTitlePillar'] as bool?,
+      isHiddenTitleRow: json['isHiddenTitleRow'] as bool?,
       showTitleColumn: json['showTitleColumn'] as bool?,
       showInCellTitleGlobal: json['showInCellTitleGlobal'] as bool?,
       showInCellTitleByRowType: _rowTypeBoolMapFromJson(
@@ -20,6 +22,8 @@ CardTemplateSettingOverride _$CardTemplateSettingOverrideFromJson(
 Map<String, dynamic> _$CardTemplateSettingOverrideToJson(
         CardTemplateSettingOverride instance) =>
     <String, dynamic>{
+      'isHiddenTitlePillar': instance.isHiddenTitlePillar,
+      'isHiddenTitleRow': instance.isHiddenTitleRow,
       'showTitleColumn': instance.showTitleColumn,
       'showInCellTitleGlobal': instance.showInCellTitleGlobal,
       'showInCellTitleByRowType':
@@ -41,6 +45,8 @@ CardTemplateSetting _$CardTemplateSettingFromJson(Map<String, dynamic> json) =>
           ? null
           : DateTime.parse(json['deletedAt'] as String),
       templateUuid: json['templateUuid'] as String,
+      isHiddenTitlePillar: json['isHiddenTitlePillar'] as bool?,
+      isHiddenTitleRow: json['isHiddenTitleRow'] as bool?,
       showTitleColumn: json['showTitleColumn'] as bool?,
       showInCellTitleGlobal: json['showInCellTitleGlobal'] as bool?,
       showInCellTitleByRowType: _rowTypeBoolMapFromJson(
@@ -58,6 +64,8 @@ Map<String, dynamic> _$CardTemplateSettingToJson(
       'modifiedAt': instance.modifiedAt.toIso8601String(),
       'deletedAt': instance.deletedAt?.toIso8601String(),
       'templateUuid': instance.templateUuid,
+      'isHiddenTitlePillar': instance.isHiddenTitlePillar,
+      'isHiddenTitleRow': instance.isHiddenTitleRow,
       'showTitleColumn': instance.showTitleColumn,
       'showInCellTitleGlobal': instance.showInCellTitleGlobal,
       'showInCellTitleByRowType':

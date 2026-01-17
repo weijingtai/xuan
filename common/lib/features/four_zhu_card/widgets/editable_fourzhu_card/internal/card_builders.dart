@@ -298,6 +298,7 @@ class CardBuilders {
       rowType: rowPayload.rowType,
       payload: payload,
       rowStrategyMapper: sizeManager.rowStrategyMapper,
+      pillarStrategyMapper: sizeManager.pillarStrategyMapper,
     );
 
     for (int i = 0; i < pillarOrder.length; i++) {

@@ -16,6 +16,7 @@ class CardDataAdapter {
   static Map<String, CellTextSpec> buildCellTextSpecMap({
     required CardPayload payload,
     required Map<RowType, RowComputationStrategy> rowStrategyMapper,
+    Map<PillarType, PillarComputationStrategy>? pillarStrategyMapper,
     required TypographySection typography,
   }) {
     final specMap = <String, CellTextSpec>{};
@@ -24,15 +25,19 @@ class CardDataAdapter {
       final row = payload.rowMap[rowUuid];
       if (row == null) continue;
 
+      final rowValues = getRowValues(
+        rowType: row.rowType,
+        payload: payload,
+        rowStrategyMapper: rowStrategyMapper,
+        pillarStrategyMapper: pillarStrategyMapper,
+      );
+
       for (final pillarUuid in payload.pillarOrderUuid) {
         final pillar = payload.pillarMap[pillarUuid];
         if (pillar == null) continue;
 
-        final charCount = _calculateCharCount(
-          rowType: row.rowType,
-          pillarType: pillar.pillarType,
-          rowStrategyMapper: rowStrategyMapper,
-        );
+        final content = rowValues[pillarUuid] ?? '';
+        final charCount = content.length;
 
         final fontSize = typography
             .getCellContentBy(row.rowType)
@@ -56,46 +61,50 @@ class CardDataAdapter {
     required RowType rowType,
     required CardPayload payload,
     required Map<RowType, RowComputationStrategy> rowStrategyMapper,
+    Map<PillarType, PillarComputationStrategy>? pillarStrategyMapper,
   }) {
     final values = <String, String>{};
 
+    final contentPillars = payload.pillarOrderUuid
+        .map((uuid) => payload.pillarMap[uuid])
+        .whereType<ContentPillarPayload>()
+        .toList(growable: false);
+
+    final pillars =
+        contentPillars.map((p) => p.pillarContent).toList(growable: false);
+
+    final ContentPillarPayload? dayPillar = contentPillars.isNotEmpty
+        ? contentPillars.firstWhere(
+            (p) => p.pillarType == PillarType.day,
+            orElse: () => contentPillars.first,
+          )
+        : null;
+
+    final dayJiaZi = dayPillar?.pillarContent.jiaZi;
+
+    final textRowPayloads = payload.rowMap.values
+        .whereType<TextRowPayload>()
+        .where((r) => r.rowType == rowType);
+
+    final tenGodLabelType =
+        textRowPayloads.isNotEmpty ? textRowPayloads.first.tenGodLabelType : 'name';
+
+    final isShortName = tenGodLabelType == 'singleName';
+
     // 1. 优先使用 Strategy（仅对内容柱计算）
     final strategy = rowStrategyMapper[rowType];
-    if (strategy != null) {
-      final contentPillars = payload.pillarOrderUuid
-          .map((uuid) => payload.pillarMap[uuid])
-          .whereType<ContentPillarPayload>()
-          .toList(growable: false);
+    if (strategy != null && contentPillars.isNotEmpty && dayPillar != null) {
+      final input = RowComputationInput(
+        pillars: pillars,
+        dayJiaZi: dayPillar.pillarContent.jiaZi,
+        gender: payload.gender,
+        isShortName: isShortName,
+      );
 
-      if (contentPillars.isNotEmpty) {
-        final pillars =
-            contentPillars.map((p) => p.pillarContent).toList(growable: false);
+      final result = strategy.compute(input);
 
-        final dayPillar = contentPillars.firstWhere(
-          (p) => p.pillarType == PillarType.day,
-          orElse: () => contentPillars.first,
-        );
-
-        final textRowPayloads = payload.rowMap.values
-            .whereType<TextRowPayload>()
-            .where((r) => r.rowType == rowType);
-
-        final tenGodLabelType = textRowPayloads.isNotEmpty
-            ? textRowPayloads.first.tenGodLabelType
-            : 'name';
-
-        final input = RowComputationInput(
-          pillars: pillars,
-          dayJiaZi: dayPillar.pillarContent.jiaZi,
-          gender: payload.gender,
-          isShortName: tenGodLabelType == 'singleName',
-        );
-
-        final result = strategy.compute(input);
-
-        for (final p in contentPillars) {
-          values[p.uuid] = result.perPillarValues[p.pillarContent.id] ?? '';
-        }
+      for (final p in contentPillars) {
+        values[p.uuid] = result.perPillarValues[p.pillarContent.id] ?? '';
       }
     }
 
@@ -118,6 +127,20 @@ class CardDataAdapter {
       }
 
       if (pillar is! ContentPillarPayload) continue;
+
+      if (pillarStrategyMapper != null && dayJiaZi != null) {
+        final override = pillarStrategyMapper[pillar.pillarType]?.computeSingleValue(
+          rowType,
+          pillar.pillarContent.jiaZi,
+          dayJiaZi,
+          payload.gender,
+        );
+        if (override != null) {
+          values[pillar.uuid] = override;
+          continue;
+        }
+      }
+
       if (values.containsKey(pillar.uuid)) continue;
 
       final content = pillar.pillarContent;
@@ -172,34 +195,4 @@ class CardDataAdapter {
     );
   }
 
-  /// 计算单元格字符数
-  static int _calculateCharCount({
-    required RowType rowType,
-    required PillarType pillarType,
-    required Map<RowType, RowComputationStrategy> rowStrategyMapper,
-  }) {
-    // 简化实现:根据行类型返回典型字符数
-    switch (rowType) {
-      case RowType.heavenlyStem:
-      case RowType.earthlyBranch:
-        return 1; // 单个天干/地支字符
-      case RowType.tenGod:
-        return 2; // 十神通常2个字
-      case RowType.naYin:
-        return 3; // 纳音通常3个字
-      case RowType.kongWang:
-        return 2; // 空亡2个字
-      case RowType.hiddenStems:
-      case RowType.hiddenStemsPrimary:
-      case RowType.hiddenStemsSecondary:
-      case RowType.hiddenStemsTertiary:
-        return 3; // 藏干通常3个字
-      case RowType.columnHeaderRow:
-        return 4; // 列标题
-      case RowType.separator:
-        return 0; // 分隔线无文字
-      default:
-        return 2; // 默认2个字
-    }
-  }
 }

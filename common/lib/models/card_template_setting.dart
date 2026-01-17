@@ -8,11 +8,16 @@ part 'card_template_setting.g.dart';
 @JsonSerializable(explicitToJson: true)
 class CardTemplateSettingOverride {
   const CardTemplateSettingOverride({
+    this.isHiddenTitlePillar,
+    this.isHiddenTitleRow,
     this.showTitleColumn,
     this.showInCellTitleGlobal,
     this.showInCellTitleByRowType,
     this.activeColorMode,
   });
+
+  final bool? isHiddenTitlePillar;
+  final bool? isHiddenTitleRow;
 
   final bool? showTitleColumn;
   final bool? showInCellTitleGlobal;
@@ -35,6 +40,8 @@ class CardTemplateSetting {
     required this.modifiedAt,
     required this.deletedAt,
     required this.templateUuid,
+    this.isHiddenTitlePillar,
+    this.isHiddenTitleRow,
     this.showTitleColumn,
     this.showInCellTitleGlobal,
     this.showInCellTitleByRowType,
@@ -47,6 +54,9 @@ class CardTemplateSetting {
   final DateTime? deletedAt;
 
   final String templateUuid;
+
+  final bool? isHiddenTitlePillar;
+  final bool? isHiddenTitleRow;
 
   final bool? showTitleColumn;
   final bool? showInCellTitleGlobal;

@@ -32,10 +32,12 @@ import 'internal/card_size_manager.dart';
 /// - [paddingNotifier]: 内边距通知器
 /// - [showGripRows]: 是否显示行拖拽手柄
 /// - [showGripColumns]: 是否显示列拖拽手柄
+@Deprecated('已废弃：请使用 EditableFourZhuCardV3')
 class EditableFourZhuCardV4 extends StatefulWidget {
   final ValueNotifier<CardPayload> cardPayloadNotifier;
   final ValueNotifier<EditableFourZhuCardTheme> themeNotifier;
   final Map<RowType, RowComputationStrategy> rowStrategyMapper;
+  final Map<PillarType, PillarComputationStrategy> pillarStrategyMapper;
   final ValueNotifier<Brightness> brightnessNotifier;
   final ValueNotifier<ColorPreviewMode> colorPreviewModeNotifier;
   final ValueNotifier<EdgeInsets> paddingNotifier;
@@ -47,6 +49,7 @@ class EditableFourZhuCardV4 extends StatefulWidget {
     required this.cardPayloadNotifier,
     required this.themeNotifier,
     required this.rowStrategyMapper,
+    this.pillarStrategyMapper = const <PillarType, PillarComputationStrategy>{},
     required this.brightnessNotifier,
     required this.colorPreviewModeNotifier,
     required this.paddingNotifier,
@@ -90,6 +93,7 @@ class _EditableFourZhuCardV4State extends State<EditableFourZhuCardV4> {
       theme: widget.themeNotifier.value,
       payload: widget.cardPayloadNotifier.value,
       rowStrategyMapper: widget.rowStrategyMapper,
+      pillarStrategyMapper: widget.pillarStrategyMapper,
       showGripRows: widget.showGripRows,
       showGripColumns: widget.showGripColumns,
       cardPadding: widget.paddingNotifier.value,

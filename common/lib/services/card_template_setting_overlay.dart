@@ -14,7 +14,17 @@ class CardTemplateSettingOverlay {
 
     var nextTheme = baseTheme;
 
-    final showTitleColumn = effective.showTitleColumn;
+    final isHiddenTitlePillar = effective.isHiddenTitlePillar;
+    if (isHiddenTitlePillar != null &&
+        !isHiddenTitlePillar != nextTheme.displayHeaderRow) {
+      nextTheme =
+          nextTheme.copyWith(displayHeaderRow: !isHiddenTitlePillar);
+    }
+
+    final isHiddenTitleRow = effective.isHiddenTitleRow;
+    final showTitleColumn = isHiddenTitleRow != null
+        ? !isHiddenTitleRow
+        : effective.showTitleColumn;
     if (showTitleColumn != null &&
         showTitleColumn != nextTheme.displayRowTitleColumn) {
       nextTheme = nextTheme.copyWith(displayRowTitleColumn: showTitleColumn);
@@ -68,6 +78,8 @@ class CardTemplateSettingOverlay {
     int? skillId,
   }) {
     final global = CardTemplateSettingOverride(
+      isHiddenTitlePillar: setting.isHiddenTitlePillar,
+      isHiddenTitleRow: setting.isHiddenTitleRow,
       showTitleColumn: setting.showTitleColumn,
       showInCellTitleGlobal: setting.showInCellTitleGlobal,
       showInCellTitleByRowType: setting.showInCellTitleByRowType,
@@ -80,6 +92,9 @@ class CardTemplateSettingOverlay {
     if (skillOverride == null) return global;
 
     return CardTemplateSettingOverride(
+      isHiddenTitlePillar:
+          skillOverride.isHiddenTitlePillar ?? global.isHiddenTitlePillar,
+      isHiddenTitleRow: skillOverride.isHiddenTitleRow ?? global.isHiddenTitleRow,
       showTitleColumn: skillOverride.showTitleColumn ?? global.showTitleColumn,
       showInCellTitleGlobal:
           skillOverride.showInCellTitleGlobal ?? global.showInCellTitleGlobal,
