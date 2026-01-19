@@ -179,8 +179,10 @@ class _MemoryOutboxStore implements OutboxStore {
   final Set<String> _dead = <String>{};
   final Set<String> _success = <String>{};
 
-  @override
-  Future<int> backlogCount(String scopeUid) async {
+  final Map<String, StreamController<int>> _backlogControllersByScope =
+      <String, StreamController<int>>{};
+
+  int _backlogCountSync(String scopeUid) {
     var count = 0;
     for (final r in _recordsByOperationId.values) {
       if (r.scopeUid != scopeUid) continue;
@@ -189,6 +191,30 @@ class _MemoryOutboxStore implements OutboxStore {
       count += 1;
     }
     return count;
+  }
+
+  void _emitBacklog(String scopeUid) {
+    final c = _backlogControllersByScope[scopeUid];
+    if (c == null) return;
+    if (c.isClosed) return;
+    c.add(_backlogCountSync(scopeUid));
+  }
+
+  @override
+  Future<int> backlogCount(String scopeUid) async {
+    return _backlogCountSync(scopeUid);
+  }
+
+  @override
+  Stream<int> watchBacklogCount(String scopeUid) {
+    final controller = _backlogControllersByScope.putIfAbsent(
+      scopeUid,
+      () => StreamController<int>.broadcast(
+        sync: true,
+        onListen: () => _emitBacklog(scopeUid),
+      ),
+    );
+    return controller.stream;
   }
 
   @override
@@ -206,6 +232,7 @@ class _MemoryOutboxStore implements OutboxStore {
   @override
   Future<void> enqueue(OutboxRecord record) async {
     _recordsByOperationId.putIfAbsent(record.operationId, () => record);
+    _emitBacklog(record.scopeUid);
   }
 
   @override
@@ -221,6 +248,7 @@ class _MemoryOutboxStore implements OutboxStore {
     if (existing == null) return;
     _recordsByOperationId[operationId] = existing.copyWith(attempt: attempt);
     if (isDead) _dead.add(operationId);
+    _emitBacklog(existing.scopeUid);
   }
 
   @override
@@ -230,6 +258,7 @@ class _MemoryOutboxStore implements OutboxStore {
   }) async {
     if (_recordsByOperationId.containsKey(operationId)) {
       _success.add(operationId);
+      _emitBacklog(_recordsByOperationId[operationId]!.scopeUid);
     }
   }
 

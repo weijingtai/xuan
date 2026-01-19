@@ -4,7 +4,6 @@ import 'package:account/account.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
@@ -17,6 +16,7 @@ import 'package:common/datasource/sync_local_appliers.dart';
 import 'package:persistence_core/persistence_core.dart';
 import 'package:persistence_firebase/persistence_firebase.dart';
 
+import 'dev_yun_liu_table.dart';
 import 'firebase_options.dart';
 
 Future<void> main() async {
@@ -207,7 +207,8 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
           useMaterial3: true,
         ),
-        home: const AuthGate(),
+        // home: const AuthGate(),
+        home: const DevYunLiuTable(),
       ),
     );
   }
