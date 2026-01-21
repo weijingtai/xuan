@@ -1,6 +1,11 @@
+import 'package:common/enums.dart';
+import 'package:common/enums/enum_chinese_12_zodic.dart';
 import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
+import 'yun_liu_table_month_widget.dart';
+import 'yun_liu_table_year_header_cell_widget.dart';
 
 class _InkTheme {
   static const paper = Color(0xFFF7F2E8);
@@ -12,6 +17,60 @@ class _InkTheme {
   static Color wash([int a = 18]) => ink.withAlpha(a);
   static Color washHi([int a = 10]) => ink.withAlpha(a);
   static Color sealWash([int a = 44]) => seal.withAlpha(a);
+}
+
+class _DayCellDashedLinePainter extends CustomPainter {
+  final Color color;
+
+  const _DayCellDashedLinePainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    const dash = 3.0;
+    const gap = 2.5;
+
+    var y = 0.0;
+    while (y < size.height) {
+      final y2 = (y + dash).clamp(0.0, size.height);
+      canvas.drawLine(
+        Offset(size.width / 2, y),
+        Offset(size.width / 2, y2),
+        paint,
+      );
+      y = y2 + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DayCellDashedLinePainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
+}
+
+class _InkHoverRegion extends StatefulWidget {
+  final Widget Function(BuildContext context, bool isHovered) builder;
+
+  const _InkHoverRegion({required this.builder});
+
+  @override
+  State<_InkHoverRegion> createState() => _InkHoverRegionState();
+}
+
+class _InkHoverRegionState extends State<_InkHoverRegion> {
+  var _isHovered = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: widget.builder(context, _isHovered),
+    );
+  }
 }
 
 class InkFiveDimYunLiuTable extends StatefulWidget {
@@ -54,6 +113,50 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     return _yearStartBase + (daYunIndex * _yearCount) + yearIndex;
   }
 
+  JiaZi _jiaZiOfYear(int year) {
+    final list = JiaZi.listAll;
+    final raw = year - 1984;
+    final idx = ((raw % list.length) + list.length) % list.length;
+    return list[idx];
+  }
+
+  List<({TianGan gan, EnumTenGods hiddenGods})> _hiddenGansForSeed(int seed) {
+    final stems = TianGan.listAll;
+    final gods = EnumTenGods.values;
+
+    return <({TianGan gan, EnumTenGods hiddenGods})>[
+      (
+        gan: stems[seed % stems.length],
+        hiddenGods: gods[(seed + 1) % gods.length],
+      ),
+      (
+        gan: stems[(seed + 3) % stems.length],
+        hiddenGods: gods[(seed + 2) % gods.length],
+      ),
+      (
+        gan: stems[(seed + 6) % stems.length],
+        hiddenGods: gods[(seed + 3) % gods.length],
+      ),
+    ];
+  }
+
+  List<({TianGan gan, EnumTenGods tenGod})> _tenGodDetailsForSeed(int seed) {
+    final stems = TianGan.listAll;
+    final gods = EnumTenGods.values;
+
+    return <({TianGan gan, EnumTenGods tenGod})>[
+      (gan: stems[seed % stems.length], tenGod: gods[(seed + 1) % gods.length]),
+      (
+        gan: stems[(seed + 2) % stems.length],
+        tenGod: gods[(seed + 2) % gods.length],
+      ),
+      (
+        gan: stems[(seed + 4) % stems.length],
+        tenGod: gods[(seed + 3) % gods.length],
+      ),
+    ];
+  }
+
   int _calendarRows({required int year, required int month}) {
     final first = DateTime(year, month, 1);
     final next = DateTime(year, month + 1, 1);
@@ -67,14 +170,22 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     return '$daYunIndex-$monthIndex-$yearIndex';
   }
 
+  double _calendarPanelWidth({
+    required double yearsWidth,
+    required bool isPhone,
+  }) {
+    final maxW = isPhone ? 460.0 : 640.0;
+    return yearsWidth.clamp(300.0, maxW).toDouble();
+  }
+
   double _calendarRowHeight({
     required double availableWidth,
     required bool isPhone,
   }) {
     final cellW = availableWidth / 7;
-    final target = cellW * 0.98;
+    final target = cellW * 1.04;
     return target
-        .clamp(isPhone ? 50.0 : 56.0, isPhone ? 78.0 : 90.0)
+        .clamp(isPhone ? 72.0 : 84.0, isPhone ? 128.0 : 148.0)
         .toDouble();
   }
 
@@ -91,7 +202,11 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
 
     final innerPad = isPhone ? 12.0 : 16.0;
 
-    final availableWidth = (yearsWidth - (outerLR * 2) - (innerPad * 2))
+    final panelW = _calendarPanelWidth(
+      yearsWidth: yearsWidth,
+      isPhone: isPhone,
+    );
+    final availableWidth = (panelW - (outerLR * 2) - (innerPad * 2))
         .clamp(140.0, double.infinity)
         .toDouble();
     final rows = _calendarRows(year: year, month: month);
@@ -180,9 +295,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
         final isPhone = c.maxWidth < 600;
         final padding = isPhone ? 16.0 : 24.0;
 
-        final cellW = isPhone ? 60.0 : 100.0;
-        final cellH = isPhone ? 60.0 : 60.0;
-        final headerH = isPhone ? 44.0 : 48.0;
+        final cellW = 120.0;
+        final cellH = 96.0;
+        final headerH = 115.0;
         final monthAxisW = isPhone ? 56.0 : 72.0;
 
         return Container(
@@ -481,12 +596,6 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required bool isPhone,
   }) {
     final yearsWidth = _yearCount * cellW;
-    final headerStyle = TextStyle(
-      fontSize: isPhone ? 12 : 13,
-      color: _InkTheme.ink.withAlpha(220),
-      height: 1.0,
-      fontWeight: FontWeight.w600,
-    );
 
     return ScrollConfiguration(
       behavior: _InkScrollBehavior(),
@@ -502,33 +611,19 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 child: Row(
                   children: [
                     for (var i = 0; i < _yearCount; i++)
-                      Container(
+                      SizedBox(
                         width: cellW,
                         height: headerH,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            right: BorderSide(
-                              color: _inkBorderColor,
-                              width: 0.6,
-                            ),
-                            bottom: BorderSide(
-                              color: _inkBorderColor,
-                              width: 0.6,
-                            ),
+                        child: DaYunHeaderCell(
+                          year: _yearAt(daYunIndex, i),
+                          age: 28 + (_yearAt(daYunIndex, i) - _yearStartBase),
+                          yearGanZhi: _jiaZiOfYear(_yearAt(daYunIndex, i)),
+                          ganGod:
+                              EnumTenGods.values[(daYunIndex + i) %
+                                  EnumTenGods.values.length],
+                          hiddenGans: _hiddenGansForSeed(
+                            (daYunIndex * 37) + (i * 11),
                           ),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              _InkTheme.paperHi.withAlpha(230),
-                              Colors.white.withAlpha(110),
-                            ],
-                          ),
-                        ),
-                        child: Text(
-                          '${_yearAt(daYunIndex, i)}',
-                          style: headerStyle,
                         ),
                       ),
                   ],
@@ -577,131 +672,76 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
         _expandedMonthByDaYun[daYunIndex] == monthIndex &&
         _expandedYearByDaYun[daYunIndex] == yearIndex;
 
-    final bg = _fiveElementTint(
-      daYunIndex: daYunIndex,
-      yearIndex: yearIndex,
-      monthIndex: monthIndex,
-    );
-    final fontSize = isPhone ? 14.0 : 16.0;
+    final year = _yearAt(daYunIndex, yearIndex);
+    final seed = (daYunIndex * 97) + (yearIndex * 19) + (monthIndex * 7);
 
-    final gan = const ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
-    final zhi = const [
-      '子',
-      '丑',
-      '寅',
-      '卯',
-      '辰',
-      '巳',
-      '午',
-      '未',
-      '申',
-      '酉',
-      '戌',
-      '亥',
-    ];
-    final text =
-        '${gan[(daYunIndex + yearIndex + monthIndex) % gan.length]}'
-        '${zhi[(daYunIndex * 2 + yearIndex * 2 + monthIndex) % zhi.length]}';
+    final tianGan = TianGan.listAll[seed % TianGan.listAll.length];
+    final diZhi = DiZhi.values[(seed + 3) % DiZhi.values.length];
+    final tenGod = EnumTenGods.values[(seed + 5) % EnumTenGods.values.length];
+    final tenGodDetails = _tenGodDetailsForSeed(seed);
 
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
-      onTap: () async {
-        setState(() {
-          if (isExpanded) {
-            _selectedDateByCalendar.remove(
-              _calendarId(daYunIndex, monthIndex, yearIndex),
-            );
-            _expandedMonthByDaYun[daYunIndex] = null;
-            _expandedYearByDaYun[daYunIndex] = null;
-          } else {
-            _expandedMonthByDaYun[daYunIndex] = monthIndex;
-            _expandedYearByDaYun[daYunIndex] = yearIndex;
-          }
-        });
+    return SizedBox(
+      width: width,
+      height: height,
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: () async {
+            setState(() {
+              if (isExpanded) {
+                _selectedDateByCalendar.remove(
+                  _calendarId(daYunIndex, monthIndex, yearIndex),
+                );
+                _expandedMonthByDaYun[daYunIndex] = null;
+                _expandedYearByDaYun[daYunIndex] = null;
+              } else {
+                _expandedMonthByDaYun[daYunIndex] = monthIndex;
+                _expandedYearByDaYun[daYunIndex] = yearIndex;
+              }
+            });
 
-        if (!isPhone) return;
+            if (!isPhone) return;
 
-        await WidgetsBinding.instance.endOfFrame;
-        final key = _calendarKey(daYunIndex, monthIndex, yearIndex);
-        if (key.currentContext != null) {
-          Scrollable.ensureVisible(
-            key.currentContext!,
-            duration: const Duration(milliseconds: 260),
-            curve: Curves.easeOutCubic,
-            alignment: 0.35,
-          );
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
-        width: width,
-        height: height,
-        decoration: BoxDecoration(
-          color: bg,
-          border: Border(
-            right: BorderSide(color: _inkBorderColor, width: 0.6),
-            bottom: BorderSide(color: _inkBorderColor, width: 0.6),
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(6),
-          child: DecoratedBox(
+            await WidgetsBinding.instance.endOfFrame;
+            final key = _calendarKey(daYunIndex, monthIndex, yearIndex);
+            if (key.currentContext != null) {
+              Scrollable.ensureVisible(
+                key.currentContext!,
+                duration: const Duration(milliseconds: 260),
+                curve: Curves.easeOutCubic,
+                alignment: 0.35,
+              );
+            }
+          },
+          child: Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: isExpanded
-                    ? _InkTheme.seal.withAlpha(140)
-                    : _InkTheme.ink.withAlpha(14),
-                width: isExpanded ? 1.0 : 0.8,
+              border: Border(
+                bottom: BorderSide(color: _inkBorderColor, width: 0.6),
               ),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withAlpha(isExpanded ? 120 : 70),
-                  Colors.transparent,
-                ],
-              ),
-              boxShadow: isExpanded
-                  ? [
-                      BoxShadow(
-                        color: _InkTheme.ink.withAlpha(16),
-                        blurRadius: 10,
-                        offset: const Offset(0, 6),
-                      ),
-                    ]
-                  : null,
             ),
             child: Stack(
               children: [
-                Center(
-                  child: Text(
-                    text,
-                    style: ConstUIResourcesMapper.tianGanTextStyle.copyWith(
-                      fontSize: fontSize,
-                      shadows: const [],
-                      color: _InkTheme.ink.withAlpha(220),
-                      height: 1.0,
+                Positioned.fill(
+                  child: SizedBox(
+                    width: 120,
+                    child: YunLiuTableMonthWidget(
+                      tianGan: tianGan,
+                      diZhi: diZhi,
+                      tenGod: tenGod,
+                      tenGodDetails: tenGodDetails,
                     ),
                   ),
                 ),
                 if (isExpanded)
-                  Positioned(
-                    right: 8,
-                    bottom: 8,
-                    child: Transform.rotate(
-                      angle: -0.22,
+                  Positioned.fill(
+                    child: IgnorePointer(
                       child: Container(
-                        width: 18,
-                        height: 8,
+                        margin: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
-                          color: _InkTheme.seal.withAlpha(70),
                           border: Border.all(
-                            color: _InkTheme.seal.withAlpha(130),
-                            width: 0.6,
+                            color: _InkTheme.seal.withAlpha(70),
+                            width: 1,
                           ),
-                          borderRadius: BorderRadius.circular(2),
                         ),
                       ),
                     ),
@@ -722,56 +762,63 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   }) {
     final expanded = _expandedMonthByDaYun[daYunIndex] == monthIndex;
     final yearIndex = _expandedYearByDaYun[daYunIndex];
+    final panelW = _calendarPanelWidth(
+      yearsWidth: yearsWidth,
+      isPhone: isPhone,
+    );
 
     return ClipRect(
       child: AnimatedSize(
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOutCubic,
         child: expanded && yearIndex != null
-            ? SizedBox(
-                width: yearsWidth,
-                height: _calendarExpandedRowHeight(
-                  yearsWidth: yearsWidth,
-                  isPhone: isPhone,
-                  year: _yearAt(daYunIndex, yearIndex),
-                  month: monthIndex + 1,
-                  showDetail: _selectedDateByCalendar.containsKey(
-                    _calendarId(daYunIndex, monthIndex, yearIndex),
+            ? Align(
+                alignment: Alignment.topCenter,
+                child: SizedBox(
+                  width: panelW,
+                  height: _calendarExpandedRowHeight(
+                    yearsWidth: yearsWidth,
+                    isPhone: isPhone,
+                    year: _yearAt(daYunIndex, yearIndex),
+                    month: monthIndex + 1,
+                    showDetail: _selectedDateByCalendar.containsKey(
+                      _calendarId(daYunIndex, monthIndex, yearIndex),
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    isPhone ? 10 : 14,
-                    10,
-                    isPhone ? 10 : 14,
-                    14,
-                  ),
-                  child: _DoubleInkBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Container(
-                      key: _calendarKey(daYunIndex, monthIndex, yearIndex),
-                      padding: EdgeInsets.all(isPhone ? 12 : 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(14),
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            _InkTheme.paperHi.withAlpha(240),
-                            Colors.white.withAlpha(150),
-                            _InkTheme.washHi(10),
-                          ],
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      isPhone ? 10 : 14,
+                      10,
+                      isPhone ? 10 : 14,
+                      14,
+                    ),
+                    child: _DoubleInkBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        key: _calendarKey(daYunIndex, monthIndex, yearIndex),
+                        padding: EdgeInsets.all(isPhone ? 12 : 16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(14),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              _InkTheme.paperHi.withAlpha(240),
+                              Colors.white.withAlpha(150),
+                              _InkTheme.washHi(10),
+                            ],
+                          ),
                         ),
-                      ),
-                      child: _buildCalendar(
-                        calendarId: _calendarId(
-                          daYunIndex,
-                          monthIndex,
-                          yearIndex,
+                        child: _buildCalendar(
+                          calendarId: _calendarId(
+                            daYunIndex,
+                            monthIndex,
+                            yearIndex,
+                          ),
+                          year: _yearAt(daYunIndex, yearIndex),
+                          month: monthIndex + 1,
+                          isPhone: isPhone,
                         ),
-                        year: _yearAt(daYunIndex, yearIndex),
-                        month: monthIndex + 1,
-                        isPhone: isPhone,
                       ),
                     ),
                   ),
@@ -846,9 +893,12 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
               padding: EdgeInsets.all(cellMargin),
               child: Container(
                 decoration: BoxDecoration(
-                  color: emptyCellBg,
-                  border: Border.all(color: _InkTheme.line(35), width: 0.6),
-                  borderRadius: cellRadius,
+                  color: Colors.white.withAlpha(40),
+                  border: Border.all(
+                    color: const Color(0xFFD1CDC2),
+                    width: 0.6,
+                  ),
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
             );
@@ -856,93 +906,22 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
 
           final isToday = isSameDay(dt, today);
           final isSelected = selected != null && isSameDay(dt, selected);
-          final isWeekend =
-              dt.weekday == DateTime.saturday || dt.weekday == DateTime.sunday;
-          final isSunday = dt.weekday == DateTime.sunday;
-          final textColor = isWeekend
-              ? (isSunday
-                    ? _InkTheme.seal.withAlpha(180)
-                    : _InkTheme.ink.withAlpha(175))
-              : _InkTheme.ink.withAlpha(215);
 
           return Padding(
             padding: EdgeInsets.all(cellMargin),
-            child: _DoubleInkBorder(
-              borderRadius: cellRadius,
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  borderRadius: cellRadius,
-                  overlayColor: WidgetStateProperty.resolveWith((states) {
-                    if (states.contains(WidgetState.pressed)) {
-                      return _InkTheme.sealWash(28);
-                    }
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.white.withAlpha(70);
-                    }
-                    return null;
-                  }),
-                  onTap: () {
-                    setState(() {
-                      if (selected != null && isSameDay(dt, selected)) {
-                        _selectedDateByCalendar.remove(calendarId);
-                      } else {
-                        _selectedDateByCalendar[calendarId] = dt;
-                      }
-                    });
-                  },
-                  child: Ink(
-                    decoration: BoxDecoration(
-                      borderRadius: cellRadius,
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withAlpha(isWeekend ? 182 : 190),
-                          isWeekend
-                              ? _InkTheme.washHi(22)
-                              : Colors.white.withAlpha(120),
-                        ],
-                      ),
-                    ),
-                    child: Center(
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 160),
-                        curve: Curves.easeOutCubic,
-                        padding: EdgeInsets.all(isPhone ? 10 : 8),
-                        decoration: isSelected
-                            ? BoxDecoration(
-                                color: _InkTheme.sealWash(42),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: _InkTheme.seal.withAlpha(190),
-                                  width: 1.2,
-                                ),
-                              )
-                            : (isToday
-                                  ? BoxDecoration(
-                                      color: _InkTheme.sealWash(28),
-                                      shape: BoxShape.circle,
-                                      border: Border.all(
-                                        color: _InkTheme.seal.withAlpha(150),
-                                        width: 1.0,
-                                      ),
-                                    )
-                                  : null),
-                        child: Text(
-                          '${dt.day}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: textColor,
-                            height: 1.0,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+            child: _buildLiuDayCell(
+              date: dt,
+              isToday: isToday,
+              isSelected: isSelected,
+              onTap: () {
+                setState(() {
+                  if (selected != null && isSameDay(dt, selected)) {
+                    _selectedDateByCalendar.remove(calendarId);
+                  } else {
+                    _selectedDateByCalendar[calendarId] = dt;
+                  }
+                });
+              },
             ),
           );
         }
@@ -1049,6 +1028,111 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     );
   }
 
+  String _splitTwoLines(String text) {
+    final chars = text.split('');
+    if (chars.length <= 1) return text;
+    if (chars.length == 2) return '${chars[0]}\n${chars[1]}';
+    return '${chars.take(chars.length - 1).join('')}\n${chars.last}';
+  }
+
+  String _ganZhiForDay(DateTime date) {
+    const gan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+    const zhi = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
+    final g = (date.year + date.month + date.day) % gan.length;
+    final z = (date.year + (date.month * 2) + date.day) % zhi.length;
+    return '${gan[g]}${zhi[z]}';
+  }
+
+  ({String tenGod, String shortName}) _tenGodForDay(DateTime date) {
+    const names = ['正财', '偏财', '正印', '偏印', '食神', '伤官', '正官', '偏官', '比肩', '劫财'];
+    const shortNames = ['财', '才', '印', '枭', '食', '伤', '官', '杀', '比', '劫'];
+    final i = (date.day + date.month + date.year) % names.length;
+    return (tenGod: names[i], shortName: shortNames[i]);
+  }
+
+  List<({String gan, String tenGod, String shortName})> _hiddenTriplesForDay(
+    DateTime date,
+  ) {
+    const gan = ['甲', '乙', '丙', '丁', '戊', '己', '庚', '辛', '壬', '癸'];
+    const tenGods = [
+      '正财',
+      '偏财',
+      '正印',
+      '偏印',
+      '食神',
+      '伤官',
+      '正官',
+      '偏官',
+      '比肩',
+      '劫财',
+    ];
+    const shortNames = ['财', '才', '印', '枭', '食', '伤', '官', '杀', '比', '劫'];
+    final seed = (date.year * 37) + (date.month * 11) + date.day;
+    return <({String gan, String tenGod, String shortName})>[
+      (
+        gan: gan[seed % gan.length],
+        tenGod: tenGods[(seed + 1) % tenGods.length],
+        shortName: shortNames[(seed + 1) % shortNames.length],
+      ),
+      (
+        gan: gan[(seed + 3) % gan.length],
+        tenGod: tenGods[(seed + 2) % tenGods.length],
+        shortName: shortNames[(seed + 2) % shortNames.length],
+      ),
+      (
+        gan: gan[(seed + 6) % gan.length],
+        tenGod: tenGods[(seed + 3) % tenGods.length],
+        shortName: shortNames[(seed + 3) % shortNames.length],
+      ),
+    ];
+  }
+
+  Widget _verticalGanZhi(String text, TextStyle style) {
+    final chars = text.split('');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [for (final c in chars) Text(c, style: style)],
+    );
+  }
+
+  Widget _buildLiuDayCell({
+    required DateTime date,
+    required bool isToday,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    final ganZhi = _ganZhiForDay(date);
+    final ganZhiChars = ganZhi.split('');
+    final ganText = ganZhiChars.isEmpty ? '' : ganZhiChars.first;
+    final zhiText = ganZhiChars.length < 2 ? '' : ganZhiChars[1];
+
+    final tenGodShortName = _tenGodForDay(date).shortName;
+    final hidden = _hiddenTriplesForDay(
+      date,
+    ).map((e) => (gan: e.gan, shortName: e.shortName)).toList(growable: false);
+
+    final jieQi = TwentyFourJieQi.fromOrder(
+      ((date.year * 37) + (date.month * 11) + date.day) % 24,
+    ).name;
+    final zodiac = EnumChinese12Zodiac.fromDiZhi(
+      DiZhi.getFromValue(zhiText) ?? DiZhi.ZI,
+    ).name;
+
+    return LiuDayCellWidget(
+      date: date,
+      isToday: isToday,
+      isSelected: isSelected,
+      onTap: onTap,
+      ganText: ganText,
+      zhiText: zhiText,
+      tenGodShortName: tenGodShortName,
+      hidden: hidden,
+      jieQi: jieQi,
+      zodiac: zodiac,
+    );
+  }
+
   Color _fiveElementTint({
     required int daYunIndex,
     required int yearIndex,
@@ -1074,6 +1158,360 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   GlobalKey _calendarKey(int daYunIndex, int monthIndex, int yearIndex) {
     final k = '$daYunIndex-$monthIndex-$yearIndex';
     return _calendarKeys.putIfAbsent(k, () => GlobalKey());
+  }
+}
+
+class LiuDayCellWidget extends StatelessWidget {
+  final DateTime date;
+  final bool isToday;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  final String ganText;
+  final String zhiText;
+  final String tenGodShortName;
+  final List<({String gan, String shortName})> hidden;
+  final String jieQi;
+  final String zodiac;
+
+  const LiuDayCellWidget({
+    required this.date,
+    required this.isToday,
+    required this.isSelected,
+    required this.onTap,
+    required this.ganText,
+    required this.zhiText,
+    required this.tenGodShortName,
+    required this.hidden,
+    required this.jieQi,
+    required this.zodiac,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const sealRed = Color(0xFFB22D2A);
+    const paperBase = Color(0xFFF9F6F0);
+    const paperHover = Color(0xFFF2EFE5);
+
+    const inkBlack = Color(0xFF2D2D2D);
+    const inkLight = Color(0xFFE5E5E5);
+    const dayMutedLight = Color(0xFF7A7A7A);
+    const hiddenMutedLight = Color(0xFFA9A9A9);
+    const borderLight = Color(0xFFD1CDC2);
+    const borderDark = Color(0xFF33302C);
+
+    final ink = isDark ? inkLight : inkBlack;
+    final dayMuted = isDark ? ink.withAlpha(150) : dayMutedLight;
+    final hiddenMuted = isDark ? ink.withAlpha(70) : hiddenMutedLight;
+    final seal = isDark ? const Color(0xFFD64545) : sealRed;
+    final border = isDark ? borderDark : borderLight;
+
+    final isWeekend =
+        date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+
+    return _InkHoverRegion(
+      builder: (context, isHovered) {
+        return LayoutBuilder(
+          builder: (context, c) {
+            final compact = c.maxHeight <= 76 || c.maxWidth <= 56;
+
+            final radius = BorderRadius.circular(compact ? 10 : 12);
+            final pad = 6.0;
+
+            final dayFont = (compact ? 11.0 : 12.0) + 6;
+            final jieQiFont = (compact ? 9.0 : 10.0) + 4;
+            final ganZhiFont = (compact ? 18.0 : 20.0) + 4;
+            final tenGodFont = (compact ? 13.0 : 14.0) + 4;
+            final hiddenLineGap = compact ? 1.0 : 2.0;
+            final watermarkFont = (compact ? 7.0 : 8.0) + 4;
+
+            final ganZhiColW = ganZhiFont + 2;
+            final tenGodColumnW = tenGodFont + 10;
+            const colGap = 0.0;
+
+            const ganZhiGap = 4.0;
+
+            final dayStyle = TextStyle(
+              fontSize: dayFont,
+              height: 1.0,
+              color: isWeekend ? dayMuted.withAlpha(190) : dayMuted,
+              fontWeight: FontWeight.w700,
+              fontFamilyFallback: const [
+                'ZCOOL XiaoWei',
+                'Noto Serif SC',
+                'serif',
+              ],
+            );
+
+            final jieQiStyle = TextStyle(
+              fontSize: jieQiFont,
+              height: 1.0,
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.2,
+              color: seal,
+              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+            );
+
+            final ganZhiStyle = TextStyle(
+              fontSize: ganZhiFont,
+              height: 1.0,
+              fontWeight: FontWeight.w800,
+              color: ink,
+              fontFamilyFallback: const [
+                'ZCOOL XiaoWei',
+                'Noto Serif SC',
+                'serif',
+              ],
+            );
+
+            final tenGodStyle = TextStyle(
+              fontSize: tenGodFont,
+              height: 1.0,
+              fontWeight: FontWeight.w800,
+              color: seal,
+              fontFamilyFallback: const [
+                'ZCOOL XiaoWei',
+                'Noto Serif SC',
+                'serif',
+              ],
+            );
+
+            final hiddenGanStyle = tenGodStyle.copyWith(
+              color: hiddenMuted,
+              fontWeight: FontWeight.w700,
+            );
+
+            final body = Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: isDark ? 0.12 : 0.18,
+                      child: CustomPaint(painter: _PaperTexturePainter()),
+                    ),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Padding(
+                    padding: EdgeInsets.all(pad),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('${date.day}', style: dayStyle),
+                                if (isToday) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    width: 5,
+                                    height: 5,
+                                    margin: const EdgeInsets.only(top: 1),
+                                    decoration: BoxDecoration(
+                                      color: seal.withAlpha(170),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            Text(jieQi, style: jieQiStyle),
+                          ],
+                        ),
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 2),
+                            child: Center(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(width: ganZhiColW),
+                                      SizedBox(width: colGap),
+                                      SizedBox(
+                                        width: ganZhiColW,
+                                        child: Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text(
+                                            ganText,
+                                            style: ganZhiStyle,
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: colGap),
+                                      SizedBox(
+                                        width: tenGodColumnW,
+                                        child: Align(
+                                          alignment: Alignment.topCenter,
+                                          child: Text(
+                                            tenGodShortName,
+                                            style: tenGodStyle,
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (hidden.isNotEmpty) ...[
+                                    SizedBox(height: hiddenLineGap),
+                                    for (var i = 0; i < hidden.length; i++) ...[
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          SizedBox(
+                                            width: ganZhiColW,
+                                            child: Align(
+                                              alignment: Alignment.topCenter,
+                                              child: Text(
+                                                hidden[i].gan,
+                                                style: hiddenGanStyle,
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: colGap),
+                                          SizedBox(
+                                            width: ganZhiColW,
+                                            child: Align(
+                                              alignment: Alignment.topCenter,
+                                              child: i == 0
+                                                  ? Text(
+                                                      zhiText,
+                                                      style: ganZhiStyle,
+                                                    )
+                                                  : const SizedBox.shrink(),
+                                            ),
+                                          ),
+                                          SizedBox(width: colGap),
+                                          SizedBox(
+                                            width: tenGodColumnW,
+                                            child: Align(
+                                              alignment: Alignment.topCenter,
+                                              child: Text(
+                                                hidden[i].shortName,
+                                                style: tenGodStyle,
+                                                textAlign: TextAlign.center,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      if (i != hidden.length - 1)
+                                        SizedBox(height: hiddenLineGap),
+                                    ],
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 1,
+                  right: 4,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: 0.20,
+                      child: Text(
+                        zodiac,
+                        style: TextStyle(
+                          fontSize: watermarkFont,
+                          height: 1.0,
+                          color: hiddenMuted,
+                          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+
+            final content = Stack(
+              children: [
+                Positioned.fill(
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: SizedBox.square(
+                        dimension: compact ? 124 : 124,
+                        child: body,
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Opacity(
+                      opacity: isSelected ? 1.0 : 0.0,
+                      child: Container(
+                        width: compact ? 5 : 6,
+                        height: compact ? 5 : 6,
+                        decoration: BoxDecoration(
+                          color: seal,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+
+            return Material(
+              type: MaterialType.transparency,
+              child: InkWell(
+                onTap: onTap,
+                borderRadius: radius,
+                overlayColor: WidgetStateProperty.resolveWith((states) {
+                  if (states.contains(WidgetState.pressed)) {
+                    return _InkTheme.sealWash(26);
+                  }
+                  if (states.contains(WidgetState.hovered)) {
+                    return Colors.white.withAlpha(isDark ? 18 : 60);
+                  }
+                  return null;
+                }),
+                child: ClipRRect(
+                  borderRadius: radius,
+                  child: Ink(
+                    decoration: BoxDecoration(
+                      borderRadius: radius,
+                      color: isSelected
+                          ? (isDark ? Colors.white.withAlpha(10) : paperHover)
+                          : (isDark
+                                ? (isHovered
+                                      ? const Color(0xFF24231F)
+                                      : const Color(0xFF1C1B18))
+                                : (isHovered ? paperHover : paperBase)),
+                      border: Border.all(
+                        color: isSelected ? seal.withAlpha(160) : border,
+                        width: isSelected ? 1.0 : 0.6,
+                      ),
+                    ),
+                    child: content,
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 }
 
@@ -1825,7 +2263,7 @@ class _QuarterSelectorRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(12);
     return LayoutBuilder(
-      builder: (context, c) {
+      builder: (context, _) {
         return Row(
           children: [
             for (var i = 0; i < 8; i++) ...[
