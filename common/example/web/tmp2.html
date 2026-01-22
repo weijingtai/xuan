@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>中国风高权重十神单元格</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        /* 宣纸背景纹理 */
+        .paper-texture {
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper.png');
+            background-color: #F7F4EF;
+        }
+        /* 楷体字体 */
+        .font-kaiti {
+            font-family: 'Noto Serif SC', serif;
+        }
+        /* 朱砂印章效果 */
+        .seal-text {
+            position: relative;
+            display: inline-block;
+            padding: 2px 4px;
+            color: #B22D2A;
+            font-weight: bold;
+            border: 2px solid #B22D2A;
+            border-radius: 4px;
+            box-shadow: inset 0 0 4px rgba(178, 45, 42, 0.3);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+    </style>
+</head>
+<body class="p-8 flex justify-center bg-gray-100 font-kaiti">
+
+
+<div class="relative bg-[#F9F6F0] p-1.5 border-[0.5px] border-[#D1CDC2] flex flex-col justify-between aspect-square min-w-[90px] hover:bg-[#F2EFE5] transition-colors group paper-texture">
+  
+  <div class="flex justify-between items-start leading-none">
+    <span class="text-sm font-serif text-[#7A7A7A] font-bold">15</span>
+    <span class="text-[10px] text-[#B22D2A] font-medium tracking-tighter">立春</span>
+  </div>
+
+  <div class="relative flex justify-center items-center py-0.5">
+    <div class="flex flex-col items-center">
+      <span class="text-lg font-bold text-[#2D2D2D] leading-none">甲</span>
+      <span class="text-lg font-bold text-[#2D2D2D] leading-none mt-1">子</span>
+    </div>
+    <div class="absolute right-0 top-0 text-[11px] font-bold text-[#B22D2A] leading-none">
+      比<br/>肩
+    </div>
+  </div>
+
+  <div class="mt-1 border-t border-[#D1CDC2]/30 pt-1.5 flex justify-around items-end">
+    <div class="flex flex-col items-center">
+      <span class="text-[8px] text-[#A9A9A9] scale-90 leading-none mb-0.5">戊</span>
+      <span class="text-[11px] font-bold text-[#B22D2A] leading-none">财</span>
+    </div>
+    <div class="flex flex-col items-center border-l border-[#D1CDC2]/20 pl-0.5">
+      <span class="text-[8px] text-[#A9A9A9] scale-90 leading-none mb-0.5">乙</span>
+      <span class="text-[11px] font-bold text-[#B22D2A] leading-none">官</span>
+    </div>
+    <div class="flex flex-col items-center border-l border-[#D1CDC2]/20 pl-0.5">
+      <span class="text-[8px] text-[#A9A9A9] scale-90 leading-none mb-0.5">癸</span>
+      <span class="text-[11px] font-bold text-[#B22D2A] leading-none">印</span>
+    </div>
+  </div>
+
+  <div class="absolute bottom-0 right-0.5 text-[8px] text-[#A9A9A9] opacity-20">鼠</div>
+</div>
+
+</body>
+</html>

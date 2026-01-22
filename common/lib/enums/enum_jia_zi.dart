@@ -2,6 +2,7 @@ import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:tuple/tuple.dart';
 
+import 'enum_chinese_12_zodic.dart';
 import 'enum_di_zhi.dart';
 import 'enum_tian_gan.dart';
 import 'enum_five_xing.dart';
@@ -544,6 +545,9 @@ enum JiaZi {
       throw Exception("Unknown xunHeadJiaZi: $xunHeadJiaZi");
     }
   }
+
+  EnumChinese12Zodiac get chinese12Zodiac =>
+      EnumChinese12Zodiac.fromDiZhi(diZhi);
 }
 
 // Now we can add the fiveXing getter to NaYinFiveXing

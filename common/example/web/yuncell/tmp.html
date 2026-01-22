@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-selected: #fcf9f2; /* 选中时的宣纸色 */
+            --paper-unselected: #fcfcfc; /* 未选中时的浅白色 */
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold: #aa9460;
+            --border-selected: #2c2c2c;
+            --border-unselected: rgba(0, 0, 0, 0.08);
+        }
+
+        body { background: #e0e0e0; display: flex; gap: 15px; padding: 40px; font-family: "STKaiti", "KaiTi", serif; }
+
+        /* 大运 Tab 按钮容器 */
+        .dayun-tab {
+            width: 110px; /* 适合横向滚动的宽度 */
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            position: relative;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        /* 选中状态：深色重边框，模拟玉简 */
+        .tab-selected {
+            background-color: var(--paper-selected);
+            border: 2px solid var(--border-selected);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        /* 未选中状态：浅色细边框 */
+        .tab-unselected {
+            background-color: var(--paper-unselected);
+            border: 1px solid var(--border-unselected);
+            opacity: 0.8;
+        }
+
+        /* 1. 顶部：时间区间 */
+        .tab-period {
+            padding-top: 6px;
+            text-align: center;
+            border-bottom: 1px dashed var(--gold);
+            margin: 0 8px;
+        }
+        .year-range { font-size: 10px; font-weight: bold; color: var(--ink); display: block; }
+        .age-range { font-size: 9px; color: var(--gold); opacity: 0.9; }
+
+        /* 2. 核心内容区 */
+        .tab-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 4px;
+        }
+
+        /* 左右对称的十神 (平权设计) */
+        .side-gods {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        /* 干支主柱 */
+        .tab-pillar {
+            font-size: 30px;
+            font-weight: 900;
+            writing-mode: vertical-rl;
+            color: var(--ink);
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        /* 统一的十神样式 */
+        .god-txt {
+            color: var(--cinnabar);
+            font-size: 11px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+        }
+
+        /* 藏干字号 */
+        .root-char {
+            font-size: 10px;
+            color: var(--ink);
+            font-weight: bold;
+            margin-bottom: -4px;
+        }
+
+        /* 3. 底部：装饰性选定标识 */
+        .tab-indicator {
+            height: 4px;
+            background: var(--cinnabar);
+            width: 30%;
+            margin: 0 auto 4px auto;
+            border-radius: 2px;
+            display: none;
+        }
+        .tab-selected .tab-indicator { display: block; }
+
+    </style>
+</head>
+<body>
+
+    <div class="dayun-tab tab-selected">
+        <div class="tab-period">
+            <span class="year-range">2024-2033</span>
+            <span class="age-range">28岁7月-38岁7月</span>
+        </div>
+        <div class="tab-body">
+            <div class="side-gods">
+                <span class="god-txt">正财</span>
+            </div>
+
+            <div class="tab-pillar">甲辰</div>
+
+            <div class="side-gods">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <span class="root-char">乙</span>
+                    <span class="god-txt">劫财</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <span class="root-char">癸</span>
+                    <span class="god-txt">正印</span>
+                </div>
+            </div>
+        </div>
+        <div class="tab-indicator"></div>
+    </div>
+
+    <div class="dayun-tab tab-unselected">
+        <div class="tab-period">
+            <span class="year-range">2034-2043</span>
+            <span class="age-range">38岁7月-48岁7月</span>
+        </div>
+        <div class="tab-body">
+            <div class="side-gods">
+                <span class="god-txt">偏财</span>
+            </div>
+            <div class="tab-pillar">乙巳</div>
+            <div class="side-gods">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <span class="root-char">庚</span>
+                    <span class="god-txt">正官</span>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <span class="root-char">丙</span>
+                    <span class="god-txt">食神</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

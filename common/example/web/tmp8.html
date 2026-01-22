@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --bg-paper: #f4f1e9;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold: #aa9460;
+            --watermark: rgba(0, 0, 0, 0.04);
+        }
+
+        body { 
+            background: #d1d1d1; 
+            padding: 20px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 12时辰大网格 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 单个时辰 Cell (3:4 比例) */
+        .hour-cell {
+            width: 180px;
+            height: 240px;
+            background-color: var(--bg-paper);
+            border: 1px solid var(--ink);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 背景书法水印 */
+        .bg-char {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 160px;
+            color: var(--watermark);
+            z-index: 0;
+            font-family: "Zhi Mang Xing", cursive; /* 建议引用书法字体 */
+            pointer-events: none;
+        }
+
+        /* 顶部时间 */
+        .cell-header {
+            z-index: 1;
+            font-size: 11px;
+            padding: 5px 8px;
+            text-align: right;
+            color: var(--ink);
+            border-bottom: 1px dotted var(--gold);
+        }
+
+        /* 核心布局 */
+        .cell-main {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            padding: 10px 5px;
+        }
+
+        /* 左侧：干支主柱 */
+        .pillar-side {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid rgba(170, 148, 96, 0.2);
+        }
+        .pillar-text {
+            writing-mode: vertical-rl;
+            font-size: 38px;
+            font-weight: bold;
+            letter-spacing: 8px;
+        }
+
+        /* 右侧：十神集成区 */
+        .info-side {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10px;
+        }
+
+        /* 天干十神标头 */
+        .heaven-god-top {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .seal-tag {
+            background: var(--cinnabar);
+            color: #fff;
+            font-size: 10px;
+            padding: 1px 3px;
+            margin-right: 4px;
+            border-radius: 1px;
+        }
+        .h-god-name {
+            font-size: 15px;
+            color: var(--cinnabar);
+            font-weight: bold;
+        }
+
+        /* 藏干列表 */
+        .root-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .root-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .r-char { font-size: 14px; font-weight: bold; color: var(--ink); }
+        .r-god { font-size: 11px; color: var(--cinnabar); opacity: 0.8; }
+
+        /* 底部：节气或时辰名称 */
+        .cell-footer {
+            z-index: 1;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            background: rgba(0,0,0,0.03);
+            color: var(--ink);
+        }
+
+        /* 节气高亮样式 */
+        .has-solar {
+            background: var(--cinnabar);
+            color: #fff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="calendar-grid">
+    <div class="hour-cell">
+        <div class="bg-char">未</div>
+        <div class="cell-header">13:00 - 15:00</div>
+        <div class="cell-main">
+            <div class="pillar-side"><div class="pillar-text">辛未</div></div>
+            <div class="info-side">
+                <div class="heaven-god-top">
+                    <span class="seal-tag">干</span>
+                    <span class="h-god-name">偏财</span>
+                </div>
+                <div class="root-list">
+                    <div class="root-item"><span class="r-char">己</span><span class="r-god">食神</span></div>
+                    <div class="root-item"><span class="r-char">丁</span><span class="r-god">偏印</span></div>
+                    <div class="root-item"><span class="r-char">乙</span><span class="r-god">七杀</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="cell-footer has-solar">〈 立春 14:15 〉</div>
+    </div>
+
+    <div class="hour-cell">
+        <div class="bg-char">申</div>
+        <div class="cell-header">15:00 - 17:00</div>
+        <div class="cell-main">
+            <div class="pillar-side"><div class="pillar-text">壬申</div></div>
+            <div class="info-side">
+                <div class="heaven-god-top">
+                    <span class="seal-tag">干</span>
+                    <span class="h-god-name">伤官</span>
+                </div>
+                <div class="root-list">
+                    <div class="root-item"><span class="r-char">庚</span><span class="r-god">正印</span></div>
+                    <div class="root-item"><span class="r-char">壬</span><span class="r-god">劫财</span></div>
+                    <div class="root-item"><span class="r-char">戊</span><span class="r-god">正官</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="cell-footer">申时 · 哺时</div>
+    </div>
+
+    </div>
+
+</body>
+</html>

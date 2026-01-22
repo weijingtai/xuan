@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --aged-silk: #e8e2d6;    /* 古绢色 */
+            --paper-white: #fdfaf5;  /* 宣纸色 */
+            --ink-black: #1a1a1a;    /* 浓墨 */
+            --cinnabar: #b22222;     /* 朱砂红 */
+            --frame-gold: #a68a53;   /* 仿古金 */
+        }
+
+        body { 
+            background: #d1d1d1; 
+            display: flex; 
+            justify-content: center; 
+            padding: 50px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 年柱表头容器：长方形比例，更适合作为横轴头部 */
+        .year-column-header {
+            width: 170px;
+            height: 180px;
+            background-color: var(--paper-white);
+            /* 类似经摺装的装帧边框 */
+            border: 2px solid var(--ink-black);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 1. 顶部：统领信息 (横披) */
+        .header-banner {
+            background: var(--ink-black);
+            color: var(--aged-silk);
+            padding: 6px 0;
+            text-align: center;
+            border-bottom: 2px solid var(--frame-gold);
+        }
+        .year-title { font-size: 18px; font-weight: 900; letter-spacing: 2px; }
+        .age-label { font-size: 11px; opacity: 0.8; margin-top: 2px; }
+
+        /* 2. 核心区：三轨平权布局 */
+        .header-content {
+            flex: 1;
+            display: flex;
+            padding: 10px 5px;
+            background-image: linear-gradient(to bottom, var(--paper-white), var(--aged-silk));
+        }
+
+        /* 通用：神志展示行 */
+        .god-info-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* 左轨：天干十神 */
+        .side-track {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-right: 1px dotted var(--frame-gold);
+        }
+
+        /* 中轨：主柱干支 */
+        .main-track {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .pillar-font {
+            writing-mode: vertical-rl;
+            font-size: 36px;
+            font-weight: 900;
+            color: var(--ink-black);
+            line-height: 1;
+            letter-spacing: 6px;
+        }
+
+        /* 右轨：藏干十神列表 */
+        .list-track {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 8px;
+            border-left: 1px dotted var(--frame-gold);
+            padding-left: 4px;
+        }
+
+        /* 字体细节：实现平权 */
+        .god-name { 
+            color: var(--cinnabar); 
+            font-size: 13px; 
+            font-weight: bold; 
+            writing-mode: vertical-rl;
+        }
+        .stem-label { 
+            font-size: 11px; 
+            color: var(--ink-black); 
+            font-weight: bold; 
+        }
+
+        /* 3. 底部：生肖小印 (装饰) */
+        .footer-zodiac {
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.03);
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        .zodiac-seal {
+            border: 1px solid var(--cinnabar);
+            color: var(--cinnabar);
+            padding: 0 6px;
+            font-size: 12px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="year-column-header">
+        <div class="header-banner">
+            <div class="year-title">2024</div>
+            <div class="age-label">廿八岁 · 辰龙</div>
+        </div>
+
+        <div class="header-content">
+            <div class="side-track">
+                <div class="god-info-row">
+                    <span class="stem-label">甲</span>
+                    <span class="god-name">正财</span>
+                </div>
+            </div>
+
+            <div class="main-track">
+                <div class="pillar-font">甲辰</div>
+            </div>
+
+            <div class="list-track">
+                <div class="god-info-row" style="flex-direction: row; gap:2px;">
+                    <span class="stem-label">乙</span><span class="god-name">劫财</span>
+                </div>
+                <div class="god-info-row" style="flex-direction: row; gap:2px;">
+                    <span class="stem-label">癸</span><span class="god-name">正印</span>
+                </div>
+                <div class="god-info-row" style="flex-direction: row; gap:2px;">
+                    <span class="stem-label">戊</span><span class="god-name">偏财</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-zodiac">
+            <span class="zodiac-seal">岁次甲辰</span>
+        </div>
+    </div>
+
+</body>
+</html>

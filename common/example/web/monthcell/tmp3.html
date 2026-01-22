@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=STKaiti&display=swap');
+
+        :root {
+            --paper-light: #fdfaf5;
+            --paper-dark: #f4f0e6;
+            --ink: #1a1a1a;
+            --cinnabar: #c0392b;
+            --gold-line: rgba(212, 175, 55, 0.3);
+            --watermark: rgba(0, 0, 0, 0.06); /* 稍微加深一点点，因为不再重叠 */
+        }
+
+        body {
+            background: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            padding: 50px;
+            font-family: "STKaiti", "KaiTi", serif;
+        }
+
+        .year-header-cell {
+            width: 170px;
+            height: 195px; 
+            background: var(--paper-light);
+            border: 2px solid var(--ink); 
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* 必须为relative以支持内部裁切 */
+            overflow: hidden; /* 关键：裁切掉出的水印部分 */
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        /* 1. 顶部碑额 */
+        .header-banner {
+            background-color: var(--ink);
+            color: var(--paper-light);
+            padding: 6px 0;
+            text-align: center;
+            z-index: 2;
+            border-bottom: 1px solid var(--gold-line);
+        }
+        .year-num { font-size: 20px; font-weight: 900; letter-spacing: 1px; line-height: 1; }
+        .age-num { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+
+        /* 2. 中部核心区 */
+        .core-pillar-zone {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 0;
+        }
+
+        /* 【核心调整】生肖水印：右下角、倾斜、裁切 */
+        .zodiac-bg {
+            position: absolute;
+            bottom: -15px; /* 向下偏移出界 */
+            right: -10px;  /* 向右偏移出界 */
+            transform: rotate(-20deg); /* 倾斜艺术感 */
+            font-size: 100px;
+            font-family: 'Zhi Mang Xing', cursive;
+            color: var(--watermark);
+            z-index: 0;
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        /* 天干十神 */
+        .stem-god-side {
+            position: absolute;
+            left: 15px;
+            writing-mode: vertical-rl;
+            color: var(--cinnabar);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* 主柱：增加微弱白光描边，确保在任何情况下都不被背景干扰 */
+        .pillar-main-txt {
+            font-size: 48px;
+            font-weight: 900;
+            color: var(--ink);
+            letter-spacing: -2px;
+            z-index: 2;
+            text-shadow: 0 0 8px var(--paper-light); 
+        }
+
+        /* 3. 底部碑座 */
+        .hidden-stems-base {
+            background-color: var(--paper-dark);
+            border-top: 1px solid var(--gold-line);
+            display: flex;
+            padding: 6px 0;
+            z-index: 2; /* 确保在水印上方 */
+        }
+
+        .stem-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .stem-col::after {
+            content: '';
+            position: absolute;
+            right: 0; top: 10%; height: 80%;
+            border-right: 1px dashed rgba(0,0,0,0.08);
+        }
+        .stem-col:last-child::after { display: none; }
+
+        .root-char { font-size: 15px; font-weight: 900; color: var(--ink); }
+        .root-god { font-size: 11px; color: var(--cinnabar); margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+    <div class="year-header-cell">
+        <div class="header-banner">
+            <div class="year-num">2024</div>
+            <div class="age-num">廿八岁</div>
+        </div>
+
+        <div class="core-pillar-zone">
+            <div class="zodiac-bg">龙</div>
+            
+            <div class="stem-god-side">正财</div>
+            <div class="pillar-main-txt">甲辰</div>
+        </div>
+
+        <div class="hidden-stems-base">
+            <div class="stem-col">
+                <span class="root-char">乙</span>
+                <span class="root-god">劫财</span>
+            </div>
+            <div class="stem-col">
+                <span class="root-char">癸</span>
+                <span class="root-god">正印</span>
+            </div>
+            <div class="stem-col">
+                <span class="root-char">戊</span>
+                <span class="root-god">偏财</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

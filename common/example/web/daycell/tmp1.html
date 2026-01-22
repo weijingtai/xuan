@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper: #fdfaf5;   /* 宣纸底色 */
+            --ink: #1a1a1a;     /* 墨黑 */
+            --seal-red: #b22222; /* 朱砂红 */
+            --gray-sub: #999999; /* 辅助灰 */
+            --gold-line: rgba(170, 148, 96, 0.2); /* 金边线 */
+        }
+
+        body { 
+            background: #e0e0e0; 
+            display: flex; 
+            gap: 30px; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 基础容器 */
+        .day-cell {
+            width: 160px;
+            height: 160px;
+            background: var(--paper);
+            border-radius: 12px;
+            border: 2px solid var(--ink);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        /* 顶部日期栏 */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 8px 0 8px;
+            align-items: flex-start;
+        }
+        .date { font-size: 36px; font-weight: 900; color: var(--ink); line-height: 0.8; }
+
+        /* 有节气时的红印 */
+        .solar-seal {
+            background: var(--seal-red);
+            color: #fff;
+            padding: 2px 4px;
+            font-size: 11px;
+            writing-mode: vertical-rl;
+            border-radius: 1px;
+        }
+
+        /* 无节气时的辅助标示 */
+        .no-solar-tag {
+            color: var(--gray-sub);
+            font-size: 11px;
+            border: 1px solid var(--gray-sub);
+            padding: 1px 3px;
+            border-radius: 2px;
+        }
+
+        /* 主内容区 */
+        .main {
+            flex: 1;
+            display: flex;
+            padding: 5px 10px;
+            align-items: center;
+        }
+
+        /* 左侧日柱 */
+        .pillar { flex: 0.9; display: flex; justify-content: center; }
+        .pillar-txt {
+            font-size: 34px;
+            font-weight: bold;
+            color: var(--ink);
+            display: flex;
+            flex-direction: column;
+            line-height: 0.95;
+        }
+
+        /* 右侧平权神志区 (微调重点) */
+        .gods-list {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid var(--gold-line);
+            padding-left: 10px;
+            gap: 5px; /* 统一行间距 */
+        }
+
+        .god-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px; /* 统一字号 */
+            line-height: 1;
+        }
+
+        /* 统一十神文字权重 */
+        .god-label { color: var(--seal-red); font-weight: bold; }
+        .stem-char { color: var(--ink); font-weight: 900; }
+
+        /* 底部信息 */
+        .footer {
+            background: rgba(0,0,0,0.02);
+            font-size: 10px;
+            color: var(--gray-sub);
+            text-align: center;
+            padding: 3px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="day-cell">
+        <div class="header">
+            <div class="date">20</div>
+            <div class="solar-seal">大寒</div>
+        </div>
+        <div class="main">
+            <div class="pillar">
+                <div class="pillar-txt"><span>甲</span><span>戌</span></div>
+            </div>
+            <div class="gods-list">
+                <div class="god-row"><span class="stem-char">甲</span><span class="god-label">比肩</span></div>
+                <div class="god-row"><span class="stem-char">戊</span><span class="god-label">偏财</span></div>
+                <div class="god-row"><span class="stem-char">辛</span><span class="god-label">正官</span></div>
+                <div class="god-row"><span class="stem-char">丁</span><span class="god-label">伤官</span></div>
+            </div>
+        </div>
+        <div class="footer">乙巳年 · 腊月初一</div>
+    </div>
+
+    <div class="day-cell">
+        <div class="header">
+            <div class="date">21</div>
+            <div class="no-solar-tag">周三 · 羊</div>
+        </div>
+        <div class="main">
+            <div class="pillar">
+                <div class="pillar-txt"><span>乙</span><span>亥</span></div>
+            </div>
+            <div class="gods-list">
+                <div class="god-row"><span class="stem-char">乙</span><span class="god-label">劫财</span></div>
+                <div class="god-row"><span class="stem-char">壬</span><span class="god-label">正印</span></div>
+                <div class="god-row"><span class="stem-char">甲</span><span class="god-label">劫财</span></div>
+                <div class="god-row" style="opacity: 0;">-</div> </div>
+        </div>
+        <div class="footer">乙巳年 · 腊月初二</div>
+    </div>
+
+</body>
+</html>

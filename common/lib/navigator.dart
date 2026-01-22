@@ -8,6 +8,7 @@ import './divinatioin_history_record/divination_history_record_page.dart';
 import 'package:common/pages/dev_test_lunar_info_card_page.dart';
 import 'package:common/pages/four_zhu_edit_page.dart';
 import 'package:common/pages/editable_four_zhu_card_demo_page.dart';
+import 'package:common/pages/fate_calender_page.dart';
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -24,6 +25,7 @@ class NavigatorGenerator {
     "/common/four_zhu_edit": (context, {arguments}) => const FourZhuEditPage(),
     "/common/editable_card_demo": (context, {arguments}) =>
         const EditableFourZhuCardDemoPage(),
+    "/common/fate_calender": (context, {arguments}) => const FateCalenderPage(),
     // "/common/reorderable_cards": (context, {arguments}) => const ReorderableCardsDemo(),
   };
 

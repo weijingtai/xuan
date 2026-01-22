@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-selected: #fcf9f2;
+            --paper-unselected: #f7f7f7;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold: #aa9460;
+            --border-active: #2c2c2c;
+        }
+
+        body { background: #e0e0e0; display: flex; gap: 12px; padding: 40px; font-family: "STKaiti", "KaiTi", serif; }
+
+        /* 大运 Tab 按钮：仿书签/简报设计 */
+        .dayun-tab {
+            width: 120px;
+            height: 155px; /* 增加高度以容纳3个藏干 */
+            display: flex;
+            flex-direction: column;
+            border-radius: 10px;
+            position: relative;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            overflow: hidden;
+            background: var(--paper-unselected);
+            border: 1px solid rgba(0,0,0,0.08);
+        }
+
+        /* 选中状态 */
+        .tab-active {
+            background-color: var(--paper-selected);
+            border: 2px solid var(--border-active);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        /* 1. 顶部：时间标尺 (紧凑排版) */
+        .tab-header {
+            padding: 6px 4px;
+            text-align: center;
+            border-bottom: 1px solid rgba(170, 148, 96, 0.2);
+            background: rgba(0,0,0,0.02);
+        }
+        .year-range { font-size: 10px; font-weight: bold; color: var(--ink); display: block; line-height: 1.2; }
+        .age-range { font-size: 9px; color: var(--gold); display: block; margin-top: 1px; }
+
+        /* 2. 核心内容区：左主右辅 */
+        .tab-content {
+            flex: 1;
+            display: flex;
+            padding: 8px 4px;
+            align-items: center;
+        }
+
+        /* 左侧：大运主柱 */
+        .pillar-zone {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            border-right: 1px dotted var(--gold);
+        }
+        .pillar-txt {
+            writing-mode: vertical-rl;
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--ink);
+            letter-spacing: 4px;
+            line-height: 1;
+        }
+
+        /* 右侧：同侧神志榜 (天干十神 + 3藏干十神) */
+        .gods-list-zone {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 8px;
+            gap: 4px; /* 紧凑行间距 */
+        }
+
+        /* 统一十神项样式：实现平权 */
+        .god-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .god-label {
+            color: var(--cinnabar);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stem-tag {
+            font-size: 10px;
+            color: var(--ink);
+            font-weight: bold;
+            width: 14px;
+        }
+
+        /* 天干十神的特别标记 (仅用小标区分，不改变权重) */
+        .heaven-marker {
+            font-size: 8px;
+            background: var(--cinnabar);
+            color: #fff;
+            padding: 0 2px;
+            border-radius: 2px;
+            margin-right: 2px;
+            font-style: normal;
+        }
+
+        /* 3. 选中指示器 */
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 4px;
+            background: var(--cinnabar);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dayun-tab tab-active">
+        <div class="tab-header">
+            <span class="year-range">2024-2033</span>
+            <span class="age-range">28.7岁 - 38.7岁</span>
+        </div>
+        <div class="tab-content">
+            <div class="pillar-zone">
+                <div class="pillar-txt">甲辰</div>
+            </div>
+            <div class="gods-list-zone">
+                <div class="god-row">
+                    <i class="heaven-marker">干</i>
+                    <span class="god-label">正财</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">乙</span>
+                    <span class="god-label">劫财</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">癸</span>
+                    <span class="god-label">正印</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">戊</span>
+                    <span class="god-label">偏财</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dayun-tab">
+        <div class="tab-header">
+            <span class="year-range">2034-2043</span>
+            <span class="age-range">38.7岁 - 48.7岁</span>
+        </div>
+        <div class="tab-content">
+            <div class="pillar-zone">
+                <div class="pillar-txt">乙巳</div>
+            </div>
+            <div class="gods-list-zone">
+                <div class="god-row">
+                    <i class="heaven-marker">干</i>
+                    <span class="god-label">偏财</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">庚</span>
+                    <span class="god-label">正官</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">丙</span>
+                    <span class="god-label">食神</span>
+                </div>
+                <div class="god-row">
+                    <span class="stem-tag">戊</span>
+                    <span class="god-label">正印</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

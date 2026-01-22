@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 
+import 'enum_chinese_12_zodic.dart';
 import 'enum_five_xing.dart';
 import 'enum_month_token.dart';
 import 'enum_ten_gods.dart';
@@ -126,8 +127,13 @@ enum DiZhi {
     }
   }
 
+  EnumChinese12Zodiac get chinese12Zodiac =>
+      EnumChinese12Zodiac.fromDiZhi(this);
+
   List<EnumTenGods> getTenGods(TianGan dayMaster) {
-    return cangGan.map((hiddenStem) => hiddenStem.getTenGods(dayMaster)).toList();
+    return cangGan
+        .map((hiddenStem) => hiddenStem.getTenGods(dayMaster))
+        .toList();
   }
 
   static List<DiZhi> get listAll {

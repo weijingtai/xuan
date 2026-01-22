@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper: #fdfaf5;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold: #aa9460;
+            --watermark: rgba(0, 0, 0, 0.08); /* 加深水印以保证清楚 */
+        }
+
+        body { 
+            background: #e0e0e0; 
+            padding: 20px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        .matrix-scroll-view {
+            overflow-x: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        table { border-collapse: separate; border-spacing: 8px; }
+
+        /* --- X轴：大运全息表头 --- */
+        th.dayun-head {
+            min-width: 170px;
+            background: var(--paper);
+            border: 2px solid var(--ink);
+            border-radius: 10px;
+            padding: 0;
+            vertical-align: top;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .luck-banner-top {
+            background: var(--cinnabar);
+            color: white;
+            padding: 4px 0;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .luck-info-wrap {
+            display: flex;
+            padding: 10px;
+            gap: 10px;
+        }
+
+        .luck-pillar-box {
+            flex: 0.8;
+            writing-mode: vertical-rl;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1;
+        }
+
+        .luck-gods-box {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            border-left: 1px dotted var(--gold);
+            padding-left: 8px;
+        }
+
+        /* 大运区间与年龄段 */
+        .luck-interval-footer {
+            background: rgba(0,0,0,0.03);
+            border-top: 1px solid rgba(0,0,0,0.05);
+            padding: 4px 0;
+            font-size: 10px;
+            color: var(--gold);
+            font-weight: bold;
+        }
+
+        /* --- Y轴：流年序 --- */
+        td.index-sidebar {
+            background: var(--ink);
+            color: var(--paper);
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 8px;
+            border-radius: 6px;
+            position: sticky;
+            left: 0;
+            z-index: 50;
+        }
+
+        /* --- 流年单元格 (核心) --- */
+        .year-cell {
+            width: 155px;
+            height: 115px;
+            background: var(--paper);
+            border: 1.5px solid rgba(0,0,0,0.06);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden; /* 必须裁切偏移的水印 */
+            display: flex;
+            padding: 12px 8px 8px 8px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        /* 年份背景水印：偏移与截断 */
+        .year-watermark-offset {
+            position: absolute;
+            top: -5px;
+            left: -35px; /* 向左大幅度偏移，实现“千位”截断，“百位”露出一半 */
+            font-size: 85px;
+            font-weight: 900;
+            color: var(--watermark);
+            z-index: 0;
+            line-height: 1;
+            font-family: Arial, sans-serif; /* 使用现代字体增加张力 */
+            pointer-events: none;
+        }
+
+        /* 年龄角标 (Tag) */
+        .age-tag {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(170, 148, 96, 0.15); /* 淡淡的金棕色底 */
+            color: var(--gold);
+            font-size: 9px;
+            font-weight: bold;
+            padding: 1px 6px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        /* 单元格内容 */
+        .cell-main {
+            display: flex;
+            width: 100%;
+            z-index: 1;
+            align-items: center;
+        }
+
+        .pillar-left {
+            flex: 0.9;
+            display: flex;
+            justify-content: center;
+            border-right: 1px dotted var(--gold);
+        }
+        .pillar-txt {
+            writing-mode: vertical-rl;
+            font-size: 28px;
+            font-weight: 900;
+            color: var(--ink);
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--paper);
+        }
+
+        /* 十神平权列表 (同侧) */
+        .gods-right {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10px;
+            gap: 4px;
+        }
+
+        .god-line {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .g-label { color: var(--cinnabar); font-size: 13px; font-weight: bold; }
+        .s-char { color: var(--ink); font-size: 11px; font-weight: 900; width: 14px; }
+        .h-mark { 
+            font-size: 8px; background: var(--cinnabar); color: white; 
+            padding: 0 2px; border-radius: 1px; transform: scale(0.8); 
+        }
+    </style>
+</head>
+<body>
+
+<div class="matrix-scroll-view">
+    <table>
+        <thead>
+            <tr>
+                <th style="background:none; border:none;"></th>
+                <th class="dayun-head">
+                    <div class="luck-banner-top">大运 · 甲辰</div>
+                    <div class="luck-info-wrap">
+                        <div class="luck-pillar-box">甲辰</div>
+                        <div class="luck-gods-box">
+                            <div class="god-line"><span class="h-mark">干</span><span class="g-label">正财</span></div>
+                            <div class="god-line"><span class="s-char">乙</span><span class="g-label">劫财</span></div>
+                            <div class="god-line"><span class="s-char">癸</span><span class="g-label">正印</span></div>
+                            <div class="god-line"><span class="s-char">戊</span><span class="g-label">偏财</span></div>
+                        </div>
+                    </div>
+                    <div class="luck-interval-footer">
+                        2024-2033 · 28-38岁
+                    </div>
+                </th>
+                </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="index-sidebar">流年</td>
+                <td>
+                    <div class="year-cell">
+                        <div class="year-watermark-offset">2026</div>
+                        <div class="age-tag">28岁7月</div>
+                        <div class="cell-main">
+                            <div class="pillar-left">
+                                <div class="pillar-txt">丙午</div>
+                            </div>
+                            <div class="gods-right">
+                                <div class="god-line"><span class="h-mark">干</span><span class="g-label">食神</span></div>
+                                <div class="god-line"><span class="s-char">丁</span><span class="g-label">劫财</span></div>
+                                <div class="god-line"><span class="s-char">己</span><span class="g-label">伤官</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td class="index-sidebar">流年</td>
+                <td>
+                    <div class="year-cell">
+                        <div class="year-watermark-offset">2027</div>
+                        <div class="age-tag">29岁7月</div>
+                        <div class="cell-main">
+                            <div class="pillar-left"><div class="pillar-txt">丁未</div></div>
+                            <div class="gods-right">
+                                <div class="god-line"><span class="h-mark">干</span><span class="g-label">伤官</span></div>
+                                <div class="god-line"><span class="s-char">乙</span><span class="g-label">偏印</span></div>
+                                <div class="god-line"><span class="s-char">丁</span><span class="g-label">劫财</span></div>
+                                <div class="god-line"><span class="s-char">己</span><span class="g-label">伤官</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

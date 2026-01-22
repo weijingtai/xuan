@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 复用部分通用变量 */
+        :root {
+            --paper: #fdfaf5;
+            --ink: #2c2c2c;
+            --cinnabar: #bd2d2d;
+            --border-frame: #4a3f35; /* 深棕色木框感 */
+        }
+
+        body { background: #e8e8e8; padding: 50px; }
+
+        /* 容器：牌匾风格 */
+        .year-cell-couplet {
+            width: 180px; /* 稍微宽一点以容纳左右对联 */
+            height: 190px;
+            background: var(--paper);
+            border: 3px solid var(--border-frame);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            font-family: "STKaiti", "KaiTi", serif;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        /* 右上角倾斜水印 */
+        .bg-zodiac-corner {
+            position: absolute;
+            top: -20px; right: -20px;
+            transform: rotate(20deg);
+            font-size: 100px;
+            font-family: 'Zhi Mang Xing', cursive;
+            color: rgba(0,0,0,0.04);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 顶部：横批 */
+        .header-scroll {
+            background: var(--border-frame);
+            color: #f0e6d2;
+            text-align: center;
+            padding: 4px 0;
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        /* 核心：左右对联+中间堂画 */
+        .couplet-body {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            padding: 8px 0;
+        }
+
+        /* 左右侧边栏：视觉权重绝对相等 */
+        .side-couplet {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            padding: 5px;
+        }
+        
+        /* 左侧对联边框装饰 */
+        .left-scroll { border-right: 2px solid var(--border-frame); }
+        /* 右侧对联边框装饰 */
+        .right-scroll { border-left: 2px solid var(--border-frame); }
+
+        /* 中间主柱 */
+        .center-painting {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .pillar-big {
+            writing-mode: vertical-rl;
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--ink);
+            letter-spacing: 5px;
+        }
+
+        /* 十神文字样式：左右完全一致 */
+        .god-txt-red {
+            color: var(--cinnabar);
+            font-size: 14px;
+            font-weight: bold;
+            writing-mode: vertical-rl; /* 竖排更像对联 */
+        }
+
+        /* 藏干小字 */
+        .root-small {
+            font-size: 10px; color: var(--ink); margin-bottom: -4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="year-cell-couplet">
+        <div class="bg-zodiac-corner">龙</div>
+        
+        <div class="header-scroll">
+            2024 · 廿八岁
+        </div>
+
+        <div class="couplet-body">
+            <div class="side-couplet left-scroll">
+                <span class="god-txt-red" style="font-size: 16px;">正财</span> </div>
+
+            <div class="center-painting">
+                <div class="pillar-big">甲辰</div>
+            </div>
+
+            <div class="side-couplet right-scroll">
+                <div style="display:flex; gap:4px;">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span class="root-small">乙</span><span class="god-txt-red">劫财</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span class="root-small">癸</span><span class="god-txt-red">正印</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <span class="root-small">戊</span><span class="god-txt-red">偏财</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap');
+
+        :root {
+            --paper: #fdfaf5;
+            --ink: #1a1a1a;
+            --cinnabar: #c0392b;
+            --watermark: rgba(0, 0, 0, 0.05);
+        }
+
+        body { 
+            background: #e0e0e0; 
+            display: flex; 
+            gap: 20px; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+        }
+
+        /* 极小组件容器 (约 100x100px 逻辑尺寸) */
+        .mini-widget {
+            width: 110px;
+            height: 110px;
+            background: var(--paper);
+            border-radius: 18px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 6px;
+            box-sizing: border-box;
+            overflow: hidden;
+            font-family: "STKaiti", "KaiTi", serif;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 右下角深度裁切倾斜水印 */
+        .mini-bg {
+            position: absolute;
+            bottom: -35px;
+            right: -25px;
+            transform: rotate(-30deg);
+            font-size: 110px;
+            color: var(--watermark);
+            z-index: 0;
+            font-family: "Zhi Mang Xing", cursive;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        /* 顶部极细时间 */
+        .mini-time {
+            z-index: 1;
+            font-size: 8px;
+            text-align: right;
+            color: var(--ink);
+            opacity: 0.4;
+            margin-bottom: 2px;
+        }
+
+        /* 核心内容区 */
+        .mini-main {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            align-items: center;
+        }
+
+        /* 左侧干支：字号压缩但保持粗体 */
+        .mini-pillar {
+            flex: 0.8;
+            display: flex;
+            justify-content: center;
+        }
+        .pillar-font {
+            writing-mode: vertical-rl;
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 2px;
+            color: var(--ink);
+        }
+
+        /* 右侧神志：字号最大化 */
+        .mini-gods {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+        }
+
+        .h-god-mini {
+            color: var(--cinnabar);
+            font-size: 13px;
+            font-weight: 900;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .r-mini-row {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            font-size: 11px;
+            line-height: 1;
+        }
+        .r-char-mini { font-weight: 900; color: var(--ink); }
+        .r-god-mini { color: var(--cinnabar); font-weight: bold; }
+
+        /* 底部状态 */
+        .mini-footer {
+            z-index: 1;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 节气：极简色块 */
+        .mini-solar {
+            background: var(--cinnabar);
+            color: #fff;
+            font-size: 8px;
+            padding: 0px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            transform: scale(0.9);
+        }
+
+        /* 无节气：留白或极淡文字 */
+        .mini-alias {
+            font-size: 8px;
+            color: var(--ink);
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mini-widget">
+        <div class="mini-bg">未</div>
+        <div class="mini-time">13-15时</div>
+        <div class="mini-main">
+            <div class="mini-pillar"><div class="pillar-font">辛未</div></div>
+            <div class="mini-gods">
+                <span class="h-god-mini">偏财</span>
+                <div class="r-mini-row"><span class="r-char-mini">己</span><span class="r-god-mini">食神</span></div>
+                <div class="r-mini-row"><span class="r-char-mini">丁</span><span class="r-god-mini">偏印</span></div>
+                <div class="r-mini-row"><span class="r-char-mini">乙</span><span class="r-god-mini">七杀</span></div>
+            </div>
+        </div>
+        <div class="mini-footer">
+            <div class="mini-solar">立春 14:15</div>
+        </div>
+    </div>
+
+    <div class="mini-widget">
+        <div class="mini-bg">申</div>
+        <div class="mini-time">15-17时</div>
+        <div class="mini-main">
+            <div class="mini-pillar"><div class="pillar-font">壬申</div></div>
+            <div class="mini-gods">
+                <span class="h-god-mini">伤官</span>
+                <div class="r-mini-row"><span class="r-char-mini">庚</span><span class="r-god-mini">正印</span></div>
+                <div class="r-mini-row"><span class="r-char-mini">壬</span><span class="r-god-mini">劫财</span></div>
+                <div class="r-mini-row"><span class="r-char-mini">戊</span><span class="r-god-mini">正官</span></div>
+            </div>
+        </div>
+        <div class="mini-footer">
+            <div class="mini-alias">申时·哺时</div>
+        </div>
+    </div>
+
+</body>
+</html>

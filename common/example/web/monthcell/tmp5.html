@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Noto+Serif+SC:wght@700;900&display=swap');
+
+        :root {
+            --paper-texture: #f8f6f0; /* 仿古宣纸 */
+            --ink-black: #222222;     /* 墨黑 */
+            --cinnabar: #b22222;      /* 朱砂红 */
+            --silk-gold: #c5a368;     /* 丝绢金 */
+            --bg-lattice: rgba(197, 163, 104, 0.08); /* 极淡回纹 */
+        }
+
+        body { background: #e0e0e0; display: flex; justify-content: center; padding: 50px; font-family: "STKaiti", "KaiTi", serif; }
+
+        /* 年柱 Header 容器 */
+        .year-header-lattice {
+            width: 175px;
+            height: 190px;
+            background-color: var(--paper-texture);
+            /* 模拟花窗边框 */
+            border: 1.5px solid var(--ink-black);
+            outline: 3px solid var(--paper-texture);
+            outline-offset: -5px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+        }
+
+        /* 顶部装饰线与横批 */
+        .lattice-top {
+            height: 35px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--silk-gold);
+            z-index: 2;
+        }
+        .header-year { font-size: 16px; font-weight: 900; letter-spacing: 1px; color: var(--ink-black); line-height: 1; }
+        .header-age { font-size: 10px; color: var(--silk-gold); margin-top: 2px; font-weight: bold; }
+
+        /* 背景：极淡的几何回纹 (代替地支水印，增加高级感) */
+        .lattice-pattern {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(var(--bg-lattice) 1px, transparent 1px);
+            background-size: 10px 10px;
+            z-index: 0;
+        }
+
+        /* 核心内容区：左右对称结构 */
+        .lattice-body {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            padding: 5px 0;
+        }
+
+        /* 左右两侧：神志对联区 (绝对对等) */
+        .side-gods-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 中间主柱区 */
+        .center-pillar-window {
+            flex: 1.2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-left: 1px solid var(--bg-lattice);
+            border-right: 1px solid var(--bg-lattice);
+        }
+
+        .pillar-txt-bold {
+            writing-mode: vertical-rl;
+            font-size: 38px;
+            font-weight: 900;
+            color: var(--ink-black);
+            letter-spacing: 4px;
+            /* 增加微弱光晕确保文字清晰 */
+            text-shadow: 0 0 10px var(--paper-texture);
+        }
+
+        /* 十神与藏干：统一样式 (实现平权) */
+        .god-row-equal {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            line-height: 1.1;
+        }
+
+        .god-name-red {
+            color: var(--cinnabar);
+            font-size: 13px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+        }
+
+        .stem-char-small {
+            font-size: 11px;
+            color: var(--ink-black);
+            margin-bottom: 2px;
+            font-weight: bold;
+        }
+
+        /* 右下角倾斜裁切生肖：仅保留局部，增加动感 */
+        .zodiac-corner-cut {
+            position: absolute;
+            bottom: -20px;
+            right: -15px;
+            font-size: 70px;
+            color: rgba(0,0,0,0.03);
+            font-family: 'Zhi Mang Xing', cursive;
+            transform: rotate(-15deg);
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="year-header-lattice">
+        <div class="lattice-pattern"></div>
+        
+        <div class="zodiac-corner-cut">龙</div>
+
+        <div class="lattice-top">
+            <div class="header-year">2024</div>
+            <div class="header-age">廿八岁</div>
+        </div>
+
+        <div class="lattice-body">
+            <div class="side-gods-column">
+                <div class="god-row-equal">
+                    <span class="god-name-red">正财</span>
+                </div>
+            </div>
+
+            <div class="center-pillar-window">
+                <div class="pillar-txt-bold">甲辰</div>
+            </div>
+
+            <div class="side-gods-column">
+                <div class="god-row-equal">
+                    <span class="stem-char-small">乙</span>
+                    <span class="god-name-red">劫财</span>
+                </div>
+                <div class="god-row-equal">
+                    <span class="stem-char-small">癸</span>
+                    <span class="god-name-red">正印</span>
+                </div>
+                <div class="god-row-equal">
+                    <span class="stem-char-small">戊</span>
+                    <span class="god-name-red">偏财</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

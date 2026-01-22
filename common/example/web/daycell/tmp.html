@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-bg: #fcfaf2;   /* 仿古宣纸 */
+            --ink-black: #1a1a1a;  /* 浓墨 */
+            --seal-red: #b22222;   /* 朱砂 */
+            --gold-border: #d4af37; /* 描金 */
+        }
+
+        body { 
+            background: #e0e0e0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 日格容器：增加边框厚度，体现稳定性 */
+        .day-widget {
+            width: 160px;
+            height: 160px;
+            background: var(--paper-bg);
+            border-radius: 12px;
+            border: 2px solid var(--ink-black); /* 黑色重边框，区别于时辰格的轻量级 */
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+        }
+
+        /* 1. 顶部：强调日期数字 */
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 8px 0 8px;
+            align-items: flex-start;
+        }
+
+        .date-num {
+            font-size: 36px;
+            font-weight: 900;
+            line-height: 0.8;
+            color: var(--ink-black);
+        }
+
+        /* 节气印章：代替背景水印 */
+        .solar-seal {
+            background: var(--seal-red);
+            color: #fff;
+            padding: 2px 4px;
+            font-size: 11px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            border-radius: 1px;
+            box-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+        }
+
+        /* 2. 核心区：横向结构，区别于时辰格的竖向 */
+        .day-main {
+            flex: 1;
+            display: flex;
+            padding: 5px 10px;
+            align-items: center;
+        }
+
+        /* 日柱干支 */
+        .pillar-focus {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .pillar-txt {
+            font-size: 34px;
+            font-weight: bold;
+            color: var(--ink-black);
+            letter-spacing: -2px;
+            display: flex;
+            flex-direction: column;
+            line-height: 0.9;
+        }
+
+        /* 3. 神志集成区：将十神与藏干并排展示，方便阅读 */
+        .info-panel {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid rgba(0,0,0,0.1);
+            padding-left: 10px;
+            gap: 4px;
+        }
+
+        /* 天干十神：突出显示 */
+        .heaven-god-row {
+            color: var(--seal-red);
+            font-size: 14px;
+            font-weight: 900;
+            border-bottom: 2px solid var(--seal-red);
+            width: fit-content;
+            margin-bottom: 2px;
+        }
+
+        /* 藏干+藏干十神：成对出现 */
+        .root-god-pair {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+        }
+        .r-char { font-weight: 900; color: var(--ink-black); }
+        .r-god { color: var(--seal-red); }
+
+        /* 4. 底部：农历信息 */
+        .day-footer {
+            background: rgba(0,0,0,0.03);
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+            padding: 2px 0;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="day-widget">
+        <div class="day-header">
+            <div class="date-num">20</div>
+            <div class="solar-seal">大寒</div>
+        </div>
+
+        <div class="day-main">
+            <div class="pillar-focus">
+                <div class="pillar-txt">
+                    <span>甲</span>
+                    <span>戌</span>
+                </div>
+            </div>
+
+            <div class="info-panel">
+                <div class="heaven-god-row">比肩</div>
+                <div class="root-god-pair">
+                    <span class="r-char">戊</span><span class="r-god">偏财</span>
+                </div>
+                <div class="root-god-pair">
+                    <span class="r-char">辛</span><span class="r-god">正官</span>
+                </div>
+                <div class="root-god-pair">
+                    <span class="r-char">丁</span><span class="r-god">伤官</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="day-footer">
+            乙巳年 · 腊月初一
+        </div>
+    </div>
+
+</body>
+</html>

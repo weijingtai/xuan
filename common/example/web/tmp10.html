@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 建议实际使用时引入书法字体 */
+        @import url('https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&display=swap');
+
+        :root {
+            --paper: #fdfaf5;
+            --ink: #1a1a1a;
+            --cinnabar: #c0392b;
+            --watermark: rgba(0, 0, 0, 0.06);
+            --gold-line: rgba(170, 148, 96, 0.2);
+        }
+
+        body { 
+            background: #e8e8e8; 
+            display: flex; 
+            gap: 30px; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* Widget 基础容器 */
+        .widget {
+            width: 160px;
+            height: 160px;
+            background: var(--paper);
+            border-radius: 24px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 右下角倾斜裁切水印 */
+        .bg-watermark {
+            position: absolute;
+            bottom: -40px;
+            right: -25px;
+            transform: rotate(-22deg);
+            font-size: 130px;
+            color: var(--watermark);
+            z-index: 0;
+            font-family: "Zhi Mang Xing", cursive;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .header {
+            z-index: 1;
+            font-size: 10px;
+            text-align: right;
+            color: var(--ink);
+            opacity: 0.6;
+            margin-bottom: 2px;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            align-items: center;
+        }
+
+        /* 左侧主干支 */
+        .pillar {
+            flex: 0.9;
+            display: flex;
+            justify-content: center;
+        }
+        .pillar-txt {
+            writing-mode: vertical-rl;
+            font-size: 32px;
+            font-weight: 900;
+            letter-spacing: 4px;
+            line-height: 1;
+        }
+
+        /* 右侧加大字体神志区 */
+        .gods-box {
+            flex: 1.3;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1.5px solid var(--gold-line);
+            padding-left: 8px;
+            gap: 4px;
+        }
+
+        .h-god {
+            color: var(--cinnabar);
+            font-size: 16px; /* 加大 */
+            font-weight: 900;
+            margin-bottom: 2px;
+        }
+
+        .r-row {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            font-size: 13px; /* 加大 */
+        }
+        .r-char { font-weight: 900; color: var(--ink); width: 14px; }
+        .r-god { color: var(--cinnabar); font-weight: bold; }
+
+        /* 底部状态区域 */
+        .footer {
+            z-index: 1;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        /* 【状态1】交节高亮 */
+        .solar-term {
+            background: var(--cinnabar);
+            color: #fff;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        /* 【状态2】无交节古称 */
+        .time-alias {
+            font-size: 10px;
+            color: var(--ink);
+            opacity: 0.5;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget">
+        <div class="bg-watermark">未</div>
+        <div class="header">13:00~15:00</div>
+        <div class="main">
+            <div class="pillar"><div class="pillar-txt">辛未</div></div>
+            <div class="gods-box">
+                <div class="h-god">偏财</div>
+                <div class="r-row"><span class="r-char">己</span><span class="r-god">食神</span></div>
+                <div class="r-row"><span class="r-char">丁</span><span class="r-god">偏印</span></div>
+                <div class="r-row"><span class="r-char">乙</span><span class="r-god">七杀</span></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="solar-term">立春 14:15</div>
+        </div>
+    </div>
+
+    <div class="widget">
+        <div class="bg-watermark">申</div>
+        <div class="header">15:00~17:00</div>
+        <div class="main">
+            <div class="pillar"><div class="pillar-txt">壬申</div></div>
+            <div class="gods-box">
+                <div class="h-god">伤官</div>
+                <div class="r-row"><span class="r-char">庚</span><span class="r-god">正印</span></div>
+                <div class="r-row"><span class="r-char">壬</span><span class="r-god">劫财</span></div>
+                <div class="r-row"><span class="r-char">戊</span><span class="r-god">正官</span></div>
+            </div>
+        </div>
+        <div class="footer">
+            <div class="time-alias">申时 · 哺时</div>
+        </div>
+    </div>
+
+</body>
+</html>

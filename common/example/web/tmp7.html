@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-texture: #f4f0e6;   /* 仿古宣纸 */
+            --ink-black: #1a1a1a;       /* 浓墨 */
+            --cinnabar: #b22d2d;        /* 朱砂 */
+            --gold-leaf: #af955d;       /* 描金 */
+            --watermark: rgba(175, 149, 93, 0.08); /* 浅金色水印 */
+        }
+
+        body { 
+            background: #d1d1d1; 
+            display: flex; 
+            justify-content: center; 
+            padding: 50px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 3:4 比例的时辰格 */
+        .bazi-shichen-box {
+            width: 180px;
+            height: 240px;
+            background-color: var(--paper-texture);
+            border: 2px solid var(--ink-black);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        /* 1. 圆篆背景水印 */
+        .shichen-seal-bg {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px;
+            height: 150px;
+            border: 4px solid var(--watermark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            color: var(--watermark);
+            z-index: 0;
+            font-family: "Zhi Mang Xing", cursive;
+            pointer-events: none;
+        }
+
+        /* 2. 顶部时间段 - 类似古籍书眉 */
+        .time-banner {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            font-size: 11px;
+            padding: 4px 0;
+            background: var(--ink-black);
+            color: var(--paper-texture);
+            letter-spacing: 2px;
+        }
+
+        /* 3. 核心布局：对联式结构 */
+        .content-frame {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 5px;
+            z-index: 1;
+        }
+
+        .side-annotation {
+            width: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 左侧天干十神：竖排大字 */
+        .heaven-god {
+            color: var(--cinnabar);
+            font-size: 16px;
+            writing-mode: vertical-rl;
+            font-weight: bold;
+            border-right: 1px solid var(--gold-leaf);
+            padding-right: 5px;
+        }
+
+        /* 中间主柱：书法核心 */
+        .pillar-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .pillar-char {
+            font-size: 44px;
+            font-weight: 900;
+            color: var(--ink-black);
+            line-height: 1.1;
+            text-shadow: 2px 2px 0px rgba(255,255,255,0.8);
+        }
+
+        /* 右侧藏干组：并排小注 */
+        .earth-gods {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-left: 1px solid var(--gold-leaf);
+            padding-left: 5px;
+        }
+
+        .root-pair {
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .root-char { font-size: 14px; color: var(--ink-black); font-weight: bold; }
+        .root-god { font-size: 10px; color: var(--cinnabar); writing-mode: vertical-rl; }
+
+        /* 4. 底部交节 - 仿朱砂印章 */
+        .solar-transition-footer {
+            height: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .seal-box {
+            border: 1.5px solid var(--cinnabar);
+            color: var(--cinnabar);
+            padding: 2px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            background: rgba(178, 45, 45, 0.05);
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bazi-shichen-box">
+        <div class="shichen-seal-bg">未</div>
+
+        <div class="time-banner">未时 13:00~15:00</div>
+
+        <div class="content-frame">
+            <div class="side-annotation heaven-god">
+                偏财
+            </div>
+
+            <div class="pillar-center">
+                <div class="pillar-char">辛</div>
+                <div class="pillar-char">未</div>
+            </div>
+
+            <div class="side-annotation earth-gods">
+                <div class="root-pair">
+                    <span class="root-char">己</span>
+                    <span class="root-god">食神</span>
+                </div>
+                <div class="root-pair">
+                    <span class="root-char">丁</span>
+                    <span class="root-god">偏印</span>
+                </div>
+                <div class="root-pair">
+                    <span class="root-char">乙</span>
+                    <span class="root-god">七杀</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="solar-transition-footer">
+            <div class="seal-box">〈 立春 14:15 〉</div>
+        </div>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap');
+
+        :root {
+            --paper: #f2ede4;       /* 古法宣纸色 */
+            --ink: #1c1c1b;        /* 松烟墨 */
+            --cinnabar: #9e2a2b;   /* 朱砂红 */
+            --watermark: #e5dfd3;  /* 枯笔淡墨 */
+            --line: #d1c7b7;       /* 绢本线 */
+        }
+
+        body { 
+            background: #d6d6d6; 
+            display: flex; 
+            justify-content: center; 
+            padding: 40px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 3:4 比例容器 */
+        .bazi-cell {
+            width: 180px;
+            height: 240px;
+            background-color: var(--paper);
+            border: 1px solid var(--ink);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 设计感水印：大写意书法 */
+        .bg-watermark {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 180px;
+            color: var(--watermark);
+            z-index: 0;
+            user-select: none;
+            line-height: 1;
+        }
+
+        /* 顶部时间 */
+        .header-time {
+            position: relative;
+            z-index: 1;
+            padding: 6px 8px;
+            font-size: 11px;
+            color: var(--ink);
+            border-bottom: 1px double var(--line);
+            text-align: right;
+            letter-spacing: 1px;
+        }
+
+        /* 核心三栏：等权布局 */
+        .main-body {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            padding: 10px 4px;
+        }
+
+        .side-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .center-col {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 1px solid var(--line);
+            border-right: 1px solid var(--line);
+        }
+
+        /* 天干十神：竖排印章感 */
+        .stem-god-box {
+            color: var(--cinnabar);
+            font-size: 15px;
+            font-weight: bold;
+            writing-mode: vertical-rl;
+            border: 1.5px solid var(--cinnabar);
+            padding: 4px 2px;
+            background: rgba(158, 42, 43, 0.03);
+        }
+
+        /* 主柱：书法大字 */
+        .pillar-txt {
+            writing-mode: vertical-rl;
+            font-size: 42px;
+            font-weight: 900;
+            color: var(--ink);
+            letter-spacing: 10px;
+            line-height: 1;
+        }
+
+        /* 藏干组合 */
+        .hidden-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 8px;
+        }
+        
+        .h-god-tag {
+            color: var(--cinnabar);
+            font-size: 11px;
+            writing-mode: vertical-rl;
+        }
+        
+        .h-stem-txt {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--ink);
+        }
+
+        /* 底部交节信息 */
+        .solar-footer {
+            position: relative;
+            z-index: 1;
+            height: 32px;
+            background: var(--ink);
+            color: var(--paper);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        .solar-tag {
+            color: #d4af37; /* 金色文字 */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bazi-cell">
+        <div class="bg-watermark">未</div>
+
+        <div class="header-time">13:00 — 15:00</div>
+
+        <div class="main-body">
+            <div class="side-col">
+                <div class="stem-god-box">偏财</div>
+            </div>
+
+            <div class="center-col">
+                <div class="pillar-txt">辛未</div>
+            </div>
+
+            <div class="side-col">
+                <div class="hidden-row">
+                    <span class="h-stem-txt">己</span>
+                    <span class="h-god-tag">食神</span>
+                </div>
+                <div class="hidden-row">
+                    <span class="h-stem-txt">丁</span>
+                    <span class="h-god-tag">偏印</span>
+                </div>
+                <div class="hidden-row">
+                    <span class="h-stem-txt">乙</span>
+                    <span class="h-god-tag">七杀</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="solar-footer">
+            <span class="solar-tag">〈 立春 14:15 〉</span>
+        </div>
+    </div>
+
+</body>
+</html>

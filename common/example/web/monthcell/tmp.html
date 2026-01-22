@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-bg: #fcfaf2;
+            --header-bg: #f0ede5;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold-line: #d4af37;
+            --stripe: rgba(170, 148, 96, 0.05); /* 极淡的斑马线 */
+        }
+
+        body { 
+            background: #e8e8e8; 
+            padding: 20px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 大表容器 */
+        .bazi-table {
+            border-collapse: separate;
+            border-spacing: 4px; /* 关键：增加格子间的缝隙 */
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        /* 表头年份 */
+        th {
+            background: var(--header-bg);
+            color: var(--ink);
+            padding: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        /* 侧边月份 */
+        .month-axis {
+            background: var(--header-bg);
+            writing-mode: vertical-rl;
+            padding: 10px 5px;
+            font-size: 14px;
+            color: var(--ink);
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        /* 斑马线：奇数行底色 */
+        tr:nth-child(odd) td {
+            background-color: var(--stripe);
+        }
+
+        /* 单元格样式：保留你喜欢的布局，但去掉硬边框 */
+        .month-cell {
+            width: 100px;
+            height: 70px;
+            padding: 8px;
+            position: relative;
+            background: var(--paper-bg); /* 默认宣纸色 */
+            border-radius: 4px;
+            transition: transform 0.2s;
+        }
+
+        .month-cell:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 内部布局逻辑 */
+        .cell-content {
+            display: flex;
+            height: 100%;
+        }
+
+        /* 左侧主柱 */
+        .pillar-left {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--ink);
+            border-right: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* 右侧数据区 */
+        .data-right {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-left: 6px;
+        }
+
+        .ten-god-top {
+            font-size: 11px;
+            color: var(--cinnabar);
+            font-weight: bold;
+        }
+
+        .hidden-roots-bottom {
+            display: flex;
+            flex-direction: column;
+            font-size: 9px;
+            color: #666;
+            line-height: 1;
+        }
+
+        .root-pair {
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+<table class="bazi-table">
+    <thead>
+        <tr>
+            <th style="background:none;"></th> <th>甲午</th>
+            <th>乙未</th>
+            <th>丙申</th>
+            <th>丁酉</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="month-axis">正月</td>
+            <td>
+                <div class="month-cell">
+                    <div class="cell-content">
+                        <div class="pillar-left">丙寅</div>
+                        <div class="data-right">
+                            <div class="ten-god-top">食神</div>
+                            <div class="hidden-roots-bottom">
+                                <div class="root-pair"><span>甲</span><span>偏印</span></div>
+                                <div class="root-pair"><span>丙</span><span>食神</span></div>
+                                <div class="root-pair"><span>戊</span><span>偏财</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+            <td><div class="month-cell">...</div></td>
+            <td><div class="month-cell">...</div></td>
+            <td><div class="month-cell">...</div></td>
+        </tr>
+        <tr>
+            <td class="month-axis">二月</td>
+            <td><div class="month-cell">...</div></td>
+            <td><div class="month-cell">...</div></td>
+            <td><div class="month-cell">...</div></td>
+            <td><div class="month-cell">...</div></td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

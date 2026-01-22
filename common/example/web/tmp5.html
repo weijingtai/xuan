@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-bg: #f8f4ed;       /* 宣纸色 */
+            --ink-black: #1a1a1a;      /* 浓墨 */
+            --seal-red: #b22222;       /* 朱砂 */
+            --watermark-ink: rgba(0, 0, 0, 0.04); /* 极淡墨色 */
+            --border-line: #d9d0c1;    /* 丝绢线 */
+        }
+
+        body { 
+            background: #e0e0e0; 
+            display: flex; 
+            justify-content: center; 
+            padding: 50px; 
+            font-family: "Long Cang", "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 3:4 比例的时辰 Cell */
+        .shichen-cell {
+            width: 180px;
+            height: 240px;
+            background-color: var(--paper-bg);
+            border: 1px solid var(--ink-black);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 8px;
+            box-sizing: border-box;
+            overflow: hidden;
+            box-shadow: 3px 3px 15px rgba(0,0,0,0.1);
+        }
+
+        /* 1. 地支水印背景 (设计感核心) */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 160px;
+            color: var(--watermark-ink);
+            z-index: 0;
+            font-weight: 900;
+            white-space: nowrap;
+            pointer-events: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        /* 2. 顶部时间段 */
+        .time-info {
+            position: relative;
+            z-index: 2;
+            text-align: right;
+            font-size: 11px;
+            color: var(--ink-black);
+            opacity: 0.6;
+            font-family: monospace;
+            border-bottom: 1px solid var(--border-line);
+            padding-bottom: 4px;
+        }
+
+        /* 3. 核心三栏布局 (等权设计) */
+        .core-layout {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            padding: 10px 0;
+        }
+
+        /* 通用纵向文本样式 */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: upright;
+        }
+
+        /* 左侧：天干十神 (与右侧对等) */
+        .stem-god-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            color: var(--seal-red);
+            font-size: 14px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            width: 25px;
+        }
+
+        /* 中间：主干支 */
+        .pillar-col {
+            font-size: 40px;
+            font-weight: 900;
+            color: var(--ink-black);
+            letter-spacing: 12px;
+            text-shadow: 1px 1px 0px #fff;
+        }
+
+        /* 右侧：藏干+藏干十神 */
+        .hidden-col {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 10px;
+            width: 35px;
+            border-left: 1px solid var(--border-line);
+            padding-left: 5px;
+        }
+
+        .hidden-group {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+        }
+        
+        .h-god { color: var(--seal-red); font-size: 11px; line-height: 1; }
+        .h-stem { color: var(--ink-black); font-size: 15px; font-weight: bold; }
+
+        /* 4. 底部交节信息 */
+        .solar-transition {
+            position: relative;
+            z-index: 2;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(178, 34, 34, 0.05);
+            border-top: 1px solid var(--border-line);
+            color: var(--seal-red);
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="shichen-cell">
+        <div class="watermark">未</div>
+
+        <div class="time-info">未时 13:00~15:00</div>
+
+        <div class="core-layout">
+            <div class="stem-god-col vertical-text">
+                偏财
+            </div>
+
+            <div class="pillar-col vertical-text">
+                辛未
+            </div>
+
+            <div class="hidden-col">
+                <div class="hidden-group">
+                    <span class="h-stem">己</span>
+                    <span class="h-god vertical-text">食神</span>
+                </div>
+                <div class="hidden-group">
+                    <span class="h-stem">丁</span>
+                    <span class="h-god vertical-text">偏印</span>
+                </div>
+                <div class="hidden-group">
+                    <span class="h-stem">乙</span>
+                    <span class="h-god vertical-text">七杀</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="solar-transition">
+            〈 立春 14:15 〉
+        </div>
+    </div>
+
+</body>
+</html>

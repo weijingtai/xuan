@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper: #fdfaf5;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --gold: #aa9460;
+            --bg-body: #d1d1d1;
+        }
+
+        body { 
+            background: var(--bg-body); 
+            padding: 30px; 
+            font-family: "STKaiti", "KaiTi", serif; 
+        }
+
+        /* 大谱容器：支持横向滚动 */
+        .matrix-scroll-wrapper {
+            max-width: 100%;
+            overflow-x: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 6px; /* 增加呼吸感 */
+        }
+
+        /* 1. X轴：大运表头 (匾额样式) */
+        th.luck-column-head {
+            min-width: 140px;
+            background: var(--cinnabar);
+            color: white;
+            border: 2px solid var(--ink);
+            border-radius: 8px 8px 2px 2px;
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .luck-title { font-size: 12px; opacity: 0.9; padding-top: 5px; }
+        .luck-pillar { font-size: 26px; font-weight: 900; padding: 5px 0 10px 0; letter-spacing: 2px; }
+
+        /* 2. Y轴：流年序号/岁数 (简注样式) */
+        td.year-index-head {
+            background: var(--ink);
+            color: var(--paper);
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 10px;
+            border-radius: 4px;
+            position: sticky;
+            left: 0;
+            z-index: 5;
+        }
+
+        /* 3. 单元格：流年数据 (左柱右榜，十神平权) */
+        .year-data-cell {
+            width: 140px;
+            height: 100px;
+            background: var(--paper);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 6px;
+            display: flex;
+            padding: 8px;
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+        .year-data-cell:hover {
+            transform: scale(1.03);
+            border-color: var(--gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+
+        /* 单元格左侧：主柱 */
+        .c-left {
+            flex: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px dotted var(--gold);
+            font-size: 24px;
+            font-weight: 900;
+            color: var(--ink);
+            line-height: 1.1;
+        }
+
+        /* 单元格右侧：十神全集 */
+        .c-right {
+            flex: 1.1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10px;
+            gap: 3px;
+        }
+
+        .god-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        /* 统一十神样式 (平权) */
+        .g-label { color: var(--cinnabar); font-size: 12px; font-weight: bold; }
+        .s-label { color: var(--ink); font-size: 11px; font-weight: 900; width: 14px; }
+        /* 天干标识：微缩圆标 */
+        .t-mark { font-size: 9px; border: 1px solid var(--cinnabar); color: var(--cinnabar); border-radius: 50%; width: 12px; height: 12px; display: flex; align-items: center; justify-content: center; transform: scale(0.8); }
+
+    </style>
+</head>
+<body>
+
+<div class="matrix-scroll-wrapper">
+    <table>
+        <thead>
+            <tr>
+                <th style="background:none; border:none;"></th>
+                <th class="luck-column-head">
+                    <div class="luck-title">28-38岁</div>
+                    <div class="luck-pillar">甲辰</div>
+                </th>
+                <th class="luck-column-head">
+                    <div class="luck-title">38-48岁</div>
+                    <div class="luck-pillar">乙巳</div>
+                </th>
+                </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="year-index-head">2026<br>丙午</td>
+                <td>
+                    <div class="year-data-cell">
+                        <div class="c-left">丙午</div>
+                        <div class="c-right">
+                            <div class="god-item"><span class="t-mark">干</span><span class="g-label">食神</span></div>
+                            <div class="god-item"><span class="s-label">丁</span><span class="g-label">劫财</span></div>
+                            <div class="god-item"><span class="s-label">己</span><span class="g-label">伤官</span></div>
+                        </div>
+                    </div>
+                </td>
+                <td><div class="year-data-cell">...</div></td>
+            </tr>
+            <tr>
+                <td class="year-index-head">2027<br>丁未</td>
+                <td>
+                    <div class="year-data-cell">
+                        <div class="c-left">丁未</div>
+                        <div class="c-right">
+                            <div class="god-item"><span class="t-mark">干</span><span class="g-label">伤官</span></div>
+                            <div class="god-item"><span class="s-label">乙</span><span class="g-label">偏印</span></div>
+                            <div class="god-item"><span class="s-label">丁</span><span class="g-label">劫财</span></div>
+                            <div class="god-item"><span class="s-label">己</span><span class="g-label">伤官</span></div>
+                        </div>
+                    </div>
+                </td>
+                <td><div class="year-data-cell">...</div></td>
+            </tr>
+            </tbody>
+    </table>
+</div>
+
+</body>
+</html>

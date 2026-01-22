@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --bg-color: #fcfaf2;
+            --main-text: #1a1a1a;
+            --god-red: #d32f2f;
+            --root-gray: #616161;
+            --border-color: #e0e0e0;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        }
+
+        /* 卡片主容器 */
+        .bazi-card {
+            position: relative;
+            width: 260px;
+            height: 200px;
+            background-color: var(--bg-color);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow: hidden;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* 背景大水印：通过定位放置，不占位，不干扰文字 */
+        .watermark {
+            position: absolute;
+            bottom: -20px;
+            left: -10px;
+            font-size: 150px;
+            color: rgba(0, 0, 0, 0.03);
+            z-index: 0;
+            pointer-events: none;
+            font-weight: bold;
+        }
+
+        /* 顶部栏：日期与胶囊数字 */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            z-index: 1;
+        }
+
+        .date-num {
+            font-size: 20px;
+            color: var(--root-gray);
+            font-weight: 500;
+        }
+
+        .status-capsule {
+            background: rgba(0,0,0,0.05);
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: var(--main-text);
+            border: 1px solid var(--border-color);
+            display: flex;
+            gap: 6px;
+        }
+
+        /* 核心内容区：左右分栏 */
+        .card-body {
+            display: flex;
+            align-items: center;
+            z-index: 1;
+            margin-top: 10px;
+        }
+
+        /* 左侧：主干支 */
+        .main-pillar {
+            font-size: 42px;
+            line-height: 1.1;
+            font-weight: bold;
+            color: var(--main-text);
+            margin-right: 30px;
+            letter-spacing: 2px;
+        }
+
+        /* 右侧：三列对齐的十神与藏干 */
+        .details-grid {
+            display: flex;
+            gap: 15px; /* 列间距 */
+            flex-grow: 1;
+        }
+
+        .data-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px; /* 十神与藏干的垂直间距 */
+        }
+
+        .god-name {
+            color: var(--god-red);
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .hidden-root {
+            color: var(--root-gray);
+            font-size: 14px;
+        }
+
+        /* 底部栏 */
+        .card-footer {
+            display: flex;
+            justify-content: flex-end;
+            font-size: 12px;
+            color: rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        .solar-term {
+            color: var(--god-red);
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bazi-card">
+        <div class="watermark">未</div>
+
+        <div class="card-header">
+            <div class="date-num">17</div>
+            <div class="status-capsule">
+                <span>13</span>
+                <span style="color: #ccc;">|</span>
+                <span>15</span>
+            </div>
+        </div>
+
+        <div class="card-body">
+            <div class="main-pillar">
+                辛<br>未
+            </div>
+            
+            <div class="details-grid">
+                <div class="data-column">
+                    <span class="god-name">食</span>
+                    <span class="hidden-root">己</span>
+                </div>
+                <div class="data-column">
+                    <span class="god-name">枭</span>
+                    <span class="hidden-root">丁</span>
+                </div>
+                <div class="data-column">
+                    <span class="god-name">杀</span>
+                    <span class="hidden-root">乙</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <span class="solar-term">立春</span>
+            <span style="margin-left: 8px;">鸡</span>
+        </div>
+    </div>
+
+</body>
+</html>

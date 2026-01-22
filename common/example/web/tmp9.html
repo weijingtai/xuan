@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        :root {
+            --paper-bg: #fdfaf5;
+            --ink: #1a1a1a;
+            --cinnabar: #b22222;
+            --watermark: rgba(0, 0, 0, 0.04);
+        }
+
+        /* 小组件容器 (模拟 2x2 Widget) */
+        .widget-container {
+            width: 156px;
+            height: 156px;
+            background: var(--paper-bg);
+            border-radius: 22px; /* 适配 iOS/Android 圆角 */
+            border: 1px solid #e5e0d5;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow: hidden;
+            font-family: "STKaiti", "KaiTi", serif;
+        }
+
+        /* 背景水墨水印 */
+        .widget-bg {
+            position: absolute;
+            top: 45%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 110px;
+            color: var(--watermark);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* 1. 顶部：微缩时间 */
+        .widget-header {
+            z-index: 1;
+            font-size: 9px;
+            color: var(--ink);
+            opacity: 0.5;
+            text-align: right;
+            margin-bottom: 4px;
+        }
+
+        /* 2. 中间核心：左右分栏 */
+        .widget-body {
+            flex: 1;
+            display: flex;
+            z-index: 1;
+            align-items: center;
+        }
+
+        /* 左侧主干支 */
+        .widget-pillar {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .pillar-txt {
+            writing-mode: vertical-rl;
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: 4px;
+        }
+
+        /* 右侧神志集成区 */
+        .widget-gods-stack {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2px;
+            border-left: 1px solid rgba(0,0,0,0.05);
+            padding-left: 6px;
+        }
+
+        /* 统一十神项样式 */
+        .god-row {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 10px;
+            white-space: nowrap;
+        }
+        
+        /* 天干十神特别标红 */
+        .h-god-label {
+            color: var(--cinnabar);
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .r-char { font-weight: bold; color: var(--ink); width: 12px; }
+        .r-god { color: var(--cinnabar); opacity: 0.8; }
+
+        /* 3. 底部：状态栏 */
+        .widget-footer {
+            z-index: 1;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            border-radius: 4px;
+        }
+
+        /* 节气高亮状态 */
+        .solar-active {
+            background: var(--cinnabar);
+            color: #fff;
+            transform: scale(0.9);
+            padding: 0 8px;
+        }
+
+        /* 无节气普通状态 */
+        .normal-footer {
+            color: var(--ink);
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="widget-container">
+        <div class="widget-bg">未</div>
+        <div class="widget-header">13:00-15:00</div>
+        <div class="widget-body">
+            <div class="widget-pillar">
+                <div class="pillar-txt">辛未</div>
+            </div>
+            <div class="widget-gods-stack">
+                <span class="h-god-label">偏财</span>
+                <div class="god-row"><span class="r-char">己</span><span class="r-god">食神</span></div>
+                <div class="god-row"><span class="r-char">丁</span><span class="r-god">偏印</span></div>
+                <div class="god-row"><span class="r-char">乙</span><span class="r-god">七杀</span></div>
+            </div>
+        </div>
+        <div class="widget-footer solar-active">立春 14:15</div>
+    </div>
+
+</body>
+</html>
