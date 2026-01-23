@@ -1520,12 +1520,23 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       date,
     ).map((e) => (gan: e.gan, shortName: e.shortName)).toList(growable: false);
 
-    final jieQi = TwentyFourJieQi.fromOrder(
-      ((date.year * 37) + (date.month * 11) + date.day) % 24,
-    ).name;
+    final info = SolarLunarDateTimeHelper.cacluateChineseDateInfo(
+      DateTime(date.year, date.month, date.day, 12),
+      _shiChenZiStrategy,
+    );
+
+    final jieQi = info.jieQiInfo.jieQi.name;
     final zodiac = EnumChinese12Zodiac.fromDiZhi(
       DiZhi.getFromValue(zhiText) ?? DiZhi.ZI,
     ).name;
+
+    final lunarMonthCn =
+        SolarLunarDateTimeHelper.intMonth2ChineseMap[info.lunarMonth] ??
+            '${info.lunarMonth}';
+    final lunarDayCn = SolarLunarDateTimeHelper.intDay2ChineseMap[info.lunarDay] ??
+        '${info.lunarDay}';
+    final lunarText =
+        '${info.eightChars.year.name}年 · ${info.isLeapMonth ? '闰' : ''}${lunarMonthCn}月$lunarDayCn';
 
     return LiuDayCellWidget(
       date: date,
@@ -1538,6 +1549,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       hidden: hidden,
       jieQi: jieQi,
       zodiac: zodiac,
+      lunarText: lunarText,
     );
   }
 
@@ -1581,6 +1593,7 @@ class LiuDayCellWidget extends StatelessWidget {
   final List<({String gan, String shortName})> hidden;
   final String jieQi;
   final String zodiac;
+  final String lunarText;
 
   const LiuDayCellWidget({
     required this.date,
@@ -1593,344 +1606,283 @@ class LiuDayCellWidget extends StatelessWidget {
     required this.hidden,
     required this.jieQi,
     required this.zodiac,
+    required this.lunarText,
   });
+
+  Widget _vertical(String text, TextStyle style) {
+    final chars = text.split('');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [for (final c in chars) Text(c, style: style)],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    const sealRed = Color(0xFFB22D2A);
-    const paperBase = Color(0xFFF9F6F0);
-    const paperHover = Color(0xFFF2EFE5);
-
-    const inkBlack = Color(0xFF2D2D2D);
-    const inkLight = Color(0xFFE5E5E5);
-    const dayMutedLight = Color(0xFF7A7A7A);
-    const hiddenMutedLight = Color(0xFFA9A9A9);
-    const borderLight = Color(0xFFD1CDC2);
-    const borderDark = Color(0xFF33302C);
-
-    final ink = isDark ? inkLight : inkBlack;
-    final dayMuted = isDark ? ink.withAlpha(150) : dayMutedLight;
-    final hiddenMuted = isDark ? ink.withAlpha(70) : hiddenMutedLight;
-    final seal = isDark ? const Color(0xFFD64545) : sealRed;
-    final border = isDark ? borderDark : borderLight;
-
-    final isWeekend =
-        date.weekday == DateTime.saturday || date.weekday == DateTime.sunday;
+    const paper = Color(0xFFFCFAF2);
+    const ink = Color(0xFF1A1A1A);
+    const sealRed = Color(0xFFB22222);
 
     return _InkHoverRegion(
       builder: (context, isHovered) {
         return LayoutBuilder(
           builder: (context, c) {
-            final compact = c.maxHeight <= 76 || c.maxWidth <= 56;
+            final s = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 160.0)
+                .clamp(0.35, 2.0);
 
-            final radius = BorderRadius.circular(compact ? 10 : 12);
-            final pad = 6.0;
+            final radius = 12.0 * s;
+            final borderW = 2.0 * s;
 
-            final dayFont = (compact ? 11.0 : 12.0) + 6;
-            final jieQiFont = (compact ? 9.0 : 10.0) + 4;
-            final ganZhiFont = (compact ? 18.0 : 20.0) + 4;
-            final tenGodFont = (compact ? 13.0 : 14.0) + 4;
-            final hiddenLineGap = compact ? 1.0 : 2.0;
-            final watermarkFont = (compact ? 7.0 : 8.0) + 4;
-
-            final ganZhiColW = ganZhiFont + 2;
-            final tenGodColumnW = tenGodFont + 10;
-            const colGap = 0.0;
-
-            const ganZhiGap = 4.0;
-
-            final dayStyle = TextStyle(
-              fontSize: dayFont,
-              height: 1.0,
-              color: isWeekend ? dayMuted.withAlpha(190) : dayMuted,
-              fontWeight: FontWeight.w700,
-              fontFamilyFallback: const [
-                'ZCOOL XiaoWei',
-                'Noto Serif SC',
-                'serif',
-              ],
+            final dateStyle = TextStyle(
+              fontSize: 36.0 * s,
+              height: 0.8,
+              fontWeight: FontWeight.w900,
+              color: ink,
+              fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
             );
 
-            final jieQiStyle = TextStyle(
-              fontSize: jieQiFont,
+            final pillarStyle = TextStyle(
+              fontSize: 34.0 * s,
+              height: 0.9,
+              fontWeight: FontWeight.w900,
+              color: ink,
+              letterSpacing: -2.0 * s,
+              fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+            );
+
+            final sealCharStyle = TextStyle(
+              fontSize: 11.0 * s,
               height: 1.0,
-              fontWeight: FontWeight.w600,
-              letterSpacing: -0.2,
-              color: seal,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
               fontFamilyFallback: const ['Noto Serif SC', 'serif'],
             );
 
-            final ganZhiStyle = TextStyle(
-              fontSize: ganZhiFont,
+            final heavenGodStyle = TextStyle(
+              fontSize: 14.0 * s,
               height: 1.0,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
+              color: sealRed,
+              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+            );
+
+            final pairCharStyle = TextStyle(
+              fontSize: 12.0 * s,
+              height: 1.0,
+              fontWeight: FontWeight.w900,
               color: ink,
-              fontFamilyFallback: const [
-                'ZCOOL XiaoWei',
-                'Noto Serif SC',
-                'serif',
-              ],
+              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
             );
 
-            final tenGodStyle = TextStyle(
-              fontSize: tenGodFont,
+            final pairGodStyle = TextStyle(
+              fontSize: 12.0 * s,
               height: 1.0,
               fontWeight: FontWeight.w800,
-              color: seal,
-              fontFamilyFallback: const [
-                'ZCOOL XiaoWei',
-                'Noto Serif SC',
-                'serif',
-              ],
+              color: sealRed,
+              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
             );
 
-            final hiddenGanStyle = tenGodStyle.copyWith(
-              color: hiddenMuted,
+            final footerStyle = TextStyle(
+              fontSize: 10.0 * s,
+              height: 1.0,
+              color: const Color(0xFF666666),
               fontWeight: FontWeight.w700,
+              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
             );
 
-            final body = Stack(
-              children: [
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: isDark ? 0.12 : 0.18,
-                      child: CustomPaint(painter: _PaperTexturePainter()),
-                    ),
+            final header = Padding(
+              padding: EdgeInsets.fromLTRB(8.0 * s, 8.0 * s, 8.0 * s, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('${date.day}', style: dateStyle),
+                      if (isToday) ...[
+                        SizedBox(width: 6.0 * s),
+                        Container(
+                          width: 6.0 * s,
+                          height: 6.0 * s,
+                          margin: EdgeInsets.only(top: 4.0 * s),
+                          decoration: BoxDecoration(
+                            color: sealRed,
+                            borderRadius: BorderRadius.circular(2.0 * s),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ),
-                Positioned.fill(
-                  child: Padding(
-                    padding: EdgeInsets.all(pad),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 4.0 * s, vertical: 2.0 * s),
+                    decoration: BoxDecoration(
+                      color: sealRed,
+                      borderRadius: BorderRadius.circular(1.0 * s),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.20),
+                          offset: Offset(1.0 * s, 1.0 * s),
+                          blurRadius: 0,
+                        ),
+                      ],
+                    ),
+                    child: _vertical(jieQi, sealCharStyle),
+                  ),
+                ],
+              ),
+            );
+
+            final main = Expanded(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(10.0 * s, 5.0 * s, 10.0 * s, 5.0 * s),
+                child: Row(
+                  children: [
+                    Expanded(
+                      flex: 10,
+                      child: Center(
+                        child: _vertical('$ganText$zhiText', pillarStyle),
+                      ),
+                    ),
+                    Expanded(
+                      flex: 12,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border(
+                            left: BorderSide(
+                              color: Colors.black.withOpacity(0.10),
+                              width: 1.0 * s,
+                            ),
+                          ),
+                        ),
+                        padding: EdgeInsets.only(left: 10.0 * s),
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('${date.day}', style: dayStyle),
-                                if (isToday) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    width: 5,
-                                    height: 5,
-                                    margin: const EdgeInsets.only(top: 1),
-                                    decoration: BoxDecoration(
-                                      color: seal.withAlpha(170),
-                                      borderRadius: BorderRadius.circular(2),
+                                Container(
+                                  padding: EdgeInsets.only(bottom: 2.0 * s),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(
+                                        color: sealRed,
+                                        width: 2.0 * s,
+                                      ),
                                     ),
                                   ),
-                                ],
-                              ],
-                            ),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  width: 8,
-                                  height: 8,
-                                  margin: const EdgeInsets.only(top: 1),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: seal.withAlpha(190),
-                                    border: Border.all(
-                                      color: Colors.white.withAlpha(200),
-                                      width: 1,
-                                    ),
+                                  child: Text(
+                                    tenGodShortName,
+                                    style: heavenGodStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                Text(jieQi, style: jieQiStyle),
                               ],
                             ),
+                            SizedBox(height: 4.0 * s),
+                            for (final it in hidden)
+                              Padding(
+                                padding: EdgeInsets.only(top: 4.0 * s),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(it.gan, style: pairCharStyle),
+                                    SizedBox(width: 6.0 * s),
+                                    Text(it.shortName, style: pairGodStyle),
+                                  ],
+                                ),
+                              ),
                           ],
                         ),
-                        Expanded(
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 2),
-                            child: Center(
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(width: ganZhiColW),
-                                      SizedBox(width: colGap),
-                                      SizedBox(
-                                        width: ganZhiColW,
-                                        child: Align(
-                                          alignment: Alignment.topCenter,
-                                          child: Text(
-                                            ganText,
-                                            style: ganZhiStyle,
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: colGap),
-                                      SizedBox(
-                                        width: tenGodColumnW,
-                                        child: Align(
-                                          alignment: Alignment.topCenter,
-                                          child: Text(
-                                            tenGodShortName,
-                                            style: tenGodStyle,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  if (hidden.isNotEmpty) ...[
-                                    SizedBox(height: hiddenLineGap),
-                                    for (var i = 0; i < hidden.length; i++) ...[
-                                      Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: ganZhiColW,
-                                            child: Align(
-                                              alignment: Alignment.topCenter,
-                                              child: Text(
-                                                hidden[i].gan,
-                                                style: hiddenGanStyle,
-                                              ),
-                                            ),
-                                          ),
-                                          SizedBox(width: colGap),
-                                          SizedBox(
-                                            width: ganZhiColW,
-                                            child: Align(
-                                              alignment: Alignment.topCenter,
-                                              child: i == 0
-                                                  ? Text(
-                                                      zhiText,
-                                                      style: ganZhiStyle,
-                                                    )
-                                                  : const SizedBox.shrink(),
-                                            ),
-                                          ),
-                                          SizedBox(width: colGap),
-                                          SizedBox(
-                                            width: tenGodColumnW,
-                                            child: Align(
-                                              alignment: Alignment.topCenter,
-                                              child: Text(
-                                                hidden[i].shortName,
-                                                style: tenGodStyle,
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      if (i != hidden.length - 1)
-                                        SizedBox(height: hiddenLineGap),
-                                    ],
-                                  ],
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 1,
-                  right: 4,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: 0.20,
-                      child: Text(
-                        zodiac,
-                        style: TextStyle(
-                          fontSize: watermarkFont,
-                          height: 1.0,
-                          color: hiddenMuted,
-                          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                        ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
             );
 
-            final content = Stack(
-              children: [
-                Positioned.fill(
-                  child: Center(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: SizedBox.square(
-                        dimension: compact ? 124 : 124,
-                        child: body,
-                      ),
-                    ),
+            final footer = Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 2.0 * s),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.03),
+                border: Border(
+                  top: BorderSide(
+                    color: Colors.black.withOpacity(0.05),
+                    width: 1.0 * s,
                   ),
                 ),
-                Positioned(
-                  left: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: isSelected ? 1.0 : 0.0,
-                      child: Container(
-                        width: compact ? 5 : 6,
-                        height: compact ? 5 : 6,
-                        decoration: BoxDecoration(
-                          color: seal,
-                          borderRadius: BorderRadius.circular(2),
+              ),
+              child: Text(
+                lunarText,
+                style: footerStyle,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            );
+
+            final card = DecoratedBox(
+              decoration: BoxDecoration(
+                color: paper,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: ink, width: borderW),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.10),
+                    offset: Offset(4.0 * s, 4.0 * s),
+                    blurRadius: 0,
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  Column(children: [header, main, footer]),
+                  Positioned(
+                    left: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: Opacity(
+                        opacity: isSelected ? 1.0 : 0.0,
+                        child: Container(
+                          width: 6.0 * s,
+                          height: 6.0 * s,
+                          decoration: BoxDecoration(
+                            color: sealRed,
+                            borderRadius: BorderRadius.circular(2.0 * s),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
 
             return Material(
               type: MaterialType.transparency,
               child: InkWell(
                 onTap: onTap,
-                borderRadius: radius,
+                borderRadius: BorderRadius.circular(radius),
                 overlayColor: WidgetStateProperty.resolveWith((states) {
                   if (states.contains(WidgetState.pressed)) {
                     return _InkTheme.sealWash(26);
                   }
                   if (states.contains(WidgetState.hovered)) {
-                    return Colors.white.withAlpha(isDark ? 18 : 60);
+                    return Colors.white.withAlpha(50);
                   }
                   return null;
                 }),
                 child: ClipRRect(
-                  borderRadius: radius,
-                  child: Ink(
+                  borderRadius: BorderRadius.circular(radius),
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
-                      borderRadius: radius,
-                      color: isSelected
-                          ? (isDark ? Colors.white.withAlpha(10) : paperHover)
-                          : (isDark
-                                ? (isHovered
-                                      ? const Color(0xFF24231F)
-                                      : const Color(0xFF1C1B18))
-                                : (isHovered ? paperHover : paperBase)),
-                      border: Border.all(
-                        color: isSelected ? seal.withAlpha(160) : border,
-                        width: isSelected ? 1.0 : 0.6,
-                      ),
+                      color: isHovered ? const Color(0xFFF2EFE5) : Colors.transparent,
                     ),
-                    child: content,
+                    child: card,
                   ),
                 ),
               ),
@@ -1957,346 +1909,212 @@ class LiuGanZhiMiniCell extends StatelessWidget {
     required this.dayMaster,
   });
 
+  Widget _vertical(String text, TextStyle style) {
+    final chars = text.split('');
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [for (final c in chars) Text(c, style: style)],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const paper = Color(0xFFFDFaf5);
+    const ink = Color(0xFF1A1A1A);
+    const cinnabar = Color(0xFFC0392B);
+    const watermark = Color.fromRGBO(0, 0, 0, 0.06);
+    const goldLine = Color.fromRGBO(170, 148, 96, 0.20);
 
-    const inkBlack = Color(0xFF2D2D2D);
-    const inkLight = Color(0xFFE5E5E5);
-    const sealRed = Color(0xFFB22D2A);
-    const borderLight = Color(0xFFD1CDC2);
-    const borderDark = Color(0xFF33302C);
+    final range = (timeRangeLabel ?? '').trim();
+    final jieQiText = (jieQiLabel ?? '').trim();
 
-    final ink = isDark ? inkLight : inkBlack;
-    final seal = isDark ? const Color(0xFFD64545) : sealRed;
-    final border = isDark ? borderDark : borderLight;
+    final heavenGod = jiaZi.tianGan.getTenGods(dayMaster).name;
+    final hidden = jiaZi.diZhi.cangGan;
 
     return LayoutBuilder(
       builder: (context, c) {
-        final hasTopLabel = (timeRangeLabel ?? '').isNotEmpty;
-        final hasBottomLabel = (jieQiLabel ?? '').isNotEmpty;
-        final labelTight = hasTopLabel || hasBottomLabel;
+        final s = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 160.0)
+            .clamp(0.35, 2.0);
 
-        final compact = c.maxWidth <= 54 || c.maxHeight <= (labelTight ? 58 : 46);
+        final radius = 24.0 * s;
 
-        final ganZhiFont = compact
-            ? 16.0
-            : (labelTight ? 17.0 : 18.0);
-        final tenGodFont = compact
-            ? 11.0
-            : (labelTight ? 11.0 : 12.0);
-        final hiddenFont = tenGodFont;
-        final gap = compact ? 2.0 : (labelTight ? 2.0 : 3.0);
-
-        final tenGodShort = jiaZi.tianGan.getTenGods(dayMaster).shortName;
-
-        final hiddenStems = jiaZi.diZhi.cangGan;
-        final hiddenStemText = <String>[
-          ...hiddenStems.map((e) => e.value),
-          '',
-          '',
-          '',
-        ].take(3).toList(growable: false);
-
-        final hiddenGodText = <String>[
-          ...hiddenStems.map((e) => e.getTenGods(dayMaster).shortName),
-          '',
-          '',
-          '',
-        ].take(3).toList(growable: false);
-
-        final hiddenColGap = compact ? 1.0 : (labelTight ? 1.0 : 2.0);
-
-        final contentW = (c.maxWidth - 12).clamp(0.0, double.infinity);
-        final leftColW = ganZhiFont + 2;
-        final hiddenBlockW = (contentW - leftColW - gap).clamp(
-          0.0,
-          double.infinity,
-        );
-        final hiddenColW = ((hiddenBlockW - (hiddenColGap * 2)) / 3).clamp(
-          0.0,
-          double.infinity,
-        );
-
-        final ganZhiStyle = TextStyle(
-          fontSize: ganZhiFont,
+        final headerStyle = TextStyle(
+          fontSize: 10.0 * s,
           height: 1.0,
+          color: ink.withOpacity(0.6),
+          fontWeight: FontWeight.w700,
+          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+        );
+
+        final pillarStyle = TextStyle(
+          fontSize: 32.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w900,
+          letterSpacing: 4.0 * s,
           color: ink,
-          fontWeight: FontWeight.w900,
           fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
         );
 
-        final tenGodStyle = TextStyle(
-          fontSize: tenGodFont,
+        final hGodStyle = TextStyle(
+          fontSize: 16.0 * s,
           height: 1.0,
-          color: seal,
           fontWeight: FontWeight.w900,
-          fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          color: cinnabar,
+          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
 
-        final hiddenGodStyle = tenGodStyle.copyWith(
-          fontSize: hiddenFont,
-          fontWeight: FontWeight.w900,
-          color: seal.withAlpha(isDark ? 170 : 200),
-        );
-
-        final hiddenStemStyle = ganZhiStyle.copyWith(
-          fontSize: hiddenFont,
+        final rowStyle = TextStyle(
+          fontSize: 13.0 * s,
+          height: 1.0,
           fontWeight: FontWeight.w800,
-          color: ink.withAlpha(isDark ? 120 : 150),
+          color: ink,
+          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+        );
+
+        final rowGodStyle = rowStyle.copyWith(
+          color: cinnabar,
+          fontWeight: FontWeight.w900,
         );
 
         final watermarkStyle = TextStyle(
-          fontSize: (compact ? 66.0 : 76.0) * 0.8,
+          fontSize: 130.0 * s,
           height: 1.0,
-          color: ink.withAlpha(isDark ? 22 : 28),
           fontWeight: FontWeight.w900,
-          fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          color: watermark,
+          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
 
-        final bottomLabelStyle = TextStyle(
-          fontSize: compact ? 7.5 : 8.5,
+        final footerTextStyle = TextStyle(
+          fontSize: 10.0 * s,
           height: 1.0,
-          color: seal.withAlpha(isDark ? 160 : 170),
           fontWeight: FontWeight.w800,
-          fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-        );
-
-        final timeWatermarkStyle = TextStyle(
-          fontSize: compact ? 12.0 : 14.0,
-          height: 1.0,
-          color: ink.withAlpha(isDark ? 130 : 150),
-          fontWeight: FontWeight.w900,
-          fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-        );
-
-        int? hourOf(String s) {
-          final parts = s.split(':');
-          if (parts.isEmpty) return null;
-          return int.tryParse(parts.first);
-        }
-
-        final timeParts = (timeRangeLabel ?? '').split('~');
-        final timeStart = timeParts.isNotEmpty && timeParts.first.isNotEmpty
-            ? timeParts.first
-            : null;
-        final timeEnd = timeParts.length >= 2 && timeParts[1].isNotEmpty
-            ? timeParts[1]
-            : null;
-
-        String? hourTextOf(String? s) {
-          if (s == null) return null;
-          final h = hourOf(s);
-          if (h == null) return null;
-          return h.toString().padLeft(2, '0');
-        }
-
-        final startHourText = hourTextOf(timeStart);
-        final endHourText = () {
-          if (timeEnd == null) return null;
-          final h = hourOf(timeEnd!);
-          if (h == null) return null;
-          return ((h + 1) % 24).toString().padLeft(2, '0');
-        }();
-
-        final contentPadding = EdgeInsets.fromLTRB(
-          6,
-          6,
-          6,
-          hasBottomLabel ? (compact ? 12 : 14) : 6,
+          color: ink.withOpacity(0.5),
+          letterSpacing: 1.0 * s,
+          fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
 
         return ClipRRect(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(radius),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: border, width: 0.6),
-              color: isDark
-                  ? const Color(0xFF1C1B18).withAlpha(200)
-                  : const Color(0xFFF9F6F0),
+              color: paper,
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(
+                color: Colors.black.withOpacity(0.05),
+                width: 1.0 * s,
+              ),
             ),
             child: Stack(
               clipBehavior: Clip.hardEdge,
               children: [
-                if (startHourText != null && endHourText != null)
-                  Positioned(
-                    right: 8,
-                    top: 6,
-                    child: IgnorePointer(
-                      child: Container(
-                        padding: EdgeInsets.zero,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: ink.withAlpha(isDark ? 60 : 90),
-                            width: 0.6,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(startHourText!, style: timeWatermarkStyle),
-                            SizedBox(
-                              width: 18,
-                              child: Divider(
-                                height: 6,
-                                thickness: 0.8,
-                                color: ink.withAlpha(isDark ? 50 : 70),
-                              ),
-                            ),
-                            Text(endHourText!, style: timeWatermarkStyle),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
                 Positioned(
-                  left: compact ? -10 : -14,
-                  bottom: compact ? -14 : -18,
+                  right: -25.0 * s,
+                  bottom: -40.0 * s,
                   child: IgnorePointer(
                     child: Transform.rotate(
-                      angle: -0.16,
+                      angle: -0.38,
                       child: Text(label, style: watermarkStyle),
                     ),
                   ),
                 ),
-                if ((jieQiLabel ?? '').isNotEmpty)
-                  Positioned(
-                    left: 4,
-                    right: 4,
-                    bottom: 4,
-                    child: IgnorePointer(
-                      child: Center(
+                Padding(
+                  padding: EdgeInsets.all(12.0 * s),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Align(
+                        alignment: Alignment.centerRight,
                         child: Text(
-                          jieQiLabel!,
+                          range,
+                          style: headerStyle,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: bottomLabelStyle,
                         ),
                       ),
-                    ),
-                  ),
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: Opacity(
-                      opacity: isDark ? 0.06 : 0.08,
-                      child: CustomPaint(painter: _PaperTexturePainter()),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: contentPadding,
-                  child: Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
+                      SizedBox(height: 6.0 * s),
+                      Expanded(
+                        child: Row(
                           children: [
-                            SizedBox(
-                              width: leftColW,
+                            SizedBox(width: 6.0 * s),
+                            Expanded(
+                              flex: 9,
                               child: Center(
-                                child: Text(
-                                  jiaZi.tianGan.value,
-                                  style: ganZhiStyle,
-                                ),
+                                child: _vertical(jiaZi.name, pillarStyle),
                               ),
                             ),
-                            SizedBox(width: gap),
-                            SizedBox(
-                              width: hiddenBlockW,
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                            SizedBox(width: 10.0 * s),
+                            Container(width: 1.5 * s, color: goldLine),
+                            SizedBox(width: 8.0 * s),
+                            Expanded(
+                              flex: 13,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  SizedBox(
-                                    width: hiddenColW,
-                                    child: Center(
-                                      child: Text(
-                                        tenGodShort,
-                                        style: tenGodStyle,
+                                  Text(
+                                    heavenGod,
+                                    style: hGodStyle,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  SizedBox(height: 4.0 * s),
+                                  for (final g in hidden)
+                                    Padding(
+                                      padding: EdgeInsets.only(top: 4.0 * s),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            width: 14.0 * s,
+                                            child: Text(
+                                              g.value,
+                                              style: rowStyle,
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                          SizedBox(width: 4.0 * s),
+                                          Flexible(
+                                            child: Text(
+                                              g.getTenGods(dayMaster).name,
+                                              style: rowGodStyle,
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ),
-                                  SizedBox(width: hiddenColGap),
-                                  SizedBox(width: hiddenColW),
-                                  SizedBox(width: hiddenColGap),
-                                  SizedBox(width: hiddenColW),
                                 ],
                               ),
                             ),
                           ],
                         ),
-                        SizedBox(height: gap),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: leftColW,
-                              child: Center(
-                                child: Text(
-                                  jiaZi.diZhi.value,
-                                  style: ganZhiStyle,
+                      ),
+                      SizedBox(height: 6.0 * s),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: jieQiText.isNotEmpty
+                            ? Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8.0 * s,
+                                  vertical: 2.0 * s,
                                 ),
-                              ),
-                            ),
-                            SizedBox(width: gap),
-                            SizedBox(
-                              width: hiddenBlockW,
-                              child: Column(
-                                mainAxisSize: MainAxisSize.min,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      for (var i = 0; i < 3; i++) ...[
-                                        SizedBox(
-                                          width: hiddenColW,
-                                          child: Center(
-                                            child: Text(
-                                              hiddenGodText[i],
-                                              style: hiddenGodStyle.copyWith(
-                                                fontSize: tenGodFont,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        if (i != 2)
-                                          SizedBox(width: hiddenColGap),
-                                      ],
-                                    ],
+                                decoration: BoxDecoration(
+                                  color: cinnabar,
+                                  borderRadius:
+                                      BorderRadius.circular(10.0 * s),
+                                ),
+                                child: Text(
+                                  jieQiText,
+                                  style: footerTextStyle.copyWith(
+                                    color: Colors.white.withOpacity(0.95),
+                                    letterSpacing: 0,
                                   ),
-                                  SizedBox(height: hiddenColGap),
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      for (var i = 0; i < 3; i++) ...[
-                                        SizedBox(
-                                          width: hiddenColW,
-                                          child: Center(
-                                            child: Text(
-                                              hiddenStemText[i],
-                                              style: hiddenStemStyle.copyWith(
-                                                fontSize: tenGodFont,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                        if (i != 2)
-                                          SizedBox(width: hiddenColGap),
-                                      ],
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                                ),
+                              )
+                            : Text('${label}时', style: footerTextStyle),
+                      ),
+                    ],
                   ),
                 ),
               ],

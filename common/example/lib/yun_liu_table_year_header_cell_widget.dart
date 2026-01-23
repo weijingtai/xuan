@@ -62,258 +62,218 @@ class _DaYunHeaderCellState extends State<DaYunHeaderCell> {
 
   @override
   Widget build(BuildContext context) {
-    const borderColor = Color(0xFFD1CDC2);
-    const ink = Color(0xFF2D2D2D);
-    const seal = Color(0xFFB22D2A);
-    const muted = Color(0xFF959595);
-    const muted2 = Color(0xFF7A7A7A);
+    const paperLight = Color(0xFFFDFaf5);
+    const paperDark = Color(0xFFF4F0E6);
+    const ink = Color(0xFF1A1A1A);
+    const cinnabar = Color(0xFFC0392B);
+    const goldLine = Color(0x4DD4AF37);
 
-    final titleStyle = const TextStyle(
-      fontSize: 12,
-      height: 1.0,
-      color: ink,
-      fontWeight: FontWeight.w600,
-      fontFamilyFallback: ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-    );
+    final ganGodVertical = widget.ganGod.name.split('').join('\n');
+    final zodiacChar = widget.yearGanZhi.chinese12Zodiac.name;
 
-    final subTitleStyle = const TextStyle(
-      fontSize: 10,
-      height: 1.0,
-      color: muted,
-      fontWeight: FontWeight.w400,
-      fontFamilyFallback: ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-    );
-
-    final ganZhiStyle = const TextStyle(
-      fontSize: 24,
-      height: 1.0,
-      fontWeight: FontWeight.w800,
-      color: ink,
-      fontFamilyFallback: ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-    );
-
-    final ganGodStyle = const TextStyle(
-      fontSize: 12,
-      height: 1.0,
-      fontWeight: FontWeight.w800,
-      color: seal,
-      fontFamilyFallback: ['Noto Serif SC', 'serif'],
-    );
-
-    final zodiacStyle = const TextStyle(
-      fontSize: 10,
-      height: 1.0,
-      color: muted2,
-      fontFamilyFallback: ['Noto Serif SC', 'serif'],
-    );
-
-    final hiddenGanTextStyle = const TextStyle(
-      fontSize: 12,
-      height: 1.1,
-      color: muted,
-      fontFamilyFallback: ['Noto Serif SC', 'serif'],
-    );
-
-    final hiddenGanLabelStyle = TextStyle(
-      fontSize: 12,
-      height: 1.1,
-      color: seal.withAlpha(178), // ~70%
-      fontWeight: FontWeight.w800,
-      fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-    );
-
-    // var ganGodName = widget.ganGod.name.replaceFirst("", "\n");
-    var ganGodName = widget.ganGod.name.split("").join("\n");
+    final hidden = <({TianGan gan, EnumTenGods hiddenGods})>[...widget.hiddenGans];
+    while (hidden.length < 3) {
+      hidden.add((gan: TianGan.JIA, hiddenGods: EnumTenGods.BiJian));
+    }
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
       onExit: (_) => setState(() => _hovered = false),
-      child: SizedBox(
-        width: 120,
-        height: 115,
-        child: Stack(
-          children: [
-            Container(
+      child: LayoutBuilder(
+        builder: (context, c) {
+          final sx = (c.maxWidth / 170.0).clamp(0.4, 2.0);
+          final sy = (c.maxHeight / 195.0).clamp(0.4, 2.0);
+          final s = sx < sy ? sx : sy;
+
+          final radius = 12.0 * s;
+          final borderW = 2.0 * s;
+
+          final yearStyle = TextStyle(
+            fontSize: 20.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 1.0 * s,
+            color: paperLight,
+            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          );
+
+          final ageStyle = TextStyle(
+            fontSize: 12.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w700,
+            color: paperLight.withAlpha(210),
+            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          );
+
+          final pillarStyle = TextStyle(
+            fontSize: 48.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -2.0 * s,
+            color: ink,
+            shadows: [Shadow(color: paperLight, blurRadius: 8.0 * s)],
+            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          );
+
+          final ganGodStyle = TextStyle(
+            fontSize: 14.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w800,
+            color: cinnabar,
+            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+          );
+
+          final watermarkStyle = TextStyle(
+            fontSize: 100.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w900,
+            color: Colors.black.withOpacity(0.06),
+            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+          );
+
+          final rootCharStyle = TextStyle(
+            fontSize: 15.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w900,
+            color: ink,
+            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
+          );
+
+          final rootGodStyle = TextStyle(
+            fontSize: 11.0 * s,
+            height: 1.0,
+            fontWeight: FontWeight.w800,
+            color: cinnabar,
+            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+          );
+
+          final body = ClipRRect(
+            borderRadius: BorderRadius.circular(radius),
+            child: DecoratedBox(
               decoration: BoxDecoration(
-                // color: const Color(0xFFF2EFE5).withAlpha(77), // /30
-                color: const Color(0xFFFCF9F2), // /30
-                border: Border.all(color: borderColor, width: 1),
+                color: paperLight,
+                borderRadius: BorderRadius.circular(radius),
+                border: Border.all(color: ink, width: borderW),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.10),
+                    blurRadius: 20.0 * s,
+                    offset: Offset(0, 8.0 * s),
+                  ),
+                ],
               ),
-              padding: const EdgeInsets.all(8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+              child: Stack(
+                clipBehavior: Clip.hardEdge,
                 children: [
-                  Text(
-                    widget.year.toString(),
-                    style: titleStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${widget.age}岁',
-                    style: subTitleStyle,
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  Column(
                     children: [
-                      Align(
-                        alignment: Alignment.topCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 2),
-                          child: Transform.scale(
-                            scale: 0.85,
-                            child: Text(
-                              // widget.ganGod.name.replaceFirst("", "\r\n"),
-                              // "比\n肩",
-                              ganGodName,
-                              style: ganGodStyle,
-                              textAlign: TextAlign.center,
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 6.0 * s),
+                        decoration: const BoxDecoration(color: ink),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text('${widget.year}', style: yearStyle),
+                            SizedBox(height: 2.0 * s),
+                            Text('${widget.age}岁', style: ageStyle),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              right: -10.0 * s,
+                              bottom: -15.0 * s,
+                              child: IgnorePointer(
+                                child: Transform.rotate(
+                                  angle: -0.35,
+                                  child: Text(zodiacChar, style: watermarkStyle),
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          widget.yearGanZhi.name,
-                          style: ganZhiStyle,
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      Align(
-                        alignment: Alignment.bottomCenter,
-                        child: Padding(
-                          padding: const EdgeInsets.only(top: 12),
-                          child: Text(
-                            widget.yearGanZhi.chinese12Zodiac.name,
-                            style: ganGodStyle.copyWith(
-                              color: Colors.black26,
-                              fontSize: 10,
+                            Positioned(
+                              left: 15.0 * s,
+                              top: 10.0 * s,
+                              bottom: 10.0 * s,
+                              child: IgnorePointer(
+                                child: Text(
+                                  ganGodVertical,
+                                  style: ganGodStyle,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
                             ),
-                            textAlign: TextAlign.center,
-                          ),
+                            Center(
+                              child: Text(
+                                widget.yearGanZhi.name,
+                                style: pillarStyle,
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    // padding: const EdgeInsets.only(top: 4),
-                    // decoration: BoxDecoration(
-                    //   border: Border(
-                    //     top: BorderSide(
-                    //       color: borderColor.withAlpha(128),
-                    //       width: 1,
-                    //     ),
-                    //   ),
-                    // ),
-                    child: Column(
-                      children: [
-                        // Transform.scale(
-                        //   scale: 0.9,
-                        //   alignment: Alignment.topCenter,
-                        //   child: Text(
-                        //     widget.zodiacZn,
-                        //     style: zodiacStyle,
-                        //     textAlign: TextAlign.center,
-                        //   ),
-                        // ),
-                        // const SizedBox(height: 4),
-                        Transform.scale(
-                          scale: 0.85,
-                          // scale: 1,
-                          alignment: Alignment.topCenter,
-                          child: Row(
-                            children: List.generate(3, (i) {
-                              final item = widget.hiddenGans[i];
-                              var godFirstChar = item.hiddenGods.shortName;
-                              // var lastChar = item.hiddenGods.name
-                              //     .split("")
-                              //     .last;
-                              // String? godSecondChar = lastChar;
-                              // if (lastChar == "" ||
-                              //     item.hiddenGods.name.length == 1) {
-                              //   godSecondChar = null;
-                              // }
-                              var showLeftBorder = false;
-                              if (i == 1 || i == 2) {
-                                showLeftBorder = true;
-                              }
-                              // final showLeftBorder = i == 2;
-                              return Expanded(
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 6.0 * s),
+                        decoration: BoxDecoration(
+                          color: paperDark,
+                          border: Border(top: BorderSide(color: goldLine, width: 1.0 * s)),
+                        ),
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < 3; i++)
+                              Expanded(
                                 child: Container(
                                   decoration: BoxDecoration(
-                                    border: showLeftBorder
-                                        ? Border(
+                                    border: i == 0
+                                        ? null
+                                        : Border(
                                             left: BorderSide(
-                                              color: borderColor.withAlpha(77),
-                                              width: 1,
+                                              color: Colors.black.withOpacity(0.08),
+                                              width: 1.0 * s,
                                             ),
-                                          )
-                                        : null,
+                                          ),
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        item.gan.name,
-                                        style: hiddenGanTextStyle,
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Column(
-                                        children: [
-                                          Text(
-                                            godFirstChar,
-                                            style: hiddenGanLabelStyle,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          // if (godSecondChar != null)
-                                          //   Text(
-                                          //     godSecondChar,
-                                          //     style: hiddenGanLabelStyle,
-                                          //     textAlign: TextAlign.center,
-                                          //   ),
-                                        ],
-                                      ),
+                                      Text(hidden[i].gan.name, style: rootCharStyle),
+                                      SizedBox(height: 2.0 * s),
+                                      Text(hidden[i].hiddenGods.name, style: rootGodStyle),
                                     ],
                                   ),
                                 ),
-                              );
-                            }),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: AnimatedOpacity(
+                        duration: const Duration(milliseconds: 160),
+                        opacity: _hovered ? 1.0 : 0.0,
+                        child: Container(
+                          margin: EdgeInsets.all(2.0 * s),
+                          decoration: BoxDecoration(
+                            border: Border.all(color: cinnabar.withAlpha(90), width: 1.0 * s),
+                            borderRadius: BorderRadius.circular(radius - 2.0 * s),
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+          );
 
-            Positioned.fill(
-              child: IgnorePointer(
-                child: AnimatedOpacity(
-                  duration: const Duration(milliseconds: 160),
-                  opacity: _hovered ? 1.0 : 0.0,
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: seal.withAlpha(51),
-                        width: 1,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+          return SizedBox(width: c.maxWidth, height: c.maxHeight, child: body);
+        },
       ),
     );
   }

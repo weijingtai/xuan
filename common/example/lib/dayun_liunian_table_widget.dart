@@ -49,6 +49,68 @@ class _DaYunLiuNianTableDemoWidgetState
   }
 }
 
+class DaYunLiuNianTinyTableDemoWidget extends StatefulWidget {
+  final bool fitHeight;
+
+  const DaYunLiuNianTinyTableDemoWidget({super.key, this.fitHeight = true});
+
+  @override
+  State<DaYunLiuNianTinyTableDemoWidget> createState() =>
+      _DaYunLiuNianTinyTableDemoWidgetState();
+}
+
+class _DaYunLiuNianTinyTableDemoWidgetState
+    extends State<DaYunLiuNianTinyTableDemoWidget> {
+  int _yearsPerDaYun = 10;
+
+  @override
+  Widget build(BuildContext context) {
+    final data = DaYunLiuNianTableViewData.demo(yearsPerDaYun: _yearsPerDaYun);
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: DaYunLiuNianTinyTableWidget(
+            data: data,
+            fitHeight: widget.fitHeight,
+          ),
+        ),
+        Positioned(
+          left: 14,
+          top: 14,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.65),
+              borderRadius: BorderRadius.circular(999),
+            ),
+            child: const Text(
+              'TINY',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+                height: 1,
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          right: 14,
+          bottom: 14,
+          child: _YearsPerDaYunToggle(
+            selectedYears: _yearsPerDaYun,
+            onChanged: (v) {
+              setState(() {
+                _yearsPerDaYun = v;
+              });
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _YearsPerDaYunToggle extends StatelessWidget {
   final int selectedYears;
   final ValueChanged<int> onChanged;
@@ -105,21 +167,28 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
   final DaYunLiuNianTableViewData data;
   final double scale;
   final bool fitHeight;
+  final double outerPadding;
+  final double cardPadding;
 
   const DaYunLiuNianTableWidget({
     super.key,
     required this.data,
     this.scale = 1.0,
     this.fitHeight = true,
+    this.outerPadding = 20,
+    this.cardPadding = 20,
   });
 
   DaYunLiuNianTableWidget.demo({
     super.key,
     this.scale = 0.82,
     this.fitHeight = true,
+    this.outerPadding = 20,
+    this.cardPadding = 20,
   }) : data = DaYunLiuNianTableViewData.demo();
 
   static const Color _paper = Color(0xFFFDFaf5);
+  static const Color _paperAlt = Color(0xFFF6EFE3);
   static const Color _ink = Color(0xFF1A1A1A);
   static const Color _cinnabar = Color(0xFFB22222);
   static const Color _gold = Color(0xFFAA9460);
@@ -136,8 +205,8 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
       builder: (context, constraints) {
         final rowCount = data.rowSidebars.length;
 
-        const outerPad = 20.0;
-        const cardPad = 20.0;
+        final outerPad = outerPadding;
+        final cardPad = cardPadding;
         final availableMatrixH = constraints.maxHeight.isFinite
             ? (constraints.maxHeight - outerPad * 2 - cardPad * 2).clamp(
                 0.0,
@@ -150,7 +219,7 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
             ? (availableMatrixH / baseMatrixH).clamp(0.2, 1.0)
             : 1.0;
 
-        const fitSafety = 0.985;
+        const fitSafety = 0.975;
         final safeFitScale = (fitScale * fitSafety).clamp(0.2, 1.0);
 
         final effectiveScale = fitHeight
@@ -160,9 +229,9 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
         return ColoredBox(
           color: const Color(0xFFE0E0E0),
           child: Padding(
-            padding: const EdgeInsets.all(outerPad),
+            padding: EdgeInsets.all(outerPad),
             child: Container(
-              padding: const EdgeInsets.all(cardPad),
+              padding: EdgeInsets.all(cardPad),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),
@@ -191,7 +260,7 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
   }
 
   double _estimateMatrixHeight({required int rowCount}) {
-    const headerApproxH = 182.0;
+    const headerApproxH = 194.0;
     return headerApproxH + _gap + rowCount * (_yearCellH + _gap);
   }
 
@@ -203,55 +272,109 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
     final gap = _gap * layoutScale;
     final sidebarW = _sidebarW * layoutScale;
     final dayunW = _dayunW * layoutScale;
+    final columnCount = data.columns.length;
+    final totalW =
+        sidebarW + gap + (columnCount * dayunW) + ((columnCount - 1) * gap);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(width: sidebarW),
-            SizedBox(width: gap),
-            for (var c = 0; c < data.columns.length; c++) ...[
-              _DaYunHeaderCell(
-                data: data.columns[c].header,
-                layoutScale: layoutScale,
-                textScale: textScale,
-              ),
-              if (c != data.columns.length - 1) SizedBox(width: gap),
-            ],
-          ],
-        ),
-        SizedBox(height: gap),
-        for (var r = 0; r < rowCount; r++) ...[
-          Row(
+    return SizedBox(
+      width: totalW,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Row(
+              children: [
+                SizedBox(width: sidebarW + gap),
+                for (var c = 0; c < columnCount; c++)
+                  Container(
+                    width: dayunW + (c == columnCount - 1 ? 0 : gap),
+                    color: c.isEven
+                        ? Colors.transparent
+                        : _gold.withOpacity(0.12),
+                  ),
+              ],
+            ),
+          ),
+          Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _IndexSidebar(
-                text: data.rowSidebars[r],
-                layoutScale: layoutScale,
-                textScale: textScale,
-              ),
-              SizedBox(width: gap),
-              for (var c = 0; c < data.columns.length; c++) ...[
-                SizedBox(
-                  width: dayunW,
-                  child: Align(
-                    alignment: Alignment.center,
-                    child: _YearCell(
-                      data: data.columns[c].years[r],
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(width: sidebarW),
+                  SizedBox(width: gap),
+                  for (var c = 0; c < data.columns.length; c++) ...[
+                    _DaYunHeaderCell(
+                      data: data.columns[c].header,
                       layoutScale: layoutScale,
                       textScale: textScale,
                     ),
-                  ),
+                    if (c != data.columns.length - 1) SizedBox(width: gap),
+                  ],
+                ],
+              ),
+              SizedBox(height: gap),
+              for (var r = 0; r < rowCount; r++) ...[
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _IndexSidebar(
+                      text: data.rowSidebars[r],
+                      layoutScale: layoutScale,
+                      textScale: textScale,
+                    ),
+                    SizedBox(width: gap),
+                    for (var c = 0; c < data.columns.length; c++) ...[
+                      SizedBox(
+                        width: dayunW,
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: _YearCell(
+                            data: data.columns[c].years[r],
+                            layoutScale: layoutScale,
+                            textScale: textScale,
+                          ),
+                        ),
+                      ),
+                      if (c != data.columns.length - 1) SizedBox(width: gap),
+                    ],
+                  ],
                 ),
-                if (c != data.columns.length - 1) SizedBox(width: gap),
+                SizedBox(height: gap),
               ],
             ],
           ),
-          SizedBox(height: gap),
         ],
-      ],
+      ),
+    );
+  }
+}
+
+class DaYunLiuNianTinyTableWidget extends StatelessWidget {
+  final DaYunLiuNianTableViewData data;
+  final double scale;
+  final bool fitHeight;
+
+  const DaYunLiuNianTinyTableWidget({
+    super.key,
+    required this.data,
+    this.scale = 0.52,
+    this.fitHeight = true,
+  });
+
+  DaYunLiuNianTinyTableWidget.demo({
+    super.key,
+    this.scale = 0.52,
+    this.fitHeight = true,
+  }) : data = DaYunLiuNianTableViewData.demo();
+
+  @override
+  Widget build(BuildContext context) {
+    return DaYunLiuNianTableWidget(
+      data: data,
+      scale: scale,
+      fitHeight: fitHeight,
+      outerPadding: 8,
+      cardPadding: 8,
     );
   }
 }
@@ -319,6 +442,19 @@ class DaYunLiuNianTableViewData {
     const startYear = 2024;
     const startAge = 28;
 
+    const yearIndexZhUpper = <String>[
+      '壹',
+      '贰',
+      '叁',
+      '肆',
+      '伍',
+      '陆',
+      '柒',
+      '捌',
+      '玖',
+      '拾',
+    ];
+
     final columns = <DaYunColumnViewData>[];
     for (var c = 0; c < daYunPillars.length; c++) {
       final colStartYear = startYear + c * yearsPerDaYun;
@@ -336,7 +472,7 @@ class DaYunLiuNianTableViewData {
         years.add(
           YearCellViewData(
             year: year,
-            ageTagText: '${age}岁7月',
+            ageTagText: '${age}岁',
             pillarText: pillar,
             gods: _demoYearGods(c * 100 + r),
           ),
@@ -346,7 +482,7 @@ class DaYunLiuNianTableViewData {
       columns.add(
         DaYunColumnViewData(
           header: DaYunHeaderViewData(
-            bannerText: '大运·${daYunIndexZh[c]}·${daYunPillars[c]}',
+            bannerText: '大运·${daYunIndexZh[c]}',
             pillarText: daYunPillars[c],
             gods: headerGods,
             footerText:
@@ -357,10 +493,12 @@ class DaYunLiuNianTableViewData {
       );
     }
 
-    final rowSidebars = List<String>.generate(
-      yearsPerDaYun,
-      (i) => '流年${i + 1}',
-    );
+    final rowSidebars = List<String>.generate(yearsPerDaYun, (i) {
+      final idx = i < yearIndexZhUpper.length
+          ? yearIndexZhUpper[i]
+          : '${i + 1}';
+      return '年·$idx';
+    });
 
     return DaYunLiuNianTableViewData(
       columns: columns,
@@ -567,7 +705,7 @@ class _DaYunHeaderCell extends StatelessWidget {
             ),
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 4 * layoutScale),
+              padding: EdgeInsets.symmetric(vertical: 6 * layoutScale),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.03),
                 border: Border(
@@ -577,15 +715,82 @@ class _DaYunHeaderCell extends StatelessWidget {
                   bottom: Radius.circular(8 * layoutScale),
                 ),
               ),
-              child: Text(
-                data.footerText,
-                maxLines: 2,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: _gold,
-                  fontSize: 11 * textScale,
-                  fontWeight: FontWeight.w800,
-                  height: 1.1,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.center,
+                child: Builder(
+                  builder: (context) {
+                    final parts = data.footerText.split('\n');
+                    final yearRange = parts.isNotEmpty ? parts.first : '';
+                    final ageRange = parts.length > 1 ? parts[1] : '';
+                    final ageOnly = ageRange.replaceAll(RegExp(r'\s'), '');
+                    String ageNums = ageOnly;
+                    String ageSuffix = '';
+                    final ageSuffixMatch = RegExp(
+                      r'^(.*?)(岁.*)$',
+                    ).firstMatch(ageOnly);
+                    if (ageSuffixMatch != null) {
+                      ageNums = ageSuffixMatch.group(1) ?? ageOnly;
+                      ageSuffix = ageSuffixMatch.group(2) ?? '';
+                    }
+
+                    final lineGap = 4 * layoutScale;
+
+                    final yearPillTextStyle = TextStyle(
+                      color: _gold,
+                      fontSize: (12.5 * textScale) + 2,
+                      fontWeight: FontWeight.w900,
+                      height: 1.0,
+                    );
+
+                    final ageColor = Colors.black.withOpacity(0.18);
+                    final ageNumStyle = TextStyle(
+                      color: ageColor,
+                      fontSize: (13.5 * textScale) + 2,
+                      fontWeight: FontWeight.w900,
+                      height: 1.0,
+                    );
+                    final ageUnitStyle = TextStyle(
+                      color: Colors.black.withOpacity(0.14),
+                      fontSize: 11.0 * textScale,
+                      fontWeight: FontWeight.w800,
+                      height: 1.0,
+                    );
+
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 6 * layoutScale,
+                            vertical: 1 * layoutScale,
+                          ),
+                          decoration: BoxDecoration(
+                            color: _gold.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(
+                              4 * layoutScale,
+                            ),
+                          ),
+                          child: Text(
+                            yearRange,
+                            textAlign: TextAlign.center,
+                            style: yearPillTextStyle,
+                          ),
+                        ),
+                        SizedBox(height: lineGap),
+                        Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(text: ageNums, style: ageNumStyle),
+                              if (ageSuffix.isNotEmpty)
+                                TextSpan(text: ageSuffix, style: ageUnitStyle),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
             ),
@@ -621,13 +826,13 @@ class _IndexSidebar extends StatelessWidget {
           color: _ink,
           borderRadius: BorderRadius.circular(6 * layoutScale),
         ),
-        child: Text(
-          text,
+        child: _VerticalText(
+          text: text,
           style: TextStyle(
             color: _paper,
             fontSize: 14 * textScale,
-            fontWeight: FontWeight.w700,
-            height: 1.05,
+            fontWeight: FontWeight.w800,
+            height: 1.0,
           ),
         ),
       ),
@@ -639,11 +844,13 @@ class _YearCell extends StatelessWidget {
   final YearCellViewData data;
   final double layoutScale;
   final double textScale;
+  final Color paperColor;
 
   const _YearCell({
     required this.data,
     required this.layoutScale,
     required this.textScale,
+    this.paperColor = _paper,
   });
 
   static const Color _paper = DaYunLiuNianTableWidget._paper;
@@ -652,6 +859,9 @@ class _YearCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cellPaper = paperColor;
+    final ageMatch = RegExp(r'(\d+)').firstMatch(data.ageTagText);
+    final ageNum = ageMatch?.group(1) ?? data.ageTagText;
     return SizedBox(
       width: DaYunLiuNianTableWidget._yearCellW * layoutScale,
       height: DaYunLiuNianTableWidget._yearCellH * layoutScale,
@@ -659,7 +869,7 @@ class _YearCell extends StatelessWidget {
         borderRadius: BorderRadius.circular(10 * layoutScale),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: _paper,
+            color: cellPaper,
             borderRadius: BorderRadius.circular(10 * layoutScale),
             border: Border.all(
               color: Colors.black.withOpacity(0.06),
@@ -668,18 +878,31 @@ class _YearCell extends StatelessWidget {
           ),
           child: Stack(
             children: [
-              Positioned(
-                top: -5 * layoutScale,
-                left: -35 * layoutScale,
+              Positioned.fill(
                 child: IgnorePointer(
-                  child: Text(
-                    '${data.year}',
-                    style: TextStyle(
-                      fontSize: 85 * layoutScale,
-                      fontWeight: FontWeight.w900,
-                      height: 1,
-                      color: Colors.black.withOpacity(0.08),
-                      fontFamily: 'Arial',
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      6 * layoutScale,
+                      2 * layoutScale,
+                      6 * layoutScale,
+                      0,
+                    ),
+                    child: Align(
+                      alignment: Alignment.topLeft,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.topLeft,
+                        child: Text(
+                          ageNum,
+                          style: TextStyle(
+                            fontSize: 140 * layoutScale,
+                            fontWeight: FontWeight.w900,
+                            height: 1,
+                            color: Colors.black.withOpacity(0.08),
+                            fontFamily: 'Arial',
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -697,12 +920,12 @@ class _YearCell extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4 * layoutScale),
                   ),
                   child: Text(
-                    data.ageTagText,
+                    '${data.year}',
                     style: TextStyle(
                       color: _gold,
-                      fontSize: 9.5 * textScale,
-                      fontWeight: FontWeight.w800,
-                      height: 1.05,
+                      fontSize: (12.5 * textScale) + 2,
+                      fontWeight: FontWeight.w900,
+                      height: 1.0,
                     ),
                   ),
                 ),
@@ -723,20 +946,23 @@ class _YearCell extends StatelessWidget {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            _VerticalText(
-                              text: data.pillarText,
-                              style: TextStyle(
-                                fontSize: 28 * textScale,
-                                fontWeight: FontWeight.w900,
-                                height: 1,
-                                color: _ink,
-                                letterSpacing: 2 * layoutScale,
-                                shadows: [
-                                  Shadow(
-                                    color: _paper,
-                                    blurRadius: 10 * layoutScale,
-                                  ),
-                                ],
+                            Transform.translate(
+                              offset: Offset(0, -8 * layoutScale),
+                              child: _VerticalText(
+                                text: data.pillarText,
+                                style: TextStyle(
+                                  fontSize: 28 * textScale,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1,
+                                  color: _ink,
+                                  letterSpacing: 2 * layoutScale,
+                                  shadows: [
+                                    Shadow(
+                                      color: cellPaper,
+                                      blurRadius: 10 * layoutScale,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ],

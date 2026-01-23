@@ -34,13 +34,14 @@ class _DevYunLiuTableState extends State<DevYunLiuTable> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('开发大运流年Big Table'),
           bottom: const TabBar(
             tabs: [
               Tab(text: '大运流年表格'),
+              Tab(text: 'Tiny大运流年'),
               Tab(text: '年月table'),
             ],
           ),
@@ -48,7 +49,11 @@ class _DevYunLiuTableState extends State<DevYunLiuTable> {
         body: SafeArea(
           child: TabBarView(
             physics: const PageScrollPhysics(),
-            children: [_buildDaYunLiuNianPage(), _buildYearMonthPage()],
+            children: [
+              _buildDaYunLiuNianPage(),
+              _buildDaYunLiuNianTinyPage(),
+              _buildYearMonthPage(),
+            ],
           ),
         ),
       ),
@@ -57,6 +62,10 @@ class _DevYunLiuTableState extends State<DevYunLiuTable> {
 
   Widget _buildDaYunLiuNianPage() {
     return const DaYunLiuNianTableDemoWidget();
+  }
+
+  Widget _buildDaYunLiuNianTinyPage() {
+    return const DaYunLiuNianTinyTableDemoWidget();
   }
 
   Widget _buildYearMonthPage() {

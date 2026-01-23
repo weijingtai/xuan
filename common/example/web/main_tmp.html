@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>tmp*.html 浏览器</title>
+    <style>
+      :root { color-scheme: light dark; }
+      body { margin: 0; font: 14px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif; }
+      header { padding: 10px 12px; border-bottom: 1px solid rgba(127,127,127,.35); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+      header input[type="search"] { min-width: 260px; max-width: 520px; width: 40vw; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(127,127,127,.4); background: transparent; }
+      header button { padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(127,127,127,.4); background: transparent; cursor: pointer; }
+      header .hint { opacity: .75; }
+      main { display: grid; grid-template-columns: 420px 1fr; height: calc(100vh - 54px); }
+      aside { border-right: 1px solid rgba(127,127,127,.35); overflow: auto; }
+      .list { list-style: none; margin: 0; padding: 0; }
+      .item { padding: 10px 12px; border-bottom: 1px solid rgba(127,127,127,.15); cursor: pointer; }
+      .item:hover { background: rgba(127,127,127,.10); }
+      .item.active { background: rgba(80,140,255,.18); }
+      .item .path { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; font-size: 12px; opacity: .9; }
+      .item .meta { font-size: 12px; opacity: .65; margin-top: 4px; display: flex; gap: 10px; flex-wrap: wrap; }
+      section { display: grid; grid-template-rows: auto 1fr; min-width: 0; }
+      .toolbar { padding: 8px 10px; border-bottom: 1px solid rgba(127,127,127,.35); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+      .toolbar a { color: inherit; opacity: .85; text-decoration: none; border: 1px solid rgba(127,127,127,.4); padding: 6px 8px; border-radius: 8px; }
+      .toolbar a:hover { opacity: 1; }
+      iframe { width: 100%; height: 100%; border: 0; background: white; }
+      .status { padding: 10px 12px; opacity: .8; }
+      @media (max-width: 980px) { main { grid-template-columns: 1fr; grid-template-rows: 42vh 1fr; } aside { border-right: 0; border-bottom: 1px solid rgba(127,127,127,.35); } }
+    </style>
+  </head>
+  <body>
+    <header>
+      <button id="btnRefresh" type="button">刷新列表</button>
+      <input id="q" type="search" placeholder="过滤（支持子串）… 例如：liunian / dayun / 2024" />
+      <span class="hint">快捷键：↑↓ 切换，Enter 打开新标签</span>
+      <span id="count" class="hint"></span>
+    </header>
+
+    <main>
+      <aside>
+        <div id="status" class="status">加载中…</div>
+        <ul id="list" class="list"></ul>
+      </aside>
+
+      <section>
+        <div class="toolbar">
+          <a id="openNewTab" href="#" target="_blank" rel="noopener">新标签打开</a>
+          <a id="openDirect" href="#" target="_self">直接跳转</a>
+          <span id="current" class="hint"></span>
+        </div>
+        <iframe id="preview" title="预览"></iframe>
+      </section>
+    </main>
+
+    <script type="text/plain" id="oldScript">
+      function resolveWebRoot() {
+        const url = new URL(window.location.href);
+        const fromParam = url.searchParams.get("root");
+        if (fromParam) {
+          let p = fromParam.trim();
+          if (!p.startsWith("/")) p = "/" + p;
+          if (!p.endsWith("/")) p = p + "/";
+          return p;
+        }
+        const dir = new URL("./", url).pathname;
+        return dir.endsWith("/") ? dir : dir + "/";
+      }
+
+      const WEB_ROOT = resolveWebRoot();
+      const TMP_HTML_RE = /^tmp.*\.html$/i;
+
+      const elStatus = document.getElementById("status");
+      const elList = document.getElementById("list");
+      const elQ = document.getElementById("q");
+      const elCount = document.getElementById("count");
+      const elPreview = document.getElementById("preview");
+      const elOpenNewTab = document.getElementById("openNewTab");
+      const elOpenDirect = document.getElementById("openDirect");
+      const elCurrent = document.getElementById("current");
+      const elBtnRefresh = document.getElementById("btnRefresh");
+
+      let allPaths = [];
+      let filteredPaths = [];
+      let activeIndex = -1;
+
+      function normalizePath(p) {
+        if (!p.startsWith("/")) p = "/" + p;
+        p = p.replace(/\/{2,}/g, "/");
+        return p;
+      }
+
+      function joinUrl(basePathname, href) {
+        const baseAbs = new URL(basePathname, window.location.origin);
+        return normalizePath(new URL(href, baseAbs).pathname);
+      }
+
+      function parseDirectoryListing(htmlText, baseUrl) {
+        const doc = new DOMParser().parseFromString(htmlText, "text/html");
+        const anchors = Array.from(doc.querySelectorAll("a[href]"));
+        return anchors
+          .map(a => a.getAttribute("href"))
+          .filter(Boolean)
+          .map(href => ({ href, path: joinUrl(baseUrl, href) }))
+          .filter(x => x.href !== "../" && x.href !== "./");
+      }
+
+      async function fetchText(pathname) {
+        const res = await fetch(pathname, { cache: "no-store" });
+        if (!res.ok) throw new Error(`请求失败 ${res.status}: ${pathname}`);
+        return await res.text();
+      }
+
+      async function listTmpHtmlUnderWeb() {
+        const webIndexHtml = await fetchText(WEB_ROOT);
+        const webEntries = parseDirectoryListing(webIndexHtml, WEB_ROOT);
+
+        const directFiles = webEntries
+          .filter(e => !e.href.endsWith("/"))
+          .map(e => e.href)
+          .filter(name => TMP_HTML_RE.test(name))
+          .map(name => normalizePath(WEB_ROOT + name));
+
+        const subdirs = webEntries
+          .filter(e => e.href.endsWith("/"))
+          .map(e => e.href)
+          .filter(name => name !== "../" && name !== "./");
+
+        const oneLevelFiles = [];
+        for (const dirName of subdirs) {
+          const dirPath = normalizePath(WEB_ROOT + dirName);
+          try {
+            const dirIndexHtml = await fetchText(dirPath);
+            const dirEntries = parseDirectoryListing(dirIndexHtml, dirPath);
+
+            dirEntries
+              .filter(e => !e.href.endsWith("/"))
+              .map(e => e.href)
+              .filter(name => TMP_HTML_RE.test(name))
+              .forEach(name => oneLevelFiles.push(normalizePath(dirPath + name)));
+          } catch (_) {
+          }
+        }
+
+        const set = new Set([...directFiles, ...oneLevelFiles]);
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+      }
+
+      function renderList() {
+        elList.textContent = "";
+        const q = (elQ.value || "").trim().toLowerCase();
+        filteredPaths = q
+          ? allPaths.filter(p => p.toLowerCase().includes(q))
+          : allPaths.slice();
+
+        elCount.textContent = `共 ${filteredPaths.length} 个（web/tmp*.html + web/*/tmp*.html）`;
+
+        for (let i = 0; i < filteredPaths.length; i++) {
+          const p = filteredPaths[i];
+          const li = document.createElement("li");
+          li.className = "item";
+          li.dataset.index = String(i);
+
+          const pathDiv = document.createElement("div");
+          pathDiv.className = "path";
+          pathDiv.textContent = p;
+
+          const metaDiv = document.createElement("div");
+          metaDiv.className = "meta";
+          metaDiv.textContent = `来源：${WEB_ROOT}`;
+
+          li.appendChild(pathDiv);
+          li.appendChild(metaDiv);
+
+          li.addEventListener("click", () => setActiveIndex(i, { preview: true }));
+          elList.appendChild(li);
+        }
+
+        if (filteredPaths.length === 0) {
+          elStatus.textContent = `未匹配到文件（扫描目录：${WEB_ROOT}）。请确认已用本地 HTTP 服务打开且服务器允许列目录；也可用 ?root=/web/ 指定扫描目录。`;
+          activeIndex = -1;
+          setPreview(null);
+          return;
+        }
+
+        const saved = localStorage.getItem("tmp_mainpage_active_path");
+        const idx = saved ? filteredPaths.indexOf(saved) : -1;
+        setActiveIndex(idx >= 0 ? idx : 0, { preview: true, scroll: true });
+      }
+
+      function setPreview(pathname) {
+        if (!pathname) {
+          elPreview.removeAttribute("src");
+          elOpenNewTab.href = "#";
+          elOpenDirect.href = "#";
+          elCurrent.textContent = "";
+          return;
+        }
+        elPreview.src = pathname;
+        elOpenNewTab.href = pathname;
+        elOpenDirect.href = pathname;
+        elCurrent.textContent = pathname;
+      }
+
+      function setActiveIndex(i, opts = {}) {
+        if (filteredPaths.length === 0) return;
+        const next = Math.max(0, Math.min(filteredPaths.length - 1, i));
+        activeIndex = next;
+
+        const items = Array.from(elList.querySelectorAll(".item"));
+        items.forEach(el => el.classList.remove("active"));
+        const activeEl = items[next];
+        if (activeEl) activeEl.classList.add("active");
+
+        const pathname = filteredPaths[next];
+        localStorage.setItem("tmp_mainpage_active_path", pathname);
+
+        if (opts.preview) setPreview(pathname);
+        if (opts.scroll && activeEl) activeEl.scrollIntoView({ block: "nearest" });
+      }
+
+      async function refresh() {
+        if (window.location.protocol === "file:") {
+          elStatus.textContent = "你正在用 file:// 打开，浏览器无法通过 fetch 读取目录列表。请在项目根目录启动本地 HTTP 服务后，用 http://localhost:8000/common/example/web/main_tmp.html 打开；如需扫描 /web/，再加 ?root=/web/ 。";
+          elList.textContent = "";
+          elCount.textContent = "";
+          setPreview(null);
+          return;
+        }
+
+        elStatus.textContent = "加载中…（需要用本地 HTTP 服务打开此页面）";
+        try {
+          allPaths = await listTmpHtmlUnderWeb();
+          elStatus.textContent = allPaths.length ? "就绪。" : "未发现匹配文件。";
+          renderList();
+        } catch (e) {
+          elStatus.textContent = `加载失败：${e && e.message ? e.message : String(e)}。请用本地 HTTP 服务打开此页面，并确保 ${WEB_ROOT} 可被访问且支持目录列表（或通过 ?root=/web/ 指定）。`;
+          allPaths = [];
+          renderList();
+        }
+      }
+
+      elQ.addEventListener("input", () => renderList());
+      elBtnRefresh.addEventListener("click", () => refresh());
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowDown") { e.preventDefault(); setActiveIndex(activeIndex + 1, { preview: true, scroll: true }); }
+        if (e.key === "ArrowUp") { e.preventDefault(); setActiveIndex(activeIndex - 1, { preview: true, scroll: true }); }
+        if (e.key === "Enter") {
+          const p = filteredPaths[activeIndex];
+          if (p) window.open(p, "_blank", "noopener");
+        }
+      });
+
+      refresh();
+    </script>
+    <script>
+      const FILES = [
+        "tmp.html",
+        "tmp2.html",
+        "tmp3.html",
+        "tmp4.html",
+        "tmp5.html",
+        "tmp6.html",
+        "tmp7.html",
+        "tmp8.html",
+        "tmp9.html",
+        "tmp10.html",
+        "daycell/tmp.html",
+        "daycell/tmp1.html",
+        "monthcell/tmp.html",
+        "monthcell/tmp2.html",
+        "monthcell/tmp3.html",
+        "monthcell/tmp4.html",
+        "monthcell/tmp5.html",
+        "monthcell/tmp6.html",
+        "yuncell/tmp.html",
+        "yuncell/tmp1.html",
+        "yuncell/tmp2.html",
+        "yunyeartable/tmp.html",
+        "yunyeartable/tmp1.html",
+        "yunyeartable/tmp2.html"
+      ];
+
+      const pre = document.createElement("pre");
+      pre.innerHTML = FILES.map((p) => `<a href="${p}" target="_blank" rel="noopener">${p}</a>`).join("\n");
+      document.body.innerHTML = "";
+      document.body.appendChild(pre);
+    </script>
+  </body>
+</html>
