@@ -15,6 +15,7 @@ class _InkTheme {
   static const paperHi = Color(0xFFFFFBF2);
   static const ink = Color(0xFF2D2D2D);
   static const seal = Color(0xFFB23A2B);
+  static const gold = Color(0xFFAA9460);
 
   static Color line([int a = 70]) => ink.withAlpha(a);
   static Color wash([int a = 18]) => ink.withAlpha(a);
@@ -50,6 +51,38 @@ class _DayCellDashedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _DayCellDashedLinePainter oldDelegate) {
+    return oldDelegate.color != color;
+  }
+}
+
+class _DashedHrPainter extends CustomPainter {
+  final Color color;
+
+  const _DashedHrPainter({required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    const dash = 4.0;
+    const gap = 3.0;
+
+    var x = 0.0;
+    while (x < size.width) {
+      final x2 = (x + dash).clamp(0.0, size.width);
+      canvas.drawLine(
+        Offset(x, size.height / 2),
+        Offset(x2, size.height / 2),
+        paint,
+      );
+      x = x2 + gap;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _DashedHrPainter oldDelegate) {
     return oldDelegate.color != color;
   }
 }
@@ -94,6 +127,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
 
   final Map<String, DateTime> _selectedDateByCalendar = <String, DateTime>{};
   ZiShiStrategy _shiChenZiStrategy = ZiShiStrategy.noDistinguishAt23;
+  int _yearsPerDaYun = 10;
 
   static Color get _inkBorderColor => _InkTheme.line(70);
 
@@ -110,11 +144,22 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     '癸丑大运',
   ];
 
-  static const int _yearCount = 10;
   static const int _yearStartBase = 2024;
 
   int _yearAt(int daYunIndex, int yearIndex) {
-    return _yearStartBase + (daYunIndex * _yearCount) + yearIndex;
+    return _yearStartBase + (daYunIndex * _yearsPerDaYun) + yearIndex;
+  }
+
+  void _setYearsPerDaYun(int v) {
+    if (v == _yearsPerDaYun) return;
+    setState(() {
+      _yearsPerDaYun = v;
+      _selectedDateByCalendar.clear();
+      for (var i = 0; i < _daYun.length; i++) {
+        _expandedMonthByDaYun[i] = null;
+        _expandedYearByDaYun[i] = null;
+      }
+    });
   }
 
   JiaZi _jiaZiOfYear(int year) {
@@ -372,72 +417,559 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   }
 
   Widget _buildDaYunTabs({required bool isPhone}) {
-    final itemPadding = EdgeInsets.symmetric(
-      horizontal: isPhone ? 12 : 14,
-      vertical: isPhone ? 10 : 12,
+    final tabW = isPhone ? 118.0 : 125.0;
+    final tabH = isPhone ? 156.0 : 165.0;
+
+    const selectedPaper = Color(0xFFFDFaf5);
+    const unselectedPaper = Color(0xFFF2F2F2);
+
+    final borderActive = _InkTheme.ink;
+    final gold = _InkTheme.gold;
+    final cinnabar = _InkTheme.seal;
+
+    final is9 = _yearsPerDaYun == 9;
+
+    final toggleLabelStyle = TextStyle(
+      fontSize: 12,
+      height: 1,
+      fontWeight: FontWeight.w800,
+      color: _InkTheme.ink.withAlpha(160),
+      fontFamilyFallback: const [
+        'STKaiti',
+        'KaiTi',
+        'Noto Serif SC',
+        'serif',
+      ],
     );
 
-    return AnimatedBuilder(
-      animation: _daYunTabController,
-      builder: (context, _) {
-        final selectedIndex = _daYunTabController.index;
-
-        return Container(
-          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
-          decoration: BoxDecoration(
-            border: Border.all(color: _inkBorderColor, width: 0.6),
-            color: _InkTheme.paperHi.withAlpha(180),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: TabBar(
-            controller: _daYunTabController,
-            isScrollable: true,
-            tabAlignment: TabAlignment.start,
-            labelPadding: const EdgeInsets.symmetric(horizontal: 4),
-            indicatorSize: TabBarIndicatorSize.tab,
-            dividerColor: Colors.transparent,
-            overlayColor: WidgetStatePropertyAll(_InkTheme.ink.withAlpha(12)),
-            indicator: _StampIndicator(
-              stampWidth: isPhone ? 58 : 70,
-              stampHeight: 16,
-              rotation: -0.06,
+    final toggle = Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withAlpha(220),
+          borderRadius: BorderRadius.circular(999),
+          border: Border.all(color: _inkBorderColor, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withAlpha(18),
+              blurRadius: 14,
+              offset: const Offset(0, 10),
             ),
-            labelColor: _InkTheme.seal.withAlpha(220),
-            unselectedLabelColor: _InkTheme.ink.withAlpha(200),
-            labelStyle: TextStyle(
-              fontSize: isPhone ? 12 : 14,
-              height: 1.0,
-              fontWeight: FontWeight.w700,
-            ),
-            unselectedLabelStyle: TextStyle(
-              fontSize: isPhone ? 12 : 14,
-              height: 1.0,
-              fontWeight: FontWeight.w500,
-            ),
-            tabs: List<Widget>.generate(_daYun.length, (i) {
-              final selected = i == selectedIndex;
-              return AnimatedContainer(
-                duration: const Duration(milliseconds: 180),
-                curve: Curves.easeOutCubic,
-                padding: itemPadding,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: selected
-                        ? _InkTheme.seal.withAlpha(110)
-                        : _inkBorderColor,
-                    width: selected ? 0.8 : 0.6,
-                  ),
-                  color: selected
-                      ? _InkTheme.sealWash(34)
-                      : Colors.white.withAlpha(120),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('一运', style: toggleLabelStyle),
+            const SizedBox(width: 10),
+            ToggleButtons(
+              isSelected: [is9, !is9],
+              onPressed: (index) {
+                _setYearsPerDaYun(index == 0 ? 9 : 10);
+              },
+              borderRadius: BorderRadius.circular(999),
+              constraints: const BoxConstraints(minHeight: 30, minWidth: 46),
+              borderColor: _InkTheme.ink.withAlpha(35),
+              selectedBorderColor: _InkTheme.seal.withAlpha(160),
+              fillColor: _InkTheme.sealWash(36),
+              color: _InkTheme.ink.withAlpha(170),
+              selectedColor: _InkTheme.seal.withAlpha(230),
+              children: const [
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text('9年'),
                 ),
-                child: Text(_daYun[i]),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text('10年'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+
+    TextStyle kaitiTextStyle({
+      required double fontSize,
+      FontWeight? fontWeight,
+      required Color color,
+      double height = 1,
+      double? letterSpacing,
+    }) {
+      return TextStyle(
+        fontSize: fontSize,
+        height: height,
+        fontWeight: fontWeight,
+        color: color,
+        letterSpacing: letterSpacing,
+        fontFamilyFallback: const [
+          'STKaiti',
+          'KaiTi',
+          'Noto Serif SC',
+          'serif',
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: AnimatedBuilder(
+            animation: _daYunTabController,
+            builder: (context, _) {
+              final selectedIndex = _daYunTabController.index;
+
+              return Container(
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+                decoration: BoxDecoration(
+                  border: Border.all(color: _inkBorderColor, width: 0.6),
+                  color: _InkTheme.paperHi.withAlpha(180),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: toggle,
+                    ),
+                    const SizedBox(height: 10),
+                    ScrollConfiguration(
+                      behavior: _InkScrollBehavior(),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            ...List<Widget>.generate(_daYun.length, (i) {
+                              final selected = i == selectedIndex;
+
+                              final startYear = _yearAt(i, 0);
+                              final endYear = _yearAt(i, _yearsPerDaYun - 1);
+                              final startAge =
+                                  28 + (startYear - _yearStartBase);
+                              final endAge = startAge + _yearsPerDaYun;
+
+                              final pillar = _daYun[i].replaceAll('大运', '');
+
+                              final ganGod = EnumTenGods
+                                  .values[i % EnumTenGods.values.length];
+
+                              final hiddenRaw = YunLiuHelper.hiddenGansForSeed(
+                                i * 37,
+                              );
+                              final hidden =
+                                  <({TianGan gan, EnumTenGods tenGod})>[
+                                    ...hiddenRaw.map(
+                                      (e) => (gan: e.gan, tenGod: e.hiddenGods),
+                                    ),
+                                  ];
+                              while (hidden.length < 3) {
+                                hidden.add((
+                                  gan: TianGan.JIA,
+                                  tenGod: EnumTenGods.BiJian,
+                                ));
+                              }
+
+                              final labelStyle = kaitiTextStyle(
+                                fontSize: 10,
+                                height: 1.0,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: 2,
+                              );
+                              final yearStyle = kaitiTextStyle(
+                                fontSize: 10,
+                                height: 1.2,
+                                fontWeight: FontWeight.w900,
+                                color: _InkTheme.ink,
+                              );
+                              final ageStyle = kaitiTextStyle(
+                                fontSize: 9,
+                                height: 1.2,
+                                fontWeight: FontWeight.w700,
+                                color: gold,
+                              );
+                              final pillarStyle = kaitiTextStyle(
+                                fontSize: isPhone ? 30 : 32,
+                                fontWeight: FontWeight.w900,
+                                color: _InkTheme.ink,
+                                letterSpacing: isPhone ? 3 : 4,
+                              );
+                              final godStyle = kaitiTextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w800,
+                                color: cinnabar,
+                              );
+                              final stemStyle = kaitiTextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                color: _InkTheme.ink,
+                              );
+
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 6,
+                                ),
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
+                                    _daYunTabController.animateTo(i);
+                                  },
+                                  child: AnimatedContainer(
+                                    duration: const Duration(milliseconds: 220),
+                                    curve: Curves.easeOutCubic,
+                                    width: tabW,
+                                    height: tabH,
+                                    transform: selected
+                                        ? Matrix4.translationValues(0, -3, 0)
+                                        : null,
+                                    decoration: BoxDecoration(
+                                      color: selected
+                                          ? selectedPaper
+                                          : unselectedPaper,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: selected
+                                            ? borderActive
+                                            : Colors.black.withAlpha(15),
+                                        width: selected ? 2 : 1,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: selected
+                                              ? Colors.black.withAlpha(46)
+                                              : Colors.black.withAlpha(30),
+                                          blurRadius: selected ? 18 : 4,
+                                          offset: selected
+                                              ? const Offset(0, 6)
+                                              : const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Stack(
+                                        children: [
+                                          Column(
+                                            children: [
+                                              Container(
+                                                width: double.infinity,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      vertical: 2,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: selected
+                                                      ? cinnabar
+                                                      : const Color(0xFF888888),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.black
+                                                          .withAlpha(52),
+                                                      blurRadius: 3,
+                                                      offset: const Offset(
+                                                        0,
+                                                        1,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                child: Text(
+                                                  '大运',
+                                                  style: labelStyle,
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                              Container(
+                                                width: double.infinity,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 4,
+                                                      vertical: 6,
+                                                    ),
+                                                margin:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 6,
+                                                    ),
+                                                child: Column(
+                                                  mainAxisSize:
+                                                      MainAxisSize.min,
+                                                  children: [
+                                                    Text(
+                                                      '$startYear - $endYear',
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: yearStyle,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                    const SizedBox(height: 1),
+                                                    Text(
+                                                      '$startAge岁 - $endAge岁',
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                      style: ageStyle,
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                    const SizedBox(height: 6),
+                                                    SizedBox(
+                                                      height: 1,
+                                                      child: CustomPaint(
+                                                        painter:
+                                                            _DashedHrPainter(
+                                                              color: gold
+                                                                  .withAlpha(
+                                                                    180,
+                                                                  ),
+                                                            ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                              ),
+                                              Expanded(
+                                                child: Padding(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 8,
+                                                      ),
+                                                  child: Row(
+                                                    children: [
+                                                      Expanded(
+                                                        flex: 9,
+                                                        child: Opacity(
+                                                          opacity: selected
+                                                              ? 1
+                                                              : 0.6,
+                                                          child: Center(
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              children: [
+                                                                for (final c
+                                                                    in pillar
+                                                                        .split(
+                                                                          '',
+                                                                        ))
+                                                                  Text(
+                                                                    c,
+                                                                    style:
+                                                                        pillarStyle,
+                                                                  ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                      Container(
+                                                        width: 1,
+                                                        height: double.infinity,
+                                                        color: gold.withAlpha(
+                                                          38,
+                                                        ),
+                                                      ),
+                                                      Expanded(
+                                                        flex: 13,
+                                                        child: Opacity(
+                                                          opacity: selected
+                                                              ? 1
+                                                              : 0.5,
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 10,
+                                                                ),
+                                                            child: Column(
+                                                              mainAxisSize:
+                                                                  MainAxisSize
+                                                                      .min,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                Row(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    Transform.scale(
+                                                                      scale:
+                                                                          0.8,
+                                                                      child: Container(
+                                                                        padding: const EdgeInsets.symmetric(
+                                                                          horizontal:
+                                                                              1,
+                                                                          vertical:
+                                                                              0,
+                                                                        ),
+                                                                        decoration: BoxDecoration(
+                                                                          border: Border.all(
+                                                                            color:
+                                                                                cinnabar,
+                                                                            width:
+                                                                                1,
+                                                                          ),
+                                                                          borderRadius:
+                                                                              BorderRadius.circular(
+                                                                                1,
+                                                                              ),
+                                                                        ),
+                                                                        child: Text(
+                                                                          '干',
+                                                                          style: TextStyle(
+                                                                            fontSize:
+                                                                                8,
+                                                                            height:
+                                                                                1,
+                                                                            color:
+                                                                                cinnabar,
+                                                                            fontWeight:
+                                                                                FontWeight.w800,
+                                                                            fontFamilyFallback: const [
+                                                                              'STKaiti',
+                                                                              'KaiTi',
+                                                                              'Noto Serif SC',
+                                                                              'serif',
+                                                                            ],
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    ),
+                                                                    const SizedBox(
+                                                                      width: 4,
+                                                                    ),
+                                                                    Text(
+                                                                      ganGod
+                                                                          .name,
+                                                                      style:
+                                                                          godStyle,
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 4,
+                                                                ),
+                                                                for (
+                                                                  var j = 0;
+                                                                  j < 3;
+                                                                  j++
+                                                                ) ...[
+                                                                  Row(
+                                                                    mainAxisSize:
+                                                                        MainAxisSize
+                                                                            .min,
+                                                                    children: [
+                                                                      SizedBox(
+                                                                        width:
+                                                                            14,
+                                                                        child: Text(
+                                                                          hidden[j]
+                                                                              .gan
+                                                                              .name,
+                                                                          style:
+                                                                              stemStyle,
+                                                                        ),
+                                                                      ),
+                                                                      const SizedBox(
+                                                                        width:
+                                                                            4,
+                                                                      ),
+                                                                      Text(
+                                                                        hidden[j]
+                                                                            .tenGod
+                                                                            .name,
+                                                                        style:
+                                                                            godStyle,
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  if (j != 2)
+                                                                    const SizedBox(
+                                                                      height: 4,
+                                                                    ),
+                                                                ],
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          Positioned(
+                                            left: 0,
+                                            right: 0,
+                                            bottom: 0,
+                                            child: SizedBox(
+                                              height: 6,
+                                              child: Opacity(
+                                                opacity: selected ? 1 : 0.2,
+                                                child: DecoratedBox(
+                                                  decoration: selected
+                                                      ? BoxDecoration(
+                                                          color: cinnabar,
+                                                        )
+                                                      : BoxDecoration(
+                                                          gradient: LinearGradient(
+                                                            begin: Alignment
+                                                                .topLeft,
+                                                            end: Alignment
+                                                                .bottomRight,
+                                                            tileMode: TileMode
+                                                                .repeated,
+                                                            colors: [
+                                                              gold,
+                                                              gold,
+                                                              Colors
+                                                                  .transparent,
+                                                              Colors
+                                                                  .transparent,
+                                                            ],
+                                                            stops: const [
+                                                              0,
+                                                              0.5,
+                                                              0.5,
+                                                              1,
+                                                            ],
+                                                          ),
+                                                        ),
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               );
-            }),
+            },
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 
@@ -543,7 +1075,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                   _expandedMonthByDaYun[daYunIndex] == m &&
                       _expandedYearByDaYun[daYunIndex] != null
                   ? _calendarExpandedRowHeight(
-                      yearsWidth: _yearCount * cellW,
+                      yearsWidth: _yearsPerDaYun * cellW,
                       isPhone: isPhone,
                       year: _yearAt(
                         daYunIndex,
@@ -582,7 +1114,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required double headerH,
     required bool isPhone,
   }) {
-    final yearsWidth = _yearCount * cellW;
+    final yearsWidth = _yearsPerDaYun * cellW;
 
     return ScrollConfiguration(
       behavior: _InkScrollBehavior(),
@@ -597,7 +1129,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 height: headerH,
                 child: Row(
                   children: [
-                    for (var i = 0; i < _yearCount; i++)
+                    for (var i = 0; i < _yearsPerDaYun; i++)
                       SizedBox(
                         width: cellW,
                         height: headerH,
@@ -621,7 +1153,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                   height: cellH,
                   child: Row(
                     children: [
-                      for (var y = 0; y < _yearCount; y++)
+                      for (var y = 0; y < _yearsPerDaYun; y++)
                         _buildGanZhiCell(
                           daYunIndex: daYunIndex,
                           yearIndex: y,

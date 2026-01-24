@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>流年能量卡片 UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Noto Serif SC', serif; background-color: #f0f0f0; display: flex; justify-center: center; padding: 50px; }
+        .paper-bg {
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper.png');
+            background-color: #F7F4EF;
+        }
+        .writing-v { writing-mode: vertical-lr; text-orientation: upright; }
+    </style>
+</head>
+<body>
+
+    <div class="relative w-64 shadow-2xl rounded-xl overflow-hidden border border-[#D1CDC2] paper-bg">
+        
+        <header class="bg-[#1A1A1A] py-3 text-center border-b border-[#D1CDC2]">
+            <div class="text-white text-xl font-bold tracking-widest">2024</div>
+            <div class="text-[#D4AF37] text-sm mt-0.5 opacity-80">廿八岁</div>
+        </header>
+
+        <div class="flex p-4 h-56">
+            
+            <div class="w-1/2 flex flex-col items-center justify-center border-r border-[#D1CDC2]/30">
+                <div class="text-6xl font-bold text-[#2D2D2D] leading-none tracking-tighter">
+                    甲<br/>辰
+                </div>
+                <div class="mt-4 text-[10px] text-gray-400 opacity-50 tracking-widest">DRAGON · 龙</div>
+            </div>
+
+            <div class="w-1/2 flex flex-col justify-between pl-4 py-2">
+                
+                <div class="flex flex-col items-start">
+                    <div class="text-[12px] font-bold text-[#B22D2A] leading-tight px-1 border-l-2 border-[#B22D2A]">
+                        正财
+                    </div>
+                    <div class="text-[9px] text-gray-400 mt-1">天干</div>
+                </div>
+
+                <div class="w-full border-t border-dashed border-[#D1CDC2]"></div>
+
+                <div class="space-y-3">
+                    <div class="flex items-center gap-2">
+                        <div class="text-[12px] font-bold text-[#B22D2A]">劫财</div>
+                        <span class="text-[10px] text-gray-400">乙</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-[12px] font-bold text-[#B22D2A]">正印</div>
+                        <span class="text-[10px] text-gray-400">癸</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="text-[12px] font-bold text-[#B22D2A]">偏财</div>
+                        <span class="text-[10px] text-gray-400">戊</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="absolute bottom-2 right-2 text-5xl font-bold text-[#2D2D2D] opacity-[0.03] select-none">
+            龍
+        </div>
+
+    </div>
+
+<br/>
+<div class="w-20 h-32 paper-texture border border-[#D1CDC2] flex flex-col items-center p-1 overflow-hidden">
+  <div class="text-[9px] text-gray-400 scale-90">2024 · 廿八</div>
+  
+  <div class="my-1 flex flex-col items-center leading-none">
+    <span class="text-sm font-bold text-[#2D2D2D]">甲</span>
+    <span class="text-sm font-bold text-[#2D2D2D] mt-0.5">辰</span>
+  </div>
+
+  <div class="w-full border-t border-dashed border-[#D1CDC2] my-1"></div>
+
+  <div class="flex flex-col gap-1 w-full px-1">
+    <div class="flex justify-between items-center bg-[#B22D2A]/5 px-1">
+      <span class="text-[10px] font-bold text-[#B22D2A]">正财</span>
+      <span class="text-[8px] text-gray-300">干</span>
+    </div>
+    <div class="flex justify-between items-center px-1">
+      <span class="text-[10px] font-bold text-[#B22D2A]">劫财</span>
+      <span class="text-[8px] text-gray-400">乙</span>
+    </div>
+    <div class="flex justify-between items-center px-1">
+      <span class="text-[10px] font-bold text-[#B22D2A]">正印</span>
+      <span class="text-[8px] text-gray-400">癸</span>
+    </div>
+    <div class="flex justify-between items-center px-1">
+      <span class="text-[10px] font-bold text-[#B22D2A]">偏财</span>
+      <span class="text-[8px] text-gray-400">戊</span>
+    </div>
+  </div>
+</div>
+<br />
+<div class="w-24 h-24 paper-texture border-[0.5px] border-[#D1CDC2] relative p-1.5 overflow-hidden">
+  <div class="flex justify-between items-start">
+    <span class="text-base font-bold text-[#2D2D2D]">甲</span>
+    <span class="text-[10px] font-bold text-[#B22D2A] border border-[#B22D2A] px-0.5">正财</span>
+  </div>
+
+  <div class="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
+    <span class="text-[8px] font-serif rotate-45">2024</span>
+  </div>
+
+  <div class="absolute bottom-1.5 left-1.5 right-1.5 flex justify-between items-end">
+    <div class="flex flex-col leading-none gap-1">
+      <div class="flex items-center gap-1 scale-90 origin-left">
+        <span class="text-[10px] font-bold text-[#B22D2A]">劫</span>
+        <span class="text-[8px] text-gray-400">乙</span>
+      </div>
+      <div class="flex items-center gap-1 scale-90 origin-left">
+        <span class="text-[10px] font-bold text-[#B22D2A]">印</span>
+        <span class="text-[8px] text-gray-400">癸</span>
+      </div>
+    </div>
+    <span class="text-base font-bold text-[#2D2D2D]">辰</span>
+  </div>
+</div>
+<br/>
+<div class="relative w-[110px] h-[110px] paper-texture flex flex-col p-1.5 border border-[#D1CDC2] shadow-[inset_0_0_10px_rgba(0,0,0,0.05)] rounded-sm overflow-hidden group">
+  
+  <div class="flex justify-between items-start z-10">
+    <span class="text-[12px] font-bold text-[#7A7A7A] font-serif">15</span>
+    <span class="px-1 bg-[#B22D2A] text-white text-[9px] scale-90 origin-right rounded-sm">立春</span>
+  </div>
+
+  <div class="flex-1 flex items-center justify-between mt-1 px-1">
+    
+    <div class="flex flex-col items-center justify-center border-r border-[#D1CDC2]/40 pr-2">
+      <span class="text-xl font-bold text-[#2D2D2D] leading-none drop-shadow-sm">甲</span>
+      <span class="text-xl font-bold text-[#2D2D2D] leading-none mt-1.5">辰</span>
+    </div>
+
+    <div class="flex-1 flex flex-col justify-between h-full pl-2 py-1">
+      <div class="flex flex-col items-start">
+        <span class="px-1 border border-[#B22D2A] text-[10px] font-bold text-[#B22D2A] leading-tight bg-[#B22D2A]/5">正财</span>
+      </div>
+
+      <div class="flex flex-col gap-1 mt-1">
+        <div class="flex items-center justify-between">
+          <span class="text-[8px] text-[#A9A9A9] scale-90">戊</span>
+          <span class="border-b border-[#B22D2A]/40 text-[10px] font-bold text-[#B22D2A]">偏财</span>
+        </div>
+        <div class="flex items-center justify-between">
+          <span class="text-[8px] text-[#A9A9A9] scale-90">乙</span>
+          <span class="border-b border-[#B22D2A]/40 text-[10px] font-bold text-[#B22D2A]">劫财</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute -bottom-1 -right-1 text-4xl opacity-[0.05] pointer-events-none text-[#B22D2A]">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M17.5,15c-0.2,0-0.4,0-0.5,0.1..."></path></svg>
+  </div>
+
+  <div class="absolute left-0 top-0 h-full w-[3px] bg-gradient-to-b from-green-800/80 to-green-600/40"></div>
+</div>
+<br />
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>黑金宣纸经纬卡片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .paper-texture {
+            background-image: url('https://www.transparenttextures.com/patterns/rice-paper.png');
+            background-color: #F7F4EF;
+        }
+        /* 竖排书法字体 */
+        .font-calligraphy {
+            font-family: 'Ma Shan Zheng', cursive;
+        }
+        /* 朱丝栏分隔线 */
+        .zhu-si-lan {
+            border-left: 1px solid #B22D2A;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="w-64 rounded-xl overflow-hidden shadow-2xl border border-[#D1CDC2]">
+        
+        <header class="bg-[#1A1A1A] py-3 text-center relative">
+            <h1 class="text-[#F7F4EF] text-2xl font-bold tracking-widest">2024</h1>
+            <p class="text-[#D4AF37] text-sm mt-1 opacity-90">廿八岁</p>
+            <div class="absolute top-2 right-2 text-[#B22D2A] text-xs bg-[#F7F4EF]/10 px-1.5 py-0.5 rounded-sm">
+                立春
+            </div>
+        </header>
+
+        <main class="paper-texture p-5 flex">
+            
+            <div class="flex-1 flex justify-center items-center pr-4">
+                <div class="font-calligraphy text-6xl text-[#2D2D2D] leading-none flex flex-col items-center">
+                    <span>甲</span>
+                    <span class="mt-1">辰</span>
+                </div>
+            </div>
+
+            <div class="zhu-si-lan"></div>
+
+            <div class="flex-1 pl-4 flex flex-col justify-between py-1">
+                
+                <div class="flex items-center gap-1.5 mb-3">
+                    <div class="w-4 h-4 bg-[#B22D2A] text-[#F7F4EF] text-[10px] flex items-center justify-center rounded-sm">
+                        干
+                    </div>
+                    <span class="text-lg font-bold text-[#B22D2A]">正财</span>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-[#2D2D2D]">乙</span>
+                        <span class="text-[#B22D2A]">劫财</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-[#2D2D2D]">癸</span>
+                        <span class="text-[#B22D2A]">正印</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="font-bold text-[#2D2D2D]">戊</span>
+                        <span class="text-[#B22D2A]">偏财</span>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <footer class="bg-[#E8E4D9] py-2 text-center border-t border-[#D1CDC2]/50">
+            <p class="text-sm text-[#7A7A7A] font-medium">甲辰 · 龙年 · Dragon</p>
+        </footer>
+
+    </div>
+
+</body>
+</html>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class YunLiuTableYearHeaderCellWidget extends StatelessWidget {
   const YunLiuTableYearHeaderCellWidget({super.key});
@@ -10,16 +11,16 @@ class YunLiuTableYearHeaderCellWidget extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F5F4), // stone-100
       body: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(32),
+          padding: const EdgeInsets.all(32),
           child: Center(
             child: ConstrainedBox(
-              constraints: BoxConstraints(maxWidth: 120),
-              child: DaYunHeaderCell(
+              constraints: const BoxConstraints(maxWidth: 120),
+              child: const DaYunHeaderCell(
                 year: 2024,
                 age: 28,
                 yearGanZhi: JiaZi.JIA_CHEN,
                 ganGod: EnumTenGods.ZhenCai,
-                hiddenGans: const [
+                hiddenGans: [
                   (gan: TianGan.WU, hiddenGods: EnumTenGods.ZhenCai),
                   (gan: TianGan.YI, hiddenGods: EnumTenGods.ZhengGuan),
                   (gan: TianGan.BING, hiddenGods: EnumTenGods.PanYin),
@@ -33,7 +34,7 @@ class YunLiuTableYearHeaderCellWidget extends StatelessWidget {
   }
 }
 
-class DaYunHeaderCell extends StatefulWidget {
+class DaYunHeaderCell extends StatelessWidget {
   final JiaZi yearGanZhi;
   final EnumTenGods ganGod;
   final List<({TianGan gan, EnumTenGods hiddenGods})> hiddenGans;
@@ -43,7 +44,7 @@ class DaYunHeaderCell extends StatefulWidget {
   final int age;
   final int year;
 
-  DaYunHeaderCell({
+  const DaYunHeaderCell({
     super.key,
     required this.yearGanZhi,
     required this.ganGod,
@@ -54,228 +55,254 @@ class DaYunHeaderCell extends StatefulWidget {
   });
 
   @override
-  State<DaYunHeaderCell> createState() => _DaYunHeaderCellState();
-}
-
-class _DaYunHeaderCellState extends State<DaYunHeaderCell> {
-  bool _hovered = false;
-
-  @override
   Widget build(BuildContext context) {
-    const paperLight = Color(0xFFFDFaf5);
-    const paperDark = Color(0xFFF4F0E6);
-    const ink = Color(0xFF1A1A1A);
-    const cinnabar = Color(0xFFC0392B);
-    const goldLine = Color(0x4DD4AF37);
+    const paperBase = Color(0xFFF7F4EF);
+    const headerInk = Color(0xFF1A1A1A);
+    const ink = Color(0xFF2D2D2D);
+    const cinnabar = Color(0xFFB22D2A);
+    const gold = Color(0xFFD4AF37);
+    const borderColor = Color(0xFFD1CDC2);
+    const textureUrl =
+        'https://www.transparenttextures.com/patterns/rice-paper.png';
 
-    final ganGodVertical = widget.ganGod.name.split('').join('\n');
-    final zodiacChar = widget.yearGanZhi.chinese12Zodiac.name;
-
-    final hidden = <({TianGan gan, EnumTenGods hiddenGods})>[...widget.hiddenGans];
+    final hidden = <({TianGan gan, EnumTenGods hiddenGods})>[...hiddenGans];
     while (hidden.length < 3) {
       hidden.add((gan: TianGan.JIA, hiddenGods: EnumTenGods.BiJian));
     }
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: LayoutBuilder(
-        builder: (context, c) {
-          final sx = (c.maxWidth / 170.0).clamp(0.4, 2.0);
-          final sy = (c.maxHeight / 195.0).clamp(0.4, 2.0);
-          final s = sx < sy ? sx : sy;
+    final pillarChars = yearGanZhi.name.split('');
+    final leftChar = pillarChars.isNotEmpty ? pillarChars.first : '';
+    final rightChar = pillarChars.length > 1 ? pillarChars[1] : '';
+    final zodiacChar = yearGanZhi.chinese12Zodiac.name;
 
-          final radius = 12.0 * s;
-          final borderW = 2.0 * s;
+    return LayoutBuilder(
+      builder: (context, c) {
+        final sx = (c.maxWidth / 100.0).clamp(0.45, 2.4);
+        final sy = (c.maxHeight / 112.0).clamp(0.45, 2.4);
+        final s = sx < sy ? sx : sy;
 
-          final yearStyle = TextStyle(
-            fontSize: 20.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 1.0 * s,
-            color: paperLight,
-            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-          );
+        final radius = 8.0 * s;
 
-          final ageStyle = TextStyle(
-            fontSize: 12.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w700,
-            color: paperLight.withAlpha(210),
-            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-          );
+        final headerYearStyle = TextStyle(
+          fontSize: 10.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.3 * s,
+          color: paperBase,
+          fontFamilyFallback: const [
+            'Noto Serif SC',
+            'STKaiti',
+            'KaiTi',
+            'serif',
+          ],
+        );
 
-          final pillarStyle = TextStyle(
-            fontSize: 48.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w900,
-            letterSpacing: -2.0 * s,
-            color: ink,
-            shadows: [Shadow(color: paperLight, blurRadius: 8.0 * s)],
-            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-          );
+        final ageStyle = TextStyle(
+          fontSize: 8.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w700,
+          color: gold,
+          fontFamilyFallback: const [
+            'Noto Serif SC',
+            'STKaiti',
+            'KaiTi',
+            'serif',
+          ],
+        );
 
-          final ganGodStyle = TextStyle(
-            fontSize: 14.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w800,
-            color: cinnabar,
-            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-          );
+        final pillarStyle = GoogleFonts.maShanZheng(
+          fontSize: 24.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w700,
+          color: ink,
+        );
 
-          final watermarkStyle = TextStyle(
-            fontSize: 100.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w900,
-            color: Colors.black.withOpacity(0.06),
-            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-          );
+        final watermarkStyle = GoogleFonts.maShanZheng(
+          fontSize: 60.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w700,
+          color: ink.withValues(alpha: 0.15),
+        );
 
-          final rootCharStyle = TextStyle(
-            fontSize: 15.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w900,
-            color: ink,
-            fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-          );
+        final syncTextStyle = TextStyle(
+          fontSize: 11.0 * s,
+          height: 1.0,
+          fontWeight: FontWeight.w700,
+          fontFamilyFallback: const [
+            'Noto Serif SC',
+            'STKaiti',
+            'KaiTi',
+            'serif',
+          ],
+        );
 
-          final rootGodStyle = TextStyle(
-            fontSize: 11.0 * s,
-            height: 1.0,
-            fontWeight: FontWeight.w800,
-            color: cinnabar,
-            fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-          );
-
-          final body = ClipRRect(
-            borderRadius: BorderRadius.circular(radius),
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: paperLight,
-                borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: ink, width: borderW),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
-                    blurRadius: 20.0 * s,
-                    offset: Offset(0, 8.0 * s),
-                  ),
-                ],
+        final body = ClipRRect(
+          borderRadius: BorderRadius.circular(radius),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: paperBase,
+              borderRadius: BorderRadius.circular(radius),
+              border: Border.all(color: borderColor, width: 1.0 * s),
+              image: const DecorationImage(
+                image: NetworkImage(textureUrl),
+                fit: BoxFit.cover,
               ),
-              child: Stack(
-                clipBehavior: Clip.hardEdge,
-                children: [
-                  Column(
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withAlpha(26),
+                  blurRadius: 12.0 * s,
+                  offset: Offset(0, 6.0 * s),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(vertical: 6.0 * s),
+                  color: headerInk,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 6.0 * s),
-                        decoration: const BoxDecoration(color: ink),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text('${widget.year}', style: yearStyle),
-                            SizedBox(height: 2.0 * s),
-                            Text('${widget.age}岁', style: ageStyle),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              right: -10.0 * s,
-                              bottom: -15.0 * s,
-                              child: IgnorePointer(
-                                child: Transform.rotate(
-                                  angle: -0.35,
-                                  child: Text(zodiacChar, style: watermarkStyle),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              left: 15.0 * s,
-                              top: 10.0 * s,
-                              bottom: 10.0 * s,
-                              child: IgnorePointer(
-                                child: Text(
-                                  ganGodVertical,
-                                  style: ganGodStyle,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ),
-                            Center(
-                              child: Text(
-                                widget.yearGanZhi.name,
-                                style: pillarStyle,
-                                textAlign: TextAlign.center,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 6.0 * s),
-                        decoration: BoxDecoration(
-                          color: paperDark,
-                          border: Border(top: BorderSide(color: goldLine, width: 1.0 * s)),
-                        ),
-                        child: Row(
-                          children: [
-                            for (var i = 0; i < 3; i++)
-                              Expanded(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    border: i == 0
-                                        ? null
-                                        : Border(
-                                            left: BorderSide(
-                                              color: Colors.black.withOpacity(0.08),
-                                              width: 1.0 * s,
-                                            ),
-                                          ),
-                                  ),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Text(hidden[i].gan.name, style: rootCharStyle),
-                                      SizedBox(height: 2.0 * s),
-                                      Text(hidden[i].hiddenGods.name, style: rootGodStyle),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
+                      Text('$year', style: headerYearStyle),
+                      SizedBox(height: 3.0 * s),
+                      Transform.scale(
+                        scale: 0.9,
+                        child: Text('$age岁', style: ageStyle),
                       ),
                     ],
                   ),
-                  Positioned.fill(
-                    child: IgnorePointer(
-                      child: AnimatedOpacity(
-                        duration: const Duration(milliseconds: 160),
-                        opacity: _hovered ? 1.0 : 0.0,
-                        child: Container(
-                          margin: EdgeInsets.all(2.0 * s),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: cinnabar.withAlpha(90), width: 1.0 * s),
-                            borderRadius: BorderRadius.circular(radius - 2.0 * s),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(4.0 * s),
+                    child: Stack(
+                      clipBehavior: Clip.hardEdge,
+                      children: [
+                        Positioned(
+                          left: 4.0 * s,
+                          bottom: 4.0 * s,
+                          child: IgnorePointer(
+                            child: SizedBox(
+                              width: 70.0 * s,
+                              height: 70.0 * s,
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: Transform.rotate(
+                                  angle: 0.26,
+                                  child: Text(
+                                    zodiacChar,
+                                    style: watermarkStyle,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              flex: 35,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(leftChar, style: pillarStyle),
+                                  SizedBox(height: 10.0 * s),
+                                  Text(rightChar, style: pillarStyle),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              width: 1.0 * s,
+                              height: double.infinity,
+                              color: cinnabar.withValues(alpha: 0.4),
+                            ),
+                            Expanded(
+                              flex: 65,
+                              child: Padding(
+                                padding: EdgeInsets.only(left: 6.0 * s),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 12.0 * s,
+                                          height: 12.0 * s,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: cinnabar,
+                                            borderRadius: BorderRadius.circular(
+                                              2.0 * s,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '干',
+                                            style: syncTextStyle.copyWith(
+                                              fontSize: 11.0 * s,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 4.0 * s),
+                                        Text(
+                                          ganGod.name,
+                                          style: syncTextStyle.copyWith(
+                                            color: cinnabar,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    SizedBox(height: 6.0 * s),
+                                    Column(
+                                      children: [
+                                        for (var i = 0; i < 3; i++)
+                                          Padding(
+                                            padding: EdgeInsets.only(
+                                              bottom: i == 2 ? 0 : 4.0 * s,
+                                            ),
+                                            child: Row(
+                                              children: [
+                                                SizedBox(
+                                                  width: 14.0 * s,
+                                                  child: Text(
+                                                    hidden[i].gan.name,
+                                                    style: syncTextStyle
+                                                        .copyWith(color: ink),
+                                                    textAlign: TextAlign.center,
+                                                  ),
+                                                ),
+                                                SizedBox(width: 4.0 * s),
+                                                Text(
+                                                  hidden[i].hiddenGods.name,
+                                                  style: syncTextStyle.copyWith(
+                                                    color: cinnabar,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
+          ),
+        );
 
-          return SizedBox(width: c.maxWidth, height: c.maxHeight, child: body);
-        },
-      ),
+        return SizedBox(width: c.maxWidth, height: c.maxHeight, child: body);
+      },
     );
   }
 }
-
