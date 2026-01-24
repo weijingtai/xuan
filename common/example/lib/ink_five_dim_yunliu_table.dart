@@ -1057,6 +1057,25 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
             fontWeight: FontWeight.w800,
           );
 
+          Color getStrategyColor(ZiShiStrategy s, {bool isWash = false}) {
+            switch (s) {
+              case ZiShiStrategy.noDistinguishAt23:
+              case ZiShiStrategy.startFrom23:
+                return isWash
+                    ? const Color(0xFF455A64).withOpacity(0.15)
+                    : const Color(0xFF455A64);
+              case ZiShiStrategy.distinguishAt0FiveMouse:
+              case ZiShiStrategy.startFrom0:
+              case ZiShiStrategy.splitedZi:
+              case ZiShiStrategy.bandsStartAt0:
+                return isWash ? _InkTheme.sealWash(40) : _InkTheme.seal;
+              case ZiShiStrategy.distinguishAt0Fixed:
+                return isWash
+                    ? const Color(0xFF2E7D32).withOpacity(0.15)
+                    : const Color(0xFF2E7D32);
+            }
+          }
+
           return _DoubleInkBorder(
             borderRadius: BorderRadius.circular(14),
             child: Container(
@@ -1125,7 +1144,10 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                         if (states.contains(
                                           WidgetState.selected,
                                         )) {
-                                          return _InkTheme.sealWash(40);
+                                          return getStrategyColor(
+                                            _shiChenZiStrategy,
+                                            isWash: true,
+                                          );
                                         }
                                         return Colors.white.withAlpha(170);
                                       }),
@@ -1134,7 +1156,10 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                       if (states.contains(
                                         WidgetState.pressed,
                                       )) {
-                                        return _InkTheme.sealWash(26);
+                                        return getStrategyColor(
+                                          _shiChenZiStrategy,
+                                          isWash: true,
+                                        ).withOpacity(0.3);
                                       }
                                       if (states.contains(
                                         WidgetState.hovered,
@@ -1206,6 +1231,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               return LiuGanZhiMiniCell(
                                 label: item.jz.diZhi.value,
                                 timeRangeLabel: item.range,
+                                timeRangeColor: getStrategyColor(
+                                  _shiChenZiStrategy,
+                                ),
                                 jieQiLabel: item.jieqi,
                                 jiaZi: item.jz,
                                 dayMaster: dayMaster,
@@ -1526,7 +1554,16 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       _shiChenZiStrategy,
     );
 
-    final jieQi = info.jieQiInfo.jieQi.name;
+    var jieQi = '';
+    final dayStart = DateTime(date.year, date.month, date.day);
+    final dayEnd = dayStart.add(const Duration(days: 1));
+    final jq = info.jieQiInfo;
+    if (!jq.startAt.isBefore(dayStart) && jq.startAt.isBefore(dayEnd)) {
+      jieQi = jq.jieQi.name;
+    } else if (!jq.endAt.isBefore(dayStart) && jq.endAt.isBefore(dayEnd)) {
+      jieQi = jq.nextJieQi.name;
+    }
+
     final zodiac = EnumChinese12Zodiac.fromDiZhi(
       DiZhi.getFromValue(zhiText) ?? DiZhi.ZI,
     ).name;
@@ -1695,7 +1732,7 @@ class LiuDayCellWidget extends StatelessWidget {
                   fontSize: 18.0 * s,
                   height: .8,
                   fontWeight: FontWeight.w800,
-                  color: ink.withAlpha(100),
+                  color: sealRed.withAlpha(210),
                   fontFamilyFallback: const ['Noto Serif SC', 'serif'],
                 );
 
@@ -1757,35 +1794,36 @@ class LiuDayCellWidget extends StatelessWidget {
                           ],
                         ],
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 6.0 * s),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 8.0 * s,
-                              height: 8.0 * s,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: ink.withOpacity(0.55),
-                                  // border: Border.all(
-                                  //   color: ink.withOpacity(0.55),
-                                  //   width: 1.2 * s,
-                                  // ),
+                      if (jieQi.trim().isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(top: 6.0 * s),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 8.0 * s,
+                                height: 8.0 * s,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: sealRed.withAlpha(190),
+                                    // border: Border.all(
+                                    //   color: ink.withOpacity(0.55),
+                                    //   width: 1.2 * s,
+                                    // ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 4.0 * s),
-                            Text(
-                              jieQi,
-                              style: jieQiStyle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                              SizedBox(width: 4.0 * s),
+                              Text(
+                                jieQi,
+                                style: jieQiStyle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 );
@@ -2012,6 +2050,7 @@ class LiuDayCellWidget extends StatelessWidget {
 class LiuGanZhiMiniCell extends StatelessWidget {
   final String label;
   final String? timeRangeLabel;
+  final Color? timeRangeColor;
   final String? jieQiLabel;
   final JiaZi jiaZi;
   final TianGan dayMaster;
@@ -2019,6 +2058,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
   const LiuGanZhiMiniCell({
     required this.label,
     this.timeRangeLabel,
+    this.timeRangeColor,
     this.jieQiLabel,
     required this.jiaZi,
     required this.dayMaster,
@@ -2043,6 +2083,21 @@ class LiuGanZhiMiniCell extends StatelessWidget {
     final range = (timeRangeLabel ?? '').trim();
     final jieQiText = (jieQiLabel ?? '').trim();
 
+    const shichenAlias = {
+      '子': '夜半',
+      '丑': '鸡鸣',
+      '寅': '平旦',
+      '卯': '日出',
+      '辰': '食时',
+      '巳': '隅中',
+      '午': '日中',
+      '未': '日昳',
+      '申': '晡时',
+      '酉': '日入',
+      '戌': '黄昏',
+      '亥': '人定',
+    };
+
     final heavenGod = jiaZi.tianGan.getTenGods(dayMaster).name;
     final hidden = jiaZi.diZhi.cangGan;
 
@@ -2055,9 +2110,9 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         final radius = 24.0 * s;
 
         final headerStyle = TextStyle(
-          fontSize: 11.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
-          color: ink.withOpacity(0.6),
+          color: timeRangeColor ?? ink.withOpacity(0.6),
           fontWeight: FontWeight.w700,
           fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
@@ -2072,7 +2127,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final hGodStyle = TextStyle(
-          fontSize: 18.0 * s,
+          fontSize: 20.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w900,
           color: cinnabar,
@@ -2080,7 +2135,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final rowStyle = TextStyle(
-          fontSize: 15.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink,
@@ -2101,7 +2156,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final footerTextStyle = TextStyle(
-          fontSize: 11.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink.withOpacity(0.5),
@@ -2208,7 +2263,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
                       ),
                       SizedBox(height: 6.0 * s),
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: Alignment.centerLeft,
                         child: jieQiText.isNotEmpty
                             ? Container(
                                 padding: EdgeInsets.symmetric(
@@ -2227,7 +2282,10 @@ class LiuGanZhiMiniCell extends StatelessWidget {
                                   ),
                                 ),
                               )
-                            : Text('${label}时', style: footerTextStyle),
+                            : Text(
+                                '${label}时 · ${shichenAlias[label] ?? ''}',
+                                style: footerTextStyle,
+                              ),
                       ),
                     ],
                   ),

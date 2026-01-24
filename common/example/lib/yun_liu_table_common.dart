@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:common/enums.dart';
+import 'package:common/features/datetime_details/input_info_params.dart';
 
 class InkTheme {
   static const paper = Color(0xFFF7F2E8);
@@ -109,6 +110,25 @@ class YunLiuHelper {
     '冬月',
     '腊月',
   ];
+
+  static Color getStrategyColor(ZiShiStrategy strategy, {bool isWash = false}) {
+    switch (strategy) {
+      case ZiShiStrategy.noDistinguishAt23:
+      case ZiShiStrategy.startFrom23:
+        return isWash
+            ? const Color(0xFF455A64).withOpacity(0.15)
+            : const Color(0xFF455A64);
+      case ZiShiStrategy.distinguishAt0FiveMouse:
+      case ZiShiStrategy.startFrom0:
+      case ZiShiStrategy.splitedZi:
+      case ZiShiStrategy.bandsStartAt0:
+        return isWash ? InkTheme.sealWash(40) : InkTheme.seal;
+      case ZiShiStrategy.distinguishAt0Fixed:
+        return isWash
+            ? const Color(0xFF2E7D32).withOpacity(0.15)
+            : const Color(0xFF2E7D32);
+    }
+  }
 
   static const int yearCount = 10;
   static const int yearStartBase = 2024;

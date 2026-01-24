@@ -310,7 +310,10 @@ class CalendarPanel extends StatelessWidget {
                                         if (states.contains(
                                           WidgetState.selected,
                                         )) {
-                                          return InkTheme.sealWash(40);
+                                          return YunLiuHelper.getStrategyColor(
+                                            shiChenZiStrategy,
+                                            isWash: true,
+                                          );
                                         }
                                         return Colors.white.withAlpha(170);
                                       }),
@@ -319,7 +322,10 @@ class CalendarPanel extends StatelessWidget {
                                       if (states.contains(
                                         WidgetState.pressed,
                                       )) {
-                                        return InkTheme.sealWash(26);
+                                        return YunLiuHelper.getStrategyColor(
+                                          shiChenZiStrategy,
+                                          isWash: true,
+                                        ).withOpacity(0.3);
                                       }
                                       if (states.contains(
                                         WidgetState.hovered,
@@ -385,6 +391,9 @@ class CalendarPanel extends StatelessWidget {
                               return LiuGanZhiMiniCell(
                                 label: item.jz.diZhi.value,
                                 timeRangeLabel: item.range,
+                                timeRangeColor: YunLiuHelper.getStrategyColor(
+                                  shiChenZiStrategy,
+                                ),
                                 jieQiLabel: item.jieqi,
                                 jiaZi: item.jz,
                                 dayMaster: dayMaster,

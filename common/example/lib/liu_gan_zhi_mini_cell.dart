@@ -5,6 +5,7 @@ import 'yun_liu_table_common.dart';
 class LiuGanZhiMiniCell extends StatelessWidget {
   final String label;
   final String? timeRangeLabel;
+  final Color? timeRangeColor;
   final String? jieQiLabel;
   final JiaZi jiaZi;
   final TianGan dayMaster;
@@ -13,6 +14,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
     super.key,
     required this.label,
     this.timeRangeLabel,
+    this.timeRangeColor,
     this.jieQiLabel,
     required this.jiaZi,
     required this.dayMaster,
@@ -51,7 +53,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         final headerStyle = TextStyle(
           fontSize: 11.0 * s,
           height: 1.0,
-          color: ink.withOpacity(0.6),
+          color: (timeRangeColor ?? ink.withOpacity(0.6)),
           fontWeight: FontWeight.w700,
           fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
