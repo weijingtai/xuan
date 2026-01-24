@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'yun_liu_table_month_widget.dart';
 import 'yun_liu_table_year_header_cell_widget.dart';
+import 'yun_liu_table_common.dart';
 
 class _InkTheme {
   static const paper = Color(0xFFF7F2E8);
@@ -123,43 +124,6 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     return list[idx];
   }
 
-  List<({TianGan gan, EnumTenGods hiddenGods})> _hiddenGansForSeed(int seed) {
-    final stems = TianGan.listAll;
-    final gods = EnumTenGods.values;
-
-    return <({TianGan gan, EnumTenGods hiddenGods})>[
-      (
-        gan: stems[seed % stems.length],
-        hiddenGods: gods[(seed + 1) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 3) % stems.length],
-        hiddenGods: gods[(seed + 2) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 6) % stems.length],
-        hiddenGods: gods[(seed + 3) % gods.length],
-      ),
-    ];
-  }
-
-  List<({TianGan gan, EnumTenGods tenGod})> _tenGodDetailsForSeed(int seed) {
-    final stems = TianGan.listAll;
-    final gods = EnumTenGods.values;
-
-    return <({TianGan gan, EnumTenGods tenGod})>[
-      (gan: stems[seed % stems.length], tenGod: gods[(seed + 1) % gods.length]),
-      (
-        gan: stems[(seed + 2) % stems.length],
-        tenGod: gods[(seed + 2) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 4) % stems.length],
-        tenGod: gods[(seed + 3) % gods.length],
-      ),
-    ];
-  }
-
   int _calendarRows({required int year, required int month}) {
     final first = DateTime(year, month, 1);
     final next = DateTime(year, month + 1, 1);
@@ -186,10 +150,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required bool isPhone,
   }) {
     final cellW = availableWidth / 7;
-    final target = cellW * 1.04;
-    return target
-        .clamp(isPhone ? 72.0 : 84.0, isPhone ? 128.0 : 148.0)
-        .toDouble();
+    return cellW.toDouble();
   }
 
   double _calendarExpandedRowHeight({
@@ -239,22 +200,25 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
             final gapTop = isPhone ? 8.0 : 10.0;
             final gapBottom = isPhone ? 6.0 : 8.0;
 
-            final panelW = (availableWidth - (outerPad * 2))
-                .clamp(0.0, double.infinity);
-            final gridW = (panelW - (innerPad * 2)).clamp(
+            final panelW = (availableWidth - (outerPad * 2)).clamp(
               0.0,
               double.infinity,
             );
-            final cellW = (gridW - (gridCrossSpacing * (gridCrossAxisCount - 1))) /
+            final gridW = (panelW - (innerPad * 2)).clamp(0.0, double.infinity);
+            final cellW =
+                (gridW - (gridCrossSpacing * (gridCrossAxisCount - 1))) /
                 gridCrossAxisCount;
-            final cellH = (cellW / cellAspectRatio).clamp(
-              0.0,
-              double.infinity,
-            );
+            final cellH = (cellW / cellAspectRatio).clamp(0.0, double.infinity);
             final gridH = (cellH * 2) + gridMainSpacing;
 
-            final total = (innerPad * 2) + topBarH + gapTop + gridH + gapBottom + bottomBarH;
-            return total + 10;
+            final total =
+                (innerPad * 2) +
+                topBarH +
+                gapTop +
+                gridH +
+                gapBottom +
+                bottomBarH;
+            return total + (isPhone ? 22 : 24);
           }()
         : 0.0;
 
@@ -269,21 +233,6 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
 
     return outerTop + outerBottom + (innerPad * 2) + calendarH + 6;
   }
-
-  final List<String> _months = const [
-    '正月',
-    '二月',
-    '三月',
-    '四月',
-    '五月',
-    '六月',
-    '七月',
-    '八月',
-    '九月',
-    '十月',
-    '冬月',
-    '腊月',
-  ];
 
   @override
   void initState() {
@@ -333,9 +282,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
         final isPhone = c.maxWidth < 600;
         final padding = isPhone ? 16.0 : 24.0;
 
-        final cellW = 120.0;
-        final cellH = 96.0;
-        final headerH = 115.0;
+        final cellW = 128.0;
+        final cellH = cellW * 2 / 3;
+        final headerH = 122.0;
         final monthAxisW = isPhone ? 56.0 : 72.0;
 
         return Container(
@@ -564,7 +513,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
             ),
           ),
         ),
-        for (var m = 0; m < _months.length; m++) ...[
+        for (var m = 0; m < YunLiuHelper.months.length; m++) ...[
           Container(
             width: monthAxisW,
             height: cellH,
@@ -583,7 +532,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 ],
               ),
             ),
-            child: _buildVerticalLabel(_months[m], monthStyle),
+            child: _buildVerticalLabel(YunLiuHelper.months[m], monthStyle),
           ),
           AnimatedSize(
             duration: const Duration(milliseconds: 220),
@@ -659,7 +608,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                           ganGod:
                               EnumTenGods.values[(daYunIndex + i) %
                                   EnumTenGods.values.length],
-                          hiddenGans: _hiddenGansForSeed(
+                          hiddenGans: YunLiuHelper.hiddenGansForSeed(
                             (daYunIndex * 37) + (i * 11),
                           ),
                         ),
@@ -667,7 +616,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                   ],
                 ),
               ),
-              for (var m = 0; m < _months.length; m++) ...[
+              for (var m = 0; m < YunLiuHelper.months.length; m++) ...[
                 SizedBox(
                   height: cellH,
                   child: Row(
@@ -716,7 +665,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     final tianGan = TianGan.listAll[seed % TianGan.listAll.length];
     final diZhi = DiZhi.values[(seed + 3) % DiZhi.values.length];
     final tenGod = EnumTenGods.values[(seed + 5) % EnumTenGods.values.length];
-    final tenGodDetails = _tenGodDetailsForSeed(seed);
+    final tenGodDetails = YunLiuHelper.tenGodDetailsForSeed(seed);
 
     return SizedBox(
       width: width,
@@ -907,6 +856,29 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
 
     return LayoutBuilder(
       builder: (context, constraints) {
+        // Pre-calculate major lunar month for highlighting
+        final lunarMonthCounts = <int, int>{};
+        for (final dt in items) {
+          if (dt != null) {
+            final info = SolarLunarDateTimeHelper.cacluateChineseDateInfo(
+              DateTime(dt.year, dt.month, dt.day, 12),
+              _shiChenZiStrategy,
+            );
+            lunarMonthCounts[info.lunarMonth] =
+                (lunarMonthCounts[info.lunarMonth] ?? 0) + 1;
+          }
+        }
+        int? majorLunarMonth;
+        var maxCount = -1;
+        for (final entry in lunarMonthCounts.entries) {
+          if (entry.value > maxCount) {
+            maxCount = entry.value;
+            majorLunarMonth = entry.key;
+          }
+        }
+
+        final currentYearGanZhi = _jiaZiOfYear(year).name;
+
         final headerH = isPhone ? 30.0 : 32.0;
         final weekH = 20.0;
         final topGap = isPhone ? 10.0 : 12.0;
@@ -943,13 +915,16 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 final gapTop = isPhone ? 8.0 : 10.0;
                 final gapBottom = isPhone ? 6.0 : 8.0;
 
-                final panelW = (constraints.maxWidth - (outerPad * 2))
-                    .clamp(0.0, double.infinity);
+                final panelW = (constraints.maxWidth - (outerPad * 2)).clamp(
+                  0.0,
+                  double.infinity,
+                );
                 final gridW = (panelW - (innerPad * 2)).clamp(
                   0.0,
                   double.infinity,
                 );
-                final cellW = (gridW - (gridCrossSpacing * (gridCrossAxisCount - 1))) /
+                final cellW =
+                    (gridW - (gridCrossSpacing * (gridCrossAxisCount - 1))) /
                     gridCrossAxisCount;
                 final cellH = (cellW / cellAspectRatio).clamp(
                   0.0,
@@ -957,8 +932,14 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 );
                 final gridH = (cellH * 2) + gridMainSpacing;
 
-                final total = (innerPad * 2) + topBarH + gapTop + gridH + gapBottom + bottomBarH;
-                return total + 2;
+                final total =
+                    (innerPad * 2) +
+                    topBarH +
+                    gapTop +
+                    gridH +
+                    gapBottom +
+                    bottomBarH;
+                return total + (isPhone ? 12 : 14);
               }();
 
         const useLegacyDetailPanel = false;
@@ -1095,117 +1076,132 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                   ),
                   Padding(
                     padding: EdgeInsets.all(isPhone ? 10 : 12),
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            SegmentedButton<ZiShiStrategy>(
-                              segments: <ButtonSegment<ZiShiStrategy>>[
-                                ButtonSegment<ZiShiStrategy>(
-                                  value: ZiShiStrategy.noDistinguishAt23,
-                                  label: Text('23统', style: switcherTextStyle),
-                                ),
-                                ButtonSegment<ZiShiStrategy>(
-                                  value: ZiShiStrategy.distinguishAt0FiveMouse,
-                                  label: Text('0五', style: switcherTextStyle),
-                                ),
-                                ButtonSegment<ZiShiStrategy>(
-                                  value: ZiShiStrategy.distinguishAt0Fixed,
-                                  label: Text('0定', style: switcherTextStyle),
-                                ),
-                              ],
-                              selected: <ZiShiStrategy>{_shiChenZiStrategy},
-                              onSelectionChanged: (s) {
-                                setState(() => _shiChenZiStrategy = s.first);
-                              },
-                              showSelectedIcon: false,
-                              style: ButtonStyle(
-                                visualDensity: VisualDensity.compact,
-                                padding: WidgetStateProperty.all(
-                                  const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 6,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              SegmentedButton<ZiShiStrategy>(
+                                segments: <ButtonSegment<ZiShiStrategy>>[
+                                  ButtonSegment<ZiShiStrategy>(
+                                    value: ZiShiStrategy.noDistinguishAt23,
+                                    label: Text(
+                                      '23统',
+                                      style: switcherTextStyle,
+                                    ),
                                   ),
-                                ),
-                                side: WidgetStateProperty.all(
-                                  BorderSide(
-                                    color: _InkTheme.line(60),
-                                    width: 0.6,
+                                  ButtonSegment<ZiShiStrategy>(
+                                    value:
+                                        ZiShiStrategy.distinguishAt0FiveMouse,
+                                    label: Text('0五', style: switcherTextStyle),
                                   ),
-                                ),
-                                backgroundColor:
-                                    WidgetStateProperty.resolveWith((states) {
-                                  if (states.contains(WidgetState.selected)) {
-                                    return _InkTheme.sealWash(40);
-                                  }
-                                  return Colors.white.withAlpha(170);
-                                }),
-                                overlayColor:
-                                    WidgetStateProperty.resolveWith((states) {
-                                  if (states.contains(WidgetState.pressed)) {
-                                    return _InkTheme.sealWash(26);
-                                  }
-                                  if (states.contains(WidgetState.hovered)) {
-                                    return Colors.white.withAlpha(70);
-                                  }
-                                  return null;
-                                }),
-                                shape: WidgetStateProperty.all(
-                                  RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                  ButtonSegment<ZiShiStrategy>(
+                                    value: ZiShiStrategy.distinguishAt0Fixed,
+                                    label: Text('0定', style: switcherTextStyle),
                                   ),
-                                ),
-                              ),
-                            ),
-                            Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedDateByCalendar.remove(calendarId);
-                                  });
+                                ],
+                                selected: <ZiShiStrategy>{_shiChenZiStrategy},
+                                onSelectionChanged: (s) {
+                                  setState(() => _shiChenZiStrategy = s.first);
                                 },
-                                borderRadius: BorderRadius.circular(999),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 6,
+                                showSelectedIcon: false,
+                                style: ButtonStyle(
+                                  visualDensity: VisualDensity.compact,
+                                  padding: WidgetStateProperty.all(
+                                    const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 6,
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    border: Border.all(
+                                  side: WidgetStateProperty.all(
+                                    BorderSide(
                                       color: _InkTheme.line(60),
                                       width: 0.6,
                                     ),
-                                    color: Colors.white.withAlpha(140),
-                                    borderRadius: BorderRadius.circular(999),
                                   ),
-                                  child: Text(
-                                    'X 关闭',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      height: 1.0,
-                                      color: _InkTheme.ink.withAlpha(170),
-                                      fontWeight: FontWeight.w700,
+                                  backgroundColor:
+                                      WidgetStateProperty.resolveWith((states) {
+                                        if (states.contains(
+                                          WidgetState.selected,
+                                        )) {
+                                          return _InkTheme.sealWash(40);
+                                        }
+                                        return Colors.white.withAlpha(170);
+                                      }),
+                                  overlayColor: WidgetStateProperty.resolveWith(
+                                    (states) {
+                                      if (states.contains(
+                                        WidgetState.pressed,
+                                      )) {
+                                        return _InkTheme.sealWash(26);
+                                      }
+                                      if (states.contains(
+                                        WidgetState.hovered,
+                                      )) {
+                                        return Colors.white.withAlpha(70);
+                                      }
+                                      return null;
+                                    },
+                                  ),
+                                  shape: WidgetStateProperty.all(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: isPhone ? 8 : 10),
-                        Expanded(
-                          child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: twelve.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: gridCrossAxisCount,
-                        crossAxisSpacing: gridCrossSpacing,
-                        mainAxisSpacing: gridMainSpacing,
-                        childAspectRatio: cellAspectRatio,
-                      ),
-                      itemBuilder: (context, i) {
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedDateByCalendar.remove(
+                                        calendarId,
+                                      );
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(999),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: _InkTheme.line(60),
+                                        width: 0.6,
+                                      ),
+                                      color: Colors.white.withAlpha(140),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: Text(
+                                      'X 关闭',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        height: 1.0,
+                                        color: _InkTheme.ink.withAlpha(170),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: isPhone ? 8 : 10),
+                          GridView.builder(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: twelve.length,
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: gridCrossAxisCount,
+                                  crossAxisSpacing: gridCrossSpacing,
+                                  mainAxisSpacing: gridMainSpacing,
+                                  childAspectRatio: cellAspectRatio,
+                                ),
+                            itemBuilder: (context, i) {
                               final item = twelve[i];
                               return LiuGanZhiMiniCell(
                                 label: item.jz.diZhi.value,
@@ -1216,46 +1212,46 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               );
                             },
                           ),
-                        ),
-                        SizedBox(height: isPhone ? 6 : 8),
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: Material(
-                            color: Colors.transparent,
-                            child: InkWell(
-                              onTap: () {
-                                Navigator.of(
-                                  context,
-                                ).pushNamed('/common/ren_sheng_wan_nian_li');
-                              },
-                              borderRadius: BorderRadius.circular(999),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _InkTheme.sealWash(34),
-                                  borderRadius: BorderRadius.circular(999),
-                                  border: Border.all(
-                                    color: _InkTheme.seal.withAlpha(140),
-                                    width: 0.6,
+                          SizedBox(height: isPhone ? 6 : 8),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.of(
+                                    context,
+                                  ).pushNamed('/common/ren_sheng_wan_nian_li');
+                                },
+                                borderRadius: BorderRadius.circular(999),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 6,
                                   ),
-                                ),
-                                child: Text(
-                                  '进入「人生万年历」>>>',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    height: 1.0,
-                                    color: _InkTheme.seal.withAlpha(220),
-                                    fontWeight: FontWeight.w800,
+                                  decoration: BoxDecoration(
+                                    color: _InkTheme.sealWash(34),
+                                    borderRadius: BorderRadius.circular(999),
+                                    border: Border.all(
+                                      color: _InkTheme.seal.withAlpha(140),
+                                      width: 0.6,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '进入「人生万年历」>>>',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      height: 1.0,
+                                      color: _InkTheme.seal.withAlpha(220),
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -1299,6 +1295,8 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                   }
                 });
               },
+              majorLunarMonth: majorLunarMonth,
+              currentYearGanZhi: currentYearGanZhi,
             ),
           );
         }
@@ -1317,8 +1315,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                     child: InkWell(
                       onTap: () {
                         final parts = calendarId.split('-');
-                        final daYunIndex =
-                            parts.isNotEmpty ? int.tryParse(parts[0]) : null;
+                        final daYunIndex = parts.isNotEmpty
+                            ? int.tryParse(parts[0])
+                            : null;
                         setState(() {
                           _selectedDateByCalendar.remove(calendarId);
                           if (daYunIndex != null &&
@@ -1509,16 +1508,18 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required bool isToday,
     required bool isSelected,
     required VoidCallback onTap,
+    required int? majorLunarMonth,
+    required String currentYearGanZhi,
   }) {
     final ganZhi = _ganZhiForDay(date);
     final ganZhiChars = ganZhi.split('');
     final ganText = ganZhiChars.isEmpty ? '' : ganZhiChars.first;
     final zhiText = ganZhiChars.length < 2 ? '' : ganZhiChars[1];
 
-    final tenGodShortName = _tenGodForDay(date).shortName;
+    final tenGodName = _tenGodForDay(date).tenGod;
     final hidden = _hiddenTriplesForDay(
       date,
-    ).map((e) => (gan: e.gan, shortName: e.shortName)).toList(growable: false);
+    ).map((e) => (gan: e.gan, tenGod: e.tenGod)).toList(growable: false);
 
     final info = SolarLunarDateTimeHelper.cacluateChineseDateInfo(
       DateTime(date.year, date.month, date.day, 12),
@@ -1530,13 +1531,30 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       DiZhi.getFromValue(zhiText) ?? DiZhi.ZI,
     ).name;
 
-    final lunarMonthCn =
+    // Lunar text formatting logic
+    final lunarYear = info.eightChars.year.name;
+    final showYear = lunarYear != currentYearGanZhi;
+
+    var monthStr =
         SolarLunarDateTimeHelper.intMonth2ChineseMap[info.lunarMonth] ??
-            '${info.lunarMonth}';
-    final lunarDayCn = SolarLunarDateTimeHelper.intDay2ChineseMap[info.lunarDay] ??
+        '${info.lunarMonth}';
+    if (info.lunarMonth == 1) monthStr = '一';
+    if (info.lunarMonth == 11) monthStr = '十一';
+    if (info.lunarMonth == 12) monthStr = '十二';
+
+    final dayStr =
+        SolarLunarDateTimeHelper.intDay2ChineseMap[info.lunarDay] ??
         '${info.lunarDay}';
-    final lunarText =
-        '${info.eightChars.year.name}年 · ${info.isLeapMonth ? '闰' : ''}${lunarMonthCn}月$lunarDayCn';
+
+    final sb = StringBuffer();
+    if (showYear) {
+      sb.write('$lunarYear · ');
+    }
+    sb.write('${info.isLeapMonth ? '闰' : ''}$monthStr月 · $dayStr');
+
+    final lunarText = sb.toString();
+    final isHighlight =
+        majorLunarMonth != null && info.lunarMonth != majorLunarMonth;
 
     return LiuDayCellWidget(
       date: date,
@@ -1545,11 +1563,12 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       onTap: onTap,
       ganText: ganText,
       zhiText: zhiText,
-      tenGodShortName: tenGodShortName,
+      tenGodName: tenGodName,
       hidden: hidden,
       jieQi: jieQi,
       zodiac: zodiac,
       lunarText: lunarText,
+      isLunarHighlight: isHighlight,
     );
   }
 
@@ -1589,11 +1608,12 @@ class LiuDayCellWidget extends StatelessWidget {
 
   final String ganText;
   final String zhiText;
-  final String tenGodShortName;
-  final List<({String gan, String shortName})> hidden;
+  final String tenGodName;
+  final List<({String gan, String tenGod})> hidden;
   final String jieQi;
   final String zodiac;
   final String lunarText;
+  final bool isLunarHighlight;
 
   const LiuDayCellWidget({
     required this.date,
@@ -1602,18 +1622,23 @@ class LiuDayCellWidget extends StatelessWidget {
     required this.onTap,
     required this.ganText,
     required this.zhiText,
-    required this.tenGodShortName,
+    required this.tenGodName,
     required this.hidden,
     required this.jieQi,
     required this.zodiac,
     required this.lunarText,
+    this.isLunarHighlight = false,
   });
 
   Widget _vertical(String text, TextStyle style) {
     final chars = text.split('');
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [for (final c in chars) Text(c, style: style)],
+      children: [
+        Text(chars.first, style: style),
+        SizedBox(height: 8.0),
+        Text(chars.last, style: style),
+      ],
     );
   }
 
@@ -1625,269 +1650,359 @@ class LiuDayCellWidget extends StatelessWidget {
 
     return _InkHoverRegion(
       builder: (context, isHovered) {
-        return LayoutBuilder(
-          builder: (context, c) {
-            final s = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 160.0)
-                .clamp(0.35, 2.0);
+        const designSize = 180.0;
+        return FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: designSize,
+            height: designSize,
+            child: LayoutBuilder(
+              builder: (context, c) {
+                final s =
+                    ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) /
+                            designSize)
+                        .clamp(0.35, 2.0);
 
-            final radius = 12.0 * s;
-            final borderW = 2.0 * s;
+                final radius = 12.0 * s;
+                final borderW = 2.0 * s;
 
-            final dateStyle = TextStyle(
-              fontSize: 36.0 * s,
-              height: 0.8,
-              fontWeight: FontWeight.w900,
-              color: ink,
-              fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-            );
+                final dateStyle = TextStyle(
+                  fontSize: 32.0 * s,
+                  height: 0.8,
+                  fontWeight: FontWeight.w900,
+                  color: ink.withAlpha(100),
+                  fontFamilyFallback: const [
+                    'ZCOOL XiaoWei',
+                    'Noto Serif SC',
+                    'serif',
+                  ],
+                );
 
-            final pillarStyle = TextStyle(
-              fontSize: 34.0 * s,
-              height: 0.9,
-              fontWeight: FontWeight.w900,
-              color: ink,
-              letterSpacing: -2.0 * s,
-              fontFamilyFallback: const ['ZCOOL XiaoWei', 'Noto Serif SC', 'serif'],
-            );
+                final pillarStyle = TextStyle(
+                  fontSize: 38.0 * s,
+                  height: 0.9,
+                  fontWeight: FontWeight.w900,
+                  color: ink,
+                  letterSpacing: -2.0 * s,
+                  fontFamilyFallback: const [
+                    'ZCOOL XiaoWei',
+                    'Noto Serif SC',
+                    'serif',
+                  ],
+                );
 
-            final sealCharStyle = TextStyle(
-              fontSize: 11.0 * s,
-              height: 1.0,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-            );
+                final jieQiStyle = TextStyle(
+                  fontSize: 18.0 * s,
+                  height: .8,
+                  fontWeight: FontWeight.w800,
+                  color: ink.withAlpha(100),
+                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                );
 
-            final heavenGodStyle = TextStyle(
-              fontSize: 14.0 * s,
-              height: 1.0,
-              fontWeight: FontWeight.w900,
-              color: sealRed,
-              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-            );
+                final heavenGodStyle = TextStyle(
+                  fontSize: 19.0 * s,
+                  height: 1.0,
+                  fontWeight: FontWeight.w900,
+                  color: sealRed,
+                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                );
 
-            final pairCharStyle = TextStyle(
-              fontSize: 12.0 * s,
-              height: 1.0,
-              fontWeight: FontWeight.w900,
-              color: ink,
-              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-            );
+                final pairCharStyle = TextStyle(
+                  fontSize: 19.0 * s,
+                  height: 1.0,
+                  fontWeight: FontWeight.w900,
+                  color: ink,
+                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                );
 
-            final pairGodStyle = TextStyle(
-              fontSize: 12.0 * s,
-              height: 1.0,
-              fontWeight: FontWeight.w800,
-              color: sealRed,
-              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-            );
+                final pairGodStyle = TextStyle(
+                  fontSize: 19.0 * s,
+                  height: 1.0,
+                  fontWeight: FontWeight.w800,
+                  color: sealRed,
+                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                );
 
-            final footerStyle = TextStyle(
-              fontSize: 10.0 * s,
-              height: 1.0,
-              color: const Color(0xFF666666),
-              fontWeight: FontWeight.w700,
-              fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-            );
+                final ganColW = 20.0 * s;
 
-            final header = Padding(
-              padding: EdgeInsets.fromLTRB(8.0 * s, 8.0 * s, 8.0 * s, 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
+                final footerStyle = TextStyle(
+                  fontSize: 14.0 * s,
+                  height: 1.0,
+                  color: const Color(0xFF666666),
+                  fontWeight: FontWeight.w700,
+                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
+                );
+
+                final header = Padding(
+                  padding: EdgeInsets.fromLTRB(8.0 * s, 8.0 * s, 8.0 * s, 0),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('${date.day}', style: dateStyle),
-                      if (isToday) ...[
-                        SizedBox(width: 6.0 * s),
-                        Container(
-                          width: 6.0 * s,
-                          height: 6.0 * s,
-                          margin: EdgeInsets.only(top: 4.0 * s),
-                          decoration: BoxDecoration(
-                            color: sealRed,
-                            borderRadius: BorderRadius.circular(2.0 * s),
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 4.0 * s, vertical: 2.0 * s),
-                    decoration: BoxDecoration(
-                      color: sealRed,
-                      borderRadius: BorderRadius.circular(1.0 * s),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.20),
-                          offset: Offset(1.0 * s, 1.0 * s),
-                          blurRadius: 0,
-                        ),
-                      ],
-                    ),
-                    child: _vertical(jieQi, sealCharStyle),
-                  ),
-                ],
-              ),
-            );
-
-            final main = Expanded(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(10.0 * s, 5.0 * s, 10.0 * s, 5.0 * s),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 10,
-                      child: Center(
-                        child: _vertical('$ganText$zhiText', pillarStyle),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('${date.day}', style: dateStyle),
+                          if (isToday) ...[
+                            SizedBox(width: 6.0 * s),
+                            Container(
+                              width: 6.0 * s,
+                              height: 6.0 * s,
+                              margin: EdgeInsets.only(top: 4.0 * s),
+                              decoration: BoxDecoration(
+                                color: sealRed,
+                                borderRadius: BorderRadius.circular(2.0 * s),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ),
-                    Expanded(
-                      flex: 12,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border(
-                            left: BorderSide(
-                              color: Colors.black.withOpacity(0.10),
-                              width: 1.0 * s,
-                            ),
-                          ),
-                        ),
-                        padding: EdgeInsets.only(left: 10.0 * s),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
+                      Padding(
+                        padding: EdgeInsets.only(top: 6.0 * s),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
-                                  padding: EdgeInsets.only(bottom: 2.0 * s),
-                                  decoration: BoxDecoration(
-                                    border: Border(
-                                      bottom: BorderSide(
-                                        color: sealRed,
-                                        width: 2.0 * s,
-                                      ),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    tenGodShortName,
-                                    style: heavenGodStyle,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 4.0 * s),
-                            for (final it in hidden)
-                              Padding(
-                                padding: EdgeInsets.only(top: 4.0 * s),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(it.gan, style: pairCharStyle),
-                                    SizedBox(width: 6.0 * s),
-                                    Text(it.shortName, style: pairGodStyle),
-                                  ],
+                            SizedBox(
+                              width: 8.0 * s,
+                              height: 8.0 * s,
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: ink.withOpacity(0.55),
+                                  // border: Border.all(
+                                  //   color: ink.withOpacity(0.55),
+                                  //   width: 1.2 * s,
+                                  // ),
                                 ),
                               ),
+                            ),
+                            SizedBox(width: 4.0 * s),
+                            Text(
+                              jieQi,
+                              style: jieQiStyle,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ],
                         ),
                       ),
+                    ],
+                  ),
+                );
+
+                final main = Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      10.0 * s,
+                      5.0 * s,
+                      10.0 * s,
+                      5.0 * s,
                     ),
-                  ],
-                ),
-              ),
-            );
-
-            final footer = Container(
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(vertical: 2.0 * s),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.03),
-                border: Border(
-                  top: BorderSide(
-                    color: Colors.black.withOpacity(0.05),
-                    width: 1.0 * s,
-                  ),
-                ),
-              ),
-              child: Text(
-                lunarText,
-                style: footerStyle,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            );
-
-            final card = DecoratedBox(
-              decoration: BoxDecoration(
-                color: paper,
-                borderRadius: BorderRadius.circular(radius),
-                border: Border.all(color: ink, width: borderW),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.10),
-                    offset: Offset(4.0 * s, 4.0 * s),
-                    blurRadius: 0,
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Column(children: [header, main, footer]),
-                  Positioned(
-                    left: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: Opacity(
-                        opacity: isSelected ? 1.0 : 0.0,
-                        child: Container(
-                          width: 6.0 * s,
-                          height: 6.0 * s,
-                          decoration: BoxDecoration(
-                            color: sealRed,
-                            borderRadius: BorderRadius.circular(2.0 * s),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          flex: 10,
+                          child: Center(
+                            child: Transform.translate(
+                              offset: Offset(4.0 * s, -4.0 * s),
+                              child: _vertical('$ganText$zhiText', pillarStyle),
+                            ),
                           ),
+                        ),
+                        Expanded(
+                          flex: 12,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  // color: Colors.black.withOpacity(0.10),
+                                  color: sealRed,
+                                  width: 1.0 * s,
+                                ),
+                              ),
+                            ),
+                            padding: EdgeInsets.only(left: 10.0 * s),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      width: ganColW,
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: Container(
+                                          width: ganColW,
+                                          height: ganColW,
+                                          alignment: Alignment.center,
+                                          decoration: BoxDecoration(
+                                            color: sealRed,
+                                            // color: Colors.black.withOpacity(
+                                            //   0.10,
+                                            // ),
+                                            borderRadius: BorderRadius.circular(
+                                              6.0 * s,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '干',
+                                            style: pairCharStyle.copyWith(
+                                              color: Colors.white,
+                                              height: 1.0,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.0 * s),
+                                    Flexible(
+                                      child: Text(
+                                        tenGodName,
+                                        style: heavenGodStyle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10.0 * s),
+                                for (final it in hidden)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 4.0 * s),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: ganColW,
+                                          child: Text(
+                                            it.gan,
+                                            style: pairCharStyle,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(width: 12.0 * s),
+                                        Flexible(
+                                          child: Text(
+                                            it.tenGod,
+                                            style: pairGodStyle,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+                final footer = Container(
+                  width: double.infinity,
+                  constraints: BoxConstraints(minHeight: 32.0 * s),
+                  padding: EdgeInsets.symmetric(vertical: 7.0 * s),
+                  decoration: BoxDecoration(
+                    color: isLunarHighlight
+                        ? sealRed.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.03),
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.black.withOpacity(0.05),
+                        width: 1.0 * s,
+                      ),
+                    ),
+                  ),
+                  child: Text(
+                    lunarText,
+                    style: footerStyle.copyWith(
+                      color: isLunarHighlight ? sealRed : null,
+                      fontWeight: isLunarHighlight ? FontWeight.w900 : null,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                );
+
+                final card = DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: paper,
+                    borderRadius: BorderRadius.circular(radius),
+                    border: Border.all(color: ink, width: borderW),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.10),
+                        offset: Offset(4.0 * s, 4.0 * s),
+                        blurRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Stack(
+                    children: [
+                      Column(children: [header, main, footer]),
+                      Positioned(
+                        left: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          child: Opacity(
+                            opacity: isSelected ? 1.0 : 0.0,
+                            child: Container(
+                              width: 6.0 * s,
+                              height: 6.0 * s,
+                              decoration: BoxDecoration(
+                                color: sealRed,
+                                borderRadius: BorderRadius.circular(2.0 * s),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+
+                return MediaQuery(
+                  data: MediaQuery.of(
+                    context,
+                  ).copyWith(textScaler: TextScaler.noScaling),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: InkWell(
+                      onTap: onTap,
+                      borderRadius: BorderRadius.circular(radius),
+                      overlayColor: WidgetStateProperty.resolveWith((states) {
+                        if (states.contains(WidgetState.pressed)) {
+                          return _InkTheme.sealWash(26);
+                        }
+                        if (states.contains(WidgetState.hovered)) {
+                          return Colors.white.withAlpha(50);
+                        }
+                        return null;
+                      }),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(radius),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: isHovered
+                                ? const Color(0xFFF2EFE5)
+                                : Colors.transparent,
+                          ),
+                          child: card,
                         ),
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-
-            return Material(
-              type: MaterialType.transparency,
-              child: InkWell(
-                onTap: onTap,
-                borderRadius: BorderRadius.circular(radius),
-                overlayColor: WidgetStateProperty.resolveWith((states) {
-                  if (states.contains(WidgetState.pressed)) {
-                    return _InkTheme.sealWash(26);
-                  }
-                  if (states.contains(WidgetState.hovered)) {
-                    return Colors.white.withAlpha(50);
-                  }
-                  return null;
-                }),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(radius),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: isHovered ? const Color(0xFFF2EFE5) : Colors.transparent,
-                    ),
-                    child: card,
-                  ),
-                ),
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         );
       },
     );
@@ -1933,13 +2048,14 @@ class LiuGanZhiMiniCell extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, c) {
-        final s = ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 160.0)
-            .clamp(0.35, 2.0);
+        final s =
+            ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) / 160.0)
+                .clamp(0.35, 2.0);
 
         final radius = 24.0 * s;
 
         final headerStyle = TextStyle(
-          fontSize: 10.0 * s,
+          fontSize: 11.0 * s,
           height: 1.0,
           color: ink.withOpacity(0.6),
           fontWeight: FontWeight.w700,
@@ -1947,7 +2063,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final pillarStyle = TextStyle(
-          fontSize: 32.0 * s,
+          fontSize: 36.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w900,
           letterSpacing: 4.0 * s,
@@ -1956,7 +2072,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final hGodStyle = TextStyle(
-          fontSize: 16.0 * s,
+          fontSize: 18.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w900,
           color: cinnabar,
@@ -1964,7 +2080,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final rowStyle = TextStyle(
-          fontSize: 13.0 * s,
+          fontSize: 15.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink,
@@ -1985,7 +2101,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final footerTextStyle = TextStyle(
-          fontSize: 10.0 * s,
+          fontSize: 11.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink.withOpacity(0.5),
@@ -2101,8 +2217,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
                                 ),
                                 decoration: BoxDecoration(
                                   color: cinnabar,
-                                  borderRadius:
-                                      BorderRadius.circular(10.0 * s),
+                                  borderRadius: BorderRadius.circular(10.0 * s),
                                 ),
                                 child: Text(
                                   jieQiText,
