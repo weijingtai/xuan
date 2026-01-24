@@ -38,6 +38,7 @@ class DaYunHeaderCell extends StatelessWidget {
   final JiaZi yearGanZhi;
   final EnumTenGods ganGod;
   final List<({TianGan gan, EnumTenGods hiddenGods})> hiddenGans;
+  final Color? backgroundColor;
 
   // final String zodiacZn;
 
@@ -52,6 +53,7 @@ class DaYunHeaderCell extends StatelessWidget {
     required this.hiddenGans,
     required this.age,
     required this.year,
+    this.backgroundColor,
   });
 
   @override
@@ -136,11 +138,13 @@ class DaYunHeaderCell extends StatelessWidget {
           ],
         );
 
+        final cellPaper = backgroundColor ?? paperBase;
+
         final body = ClipRRect(
           borderRadius: BorderRadius.circular(radius),
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: paperBase,
+              color: cellPaper,
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(color: borderColor, width: 1.0 * s),
               image: const DecorationImage(
