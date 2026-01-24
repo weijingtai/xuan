@@ -11,7 +11,6 @@ class LiuGanZhiMiniCell extends StatelessWidget {
   final TianGan dayMaster;
 
   const LiuGanZhiMiniCell({
-    super.key,
     required this.label,
     this.timeRangeLabel,
     this.timeRangeColor,
@@ -39,6 +38,21 @@ class LiuGanZhiMiniCell extends StatelessWidget {
     final range = (timeRangeLabel ?? '').trim();
     final jieQiText = (jieQiLabel ?? '').trim();
 
+    const shichenAlias = {
+      '子': '夜半',
+      '丑': '鸡鸣',
+      '寅': '平旦',
+      '卯': '日出',
+      '辰': '食时',
+      '巳': '隅中',
+      '午': '日中',
+      '未': '日昳',
+      '申': '晡时',
+      '酉': '日入',
+      '戌': '黄昏',
+      '亥': '人定',
+    };
+
     final heavenGod = jiaZi.tianGan.getTenGods(dayMaster).name;
     final hidden = jiaZi.diZhi.cangGan;
 
@@ -51,9 +65,9 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         final radius = 24.0 * s;
 
         final headerStyle = TextStyle(
-          fontSize: 11.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
-          color: (timeRangeColor ?? ink.withOpacity(0.6)),
+          color: timeRangeColor ?? ink.withOpacity(0.6),
           fontWeight: FontWeight.w700,
           fontFamilyFallback: const ['Noto Serif SC', 'serif'],
         );
@@ -68,7 +82,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final hGodStyle = TextStyle(
-          fontSize: 18.0 * s,
+          fontSize: 20.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w900,
           color: cinnabar,
@@ -76,7 +90,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final rowStyle = TextStyle(
-          fontSize: 15.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink,
@@ -97,7 +111,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
         );
 
         final footerTextStyle = TextStyle(
-          fontSize: 11.0 * s,
+          fontSize: 17.0 * s,
           height: 1.0,
           fontWeight: FontWeight.w800,
           color: ink.withOpacity(0.5),
@@ -204,7 +218,7 @@ class LiuGanZhiMiniCell extends StatelessWidget {
                       ),
                       SizedBox(height: 6.0 * s),
                       Align(
-                        alignment: Alignment.centerRight,
+                        alignment: Alignment.centerLeft,
                         child: jieQiText.isNotEmpty
                             ? Container(
                                 padding: EdgeInsets.symmetric(
@@ -223,7 +237,10 @@ class LiuGanZhiMiniCell extends StatelessWidget {
                                   ),
                                 ),
                               )
-                            : Text('${label}时', style: footerTextStyle),
+                            : Text(
+                                '${label}时 · ${shichenAlias[label] ?? ''}',
+                                style: footerTextStyle,
+                              ),
                       ),
                     ],
                   ),
