@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:common/enums.dart';
 import 'yun_liu_table_common.dart';
-import 'yun_liu_table_common.dart';
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class LiuDayCellWidget extends StatelessWidget {
   final DateTime date;
@@ -15,9 +17,9 @@ class LiuDayCellWidget extends StatelessWidget {
   final String jieQi;
   final String zodiac;
   final String lunarText;
+  final bool isLunarHighlight;
 
   const LiuDayCellWidget({
-    super.key,
     required this.date,
     required this.isToday,
     required this.isSelected,
@@ -29,21 +31,37 @@ class LiuDayCellWidget extends StatelessWidget {
     required this.jieQi,
     required this.zodiac,
     required this.lunarText,
+    this.isLunarHighlight = false,
   });
 
   Widget _vertical(String text, TextStyle style) {
     final chars = text.split('');
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [for (final c in chars) Text(c, style: style)],
+      children: [
+        Text(chars.first, style: style),
+        SizedBox(height: 8.0),
+        Text(chars.last, style: style),
+      ],
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const paper = Color(0xFFFCFAF2);
-    const ink = Color(0xFF1A1A1A);
-    const sealRed = Color(0xFFB22222);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final paper = InkTheme.paperCell;
+    final ink = InkTheme.inkDeep;
+    final sealRed = InkTheme.cinnabar;
+    final tianGan = TianGan.getFromValue(ganText);
+    final diZhi = DiZhi.getFromValue(zhiText);
+    final ganZhiLineColor = YunLiuHelper.getGanZhiLineColor(
+      mode: YunLiuHelper.ganZhiLineColorMode,
+      gan: tianGan,
+      zhi: diZhi,
+      fixedColor: sealRed,
+      isDashed: false,
+      isDark: isDark,
+    );
 
     return InkHoverRegion(
       builder: (context, isHovered) {
@@ -92,12 +110,12 @@ class LiuDayCellWidget extends StatelessWidget {
                   fontSize: 18.0 * s,
                   height: .8,
                   fontWeight: FontWeight.w800,
-                  color: ink.withAlpha(100),
+                  color: sealRed.withAlpha(210),
                   fontFamilyFallback: const ['Noto Serif SC', 'serif'],
                 );
 
                 final heavenGodStyle = TextStyle(
-                  fontSize: 18.0 * s,
+                  fontSize: 19.0 * s,
                   height: 1.0,
                   fontWeight: FontWeight.w900,
                   color: sealRed,
@@ -105,7 +123,7 @@ class LiuDayCellWidget extends StatelessWidget {
                 );
 
                 final pairCharStyle = TextStyle(
-                  fontSize: 18.0 * s,
+                  fontSize: 19.0 * s,
                   height: 1.0,
                   fontWeight: FontWeight.w900,
                   color: ink,
@@ -113,19 +131,19 @@ class LiuDayCellWidget extends StatelessWidget {
                 );
 
                 final pairGodStyle = TextStyle(
-                  fontSize: 18.0 * s,
+                  fontSize: 19.0 * s,
                   height: 1.0,
                   fontWeight: FontWeight.w800,
                   color: sealRed,
                   fontFamilyFallback: const ['Noto Serif SC', 'serif'],
                 );
 
-                final ganColW = 18.0 * s;
+                final ganColW = 20.0 * s;
 
                 final footerStyle = TextStyle(
                   fontSize: 14.0 * s,
                   height: 1.0,
-                  color: const Color(0xFF666666),
+                  color: InkTheme.inkMuted,
                   fontWeight: FontWeight.w700,
                   fontFamilyFallback: const ['Noto Serif SC', 'serif'],
                 );
@@ -154,31 +172,36 @@ class LiuDayCellWidget extends StatelessWidget {
                           ],
                         ],
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(top: 6.0 * s),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            SizedBox(
-                              width: 8.0 * s,
-                              height: 8.0 * s,
-                              child: DecoratedBox(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: ink.withOpacity(0.55),
+                      if (jieQi.trim().isNotEmpty)
+                        Padding(
+                          padding: EdgeInsets.only(top: 6.0 * s),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 8.0 * s,
+                                height: 8.0 * s,
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: sealRed.withAlpha(190),
+                                    // border: Border.all(
+                                    //   color: ink.withOpacity(0.55),
+                                    //   width: 1.2 * s,
+                                    // ),
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 4.0 * s),
-                            Text(
-                              jieQi,
-                              style: jieQiStyle,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
+                              SizedBox(width: 4.0 * s),
+                              Text(
+                                jieQi,
+                                style: jieQiStyle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
                     ],
                   ),
                 );
@@ -208,94 +231,88 @@ class LiuDayCellWidget extends StatelessWidget {
                             decoration: BoxDecoration(
                               border: Border(
                                 left: BorderSide(
-                                  color: Colors.black.withOpacity(0.10),
+                                  // color: Colors.black.withOpacity(0.10),
+                                  color: ganZhiLineColor,
                                   width: 1.0 * s,
                                 ),
                               ),
                             ),
                             padding: EdgeInsets.only(left: 10.0 * s),
-                            child: Center(
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisAlignment: MainAxisAlignment.center,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: 18.0 * s,
-                                          height: 18.0 * s,
+                                    SizedBox(
+                                      width: ganColW,
+                                      child: Align(
+                                        alignment: Alignment.center,
+                                        child: Container(
+                                          width: ganColW,
+                                          height: ganColW,
                                           alignment: Alignment.center,
                                           decoration: BoxDecoration(
-                                            color: Colors.black.withOpacity(
-                                              0.10,
-                                            ),
+                                            color: sealRed,
+                                            // color: Colors.black.withOpacity(
+                                            //   0.10,
+                                            // ),
                                             borderRadius: BorderRadius.circular(
-                                              4.0 * s,
+                                              6.0 * s,
                                             ),
                                           ),
                                           child: Text(
                                             '干',
                                             style: pairCharStyle.copyWith(
-                                              color: sealRed,
-                                              fontSize: 12.0 * s,
+                                              color: Colors.white,
                                               height: 1.0,
                                             ),
                                           ),
                                         ),
-
-                                        SizedBox(width: 4.0 * s),
+                                      ),
+                                    ),
+                                    SizedBox(width: 12.0 * s),
+                                    Flexible(
+                                      child: Text(
+                                        tenGodName,
+                                        style: heavenGodStyle,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10.0 * s),
+                                for (final it in hidden)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 4.0 * s),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        SizedBox(
+                                          width: ganColW,
+                                          child: Text(
+                                            it.gan,
+                                            style: pairCharStyle,
+                                            textAlign: TextAlign.center,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(width: 12.0 * s),
                                         Flexible(
                                           child: Text(
-                                            tenGodName,
-                                            style: heavenGodStyle,
+                                            it.tenGod,
+                                            style: pairGodStyle,
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    SizedBox(height: 4.0 * s),
-                                    for (final it in hidden)
-                                      Padding(
-                                        padding: EdgeInsets.only(top: 4.0 * s),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            SizedBox(
-                                              width: ganColW,
-                                              child: Text(
-                                                it.gan,
-                                                style: pairCharStyle,
-                                                textAlign: TextAlign.center,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            SizedBox(width: 4.0 * s),
-                                            Container(
-                                              width: 1.0 * s,
-                                              height: 18.0 * s,
-                                              color: Colors.black.withOpacity(
-                                                0.10,
-                                              ),
-                                            ),
-                                            SizedBox(width: 6.0 * s),
-                                            Flexible(
-                                              child: Text(
-                                                it.tenGod,
-                                                style: pairGodStyle,
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                  ],
-                                ),
-                              ),
+                                  ),
+                              ],
                             ),
                           ),
                         ),
@@ -303,13 +320,14 @@ class LiuDayCellWidget extends StatelessWidget {
                     ),
                   ),
                 );
-
                 final footer = Container(
                   width: double.infinity,
                   constraints: BoxConstraints(minHeight: 32.0 * s),
                   padding: EdgeInsets.symmetric(vertical: 7.0 * s),
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.03),
+                    color: isLunarHighlight
+                        ? sealRed.withOpacity(0.08)
+                        : Colors.black.withOpacity(0.03),
                     border: Border(
                       top: BorderSide(
                         color: Colors.black.withOpacity(0.05),
@@ -319,7 +337,10 @@ class LiuDayCellWidget extends StatelessWidget {
                   ),
                   child: Text(
                     lunarText,
-                    style: footerStyle,
+                    style: footerStyle.copyWith(
+                      color: isLunarHighlight ? sealRed : null,
+                      fontWeight: isLunarHighlight ? FontWeight.w900 : null,
+                    ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -386,7 +407,7 @@ class LiuDayCellWidget extends StatelessWidget {
                         child: DecoratedBox(
                           decoration: BoxDecoration(
                             color: isHovered
-                                ? const Color(0xFFF2EFE5)
+                                ? InkTheme.paperHighlight
                                 : Colors.transparent,
                           ),
                           child: card,

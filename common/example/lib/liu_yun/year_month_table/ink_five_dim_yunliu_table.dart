@@ -6,109 +6,14 @@ import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'liu_day_cell_widget.dart';
 import 'liu_gan_zhi_mini_cell.dart';
 import 'yun_liu_table_month_widget.dart';
 import 'yun_liu_table_year_header_cell_widget.dart';
 import 'yun_liu_table_common.dart';
 
-class _InkTheme {
-  static const paper = Color(0xFFF7F2E8);
-  static const paperHi = Color(0xFFFFFBF2);
-  static const ink = Color(0xFF2D2D2D);
-  static const seal = Color(0xFFB23A2B);
-  static const gold = Color(0xFFAA9460);
-
-  static Color line([int a = 70]) => ink.withAlpha(a);
-  static Color wash([int a = 18]) => ink.withAlpha(a);
-  static Color washHi([int a = 10]) => ink.withAlpha(a);
-  static Color sealWash([int a = 44]) => seal.withAlpha(a);
-}
-
-class _DayCellDashedLinePainter extends CustomPainter {
-  final Color color;
-
-  const _DayCellDashedLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-
-    const dash = 3.0;
-    const gap = 2.5;
-
-    var y = 0.0;
-    while (y < size.height) {
-      final y2 = (y + dash).clamp(0.0, size.height);
-      canvas.drawLine(
-        Offset(size.width / 2, y),
-        Offset(size.width / 2, y2),
-        paint,
-      );
-      y = y2 + gap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DayCellDashedLinePainter oldDelegate) {
-    return oldDelegate.color != color;
-  }
-}
-
-class _DashedHrPainter extends CustomPainter {
-  final Color color;
-
-  const _DashedHrPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-
-    const dash = 4.0;
-    const gap = 3.0;
-
-    var x = 0.0;
-    while (x < size.width) {
-      final x2 = (x + dash).clamp(0.0, size.width);
-      canvas.drawLine(
-        Offset(x, size.height / 2),
-        Offset(x2, size.height / 2),
-        paint,
-      );
-      x = x2 + gap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedHrPainter oldDelegate) {
-    return oldDelegate.color != color;
-  }
-}
-
-class _InkHoverRegion extends StatefulWidget {
-  final Widget Function(BuildContext context, bool isHovered) builder;
-
-  const _InkHoverRegion({required this.builder});
-
-  @override
-  State<_InkHoverRegion> createState() => _InkHoverRegionState();
-}
-
-class _InkHoverRegionState extends State<_InkHoverRegion> {
-  var _isHovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: widget.builder(context, _isHovered),
-    );
-  }
-}
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class InkFiveDimYunLiuTable extends StatefulWidget {
   const InkFiveDimYunLiuTable({super.key});
@@ -131,8 +36,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   final Map<String, DateTime> _selectedDateByCalendar = <String, DateTime>{};
   ZiShiStrategy _shiChenZiStrategy = ZiShiStrategy.noDistinguishAt23;
   int _yearsPerDaYun = 10;
+  GanZhiLineColorMode? _previousGanZhiLineColorMode;
 
-  static Color get _inkBorderColor => _InkTheme.line(70);
+  static Color get _inkBorderColor => InkTheme.line(70);
 
   final List<String> _daYun = const [
     '甲辰大运',
@@ -285,6 +191,8 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   @override
   void initState() {
     super.initState();
+    _previousGanZhiLineColorMode = YunLiuHelper.ganZhiLineColorMode;
+    YunLiuHelper.ganZhiLineColorMode = GanZhiLineColorMode.naYin;
     _daYunTabController = TabController(length: _daYun.length, vsync: this);
     _verticalControllers = List<ScrollController>.generate(
       _daYun.length,
@@ -327,6 +235,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     for (final c in _yearHorizontalControllers) {
       c.dispose();
     }
+    if (_previousGanZhiLineColorMode != null) {
+      YunLiuHelper.ganZhiLineColorMode = _previousGanZhiLineColorMode!;
+    }
     super.dispose();
   }
 
@@ -345,7 +256,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
         return Container(
           padding: EdgeInsets.all(padding),
           decoration: BoxDecoration(
-            color: _InkTheme.paper,
+            color: InkTheme.paper,
             border: Border.all(color: _inkBorderColor, width: 0.6),
             borderRadius: BorderRadius.circular(10),
           ),
@@ -355,16 +266,16 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 child: IgnorePointer(
                   child: Stack(
                     children: [
-                      CustomPaint(painter: _PaperTexturePainter()),
+                      CustomPaint(painter: PaperTexturePainter()),
                       DecoratedBox(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              _InkTheme.paperHi.withAlpha(160),
+                              InkTheme.paperHi.withAlpha(160),
                               Colors.transparent,
-                              _InkTheme.ink.withAlpha(10),
+                              InkTheme.ink.withAlpha(10),
                             ],
                             stops: const [0, 0.6, 1],
                           ),
@@ -430,12 +341,12 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     final tabW = isPhone ? 118.0 : 125.0;
     final tabH = isPhone ? 156.0 : 165.0;
 
-    const selectedPaper = Color(0xFFFDFaf5);
-    const unselectedPaper = Color(0xFFF2F2F2);
+    const selectedPaper = InkTheme.paperSoft;
+    const unselectedPaper = InkTheme.paperMuted;
 
-    final borderActive = _InkTheme.ink;
-    final gold = _InkTheme.gold;
-    final cinnabar = _InkTheme.seal;
+    final borderActive = InkTheme.ink;
+    final gold = InkTheme.gold;
+    final cinnabar = InkTheme.seal;
 
     final is9 = _yearsPerDaYun == 9;
 
@@ -443,7 +354,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
       fontSize: 12,
       height: 1,
       fontWeight: FontWeight.w800,
-      color: _InkTheme.ink.withAlpha(160),
+      color: InkTheme.ink.withAlpha(160),
       fontFamilyFallback: const ['STKaiti', 'KaiTi', 'Noto Serif SC', 'serif'],
     );
 
@@ -475,11 +386,11 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
               },
               borderRadius: BorderRadius.circular(999),
               constraints: const BoxConstraints(minHeight: 30, minWidth: 46),
-              borderColor: _InkTheme.ink.withAlpha(35),
-              selectedBorderColor: _InkTheme.seal.withAlpha(160),
-              fillColor: _InkTheme.sealWash(36),
-              color: _InkTheme.ink.withAlpha(170),
-              selectedColor: _InkTheme.seal.withAlpha(230),
+              borderColor: InkTheme.ink.withAlpha(35),
+              selectedBorderColor: InkTheme.seal.withAlpha(160),
+              fillColor: InkTheme.sealWash(36),
+              color: InkTheme.ink.withAlpha(170),
+              selectedColor: InkTheme.seal.withAlpha(230),
               children: const [
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -534,7 +445,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
                 decoration: BoxDecoration(
                   border: Border.all(color: _inkBorderColor, width: 0.6),
-                  color: _InkTheme.paperHi.withAlpha(180),
+                  color: InkTheme.paperHi.withAlpha(180),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Column(
@@ -544,7 +455,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                     Align(alignment: Alignment.centerRight, child: toggle),
                     const SizedBox(height: 10),
                     ScrollConfiguration(
-                      behavior: _InkScrollBehavior(),
+                      behavior: InkScrollBehavior(),
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -603,7 +514,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               final pillarStyle = kaitiTextStyle(
                                 fontSize: isPhone ? 30 : 32,
                                 fontWeight: FontWeight.w900,
-                                color: _InkTheme.ink,
+                                color: InkTheme.ink,
                                 letterSpacing: isPhone ? 3 : 4,
                               );
                               final godStyle = kaitiTextStyle(
@@ -614,7 +525,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               final stemStyle = kaitiTextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
-                                color: _InkTheme.ink,
+                                color: InkTheme.ink,
                               );
 
                               return Padding(
@@ -678,7 +589,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                                 decoration: BoxDecoration(
                                                   color: selected
                                                       ? cinnabar
-                                                      : const Color(0xFF9A9A9A),
+                                                      : InkTheme.neutralGray,
                                                   borderRadius:
                                                       const BorderRadius.only(
                                                         topLeft:
@@ -912,7 +823,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                                 decoration: BoxDecoration(
                                                   color: selected
                                                       ? cinnabar
-                                                      : const Color(0xFF9A9A9A),
+                                                      : InkTheme.neutralGray,
                                                   borderRadius:
                                                       const BorderRadius.only(
                                                         bottomLeft:
@@ -1014,7 +925,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required bool isPhone,
   }) {
     return ScrollConfiguration(
-      behavior: _InkScrollBehavior(),
+      behavior: InkScrollBehavior(),
       child: SingleChildScrollView(
         controller: _verticalControllers[daYunIndex],
         child: Row(
@@ -1053,7 +964,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   }) {
     final monthStyle = ConstUIResourcesMapper.twelveDiZhiTextStyle.copyWith(
       fontSize: isPhone ? 16 : 20,
-      color: _InkTheme.ink.withAlpha(120),
+      color: InkTheme.ink.withAlpha(120),
       shadows: const [],
     );
 
@@ -1072,7 +983,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [_InkTheme.paperHi.withAlpha(220), _InkTheme.paper],
+                colors: [InkTheme.paperHi.withAlpha(220), InkTheme.paper],
               ),
             ),
           ),
@@ -1129,7 +1040,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                     right: BorderSide(color: _inkBorderColor, width: 0.6),
                     bottom: BorderSide(color: _inkBorderColor, width: 0.6),
                   ),
-                  color: _InkTheme.wash(10),
+                  color: InkTheme.wash(10),
                 ),
               ),
             ),
@@ -1147,9 +1058,10 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required bool isPhone,
   }) {
     final yearsWidth = _yearsPerDaYun * cellW;
+    final zebraColor = InkTheme.wash(isPhone ? 6 : 4);
 
     return ScrollConfiguration(
-      behavior: _InkScrollBehavior(),
+      behavior: InkScrollBehavior(),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         controller: _yearHorizontalControllers[daYunIndex],
@@ -1157,15 +1069,17 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
           width: yearsWidth,
           child: Stack(
             children: [
-              Positioned.fill(
+              Positioned(
+                top: headerH,
+                left: 0,
+                right: 0,
+                bottom: 0,
                 child: Row(
                   children: [
                     for (var i = 0; i < _yearsPerDaYun; i++)
                       Container(
                         width: cellW,
-                        color: i.isEven
-                            ? _InkTheme.wash(isPhone ? 6 : 4)
-                            : Colors.transparent,
+                        color: i.isEven ? zebraColor : Colors.transparent,
                       ),
                   ],
                 ),
@@ -1192,9 +1106,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               hiddenGans: YunLiuHelper.hiddenGansForSeed(
                                 (daYunIndex * 37) + (i * 11),
                               ),
-                              backgroundColor: i.isEven
-                                  ? _InkTheme.wash(isPhone ? 6 : 4)
-                                  : null,
+                              backgroundColor: i.isEven ? zebraColor : null,
                             ),
                           ),
                       ],
@@ -1212,6 +1124,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               monthIndex: m,
                               width: cellW,
                               height: cellH,
+                              backgroundColor: y.isEven ? zebraColor : null,
                               isPhone: isPhone,
                             ),
                         ],
@@ -1239,6 +1152,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     required int monthIndex,
     required double width,
     required double height,
+    Color? backgroundColor,
     required bool isPhone,
   }) {
     final isExpanded =
@@ -1248,8 +1162,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     final year = _yearAt(daYunIndex, yearIndex);
     final seed = (daYunIndex * 97) + (yearIndex * 19) + (monthIndex * 7);
 
-    final tianGan = TianGan.listAll[seed % TianGan.listAll.length];
-    final diZhi = DiZhi.values[(seed + 3) % DiZhi.values.length];
+    final jiaZi = JiaZi.listAll[seed % JiaZi.listAll.length];
+    final tianGan = jiaZi.tianGan;
+    final diZhi = jiaZi.diZhi;
     final tenGod = EnumTenGods.values[(seed + 5) % EnumTenGods.values.length];
     final tenGodDetails = YunLiuHelper.tenGodDetailsForSeed(seed);
 
@@ -1302,6 +1217,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                       diZhi: diZhi,
                       tenGod: tenGod,
                       tenGodDetails: tenGodDetails,
+                      backgroundColor: backgroundColor,
                     ),
                   ),
                 ),
@@ -1312,7 +1228,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                         margin: const EdgeInsets.all(2),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: _InkTheme.seal.withAlpha(70),
+                            color: InkTheme.seal.withAlpha(70),
                             width: 1,
                           ),
                         ),
@@ -1365,7 +1281,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                       isPhone ? 10 : 14,
                       14,
                     ),
-                    child: _DoubleInkBorder(
+                    child: DoubleInkBorder(
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         key: _calendarKey(daYunIndex, monthIndex, yearIndex),
@@ -1376,9 +1292,9 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
-                              _InkTheme.paperHi.withAlpha(240),
+                              InkTheme.paperHi.withAlpha(240),
                               Colors.white.withAlpha(150),
-                              _InkTheme.washHi(10),
+                              InkTheme.washHi(10),
                             ],
                           ),
                         ),
@@ -1410,7 +1326,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   }) {
     final titleStyle = TextStyle(
       fontSize: isPhone ? 12 : 13,
-      color: _InkTheme.ink.withAlpha(200),
+      color: InkTheme.ink.withAlpha(200),
       height: 1.0,
       fontWeight: FontWeight.w600,
     );
@@ -1639,35 +1555,16 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
           final switcherTextStyle = TextStyle(
             fontSize: 10,
             height: 1.0,
-            color: _InkTheme.ink.withAlpha(200),
+            color: InkTheme.ink.withAlpha(200),
             fontWeight: FontWeight.w800,
           );
 
-          Color getStrategyColor(ZiShiStrategy s, {bool isWash = false}) {
-            switch (s) {
-              case ZiShiStrategy.noDistinguishAt23:
-              case ZiShiStrategy.startFrom23:
-                return isWash
-                    ? const Color(0xFF455A64).withOpacity(0.15)
-                    : const Color(0xFF455A64);
-              case ZiShiStrategy.distinguishAt0FiveMouse:
-              case ZiShiStrategy.startFrom0:
-              case ZiShiStrategy.splitedZi:
-              case ZiShiStrategy.bandsStartAt0:
-                return isWash ? _InkTheme.sealWash(40) : _InkTheme.seal;
-              case ZiShiStrategy.distinguishAt0Fixed:
-                return isWash
-                    ? const Color(0xFF2E7D32).withOpacity(0.15)
-                    : const Color(0xFF2E7D32);
-            }
-          }
-
-          return _DoubleInkBorder(
+          return DoubleInkBorder(
             borderRadius: BorderRadius.circular(14),
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(14),
-                color: _InkTheme.paper,
+                color: InkTheme.paper,
               ),
               child: Stack(
                 children: [
@@ -1675,7 +1572,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                     child: IgnorePointer(
                       child: Opacity(
                         opacity: 0.12,
-                        child: CustomPaint(painter: _PaperTexturePainter()),
+                        child: CustomPaint(painter: PaperTexturePainter()),
                       ),
                     ),
                   ),
@@ -1721,7 +1618,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                   ),
                                   side: WidgetStateProperty.all(
                                     BorderSide(
-                                      color: _InkTheme.line(60),
+                                      color: InkTheme.line(60),
                                       width: 0.6,
                                     ),
                                   ),
@@ -1730,7 +1627,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                         if (states.contains(
                                           WidgetState.selected,
                                         )) {
-                                          return getStrategyColor(
+                                          return YunLiuHelper.getStrategyColor(
                                             _shiChenZiStrategy,
                                             isWash: true,
                                           );
@@ -1742,7 +1639,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                       if (states.contains(
                                         WidgetState.pressed,
                                       )) {
-                                        return getStrategyColor(
+                                        return YunLiuHelper.getStrategyColor(
                                           _shiChenZiStrategy,
                                           isWash: true,
                                         ).withOpacity(0.3);
@@ -1780,18 +1677,18 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                     ),
                                     decoration: BoxDecoration(
                                       border: Border.all(
-                                        color: _InkTheme.line(60),
+                                        color: InkTheme.line(60),
                                         width: 0.6,
                                       ),
                                       color: Colors.white.withAlpha(140),
                                       borderRadius: BorderRadius.circular(999),
                                     ),
                                     child: Text(
-                                      'X 关闭',
+                                      '关闭',
                                       style: TextStyle(
                                         fontSize: 11,
                                         height: 1.0,
-                                        color: _InkTheme.ink.withAlpha(170),
+                                        color: InkTheme.ink.withAlpha(170),
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -1817,7 +1714,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                               return LiuGanZhiMiniCell(
                                 label: item.jz.diZhi.value,
                                 timeRangeLabel: item.range,
-                                timeRangeColor: getStrategyColor(
+                                timeRangeColor: YunLiuHelper.getStrategyColor(
                                   _shiChenZiStrategy,
                                 ),
                                 jieQiLabel: item.jieqi,
@@ -1844,10 +1741,10 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                     vertical: 6,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: _InkTheme.sealWash(34),
+                                    color: InkTheme.sealWash(34),
                                     borderRadius: BorderRadius.circular(999),
                                     border: Border.all(
-                                      color: _InkTheme.seal.withAlpha(140),
+                                      color: InkTheme.seal.withAlpha(140),
                                       width: 0.6,
                                     ),
                                   ),
@@ -1856,7 +1753,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                                     style: TextStyle(
                                       fontSize: 11,
                                       height: 1.0,
-                                      color: _InkTheme.seal.withAlpha(220),
+                                      color: InkTheme.seal.withAlpha(220),
                                       fontWeight: FontWeight.w800,
                                     ),
                                   ),
@@ -1881,10 +1778,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
               child: Container(
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(40),
-                  border: Border.all(
-                    color: const Color(0xFFD1CDC2),
-                    width: 0.6,
-                  ),
+                  border: Border.all(color: InkTheme.borderStone, width: 0.6),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -1950,18 +1844,18 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                         ),
                         decoration: BoxDecoration(
                           border: Border.all(
-                            color: _InkTheme.line(60),
+                            color: InkTheme.line(60),
                             width: 0.6,
                           ),
                           color: Colors.white.withAlpha(140),
                           borderRadius: BorderRadius.circular(999),
                         ),
                         child: Text(
-                          'X 关闭',
+                          '关闭',
                           style: TextStyle(
                             fontSize: 11,
                             height: 1.0,
-                            color: _InkTheme.ink.withAlpha(170),
+                            color: InkTheme.ink.withAlpha(170),
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -1984,7 +1878,7 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
                             style: TextStyle(
                               fontSize: 12,
                               height: 1.0,
-                              color: _InkTheme.ink.withAlpha(160),
+                              color: InkTheme.ink.withAlpha(160),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -2203,15 +2097,15 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
     final k = (daYunIndex + yearIndex + monthIndex) % 5;
     switch (k) {
       case 0:
-        return const Color(0xFF4E7D58).withAlpha(22);
+        return InkTheme.elementWood.withAlpha(22);
       case 1:
-        return const Color(0xFFB23A2B).withAlpha(18);
+        return InkTheme.seal.withAlpha(18);
       case 2:
-        return const Color(0xFFB89B4D).withAlpha(18);
+        return InkTheme.elementEarth.withAlpha(18);
       case 3:
-        return const Color(0xFF7A7A7A).withAlpha(16);
+        return InkTheme.elementMetal.withAlpha(16);
       default:
-        return const Color(0xFF3E6D8C).withAlpha(18);
+        return InkTheme.elementWater.withAlpha(18);
     }
   }
 
@@ -2220,557 +2114,6 @@ class _InkFiveDimYunLiuTableState extends State<InkFiveDimYunLiuTable>
   GlobalKey _calendarKey(int daYunIndex, int monthIndex, int yearIndex) {
     final k = '$daYunIndex-$monthIndex-$yearIndex';
     return _calendarKeys.putIfAbsent(k, () => GlobalKey());
-  }
-}
-
-class LiuDayCellWidget extends StatelessWidget {
-  final DateTime date;
-  final bool isToday;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  final String ganText;
-  final String zhiText;
-  final String tenGodName;
-  final List<({String gan, String tenGod})> hidden;
-  final String jieQi;
-  final String zodiac;
-  final String lunarText;
-  final bool isLunarHighlight;
-
-  const LiuDayCellWidget({
-    required this.date,
-    required this.isToday,
-    required this.isSelected,
-    required this.onTap,
-    required this.ganText,
-    required this.zhiText,
-    required this.tenGodName,
-    required this.hidden,
-    required this.jieQi,
-    required this.zodiac,
-    required this.lunarText,
-    this.isLunarHighlight = false,
-  });
-
-  Widget _vertical(String text, TextStyle style) {
-    final chars = text.split('');
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(chars.first, style: style),
-        SizedBox(height: 8.0),
-        Text(chars.last, style: style),
-      ],
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    const paper = Color(0xFFFCFAF2);
-    const ink = Color(0xFF1A1A1A);
-    const sealRed = Color(0xFFB22222);
-
-    return _InkHoverRegion(
-      builder: (context, isHovered) {
-        const designSize = 180.0;
-        return FittedBox(
-          fit: BoxFit.contain,
-          child: SizedBox(
-            width: designSize,
-            height: designSize,
-            child: LayoutBuilder(
-              builder: (context, c) {
-                final s =
-                    ((c.maxWidth < c.maxHeight ? c.maxWidth : c.maxHeight) /
-                            designSize)
-                        .clamp(0.35, 2.0);
-
-                final radius = 12.0 * s;
-                final borderW = 2.0 * s;
-
-                final dateStyle = TextStyle(
-                  fontSize: 32.0 * s,
-                  height: 0.8,
-                  fontWeight: FontWeight.w900,
-                  color: ink.withAlpha(100),
-                  fontFamilyFallback: const [
-                    'ZCOOL XiaoWei',
-                    'Noto Serif SC',
-                    'serif',
-                  ],
-                );
-
-                final pillarStyle = TextStyle(
-                  fontSize: 38.0 * s,
-                  height: 0.9,
-                  fontWeight: FontWeight.w900,
-                  color: ink,
-                  letterSpacing: -2.0 * s,
-                  fontFamilyFallback: const [
-                    'ZCOOL XiaoWei',
-                    'Noto Serif SC',
-                    'serif',
-                  ],
-                );
-
-                final jieQiStyle = TextStyle(
-                  fontSize: 18.0 * s,
-                  height: .8,
-                  fontWeight: FontWeight.w800,
-                  color: sealRed.withAlpha(210),
-                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                );
-
-                final heavenGodStyle = TextStyle(
-                  fontSize: 19.0 * s,
-                  height: 1.0,
-                  fontWeight: FontWeight.w900,
-                  color: sealRed,
-                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                );
-
-                final pairCharStyle = TextStyle(
-                  fontSize: 19.0 * s,
-                  height: 1.0,
-                  fontWeight: FontWeight.w900,
-                  color: ink,
-                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                );
-
-                final pairGodStyle = TextStyle(
-                  fontSize: 19.0 * s,
-                  height: 1.0,
-                  fontWeight: FontWeight.w800,
-                  color: sealRed,
-                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                );
-
-                final ganColW = 20.0 * s;
-
-                final footerStyle = TextStyle(
-                  fontSize: 14.0 * s,
-                  height: 1.0,
-                  color: const Color(0xFF666666),
-                  fontWeight: FontWeight.w700,
-                  fontFamilyFallback: const ['Noto Serif SC', 'serif'],
-                );
-
-                final header = Padding(
-                  padding: EdgeInsets.fromLTRB(8.0 * s, 8.0 * s, 8.0 * s, 0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text('${date.day}', style: dateStyle),
-                          if (isToday) ...[
-                            SizedBox(width: 6.0 * s),
-                            Container(
-                              width: 6.0 * s,
-                              height: 6.0 * s,
-                              margin: EdgeInsets.only(top: 4.0 * s),
-                              decoration: BoxDecoration(
-                                color: sealRed,
-                                borderRadius: BorderRadius.circular(2.0 * s),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (jieQi.trim().isNotEmpty)
-                        Padding(
-                          padding: EdgeInsets.only(top: 6.0 * s),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                width: 8.0 * s,
-                                height: 8.0 * s,
-                                child: DecoratedBox(
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: sealRed.withAlpha(190),
-                                    // border: Border.all(
-                                    //   color: ink.withOpacity(0.55),
-                                    //   width: 1.2 * s,
-                                    // ),
-                                  ),
-                                ),
-                              ),
-                              SizedBox(width: 4.0 * s),
-                              Text(
-                                jieQi,
-                                style: jieQiStyle,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                );
-
-                final main = Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                      10.0 * s,
-                      5.0 * s,
-                      10.0 * s,
-                      5.0 * s,
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          flex: 10,
-                          child: Center(
-                            child: Transform.translate(
-                              offset: Offset(4.0 * s, -4.0 * s),
-                              child: _vertical('$ganText$zhiText', pillarStyle),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 12,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              border: Border(
-                                left: BorderSide(
-                                  // color: Colors.black.withOpacity(0.10),
-                                  color: sealRed,
-                                  width: 1.0 * s,
-                                ),
-                              ),
-                            ),
-                            padding: EdgeInsets.only(left: 10.0 * s),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    SizedBox(
-                                      width: ganColW,
-                                      child: Align(
-                                        alignment: Alignment.center,
-                                        child: Container(
-                                          width: ganColW,
-                                          height: ganColW,
-                                          alignment: Alignment.center,
-                                          decoration: BoxDecoration(
-                                            color: sealRed,
-                                            // color: Colors.black.withOpacity(
-                                            //   0.10,
-                                            // ),
-                                            borderRadius: BorderRadius.circular(
-                                              6.0 * s,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            '干',
-                                            style: pairCharStyle.copyWith(
-                                              color: Colors.white,
-                                              height: 1.0,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 12.0 * s),
-                                    Flexible(
-                                      child: Text(
-                                        tenGodName,
-                                        style: heavenGodStyle,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10.0 * s),
-                                for (final it in hidden)
-                                  Padding(
-                                    padding: EdgeInsets.only(top: 4.0 * s),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        SizedBox(
-                                          width: ganColW,
-                                          child: Text(
-                                            it.gan,
-                                            style: pairCharStyle,
-                                            textAlign: TextAlign.center,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(width: 12.0 * s),
-                                        Flexible(
-                                          child: Text(
-                                            it.tenGod,
-                                            style: pairGodStyle,
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-                final footer = Container(
-                  width: double.infinity,
-                  constraints: BoxConstraints(minHeight: 32.0 * s),
-                  padding: EdgeInsets.symmetric(vertical: 7.0 * s),
-                  decoration: BoxDecoration(
-                    color: isLunarHighlight
-                        ? sealRed.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.03),
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.black.withOpacity(0.05),
-                        width: 1.0 * s,
-                      ),
-                    ),
-                  ),
-                  child: Text(
-                    lunarText,
-                    style: footerStyle.copyWith(
-                      color: isLunarHighlight ? sealRed : null,
-                      fontWeight: isLunarHighlight ? FontWeight.w900 : null,
-                    ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                );
-
-                final card = DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: paper,
-                    borderRadius: BorderRadius.circular(radius),
-                    border: Border.all(color: ink, width: borderW),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.10),
-                        offset: Offset(4.0 * s, 4.0 * s),
-                        blurRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      Column(children: [header, main, footer]),
-                      Positioned(
-                        left: 0,
-                        bottom: 0,
-                        child: IgnorePointer(
-                          child: Opacity(
-                            opacity: isSelected ? 1.0 : 0.0,
-                            child: Container(
-                              width: 6.0 * s,
-                              height: 6.0 * s,
-                              decoration: BoxDecoration(
-                                color: sealRed,
-                                borderRadius: BorderRadius.circular(2.0 * s),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-
-                return MediaQuery(
-                  data: MediaQuery.of(
-                    context,
-                  ).copyWith(textScaler: TextScaler.noScaling),
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: InkWell(
-                      onTap: onTap,
-                      borderRadius: BorderRadius.circular(radius),
-                      overlayColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.pressed)) {
-                          return _InkTheme.sealWash(26);
-                        }
-                        if (states.contains(WidgetState.hovered)) {
-                          return Colors.white.withAlpha(50);
-                        }
-                        return null;
-                      }),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(radius),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: isHovered
-                                ? const Color(0xFFF2EFE5)
-                                : Colors.transparent,
-                          ),
-                          child: card,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _PaperTexturePainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()..style = PaintingStyle.fill;
-    const step = 18.0;
-
-    for (var y = 0.0; y < size.height; y += step) {
-      for (var x = 0.0; x < size.width; x += step) {
-        final xi = x.toInt();
-        final yi = y.toInt();
-        final n = (xi * 37 + yi * 17) % 19;
-        final a = 6 + (n % 9);
-        p.color = _InkTheme.ink.withAlpha(a);
-        final r = (n % 3 == 0) ? 0.7 : 0.5;
-        final dx = ((n % 5) - 2) * 0.6;
-        final dy = (((n * 3) % 5) - 2) * 0.6;
-        canvas.drawCircle(Offset(x + dx, y + dy), r, p);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class _StampIndicator extends Decoration {
-  final double stampWidth;
-  final double stampHeight;
-  final double rotation;
-
-  const _StampIndicator({
-    required this.stampWidth,
-    required this.stampHeight,
-    required this.rotation,
-  });
-
-  @override
-  BoxPainter createBoxPainter([VoidCallback? onChanged]) {
-    return _StampIndicatorPainter(
-      stampWidth: stampWidth,
-      stampHeight: stampHeight,
-      rotation: rotation,
-    );
-  }
-}
-
-class _StampIndicatorPainter extends BoxPainter {
-  final double stampWidth;
-  final double stampHeight;
-  final double rotation;
-
-  _StampIndicatorPainter({
-    required this.stampWidth,
-    required this.stampHeight,
-    required this.rotation,
-  });
-
-  @override
-  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final size = configuration.size;
-    if (size == null) return;
-
-    final tabRect = offset & size;
-    final center = Offset(
-      tabRect.center.dx,
-      tabRect.bottom - (stampHeight / 2) - 4,
-    );
-
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(rotation);
-
-    final rect = Rect.fromCenter(
-      center: Offset.zero,
-      width: stampWidth.clamp(0.0, tabRect.width),
-      height: stampHeight,
-    );
-
-    final rrect = RRect.fromRectAndRadius(rect, const Radius.circular(3));
-
-    final shadow = Paint()..color = _InkTheme.ink.withAlpha(18);
-    canvas.drawRRect(rrect.shift(const Offset(0.6, 1.1)), shadow);
-
-    final fill = Paint()..color = _InkTheme.seal.withAlpha(76);
-    final stroke = Paint()
-      ..color = _InkTheme.seal.withAlpha(150)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 0.7;
-
-    canvas.drawRRect(rrect, fill);
-    canvas.drawRRect(rrect, stroke);
-
-    final dot = Paint()..color = _InkTheme.seal.withAlpha(95);
-    for (var i = -2; i <= 2; i++) {
-      final x = rect.left + (rect.width / 5) * (i + 2.5);
-      canvas.drawCircle(Offset(x, rect.top + 1.3), 0.7, dot);
-      canvas.drawCircle(Offset(x, rect.bottom - 1.3), 0.7, dot);
-    }
-    canvas.restore();
-  }
-}
-
-class _InkScrollBehavior extends MaterialScrollBehavior {
-  @override
-  Set<PointerDeviceKind> get dragDevices => {
-    PointerDeviceKind.mouse,
-    PointerDeviceKind.touch,
-    PointerDeviceKind.trackpad,
-    PointerDeviceKind.stylus,
-    PointerDeviceKind.unknown,
-  };
-}
-
-class _DoubleInkBorder extends StatelessWidget {
-  final Widget child;
-  final BorderRadius borderRadius;
-
-  const _DoubleInkBorder({
-    required this.child,
-    this.borderRadius = BorderRadius.zero,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        border: Border.all(color: _InkTheme.line(70), width: 0.6),
-        borderRadius: borderRadius,
-      ),
-      padding: const EdgeInsets.all(1),
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(color: _InkTheme.line(55), width: 0.6),
-          borderRadius: borderRadius,
-        ),
-        child: child,
-      ),
-    );
   }
 }
 
@@ -2794,11 +2137,11 @@ class _InlineDayDetailPanel extends StatelessWidget {
     final d = date.day.toString().padLeft(2, '0');
     final title = '$y-$m-$d · 周$weekday';
 
-    return _DoubleInkBorder(
+    return DoubleInkBorder(
       borderRadius: BorderRadius.circular(14),
       child: Container(
         decoration: BoxDecoration(
-          color: _InkTheme.paper,
+          color: InkTheme.paper,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Stack(
@@ -2807,16 +2150,16 @@ class _InlineDayDetailPanel extends StatelessWidget {
               child: IgnorePointer(
                 child: Stack(
                   children: [
-                    CustomPaint(painter: _PaperTexturePainter()),
+                    CustomPaint(painter: PaperTexturePainter()),
                     DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            _InkTheme.paperHi.withAlpha(170),
+                            InkTheme.paperHi.withAlpha(170),
                             Colors.transparent,
-                            _InkTheme.ink.withAlpha(10),
+                            InkTheme.ink.withAlpha(10),
                           ],
                         ),
                       ),
@@ -2825,13 +2168,13 @@ class _InlineDayDetailPanel extends StatelessWidget {
                 ),
               ),
             ),
-            const Positioned(top: 0, left: 0, child: _Corner()),
-            const Positioned(top: 0, right: 0, child: _Corner(flipX: true)),
-            const Positioned(bottom: 0, left: 0, child: _Corner(flipY: true)),
+            const Positioned(top: 0, left: 0, child: Corner()),
+            const Positioned(top: 0, right: 0, child: Corner(flipX: true)),
+            const Positioned(bottom: 0, left: 0, child: Corner(flipY: true)),
             const Positioned(
               bottom: 0,
               right: 0,
-              child: _Corner(flipX: true, flipY: true),
+              child: Corner(flipX: true, flipY: true),
             ),
             Column(
               children: [
@@ -2840,15 +2183,12 @@ class _InlineDayDetailPanel extends StatelessWidget {
                   padding: EdgeInsets.symmetric(horizontal: isPhone ? 12 : 16),
                   decoration: BoxDecoration(
                     border: Border(
-                      bottom: BorderSide(color: _InkTheme.line(70), width: 0.6),
+                      bottom: BorderSide(color: InkTheme.line(70), width: 0.6),
                     ),
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [
-                        _InkTheme.paperHi.withAlpha(210),
-                        _InkTheme.paper,
-                      ],
+                      colors: [InkTheme.paperHi.withAlpha(210), InkTheme.paper],
                     ),
                     borderRadius: const BorderRadius.vertical(
                       top: Radius.circular(14),
@@ -2860,9 +2200,9 @@ class _InlineDayDetailPanel extends StatelessWidget {
                         width: 26,
                         height: 26,
                         decoration: BoxDecoration(
-                          color: _InkTheme.sealWash(55),
+                          color: InkTheme.sealWash(55),
                           border: Border.all(
-                            color: _InkTheme.seal.withAlpha(120),
+                            color: InkTheme.seal.withAlpha(120),
                             width: 0.8,
                           ),
                           borderRadius: BorderRadius.circular(10),
@@ -2873,7 +2213,7 @@ class _InlineDayDetailPanel extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 12,
                               height: 1.0,
-                              color: _InkTheme.seal.withAlpha(220),
+                              color: InkTheme.seal.withAlpha(220),
                               fontWeight: FontWeight.w900,
                             ),
                           ),
@@ -2889,7 +2229,7 @@ class _InlineDayDetailPanel extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               height: 1.0,
-                              color: _InkTheme.ink.withAlpha(230),
+                              color: InkTheme.ink.withAlpha(230),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -2899,14 +2239,14 @@ class _InlineDayDetailPanel extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 11,
                               height: 1.0,
-                              color: _InkTheme.ink.withAlpha(140),
+                              color: InkTheme.ink.withAlpha(140),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                       const Spacer(),
-                      _InkIconButton(
+                      InkIconButton(
                         tooltip: '收起',
                         onTap: onClose,
                         icon: Icons.keyboard_arrow_up_rounded,
@@ -2924,96 +2264,6 @@ class _InlineDayDetailPanel extends StatelessWidget {
       ),
     );
   }
-}
-
-class _InkIconButton extends StatelessWidget {
-  final String tooltip;
-  final VoidCallback onTap;
-  final IconData icon;
-
-  const _InkIconButton({
-    required this.tooltip,
-    required this.onTap,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(12);
-    return Material(
-      type: MaterialType.transparency,
-      child: InkWell(
-        borderRadius: radius,
-        overlayColor: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.pressed)) return _InkTheme.wash(24);
-          if (states.contains(WidgetState.hovered)) {
-            return Colors.white.withAlpha(90);
-          }
-          return null;
-        }),
-        onTap: onTap,
-        child: Tooltip(
-          message: tooltip,
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              border: Border.all(color: _InkTheme.line(60), width: 0.6),
-              color: Colors.white.withAlpha(160),
-              borderRadius: radius,
-            ),
-            child: Icon(icon, size: 18, color: _InkTheme.ink.withAlpha(190)),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Corner extends StatelessWidget {
-  final bool flipX;
-  final bool flipY;
-
-  const _Corner({this.flipX = false, this.flipY = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final base = SizedBox(
-      width: 18,
-      height: 18,
-      child: CustomPaint(painter: _CornerPainter()),
-    );
-
-    return Transform(
-      alignment: Alignment.center,
-      transform: Matrix4.diagonal3Values(
-        flipX ? -1.0 : 1.0,
-        flipY ? -1.0 : 1.0,
-        1.0,
-      ),
-      child: base,
-    );
-  }
-}
-
-class _CornerPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = _InkTheme.line(90)
-      ..strokeWidth = 1
-      ..style = PaintingStyle.stroke;
-
-    final w = size.width;
-    final h = size.height;
-
-    canvas.drawLine(const Offset(0, 0), Offset(w, 0), p);
-    canvas.drawLine(const Offset(0, 0), Offset(0, h), p);
-    canvas.drawLine(Offset(0, h * 0.55), Offset(w * 0.55, h), p);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _DayDetailContent extends StatefulWidget {
@@ -3070,7 +2320,7 @@ class _DayDetailContentState extends State<_DayDetailContent> {
           ),
           const SizedBox(height: 12),
           Expanded(
-            child: _DoubleInkBorder(
+            child: DoubleInkBorder(
               borderRadius: BorderRadius.circular(14),
               child: Container(
                 decoration: BoxDecoration(
@@ -3081,7 +2331,7 @@ class _DayDetailContentState extends State<_DayDetailContent> {
                     colors: [
                       Colors.white.withAlpha(160),
                       Colors.white.withAlpha(110),
-                      _InkTheme.washHi(10),
+                      InkTheme.washHi(10),
                     ],
                   ),
                 ),
@@ -3101,7 +2351,7 @@ class _DayDetailContentState extends State<_DayDetailContent> {
                               decoration: BoxDecoration(
                                 border: Border(
                                   left: BorderSide(
-                                    color: _InkTheme.line(70),
+                                    color: InkTheme.line(70),
                                     width: 0.6,
                                   ),
                                 ),
@@ -3145,7 +2395,7 @@ class _DayDetailContentState extends State<_DayDetailContent> {
                                     if (i != _shiChen.length - 1)
                                       Divider(
                                         height: 1,
-                                        color: _InkTheme.line(70),
+                                        color: InkTheme.line(70),
                                       ),
                                   ],
                                 ],
@@ -3182,7 +2432,7 @@ class _InkModeSwitch extends StatelessWidget {
     final textStyle = TextStyle(
       fontSize: 12,
       height: 1.0,
-      color: _InkTheme.ink.withAlpha(210),
+      color: InkTheme.ink.withAlpha(210),
       fontWeight: FontWeight.w700,
     );
 
@@ -3208,17 +2458,17 @@ class _InkModeSwitch extends StatelessWidget {
               EdgeInsets.symmetric(horizontal: isPhone ? 10 : 12, vertical: 8),
             ),
             side: WidgetStateProperty.all(
-              BorderSide(color: _InkTheme.line(70), width: 0.6),
+              BorderSide(color: InkTheme.line(70), width: 0.6),
             ),
             backgroundColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.selected)) {
-                return _InkTheme.sealWash(40);
+                return InkTheme.sealWash(40);
               }
               return Colors.white.withAlpha(150);
             }),
             overlayColor: WidgetStateProperty.resolveWith((states) {
               if (states.contains(WidgetState.pressed)) {
-                return _InkTheme.sealWash(26);
+                return InkTheme.sealWash(26);
               }
               if (states.contains(WidgetState.hovered)) {
                 return Colors.white.withAlpha(70);
@@ -3239,7 +2489,7 @@ class _InkModeSwitch extends StatelessWidget {
             style: TextStyle(
               fontSize: 12,
               height: 1.0,
-              color: _InkTheme.ink.withAlpha(140),
+              color: InkTheme.ink.withAlpha(140),
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -3261,7 +2511,7 @@ class _InkGridHeader extends StatelessWidget {
       height: 40,
       decoration: BoxDecoration(
         border: Border(
-          bottom: BorderSide(color: _InkTheme.line(70), width: 0.6),
+          bottom: BorderSide(color: InkTheme.line(70), width: 0.6),
         ),
         color: Colors.white.withAlpha(120),
         borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
@@ -3276,13 +2526,13 @@ class _InkGridHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   height: 1.0,
-                  color: _InkTheme.ink.withAlpha(170),
+                  color: InkTheme.ink.withAlpha(170),
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ),
-          Container(width: 1, color: _InkTheme.line(70)),
+          Container(width: 1, color: InkTheme.line(70)),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 14),
@@ -3293,7 +2543,7 @@ class _InkGridHeader extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     height: 1.0,
-                    color: _InkTheme.ink.withAlpha(170),
+                    color: InkTheme.ink.withAlpha(170),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -3339,7 +2589,7 @@ class _InkShiChenColumn extends StatelessWidget {
                     height: box,
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(140),
-                      border: Border.all(color: _InkTheme.line(55), width: 0.6),
+                      border: Border.all(color: InkTheme.line(55), width: 0.6),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -3349,7 +2599,7 @@ class _InkShiChenColumn extends StatelessWidget {
                           fontSize: isPhone ? 16 : 18,
                           shadows: const [],
                           height: 1.0,
-                          color: _InkTheme.ink.withAlpha(220),
+                          color: InkTheme.ink.withAlpha(220),
                         ),
                       ),
                     ),
@@ -3357,7 +2607,7 @@ class _InkShiChenColumn extends StatelessWidget {
                 ),
               ),
               if (i != labels.length - 1)
-                Divider(height: 1, color: _InkTheme.line(70)),
+                Divider(height: 1, color: InkTheme.line(70)),
             ],
           ],
         ),
@@ -3397,7 +2647,7 @@ class _QuarterSelectorRow extends StatelessWidget {
                       borderRadius: radius,
                       overlayColor: WidgetStateProperty.resolveWith((states) {
                         if (states.contains(WidgetState.pressed)) {
-                          return _InkTheme.sealWash(26);
+                          return InkTheme.sealWash(26);
                         }
                         if (states.contains(WidgetState.hovered)) {
                           return Colors.white.withAlpha(70);
@@ -3410,12 +2660,12 @@ class _QuarterSelectorRow extends StatelessWidget {
                           borderRadius: radius,
                           border: Border.all(
                             color: selectedQuarter == i
-                                ? _InkTheme.seal.withAlpha(150)
-                                : _InkTheme.line(55),
+                                ? InkTheme.seal.withAlpha(150)
+                                : InkTheme.line(55),
                             width: selectedQuarter == i ? 1.0 : 0.6,
                           ),
                           color: selectedQuarter == i
-                              ? _InkTheme.sealWash(38)
+                              ? InkTheme.sealWash(38)
                               : Colors.white.withAlpha(150),
                         ),
                         child: Center(
@@ -3425,8 +2675,8 @@ class _QuarterSelectorRow extends StatelessWidget {
                               fontSize: 11,
                               height: 1.0,
                               color: selectedQuarter == i
-                                  ? _InkTheme.seal.withAlpha(210)
-                                  : _InkTheme.ink.withAlpha(170),
+                                  ? InkTheme.seal.withAlpha(210)
+                                  : InkTheme.ink.withAlpha(170),
                               fontWeight: FontWeight.w800,
                             ),
                           ),
@@ -3470,7 +2720,7 @@ class _MinuteRuler extends StatelessWidget {
               borderRadius: radius,
               overlayColor: WidgetStateProperty.resolveWith((states) {
                 if (states.contains(WidgetState.pressed)) {
-                  return _InkTheme.sealWash(26);
+                  return InkTheme.sealWash(26);
                 }
                 if (states.contains(WidgetState.hovered)) {
                   return Colors.white.withAlpha(70);
@@ -3486,12 +2736,12 @@ class _MinuteRuler extends StatelessWidget {
               onTap: () {},
               child: Ink(
                 decoration: BoxDecoration(
-                  border: Border.all(color: _InkTheme.line(70), width: 0.6),
+                  border: Border.all(color: InkTheme.line(70), width: 0.6),
                   color: Colors.white.withAlpha(150),
                   borderRadius: radius,
                 ),
                 child: CustomPaint(
-                  painter: _MinuteRulerPainter(selectedMinute: selectedMinute),
+                  painter: MinuteRulerPainter(selectedMinute: selectedMinute),
                 ),
               ),
             ),
@@ -3500,46 +2750,4 @@ class _MinuteRuler extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MinuteRulerPainter extends CustomPainter {
-  final int? selectedMinute;
-
-  const _MinuteRulerPainter({required this.selectedMinute});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = _InkTheme.line(90)
-      ..strokeWidth = 1;
-
-    final w = size.width;
-    final h = size.height;
-
-    for (var m = 0; m <= 60; m += 5) {
-      final x = w * (m / 60.0);
-      final isQuarter = (m % 15 == 0);
-      final len = isQuarter ? h * 0.8 : h * 0.45;
-      canvas.drawLine(Offset(x, h), Offset(x, h - len), p);
-    }
-
-    final sel = selectedMinute;
-    if (sel != null) {
-      final x = w * (sel / 60.0);
-      final marker = Paint()
-        ..color = _InkTheme.seal.withAlpha(180)
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke;
-      final fill = Paint()
-        ..color = _InkTheme.sealWash(48)
-        ..style = PaintingStyle.fill;
-
-      final center = Offset(x, h * 0.35);
-      canvas.drawCircle(center, 6.0, fill);
-      canvas.drawCircle(center, 6.0, marker);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

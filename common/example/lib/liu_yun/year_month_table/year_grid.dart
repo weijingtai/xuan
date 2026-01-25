@@ -1,11 +1,12 @@
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_chinese_12_zodic.dart';
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:flutter/material.dart';
 import 'calender_panel.dart';
 import 'yun_liu_table_common.dart';
 import 'yun_liu_table_month_widget.dart';
 import 'yun_liu_table_year_header_cell_widget.dart';
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class YearGrid extends StatefulWidget {
   final int daYunIndex;
@@ -140,8 +141,9 @@ class _YearGridState extends State<YearGrid> {
     final year = YunLiuHelper.yearAt(daYunIndex, yearIndex);
     final seed = (daYunIndex * 97) + (yearIndex * 19) + (monthIndex * 7);
 
-    final tianGan = TianGan.listAll[seed % TianGan.listAll.length];
-    final diZhi = DiZhi.values[(seed + 3) % DiZhi.values.length];
+    final jiaZi = JiaZi.listAll[seed % JiaZi.listAll.length];
+    final tianGan = jiaZi.tianGan;
+    final diZhi = jiaZi.diZhi;
     final tenGod = EnumTenGods.values[(seed + 5) % EnumTenGods.values.length];
     final tenGodDetails = YunLiuHelper.tenGodDetailsForSeed(seed);
 

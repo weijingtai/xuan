@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'liu_day_cell_widget.dart';
 import 'liu_gan_zhi_mini_cell.dart';
 import 'yun_liu_table_common.dart';
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class CalendarPanel extends StatelessWidget {
   final String calendarId;
@@ -456,7 +458,7 @@ class CalendarPanel extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(40),
                   border: Border.all(
-                    color: const Color(0xFFD1CDC2),
+                    color: InkTheme.borderStone,
                     width: 0.6,
                   ),
                   borderRadius: BorderRadius.circular(10),
@@ -614,7 +616,7 @@ class CalendarPanel extends StatelessWidget {
         child: Container(
           decoration: BoxDecoration(
             color: Colors.white.withAlpha(40),
-            border: Border.all(color: const Color(0xFFD1CDC2), width: 0.6),
+            border: Border.all(color: InkTheme.borderStone, width: 0.6),
             borderRadius: BorderRadius.circular(10),
           ),
         ),

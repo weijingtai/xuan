@@ -1,12 +1,15 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'yun_liu_table_common.dart';
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class YunLiuTableMonthWidget extends StatelessWidget {
   final TianGan tianGan;
   final DiZhi diZhi;
   final EnumTenGods tenGod;
   final List<({TianGan gan, EnumTenGods tenGod})> tenGodDetails;
+  final Color? backgroundColor;
 
   const YunLiuTableMonthWidget({
     super.key,
@@ -14,30 +17,39 @@ class YunLiuTableMonthWidget extends StatelessWidget {
     required this.diZhi,
     required this.tenGod,
     required this.tenGodDetails,
+    this.backgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    const primary = Color(0xFF9E2A2B);
-    const primaryLight = Color(0xFFD64545);
-    const accentGreen = Color(0xFF4A7C59);
+    final ganZhiLineColor = YunLiuHelper.getGanZhiLineColor(
+      mode: YunLiuHelper.ganZhiLineColorMode,
+      gan: tianGan,
+      zhi: diZhi,
+      fixedColor: InkTheme.accentGreen.withAlpha(153),
+      isDashed: false,
+      isDark: isDark,
+    );
 
-    const inkBlack = Color(0xFF1A1A1A);
-    const inkLight = Color(0xFFE5E5E5);
+    final ganZhiDashColor = YunLiuHelper.getGanZhiLineColor(
+      mode: YunLiuHelper.ganZhiLineColorMode,
+      gan: tianGan,
+      zhi: diZhi,
+      fixedColor: isDark ? InkTheme.inkDashDark : InkTheme.inkDashLight,
+      isDashed: true,
+      isDark: isDark,
+    );
 
-    const mutedGray = Color(0xFF8C8C8C);
-    const borderLight = Color(0xFFE3E0D8);
-    const borderDark = Color(0xFF33302C);
-
-    final textInk = isDark ? inkLight : inkBlack;
-    final borderColor = isDark ? borderDark : borderLight;
-    final primaryText = isDark ? primaryLight : primary;
+    final textInk = isDark ? InkTheme.inkSoft : InkTheme.inkDeep;
+    final borderColor =
+        isDark ? InkTheme.inkBorderDark : InkTheme.borderLight;
+    final primaryText = isDark ? InkTheme.primaryLight : InkTheme.primary;
 
     final backgroundTo = isDark
         ? Colors.white.withAlpha(13)
-        : const Color(0xFFFAFAF9).withAlpha(128);
+        : InkTheme.paperBackground.withAlpha(128);
 
     final ganZhiStyle = TextStyle(
       fontSize: 20,
@@ -58,7 +70,7 @@ class YunLiuTableMonthWidget extends StatelessWidget {
     final detailStyle = TextStyle(
       fontSize: 10,
       height: 1.15,
-      color: mutedGray,
+      color: InkTheme.textMuted,
       fontFamilyFallback: const ['Noto Serif SC', 'serif'],
     );
 
@@ -67,6 +79,7 @@ class YunLiuTableMonthWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
+          color: backgroundColor,
           border: Border(right: BorderSide(color: borderColor, width: 1)),
           // gradient: LinearGradient(
           //   begin: Alignment.topLeft,
@@ -85,7 +98,7 @@ class YunLiuTableMonthWidget extends StatelessWidget {
                     width: 2,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: accentGreen.withAlpha(153),
+                      color: ganZhiLineColor,
                       borderRadius: BorderRadius.circular(999),
                     ),
                   ),
@@ -105,11 +118,8 @@ class YunLiuTableMonthWidget extends StatelessWidget {
               width: 1,
               height: 64,
               child: CustomPaint(
-                painter: _DashedLinePainter(
-                  color: isDark
-                      // ? const Color(0xFF57534E)
-                      ? const Color(0xFF57534E)
-                      : const Color(0xFFD6D3D1),
+                painter: DayCellDashedLinePainter(
+                  color: ganZhiDashColor,
                 ),
               ),
             ),
@@ -151,37 +161,5 @@ class YunLiuTableMonthWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  final Color color;
-
-  const _DashedLinePainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 1;
-
-    const dash = 3.0;
-    const gap = 2.5;
-
-    var y = 0.0;
-    while (y < size.height) {
-      final y2 = (y + dash).clamp(0.0, size.height);
-      canvas.drawLine(
-        Offset(size.width / 2, y),
-        Offset(size.width / 2, y2),
-        paint,
-      );
-      y = y2 + gap;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) {
-    return oldDelegate.color != color;
   }
 }

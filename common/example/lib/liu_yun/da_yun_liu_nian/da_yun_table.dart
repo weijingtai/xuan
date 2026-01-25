@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'yun_liu_table_common.dart';
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class DaYunTabs extends StatelessWidget {
   final TabController controller;

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
+
 class DaYunLiuNianTableDemoWidget extends StatefulWidget {
   final double scale;
   final bool fitHeight;
@@ -187,11 +190,11 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
     this.cardPadding = 20,
   }) : data = DaYunLiuNianTableViewData.demo();
 
-  static const Color _paper = Color(0xFFFDFaf5);
-  static const Color _paperAlt = Color(0xFFF6EFE3);
-  static const Color _ink = Color(0xFF1A1A1A);
-  static const Color _cinnabar = Color(0xFFB22222);
-  static const Color _gold = Color(0xFFAA9460);
+  static const Color _paper = InkTheme.paperSoft;
+  static const Color _paperAlt = InkTheme.paperAlt;
+  static const Color _ink = InkTheme.inkDeep;
+  static const Color _cinnabar = InkTheme.cinnabar;
+  static const Color _gold = InkTheme.gold;
 
   static const double _gap = 8;
   static const double _sidebarW = 52;
@@ -227,7 +230,7 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
             : scale;
 
         return ColoredBox(
-          color: const Color(0xFFE0E0E0),
+          color: InkTheme.backgroundMuted,
           child: Padding(
             padding: EdgeInsets.all(outerPad),
             child: Container(
@@ -284,13 +287,15 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
             child: Row(
               children: [
                 SizedBox(width: sidebarW + gap),
-                for (var c = 0; c < columnCount; c++)
+                for (var c = 0; c < columnCount; c++) ...[
                   Container(
-                    width: dayunW + (c == columnCount - 1 ? 0 : gap),
+                    width: dayunW,
                     color: c.isEven
                         ? Colors.transparent
                         : _gold.withOpacity(0.12),
                   ),
+                  if (c != columnCount - 1) SizedBox(width: gap),
+                ],
               ],
             ),
           ),
@@ -315,7 +320,7 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
               SizedBox(height: gap),
               for (var r = 0; r < rowCount; r++) ...[
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _IndexSidebar(
                       text: data.rowSidebars[r],
@@ -326,6 +331,8 @@ class DaYunLiuNianTableWidget extends StatelessWidget {
                     for (var c = 0; c < data.columns.length; c++) ...[
                       SizedBox(
                         width: dayunW,
+                        height:
+                            DaYunLiuNianTableWidget._yearCellH * layoutScale,
                         child: Align(
                           alignment: Alignment.center,
                           child: _YearCell(
@@ -657,7 +664,7 @@ class _DaYunHeaderCell extends StatelessWidget {
                     width: 1 * layoutScale,
                     height: 68 * layoutScale,
                     child: CustomPaint(
-                      painter: _DashedLinePainter(
+                      painter: DashedLinePainter(
                         axis: Axis.vertical,
                         color: _gold.withOpacity(0.9),
                         dashLength: 2 * layoutScale,
@@ -973,7 +980,7 @@ class _YearCell extends StatelessWidget {
                       width: 1 * layoutScale,
                       height: 74 * layoutScale,
                       child: CustomPaint(
-                        painter: _DashedLinePainter(
+                        painter: DashedLinePainter(
                           axis: Axis.vertical,
                           color: _gold.withOpacity(0.9),
                           dashLength: 2 * layoutScale,
@@ -1121,59 +1128,5 @@ class _VerticalText extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [for (final c in chars) Text(c, style: style)],
     );
-  }
-}
-
-class _DashedLinePainter extends CustomPainter {
-  final Axis axis;
-  final Color color;
-  final double dashLength;
-  final double gapLength;
-  final double strokeWidth;
-
-  const _DashedLinePainter({
-    required this.axis,
-    required this.color,
-    required this.dashLength,
-    required this.gapLength,
-    required this.strokeWidth,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = strokeWidth
-      ..style = PaintingStyle.stroke;
-
-    double start = 0;
-    final max = axis == Axis.vertical ? size.height : size.width;
-
-    while (start < max) {
-      final end = (start + dashLength).clamp(0.0, max);
-      if (axis == Axis.vertical) {
-        canvas.drawLine(
-          Offset(size.width / 2, start),
-          Offset(size.width / 2, end),
-          paint,
-        );
-      } else {
-        canvas.drawLine(
-          Offset(start, size.height / 2),
-          Offset(end, size.height / 2),
-          paint,
-        );
-      }
-      start = end + gapLength;
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant _DashedLinePainter oldDelegate) {
-    return oldDelegate.axis != axis ||
-        oldDelegate.color != color ||
-        oldDelegate.dashLength != dashLength ||
-        oldDelegate.gapLength != gapLength ||
-        oldDelegate.strokeWidth != strokeWidth;
   }
 }

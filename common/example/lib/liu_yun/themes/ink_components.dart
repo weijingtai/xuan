@@ -1,19 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:common/enums.dart';
-import 'package:common/features/datetime_details/input_info_params.dart';
 
-class InkTheme {
-  static const paper = Color(0xFFF7F2E8);
-  static const paperHi = Color(0xFFFFFBF2);
-  static const ink = Color(0xFF2D2D2D);
-  static const seal = Color(0xFFB23A2B);
-
-  static Color line([int a = 70]) => ink.withAlpha(a);
-  static Color wash([int a = 18]) => ink.withAlpha(a);
-  static Color washHi([int a = 10]) => ink.withAlpha(a);
-  static Color sealWash([int a = 44]) => seal.withAlpha(a);
-}
+import 'ink_theme.dart';
 
 class DayCellDashedLinePainter extends CustomPainter {
   final Color color;
@@ -44,6 +32,60 @@ class DayCellDashedLinePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant DayCellDashedLinePainter oldDelegate) {
     return oldDelegate.color != color;
+  }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Axis axis;
+  final Color color;
+  final double dashLength;
+  final double gapLength;
+  final double strokeWidth;
+
+  const DashedLinePainter({
+    required this.axis,
+    required this.color,
+    required this.dashLength,
+    required this.gapLength,
+    required this.strokeWidth,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    double start = 0;
+    final max = axis == Axis.vertical ? size.height : size.width;
+
+    while (start < max) {
+      final end = (start + dashLength).clamp(0.0, max);
+      if (axis == Axis.vertical) {
+        canvas.drawLine(
+          Offset(size.width / 2, start),
+          Offset(size.width / 2, end),
+          paint,
+        );
+      } else {
+        canvas.drawLine(
+          Offset(start, size.height / 2),
+          Offset(end, size.height / 2),
+          paint,
+        );
+      }
+      start = end + gapLength;
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant DashedLinePainter oldDelegate) {
+    return oldDelegate.axis != axis ||
+        oldDelegate.color != color ||
+        oldDelegate.dashLength != dashLength ||
+        oldDelegate.gapLength != gapLength ||
+        oldDelegate.strokeWidth != strokeWidth;
   }
 }
 
@@ -92,194 +134,6 @@ class PaperTexturePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-class YunLiuHelper {
-  /// Shared months data for all YunLiu components
-  static const List<String> months = [
-    '正月',
-    '二月',
-    '三月',
-    '四月',
-    '五月',
-    '六月',
-    '七月',
-    '八月',
-    '九月',
-    '十月',
-    '冬月',
-    '腊月',
-  ];
-
-  static Color getStrategyColor(ZiShiStrategy strategy, {bool isWash = false}) {
-    switch (strategy) {
-      case ZiShiStrategy.noDistinguishAt23:
-      case ZiShiStrategy.startFrom23:
-        return isWash
-            ? const Color(0xFF455A64).withOpacity(0.15)
-            : const Color(0xFF455A64);
-      case ZiShiStrategy.distinguishAt0FiveMouse:
-      case ZiShiStrategy.startFrom0:
-      case ZiShiStrategy.splitedZi:
-      case ZiShiStrategy.bandsStartAt0:
-        return isWash ? InkTheme.sealWash(40) : InkTheme.seal;
-      case ZiShiStrategy.distinguishAt0Fixed:
-        return isWash
-            ? const Color(0xFF2E7D32).withOpacity(0.15)
-            : const Color(0xFF2E7D32);
-    }
-  }
-
-  static const int yearCount = 10;
-  static const int yearStartBase = 2024;
-
-  static List<({TianGan gan, EnumTenGods hiddenGods})> hiddenGansForSeed(int seed) {
-    final stems = TianGan.listAll;
-    final gods = EnumTenGods.values;
-
-    return <({TianGan gan, EnumTenGods hiddenGods})>[
-      (
-        gan: stems[seed % stems.length],
-        hiddenGods: gods[(seed + 1) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 3) % stems.length],
-        hiddenGods: gods[(seed + 2) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 6) % stems.length],
-        hiddenGods: gods[(seed + 3) % gods.length],
-      ),
-    ];
-  }
-
-  static List<({TianGan gan, EnumTenGods tenGod})> tenGodDetailsForSeed(int seed) {
-    final stems = TianGan.listAll;
-    final gods = EnumTenGods.values;
-
-    return <({TianGan gan, EnumTenGods tenGod})>[
-      (gan: stems[seed % stems.length], tenGod: gods[(seed + 1) % gods.length]),
-      (
-        gan: stems[(seed + 2) % stems.length],
-        tenGod: gods[(seed + 2) % gods.length],
-      ),
-      (
-        gan: stems[(seed + 4) % stems.length],
-        tenGod: gods[(seed + 3) % gods.length],
-      ),
-    ];
-  }
-
-  static int yearAt(int daYunIndex, int yearIndex) {
-    return yearStartBase + (daYunIndex * yearCount) + yearIndex;
-  }
-
-  static String calendarId(int daYunIndex, int monthIndex, int yearIndex) {
-    return '$daYunIndex-$monthIndex-$yearIndex';
-  }
-
-  static int calendarRows({required int year, required int month}) {
-    final first = DateTime(year, month, 1);
-    final next = DateTime(year, month + 1, 1);
-    final days = next.subtract(const Duration(days: 1)).day;
-    final leading = (first.weekday - DateTime.monday) % 7;
-    final total = leading + days;
-    return ((total + 6) ~/ 7).clamp(4, 6);
-  }
-
-  static double calendarPanelWidth({
-    required double yearsWidth,
-    required bool isPhone,
-  }) {
-    final maxW = isPhone ? 460.0 : 640.0;
-    return yearsWidth.clamp(300.0, maxW).toDouble();
-  }
-
-  static double calendarRowHeight({
-    required double availableWidth,
-    required bool isPhone,
-  }) {
-    final cellW = availableWidth / 7;
-    return cellW.toDouble();
-  }
-
-  static double calendarExpandedRowHeight({
-    required double yearsWidth,
-    required bool isPhone,
-    required int year,
-    required int month,
-    required bool showDetail,
-  }) {
-    final outerTop = 10.0;
-    final outerBottom = 14.0;
-    final outerLR = isPhone ? 10.0 : 14.0;
-
-    final innerPad = isPhone ? 12.0 : 16.0;
-
-    final panelW = calendarPanelWidth(yearsWidth: yearsWidth, isPhone: isPhone);
-    final availableWidth = (panelW - (outerLR * 2) - (innerPad * 2))
-        .clamp(140.0, double.infinity)
-        .toDouble();
-    final rows = calendarRows(year: year, month: month);
-    final rowH = calendarRowHeight(
-      availableWidth: availableWidth,
-      isPhone: isPhone,
-    );
-
-    final headerH = isPhone ? 30.0 : 32.0;
-    const weekH = 20.0;
-    final topGap = isPhone ? 10.0 : 12.0;
-    const midGap = 6.0;
-
-    const gridCrossSpacing = 6.0;
-    const gridMainSpacing = 6.0;
-    const gridCrossAxisCount = 6;
-    const cellAspectRatio = 1.28;
-
-    final detailGap = showDetail ? 8.0 : 0.0;
-    final shiChenH = showDetail
-        ? () {
-            final outerPad = isPhone ? 3.0 : 4.0;
-            final innerPad = isPhone ? 10.0 : 12.0;
-
-            final topBarH = isPhone ? 34.0 : 36.0;
-            final bottomBarH = isPhone ? 30.0 : 32.0;
-            final gapTop = isPhone ? 8.0 : 10.0;
-            final gapBottom = isPhone ? 6.0 : 8.0;
-
-            final panelW = (availableWidth - (outerPad * 2)).clamp(
-              0.0,
-              double.infinity,
-            );
-            final gridW = (panelW - (innerPad * 2)).clamp(0.0, double.infinity);
-            final cellW =
-                (gridW - (gridCrossSpacing * (gridCrossAxisCount - 1))) /
-                gridCrossAxisCount;
-            final cellH = (cellW / cellAspectRatio).clamp(0.0, double.infinity);
-            final gridH = (cellH * 2) + gridMainSpacing;
-
-            final total =
-                (innerPad * 2) +
-                topBarH +
-                gapTop +
-                gridH +
-                gapBottom +
-                bottomBarH;
-            return total + (isPhone ? 22 : 24);
-          }()
-        : 0.0;
-
-    final calendarH =
-        headerH +
-        topGap +
-        weekH +
-        midGap +
-        (rows * rowH) +
-        detailGap +
-        shiChenH;
-
-    return outerTop + outerBottom + (innerPad * 2) + calendarH + 6;
-  }
 }
 
 class StampIndicator extends Decoration {
@@ -484,6 +338,48 @@ class CornerPainter extends CustomPainter {
     canvas.drawLine(const Offset(0, 0), Offset(w, 0), p);
     canvas.drawLine(const Offset(0, 0), Offset(0, h), p);
     canvas.drawLine(Offset(0, h * 0.55), Offset(w * 0.55, h), p);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class MinuteRulerPainter extends CustomPainter {
+  final int? selectedMinute;
+
+  const MinuteRulerPainter({required this.selectedMinute});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final p = Paint()
+      ..color = InkTheme.line(90)
+      ..strokeWidth = 1;
+
+    final w = size.width;
+    final h = size.height;
+
+    for (var m = 0; m <= 60; m += 5) {
+      final x = w * (m / 60.0);
+      final isQuarter = (m % 15 == 0);
+      final len = isQuarter ? h * 0.8 : h * 0.45;
+      canvas.drawLine(Offset(x, h), Offset(x, h - len), p);
+    }
+
+    final sel = selectedMinute;
+    if (sel != null) {
+      final x = w * (sel / 60.0);
+      final marker = Paint()
+        ..color = InkTheme.seal.withAlpha(180)
+        ..strokeWidth = 2.0
+        ..style = PaintingStyle.stroke;
+      final fill = Paint()
+        ..color = InkTheme.sealWash(48)
+        ..style = PaintingStyle.fill;
+
+      final center = Offset(x, h * 0.35);
+      canvas.drawCircle(center, 6.0, fill);
+      canvas.drawCircle(center, 6.0, marker);
+    }
   }
 
   @override

@@ -1,6 +1,8 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'yun_liu_table_common.dart';
+import '../themes/ink_theme.dart';
 
 class YunLiuTableYearHeaderCellWidget extends StatelessWidget {
   const YunLiuTableYearHeaderCellWidget({super.key});
@@ -8,7 +10,7 @@ class YunLiuTableYearHeaderCellWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F4), // stone-100
+      backgroundColor: InkTheme.paperStone,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(32),
@@ -58,14 +60,13 @@ class DaYunHeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const paperBase = Color(0xFFF7F4EF);
-    const headerInk = Color(0xFF1A1A1A);
-    const ink = Color(0xFF2D2D2D);
-    const cinnabar = Color(0xFFB22D2A);
-    const gold = Color(0xFFD4AF37);
-    const borderColor = Color(0xFFD1CDC2);
-    const textureUrl =
-        'https://www.transparenttextures.com/patterns/rice-paper.png';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    const paperBase = InkTheme.paperHeader;
+    const headerInk = InkTheme.inkDeep;
+    const ink = InkTheme.ink;
+    const cinnabar = InkTheme.cinnabarDeep;
+    const gold = InkTheme.goldBright;
+    const borderColor = InkTheme.borderStone;
 
     final hidden = <({TianGan gan, EnumTenGods hiddenGods})>[...hiddenGans];
     while (hidden.length < 3) {
@@ -82,6 +83,15 @@ class DaYunHeaderCell extends StatelessWidget {
         final sx = (c.maxWidth / 100.0).clamp(0.45, 2.4);
         final sy = (c.maxHeight / 112.0).clamp(0.45, 2.4);
         final s = sx < sy ? sx : sy;
+
+        final ganZhiLineColor = YunLiuHelper.getGanZhiLineColor(
+          mode: YunLiuHelper.ganZhiLineColorMode,
+          gan: yearGanZhi.gan,
+          zhi: yearGanZhi.zhi,
+          fixedColor: cinnabar.withValues(alpha: 0.4),
+          isDashed: false,
+          isDark: isDark,
+        );
 
         final radius = 8.0 * s;
 
@@ -147,10 +157,6 @@ class DaYunHeaderCell extends StatelessWidget {
               color: cellPaper,
               borderRadius: BorderRadius.circular(radius),
               border: Border.all(color: borderColor, width: 1.0 * s),
-              image: const DecorationImage(
-                image: NetworkImage(textureUrl),
-                fit: BoxFit.cover,
-              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withAlpha(26),
@@ -220,7 +226,7 @@ class DaYunHeaderCell extends StatelessWidget {
                             Container(
                               width: 1.0 * s,
                               height: double.infinity,
-                              color: cinnabar.withValues(alpha: 0.4),
+                              color: ganZhiLineColor,
                             ),
                             Expanded(
                               flex: 65,

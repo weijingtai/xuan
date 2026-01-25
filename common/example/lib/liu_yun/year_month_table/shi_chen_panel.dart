@@ -1,6 +1,8 @@
 import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:flutter/material.dart';
-import 'yun_liu_table_common.dart';
+
+import '../themes/ink_components.dart';
+import '../themes/ink_theme.dart';
 
 class ShiChenPanel extends StatefulWidget {
   final DateTime date;
@@ -477,7 +479,7 @@ class _MinuteRuler extends StatelessWidget {
                   borderRadius: radius,
                 ),
                 child: CustomPaint(
-                  painter: _MinuteRulerPainter(selectedMinute: selectedMinute),
+                  painter: MinuteRulerPainter(selectedMinute: selectedMinute),
                 ),
               ),
             ),
@@ -486,46 +488,4 @@ class _MinuteRuler extends StatelessWidget {
       ),
     );
   }
-}
-
-class _MinuteRulerPainter extends CustomPainter {
-  final int? selectedMinute;
-
-  const _MinuteRulerPainter({required this.selectedMinute});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final p = Paint()
-      ..color = InkTheme.line(90)
-      ..strokeWidth = 1;
-
-    final w = size.width;
-    final h = size.height;
-
-    for (var m = 0; m <= 60; m += 5) {
-      final x = w * (m / 60.0);
-      final isQuarter = (m % 15 == 0);
-      final len = isQuarter ? h * 0.8 : h * 0.45;
-      canvas.drawLine(Offset(x, h), Offset(x, h - len), p);
-    }
-
-    final sel = selectedMinute;
-    if (sel != null) {
-      final x = w * (sel / 60.0);
-      final marker = Paint()
-        ..color = InkTheme.seal.withAlpha(180)
-        ..strokeWidth = 2.0
-        ..style = PaintingStyle.stroke;
-      final fill = Paint()
-        ..color = InkTheme.sealWash(48)
-        ..style = PaintingStyle.fill;
-
-      final center = Offset(x, h * 0.35);
-      canvas.drawCircle(center, 6.0, fill);
-      canvas.drawCircle(center, 6.0, marker);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

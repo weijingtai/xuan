@@ -1,6 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'yun_liu_table_common.dart';
+import '../themes/ink_theme.dart';
 
 class LiuGanZhiMiniCell extends StatelessWidget {
   final String label;
@@ -29,11 +30,11 @@ class LiuGanZhiMiniCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const paper = Color(0xFFFDFaf5);
-    const ink = Color(0xFF1A1A1A);
-    const cinnabar = Color(0xFFC0392B);
-    const watermark = Color.fromRGBO(0, 0, 0, 0.06);
-    const goldLine = Color.fromRGBO(170, 148, 96, 0.20);
+    const paper = InkTheme.paperSoft;
+    const ink = InkTheme.inkDeep;
+    const cinnabar = InkTheme.cinnabarAlt;
+    const watermark = InkTheme.watermarkInk;
+    const goldLine = InkTheme.goldLine;
 
     final range = (timeRangeLabel ?? '').trim();
     final jieQiText = (jieQiLabel ?? '').trim();
