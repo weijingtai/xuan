@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极客万年历 - 全信息专业版</title>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+    <style>
+        :root { --primary: #d32f2f; --border: #eee; --bg: #f8f9fa; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; font-size: 14px; }
+        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 5px 25px rgba(0,0,0,0.05); }
+        
+        /* 设置面板 */
+        .settings-panel { background: #fff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .settings-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .settings-group label { background: #eee; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+        .settings-group input { margin-right: 5px; }
+
+        /* 核心布局 */
+        .main-layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; }
+        
+        /* 左侧：日详情面板 */
+        .detail-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; position: sticky; top: 20px; }
+        .card-header { background: var(--primary); color: white; padding: 20px; text-align: center; }
+        .card-body { padding: 15px; line-height: 1.8; }
+        .info-sec { border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; margin-bottom: 10px; }
+        .info-sec:last-child { border: none; }
+        .info-title { font-weight: bold; color: var(--primary); margin-bottom: 5px; display: block; border-left: 3px solid var(--primary); padding-left: 8px; }
+
+        /* 右侧：月视图 */
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+        .day-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; min-height: 100px; cursor: pointer; position: relative; }
+        .day-cell.selected { background: #fff0f0; box-shadow: inset 0 0 0 2px var(--primary); }
+        .day-cell.other-month { opacity: 0.3; }
+        .holiday-tag { position: absolute; top: 5px; right: 5px; font-size: 10px; padding: 2px 4px; border-radius: 3px; color: white; }
+
+        .yi { color: #2e7d32; } .ji { color: #c62828; }
+        
+        @media (max-width: 900px) { .main-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="settings-panel">
+        <div style="display:flex; gap:20px; margin-bottom:15px;">
+            <input type="number" id="yIn" value="2026" style="width:80px"> 年
+            <input type="number" id="mIn" value="1" min="1" max="12" style="width:50px"> 月
+            <button onclick="renderAll()">跳转日期</button>
+        </div>
+        <strong>显示配置：</strong>
+        <div class="settings-group" id="configPanel">
+            </div>
+    </div>
+
+    <div class="main-layout">
+        <div class="detail-card" id="detailCard"></div>
+        <div id="monthView">
+            <div class="month-grid" id="monthGrid"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 1. 定义所有可配置的信息项
+const CONFIGS = {
+    basic: { name: "基础信息", items: ["公历日期", "农历日期", "星期", "星座", "节日节气", "物候", "月相"] },
+    astrology: { name: "干支命理", items: ["八字", "纳音", "五行", "旬空", "时辰干支"] },
+    almanac: { name: "黄历择吉", items: ["宜", "忌", "彭祖百忌", "诸神方位", "胎神", "冲煞", "建除十二神", "六曜"] },
+    stars: { name: "星宿九星", items: ["二十八星宿", "九星"] },
+    religious: { name: "宗教历法", items: ["道历", "佛历"] }
+};
+
+let activeConfigs = {}; // 存储当前选中的显示项
+let selectedDay = 25; // 当前选中日
+
+// 初始化配置面板
+function initConfig() {
+    const panel = document.getElementById('configPanel');
+    for (let cat in CONFIGS) {
+        CONFIGS[cat].items.forEach(item => {
+            const id = `cfg_${item}`;
+            activeConfigs[item] = true; // 默认全选
+            panel.innerHTML += `
+                <label><input type="checkbox" checked onchange="toggleCfg('${item}')"> ${item}</label>
+            `;
+        });
+    }
+}
+
+function toggleCfg(item) {
+    activeConfigs[item] = !activeConfigs[item];
+    renderAll();
+}
+
+function renderAll() {
+    const y = parseInt(document.getElementById('yIn').value);
+    const m = parseInt(document.getElementById('mIn').value);
+    renderMonth(y, m);
+    renderDetail(y, m, selectedDay);
+}
+
+// 2. 核心详情渲染：包含所有维度
+function renderDetail(y, m, d) {
+    const solar = Solar.fromYmd(y, m, d);
+    const lunar = solar.getLunar();
+    const taoist = lunar.getTaoist();
+    const buddhist = lunar.getBuddhist();
+    const eb = lunar.getEightChar();
+    
+    let html = `
+        <div class="card-header">
+            <h2 style="margin:0">${y}-${m}-${d}</h2>
+            <div>${lunar.getYearInGanZi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()}</div>
+        </div>
+        <div class="card-body">
+    `;
+
+    // 辅助函数：根据配置决定是否显示
+    const addSec = (title, content, cfgName) => {
+        if (activeConfigs[cfgName] !== false) {
+            html += `<div class="info-sec"><span class="info-title">${title}</span>${content}</div>`;
+        }
+    };
+
+    // --- 填充数据 ---
+    addSec("公/农历", `${solar.toYmd()} | ${lunar.getYearInGanZi()}(${lunar.getYearShengXiao()})年`, "公历日期");
+    addSec("星期/星座", `星期${solar.getWeekInChinese()} | ${solar.getZodiac()}座`, "星座");
+    addSec("节日/节气", (lunar.getFestivals().concat(lunar.getOtherFestivals()).join(' ') || "无") + " | " + (lunar.getJieQi() || ""), "节日节气");
+    addSec("物候/月相", `${lunar.getWuHou()} | ${lunar.getYueXiang()}月`, "物候");
+    
+    addSec("八字", `${eb.getYear()} ${eb.getMonth()} ${eb.getDay()} ${eb.getTime()}`, "八字");
+    addSec("五行/纳音", `${lunar.getDayWuXing()} | ${lunar.getDayNaYin()}`, "五行");
+    addSec("旬空", `${lunar.getDayXunKong()} (旬：${lunar.getDayXun()})`, "旬空");
+
+    addSec("宜", `<span class="yi">${lunar.getDayYi().join(' · ') || '无'}</span>`, "宜");
+    addSec("忌", `<span class="ji">${lunar.getDayJi().join(' · ') || '无'}</span>`, "忌");
+    addSec("冲煞", `${lunar.getChongDesc()} | 煞${lunar.getSha()}`, "冲煞");
+    addSec("诸神方位", `喜神:${lunar.getDayPositionXiDesc()} 财神:${lunar.getDayPositionCaiDesc()} 福神:${lunar.getDayPositionFuDesc()}`, "诸神方位");
+    addSec("建除十二神/六曜", `${lunar.getZhiXing()} | ${lunar.getLiuYao()}`, "建除十二神");
+
+    addSec("星宿", `${lunar.getGong()}${lunar.getShou()} · ${lunar.getXiu()}${lunar.getZheng()}(${lunar.getAnimal()})`, "二十八星宿");
+    const ns = lunar.getDayNineStar();
+    addSec("九星", `${ns.getNumber()}${ns.getColor()}${ns.getName()}${ns.getWuXing()}`, "九星");
+
+    // --- 道历与佛历 ---
+    addSec("道历", `天运${taoist.getYear()}年 ${taoist.getMonthInChinese()}月 ${taoist.getDayInChinese()}<br>【${taoist.getFestivals().join(' ')}】`, "道历");
+    addSec("佛历", `佛历${buddhist.getYear()}年 ${buddhist.getMonthInChinese()}月 ${buddhist.getDayInChinese()}<br>【${buddhist.getFestivals().join(' ')}】`, "佛历");
+
+    html += `</div>`;
+    document.getElementById('detailCard').innerHTML = html;
+}
+
+// 3. 月视图渲染
+function renderMonth(y, m) {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    ['日','一','二','三','四','五','六'].forEach(w => grid.innerHTML += `<div style="text-align:center;padding:5px;font-weight:bold">${w}</div>`);
+
+    const sMonth = SolarMonth.fromYm(y, m);
+    sMonth.getWeeks(0).forEach(week => {
+        week.getDays().forEach(day => {
+            const isOther = day.getMonth() !== m;
+            const lunar = day.getLunar();
+            const h = HolidayUtil.getHoliday(day.getYear(), day.getMonth(), day.getDay());
+            
+            grid.innerHTML += `
+                <div class="day-cell ${isOther ? 'other-month' : ''} ${day.getDay()===selectedDay && !isOther ? 'selected' : ''}" 
+                     onclick="if(!${isOther}){selectedDay=${day.getDay()}; renderAll();}">
+                    <div style="font-weight:bold">${day.getDay()}</div>
+                    <div style="font-size:11px;color:#666">${lunar.getDayInChinese()}</div>
+                    ${h ? `<span class="holiday-tag" style="background:${h.isWork()?'#4caf50':'#f44336'}">${h.isWork()?'班':'休'}</span>` : ''}
+                </div>
+            `;
+        });
+    });
+}
+
+initConfig();
+renderAll();
+</script>
+
+</body>
+</html>

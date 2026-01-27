@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>极客万年历 - 专业版</title>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+    <style>
+        :root {
+            --primary-color: #d32f2f;
+            --work-color: #f5f5f5;
+            --rest-color: #fff0f0;
+            --text-main: #333;
+            --border-color: #eee;
+        }
+
+        body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; background: #fafafa; margin: 0; padding: 20px; color: var(--text-main); }
+        .container { max-width: 1100px; margin: auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+        /* 控制区域 */
+        .controls { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 12px; }
+        .controls div { flex: 1; min-width: 140px; }
+        label { display: block; font-size: 13px; color: #666; margin-bottom: 5px; }
+        select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+
+        /* 视图导航 */
+        .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .tab-btn { padding: 12px 25px; border: none; background: none; cursor: pointer; font-size: 16px; font-weight: 500; color: #666; transition: all 0.3s; }
+        .tab-btn.active { color: var(--primary-color); border-bottom: 3px solid var(--primary-color); }
+
+        .view-section { display: none; }
+        .view-section.active { display: block; }
+
+        /* 月视图 */
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
+        .day-cell { border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 8px; min-height: 90px; cursor: pointer; transition: background 0.2s; position: relative; }
+        .day-cell:hover { background: #fffcfc; }
+        .day-cell.selected { background: #fff0f0; outline: 2px solid var(--primary-color); z-index: 1; }
+        .day-cell.other-month { opacity: 0.3; }
+        .day-num { font-size: 1.4em; font-weight: bold; }
+        .lunar-text { font-size: 0.85em; color: #777; margin-top: 4px; }
+        .fest-tag { font-size: 0.75em; background: #ffebee; color: #c62828; padding: 1px 4px; border-radius: 3px; display: inline-block; margin-top: 4px; }
+        .holiday-tag { position: absolute; top: 5px; right: 5px; font-size: 0.7em; padding: 2px 4px; border-radius: 4px; font-weight: bold; }
+        .tag-rest { background: #f44336; color: white; }
+        .tag-work { background: #4caf50; color: white; }
+
+        /* 日详情视图 */
+        .day-view-container { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
+        .almanac-card { border: 1px solid #eee; border-radius: 12px; padding: 20px; }
+        .yiji-box { display: flex; gap: 10px; margin-top: 15px; }
+        .yi-list, .ji-list { flex: 1; padding: 15px; border-radius: 8px; }
+        .yi-list { background: #f1f8e9; border-left: 5px solid #4caf50; }
+        .ji-list { background: #fff3e0; border-left: 5px solid #ff9800; }
+        .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px; }
+        .info-item b { color: #888; display: block; font-size: 12px; }
+
+        /* 时视图 */
+        .hour-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .hour-box { border: 1px solid #eee; padding: 15px; border-radius: 10px; text-align: center; background: #fff; }
+        .hour-box b { font-size: 1.2em; color: var(--primary-color); }
+
+        @media (max-width: 768px) {
+            .day-view-container { grid-template-columns: 1fr; }
+            .controls { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="controls">
+        <div>
+            <label>年份</label>
+            <input type="number" id="yearInput" value="2026" min="1900" max="2100" onchange="refresh()">
+        </div>
+        <div>
+            <label>月份</label>
+            <input type="number" id="monthInput" value="1" min="1" max="12" onchange="refresh()">
+        </div>
+        <div>
+            <label>子时模式</label>
+            <select id="ziShiMode" onchange="refresh()">
+                <option value="distinguishAt0">区分早晚子时 (0点换日)</option>
+                <option value="noDistinguishAt23">不区分早晚 (23点换日)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="switchView('month', this)">月视图</button>
+        <button class="tab-btn" onclick="switchView('day', this)">日详情</button>
+        <button class="tab-btn" onclick="switchView('hour', this)">时辰</button>
+    </div>
+
+    <div id="month-section" class="view-section active">
+        <div class="month-grid" id="monthGrid"></div>
+    </div>
+
+    <div id="day-section" class="view-section">
+        <div id="dayDetail"></div>
+    </div>
+
+    <div id="hour-section" class="view-section">
+        <div class="hour-grid" id="hourGrid"></div>
+    </div>
+</div>
+
+<script>
+let selDate = { y: 2026, m: 1, d: 24 }; // 当前选中的日期
+
+// 核心刷新函数
+function refresh() {
+    selDate.y = parseInt(document.getElementById('yearInput').value);
+    selDate.m = parseInt(document.getElementById('monthInput').value);
+    const mode = document.getElementById('ziShiMode').value;
+
+    renderMonth();
+    renderDayDetail(mode);
+    renderHourView(mode);
+}
+
+// 1. 月视图：包含节日与法定调休
+function renderMonth() {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    ['日','一','二','三','四','五','六'].forEach(w => {
+        grid.innerHTML += `<div style="text-align:center; padding:10px; font-weight:bold; color:#999;">${w}</div>`;
+    });
+
+    const solarMonth = SolarMonth.fromYm(selDate.y, selDate.m);
+    const weeks = solarMonth.getWeeks(0);
+
+    weeks.forEach(week => {
+        week.getDays().forEach(day => {
+            const isOther = day.getMonth() !== selDate.m;
+            const lunar = day.getLunar();
+            const isSelected = day.getDay() === selDate.d && !isOther;
+            
+            // 获取节日
+            let fest = lunar.getFestivals()[0] || lunar.getJieQi() || day.getFestivals()[0] || "";
+            
+            // 获取法定假日/调休
+            const h = HolidayUtil.getHoliday(day.getYear(), day.getMonth(), day.getDay());
+            let holidayTag = '';
+            if(h) {
+                holidayTag = `<span class="holiday-tag ${h.isWork() ? 'tag-work' : 'tag-rest'}">${h.isWork() ? '班' : '休'}</span>`;
+            }
+
+            grid.innerHTML += `
+                <div class="day-cell ${isOther ? 'other-month' : ''} ${isSelected ? 'selected' : ''}" 
+                     onclick="selectDay(${day.getDay()}, ${isOther})">
+                    ${holidayTag}
+                    <div class="day-num">${day.getDay()}</div>
+                    <div class="lunar-text">${lunar.getDayInChinese()}</div>
+                    ${fest ? `<div class="fest-tag">${fest}</div>` : ''}
+                </div>
+            `;
+        });
+    });
+}
+
+// 2. 日视图：全量信息展示
+function renderDayDetail(mode) {
+    const solar = Solar.fromYmd(selDate.y, selDate.m, selDate.d);
+    const lunar = solar.getLunar();
+    const eb = lunar.getEightChar();
+    if(mode === 'noDistinguishAt23') eb.setDayStart(23);
+
+    const container = document.getElementById('dayDetail');
+    container.innerHTML = `
+        <div class="day-view-container">
+            <div class="almanac-card" style="text-align:center; background:var(--primary-color); color:white;">
+                <h1 style="font-size:4em; margin:0;">${selDate.d}</h1>
+                <p>${solar.getYear()}年${solar.getMonth()}月 | 星期${solar.getWeekInChinese()}</p>
+                <div style="font-size:1.2em; border-top:1px solid rgba(255,255,255,0.3); padding-top:15px;">
+                    ${lunar.getYearInGanZi()}年【${lunar.getYearShengXiao()}】<br>
+                    ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()}
+                </div>
+            </div>
+            <div class="almanac-card">
+                <div class="info-grid">
+                    <div class="info-item"><b>八字五行</b>${eb.getYear()} ${eb.getMonth()} ${eb.getDay()} | ${lunar.getDayWuXing()}</div>
+                    <div class="info-item"><b>纳音</b>${lunar.getDayNaYin()}</div>
+                    <div class="info-item"><b>彭祖百忌</b>${lunar.getPengZuGan()} ${lunar.getPengZuZhi()}</div>
+                    <div class="info-item"><b>星宿</b>${lunar.getGong()}${lunar.getShou()} · ${lunar.getXiu()}</div>
+                    <div class="info-item"><b>吉神方位</b>喜神:${lunar.getDayPositionXiDesc()} 财神:${lunar.getDayPositionCaiDesc()}</div>
+                    <div class="info-item"><b>胎神</b>${lunar.getDayTaishen()}</div>
+                </div>
+                <div class="yiji-box">
+                    <div class="yi-list"><b>宜</b><br>${lunar.getDayYi().join(' · ')}</div>
+                    <div class="ji-list"><b>忌</b><br>${lunar.getDayJi().join(' · ')}</div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// 3. 时视图：12时辰排盘
+function renderHourView(mode) {
+    const grid = document.getElementById('hourGrid');
+    grid.innerHTML = '';
+    
+    for(let h=0; h<24; h+=2) {
+        const solar = Solar.fromYmdHms(selDate.y, selDate.m, selDate.d, h, 0, 0);
+        const lunar = solar.getLunar();
+        const eb = lunar.getEightChar();
+        if(mode === 'noDistinguishAt23') eb.setDayStart(23);
+
+        grid.innerHTML += `
+            <div class="hour-box">
+                <div style="color:#999; font-size:12px;">${h}:00 - ${h+2}:00</div>
+                <b>${lunar.getTimeZhi()}时</b>
+                <div style="margin-top:5px; color:#555;">${eb.getTime()}</div>
+                <div style="font-size:11px; color:#999; margin-top:5px;">${lunar.getTimeNaYin()}</div>
+            </div>
+        `;
+    }
+}
+
+// 功能辅助
+function selectDay(d, isOther) {
+    if(isOther) return;
+    selDate.d = d;
+    refresh();
+}
+
+function switchView(view, btn) {
+    document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(view + '-section').classList.add('active');
+    btn.classList.add('active');
+}
+
+// 初始加载
+refresh();
+</script>
+
+</body>
+</html>

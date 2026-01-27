@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专业万年历 - 四级全视图版</title>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+    <style>
+        :root { --primary: #d32f2f; --bg: #f5f5f5; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        /* 控制栏 */
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; background: #eee; padding: 15px; border-radius: 8px; }
+        
+        /* 视图布局 */
+        .view-section { display: none; margin-top: 20px; }
+        .view-section.active { display: block; }
+
+        /* 月视图网格 */
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid #ddd; border-left: 1px solid #ddd; }
+        .calendar-day { border-right: 1px solid #ddd; border-bottom: 1px solid #ddd; padding: 10px; min-height: 80px; position: relative; }
+        .calendar-day.other-month { background: #fafafa; color: #ccc; }
+        .solar { font-size: 1.2em; font-weight: bold; }
+        .lunar { font-size: 0.85em; color: #666; }
+        .festival { font-size: 0.8em; color: var(--primary); display: block; }
+
+        /* 时视图布局 */
+        .hour-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+        .hour-card { border: 1px solid #ddd; padding: 15px; border-radius: 6px; text-align: center; }
+        .hour-card.active { border-color: var(--primary); background: #fff8f8; }
+
+        h3 { border-left: 4px solid var(--primary); padding-left: 10px; }
+        .tab-btn { padding: 10px; cursor: pointer; border: none; background: #ddd; border-radius: 4px; }
+        .tab-btn.active { background: var(--primary); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🗓️ 专业级万年历系统</h2>
+    
+    <div class="controls">
+        <div>
+            <label>年份</label>
+            <input type="number" id="yearIdx" value="2026" onchange="init()">
+        </div>
+        <div>
+            <label>月份</label>
+            <input type="number" id="monthIdx" value="1" min="1" max="12" onchange="init()">
+        </div>
+        <div>
+            <label>子时模式</label>
+            <select id="ziShiMode" onchange="init()">
+                <option value="distinguishAt0FiveMouse">区分早晚：0点换日(五鼠遁)</option>
+                <option value="noDistinguishAt23">不区分早晚：23点换日</option>
+            </select>
+        </div>
+    </div>
+
+    <div style="display:flex; gap:10px; margin-bottom: 20px;">
+        <button class="tab-btn active" onclick="switchView('month')">月视图</button>
+        <button class="tab-btn" onclick="switchView('day')">日详情</button>
+        <button class="tab-btn" onclick="switchView('hour')">时视图</button>
+    </div>
+
+    <div id="month-view" class="view-section active">
+        <div class="calendar-grid" id="monthGrid"></div>
+    </div>
+
+    <div id="day-view" class="view-section">
+        <div id="dayDetail"></div>
+    </div>
+
+    <div id="hour-view" class="view-section">
+        <div class="hour-grid" id="hourGrid"></div>
+    </div>
+</div>
+
+<script>
+let currentDay = 24; // 默认选择 24 日
+
+function init() {
+    const y = parseInt(document.getElementById('yearIdx').value);
+    const m = parseInt(document.getElementById('monthIdx').value);
+    const mode = document.getElementById('ziShiMode').value;
+
+    renderMonthView(y, m);
+    // renderDayDetail(y, m, currentDay, mode);
+    renderAdvancedDayDetail(y, m, currentDay, mode);
+    renderHourView(y, m, currentDay, mode);
+}
+
+// 1. 月视图渲染
+function renderMonthView(y, m) {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    
+    // 渲染周标题
+    ['日','一','二','三','四','五','六'].forEach(w => {
+        grid.innerHTML += `<div style="text-align:center; padding:10px; background:#f9f9f9; font-weight:bold;">${w}</div>`;
+    });
+
+    const solarMonth = SolarMonth.fromYm(y, m);
+    const weeks = solarMonth.getWeeks(0); // 0表示周日开始
+
+    weeks.forEach(week => {
+        const days = week.getDays();
+        days.forEach(day => {
+            const isOther = day.getMonth() !== m;
+            const lunar = day.getLunar();
+            const festival = lunar.getFestivals()[0] || lunar.getJieQi() || '';
+            
+            grid.innerHTML += `
+                <div class="calendar-day ${isOther ? 'other-month' : ''}" onclick="selectDay(${day.getDay()})">
+                    <div class="solar">${day.getDay()}</div>
+                    <div class="lunar">${lunar.getDayInChinese()}</div>
+                    <span class="festival">${festival}</span>
+                </div>
+            `;
+        });
+    });
+}
+
+function renderAdvancedDayDetail(y, m, d, h, mode) {
+    const solar = Solar.fromYmdHms(y, m, d, h, 0, 0);
+    const lunar = solar.getLunar();
+    const eb = lunar.getEightChar();
+    if(mode === 'noDistinguishAt23') eb.setDayStart(23);
+
+    return `
+        <div class="almanac-detail">
+            <div class="header">
+                <h1 style="color:#d32f2f;">${lunar.getYearInGanZi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()}</h1>
+                <p>${solar.toYmd()} 星期${solar.getWeekInChinese()} | ${solar.getZodiac()}座</p>
+            </div>
+
+            <div class="section">
+                <p><b>八字：</b> ${eb.getYear()} ${eb.getMonth()} ${eb.getDay()} ${eb.getTime()}</p>
+                <p><b>五行：</b> ${lunar.getYearNaYin()} ${lunar.getMonthNaYin()} ${lunar.getDayNaYin()} ${lunar.getTimeNaYin()}</p>
+            </div>
+
+            <div class="section grid">
+                <div><b>星宿：</b> ${lunar.getGong()}${lunar.getShou()} · ${lunar.getXiu()}${lunar.getZheng()}</div>
+                <div><b>十二神：</b> ${lunar.getZhiXing()}</div>
+                <div><b>喜神：</b> ${lunar.getDayPositionXiDesc()}</div>
+                <div><b>财神：</b> ${lunar.getDayPositionCaiDesc()}</div>
+            </div>
+
+            <div class="section yiji">
+                <div class="yi">【宜】 ${lunar.getDayYi().join(' ')}</div>
+                <div class="ji">【忌】 ${lunar.getDayJi().join(' ')}</div>
+            </div>
+
+            <div class="section small">
+                <p><b>彭祖百忌：</b> ${lunar.getPengZuGan()} ${lunar.getPengZuZhi()}</p>
+                <p><b>本月节气：</b> ${lunar.getJieQi() || '非节气日'}</p>
+                <p><b>胎神占方：</b> ${lunar.getDayTaishen()}</p>
+            </div>
+        </div>
+    `;
+}
+// 2. 日视图详情
+function renderDayDetail(y, m, d, mode) {
+    const solar = Solar.fromYmd(y, m, d);
+    const lunar = solar.getLunar();
+    const eb = lunar.getEightChar();
+    if(mode === 'noDistinguishAt23') eb.setDayStart(23);
+
+    document.getElementById('dayDetail').innerHTML = `
+        <div style="background:#fff8f8; padding:20px; border-radius:8px; border:1px solid #ffcccc;">
+            <h1 style="margin:0; color:var(--primary);">${y}年${m}月${d}日</h1>
+            <p>星期${solar.getWeekInChinese()} | ${lunar.getYearInGanZi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()}日</p>
+            <hr>
+            <h3>干支八字</h3>
+            <p style="font-size:1.5em; letter-spacing:10px;">${eb.getYear()} ${eb.getMonth()} ${eb.getDay()}</p>
+            <h3>今日宜忌</h3>
+            <p><b style="color:green;">宜：</b> ${lunar.getDayYi().join(' · ')}</p>
+            <p><b style="color:red;">忌：</b> ${lunar.getDayJi().join(' · ')}</p>
+        </div>
+    `;
+}
+
+// 3. 时视图渲染 (24小时转12时辰)
+function renderHourView(y, m, d, mode) {
+    const grid = document.getElementById('hourGrid');
+    grid.innerHTML = '';
+
+    for (let h = 0; h < 24; h += 2) {
+        const solar = Solar.fromYmdHms(y, m, d, h, 0, 0);
+        const lunar = solar.getLunar();
+        const eb = lunar.getEightChar();
+        if(mode === 'noDistinguishAt23') eb.setDayStart(23);
+
+        grid.innerHTML += `
+            <div class="hour-card">
+                <div style="color:#999;">${h}:00 - ${h+2}:00</div>
+                <div style="font-size:1.2em; font-weight:bold; margin:5px 0;">${lunar.getTimeZhi()}时</div>
+                <div style="color:var(--primary);">${eb.getTime()}</div>
+            </div>
+        `;
+    }
+}
+
+// 辅助功能
+function selectDay(d) {
+    currentDay = d;
+    init();
+}
+
+function switchView(view) {
+    document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(view + '-view').classList.add('active');
+    event.target.classList.add('active');
+}
+
+// 启动
+init();
+</script>
+
+</body>
+</html>

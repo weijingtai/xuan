@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尊享版万年历 - 集成道佛双历</title>
+    <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.js"></script>
+    <style>
+        :root { --primary: #c62828; --bg: #fdfaf5; --card: #ffffff; --border: #e0e0e0; }
+        body { font-family: "Microsoft YaHei", sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .dashboard { display: grid; grid-template-columns: 380px 1fr; gap: 20px; max-width: 1400px; margin: auto; }
+
+        /* 左侧面板：设置与详情 */
+        .sidebar { display: flex; flex-direction: column; gap: 20px; }
+        .panel { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .panel-title { font-weight: bold; color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 8px; margin-bottom: 15px; display: block; }
+        
+        /* 开关样式 */
+        .config-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .config-item { font-size: 13px; display: flex; align-items: center; cursor: pointer; }
+        .config-item input { margin-right: 8px; }
+
+        /* 详情列表 */
+        .detail-item { margin-bottom: 12px; line-height: 1.6; }
+        .detail-label { font-weight: bold; color: #666; font-size: 13px; display: block; }
+        .detail-content { font-size: 15px; color: #111; word-break: break-all; }
+
+        /* 右侧面板：月历 */
+        .calendar-container { background: var(--card); border-radius: 12px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid var(--border); }
+        .calendar-header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .month-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+        .day-cell { border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 10px; min-height: 100px; cursor: pointer; transition: 0.2s; position: relative; }
+        .day-cell:hover { background: #fff8f8; }
+        .day-cell.selected { background: #fff0f0; outline: 2px solid var(--primary); z-index: 2; }
+        .day-cell.other-month { background: #f9f9f9; color: #bbb; }
+        .day-num { font-size: 1.3em; font-weight: bold; }
+        .lunar-day { font-size: 0.85em; color: #777; }
+        .holiday-badge { position: absolute; top: 5px; right: 5px; font-size: 10px; color: white; padding: 2px 4px; border-radius: 3px; font-weight: bold; }
+
+        /* 颜色标签 */
+        .yi { color: #2e7d32; } .ji { color: #d32f2f; }
+        .religion-dao { color: #0277bd; font-weight: bold; }
+        .religion-fo { color: #ef6c00; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <div class="sidebar">
+        <div class="panel">
+            <span class="panel-title">显示字段筛选</span>
+            <div class="config-grid" id="configGrid">
+                </div>
+        </div>
+
+        <div class="panel">
+            <span class="panel-title">本日全息详情</span>
+            <div id="fullDetails">
+                </div>
+        </div>
+    </div>
+
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <input type="number" id="yearInput" value="2026" style="width:80px; padding:5px;"> 年
+            <input type="number" id="monthInput" value="1" min="1" max="12" style="width:50px; padding:5px;"> 月
+            <button onclick="changeDate()" style="padding:5px 15px;">跳转</button>
+            <span id="currentDateTitle" style="font-weight:bold; margin-left:20px;"></span>
+        </div>
+        <div class="month-grid" id="monthGrid"></div>
+    </div>
+</div>
+
+<script>
+function getYearGanZhiText(l) {
+    if (typeof l.getYearInGanZhi === 'function') return l.getYearInGanZhi();
+    if (typeof l.getYearInGanZi === 'function') return l.getYearInGanZi();
+    return '';
+}
+// --- 1. 配置项定义 (映射框架方法) ---
+const FIELDS = {
+    "基础信息": {
+        "公历": (s, l) => s.toFullString(),
+        "农历": (s, l) => `${getYearGanZhiText(l)}年 ${l.getMonthInChinese()}月 ${l.getDayInChinese()}`,
+        "星期": (s, l) => "星期" + s.getWeekInChinese(),
+        "星座": (s, l) => s.getXingZuo() + "座",
+        "生肖": (s, l) => l.getYearShengXiao()
+    },
+    "黄历择吉": {
+        "宜": (s, l) => `<span class="yi">${l.getDayYi().join(' · ')}</span>`,
+        "忌": (s, l) => `<span class="ji">${l.getDayJi().join(' · ')}</span>`,
+        "冲煞": (s, l) => `冲${l.getChongDesc()} | 煞${l.getSha()}`,
+        "纳音": (s, l) => l.getDayNaYin(),
+        "八字": (s, l) => { let eb = l.getEightChar(); return `${eb.getYear()} ${eb.getMonth()} ${eb.getDay()}`; },
+        "彭祖百忌": (s, l) => `${l.getPengZuGan()} ${l.getPengZuZhi()}`,
+        "喜神财神": (s, l) => `喜神:${l.getDayPositionXiDesc()} | 财神:${l.getDayPositionCaiDesc()}`
+    },
+    "天文物候": {
+        "节气": (s, l) => l.getJieQi() || "无",
+        "物候": (s, l) => l.getWuHou(),
+        "月相": (s, l) => l.getYueXiang(),
+        "星宿": (s, l) => `${l.getGong()}${l.getShou()} · ${l.getXiu()}`
+    },
+    "宗教历法": {
+        "道历": (s, l) => { 
+            let d = l.getTao(); 
+            return `<span class="religion-dao">天运${d.getYear()}年 ${d.getMonthInChinese()}月 ${d.getDayInChinese()}</span><br><small>${d.getFestivals().join(' ')}</small>`;
+        },
+        "佛历": (s, l) => { 
+            let f = l.getFoto(); 
+            return `<span class="religion-fo">佛历${f.getYear()}年 ${f.getMonthInChinese()}月 ${f.getDayInChinese()}</span><br><small>${f.getFestivals().join(' ')}</small>`;
+        }
+    }
+};
+
+let activeFields = {}; // 记录哪些字段被勾选
+let selectedDate = { y: 2026, m: 1, d: 25 };
+
+// --- 2. 初始化功能 ---
+
+function init() {
+    // 生成 Checkbox
+    const grid = document.getElementById('configGrid');
+    for (let cat in FIELDS) {
+        for (let field in FIELDS[cat]) {
+            activeFields[field] = true; // 默认全选
+            grid.innerHTML += `
+                <label class="config-item">
+                    <input type="checkbox" checked onchange="toggleField('${field}')"> ${field}
+                </label>
+            `;
+        }
+    }
+    render();
+}
+
+function toggleField(field) {
+    activeFields[field] = !activeFields[field];
+    renderDetails();
+}
+
+function changeDate() {
+    selectedDate.y = parseInt(document.getElementById('yearInput').value);
+    selectedDate.m = parseInt(document.getElementById('monthInput').value);
+    selectedDate.d = 1; // 切换月时默认选1号
+    render();
+}
+
+function render() {
+    renderMonthGrid();
+    renderDetails();
+}
+
+// --- 3. 渲染逻辑 ---
+
+function renderMonthGrid() {
+    const grid = document.getElementById('monthGrid');
+    grid.innerHTML = '';
+    ['日','一','二','三','四','五','六'].forEach(w => {
+        grid.innerHTML += `<div style="text-align:center; padding:10px; background:#f5f5f5; font-weight:bold;">${w}</div>`;
+    });
+
+    const sMonth = SolarMonth.fromYm(selectedDate.y, selectedDate.m);
+    sMonth.getWeeks(0).forEach(week => {
+        week.getDays().forEach(day => {
+            const isOther = day.getMonth() !== selectedDate.m;
+            const lunar = day.getLunar();
+            const h = HolidayUtil.getHoliday(day.getYear(), day.getMonth(), day.getDay());
+            const isSelected = day.getDay() === selectedDate.d && !isOther;
+
+            grid.innerHTML += `
+                <div class="day-cell ${isOther ? 'other-month' : ''} ${isSelected ? 'selected' : ''}" 
+                     onclick="selectDay(${day.getDay()}, ${isOther})">
+                    ${h ? `<span class="holiday-badge" style="background:${h.isWork()?'#4caf50':'#f44336'}">${h.isWork()?'班':'休'}</span>` : ''}
+                    <div class="day-num">${day.getDay()}</div>
+                    <div class="lunar-day">${lunar.getDayInChinese()}</div>
+                    <div style="font-size:10px; color:var(--primary);">${lunar.getJieQi() || ''}</div>
+                </div>
+            `;
+        });
+    });
+}
+
+function renderDetails() {
+    const solar = Solar.fromYmd(selectedDate.y, selectedDate.m, selectedDate.d);
+    const lunar = solar.getLunar();
+    const container = document.getElementById('fullDetails');
+    document.getElementById('currentDateTitle').innerText = `${selectedDate.y}年${selectedDate.m}月${selectedDate.d}日 详情`;
+    
+    let html = '';
+    for (let cat in FIELDS) {
+        let catHtml = '';
+        for (let field in FIELDS[cat]) {
+            if (activeFields[field]) {
+                catHtml += `
+                    <div class="detail-item">
+                        <span class="detail-label">${field}</span>
+                        <div class="detail-content">${FIELDS[cat][field](solar, lunar)}</div>
+                    </div>
+                `;
+            }
+        }
+        if (catHtml) {
+            html += `<div style="margin-bottom:20px; border-bottom:1px dashed #eee; padding-bottom:10px;">
+                        <span style="color:#999; font-size:12px; font-weight:bold;">[ ${cat} ]</span>
+                        ${catHtml}
+                     </div>`;
+        }
+    }
+    container.innerHTML = html || '<p style="color:#ccc">请在上方勾选要显示的字段</p>';
+}
+
+function selectDay(d, isOther) {
+    if (isOther) return;
+    selectedDate.d = d;
+    render();
+}
+
+init();
+</script>
+</body>
+</html>

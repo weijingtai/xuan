@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Tyme 极客万年历 - 全息专业版</title>
+    <script src="https://cdn.jsdelivr.net/npm/tyme-js@1.1.8/dist/tyme.js"></script>
+    <style>
+        :root { --primary: #c62828; --bg: #fdfdfd; }
+        body { font-family: "PingFang SC", sans-serif; background: var(--bg); margin: 0; padding: 20px; display: grid; grid-template-columns: 380px 1fr; gap: 20px; }
+        
+        /* 侧边栏详情 */
+        .sidebar { background: #fff; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 20px; height: fit-content; border: 1px solid #eee; }
+        .filter-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid #f0f0f0; padding-bottom: 15px; }
+        .detail-row { margin-bottom: 12px; border-bottom: 1px solid #fafafa; padding-bottom: 8px; font-size: 14px; }
+        .label { color: #888; font-size: 12px; display: block; font-weight: bold; }
+
+        /* 月历网格 */
+        .calendar-card { background: #fff; border-radius: 12px; padding: 20px; border: 1px solid #eee; }
+        .grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid #eee; border-left: 1px solid #eee; }
+        .cell { border-right: 1px solid #eee; border-bottom: 1px solid #eee; padding: 12px; min-height: 100px; cursor: pointer; position: relative; }
+        .cell.active { background: #fff8f8; outline: 2px solid var(--primary); z-index: 5; }
+        .cell.other { opacity: 0.2; background: #fafafa; }
+        .holiday { position: absolute; top: 6px; right: 6px; font-size: 10px; color: white; padding: 2px 4px; border-radius: 3px; }
+        
+        .d-num { font-size: 1.4em; font-weight: bold; }
+        .l-num { font-size: 0.85em; color: #666; }
+        .jieqi { color: var(--primary); font-size: 0.8em; margin-top: 5px; }
+        
+        /* 宗教历法高亮 */
+        .dao { color: #1976d2; } .fo { color: #f57c00; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h3 style="color:var(--primary); margin-top:0;">显示开关</h3>
+        <div class="filter-group" id="filters"></div>
+        
+        <h3 id="detail-date" style="margin-top:20px;">2026-01-25</h3>
+        <div id="details"></div>
+    </div>
+
+    <div class="calendar-card">
+        <div style="margin-bottom:20px; display:flex; gap:15px; align-items:center;">
+            <input type="number" id="yInput" value="2026" style="width:70px"> 年
+            <input type="number" id="mInput" value="1" min="1" max="12" style="width:50px"> 月
+            <button onclick="update()">跳转</button>
+            <select id="ziShiMode" onchange="update()">
+                <option value="0">0点换日 (区分早晚子)</option>
+                <option value="23">23点换日 (不区分早晚)</option>
+            </select>
+        </div>
+        <div class="grid" id="grid"></div>
+    </div>
+
+<script>
+// 使用 Tyme 定义全息字段映射
+const DATA_MAP = {
+    "公历": (s, l) => s.toString(),
+    "农历": (s, l) => `${l.getYear().getGanZi()}年 ${l.getMonth().getName()}月 ${l.getName()}`,
+    "星期": (s, l) => "星期" + s.getWeek().getName(),
+    "星座": (s, l) => s.getZodiac().getName() + "座",
+    "干支": (s, l) => `${l.getYear().getGanZi()} ${l.getMonth().getGanZi()} ${l.getDayGanZi()}`,
+    "生肖": (s, l) => l.getYear().getShengXiao(),
+    "五行": (s, l) => l.getYear().getNaYin() + " | " + l.getDayWuXing(),
+    "道历": (s, l) => { let d = s.getTaoistDay(); return `<span class="dao">${d.getYear().getGanZi()}年 ${d.getMonth().getName()}月 ${d.getName()}</span>`; },
+    "佛历": (s, l) => { let f = s.getBuddhistDay(); return `<span class="fo">佛历${f.getYear()}年 ${f.getMonth().getName()}月 ${f.getName()}</span>`; },
+    "宜": (s, l) => `<span style="color:green">${l.getRecommends().map(v=>v.getName()).join(' ')}</span>`,
+    "忌": (s, l) => `<span style="color:red">${l.getAvoids().map(v=>v.getName()).join(' ')}</span>`,
+    "冲煞": (s, l) => `冲${l.getDayChong().getName()} | 煞${l.getDaySha().getName()}`,
+    "物候": (s, l) => l.getWuHou().getName(),
+    "月相": (s, l) => l.getYueXiang().getName(),
+    "星宿": (s, l) => `${l.getTwentyEightStar().getName()}宿`
+};
+
+let showConfig = {};
+let curY = 2026, curM = 1, curD = 25;
+
+function init() {
+    const fBox = document.getElementById('filters');
+    for (let key in DATA_MAP) {
+        showConfig[key] = true;
+        fBox.innerHTML += `<label><input type="checkbox" checked onchange="toggle('${key}')"> ${key}</label>`;
+    }
+    update();
+}
+
+function toggle(key) {
+    showConfig[key] = !showConfig[key];
+    renderDetails();
+}
+
+function update() {
+    curY = parseInt(document.getElementById('yInput').value);
+    curM = parseInt(document.getElementById('mInput').value);
+    renderGrid();
+    renderDetails();
+}
+
+function renderGrid() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    ['日','一','二','三','四','五','六'].forEach(w => grid.innerHTML += `<div style="text-align:center;padding:10px;background:#f8f8f8;font-weight:bold">${w}</div>`);
+
+    const month = tyme.SolarMonth.fromYm(curY, curM);
+    const weeks = month.getWeeks(0);
+
+    weeks.forEach(week => {
+        week.getDays().forEach(day => {
+            const isOther = day.getMonth() !== curM;
+            const lunar = day.getLunarDay();
+            const isSelect = !isOther && day.getDay() === curD;
+            
+            // 获取假日
+            const h = tyme.HolidayUtil.getHoliday(day.getYear(), day.getMonth(), day.getDay());
+
+            grid.innerHTML += `
+                <div class="cell ${isOther?'other':''} ${isSelect?'active':''}" onclick="if(!${isOther}){curD=${day.getDay()}; update();}">
+                    ${h ? `<span class="holiday" style="background:${h.isWork()?'#4caf50':'#f44336'}">${h.isWork()?'班':'休'}</span>` : ''}
+                    <div class="d-num">${day.getDay()}</div>
+                    <div class="l-num">${lunar.getName()}</div>
+                    <div class="jieqi">${day.getSolarTerm()?.getName() || ''}</div>
+                </div>
+            `;
+        });
+    });
+}
+
+function renderDetails() {
+    const ziShift = parseInt(document.getElementById('ziShiMode').value);
+    const solar = tyme.SolarDay.fromYmd(curY, curM, curD);
+    const lunar = solar.getLunarDay();
+    const detailBox = document.getElementById('details');
+    document.getElementById('detail-date').innerText = `${curY}年${curM}月${curD}日详情`;
+
+    let html = '';
+    for (let key in DATA_MAP) {
+        if (showConfig[key]) {
+            html += `<div class="detail-row"><span class="label">${key}</span>${DATA_MAP[key](solar, lunar)}</div>`;
+        }
+    }
+    detailBox.innerHTML = html;
+}
+
+init();
+</script>
+</body>
+</html>
