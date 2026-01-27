@@ -1,4 +1,8 @@
+<<<<<<< HEAD:common/lib/enums/enum_three_yuan.dart
 import 'nine_star.dart';
+=======
+import 'package:common/shared/enums/nine_star.dart';
+>>>>>>> origin/master:common/lib/shared/enums/enum_three_yuan.dart
 import 'package:json_annotation/json_annotation.dart';
 
 part 'enum_three_yuan.g.dart';

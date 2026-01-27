@@ -1,5 +1,10 @@
+<<<<<<< HEAD:common/lib/enums/nine_star.dart
 
 import '../../enums/enum_hou_tian_gua.dart';
+=======
+import 'package:common/shared/shared.dart';
+
+>>>>>>> origin/master:common/lib/shared/enums/nine_star.dart
 import 'enum_five_xing.dart';
 
 /// 九星枚举

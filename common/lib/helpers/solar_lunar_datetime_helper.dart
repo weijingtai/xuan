@@ -23,9 +23,14 @@ import 'package:common/features/four_zhu/strategies/impl/hour_fixed_zi_ping_stra
 import '../datamodel/location.dart' as my;
 import '../datamodel/location.dart';
 import '../features/datetime_details/input_info_params.dart';
+<<<<<<< HEAD
 import 'package:common/features/datetime_details/zi_strategy_store.dart';
 import 'package:common/features/datetime_details/jieqi_phenology_store.dart';
 import 'package:common/features/datetime_details/jieqi_entry_strategy_store.dart';
+=======
+import '../shared/enums/enum_jia_zi.dart';
+import '../shared/enums/enum_three_yuan.dart';
+>>>>>>> origin/master
 
 class SolarLunarDateTimeHelper {
   static DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
@@ -76,6 +81,7 @@ class SolarLunarDateTimeHelper {
 
   static ChineseDateInfo cacluateChineseDateInfo(
       DateTime time, ZiShiStrategy strategy) {
+<<<<<<< HEAD
     // 1) 将配置映射为引擎组合
     final (ZiBoundary boundary, ChildHourMode mode) = _mapZiStrategy(strategy);
     final engine =
@@ -253,12 +259,75 @@ class SolarLunarDateTimeHelper {
     final Phenology wuHou = candidates.isNotEmpty
         ? candidates[idx]
         : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
+=======
+    Lunar lunar;
+    switch (strategy) {
+      case ZiShiStrategy.startFrom23:
+        // 当时间为23点时 算作第二天的子时
+        if (time.hour == 23) {
+          // copy this time
+          DateTime time0 = DateTime.parse(dateFormat.format(time));
+          DateTime newTime = time0.add(const Duration(hours: 1));
+          lunar = Lunar.fromDate(newTime);
+        } else {
+          lunar = Lunar.fromDate(time);
+        }
+        break;
+      case ZiShiStrategy.startFrom0:
+        // 以每日零点作为换日柱与子时，每个时辰相对 startFrom23 中的时间断向后平移一个小时
+        if (time.hour % 2 == 1) {
+          lunar = Lunar.fromDate(time.subtract(const Duration(hours: 1)));
+        } else {
+          lunar = Lunar.fromDate(time);
+        }
+        break;
+      case ZiShiStrategy.splitedZi:
+        lunar = Lunar.fromDate(time);
+        print(lunar.getBaZi());
+        break;
+    }
+
+    List<String> eightCharsStr = lunar.getBaZi();
+
+    EightChars eightChars = EightChars(
+        year: JiaZi.getFromGanZhiValue(eightCharsStr[0])!,
+        month: JiaZi.getFromGanZhiValue(eightCharsStr[1])!,
+        day: JiaZi.getFromGanZhiValue(eightCharsStr[2])!,
+        time: JiaZi.getFromGanZhiValue(eightCharsStr[3])!);
+
+    // 获取 七十二物候
+    Phenology wuHou = Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
+    String jieQi;
+    DateTime jieQiDateTime;
+    DateTime jieQiEndAt;
+    // final DateFormat dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    if (lunar.getCurrentJieQi() == null) {
+      jieQi = lunar.getPrevJieQi().getName();
+      jieQiDateTime =
+          dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
+      jieQiEndAt = dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
+    } else {
+      jieQi = lunar.getCurrentJieQi()!.getName();
+      jieQiDateTime =
+          dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
+      // 如果当天是节气，getNextJieQi() 还是当前这个，所以需要加2天时间再取
+      jieQiEndAt = dateFormat.parse(lunar
+          .getCurrentJieQi()!
+          .getSolar()
+          .next(2)
+          .getLunar()
+          .getNextJieQi()
+          .getSolar()
+          .toYmdHms());
+    }
+>>>>>>> origin/master
     var threeYuanNineYun = calculateThreeYuanNineYun(lunar.getYear());
     return ChineseDateInfo(
         threeYuan: threeYuanNineYun.item1,
         nineYun: threeYuanNineYun.item2,
         eightChars: eightChars,
         phenology: wuHou,
+<<<<<<< HEAD
         lunarMonth: lunar.getMonth(),
         lunarDay: lunar.getDay(),
         isLeapMonth:
@@ -266,10 +335,20 @@ class SolarLunarDateTimeHelper {
         jieQiInfo: JieQiInfo(
           jieQi: chosenJieQi,
           startAt: jieQiStartAt,
+=======
+        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
+        lunarDay: dayMap[lunar.getDayInChinese()]!,
+        isLeapMonth:
+            LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap(),
+        jieQiInfo: JieQiInfo(
+          jieQi: TwentyFourJieQi.fromName(jieQi),
+          startAt: jieQiDateTime,
+>>>>>>> origin/master
           endAt: jieQiEndAt,
         ));
   }
 
+<<<<<<< HEAD
   static (ZiBoundary, ChildHourMode) _mapZiStrategy(ZiShiStrategy s) {
     switch (s) {
       case ZiShiStrategy.noDistinguishAt23:
@@ -286,6 +365,8 @@ class SolarLunarDateTimeHelper {
     }
   }
 
+=======
+>>>>>>> origin/master
   /// 根据年份计算三元九运
   static Tuple2<YuanYunOrder, NineYun> calculateThreeYuanNineYun(int year) {
     // 以1864年为基准点，每运20年，每元60年，每个大三元180年

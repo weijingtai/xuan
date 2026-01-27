@@ -1,6 +1,10 @@
 // test/bazi_calculator_test.dart
 
+<<<<<<< HEAD
 import 'package:common/features/datetime_details/input_info_params.dart';
+=======
+import 'package:common/features/birth_details/input_info_params.dart';
+>>>>>>> origin/master
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:flutter_test/flutter_test.dart';
 

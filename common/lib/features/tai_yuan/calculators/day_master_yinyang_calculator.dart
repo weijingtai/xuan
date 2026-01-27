@@ -1,8 +1,16 @@
+<<<<<<< HEAD
 import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import '../../../enums/enum_di_zhi.dart';
 import '../../../enums/enum_jia_zi.dart';
 import '../../../enums/enum_tian_gan.dart';
 import '../../../enums/enum_yin_yang.dart';
+=======
+import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/enums/enum_jia_zi.dart';
+import 'package:common/enums/enum_tian_gan.dart';
+import 'package:common/enums/enum_di_zhi.dart';
+import 'package:common/enums/enum_yin_yang.dart';
+>>>>>>> origin/master
 import '../tai_yuan_calculator.dart';
 import '../tai_yuan_model.dart';
 import '../enum_calculate_strategy.dart';
@@ -14,7 +22,11 @@ class DayMasterYinYangCalculator extends TaiYuanCalculator {
       TaiYuanCalculateStrategy.dayMasterYinYangMethod;
 
   @override
+<<<<<<< HEAD
   TaiYuanModel calculate(DatatimeDivinationDetailsDataModel birthInfo,
+=======
+  TaiYuanModel calculate(BaseDivinationDatetimeDataModel birthInfo,
+>>>>>>> origin/master
       {DateTime? conceptionDate,
       required bool withAdjust,
       bool isTestTubeBaby = false,

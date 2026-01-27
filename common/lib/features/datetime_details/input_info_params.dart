@@ -1,6 +1,7 @@
 import 'dart:core';
 
 import 'package:common/datamodel/location.dart';
+<<<<<<< HEAD
 import 'package:json_annotation/json_annotation.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -32,6 +33,31 @@ enum ZiShiStrategy {
 
   @JsonValue('splitedZi')
   splitedZi, // 旧：映射为 distinguishAt0FiveMouse（区分早晚，五鼠遁）
+=======
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:lunar/lunar.dart';
+import 'package:tuple/tuple.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+import '../../helpers/solar_lunar_datetime_helper.dart';
+import '../../models/chinese_date_info.dart';
+import '../../models/divination_datetime.dart';
+import 'calculation_config.dart';
+import 'processors/solar_time_processor.dart';
+
+@JsonEnum()
+enum ZiShiStrategy {
+  @JsonValue('startFrom23')
+  startFrom23, // 23:00 为子时开始，为次日
+
+  @JsonValue('startFrom0')
+  startFrom0, // 00:00 为子时，为次日
+
+  @JsonValue('splitedZi')
+  splitedZi, // 分早晚子时，早子时为23:00 - 00:00，晚子时为00:00 - 00:59。早子时使用当日日柱，晚子时使用次日日柱。
+  // Lunar默认使用
+>>>>>>> origin/master
 }
 
 @JsonEnum()
@@ -65,7 +91,10 @@ enum JieQiStrategy {
 //   DateTime utcDatetime;
 
 // }
+<<<<<<< HEAD
 @JsonSerializable()
+=======
+>>>>>>> origin/master
 class DateTimeDetailsBundle {
   //
   // 当前类包含， 标准时间、UTC时间，时区，夏令时校正后时间，正太阳时，平太阳时，以及几个时间对应的中国日期信息
@@ -107,6 +136,7 @@ class DateTimeDetailsBundle {
   DateTime? trueSolarDatetime; // 真太阳时 - 需要提供小数点后5为的经纬度才存在价值
   ChineseDateInfo? trueSolarChineseInfo; // 真太阳时的中国日期信息
 
+<<<<<<< HEAD
   // 默认构造函数
   DateTimeDetailsBundle({
     required this.calculationConfig,
@@ -125,6 +155,8 @@ class DateTimeDetailsBundle {
     required this.trueSolarChineseInfo,
   });
 
+=======
+>>>>>>> origin/master
   // 私有构造函数，只能通过计算类创建
   DateTimeDetailsBundle.internal({
     required this.calculationConfig,
@@ -143,8 +175,11 @@ class DateTimeDetailsBundle {
     this.trueSolarChineseInfo,
     SolarTimeProcessResult? solarTimeData,
   });
+<<<<<<< HEAD
 
   factory DateTimeDetailsBundle.fromJson(Map<String, dynamic> json) =>
       _$DateTimeDetailsBundleFromJson(json);
   Map<String, dynamic> toJson() => _$DateTimeDetailsBundleToJson(this);
+=======
+>>>>>>> origin/master
 }
