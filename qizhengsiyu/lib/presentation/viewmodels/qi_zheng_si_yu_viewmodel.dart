@@ -9,6 +9,7 @@ import 'package:qizhengsiyu/domain/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/domain/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/domain/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/domain/services/generate_base_panel_service.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart'; // 使用UI分支的版本
 import 'package:qizhengsiyu/data/datasources/local/hua_yao_local_data_source.dart';
 import 'package:qizhengsiyu/data/repositories/hua_yao_repository_impl.dart';
@@ -24,7 +25,7 @@ import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/pages/StarsResolver.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
-import 'package:qizhengsiyu/models/panel_config.dart'
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
     as UIPanelConfig; // UI层的PanelConfig
 import 'package:common/module.dart'; // DivinationInfoModel
 import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
@@ -60,6 +61,10 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   List<UIStarModel> get uiBasicLifeStars => _uiBasicLifeStars;
 
   // ==================== UI兼容层: ValueNotifier ====================
+  /// 周天模型数据 - 用于 ValueListenableBuilder
+  final ValueNotifier<ZhouTianModel?> uiZhouTianModelNotifier =
+      ValueNotifier(null);
+
   /// 本命盘数据 - 用于 ValueListenableBuilder
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier(null);
@@ -264,6 +269,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
     final engine = CalculationEngineFactory.create(config);
     final zhouTianModel = await engine.getSystemDefinition(config);
+    uiZhouTianModelNotifier.value = zhouTianModel;
     final starPositions = await engine.calculateStarPositions(
         observer.dateTime, observer, config);
     final starAngleMapper = _transformStarPositions(starPositions, config);
@@ -308,6 +314,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// 必须释放所有 ValueNotifier,否则会内存泄漏
   @override
   void dispose() {
+    uiZhouTianModelNotifier.dispose();
     uiBasePanelNotifier.dispose();
     uiDaXianPanelNotifier.dispose();
     uiBasicLifeStarsNotifier.dispose();
@@ -480,12 +487,14 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
     // 确保基础命盘已计算
     if (_basicLifePanel == null || _lifeObserver == null) {
-      debugPrint("Warning: Cannot calculate fate panel without basic life panel");
+      debugPrint(
+          "Warning: Cannot calculate fate panel without basic life panel");
       return;
     }
 
     // 生成流年观察者位置
-    _fateObserver = _generateFateObserverPosition(targetDateTime, _lifeObserver!);
+    _fateObserver =
+        _generateFateObserverPosition(targetDateTime, _lifeObserver!);
 
     try {
       // 调用流年计算服务
@@ -524,7 +533,6 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
 
       debugPrint("Fate panel calculated successfully for $targetDateTime");
       debugPrint("Fate stars count: ${_uiFateLifeStars.length}");
-
     } catch (e) {
       debugPrint("Error calculating fate panel: $e");
       _uiFateLifeStars = [];
@@ -540,10 +548,9 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// [baseObserver]: 基础命盘的观察者位置
   ObserverPosition _generateFateObserverPosition(
       DateTime fateDatetime, ObserverPosition baseObserver) {
-
     // 将流年时间转换为与基础观察者相同的时区
-    final tzDatetime = tz.TZDateTime.from(
-        fateDatetime, tz.getLocation(baseObserver.timezone));
+    final tzDatetime =
+        tz.TZDateTime.from(fateDatetime, tz.getLocation(baseObserver.timezone));
 
     // 计算流年干支
     final yearGanZhi = _calculateYearGanZhi(tzDatetime);

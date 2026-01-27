@@ -8,9 +8,6 @@ import 'package:path_provider/path_provider.dart';
 import '../../../domain/entities/models/base_panel_model.dart';
 import '../../../domain/entities/models/pan_entity.dart';
 import '../../../domain/entities/models/panel_config.dart';
-import '../../models/converters/divination_datetime_converter.dart';
-import '../../models/converters/panel_config_converter.dart';
-import '../../models/converters/panel_model_converter.dart';
 import 'daos/qizhengsiyu_pan_dao.dart';
 import 'tables/qizhengsiyu_pan_table.dart';
 

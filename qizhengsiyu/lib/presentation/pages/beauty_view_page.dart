@@ -14,27 +14,27 @@ import 'package:common/enums/enum_jia_zi.dart'; // JiaZi
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/passage_year_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
+import 'package:qizhengsiyu/domain/entities/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
 import 'package:qizhengsiyu/domain/entities/models/eleven_stars_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 // import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart'; // 旧的 ViewModel,已废弃
 
 import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
-import '../enums/enum_twelve_gong.dart';
-import '../domain/entities/models/body_life_model.dart';
+import '../../domain/entities/models/body_life_model.dart';
+import '../../domain/entities/models/observer_position.dart';
+import '../../domain/entities/models/panel_stars_info.dart';
+import '../../domain/entities/models/stars_angle.dart';
+import '../../enums/enum_twelve_gong.dart';
+import '../../painter/painters.dart';
+import '../../painter/star_body_ring_painter.dart';
+import '../../painter/star_xiu_ring_painter.dart';
+import '../../qi_zheng_si_yu_ui_constant_resources.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
-import '../domain/entities/models/panel_stars_info.dart';
-import '../domain/entities/models/stars_angle.dart';
-import '../domain/entities/models/observer_position.dart';
-import '../painter/painters.dart';
-import '../painter/star_body_ring_painter.dart';
-import '../painter/star_xiu_ring_painter.dart';
-import '../painter/twelve_zhi_gong_circle_ring_printer.dart';
-import '../qi_zheng_si_yu_ui_constant_resources.dart';
 // star_body.dart import no longer needed after extraction
 // import 'beauty_page_viewmodel.dart'; // 已替换为新的 MVVM ViewModel
 import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
@@ -49,12 +49,12 @@ import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
 import 'package:qizhengsiyu/widgets/center_text_circle_widget.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
-import 'package:qizhengsiyu/models/panel_config.dart'; // UI层使用的PanelConfig
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // UI层使用的PanelConfig
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
     as DomainConfig; // domain层的BasePanelConfig
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/models/panel_ui_size.dart'; // UI模型,保留在原位置
+import 'package:qizhengsiyu/domain/entities/models/panel_ui_size.dart'; // UI模型,保留在原位置
 
 // 尺寸模型已迁移至 models/panel_ui_size.dart
 
@@ -796,10 +796,19 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             outerSize: diZhi12GongOuter,
           ),
           bodyRotationAngle: -30 * pi / 180,
-          bodyBuilder: () => build12DiZhiGong(
-            diZhi12GongOuter * .5,
-            diZhi12GongInner * .5,
-          ),
+          bodyBuilder: () => ValueListenableBuilder<ZhouTianModel?>(
+              valueListenable:
+                  context.read<QiZhengSiYuViewModel>().uiZhouTianModelNotifier,
+              builder: (ctx, zhouTianModel, _) {
+                if (zhouTianModel == null) {
+                  return const SizedBox();
+                }
+                return build12DiZhiGong(
+                  diZhi12GongOuter * .5,
+                  diZhi12GongInner * .5,
+                  zhouTianModel,
+                );
+              }),
         ),
         // 黄道十二宫（统一为 RingLayer）
         RingLayer(
@@ -926,12 +935,24 @@ class _BeautyViewPageState extends State<BeautyViewPage>
               if (basePanel == null) {
                 return child!;
               }
-              return AllShenShaRing(
-                outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
-                innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                shenShaMapper: basePanel.shenShaItemMapper,
-                gongOrder: EnumTwelveGong.listAll,
-              );
+              return ValueListenableBuilder<ZhouTianModel?>(
+                  valueListenable: context
+                      .read<QiZhengSiYuViewModel>()
+                      .uiZhouTianModelNotifier,
+                  builder: (ctx, zhouTianModel, _) {
+                    if (zhouTianModel == null) {
+                      return child!;
+                    }
+                    return AllShenShaRing(
+                      outerRadius:
+                          panelSizeDataModel.innerShenShaSizeOuter * .5,
+                      innerRadius:
+                          panelSizeDataModel.innerShenShaSizeInner * .5,
+                      shenShaMapper: basePanel.shenShaItemMapper,
+                      gongOrder: EnumTwelveGong.listAll,
+                      zhouTianModel: zhouTianModel,
+                    );
+                  });
             },
             child: Container(
               width: panelSizeDataModel.innerShenShaSizeOuter,
@@ -957,12 +978,24 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   if (daXianPanel == null) {
                     return child!;
                   }
-                  return AllShenShaRing(
-                    outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
-                    innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
-                    shenShaMapper: daXianPanel.shenShaItemMapper,
-                    gongOrder: EnumTwelveGong.listAll,
-                  );
+                  return ValueListenableBuilder<ZhouTianModel?>(
+                      valueListenable: context
+                          .read<QiZhengSiYuViewModel>()
+                          .uiZhouTianModelNotifier,
+                      builder: (ctx, zhouTianModel, _) {
+                        if (zhouTianModel == null) {
+                          return child!;
+                        }
+                        return AllShenShaRing(
+                          outerRadius:
+                              panelSizeDataModel.outerShenShaSizeOuter * .5,
+                          innerRadius:
+                              panelSizeDataModel.outerShenShaSizeInner * .5,
+                          shenShaMapper: daXianPanel.shenShaItemMapper,
+                          gongOrder: EnumTwelveGong.listAll,
+                          zhouTianModel: zhouTianModel,
+                        );
+                      });
                 },
                 child: Container(
                   width: panelSizeDataModel.outerShenShaSizeOuter,
@@ -997,7 +1030,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     );
   }
 
-  Widget build12DiZhiGong(double outerRadius, double innerRadius) {
+  Widget build12DiZhiGong(
+      double outerRadius, double innerRadius, ZhouTianModel zhouTianModel) {
     TextStyle firstTextStyle =
         TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
@@ -1017,6 +1051,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     // double outerRadius = 100;
     // double innerRadius = outerRadius - 50;
     return Gong12DiZhiRing(
+      zhouTianModel: zhouTianModel,
       outerRadius: outerRadius,
       innerRadius: innerRadius,
       // angleOffset: 3,
