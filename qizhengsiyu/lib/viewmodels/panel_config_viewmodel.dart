@@ -6,7 +6,7 @@ import 'package:qizhengsiyu/enums/enum_panel_ring.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_school.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
 
 /// 命盘配置视图模型
 ///

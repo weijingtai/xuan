@@ -25,25 +25,16 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:tuple/tuple.dart';
 import 'package:uuid/v7.dart';
 
-import '../enums/enum_moon_phases.dart';
-import '../enums/enum_settle_life_body.dart';
-import '../enums/enum_star_hidden_type.dart';
-import '../managers/zhou_tian_model_manager.dart';
-import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模型
-import '../domain/entities/models/panel_config.dart'; // 使用domain层模型
-import '../models/da_xian_panel_model.dart';
-import '../models/di_zhi_shen_sha.dart';
-import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
-import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
-import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
-import '../models/panel_stars_info.dart'; // 可能仍然需要用于更详细信息展示，尽管 ElevenStarsInfo 已弃用
+import '../../domain/entities/models/panel_config.dart';
+import '../../enums/enum_settle_life_body.dart';
+import '../../managers/zhou_tian_model_manager.dart';
+import '../../domain/entities/models/base_panel_model.dart';
+import '../../domain/entities/models/da_xian_panel_model.dart';
+import '../../domain/entities/models/di_zhi_shen_sha.dart';
+import '../../domain/entities/models/hua_yao.dart';
+import '../../domain/entities/models/observer_position.dart';
+import '../../domain/entities/models/stars_angle.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
-import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
-import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
-import '../domain/entities/models/star_enter_info.dart'; // 使用domain层模型
-import '../models/eleven_stars_info.dart'; // 已弃用，但模型本身可能被PanelStarsInfo引用，暂时保留
-import '../qi_zheng_si_yu_constant_resources.dart'; // 常量资源文件，假设存在
-import '../utils/star_walking_info_utils.dart';
 import 'StarsResolver.dart';
 
 /// 七政四余星盘计算和数据管理的 ViewModel。

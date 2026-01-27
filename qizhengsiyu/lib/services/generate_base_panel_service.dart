@@ -10,10 +10,10 @@ import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/domain/entities/models/da_xian_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // 使用domain层的模型
-import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/star_angle_raw_info.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/stars_angle.dart'; // 使用domain层的模型
@@ -177,9 +177,17 @@ class GenerateBasePanelService {
       yearJiaZi: daXianObserver.yearGanZhi,
       monthJiaZi: daXianObserver.monthGanZhi,
     );
-    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
-        .map((e) => HuaYaoStarPair(e.key, e.value))
-        .toList();
+    // 转换为新的化曜格式
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (final entry in huaYaoMapper.entries) {
+      final huaYaoItem = HuaYaoItem.fromHuaYao(entry.key);
+      if (huaYaoItemMapper.containsKey(entry.value)) {
+        huaYaoItemMapper[entry.value]!.add(huaYaoItem);
+      } else {
+        huaYaoItemMapper[entry.value] = [huaYaoItem];
+      }
+    }
+
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(daXianObserver.yearGanZhi);
@@ -196,7 +204,7 @@ class GenerateBasePanelService {
       enteredGongMapper: enteredGongMapper,
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }

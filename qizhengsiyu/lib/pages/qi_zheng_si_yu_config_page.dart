@@ -2,7 +2,7 @@ import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 import 'package:qizhengsiyu/viewmodels/panel_config_viewmodel.dart';
 import 'package:qizhengsiyu/widgets/common/responsive_grid.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 
+import '../../pages/ui_star_model.dart';
 import 'ring_layer.dart';
-import '../pages/ui_star_model.dart';
 
 /// A reusable wrapper for rendering a star ring using RingLayer.
 /// It binds a ValueListenable of UIStarModel list to track/body builders,

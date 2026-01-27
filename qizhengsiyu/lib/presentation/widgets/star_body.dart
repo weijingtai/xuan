@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../models/ui_star_model.dart';
+import 'package:qizhengsiyu/pages/ui_star_model.dart';
 
 class StarBody extends StatefulWidget {
   double starSize;

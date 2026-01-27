@@ -86,6 +86,7 @@ const _$EnumXingXianTypeEnumMap = {
   EnumXingXianType.daXian: 'daXian',
   EnumXingXianType.xian106: 'xian106',
   EnumXingXianType.feiXian: 'feiXian',
+  EnumXingXianType.yang9: 'yang9',
 };
 
 StarGongInfluence _$StarGongInfluenceFromJson(Map<String, dynamic> json) =>

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 
-import '../pages/ui_star_model.dart';
-import '../painter/star_body_ring_painter.dart';
+import '../../pages/ui_star_model.dart';
+import '../../painter/star_body_ring_painter.dart';
 
 /// Inner star track ring widget using InnerLifeStarRangePainter.
 class InnerStarTrackRingWidget extends StatelessWidget {

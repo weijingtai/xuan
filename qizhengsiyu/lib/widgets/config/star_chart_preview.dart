@@ -1,6 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
-import 'package:qizhengsiyu/models/panel_config.dart';
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 
 import '../../enums/enum_panel_system_type.dart';

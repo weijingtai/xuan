@@ -20,12 +20,11 @@ import 'package:common/models/shen_sha_di_zhi.dart';
 import 'package:common/models/shen_sha_tian_gan.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/domain/entities/models/di_zhi_shen_sha.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao_shen_sha.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-
-import 'package:qizhengsiyu/models/di_zhi_shen_sha.dart';
 
 void main() {
   group("太岁驾前轮宫煞", () {

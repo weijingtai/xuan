@@ -27,15 +27,15 @@ import '../enums/enum_moon_phases.dart';
 import '../enums/enum_settle_life_body.dart';
 import '../enums/enum_star_hidden_type.dart';
 import '../domain/entities/models/base_panel_model.dart'; // 使用domain层模型
-import '../models/di_zhi_shen_sha.dart';
+import '../domain/entities/models/di_zhi_shen_sha.dart';
 import '../domain/entities/models/hua_yao.dart'; // 使用domain层模型
 import '../domain/entities/models/naming_degree_pair.dart'; // 使用domain层模型
 import '../domain/entities/models/observer_position.dart'; // 使用domain层模型
-import '../models/panel_stars_info.dart';
+import '../domain/entities/models/panel_stars_info.dart';
 import '../domain/entities/models/star_angle_speed.dart'; // 使用domain层模型
 import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层模型
 import '../domain/entities/models/stars_angle.dart'; // 使用domain层模型
-import '../models/eleven_stars_info.dart';
+import '../domain/entities/models/eleven_stars_info.dart';
 import '../qi_zheng_si_yu_constant_resources.dart';
 import '../utils/star_walking_info_utils.dart';
 import 'StarsResolver.dart';

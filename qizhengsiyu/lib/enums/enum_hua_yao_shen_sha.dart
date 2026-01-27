@@ -3,7 +3,7 @@ import 'package:common/module.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/di_zhi_gong_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/di_zhi_gong_info.dart';
 
 enum ShenShaType {
   @JsonValue('天干')

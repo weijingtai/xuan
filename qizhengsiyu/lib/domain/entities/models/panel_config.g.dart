@@ -120,3 +120,45 @@ const _$DongWeiDaXianMingGongCountingTypeEnumMap = {
   DongWeiDaXianMingGongCountingType.Ancient: 'Ancient',
   DongWeiDaXianMingGongCountingType.Modern: 'Modern',
 };
+
+PanelConfig _$PanelConfigFromJson(Map<String, dynamic> json) => PanelConfig(
+      celestialCoordinateSystem: $enumDecode(_$CelestialCoordinateSystemEnumMap,
+          json['celestialCoordinateSystem']),
+      houseDivisionSystem: $enumDecode(
+          _$HouseDivisionSystemEnumMap, json['houseDivisionSystem']),
+      panelSystemType:
+          $enumDecode(_$PanelSystemTypeEnumMap, json['panelSystemType']),
+      constellationSystemType: $enumDecode(
+          _$ConstellationSystemTypeEnumMap, json['constellationSystemType']),
+      settleLifeType:
+          $enumDecode(_$EnumSettleLifeTypeEnumMap, json['settleLifeType']),
+      settleBodyType:
+          $enumDecode(_$EnumSettleBodyTypeEnumMap, json['settleBodyType']),
+      islifeGongBySunRealTimeLocation:
+          json['islifeGongBySunRealTimeLocation'] as bool,
+      lifeCountingToGong: $enumDecodeNullable(
+              _$EnumTwelveGongEnumMap, json['lifeCountingToGong']) ??
+          EnumTwelveGong.Mao,
+      bodyCountingToGong: $enumDecodeNullable(
+              _$EnumTwelveGongEnumMap, json['bodyCountingToGong']) ??
+          EnumTwelveGong.You,
+    );
+
+Map<String, dynamic> _$PanelConfigToJson(PanelConfig instance) =>
+    <String, dynamic>{
+      'celestialCoordinateSystem': _$CelestialCoordinateSystemEnumMap[
+          instance.celestialCoordinateSystem]!,
+      'panelSystemType': _$PanelSystemTypeEnumMap[instance.panelSystemType]!,
+      'constellationSystemType':
+          _$ConstellationSystemTypeEnumMap[instance.constellationSystemType]!,
+      'houseDivisionSystem':
+          _$HouseDivisionSystemEnumMap[instance.houseDivisionSystem]!,
+      'settleLifeType': _$EnumSettleLifeTypeEnumMap[instance.settleLifeType]!,
+      'lifeCountingToGong':
+          _$EnumTwelveGongEnumMap[instance.lifeCountingToGong]!,
+      'settleBodyType': _$EnumSettleBodyTypeEnumMap[instance.settleBodyType]!,
+      'bodyCountingToGong':
+          _$EnumTwelveGongEnumMap[instance.bodyCountingToGong]!,
+      'islifeGongBySunRealTimeLocation':
+          instance.islifeGongBySunRealTimeLocation,
+    };

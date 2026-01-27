@@ -4,9 +4,9 @@ import 'package:path/path.dart' as path;
 
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/hua_yao.dart';
 
 void main() {
   // final currentDir = Directory.current;

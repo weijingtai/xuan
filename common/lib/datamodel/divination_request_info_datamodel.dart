@@ -2,6 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:common/enums.dart';
 
+import '../enums/enum_gender.dart';
+
 part 'divination_request_info_datamodel.g.dart';
 
 @JsonSerializable()

@@ -1,8 +1,8 @@
 import 'package:common/enums.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
+import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart';
 
 import '../enums/enum_twelve_gong.dart';
-import '../models/gong_star_info.dart';
+import '../domain/entities/models/gong_star_info.dart';
 
 class StarPositionManager {
   late final List<EnteredInfo> enteredInfos;

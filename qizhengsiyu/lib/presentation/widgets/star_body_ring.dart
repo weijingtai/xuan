@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:qizhengsiyu/widgets/star_body.dart';
 
-import '../pages/ui_star_model.dart';
+import '../../pages/ui_star_model.dart';
 
 /// Inner star body rotating widget.
 class InnerStarBodyRotatingWidget extends StatelessWidget {
@@ -33,13 +33,15 @@ class InnerStarBodyRotatingWidget extends StatelessWidget {
       ),
       child: Stack(
         alignment: Alignment.center,
-        children: stars.map((s) => _StarBodyRotatingItem(
-              star: s,
-              ringOuterSize: outerSize,
-              trackSize: trackSize,
-              starBodySize: starBodySize,
-              allStarsShowNotifier: allStarsShowNotifier,
-            )).toList(),
+        children: stars
+            .map((s) => _StarBodyRotatingItem(
+                  star: s,
+                  ringOuterSize: outerSize,
+                  trackSize: trackSize,
+                  starBodySize: starBodySize,
+                  allStarsShowNotifier: allStarsShowNotifier,
+                ))
+            .toList(),
       ),
     );
   }
@@ -73,13 +75,15 @@ class OuterStarBodyRotatingWidget extends StatelessWidget {
       ),
       child: Stack(
         alignment: Alignment.center,
-        children: stars.map((s) => _StarBodyRotatingItem(
-              star: s,
-              ringOuterSize: outerSize,
-              trackSize: trackSize,
-              starBodySize: starBodySize,
-              allStarsShowNotifier: allStarsShowNotifier,
-            )).toList(),
+        children: stars
+            .map((s) => _StarBodyRotatingItem(
+                  star: s,
+                  ringOuterSize: outerSize,
+                  trackSize: trackSize,
+                  starBodySize: starBodySize,
+                  allStarsShowNotifier: allStarsShowNotifier,
+                ))
+            .toList(),
       ),
     );
   }

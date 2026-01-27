@@ -1,4 +1,4 @@
-import 'package:common/enums.dart';
+import 'package:common/enums.dart' hide FiveXing, YinYang;
 import 'package:json_annotation/json_annotation.dart';
 
 import 'enum_five_xing.dart';

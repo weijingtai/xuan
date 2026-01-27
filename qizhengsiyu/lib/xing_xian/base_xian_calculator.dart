@@ -296,8 +296,7 @@ abstract class BaseXianCalculator {
     palaceToSegments[targetPalaceMapping.palaceName] = [];
 
     // 从目标宫位映射结果中提取星宿段
-    for (PalaceConstellationSegment segment
-        in targetPalaceMapping.constellationSegments) {
+    for (PalaceConstellationSegment segment in targetPalaceMapping.segments) {
       palaceToSegments[targetPalaceMapping.palaceName]!.add(
         ConstellationSegmentForDaXian(
           constellation: segment.constellationName,

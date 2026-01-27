@@ -14,7 +14,7 @@ import 'package:common/enums/enum_jia_zi.dart'; // JiaZi
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/passage_year_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
+import 'package:qizhengsiyu/domain/entities/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
 import 'package:qizhengsiyu/domain/entities/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
@@ -49,12 +49,12 @@ import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
 import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
 import 'package:qizhengsiyu/widgets/center_text_circle_widget.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
-import 'package:qizhengsiyu/models/panel_config.dart'; // UI层使用的PanelConfig
+import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // UI层使用的PanelConfig
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
     as DomainConfig; // domain层的BasePanelConfig
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/models/panel_ui_size.dart'; // UI模型,保留在原位置
+import 'package:qizhengsiyu/domain/entities/models/panel_ui_size.dart'; // UI模型,保留在原位置
 
 // 尺寸模型已迁移至 models/panel_ui_size.dart
 
