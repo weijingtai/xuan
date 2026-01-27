@@ -1,9 +1,6 @@
 import 'package:common/enums.dart';
-import 'package:daliuren/model/da_liu_ren_gong.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
-import 'package:daliuren/model/enum_gui_ren.dart';
-import 'package:daliuren/model/four_class.dart';
-import 'package:daliuren/model/three_chuan.dart';
+import 'package:daliuren/domain/enums/gui_ren.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'da_liu_ren_test.dart';
@@ -35,9 +32,9 @@ void main() {
         Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, monthGeneralSeq);
     Map<DiZhi, GuiRen> currentDiGodsMapper =
         Map<DiZhi, GuiRen>.fromIterables(diSeq, godsNameList);
-    Map<DiZhi, DaLiuRenGong> currentPanWithGods = {};
+    Map<DiZhi, EachGong> currentPanWithGods = {};
     for (var di in diSeq) {
-      currentPanWithGods[di] = DaLiuRenGong(
+      currentPanWithGods[di] = EachGong(
           guiRen: currentDiGodsMapper[di]!,
           skyPanDiZhi: currentTianDiMapper[di]!,
           groundPanDiZhi: di);
@@ -52,7 +49,7 @@ void main() {
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       // currentTianDiMapper.forEach((k,v)=>print("${k.value} - ${v.value}"));
       for (var di in dipanlistDev) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);
@@ -89,7 +86,7 @@ void main() {
           Map<DiZhi, DiZhi>.fromIterables(dipanlistDev, tianpanlistDev);
       // currentTianDiMapper.forEach((k,v)=>print("${k.value} - ${v.value}"));
       for (var di in dipanlistDev) {
-        currentPanWithGods[di] = DaLiuRenGong(
+        currentPanWithGods[di] = EachGong(
             guiRen: currentDiGodsMapper[di]!,
             skyPanDiZhi: currentTianDiMapper[di]!,
             groundPanDiZhi: di);

@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:common/utils/collections_utils.dart';
+import 'package:common/enums.dart';
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,10 +9,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/models/base_panel_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
 import 'package:qizhengsiyu/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
@@ -22,6 +21,8 @@ import 'package:common/painter/text_circle_ring_painter.dart';
 import 'package:common/painter/circle_ring_printer.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../models/body_life_model.dart';
+import '../widgets/rings/body_life_circle_widget.dart';
+import '../widgets/rings/da_xian_ring.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
 import '../widgets/rings/gong_ming_li_ring.dart';
 import '../widgets/rings/gong_shen_sha_ring.dart';
@@ -794,51 +795,27 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     return Stack(
       alignment: Alignment.center,
       children: [
-        // Container(
-        //   alignment: Alignment.center,
-        //   height: diZhi12GongOuter,
-        //   width: diZhi12GongOuter,
-        //   decoration: BoxDecoration(
-        //     // color: Colors.red.withOpacity(.1),
-        //     borderRadius: BorderRadius.circular(diZhi12GongOuter),
-        //     // border: Border.all(color: Colors.black,width: 1),
-        //   ),
-        //   child: Transform.rotate(
-        //     angle: 75 * pi / 180,
-        //     origin: Offset.zero,
-        //     child: CustomPaint(
-        //         size: Size(diZhi12GongOuter, diZhi12GongOuter),
-        //         painter: TwelveZhiGongCircleRingPrinter(
-        //           innerRadius: 86,
-        //           outerRadius: 148,
-        //           twelveGongList: [
-        //             EnumTwelveGong.Xu,
-        //             EnumTwelveGong.Hai,
-        //             EnumTwelveGong.Zi,
-        //             EnumTwelveGong.Chou,
-        //             EnumTwelveGong.Yin,
-        //             EnumTwelveGong.Mao,
-        //             EnumTwelveGong.Chen,
-        //             EnumTwelveGong.Si,
-        //             EnumTwelveGong.Wu,
-        //             EnumTwelveGong.Wei,
-        //             EnumTwelveGong.Shen,
-        //             EnumTwelveGong.You,
-        //           ],
-        //           starColorMapper: QiZhengSiYuUIConstantResources.zhengColorMap,
-        //           isAntiClockwise: false,
-        //           innerPadding: 3,
-        //           isReverseText: false,
-        //           isHorizontalText: false,
-        //           textStyle: GoogleFonts.maShanZheng(
-        //             height: 1.2,
-        //             fontSize: 16,
-        //             color: Colors.black87,
-        //           ),
-        //         )),
-        //   ),
-        // ),
-
+        ValueListenableBuilder(
+            valueListenable:
+                context.read<BeautyPageViewModel>().dongWeiFateResultNotifier,
+            builder: (ctx, dongWei, child) {
+              if (dongWei == null) {
+                return SizedBox();
+              }
+              final gongYearMapper = Map.fromEntries(dongWei
+                  .daXianResult.daXianGongs
+                  .map((e) => MapEntry(e.gong, e.totalYears)));
+              return Transform.rotate(
+                angle: -30 * pi / 180,
+                child: DaXianRing(
+                    outerRadius:
+                        (panelSizeDataModel.outerShenShaSizeOuter * .5) + 32,
+                    innerRadius:
+                        (panelSizeDataModel.outerShenShaSizeOuter * .5) + 24,
+                    gongYearsMapper: gongYearMapper,
+                    baseGongOffsetAngle: 30),
+              );
+            }),
         // 十二地支宫
         Transform.rotate(
           angle: -30 * pi / 180,
@@ -977,7 +954,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 child: AllShenShaRing(
                   outerRadius: panelSizeDataModel.innerShenShaSizeOuter * .5,
                   innerRadius: panelSizeDataModel.innerShenShaSizeInner * .5,
-                  shenShaMapper: basePanel.shenShaMapper,
+                  shenShaMapper: basePanel.shenShaItemMapper,
                   gongOrder: EnumTwelveGong.listAll,
                 ),
               );
@@ -993,7 +970,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         Transform.rotate(
           angle: 0 * pi / 180, // 和命理十二宫一样为逆时针转，也从子宫位第一宫
           // angle: 0,
-          child: ValueListenableBuilder<DaXianPanelModel?>(
+          child: ValueListenableBuilder<PassageYearPanelModel?>(
               valueListenable:
                   context.read<BeautyPageViewModel>().uiDaXianPanelNotifier,
               builder: (ctx, daXianPanel, child) {
@@ -1005,7 +982,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                   child: AllShenShaRing(
                     outerRadius: panelSizeDataModel.outerShenShaSizeOuter * .5,
                     innerRadius: panelSizeDataModel.outerShenShaSizeInner * .5,
-                    shenShaMapper: daXianPanel.shenShaMapper,
+                    shenShaMapper: daXianPanel.shenShaItemMapper,
                     gongOrder: EnumTwelveGong.listAll,
                   ),
                 );
@@ -1015,22 +992,48 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                 height: panelSizeDataModel.outerShenShaSizeOuter,
               )),
         ),
-
         Transform.rotate(
-          angle: -30 * pi / 180,
-          child: ValueListenableBuilder<BasePanelModel?>(
-              valueListenable:
-                  context.read<BeautyPageViewModel>().uiBasePanelNotifier,
-              builder: (ctx, baseModel, _) {
-                if (baseModel == null) {
-                  return Container(
-                    width: panelSizeDataModel.outerShenShaSizeOuter,
-                    height: panelSizeDataModel.outerShenShaSizeOuter,
+            angle: -30 * pi / 180,
+            child: ValueListenableBuilder<BasePanelModel?>(
+                valueListenable:
+                    context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+                builder: (ctx, basePanel, _) {
+                  if (basePanel == null) return Container();
+                  return BodyLifeCircleWidget(
+                    bodyLifeModel: basePanel.bodyLifeModel,
+                    itemSize: 64,
+                    ringColor: Colors.transparent,
+                    textStyle: TextStyle(
+                        fontSize: 12, color: Colors.black38, height: 1),
+                    starTextStyle: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withAlpha(80),
+                            blurRadius: 1,
+                            offset: Offset(0, 1),
+                          ),
+                        ]),
                   );
-                }
-                return center(baseModel);
-              }),
-        ),
+                })),
+
+        // Transform.rotate(
+        //   angle: -30 * pi / 180,
+        //   child: ValueListenableBuilder<BasePanelModel?>(
+        //       valueListenable:
+        //           context.read<BeautyPageViewModel>().uiBasePanelNotifier,
+        //       builder: (ctx, baseModel, _) {
+        //         if (baseModel == null) {
+        //           return Container(
+        //             width: panelSizeDataModel.outerShenShaSizeOuter,
+        //             height: panelSizeDataModel.outerShenShaSizeOuter,
+        //           );
+        //         }
+        //         return center(baseModel);
+        //       }),
+        // ),
       ],
     );
   }

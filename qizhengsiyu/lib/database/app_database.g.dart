@@ -3,432 +3,310 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $StarPositionStatusTableTable extends StarPositionStatusTable
-    with
-        TableInfo<$StarPositionStatusTableTable,
-            StarPositionStatusDatasetModel> {
+class $QizhengsiyuPanTableTable extends QizhengsiyuPanTable
+    with TableInfo<$QizhengsiyuPanTableTable, QiZhengSiYuPanEntity> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $StarPositionStatusTableTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  $QizhengsiyuPanTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _uuidMeta = const VerificationMeta('uuid');
   @override
-  late final GeneratedColumn<int> id = GeneratedColumn<int>(
-      'id', aliasedName, false,
-      hasAutoIncrement: true,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
-  static const VerificationMeta _classNameMeta =
-      const VerificationMeta('className');
+  late final GeneratedColumn<String> uuid =
+      GeneratedColumn<String>('uuid', aliasedName, false,
+          additionalChecks: GeneratedColumn.checkTextLength(
+            minTextLength: 1,
+          ),
+          type: DriftSqlType.string,
+          requiredDuringInsert: true);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
   @override
-  late final GeneratedColumn<String> className = GeneratedColumn<String>(
-      'class_name', aliasedName, false,
-      type: DriftSqlType.string, requiredDuringInsert: true);
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastUpdatedAtMeta =
+      const VerificationMeta('lastUpdatedAt');
   @override
-  late final GeneratedColumnWithTypeConverter<EnumStars, String> star =
-      GeneratedColumn<String>('star', aliasedName, false,
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>('last_updated_at', aliasedName, false,
+          type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _deletedAtMeta =
+      const VerificationMeta('deletedAt');
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+      'deleted_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _divinationRequestInfoUuidMeta =
+      const VerificationMeta('divinationRequestInfoUuid');
+  @override
+  late final GeneratedColumn<String> divinationRequestInfoUuid =
+      GeneratedColumn<String>(
+          'divination_request_info_uuid', aliasedName, false,
+          type: DriftSqlType.string, requiredDuringInsert: true);
+  @override
+  late final GeneratedColumnWithTypeConverter<BasePanelConfig, String>
+      panelConfig = GeneratedColumn<String>(
+              'panel_config_json', aliasedName, false,
               type: DriftSqlType.string, requiredDuringInsert: true)
-          .withConverter<EnumStars>(
-              $StarPositionStatusTableTable.$converterstar);
+          .withConverter<BasePanelConfig>(
+              $QizhengsiyuPanTableTable.$converterpanelConfig);
   @override
-  late final GeneratedColumnWithTypeConverter<EnumStarGongPositionStatusType,
-      String> starPositionStatusType = GeneratedColumn<String>(
-          'star_position_status_type', aliasedName, false,
-          type: DriftSqlType.string, requiredDuringInsert: true)
-      .withConverter<EnumStarGongPositionStatusType>(
-          $StarPositionStatusTableTable.$converterstarPositionStatusType);
-  @override
-  late final GeneratedColumnWithTypeConverter<List<Enum>, String> positionList =
-      GeneratedColumn<String>('position_list', aliasedName, false,
+  late final GeneratedColumnWithTypeConverter<BasePanelModel, String>
+      panelModel = GeneratedColumn<String>(
+              'panel_data_json', aliasedName, false,
               type: DriftSqlType.string, requiredDuringInsert: true)
-          .withConverter<List<Enum>>(
-              $StarPositionStatusTableTable.$converterpositionList);
+          .withConverter<BasePanelModel>(
+              $QizhengsiyuPanTableTable.$converterpanelModel);
   @override
-  late final GeneratedColumnWithTypeConverter<List<String>?, String>
-      descriptionList = GeneratedColumn<String>(
-              'description_list', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<List<String>?>(
-              $StarPositionStatusTableTable.$converterdescriptionListn);
-  @override
-  late final GeneratedColumnWithTypeConverter<List<String>?, String> geJuList =
-      GeneratedColumn<String>('ge_ju_list', aliasedName, true,
-              type: DriftSqlType.string, requiredDuringInsert: false)
-          .withConverter<List<String>?>(
-              $StarPositionStatusTableTable.$convertergeJuListn);
+  late final GeneratedColumnWithTypeConverter<DivinationDatetimeModel, String>
+      divinationDatetimeModel = GeneratedColumn<String>(
+              'divination_datetime_json', aliasedName, false,
+              type: DriftSqlType.string, requiredDuringInsert: true)
+          .withConverter<DivinationDatetimeModel>(
+              $QizhengsiyuPanTableTable.$converterdivinationDatetimeModel);
   @override
   List<GeneratedColumn> get $columns => [
-        id,
-        className,
-        star,
-        starPositionStatusType,
-        positionList,
-        descriptionList,
-        geJuList
+        uuid,
+        createdAt,
+        lastUpdatedAt,
+        deletedAt,
+        divinationRequestInfoUuid,
+        panelConfig,
+        panelModel,
+        divinationDatetimeModel
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'star_position_status_table';
+  static const String $name = 't_qizhengsiyu_pans';
   @override
   VerificationContext validateIntegrity(
-      Insertable<StarPositionStatusDatasetModel> instance,
+      Insertable<QiZhengSiYuPanEntity> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    }
-    if (data.containsKey('class_name')) {
-      context.handle(_classNameMeta,
-          className.isAcceptableOrUnknown(data['class_name']!, _classNameMeta));
+    if (data.containsKey('uuid')) {
+      context.handle(
+          _uuidMeta, uuid.isAcceptableOrUnknown(data['uuid']!, _uuidMeta));
     } else if (isInserting) {
-      context.missing(_classNameMeta);
+      context.missing(_uuidMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+          _lastUpdatedAtMeta,
+          lastUpdatedAt.isAcceptableOrUnknown(
+              data['last_updated_at']!, _lastUpdatedAtMeta));
+    } else if (isInserting) {
+      context.missing(_lastUpdatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(_deletedAtMeta,
+          deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta));
+    }
+    if (data.containsKey('divination_request_info_uuid')) {
+      context.handle(
+          _divinationRequestInfoUuidMeta,
+          divinationRequestInfoUuid.isAcceptableOrUnknown(
+              data['divination_request_info_uuid']!,
+              _divinationRequestInfoUuidMeta));
+    } else if (isInserting) {
+      context.missing(_divinationRequestInfoUuidMeta);
     }
     return context;
   }
 
   @override
-  Set<GeneratedColumn> get $primaryKey => {id};
+  Set<GeneratedColumn> get $primaryKey => {uuid};
   @override
-  StarPositionStatusDatasetModel map(Map<String, dynamic> data,
-      {String? tablePrefix}) {
+  QiZhengSiYuPanEntity map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return StarPositionStatusDatasetModel(
-      id: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
-      className: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}class_name'])!,
-      star: $StarPositionStatusTableTable.$converterstar.fromSql(
-          attachedDatabase.typeMapping
-              .read(DriftSqlType.string, data['${effectivePrefix}star'])!),
-      starPositionStatusType: $StarPositionStatusTableTable
-          .$converterstarPositionStatusType
+    return QiZhengSiYuPanEntity(
+      uuid: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}uuid'])!,
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_updated_at'])!,
+      deletedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}deleted_at']),
+      divinationRequestInfoUuid: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}divination_request_info_uuid'])!,
+      panelConfig: $QizhengsiyuPanTableTable.$converterpanelConfig.fromSql(
+          attachedDatabase.typeMapping.read(DriftSqlType.string,
+              data['${effectivePrefix}panel_config_json'])!),
+      panelModel: $QizhengsiyuPanTableTable.$converterpanelModel.fromSql(
+          attachedDatabase.typeMapping.read(
+              DriftSqlType.string, data['${effectivePrefix}panel_data_json'])!),
+      divinationDatetimeModel: $QizhengsiyuPanTableTable
+          .$converterdivinationDatetimeModel
           .fromSql(attachedDatabase.typeMapping.read(DriftSqlType.string,
-              data['${effectivePrefix}star_position_status_type'])!),
-      positionList: $StarPositionStatusTableTable.$converterpositionList
-          .fromSql(attachedDatabase.typeMapping.read(
-              DriftSqlType.string, data['${effectivePrefix}position_list'])!),
-      descriptionList: $StarPositionStatusTableTable.$converterdescriptionListn
-          .fromSql(attachedDatabase.typeMapping.read(
-              DriftSqlType.string, data['${effectivePrefix}description_list'])),
-      geJuList: $StarPositionStatusTableTable.$convertergeJuListn.fromSql(
-          attachedDatabase.typeMapping
-              .read(DriftSqlType.string, data['${effectivePrefix}ge_ju_list'])),
+              data['${effectivePrefix}divination_datetime_json'])!),
     );
   }
 
   @override
-  $StarPositionStatusTableTable createAlias(String alias) {
-    return $StarPositionStatusTableTable(attachedDatabase, alias);
+  $QizhengsiyuPanTableTable createAlias(String alias) {
+    return $QizhengsiyuPanTableTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<EnumStars, String, String> $converterstar =
-      const EnumNameConverter<EnumStars>(EnumStars.values);
-  static JsonTypeConverter2<EnumStarGongPositionStatusType, String, String>
-      $converterstarPositionStatusType =
-      const EnumNameConverter<EnumStarGongPositionStatusType>(
-          EnumStarGongPositionStatusType.values);
-  static TypeConverter<List<Enum>, String> $converterpositionList =
-      const PositionListConverter();
-  static TypeConverter<List<String>, String> $converterdescriptionList =
-      const StringListConverter();
-  static TypeConverter<List<String>?, String?> $converterdescriptionListn =
-      NullAwareTypeConverter.wrap($converterdescriptionList);
-  static TypeConverter<List<String>, String> $convertergeJuList =
-      const StringListConverter();
-  static TypeConverter<List<String>?, String?> $convertergeJuListn =
-      NullAwareTypeConverter.wrap($convertergeJuList);
+  static TypeConverter<BasePanelConfig, String> $converterpanelConfig =
+      const PanelConfigConverter();
+  static TypeConverter<BasePanelModel, String> $converterpanelModel =
+      const BasePanelModelConverter();
+  static TypeConverter<DivinationDatetimeModel, String>
+      $converterdivinationDatetimeModel = const DivinationDatetimeConverter();
 }
 
-class StarPositionStatusDatasetModel extends DataClass
-    implements Insertable<StarPositionStatusDatasetModel> {
-  final int id;
-  final String className;
-  final EnumStars star;
-  final EnumStarGongPositionStatusType starPositionStatusType;
-  final List<Enum> positionList;
-  final List<String>? descriptionList;
-  final List<String>? geJuList;
-  const StarPositionStatusDatasetModel(
-      {required this.id,
-      required this.className,
-      required this.star,
-      required this.starPositionStatusType,
-      required this.positionList,
-      this.descriptionList,
-      this.geJuList});
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<int>(id);
-    map['class_name'] = Variable<String>(className);
-    {
-      map['star'] = Variable<String>(
-          $StarPositionStatusTableTable.$converterstar.toSql(star));
-    }
-    {
-      map['star_position_status_type'] = Variable<String>(
-          $StarPositionStatusTableTable.$converterstarPositionStatusType
-              .toSql(starPositionStatusType));
-    }
-    {
-      map['position_list'] = Variable<String>($StarPositionStatusTableTable
-          .$converterpositionList
-          .toSql(positionList));
-    }
-    if (!nullToAbsent || descriptionList != null) {
-      map['description_list'] = Variable<String>($StarPositionStatusTableTable
-          .$converterdescriptionListn
-          .toSql(descriptionList));
-    }
-    if (!nullToAbsent || geJuList != null) {
-      map['ge_ju_list'] = Variable<String>(
-          $StarPositionStatusTableTable.$convertergeJuListn.toSql(geJuList));
-    }
-    return map;
-  }
-
-  StarPositionStatusTableCompanion toCompanion(bool nullToAbsent) {
-    return StarPositionStatusTableCompanion(
-      id: Value(id),
-      className: Value(className),
-      star: Value(star),
-      starPositionStatusType: Value(starPositionStatusType),
-      positionList: Value(positionList),
-      descriptionList: descriptionList == null && nullToAbsent
-          ? const Value.absent()
-          : Value(descriptionList),
-      geJuList: geJuList == null && nullToAbsent
-          ? const Value.absent()
-          : Value(geJuList),
-    );
-  }
-
-  factory StarPositionStatusDatasetModel.fromJson(Map<String, dynamic> json,
-      {ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return StarPositionStatusDatasetModel(
-      id: serializer.fromJson<int>(json['id']),
-      className: serializer.fromJson<String>(json['className']),
-      star: $StarPositionStatusTableTable.$converterstar
-          .fromJson(serializer.fromJson<String>(json['star'])),
-      starPositionStatusType: $StarPositionStatusTableTable
-          .$converterstarPositionStatusType
-          .fromJson(
-              serializer.fromJson<String>(json['starPositionStatusType'])),
-      positionList: serializer.fromJson<List<Enum>>(json['positionList']),
-      descriptionList:
-          serializer.fromJson<List<String>?>(json['descriptionList']),
-      geJuList: serializer.fromJson<List<String>?>(json['geJuList']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<int>(id),
-      'className': serializer.toJson<String>(className),
-      'star': serializer.toJson<String>(
-          $StarPositionStatusTableTable.$converterstar.toJson(star)),
-      'starPositionStatusType': serializer.toJson<String>(
-          $StarPositionStatusTableTable.$converterstarPositionStatusType
-              .toJson(starPositionStatusType)),
-      'positionList': serializer.toJson<List<Enum>>(positionList),
-      'descriptionList': serializer.toJson<List<String>?>(descriptionList),
-      'geJuList': serializer.toJson<List<String>?>(geJuList),
-    };
-  }
-
-  StarPositionStatusDatasetModel copyWith(
-          {int? id,
-          String? className,
-          EnumStars? star,
-          EnumStarGongPositionStatusType? starPositionStatusType,
-          List<Enum>? positionList,
-          Value<List<String>?> descriptionList = const Value.absent(),
-          Value<List<String>?> geJuList = const Value.absent()}) =>
-      StarPositionStatusDatasetModel(
-        id: id ?? this.id,
-        className: className ?? this.className,
-        star: star ?? this.star,
-        starPositionStatusType:
-            starPositionStatusType ?? this.starPositionStatusType,
-        positionList: positionList ?? this.positionList,
-        descriptionList: descriptionList.present
-            ? descriptionList.value
-            : this.descriptionList,
-        geJuList: geJuList.present ? geJuList.value : this.geJuList,
-      );
-  StarPositionStatusDatasetModel copyWithCompanion(
-      StarPositionStatusTableCompanion data) {
-    return StarPositionStatusDatasetModel(
-      id: data.id.present ? data.id.value : this.id,
-      className: data.className.present ? data.className.value : this.className,
-      star: data.star.present ? data.star.value : this.star,
-      starPositionStatusType: data.starPositionStatusType.present
-          ? data.starPositionStatusType.value
-          : this.starPositionStatusType,
-      positionList: data.positionList.present
-          ? data.positionList.value
-          : this.positionList,
-      descriptionList: data.descriptionList.present
-          ? data.descriptionList.value
-          : this.descriptionList,
-      geJuList: data.geJuList.present ? data.geJuList.value : this.geJuList,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('StarPositionStatusDatasetModel(')
-          ..write('id: $id, ')
-          ..write('className: $className, ')
-          ..write('star: $star, ')
-          ..write('starPositionStatusType: $starPositionStatusType, ')
-          ..write('positionList: $positionList, ')
-          ..write('descriptionList: $descriptionList, ')
-          ..write('geJuList: $geJuList')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(id, className, star, starPositionStatusType,
-      positionList, descriptionList, geJuList);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is StarPositionStatusDatasetModel &&
-          other.id == this.id &&
-          other.className == this.className &&
-          other.star == this.star &&
-          other.starPositionStatusType == this.starPositionStatusType &&
-          other.positionList == this.positionList &&
-          other.descriptionList == this.descriptionList &&
-          other.geJuList == this.geJuList);
-}
-
-class StarPositionStatusTableCompanion
-    extends UpdateCompanion<StarPositionStatusDatasetModel> {
-  final Value<int> id;
-  final Value<String> className;
-  final Value<EnumStars> star;
-  final Value<EnumStarGongPositionStatusType> starPositionStatusType;
-  final Value<List<Enum>> positionList;
-  final Value<List<String>?> descriptionList;
-  final Value<List<String>?> geJuList;
-  const StarPositionStatusTableCompanion({
-    this.id = const Value.absent(),
-    this.className = const Value.absent(),
-    this.star = const Value.absent(),
-    this.starPositionStatusType = const Value.absent(),
-    this.positionList = const Value.absent(),
-    this.descriptionList = const Value.absent(),
-    this.geJuList = const Value.absent(),
+class QizhengsiyuPanTableCompanion
+    extends UpdateCompanion<QiZhengSiYuPanEntity> {
+  final Value<String> uuid;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> lastUpdatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<String> divinationRequestInfoUuid;
+  final Value<BasePanelConfig> panelConfig;
+  final Value<BasePanelModel> panelModel;
+  final Value<DivinationDatetimeModel> divinationDatetimeModel;
+  final Value<int> rowid;
+  const QizhengsiyuPanTableCompanion({
+    this.uuid = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.divinationRequestInfoUuid = const Value.absent(),
+    this.panelConfig = const Value.absent(),
+    this.panelModel = const Value.absent(),
+    this.divinationDatetimeModel = const Value.absent(),
+    this.rowid = const Value.absent(),
   });
-  StarPositionStatusTableCompanion.insert({
-    this.id = const Value.absent(),
-    required String className,
-    required EnumStars star,
-    required EnumStarGongPositionStatusType starPositionStatusType,
-    required List<Enum> positionList,
-    this.descriptionList = const Value.absent(),
-    this.geJuList = const Value.absent(),
-  })  : className = Value(className),
-        star = Value(star),
-        starPositionStatusType = Value(starPositionStatusType),
-        positionList = Value(positionList);
-  static Insertable<StarPositionStatusDatasetModel> custom({
-    Expression<int>? id,
-    Expression<String>? className,
-    Expression<String>? star,
-    Expression<String>? starPositionStatusType,
-    Expression<String>? positionList,
-    Expression<String>? descriptionList,
-    Expression<String>? geJuList,
+  QizhengsiyuPanTableCompanion.insert({
+    required String uuid,
+    required DateTime createdAt,
+    required DateTime lastUpdatedAt,
+    this.deletedAt = const Value.absent(),
+    required String divinationRequestInfoUuid,
+    required BasePanelConfig panelConfig,
+    required BasePanelModel panelModel,
+    required DivinationDatetimeModel divinationDatetimeModel,
+    this.rowid = const Value.absent(),
+  })  : uuid = Value(uuid),
+        createdAt = Value(createdAt),
+        lastUpdatedAt = Value(lastUpdatedAt),
+        divinationRequestInfoUuid = Value(divinationRequestInfoUuid),
+        panelConfig = Value(panelConfig),
+        panelModel = Value(panelModel),
+        divinationDatetimeModel = Value(divinationDatetimeModel);
+  static Insertable<QiZhengSiYuPanEntity> custom({
+    Expression<String>? uuid,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? lastUpdatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<String>? divinationRequestInfoUuid,
+    Expression<String>? panelConfig,
+    Expression<String>? panelModel,
+    Expression<String>? divinationDatetimeModel,
+    Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (className != null) 'class_name': className,
-      if (star != null) 'star': star,
-      if (starPositionStatusType != null)
-        'star_position_status_type': starPositionStatusType,
-      if (positionList != null) 'position_list': positionList,
-      if (descriptionList != null) 'description_list': descriptionList,
-      if (geJuList != null) 'ge_ju_list': geJuList,
+      if (uuid != null) 'uuid': uuid,
+      if (createdAt != null) 'created_at': createdAt,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (divinationRequestInfoUuid != null)
+        'divination_request_info_uuid': divinationRequestInfoUuid,
+      if (panelConfig != null) 'panel_config_json': panelConfig,
+      if (panelModel != null) 'panel_data_json': panelModel,
+      if (divinationDatetimeModel != null)
+        'divination_datetime_json': divinationDatetimeModel,
+      if (rowid != null) 'rowid': rowid,
     });
   }
 
-  StarPositionStatusTableCompanion copyWith(
-      {Value<int>? id,
-      Value<String>? className,
-      Value<EnumStars>? star,
-      Value<EnumStarGongPositionStatusType>? starPositionStatusType,
-      Value<List<Enum>>? positionList,
-      Value<List<String>?>? descriptionList,
-      Value<List<String>?>? geJuList}) {
-    return StarPositionStatusTableCompanion(
-      id: id ?? this.id,
-      className: className ?? this.className,
-      star: star ?? this.star,
-      starPositionStatusType:
-          starPositionStatusType ?? this.starPositionStatusType,
-      positionList: positionList ?? this.positionList,
-      descriptionList: descriptionList ?? this.descriptionList,
-      geJuList: geJuList ?? this.geJuList,
+  QizhengsiyuPanTableCompanion copyWith(
+      {Value<String>? uuid,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? lastUpdatedAt,
+      Value<DateTime?>? deletedAt,
+      Value<String>? divinationRequestInfoUuid,
+      Value<BasePanelConfig>? panelConfig,
+      Value<BasePanelModel>? panelModel,
+      Value<DivinationDatetimeModel>? divinationDatetimeModel,
+      Value<int>? rowid}) {
+    return QizhengsiyuPanTableCompanion(
+      uuid: uuid ?? this.uuid,
+      createdAt: createdAt ?? this.createdAt,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      divinationRequestInfoUuid:
+          divinationRequestInfoUuid ?? this.divinationRequestInfoUuid,
+      panelConfig: panelConfig ?? this.panelConfig,
+      panelModel: panelModel ?? this.panelModel,
+      divinationDatetimeModel:
+          divinationDatetimeModel ?? this.divinationDatetimeModel,
+      rowid: rowid ?? this.rowid,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<int>(id.value);
+    if (uuid.present) {
+      map['uuid'] = Variable<String>(uuid.value);
     }
-    if (className.present) {
-      map['class_name'] = Variable<String>(className.value);
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
     }
-    if (star.present) {
-      map['star'] = Variable<String>(
-          $StarPositionStatusTableTable.$converterstar.toSql(star.value));
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
     }
-    if (starPositionStatusType.present) {
-      map['star_position_status_type'] = Variable<String>(
-          $StarPositionStatusTableTable.$converterstarPositionStatusType
-              .toSql(starPositionStatusType.value));
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
     }
-    if (positionList.present) {
-      map['position_list'] = Variable<String>($StarPositionStatusTableTable
-          .$converterpositionList
-          .toSql(positionList.value));
+    if (divinationRequestInfoUuid.present) {
+      map['divination_request_info_uuid'] =
+          Variable<String>(divinationRequestInfoUuid.value);
     }
-    if (descriptionList.present) {
-      map['description_list'] = Variable<String>($StarPositionStatusTableTable
-          .$converterdescriptionListn
-          .toSql(descriptionList.value));
+    if (panelConfig.present) {
+      map['panel_config_json'] = Variable<String>($QizhengsiyuPanTableTable
+          .$converterpanelConfig
+          .toSql(panelConfig.value));
     }
-    if (geJuList.present) {
-      map['ge_ju_list'] = Variable<String>($StarPositionStatusTableTable
-          .$convertergeJuListn
-          .toSql(geJuList.value));
+    if (panelModel.present) {
+      map['panel_data_json'] = Variable<String>($QizhengsiyuPanTableTable
+          .$converterpanelModel
+          .toSql(panelModel.value));
+    }
+    if (divinationDatetimeModel.present) {
+      map['divination_datetime_json'] = Variable<String>(
+          $QizhengsiyuPanTableTable.$converterdivinationDatetimeModel
+              .toSql(divinationDatetimeModel.value));
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
     }
     return map;
   }
 
   @override
   String toString() {
-    return (StringBuffer('StarPositionStatusTableCompanion(')
-          ..write('id: $id, ')
-          ..write('className: $className, ')
-          ..write('star: $star, ')
-          ..write('starPositionStatusType: $starPositionStatusType, ')
-          ..write('positionList: $positionList, ')
-          ..write('descriptionList: $descriptionList, ')
-          ..write('geJuList: $geJuList')
+    return (StringBuffer('QizhengsiyuPanTableCompanion(')
+          ..write('uuid: $uuid, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('divinationRequestInfoUuid: $divinationRequestInfoUuid, ')
+          ..write('panelConfig: $panelConfig, ')
+          ..write('panelModel: $panelModel, ')
+          ..write('divinationDatetimeModel: $divinationDatetimeModel, ')
+          ..write('rowid: $rowid')
           ..write(')'))
         .toString();
   }
@@ -437,212 +315,231 @@ class StarPositionStatusTableCompanion
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $StarPositionStatusTableTable starPositionStatusTable =
-      $StarPositionStatusTableTable(this);
+  late final $QizhengsiyuPanTableTable qizhengsiyuPanTable =
+      $QizhengsiyuPanTableTable(this);
+  late final QiZhengSiYuPanDao qiZhengSiYuPanDao =
+      QiZhengSiYuPanDao(this as AppDatabase);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [starPositionStatusTable];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [qizhengsiyuPanTable];
 }
 
-typedef $$StarPositionStatusTableTableCreateCompanionBuilder
-    = StarPositionStatusTableCompanion Function({
-  Value<int> id,
-  required String className,
-  required EnumStars star,
-  required EnumStarGongPositionStatusType starPositionStatusType,
-  required List<Enum> positionList,
-  Value<List<String>?> descriptionList,
-  Value<List<String>?> geJuList,
+typedef $$QizhengsiyuPanTableTableCreateCompanionBuilder
+    = QizhengsiyuPanTableCompanion Function({
+  required String uuid,
+  required DateTime createdAt,
+  required DateTime lastUpdatedAt,
+  Value<DateTime?> deletedAt,
+  required String divinationRequestInfoUuid,
+  required BasePanelConfig panelConfig,
+  required BasePanelModel panelModel,
+  required DivinationDatetimeModel divinationDatetimeModel,
+  Value<int> rowid,
 });
-typedef $$StarPositionStatusTableTableUpdateCompanionBuilder
-    = StarPositionStatusTableCompanion Function({
-  Value<int> id,
-  Value<String> className,
-  Value<EnumStars> star,
-  Value<EnumStarGongPositionStatusType> starPositionStatusType,
-  Value<List<Enum>> positionList,
-  Value<List<String>?> descriptionList,
-  Value<List<String>?> geJuList,
+typedef $$QizhengsiyuPanTableTableUpdateCompanionBuilder
+    = QizhengsiyuPanTableCompanion Function({
+  Value<String> uuid,
+  Value<DateTime> createdAt,
+  Value<DateTime> lastUpdatedAt,
+  Value<DateTime?> deletedAt,
+  Value<String> divinationRequestInfoUuid,
+  Value<BasePanelConfig> panelConfig,
+  Value<BasePanelModel> panelModel,
+  Value<DivinationDatetimeModel> divinationDatetimeModel,
+  Value<int> rowid,
 });
 
-class $$StarPositionStatusTableTableFilterComposer
-    extends Composer<_$AppDatabase, $StarPositionStatusTableTable> {
-  $$StarPositionStatusTableTableFilterComposer({
+class $$QizhengsiyuPanTableTableFilterComposer
+    extends Composer<_$AppDatabase, $QizhengsiyuPanTableTable> {
+  $$QizhengsiyuPanTableTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnFilters<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnFilters(column));
+  ColumnFilters<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get className => $composableBuilder(
-      column: $table.className, builder: (column) => ColumnFilters(column));
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
 
-  ColumnWithTypeConverterFilters<EnumStars, EnumStars, String> get star =>
-      $composableBuilder(
-          column: $table.star,
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get divinationRequestInfoUuid => $composableBuilder(
+      column: $table.divinationRequestInfoUuid,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnWithTypeConverterFilters<BasePanelConfig, BasePanelConfig, String>
+      get panelConfig => $composableBuilder(
+          column: $table.panelConfig,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnWithTypeConverterFilters<EnumStarGongPositionStatusType,
-          EnumStarGongPositionStatusType, String>
-      get starPositionStatusType => $composableBuilder(
-          column: $table.starPositionStatusType,
+  ColumnWithTypeConverterFilters<BasePanelModel, BasePanelModel, String>
+      get panelModel => $composableBuilder(
+          column: $table.panelModel,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 
-  ColumnWithTypeConverterFilters<List<Enum>, List<Enum>, String>
-      get positionList => $composableBuilder(
-          column: $table.positionList,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
-
-  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
-      get descriptionList => $composableBuilder(
-          column: $table.descriptionList,
-          builder: (column) => ColumnWithTypeConverterFilters(column));
-
-  ColumnWithTypeConverterFilters<List<String>?, List<String>, String>
-      get geJuList => $composableBuilder(
-          column: $table.geJuList,
+  ColumnWithTypeConverterFilters<DivinationDatetimeModel,
+          DivinationDatetimeModel, String>
+      get divinationDatetimeModel => $composableBuilder(
+          column: $table.divinationDatetimeModel,
           builder: (column) => ColumnWithTypeConverterFilters(column));
 }
 
-class $$StarPositionStatusTableTableOrderingComposer
-    extends Composer<_$AppDatabase, $StarPositionStatusTableTable> {
-  $$StarPositionStatusTableTableOrderingComposer({
+class $$QizhengsiyuPanTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $QizhengsiyuPanTableTable> {
+  $$QizhengsiyuPanTableTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  ColumnOrderings<int> get id => $composableBuilder(
-      column: $table.id, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get uuid => $composableBuilder(
+      column: $table.uuid, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get className => $composableBuilder(
-      column: $table.className, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get star => $composableBuilder(
-      column: $table.star, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<String> get starPositionStatusType => $composableBuilder(
-      column: $table.starPositionStatusType,
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get positionList => $composableBuilder(
-      column: $table.positionList,
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+      column: $table.deletedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get divinationRequestInfoUuid => $composableBuilder(
+      column: $table.divinationRequestInfoUuid,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get descriptionList => $composableBuilder(
-      column: $table.descriptionList,
-      builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get panelConfig => $composableBuilder(
+      column: $table.panelConfig, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get geJuList => $composableBuilder(
-      column: $table.geJuList, builder: (column) => ColumnOrderings(column));
+  ColumnOrderings<String> get panelModel => $composableBuilder(
+      column: $table.panelModel, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get divinationDatetimeModel => $composableBuilder(
+      column: $table.divinationDatetimeModel,
+      builder: (column) => ColumnOrderings(column));
 }
 
-class $$StarPositionStatusTableTableAnnotationComposer
-    extends Composer<_$AppDatabase, $StarPositionStatusTableTable> {
-  $$StarPositionStatusTableTableAnnotationComposer({
+class $$QizhengsiyuPanTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $QizhengsiyuPanTableTable> {
+  $$QizhengsiyuPanTableTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
     super.$addJoinBuilderToRootComposer,
     super.$removeJoinBuilderFromRootComposer,
   });
-  GeneratedColumn<int> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
+  GeneratedColumn<String> get uuid =>
+      $composableBuilder(column: $table.uuid, builder: (column) => column);
 
-  GeneratedColumn<String> get className =>
-      $composableBuilder(column: $table.className, builder: (column) => column);
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<EnumStars, String> get star =>
-      $composableBuilder(column: $table.star, builder: (column) => column);
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+      column: $table.lastUpdatedAt, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<EnumStarGongPositionStatusType, String>
-      get starPositionStatusType => $composableBuilder(
-          column: $table.starPositionStatusType, builder: (column) => column);
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<List<Enum>, String> get positionList =>
+  GeneratedColumn<String> get divinationRequestInfoUuid => $composableBuilder(
+      column: $table.divinationRequestInfoUuid, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<BasePanelConfig, String> get panelConfig =>
       $composableBuilder(
-          column: $table.positionList, builder: (column) => column);
+          column: $table.panelConfig, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<List<String>?, String> get descriptionList =>
+  GeneratedColumnWithTypeConverter<BasePanelModel, String> get panelModel =>
       $composableBuilder(
-          column: $table.descriptionList, builder: (column) => column);
+          column: $table.panelModel, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<List<String>?, String> get geJuList =>
-      $composableBuilder(column: $table.geJuList, builder: (column) => column);
+  GeneratedColumnWithTypeConverter<DivinationDatetimeModel, String>
+      get divinationDatetimeModel => $composableBuilder(
+          column: $table.divinationDatetimeModel, builder: (column) => column);
 }
 
-class $$StarPositionStatusTableTableTableManager extends RootTableManager<
+class $$QizhengsiyuPanTableTableTableManager extends RootTableManager<
     _$AppDatabase,
-    $StarPositionStatusTableTable,
-    StarPositionStatusDatasetModel,
-    $$StarPositionStatusTableTableFilterComposer,
-    $$StarPositionStatusTableTableOrderingComposer,
-    $$StarPositionStatusTableTableAnnotationComposer,
-    $$StarPositionStatusTableTableCreateCompanionBuilder,
-    $$StarPositionStatusTableTableUpdateCompanionBuilder,
+    $QizhengsiyuPanTableTable,
+    QiZhengSiYuPanEntity,
+    $$QizhengsiyuPanTableTableFilterComposer,
+    $$QizhengsiyuPanTableTableOrderingComposer,
+    $$QizhengsiyuPanTableTableAnnotationComposer,
+    $$QizhengsiyuPanTableTableCreateCompanionBuilder,
+    $$QizhengsiyuPanTableTableUpdateCompanionBuilder,
     (
-      StarPositionStatusDatasetModel,
-      BaseReferences<_$AppDatabase, $StarPositionStatusTableTable,
-          StarPositionStatusDatasetModel>
+      QiZhengSiYuPanEntity,
+      BaseReferences<_$AppDatabase, $QizhengsiyuPanTableTable,
+          QiZhengSiYuPanEntity>
     ),
-    StarPositionStatusDatasetModel,
+    QiZhengSiYuPanEntity,
     PrefetchHooks Function()> {
-  $$StarPositionStatusTableTableTableManager(
-      _$AppDatabase db, $StarPositionStatusTableTable table)
+  $$QizhengsiyuPanTableTableTableManager(
+      _$AppDatabase db, $QizhengsiyuPanTableTable table)
       : super(TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$StarPositionStatusTableTableFilterComposer(
-                  $db: db, $table: table),
+              $$QizhengsiyuPanTableTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$StarPositionStatusTableTableOrderingComposer(
+              $$QizhengsiyuPanTableTableOrderingComposer(
                   $db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$StarPositionStatusTableTableAnnotationComposer(
+              $$QizhengsiyuPanTableTableAnnotationComposer(
                   $db: db, $table: table),
           updateCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            Value<String> className = const Value.absent(),
-            Value<EnumStars> star = const Value.absent(),
-            Value<EnumStarGongPositionStatusType> starPositionStatusType =
+            Value<String> uuid = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> lastUpdatedAt = const Value.absent(),
+            Value<DateTime?> deletedAt = const Value.absent(),
+            Value<String> divinationRequestInfoUuid = const Value.absent(),
+            Value<BasePanelConfig> panelConfig = const Value.absent(),
+            Value<BasePanelModel> panelModel = const Value.absent(),
+            Value<DivinationDatetimeModel> divinationDatetimeModel =
                 const Value.absent(),
-            Value<List<Enum>> positionList = const Value.absent(),
-            Value<List<String>?> descriptionList = const Value.absent(),
-            Value<List<String>?> geJuList = const Value.absent(),
+            Value<int> rowid = const Value.absent(),
           }) =>
-              StarPositionStatusTableCompanion(
-            id: id,
-            className: className,
-            star: star,
-            starPositionStatusType: starPositionStatusType,
-            positionList: positionList,
-            descriptionList: descriptionList,
-            geJuList: geJuList,
+              QizhengsiyuPanTableCompanion(
+            uuid: uuid,
+            createdAt: createdAt,
+            lastUpdatedAt: lastUpdatedAt,
+            deletedAt: deletedAt,
+            divinationRequestInfoUuid: divinationRequestInfoUuid,
+            panelConfig: panelConfig,
+            panelModel: panelModel,
+            divinationDatetimeModel: divinationDatetimeModel,
+            rowid: rowid,
           ),
           createCompanionCallback: ({
-            Value<int> id = const Value.absent(),
-            required String className,
-            required EnumStars star,
-            required EnumStarGongPositionStatusType starPositionStatusType,
-            required List<Enum> positionList,
-            Value<List<String>?> descriptionList = const Value.absent(),
-            Value<List<String>?> geJuList = const Value.absent(),
+            required String uuid,
+            required DateTime createdAt,
+            required DateTime lastUpdatedAt,
+            Value<DateTime?> deletedAt = const Value.absent(),
+            required String divinationRequestInfoUuid,
+            required BasePanelConfig panelConfig,
+            required BasePanelModel panelModel,
+            required DivinationDatetimeModel divinationDatetimeModel,
+            Value<int> rowid = const Value.absent(),
           }) =>
-              StarPositionStatusTableCompanion.insert(
-            id: id,
-            className: className,
-            star: star,
-            starPositionStatusType: starPositionStatusType,
-            positionList: positionList,
-            descriptionList: descriptionList,
-            geJuList: geJuList,
+              QizhengsiyuPanTableCompanion.insert(
+            uuid: uuid,
+            createdAt: createdAt,
+            lastUpdatedAt: lastUpdatedAt,
+            deletedAt: deletedAt,
+            divinationRequestInfoUuid: divinationRequestInfoUuid,
+            panelConfig: panelConfig,
+            panelModel: panelModel,
+            divinationDatetimeModel: divinationDatetimeModel,
+            rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
@@ -651,28 +548,26 @@ class $$StarPositionStatusTableTableTableManager extends RootTableManager<
         ));
 }
 
-typedef $$StarPositionStatusTableTableProcessedTableManager
-    = ProcessedTableManager<
-        _$AppDatabase,
-        $StarPositionStatusTableTable,
-        StarPositionStatusDatasetModel,
-        $$StarPositionStatusTableTableFilterComposer,
-        $$StarPositionStatusTableTableOrderingComposer,
-        $$StarPositionStatusTableTableAnnotationComposer,
-        $$StarPositionStatusTableTableCreateCompanionBuilder,
-        $$StarPositionStatusTableTableUpdateCompanionBuilder,
-        (
-          StarPositionStatusDatasetModel,
-          BaseReferences<_$AppDatabase, $StarPositionStatusTableTable,
-              StarPositionStatusDatasetModel>
-        ),
-        StarPositionStatusDatasetModel,
-        PrefetchHooks Function()>;
+typedef $$QizhengsiyuPanTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $QizhengsiyuPanTableTable,
+    QiZhengSiYuPanEntity,
+    $$QizhengsiyuPanTableTableFilterComposer,
+    $$QizhengsiyuPanTableTableOrderingComposer,
+    $$QizhengsiyuPanTableTableAnnotationComposer,
+    $$QizhengsiyuPanTableTableCreateCompanionBuilder,
+    $$QizhengsiyuPanTableTableUpdateCompanionBuilder,
+    (
+      QiZhengSiYuPanEntity,
+      BaseReferences<_$AppDatabase, $QizhengsiyuPanTableTable,
+          QiZhengSiYuPanEntity>
+    ),
+    QiZhengSiYuPanEntity,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$StarPositionStatusTableTableTableManager get starPositionStatusTable =>
-      $$StarPositionStatusTableTableTableManager(
-          _db, _db.starPositionStatusTable);
+  $$QizhengsiyuPanTableTableTableManager get qizhengsiyuPanTable =>
+      $$QizhengsiyuPanTableTableTableManager(_db, _db.qizhengsiyuPanTable);
 }

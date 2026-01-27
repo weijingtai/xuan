@@ -84,7 +84,7 @@ class TaiXuanEachZhu {
       '$ganGua$zhiGua',
       getEachYaoGan(isYangYear),
     );
-    final sixyaoGanzhi = gua.topBottomGanZhiList;
+    final sixyaoGanzhi = gua.ganzhiList;
     final topGanzhiSum = calculateEachEightGuaGanzhiSum(
       sixyaoGanzhi.sublist(0, 3),
     );

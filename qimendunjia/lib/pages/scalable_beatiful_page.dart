@@ -25,6 +25,7 @@ import 'package:slide_switcher/slide_switcher.dart';
 import 'package:tuple/tuple.dart';
 
 import '../enums/enum_arrange_plate_type.dart';
+import '../enums/enum_center_gong_ji_gong_type.dart';
 import '../enums/enum_most_popular_ge_ju.dart';
 import '../enums/enum_nine_stars.dart';
 import '../model/shi_jia_ju.dart';

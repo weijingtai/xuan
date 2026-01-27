@@ -1,13 +1,12 @@
+import 'package:common/module.dart';
 import 'package:common/utils.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
 import 'package:qizhengsiyu/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../enums/enum_dong_wei_type.dart';
 import '../../models/fate_dong_wei_da_xian.dart';
-import '../../models/fate_year_month_pair.dart';
 
 class DongWeiDaXianManager {
   // 十二宫位年限配置
@@ -50,7 +49,7 @@ class DongWeiDaXianManager {
     // 为了示例，我们假设太阳度数为30度
     final res =
         <EnumDestinyTwelveGong, Tuple2<Tuple2<int, int>, Tuple2<int, int>>>{};
-    final YearMonthPair mingXian;
+    final YearMonth mingXian;
 
     switch (mingCountingType) {
       case DongWeiDaXianMingGongCountingType.Ancient:
@@ -63,10 +62,10 @@ class DongWeiDaXianManager {
         mingXian = calculateMingXianModern(bodyLifeModel.lifeGongInfo);
         break;
     }
-    // Map<EnumDestinyTwelveGong, Tuple2<YearMonthPair, YearMonthPair>> mapper =
+    // Map<EnumDestinyTwelveGong, Tuple2<YearMonth, YearMonth>> mapper =
     //     {};
     final daXianGongs = <DaXianGong>[];
-    YearMonthPair _tmpEnd = YearMonthPair.zero();
+    YearMonth _tmpEnd = YearMonth.zero();
     final List<EnumTwelveGong> gongSeq =
         CollectUtils.changeSeq(bodyLifeModel.lifeGong, EnumTwelveGong.listAll);
     int order = 0;
@@ -86,7 +85,7 @@ class DongWeiDaXianManager {
     for (var entry in gongYears.entries) {
       final palace = entry.key;
       if (entry.key == EnumDestinyTwelveGong.Ming) {
-        _tmpEnd = _tmpEnd.addOther(mingXian);
+        _tmpEnd = _tmpEnd + mingXian;
 
         // _tmpEnd = Tuple2(
         // mingXian.item1 + _tmpEnd.item1, mingXian.item2 + _tmpEnd.item2);
@@ -94,25 +93,23 @@ class DongWeiDaXianManager {
             order: order,
             destinyGong: palace,
             gong: gongSeq[order],
-            start: YearMonthPair.zero(),
+            start: YearMonth.zero(),
             totalYears: mingXian,
             end: _tmpEnd));
-        // mapper[palace] = Tuple2(YearMonthPair.zero(), _tmpEnd);
+        // mapper[palace] = Tuple2(YearMonth.zero(), _tmpEnd);
       } else {
-        YearMonthPair _newTmpEnd;
+        YearMonth _newTmpEnd;
 
-        YearMonthPair yearMonthCurrentPair;
+        YearMonth yearMonthCurrentPair;
         if ((entry.value - entry.value.toInt()) != 0) {
           // 有小数
           // _newTmpEnd = Tuple2(_tmp, item2)
-          yearMonthCurrentPair =
-              YearMonthPair(year: entry.value.toInt(), month: 6);
-          _newTmpEnd = _tmpEnd.addOther(yearMonthCurrentPair);
+          yearMonthCurrentPair = YearMonth(entry.value.toInt(), 6);
+          _newTmpEnd = _tmpEnd + yearMonthCurrentPair;
         } else {
           // 没有小数
-          yearMonthCurrentPair =
-              YearMonthPair(year: entry.value.toInt(), month: 0);
-          _newTmpEnd = _tmpEnd.addOther(yearMonthCurrentPair);
+          yearMonthCurrentPair = YearMonth(entry.value.toInt(), 0);
+          _newTmpEnd = _tmpEnd + yearMonthCurrentPair;
         }
         daXianGongs.add(DaXianGong(
             order: order,
@@ -139,7 +136,7 @@ class DongWeiDaXianManager {
   // 21~24 度 18年
   // 24~27 度 19年
   // 27~30 度 20年
-  YearMonthPair calculateMingXianAncient(GongDegree gongDegree) {
+  YearMonth calculateMingXianAncient(GongDegree gongDegree) {
     double enteredGong = gongDegree.degree;
     double addedYears = 0;
 
@@ -164,28 +161,28 @@ class DongWeiDaXianManager {
     } else if (enteredGong >= 27 && enteredGong < 30) {
       addedYears = 9;
     }
-    return YearMonthPair(year: 10 + addedYears.toInt(), month: 0);
+    return YearMonth(10 + addedYears.toInt(), 0);
   }
 
   // 现代方式计算命限
   // @return Tuple2<int,int> 第一个int是年，第二个int是月
-  YearMonthPair calculateMingXianModern(GongDegree gongDegree) {
+  YearMonth calculateMingXianModern(GongDegree gongDegree) {
     // 以10年为基础 加太阳入宫度数转换为年
     // 每算3度增加1年(12月)，每1度对应4个月 = 0.25年
     // 从命宫0度开始计算
     final totalAdded = getMingXianAddYears(gongDegree.degree);
     final totalYears = 10 + totalAdded.year;
     final totalMonths = totalAdded.month;
-    return YearMonthPair(year: totalYears, month: totalMonths);
+    return YearMonth(totalYears, totalMonths);
   }
 
   // @return Tuple2<int,int> 第一个int是年，第二个int是月
-  static YearMonthPair getMingXianAddYears(double atGongDegree) {
+  static YearMonth getMingXianAddYears(double atGongDegree) {
     // 每算3度增加1年(12月)，每1度对应4个月 = 0.25年
     double addYears = atGongDegree / 3;
     int years = addYears.toInt();
     int months = ((addYears - years) * 12).toInt();
-    return YearMonthPair(year: years, month: months);
+    return YearMonth(years, months);
   }
 
   String _judgePalace(String palace, double startAge, double endAge) {

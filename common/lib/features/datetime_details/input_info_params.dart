@@ -1,13 +1,17 @@
 import 'dart:core';
 
 import 'package:common/datamodel/location.dart';
+import 'package:common/enums.dart';
+import 'package:common/models/eight_chars.dart';
+import 'package:lunar/lunar.dart';
+import 'package:tuple/tuple.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:timezone/timezone.dart' as tz;
 
+import '../../helpers/solar_lunar_datetime_helper.dart';
 import '../../models/chinese_date_info.dart';
-import 'calculation_strategy_config.dart';
+import '../../models/divination_datetime.dart';
+import 'calculation_config.dart';
 import 'processors/solar_time_processor.dart';
-part 'input_info_params.g.dart';
 
 @JsonEnum()
 enum ZiShiStrategy {
@@ -53,7 +57,6 @@ enum JieQiStrategy {
 //   DateTime utcDatetime;
 
 // }
-@JsonSerializable()
 class DateTimeDetailsBundle {
   //
   // 当前类包含， 标准时间、UTC时间，时区，夏令时校正后时间，正太阳时，平太阳时，以及几个时间对应的中国日期信息
@@ -95,24 +98,6 @@ class DateTimeDetailsBundle {
   DateTime? trueSolarDatetime; // 真太阳时 - 需要提供小数点后5为的经纬度才存在价值
   ChineseDateInfo? trueSolarChineseInfo; // 真太阳时的中国日期信息
 
-  // 默认构造函数
-  DateTimeDetailsBundle({
-    required this.calculationConfig,
-    required this.standeredDatetime,
-    required this.standeredChineseInfo,
-    required this.utcDatetime,
-    required this.timezoneStr,
-    required this.isDST,
-    required this.removeDSTDatetime,
-    required this.removeDSTChineseInfo,
-    required this.location,
-    required this.meanSolarDatetime,
-    required this.meanSolarChineseInfo,
-    required this.coordinates,
-    required this.trueSolarDatetime,
-    required this.trueSolarChineseInfo,
-  });
-
   // 私有构造函数，只能通过计算类创建
   DateTimeDetailsBundle.internal({
     required this.calculationConfig,
@@ -131,8 +116,4 @@ class DateTimeDetailsBundle {
     this.trueSolarChineseInfo,
     SolarTimeProcessResult? solarTimeData,
   });
-
-  factory DateTimeDetailsBundle.fromJson(Map<String, dynamic> json) =>
-      _$DateTimeDetailsBundleFromJson(json);
-  Map<String, dynamic> toJson() => _$DateTimeDetailsBundleToJson(this);
 }

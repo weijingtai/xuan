@@ -410,47 +410,47 @@ const Map<String, int> kunGongJiaLiuDuMapper = {
 };
 
 const Map<String, int> tianGanNumberMapper = {
-  "甲": 6,
-  "乙": 2,
-  "丙": 8,
-  "丁": 7,
   "戊": 1,
-  "己": 9,
+  "乙": 2,
+  "癸": 2,
   "庚": 3,
   "辛": 4,
   "壬": 6,
-  "癸": 2,
+  "甲": 6,
+  "丁": 7,
+  "丙": 8,
+  "己": 9,
 };
 
 // 确保 [i]为”奇数“ [i]为”偶数“ 便于后续计算
 const Map<String, List<int>> diZhiNumberMapper = {
+  "亥": [1, 6],
   "子": [1, 6],
-  "丑": [5, 10],
   "寅": [3, 8],
   "卯": [3, 8],
-  "辰": [5, 10],
   "巳": [7, 2],
   "午": [7, 2],
-  "未": [5, 10],
   "申": [9, 4],
   "酉": [9, 4],
+  "辰": [5, 10],
   "戌": [5, 10],
-  "亥": [1, 6],
+  "丑": [5, 10],
+  "未": [5, 10],
 };
 
 const Map<String, int> diZhiFlatedNumberMapper = {
+  "亥": 1,
   "子": 6,
-  "丑": 10,
   "寅": 3,
   "卯": 8,
-  "辰": 5,
   "巳": 2,
   "午": 7,
-  "未": 10,
   "申": 4,
   "酉": 9,
+  "辰": 5,
   "戌": 5,
-  "亥": 1,
+  "丑": 10,
+  "未": 10,
 };
 
 const Map<String, int> taixuanGanNumberMapper = {
@@ -468,16 +468,16 @@ const Map<String, int> taixuanGanNumberMapper = {
 
 const Map<String, int> taixuanZhiNumberMapper = {
   "子": 9,
-  "丑": 8,
-  "寅": 7,
-  "卯": 6,
-  "辰": 5,
-  "巳": 4,
   "午": 9,
+  "丑": 8,
   "未": 8,
+  "寅": 7,
   "申": 7,
+  "卯": 6,
   "酉": 6,
+  "辰": 5,
   "戌": 5,
+  "巳": 4,
   "亥": 4,
 };
 

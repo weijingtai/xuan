@@ -28,16 +28,21 @@ BasePanelModel _$BasePanelModelFromJson(Map<String, dynamic> json) =>
         (k, e) => MapEntry($enumDecode(_$EnumTwelveGongEnumMap, k),
             $enumDecode(_$EnumDestinyTwelveGongEnumMap, e)),
       ),
-      shenShaMapper: (json['shenShaMapper'] as Map<String, dynamic>).map(
+      shenShaItemMapper:
+          (json['shenShaItemMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry(
             $enumDecode(_$EnumTwelveGongEnumMap, k),
             (e as List<dynamic>)
-                .map((e) => ShenSha.fromJson(e as Map<String, dynamic>))
+                .map((e) => ShenShaItem.fromJson(e as Map<String, dynamic>))
                 .toList()),
       ),
-      huaYaoStarPairList: (json['huaYaoStarPairList'] as List<dynamic>)
-          .map((e) => HuaYaoStarPair.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      huaYaoItemMapper: (json['huaYaoItemMapper'] as Map<String, dynamic>).map(
+        (k, e) => MapEntry(
+            $enumDecode(_$EnumStarsEnumMap, k),
+            (e as List<dynamic>)
+                .map((e) => HuaYaoItem.fromJson(e as Map<String, dynamic>))
+                .toList()),
+      ),
       twelveZhangShengGongMapper:
           (json['twelveZhangShengGongMapper'] as Map<String, dynamic>).map(
         (k, e) => MapEntry($enumDecode(_$EnumTwelveGongEnumMap, k),
@@ -56,9 +61,10 @@ Map<String, dynamic> _$BasePanelModelToJson(BasePanelModel instance) =>
       'bodyLifeModel': instance.bodyLifeModel,
       'twelveGongMapper': instance.twelveGongMapper.map((k, e) => MapEntry(
           _$EnumTwelveGongEnumMap[k]!, _$EnumDestinyTwelveGongEnumMap[e]!)),
-      'shenShaMapper': instance.shenShaMapper
+      'shenShaItemMapper': instance.shenShaItemMapper
           .map((k, e) => MapEntry(_$EnumTwelveGongEnumMap[k]!, e)),
-      'huaYaoStarPairList': instance.huaYaoStarPairList,
+      'huaYaoItemMapper': instance.huaYaoItemMapper
+          .map((k, e) => MapEntry(_$EnumStarsEnumMap[k]!, e)),
       'twelveZhangShengGongMapper': instance.twelveZhangShengGongMapper.map((k,
               e) =>
           MapEntry(_$EnumTwelveGongEnumMap[k]!, _$TwelveZhangShengEnumMap[e]!)),

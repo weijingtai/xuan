@@ -1,10 +1,7 @@
 import 'package:common/enums.dart';
-import 'package:daliuren/model/da_liu_ren_gong.dart';
+import 'package:daliuren/domain/enums/each_class_zei_ke_type.dart';
+import 'package:daliuren/domain/enums/gui_ren.dart';
 import 'package:daliuren/model/da_liu_ren_ke_pan.dart';
-import 'package:daliuren/model/each_class.dart';
-import 'package:daliuren/model/enum_gui_ren.dart';
-import 'package:daliuren/model/four_class.dart';
-import 'package:daliuren/model/zei_key_type.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -24,9 +21,9 @@ void main() {
         Map<DiZhi, DiZhi>.fromIterables(diSeq, monthGeneralSeq);
     Map<DiZhi, GuiRen> currentDiGodsMapper =
         Map<DiZhi, GuiRen>.fromIterables(diSeq, guiRenNameList);
-    Map<DiZhi, DaLiuRenGong> currentPanWithGods = {};
+    Map<DiZhi, EachGong> currentPanWithGods = {};
     for (var di in diSeq) {
-      currentPanWithGods[di] = DaLiuRenGong(
+      currentPanWithGods[di] = EachGong(
           guiRen: currentDiGodsMapper[di]!,
           skyPanDiZhi: currentTianDiMapper[di]!,
           groundPanDiZhi: di);

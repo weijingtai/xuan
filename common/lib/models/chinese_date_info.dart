@@ -1,4 +1,5 @@
 // common/lib/models/chinese_date_info.dart
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/models/jie_qi_info.dart';
 import 'package:common/models/seventy_two_phenology.dart';
@@ -16,6 +17,18 @@ part 'chinese_date_info.g.dart';
 class ChineseDateInfo extends Equatable {
   /// 四柱八字
   final EightChars eightChars;
+
+  /// 获取年柱
+  JiaZi get yearGanZhi => eightChars.year;
+
+  /// 获取月柱
+  JiaZi get monthGanZhi => eightChars.month;
+
+  /// 获取日柱
+  JiaZi get dayGanZhi => eightChars.day;
+
+  /// 获取时柱
+  JiaZi get timeGanZhi => eightChars.time;
 
   /// 七十二物候
   final Phenology phenology;

@@ -1,13 +1,12 @@
+import 'package:common/module.dart';
 import 'package:common/utils.dart';
-import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
 import 'package:qizhengsiyu/models/naming_degree_pair.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:tuple/tuple.dart';
 
+import '../../enums/enum_dong_wei_type.dart';
 import '../../models/fate_dong_wei_da_xian.dart';
-import '../../models/fate_year_month_pair.dart';
 
 // 百六限
 // 固定命宫 15岁
@@ -52,13 +51,13 @@ class DongWeiHundredSixManager {
     // 为了示例，我们假设太阳度数为30度
     final res =
         <EnumDestinyTwelveGong, Tuple2<Tuple2<int, int>, Tuple2<int, int>>>{};
-    final YearMonthPair mingXian;
+    final YearMonth mingXian;
 
     mingXian = calculateMingXianWithFixed15(bodyLifeModel.lifeGongInfo);
-    // Map<EnumDestinyTwelveGong, Tuple2<YearMonthPair, YearMonthPair>> mapper =
+    // Map<EnumDestinyTwelveGong, Tuple2<YearMonth, YearMonth>> mapper =
     //     {};
     final daXianGongs = <DaXianGong>[];
-    YearMonthPair _tmpEnd = YearMonthPair.zero();
+    YearMonth _tmpEnd = YearMonth.zero();
     final List<EnumTwelveGong> gongSeq =
         CollectUtils.changeSeq(bodyLifeModel.lifeGong, EnumTwelveGong.listAll);
     int order = 0;
@@ -78,7 +77,7 @@ class DongWeiHundredSixManager {
     for (var entry in gongYears.entries) {
       final palace = entry.key;
       if (entry.key == EnumDestinyTwelveGong.Ming) {
-        _tmpEnd = _tmpEnd.addOther(mingXian);
+        _tmpEnd = _tmpEnd + mingXian;
 
         // _tmpEnd = Tuple2(
         // mingXian.item1 + _tmpEnd.item1, mingXian.item2 + _tmpEnd.item2);
@@ -86,24 +85,22 @@ class DongWeiHundredSixManager {
             order: order,
             destinyGong: palace,
             gong: gongSeq[order],
-            start: YearMonthPair.zero(),
+            start: YearMonth.zero(),
             end: _tmpEnd,
             totalYears: mingXian));
-        // mapper[palace] = Tuple2(YearMonthPair.zero(), _tmpEnd);
+        // mapper[palace] = Tuple2(YearMonth.zero(), _tmpEnd);
       } else {
-        YearMonthPair _newTmpEnd;
-        YearMonthPair yearMonthCurrentPair;
+        YearMonth _newTmpEnd;
+        YearMonth yearMonthCurrentPair;
         if ((entry.value - entry.value.toInt()) != 0) {
           // 有小数
           // _newTmpEnd = Tuple2(_tmp, item2)
-          yearMonthCurrentPair =
-              YearMonthPair(year: entry.value.toInt(), month: 6);
-          _newTmpEnd = _tmpEnd.addOther(yearMonthCurrentPair);
+          yearMonthCurrentPair = YearMonth(entry.value.toInt(), 6);
+          _newTmpEnd = _tmpEnd + yearMonthCurrentPair;
         } else {
           // 没有小数
-          yearMonthCurrentPair =
-              YearMonthPair(year: entry.value.toInt(), month: 0);
-          _newTmpEnd = _tmpEnd.addOther(yearMonthCurrentPair);
+          yearMonthCurrentPair = YearMonth(entry.value.toInt(), 0);
+          _newTmpEnd = _tmpEnd + yearMonthCurrentPair;
         }
         daXianGongs.add(DaXianGong(
             order: order,
@@ -119,7 +116,7 @@ class DongWeiHundredSixManager {
     return DongWeiFate(type: mingCountingType, daXianGongs: daXianGongs);
   }
 
-  YearMonthPair calculateMingXianWithFixed15(GongDegree gongDegree) {
-    return YearMonthPair(year: 15, month: 0);
+  YearMonth calculateMingXianWithFixed15(GongDegree gongDegree) {
+    return YearMonth(15, 0);
   }
 }

@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:qimendunjia/enums/enum_arrange_plate_type.dart';
+import 'package:qimendunjia/enums/enum_center_gong_ji_gong_type.dart';
 import 'package:qimendunjia/enums/enum_eight_door.dart';
 import 'package:qimendunjia/enums/enum_eight_gods.dart';
 import 'package:qimendunjia/enums/enum_nine_stars.dart';
@@ -10,6 +11,7 @@ import 'package:qimendunjia/model/each_gong.dart';
 import 'package:qimendunjia/model/each_gong_wang_shuai.dart';
 import 'package:qimendunjia/model/pan_arrange_settings.dart';
 import 'package:qimendunjia/model/shi_jia_qi_men.dart';
+import 'package:qimendunjia/utils/constant_resources_of_qi_men.dart';
 import 'package:qimendunjia/utils/qi_men_ju_calculator.dart';
 
 void main() {

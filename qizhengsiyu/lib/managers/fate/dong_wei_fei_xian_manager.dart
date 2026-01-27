@@ -1,10 +1,9 @@
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:common/utils.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/models/fate_year_month_pair.dart';
 
 import '../../models/fate_dong_wei_da_xian.dart';
-import 'fate_manager.dart';
 
 // 洞微飞限
 class DongWeiFeiXianManager {
@@ -58,8 +57,8 @@ class DongWeiFeiXianManager {
 
     List<DaXianFeiXianGong> daXianFeiXianGongs = [];
 
-    YearMonthPair yearMonthPairCountiner = daXianGong.start;
-    YearMonthPair _counter = yearMonthPairCountiner;
+    YearMonth YearMonthCountiner = daXianGong.start;
+    YearMonth _counter = YearMonthCountiner;
     // print("current ${_counter.toJson().toString()}");
     for (var i = 0; i < totalYear; i++) {
       final feiGongType = feiGongTypeList[i % 6];
@@ -67,12 +66,11 @@ class DongWeiFeiXianManager {
       var _newCounter = _counter;
       var _shouldAddYearMonth;
       if (i == totalYear - 1 && withMonth) {
-        _shouldAddYearMonth =
-            YearMonthPair(year: 0, month: daXianGong.totalYears.month);
+        _shouldAddYearMonth = YearMonth(0, daXianGong.totalYears.month);
       } else {
-        _shouldAddYearMonth = YearMonthPair(year: 1, month: 0);
+        _shouldAddYearMonth = YearMonth(1, 0);
       }
-      _newCounter = _newCounter.addOther(_shouldAddYearMonth);
+      _newCounter = _newCounter + _shouldAddYearMonth;
       late EnumTwelveGong _atGong;
       switch (feiGongType) {
         case FeiGongType.benGong:

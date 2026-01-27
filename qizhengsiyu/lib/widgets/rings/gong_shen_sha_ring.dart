@@ -10,7 +10,7 @@ import 'enum_ring_text_direction.dart';
 import 'sector_painter.dart';
 
 class AllShenShaRing extends StatelessWidget {
-  final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper;
+  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaMapper;
   final double outerRadius;
   final double innerRadius;
   final RingTextDirection shaTextDirection;
@@ -603,7 +603,7 @@ class _ShenShaGongLayoutDelegate extends MultiChildLayoutDelegate {
   }
 
   @override
-  bool shouldRelayout(covariant _ShenShaLayoutDelegate oldDelegate) =>
+  bool shouldRelayout(covariant _ShenShaGongLayoutDelegate oldDelegate) =>
       oldDelegate.itemCount != itemCount ||
       oldDelegate.radius != radius ||
       oldDelegate.itemSize != itemSize;
@@ -644,7 +644,7 @@ class GongLayoutDelegate extends MultiChildLayoutDelegate {
   }
 
   @override
-  bool shouldRelayout(covariant _ShenShaLayoutDelegate oldDelegate) =>
+  bool shouldRelayout(covariant GongLayoutDelegate oldDelegate) =>
       oldDelegate.itemCount != itemCount ||
       oldDelegate.radius != radius ||
       oldDelegate.itemSize != itemSize;

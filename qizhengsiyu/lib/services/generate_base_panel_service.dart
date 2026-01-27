@@ -10,7 +10,7 @@ import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/models/body_life_model.dart';
-import 'package:qizhengsiyu/models/da_xian_panel_model.dart';
+import 'package:qizhengsiyu/models/passage_year_panel_model.dart';
 import 'package:qizhengsiyu/models/hua_yao.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
 import 'package:qizhengsiyu/models/star_angle_raw_info.dart';
@@ -32,7 +32,7 @@ import 'an_shen_li_ming_service.dart';
 import 'star_angle_strategy.dart';
 
 class GenerateBasePanelService {
-  final PanelConfig panelConfig;
+  final BasePanelConfig panelConfig;
   final ObserverPosition observerPosition;
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
@@ -87,15 +87,36 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             observerPosition.isDayBirth);
+
+    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+        shenShaMapper.map((key, value) {
+      return MapEntry(
+          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+    });
+
+    // 将神煞从ShenSha 处理成 String
+    // Map<EnumTwelveGong, List<String>> shenShaStrMapper = {};
+    // for (var i = 0; i < shenShaMapper.entries.length; i++) {
+    //   final entry = shenShaMapper.entries.elementAt(i);
+    //   final gong = entry.key;
+    //   final shenShaList = entry.value;
+    //   final result = shenShaList.map((e) => e.name).toList();
+    //   shenShaStrMapper[gong] = result;
+    // }
+
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
       mingGong: bodyLifeModel.lifeGong,
       yearJiaZi: observerPosition.yearGanZhi,
       monthJiaZi: observerPosition.monthGanZhi,
     );
-    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
-        .map((e) => HuaYaoStarPair(e.key, e.value))
-        .toList();
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (var entry in huaYaoMapper.entries) {
+      if (!huaYaoItemMapper.containsKey(entry.value)) {
+        huaYaoItemMapper[entry.value] = [];
+      }
+      huaYaoItemMapper[entry.value]!.add(HuaYaoItem.fromHuaYao(entry.key));
+    }
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(observerPosition.yearGanZhi);
@@ -118,13 +139,13 @@ class GenerateBasePanelService {
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
       bodyLifeModel: bodyLifeModel,
       twelveGongMapper: twelveGongMapper,
-      shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }
 
-  Future<DaXianPanelModel> calculateDaXia(
+  Future<PassageYearPanelModel> calculateDaXia(
       BasePanelModel basePanel, ObserverPosition daXianObserver) async {
     // 大限与 计算星命基础命盘一样，但是不计算 四主 与 命理十二宫的位置。
     // 在计算神煞时则是借用原局的命宫等位置进行计算
@@ -159,15 +180,30 @@ class GenerateBasePanelService {
             enteredGongMapper[EnumStars.Sun]!.enterGongInfo.gong,
             enteredGongMapper[EnumStars.Moon]!.enterGongInfo.gong,
             daXianObserver.isDayBirth);
+    final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper =
+        shenShaMapper.map((key, value) {
+      return MapEntry(
+          key, value.map((e) => ShenShaItem.fromShenSha(e)).toList());
+    });
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = huaYaoManager.calculate(
       mingGong: basePanel.bodyLifeModel.lifeGong,
       yearJiaZi: daXianObserver.yearGanZhi,
       monthJiaZi: daXianObserver.monthGanZhi,
     );
-    final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
-        .map((e) => HuaYaoStarPair(e.key, e.value))
-        .toList();
+    // final List<HuaYaoStarPair> huaYaoStarPairList = huaYaoMapper.entries
+    //     .map((e) => HuaYaoStarPair(e.key, e.value))
+    //     .toList();
+
+    final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper = {};
+    for (var entry in huaYaoMapper.entries) {
+      if (!huaYaoItemMapper.containsKey(entry.value)) {
+        huaYaoItemMapper[entry.value] = [];
+      }
+      // huaYaoStarPairList[entry.value]!.add(entry.key);
+
+      huaYaoItemMapper[entry.value]!.add(HuaYaoItem.fromHuaYao(entry.key));
+    }
     // 8. 计算十二长生
     final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper =
         calculateTwelveLong(daXianObserver.yearGanZhi);
@@ -179,12 +215,12 @@ class GenerateBasePanelService {
       shenShaMapper[gong]!.insert(0,
           ZhangSheng12ShenSha(entry.value.name, JiXiongEnum.PING, null, null));
     }
-    return DaXianPanelModel(
+    return PassageYearPanelModel(
       starAngleMapper: starAngleMapper,
       enteredGongMapper: enteredGongMapper,
       fiveStarWalkingTypeMapper: fiveStarWalkingTypeMapper,
-      shenShaMapper: shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper,
       twelveZhangShengGongMapper: twelveZhangShengGongMapper,
     );
   }

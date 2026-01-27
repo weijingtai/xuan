@@ -1,7 +1,6 @@
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_gender.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter/material.dart';
 import 'package:common/module.dart';

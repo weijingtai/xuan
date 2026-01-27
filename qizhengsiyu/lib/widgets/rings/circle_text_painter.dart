@@ -71,7 +71,10 @@ class CircleTextPainter extends CustomPainter {
       required double sweepRadians,
       required double radius,
       required int index}) {
-    final Paint fillPaint = Paint()..color = color.withAlpha(index * 10);
+    final Paint fillPaint = Paint()..color = Colors.transparent;
+    if (Colors.transparent != color) {
+      fillPaint.color = color.withAlpha(index * 10);
+    }
     final Path fillPath = Path()
       ..moveTo(center.dx + innerRadius * math.cos(startRadians),
           center.dy + innerRadius * math.sin(startRadians))

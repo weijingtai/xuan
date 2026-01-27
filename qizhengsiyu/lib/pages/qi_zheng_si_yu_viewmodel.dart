@@ -856,8 +856,8 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
     print(jsonEncode(basePanelModel));
   }
 
-  PanelConfig generatePanelConfig() {
-    return PanelConfig(
+  BasePanelConfig generatePanelConfig() {
+    return BasePanelConfig(
         celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
         houseDivisionSystem: HouseDivisionSystem.equal,
         panelSystemType: PanelSystemType.tropical,

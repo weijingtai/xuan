@@ -1,18 +1,16 @@
-import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import '../enums/enum_panel_ring.dart';
+import '../enums/enum_dong_wei_type.dart';
 import '../enums/enum_panel_system_type.dart';
-import '../enums/enum_school.dart';
 
 part 'panel_config.g.dart';
 
 /// 自定义配置数据模型
 ///
 @JsonSerializable()
-class PanelConfig {
+class BasePanelConfig {
   /// 星道制式
   CelestialCoordinateSystem celestialCoordinateSystem;
 
@@ -49,7 +47,7 @@ class PanelConfig {
   /// 流派典籍 ---- 移动至星盘高级部分
   // List<String> classicBooks;
 
-  PanelConfig({
+  BasePanelConfig({
     /// 星道制式
     required this.celestialCoordinateSystem,
 
@@ -72,7 +70,7 @@ class PanelConfig {
     this.bodyCountingToGong = EnumTwelveGong.You,
   });
   // copy with
-  PanelConfig copyWith({
+  BasePanelConfig copyWith({
     /// 星道制式
     CelestialCoordinateSystem? celestialCoordinateSystem,
 
@@ -92,7 +90,7 @@ class PanelConfig {
     EnumSettleBodyType? settleBodyType,
     bool? lifeGongBySunRealTimeLocation,
   }) {
-    return PanelConfig(
+    return BasePanelConfig(
       celestialCoordinateSystem:
           celestialCoordinateSystem ?? this.celestialCoordinateSystem,
       houseDivisionSystem: houseDivisionSystem ?? this.houseDivisionSystem,
@@ -106,7 +104,36 @@ class PanelConfig {
     );
   }
 
-  factory PanelConfig.fromJson(Map<String, dynamic> json) =>
-      _$PanelConfigFromJson(json);
-  Map<String, dynamic> toJson() => _$PanelConfigToJson(this);
+  factory BasePanelConfig.fromJson(Map<String, dynamic> json) =>
+      _$BasePanelConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$BasePanelConfigToJson(this);
+
+  /// 生成用于 GenerateBasePanelService 的默认面板配置。
+  /// 返回: PanelConfig 对象。
+  static BasePanelConfig defaultBasicPanelConfig() {
+    return BasePanelConfig(
+        celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic, // 黄道坐标系
+        houseDivisionSystem: HouseDivisionSystem.equal, // 等宫制
+        panelSystemType: PanelSystemType.tropical, // 回归制
+        constellationSystemType:
+            ConstellationSystemType.classical, // 经典黄道十二宫/二十八宿 (需确认具体含义)
+        settleLifeType: EnumSettleLifeType.Mao, // 定命宫方法 (需确认具体含义)
+        settleBodyType: EnumSettleBodyType.moon, // 定身宫方法 (需确认具体含义)
+        islifeGongBySunRealTimeLocation: true); // 是否根据太阳实时位置定命宫 (需确认具体含义)
+  }
+}
+
+@JsonSerializable()
+class FatePanelConfig {
+  DongWeiDaXianMingGongCountingType mingCountingType;
+  FatePanelConfig({required this.mingCountingType});
+
+  factory FatePanelConfig.fromJson(Map<String, dynamic> json) =>
+      _$FatePanelConfigFromJson(json);
+  Map<String, dynamic> toJson() => _$FatePanelConfigToJson(this);
+
+  static FatePanelConfig defaultFatePanelConfig() {
+    return FatePanelConfig(
+        mingCountingType: DongWeiDaXianMingGongCountingType.Modern);
+  }
 }

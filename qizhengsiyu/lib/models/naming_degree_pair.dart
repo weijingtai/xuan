@@ -1,5 +1,4 @@
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:sweph/sweph.dart';

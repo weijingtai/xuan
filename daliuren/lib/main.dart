@@ -1,39 +1,54 @@
+// lib/main.dart
+
+import 'package:daliuren/di/service_locator.dart'; // Import the GetIt service locator setup
+import 'package:daliuren/presentation/viewmodels/daliuren_home_viewmodel.dart'; // ViewModel for DaLiuRenHomePage
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'di/dependency_injection.dart';
-import 'presentation/views/da_liu_ren_view.dart';
-import './pages/my_home_page.dart';
+import 'package:provider/provider.dart'; // For providing ViewModel to the widget tree
+import 'presentation/pages/daliuren_home_page.dart'; // The main page of the application
 
-void main() => runApp(const MyApp());
+/// Main entry point of the application.
+/// Initializes WidgetsFlutterBinding, sets up the service locator,
+/// and runs the app with the DaLiuRenHomePageViewModel provided at the root.
+Future<void> main() async {
+  // Ensure that Flutter's widget binding is initialized.
+  // This is required if you need to call platform channel code (which setupServiceLocator might do indirectly
+  // through plugins like path_provider used by Drift) before calling runApp.
+  WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize all dependencies using the GetIt service locator.
+  // This should be done before the UI is built so that all services are available.
+  await setupServiceLocator();
+
+  // Run the Flutter application.
+  runApp(
+    // Use ChangeNotifierProvider to make DaLiuRenHomePageViewModel available to the widget tree.
+    // `create` callback fetches the ViewModel instance from the service locator (`sl`).
+    // This allows DaLiuRenHomePage and its descendants to access the ViewModel.
+    ChangeNotifierProvider<DaLiuRenHomePageViewModel>(
+      create: (_) => sl<DaLiuRenHomePageViewModel>(),
+      child: const MyApp(), // The root widget of the application.
+    ),
+  );
+}
+
+/// The root widget of the DaLiuRen application.
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    // 切换到旧版UI: 注释掉下面的 MultiProvider，取消注释 MaterialApp (旧版)
-
-    // ===== 新版 MVVM UI =====
-    //return MultiProvider(
-    //providers: DependencyInjection.getProviders(),
-    //child: MaterialApp(
-    //title: '大六壬 - MVVM',
-    //theme: ThemeData(
-    //colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-    //useMaterial3: true,
-    //),
-    //home: const DaLiuRenView(),
-    //),
-    //);
-
-    // ===== 旧版 UI (取消注释使用) =====
     return MaterialApp(
-      title: '大六壬 - 旧版',
+      title: '大六壬',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
+        useMaterial3: true, // Enable Material 3 design features.
+        // TODO: Consider defining a more complete theme (brightness, colorScheme, textTheme, etc.)
       ),
-      home: MyHomePage(title: '大六壬'),
+      // Set DaLiuRenHomePage as the home screen.
+      home: DaLiuRenHomePage(
+          title: '大六壬神课', arguments: DaLiuRenHomePageArguments()),
+      // TODO: Implement routing for navigation to other pages if the app grows.
+      // debugShowCheckedModeBanner: false, // Optionally hide the debug banner.
     );
   }
 }

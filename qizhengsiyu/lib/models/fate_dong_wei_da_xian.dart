@@ -1,8 +1,9 @@
+import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../enums/enum_dong_wei_type.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../managers/fate/dong_wei_da_xian_manager.dart';
-import 'fate_year_month_pair.dart';
 
 part 'fate_dong_wei_da_xian.g.dart';
 
@@ -11,9 +12,9 @@ class DaXianGong {
   int order;
   EnumDestinyTwelveGong destinyGong;
   EnumTwelveGong gong;
-  YearMonthPair start;
-  YearMonthPair end;
-  YearMonthPair totalYears;
+  YearMonth start;
+  YearMonth end;
+  YearMonth totalYears;
 
   DaXianGong(
       {required this.order,
@@ -32,9 +33,9 @@ class DaXianGong {
 class DaXianFeiXianGong {
   int order;
   EnumTwelveGong gong;
-  YearMonthPair start;
-  YearMonthPair end;
-  YearMonthPair totalYears;
+  YearMonth start;
+  YearMonth end;
+  YearMonth totalYears;
 
   DaXianFeiXianGong(
       {required this.order,

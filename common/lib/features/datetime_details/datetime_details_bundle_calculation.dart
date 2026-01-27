@@ -3,7 +3,7 @@ import 'package:common/models/chinese_date_info.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'input_info_params.dart';
-import 'calculation_strategy_config.dart';
+import 'calculation_config.dart';
 import 'processors/timezone_processor.dart';
 import 'processors/dst_processor.dart';
 import 'processors/solar_time_processor.dart';

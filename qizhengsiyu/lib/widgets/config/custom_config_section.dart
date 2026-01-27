@@ -7,10 +7,10 @@ import 'package:qizhengsiyu/enums/enum_school.dart';
 /// 自定义配置部分
 class CustomConfigSection extends StatefulWidget {
   /// 配置变更回调
-  final Function(PanelConfig) onConfigChanged;
+  final Function(BasePanelConfig) onConfigChanged;
 
   /// 初始配置
-  final PanelConfig? initialConfig;
+  final BasePanelConfig? initialConfig;
 
   const CustomConfigSection({
     Key? key,

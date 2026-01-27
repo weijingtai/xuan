@@ -399,6 +399,97 @@ class ZhouTianCalculator {
     }
     return results;
   }
+
+  /// 将宫位映射到星宿的结果
+  /// 基于 mapConstellationsToPalaces() 的返回结果，创建以宫位为主体的映射
+  List<PalaceMappingResult> mapPalacesToConstellations(
+      List<ConstellationMappingResult> constellationMappings,
+      Map<EnumTwelveGong, CelestialObject<EnumTwelveGong>> palacesData) {
+    // // 首先获取星宿到宫位的映射结果
+    // List<ConstellationMappingResult> constellationMappings =
+    //     mapConstellationsToPalaces();
+
+    // // 获取宫位数据
+    // final Map<EnumTwelveGong, CelestialObject<EnumTwelveGong>> palacesData =
+    //     calculatePalaceAngles();
+
+    // 创建宫位到星宿分段的映射
+    Map<EnumTwelveGong, List<PalaceConstellationSegment>> palaceToSegments = {};
+
+    // 初始化所有宫位的分段列表
+    for (EnumTwelveGong palace in palacesData.keys) {
+      palaceToSegments[palace] = [];
+    }
+
+    // 遍历所有星宿映射结果，将分段信息重新组织到对应的宫位中
+    for (ConstellationMappingResult constellationResult
+        in constellationMappings) {
+      for (ConstellationSegment segment in constellationResult.segments) {
+        EnumTwelveGong palaceName = segment.palaceName;
+
+        // 计算该分段在周天中的绝对位置
+        CelestialObject<EnumTwelveGong> palaceData = palacesData[palaceName]!;
+
+        // 计算分段在周天中的绝对起始和结束度数
+        double segmentAbsStartDeg = normalizeAngle(
+            palaceData.absStartContinuous + segment.startInPalaceDeg,
+            zhouTianModel.totalDegree);
+        double segmentAbsEndDeg = normalizeAngle(
+            palaceData.absStartContinuous + segment.endInPalaceDeg,
+            zhouTianModel.totalDegree);
+
+        // 创建宫位中的星宿分段信息
+        PalaceConstellationSegment palaceSegment = PalaceConstellationSegment(
+          constellationName: constellationResult.constellationName,
+          // totalDeg: zhouTianModel.starInnDegreeSeq
+          //     .firstWhere((t) =>
+          //         t.constellation == constellationResult.constellationName)
+          //     .degree,
+          startInConstellationDeg: segment.startInConstellationDeg,
+          endInConstellationDeg: segment.endInConstellationDeg,
+          startInPalaceDeg: segment.startInPalaceDeg,
+          endInPalaceDeg: segment.endInPalaceDeg,
+          segmentLengthDeg: segment.segmentLengthDeg,
+          absStartDeg: segmentAbsStartDeg,
+          absEndDeg: segmentAbsEndDeg,
+        );
+
+        palaceToSegments[palaceName]!.add(palaceSegment);
+      }
+    }
+
+    // 创建最终的宫位映射结果列表
+    List<PalaceMappingResult> results = [];
+
+    for (EnumTwelveGong palace in palacesData.keys) {
+      CelestialObject<EnumTwelveGong> palaceData = palacesData[palace]!;
+      List<PalaceConstellationSegment> segments = palaceToSegments[palace]!;
+
+      // 按照在宫位中的起始度数排序
+      segments.sort((a, b) => a.startInPalaceDeg.compareTo(b.startInPalaceDeg));
+
+      PalaceMappingResult palaceResult = PalaceMappingResult(
+        palaceName: palace,
+        totalWidthDeg: palaceData.width,
+        absStartDeg: normalizeAngle(
+            palaceData.absStartContinuous, zhouTianModel.totalDegree),
+        absEndDeg: normalizeAngle(
+            palaceData.absEndContinuous, zhouTianModel.totalDegree),
+        constellationSegments: segments,
+      );
+
+      results.add(palaceResult);
+    }
+
+    // 按照宫位顺序排序（可选）
+    results.sort((a, b) {
+      int indexA = zhouTianModel.gongOrder.indexOf(a.palaceName);
+      int indexB = zhouTianModel.gongOrder.indexOf(b.palaceName);
+      return indexA.compareTo(indexB);
+    });
+
+    return results;
+  }
 }
 
 // 假设的 ZhouTianCalculator 内部方法，用于计算静态周天信息

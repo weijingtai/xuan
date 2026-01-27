@@ -1,23 +1,26 @@
 targets:
   $default:
     builders:
-      json_serializable:
+      drift_dev:drift_dev:
+        enabled: true
         options:
-          # Options configure how source code is generated for every
-          # `@JsonSerializable`-annotated class in the package.
-          #
-          # The default value for each is listed.
-          any_map: false
-          checked: false
-          constructor: ""
-          create_factory: true
-          create_field_map: false
-          create_json_keys: false
-          create_per_field_to_json: false
-          create_to_json: true
-          disallow_unrecognized_keys: false
-          explicit_to_json: false
-          field_rename: none
-          generic_argument_factories: false
-          ignore_unannotated: false
-          include_if_null: true
+          store_date_time_values_as_text: true
+      json_serializable:
+        enabled: true
+        options:
+          explicit_to_json: true
+          include_if_null: false
+      drift_dev|clean:
+        enabled: true
+      drift_dev|build_queries:
+        enabled: true
+      drift_dev:
+        options:
+          # verbose: true # Uncomment to see generated code details
+          # generate_data_classes: true # Default
+          # generate_companions: true # Default
+          # schema_version: 1 # Enable for schema migrations
+          # date_time_serialization_type: text # Or integer (default)
+          # null_safety: true # Default if SDK >= 2.12
+          # apply_date_converter_on_json_serialization: true # If using DateTime with JSON
+          # Other options as needed, see Drift documentation.

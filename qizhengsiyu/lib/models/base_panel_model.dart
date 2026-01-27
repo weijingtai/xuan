@@ -26,11 +26,10 @@ class BasePanelModel {
   // 5. 计算命理十二宫
   final Map<EnumTwelveGong, EnumDestinyTwelveGong> twelveGongMapper;
   // 6. 计算神煞位置
-  final Map<EnumTwelveGong, List<ShenSha>> shenShaMapper;
+  final Map<EnumTwelveGong, List<ShenShaItem>> shenShaItemMapper;
 
-  // 7. 计算化曜
-  // final Map<HuaYao, EnumStars> huaYaoMapper;
-  final List<HuaYaoStarPair> huaYaoStarPairList;
+  // 7. 计算化曜 - 改写为按星体分组的化曜映射
+  final Map<EnumStars, List<HuaYaoItem>> huaYaoItemMapper;
 
   // 8. 计算十二长生
   final Map<EnumTwelveGong, TwelveZhangSheng> twelveZhangShengGongMapper;
@@ -41,8 +40,8 @@ class BasePanelModel {
     required this.fiveStarWalkingTypeMapper,
     required this.bodyLifeModel,
     required this.twelveGongMapper,
-    required this.shenShaMapper,
-    required this.huaYaoStarPairList,
+    required this.shenShaItemMapper,
+    required this.huaYaoItemMapper,
     required this.twelveZhangShengGongMapper,
   });
 
@@ -57,8 +56,8 @@ class BasePanelModel {
     Map<EnumStars, BaseFiveStarWalkingInfo>? fiveStarWalkingTypeMapper,
     BodyLifeModel? bodyLifeModel,
     Map<EnumTwelveGong, EnumDestinyTwelveGong>? twelveGongMapper,
-    Map<EnumTwelveGong, List<ShenSha>>? shenShaMapper,
-    List<HuaYaoStarPair>? huaYaoStarPairList,
+    Map<EnumTwelveGong, List<ShenShaItem>>? shenShaItemMapper,
+    Map<EnumStars, List<HuaYaoItem>>? huaYaoItemMapper,
     Map<EnumTwelveGong, TwelveZhangSheng>? twelveZhangShengGongMapper,
   }) {
     return BasePanelModel(
@@ -68,10 +67,40 @@ class BasePanelModel {
           fiveStarWalkingTypeMapper ?? this.fiveStarWalkingTypeMapper,
       bodyLifeModel: bodyLifeModel ?? this.bodyLifeModel,
       twelveGongMapper: twelveGongMapper ?? this.twelveGongMapper,
-      shenShaMapper: shenShaMapper ?? this.shenShaMapper,
-      huaYaoStarPairList: huaYaoStarPairList ?? this.huaYaoStarPairList,
+      shenShaItemMapper: shenShaItemMapper ?? this.shenShaItemMapper,
+      huaYaoItemMapper: huaYaoItemMapper ?? this.huaYaoItemMapper,
       twelveZhangShengGongMapper:
           twelveZhangShengGongMapper ?? this.twelveZhangShengGongMapper,
     );
+  }
+
+  // 辅助方法：从旧的List<HuaYaoStarPair>转换为新的Map<EnumStars, List<HuaYao>>
+  static Map<EnumStars, List<HuaYao>> convertHuaYaoStarPairListToMap(
+      List<HuaYaoStarPair> huaYaoStarPairList) {
+    final Map<EnumStars, List<HuaYao>> huaYaoItemMapper = {};
+
+    for (final pair in huaYaoStarPairList) {
+      if (huaYaoItemMapper.containsKey(pair.star)) {
+        huaYaoItemMapper[pair.star]!.add(pair.huaYao);
+      } else {
+        huaYaoItemMapper[pair.star] = [pair.huaYao];
+      }
+    }
+
+    return huaYaoItemMapper;
+  }
+
+  // 辅助方法：从新的Map<EnumStars, List<HuaYao>>转换为旧的List<HuaYaoStarPair>
+  static List<HuaYaoStarPair> convertHuaYaoMapToStarPairList(
+      Map<EnumStars, List<HuaYao>> huaYaoItemMapper) {
+    final List<HuaYaoStarPair> huaYaoStarPairList = [];
+
+    huaYaoItemMapper.forEach((star, huaYaoList) {
+      for (final huaYao in huaYaoList) {
+        huaYaoStarPairList.add(HuaYaoStarPair(huaYao, star));
+      }
+    });
+
+    return huaYaoStarPairList;
   }
 }

@@ -1,18 +1,10 @@
-import 'package:common/enums.dart';
-import 'package:common/shared/enums/enum_di_zhi.dart';
-import 'package:json_annotation/json_annotation.dart';
-
 import '../constant/constants.dart' as Constants;
 import '../utils/tiao_wen_calculator.dart';
 import '../utils/utils.dart' as Utils;
 
-part 'six_yao_gua.g.dart';
-
 /// 六爻卦类
 ///
 /// 用于表示完整的六爻卦象信息，包括卦名、爻位、干支、六亲等
-///
-@JsonSerializable()
 class SixYaoGua {
   /// 本卦名 如：履、遁等
   final String benName;
@@ -36,26 +28,15 @@ class SixYaoGua {
   final String gongGuaName;
 
   /// 装订的六亲，从上爻->初爻 index:0->5
-  final List<LiuQin> liuqinList;
+  final List<String> liuqinList;
 
   /// 装订的干支，从上爻->初爻 index:0->5
-  final List<String> topBottomGanZhiList;
-  List<String> get bottomTopGanZhiList {
-    return List.generate(
-      6,
-      (i) => "${bottomTopGanList[i].name}${bottomTopZhiList[i].name}",
-    );
-  }
-
-  List<TianGan> bottomTopGanList;
-  List<TianGan> get topBottomGanList => bottomTopGanList.reversed.toList();
-  List<DiZhi> bottomTopZhiList;
-  List<DiZhi> get topBottomZhiList => bottomTopZhiList.reversed.toList();
+  final List<String> ganzhiList;
 
   /// 卦的二进制编码，从上爻->初爻 index:0->5
   final List<int> binaryList;
 
-  SixYaoGua({
+  const SixYaoGua({
     required this.benName,
     required this.objectName,
     required this.guaName,
@@ -64,10 +45,8 @@ class SixYaoGua {
     required this.guaGong,
     required this.gongGuaName,
     required this.liuqinList,
-    required this.topBottomGanZhiList,
+    required this.ganzhiList,
     required this.binaryList,
-    required this.bottomTopGanList,
-    required this.bottomTopZhiList,
   });
 
   @override
@@ -78,8 +57,7 @@ class SixYaoGua {
       final String yaoYinYang = yaoBinary != 1
           ? Constants.yinYao
           : Constants.yangYao;
-      String eachYaoStr =
-          '${topBottomGanZhiList[i]} $yaoYinYang ${liuqinList[i]}';
+      String eachYaoStr = '${ganzhiList[i]} $yaoYinYang ${liuqinList[i]}';
 
       if (shiYaoIndex == i) {
         eachYaoStr += ' 世';
@@ -135,10 +113,8 @@ class SixYaoGua {
   /// 获取所有地支数字之和
   int get allZhiSum {
     int sum = 0;
-    for (int i = 0; i < topBottomGanZhiList.length; i++) {
-      final String zhi = topBottomGanZhiList[i].substring(
-        topBottomGanZhiList[i].length - 1,
-      );
+    for (int i = 0; i < ganzhiList.length; i++) {
+      final String zhi = ganzhiList[i].substring(ganzhiList[i].length - 1);
       sum += Constants.dizhiNumberMapper[zhi] ?? 0;
     }
     return sum;
@@ -204,10 +180,10 @@ class SixYaoGua {
     }
 
     // 5. 装六亲
-    final List<LiuQin> liuqinList = Utils.liuqinZhuanggua(
+    final List<String> liuqinList = Utils.liuqinZhuanggua(
       guaName,
       yaoGanzhiList,
-    ).map((e) => LiuQin.getLiuQinBySingleName(e[0])).toList();
+    );
 
     // 6. 获取卦宫
     final String guaGong = Utils.getGuagongByBenname(benName);
@@ -219,16 +195,6 @@ class SixYaoGua {
     // 这里需要根据具体的世应规则来计算，暂时设置为默认值
     const int shiYaoIndex = 0; // 需要根据实际规则计算
     const int yingYaoIndex = 3; // 需要根据实际规则计算
-    final List<TianGan> bottomTopGanList = yaoGanzhiList
-        .map((e) => TianGan.getFromValue(e[0])!)
-        .toList()
-        .reversed
-        .toList();
-    final List<DiZhi> bottomTopZhiList = yaoGanzhiList
-        .map((e) => DiZhi.getFromValue(e[1])!)
-        .toList()
-        .reversed
-        .toList();
 
     // 11. 创建SixYaoGua实例
     return SixYaoGua(
@@ -240,9 +206,7 @@ class SixYaoGua {
       guaGong: guaGong,
       gongGuaName: gongGuaName,
       liuqinList: liuqinList,
-      topBottomGanZhiList: yaoGanzhiList,
-      bottomTopGanList: bottomTopGanList,
-      bottomTopZhiList: bottomTopZhiList,
+      ganzhiList: yaoGanzhiList,
       binaryList: binaryGua,
     );
   }
@@ -277,12 +241,8 @@ class SixYaoGua {
     final List<int> binaryGua = Utils.guaToBinaryList(guaName);
 
     // 3. 纳甲装卦 - 获取天干和地支
-    final List<TianGan> ganTop2BottomList = specialGanFunc(
-      guaName,
-    ).map((e) => TianGan.getFromValue(e[0])!).toList();
-    final List<DiZhi> zhiTop2BottomList = specialGanFunc(
-      guaName,
-    ).map((e) => DiZhi.getFromValue(e[1])!).toList();
+    final List<String> ganTop2BottomList = specialGanFunc(guaName);
+    final List<String> zhiTop2BottomList = Utils.najiaZhuangGua(guaName);
 
     // 4. 构建每一爻的干支组合
     final List<String> yaoGanzhiList = [];
@@ -292,10 +252,10 @@ class SixYaoGua {
     }
 
     // 5. 装六亲
-    final List<LiuQin> liuqinList = Utils.liuqinZhuanggua(
+    final List<String> liuqinList = Utils.liuqinZhuanggua(
       guaName,
       yaoGanzhiList,
-    ).map((e) => LiuQin.getLiuQinBySingleName(e[0])).toList();
+    );
 
     // 6. 获取卦宫
     final String guaGong = Utils.getGuagongByBenname(benName);
@@ -318,10 +278,8 @@ class SixYaoGua {
       guaGong: guaGong,
       gongGuaName: gongGuaName,
       liuqinList: liuqinList,
-      topBottomGanZhiList: yaoGanzhiList,
+      ganzhiList: yaoGanzhiList,
       binaryList: binaryGua,
-      bottomTopGanList: ganTop2BottomList.reversed.toList(),
-      bottomTopZhiList: zhiTop2BottomList.reversed.toList(),
     );
   }
 
@@ -337,7 +295,7 @@ class SixYaoGua {
         other.guaGong == guaGong &&
         other.gongGuaName == gongGuaName &&
         _listEquals(other.liuqinList, liuqinList) &&
-        _listEquals(other.topBottomGanZhiList, topBottomGanZhiList) &&
+        _listEquals(other.ganzhiList, ganzhiList) &&
         _listEquals(other.binaryList, binaryList);
   }
 
@@ -352,7 +310,7 @@ class SixYaoGua {
       guaGong,
       gongGuaName,
       Object.hashAll(liuqinList),
-      Object.hashAll(topBottomGanZhiList),
+      Object.hashAll(ganzhiList),
       Object.hashAll(binaryList),
     );
   }
@@ -364,84 +322,5 @@ class SixYaoGua {
       if (a[i] != b[i]) return false;
     }
     return true;
-  }
-
-  /// 从JSON字符串创建SixYaoGua实例
-  factory SixYaoGua.fromJson(Map<String, dynamic> json) =>
-      _$SixYaoGuaFromJson(json);
-
-  /// 将SixYaoGua实例转换为JSON字符串
-  Map<String, dynamic> toJson() => _$SixYaoGuaToJson(this);
-
-  // SixYaoGua yinYangNaJiaGan(
-  //   YinYang yinYang,
-  //   Map<Enum8Gua, List<TianGan>> yangGuaMapper,
-  //   Map<Enum8Gua, List<TianGan>> yinGuaMapper,
-  // ) {
-  //   // 根据 给定的yinYang 确定纳甲
-  //   if (yinYang.isYang) {
-  //     bottomTopGanList = yangGuaMapper[Enum8Gua.getFromValue(benName[0])]!;
-  //   } else {
-  //     bottomTopGanList = yinGuaMapper[Enum8Gua.getFromValue(benName[0])]!;
-  //   }
-  // }
-
-  /// 根据双经卦名进行纳甲，安装“天干”。
-  /// 返回一个从上爻到初爻的6元素天干列表。
-  SixYaoGua sixYaoNaJiaGan(
-    Map<Enum8Gua, List<TianGan>> uponGuaMapper,
-    Map<Enum8Gua, List<TianGan>> underGuaMapper,
-  ) {
-    // // 上卦天干映射表
-    // Map<String, List<String>> uponGuaMapper = {
-    //   "乾": ["壬", "壬", "壬"],
-    //   "兑": ["丁", "丁", "丁"],
-    //   "离": ["己", "己", "己"],
-    //   "震": ["庚", "庚", "庚"],
-    //   "巽": ["辛", "辛", "辛"],
-    //   "坎": ["戊", "戊", "戊"],
-    //   "艮": ["丙", "丙", "丙"],
-    //   "坤": ["癸", "癸", "癸"],
-    // };
-
-    // // 下卦天干映射表
-    // final Map<String, List<String>> underGuaMapper = {
-    //   "乾": ["甲", "甲", "甲"],
-    //   "兑": ["丁", "丁", "丁"],
-    //   "离": ["己", "己", "己"],
-    //   "震": ["庚", "庚", "庚"],
-    //   "巽": ["辛", "辛", "辛"],
-    //   "坎": ["戊", "戊", "戊"],
-    //   "艮": ["丙", "丙", "丙"],
-    //   "坤": ["乙", "乙", "乙"],
-    // };
-
-    final uponGua = guaName.substring(0, 1);
-    final underGua = guaName.substring(1, 2);
-
-    // 将上卦和下卦的天干合并成一个数组，从上爻到下爻
-    final uponGan = uponGuaMapper[uponGua]!;
-    final underGan = underGuaMapper[underGua]!;
-    final bottomToUpList = [...uponGan, ...underGan].reversed.toList();
-    bottomTopGanList = bottomToUpList;
-    return this;
-
-    // return [...uponGan, ...underGan];
-  }
-
-  /// 返回一个从上爻到初爻的6元素地支列表。
-  SixYaoGua sixYaoNaZhi(
-    Map<Enum8Gua, List<DiZhi>> uponGuaMapper,
-    Map<Enum8Gua, List<DiZhi>> underGuaMapper,
-  ) {
-    final uponGua = guaName.substring(0, 1);
-    final underGua = guaName.substring(1, 2);
-
-    // 将上卦和下卦的地支字符串合并成一个数组，从上爻到下爻
-    final uponZhi = uponGuaMapper[uponGua]!;
-    final underZhi = underGuaMapper[underGua]!;
-    bottomTopZhiList = [...underZhi, ...uponZhi];
-
-    return this;
   }
 }

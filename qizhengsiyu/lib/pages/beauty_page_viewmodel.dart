@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
@@ -12,38 +12,26 @@ import 'package:common/module.dart';
 import 'package:flutter/foundation.dart'; // 使用 @visibleForTesting
 import 'package:flutter/material.dart'; // ChangeNotifier 仍然需要
 import 'package:flutter/services.dart';
-import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
-import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
 import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/models/panel_config.dart';
-import 'package:qizhengsiyu/models/star_enter_info.dart';
 import 'package:qizhengsiyu/pages/ui_star_model.dart';
-import 'package:qizhengsiyu/services/an_shen_li_ming_service.dart'; // 导入的服务可能需要
 import 'package:qizhengsiyu/services/generate_base_panel_service.dart';
 
 import 'package:timezone/timezone.dart' as tz;
-import 'package:tuple/tuple.dart';
 import 'package:uuid/v7.dart';
 
-import '../enums/enum_moon_phases.dart';
-import '../enums/enum_settle_life_body.dart';
-import '../enums/enum_star_hidden_type.dart';
 import '../managers/zhou_tian_model_manager.dart';
 import '../models/base_panel_model.dart';
-import '../models/da_xian_panel_model.dart';
+import '../models/body_life_model.dart';
+import '../models/passage_year_panel_model.dart';
 import '../models/di_zhi_shen_sha.dart';
 import '../models/hua_yao.dart';
-import '../models/naming_degree_pair.dart';
 import '../models/observer_position.dart';
-import '../models/panel_stars_info.dart'; // 可能仍然需要用于更详细信息展示，尽管 ElevenStarsInfo 已弃用
 import '../models/star_angle_speed.dart';
-import '../models/star_inn_gong_degree.dart';
 import '../models/stars_angle.dart';
-import '../models/eleven_stars_info.dart'; // 已弃用，但模型本身可能被PanelStarsInfo引用，暂时保留
-import '../qi_zheng_si_yu_constant_resources.dart'; // 常量资源文件，假设存在
-import '../utils/star_walking_info_utils.dart';
+import '../usecases/calculate_fate_dong_wei_usecase.dart';
+import '../usecases/save_calculated_panel_usecase.dart';
 import 'StarsResolver.dart';
 
 /// 七政四余星盘计算和数据管理的 ViewModel。
@@ -61,6 +49,8 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 此计算方法基于特定术数规则，非标准天文计算。
   static final tz.TZDateTime _ziQiBaseShangHaiTime =
       tz.TZDateTime(tz.getLocation('Asia/Shanghai'), 2013, 4, 9, 2, 58);
+  late final SaveCalculatedPanelUseCase saveCalculatedPanelUseCase;
+  late final CalculateFateDongWeiUseCase calculateFateDongWeiUseCase;
 
   /// 紫气每日运行角度 (度)。
   /// 每24小时运行 02′07″，约等于 0.0352 度。
@@ -95,11 +85,14 @@ class BeautyPageViewModel extends ChangeNotifier {
   // ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>(null);
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier<BasePanelModel?>(null);
-  final ValueNotifier<DaXianPanelModel?> uiDaXianPanelNotifier =
-      ValueNotifier<DaXianPanelModel?>(null);
+  final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
+      ValueNotifier<PassageYearPanelModel?>(null);
 
   final ValueNotifier<ObserverPosition?> baseObserverPositionNotifier =
       ValueNotifier<ObserverPosition?>(null);
+
+  final ValueNotifier<CalculateFateDongWeiResult?> dongWeiFateResultNotifier =
+      ValueNotifier(null);
 
   /// 行限盘（或起盘）用于 UI 显示的星体列表，已调整位置避免重叠。
   List<UIStarModel> _uiFateLifeStars = [];
@@ -171,7 +164,9 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   /// QiZhengSiYuViewModel 构造函数。
   /// 注意: 移除了 BuildContext 参数，ViewModel 不应持有 UI Context。
-  BeautyPageViewModel();
+  BeautyPageViewModel(
+      {required this.saveCalculatedPanelUseCase,
+      required this.calculateFateDongWeiUseCase});
 
   // MARK: - Initialization
 
@@ -264,6 +259,9 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   // MARK: - Calculation
 
+  BasePanelConfig panelConfig = BasePanelConfig.defaultBasicPanelConfig();
+  FatePanelConfig fatePanelConfig = FatePanelConfig.defaultFatePanelConfig();
+
   /// 根据观测者位置和时间计算星盘数据。
   /// 这是触发所有计算的主入口。
   /// [observerPosition]: 包含出生信息、行限时间、经纬度、时区等观测者信息。
@@ -274,7 +272,7 @@ class BeautyPageViewModel extends ChangeNotifier {
     // }
     // 更新服务中的观测者位置
     _generateBasePanelService = GenerateBasePanelService(
-        panelConfig: _generatePanelConfig(), // 默认配置
+        panelConfig: panelConfig, // 默认配置
         shenShaManager: shenShaManager,
         huaYaoManager: huaYaoManager,
         observerPosition: observerPosition,
@@ -298,8 +296,20 @@ class BeautyPageViewModel extends ChangeNotifier {
       // uiDestinyGongNotifier.value = basicPanelModel.twelveGongMapper;
       uiBasePanelNotifier.value = basicPanelModel;
       // gongShenShaNotifier.value = basicPanelModel.gongShenShaMapper;
+
+      calculateDongWeiFate(bodyLifeModel: basicPanelModel.bodyLifeModel);
       debugPrint(
           "Basic panel calculated. ${uiBasicLifeStarsNotifier.value!.length}");
+      final timingInfo = _divinationInfoModel!
+          .divinationDatetime.timingInfoListJson!
+          .firstWhere((t) =>
+              t.uuid ==
+              _divinationInfoModel!.divinationDatetime.timingInfoUuid!);
+      saveCalculatedPanelUseCase.execute(
+          basicPanelModel: basicPanelModel,
+          panelConfig: panelConfig,
+          divinationDatetimeModel: timingInfo,
+          requestInfo: _divinationInfoModel!.divination);
     } catch (e) {
       debugPrint("Error calculating basic panel: $e");
       // 根据需要处理错误
@@ -321,7 +331,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     // DateTime fateLifeUtcTime = fateLifeTime.toUtc();
     try {
-      DaXianPanelModel fatePanelModel = await _generateBasePanelService
+      PassageYearPanelModel fatePanelModel = await _generateBasePanelService
           .calculateDaXia(uiBasePanelNotifier.value!, fateObserver!);
 
       _uiFateLifeStars = _calculateUIStarsFromMapper(
@@ -473,6 +483,48 @@ class BeautyPageViewModel extends ChangeNotifier {
     }
   }
 
+  /// 计算洞微命理信息
+  /// [bodyLifeModel]: 身命信息模型
+  /// [calculateDaXian]: 是否计算大限，默认为 true
+  /// [calculateHundredSix]: 是否计算百六限，默认为 true
+  /// [daXianCountingType]: 大限计算类型，默认为现代方法
+  /// [hundredSixCountingType]: 百六限计算类型，默认为现代方法
+  Future<void> calculateDongWeiFate({
+    required BodyLifeModel bodyLifeModel,
+  }) async {
+    debugPrint("开始计算洞微命理...");
+
+    // 创建计算参数
+    final params = CalculateFateDongWeiParams(
+      bodyLifeModel: bodyLifeModel,
+      countingType: fatePanelConfig.mingCountingType,
+    );
+
+    // 执行计算
+    final result = await calculateFateDongWeiUseCase.execute(params);
+    dongWeiFateResultNotifier.value = result;
+  }
+
+  /// 根据当前的基础面板模型计算洞微命理
+  /// 这是一个便捷方法，会自动从当前的面板数据中提取身命信息
+  Future<void> calculateDongWeiFateFromCurrentPanel() async {
+    final basePanelModel = uiBasePanelNotifier.value;
+    if (basePanelModel == null) {
+      debugPrint("无法计算洞微命理：基础面板模型为空，请先计算星盘");
+      return;
+    }
+
+    // 从基础面板模型中提取身命信息
+    final bodyLifeModel = basePanelModel.bodyLifeModel;
+    if (bodyLifeModel == null) {
+      debugPrint("无法计算洞微命理：基础面板模型中缺少身命信息");
+      return;
+    }
+
+    // 执行洞微命理计算
+    await calculateDongWeiFate(bodyLifeModel: bodyLifeModel);
+  }
+
   /// 计算紫气在黄道坐标系中的位置。
   /// 这个计算方法基于特定术数规则，非标准天文计算。
   /// [datetime]: 计算紫气位置的时间 (UTC)。
@@ -521,25 +573,11 @@ class BeautyPageViewModel extends ChangeNotifier {
     return result;
   }
 
-  /// 生成用于 GenerateBasePanelService 的默认面板配置。
-  /// 返回: PanelConfig 对象。
-  PanelConfig _generatePanelConfig() {
-    return PanelConfig(
-        celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic, // 黄道坐标系
-        houseDivisionSystem: HouseDivisionSystem.equal, // 等宫制
-        panelSystemType: PanelSystemType.tropical, // 回归制
-        constellationSystemType:
-            ConstellationSystemType.classical, // 经典黄道十二宫/二十八宿 (需确认具体含义)
-        settleLifeType: EnumSettleLifeType.Mao, // 定命宫方法 (需确认具体含义)
-        settleBodyType: EnumSettleBodyType.moon, // 定身宫方法 (需确认具体含义)
-        islifeGongBySunRealTimeLocation: true); // 是否根据太阳实时位置定命宫 (需确认具体含义)
-  }
-
   DivinationInfoModel? _divinationInfoModel;
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    BaseDivinationDatetimeDataModel _tmp =
+    DatatimeDivinationDetailsDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -688,7 +726,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
+    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
@@ -849,4 +887,34 @@ class BeautyPageViewModel extends ChangeNotifier {
     // 使用已初始化并更新了 observerPosition 的 _generateBasePanelService
     return _generateBasePanelService.calculate();
   }
+
+  // late final App74Database _database;
+
+  // 在构造函数或初始化方法中初始化
+  // void _initializeUseCases() {
+  //   _database = App74Database();
+  //   _saveCalculatedPanelUseCase =
+  //       SaveCalculatedPanelUseCase(_database.basePanelDao);
+  // }
+
+  // 修改现有的计算方法
+  // Future<void> calculatePanel() async {
+  //   try {
+  //     basicPanelModel = await _generateBasePanelService.calculate();
+
+  //     // 保存计算结果到数据库
+  //     final savedUuid = await _saveCalculatedPanelUseCase.execute(
+  //       basicPanelModel: basicPanelModel,
+  //       panelConfig: panelConfig, // 需要传入当前的配置
+  //       observerPosition: observerPosition, // 需要传入当前的观测位置
+  //       divinationUuid: currentDivinationUuid, // 如果有的话
+  //       seekerUuid: currentSeekerUuid, // 如果有的话
+  //     );
+
+  //     print('面板数据已保存，UUID: $savedUuid');
+  //   } catch (e) {
+  //     print('保存面板数据失败: $e');
+  //     // 处理错误
+  //   }
+  // }
 }

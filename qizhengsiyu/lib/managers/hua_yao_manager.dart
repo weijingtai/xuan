@@ -1,9 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_five_xing.dart';
-import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_stars.dart';
-import 'package:common/enums/enum_tian_gan.dart';
-import 'package:common/utils/collections_utils.dart';
+import 'package:common/utils.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao_shen_sha.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
