@@ -2,8 +2,8 @@ import 'package:common/enums.dart';
 import 'package:common/widgets/yun_liu_widget/yun_liu_cell_widget.dart';
 import 'package:flutter/material.dart';
 
-import 'liu_yun/da_yun_liu_nian/dayun_liunian_table_widget.dart';
-import 'liu_yun/year_month_table/ink_five_dim_yunliu_table.dart';
+import 'package:common/features/liu_yun/da_yun_liu_nian/dayun_liunian_table_widget.dart';
+import 'package:common/features/liu_yun/year_month_table/ink_five_dim_yunliu_table.dart';
 
 class DevYunLiuTable extends StatefulWidget {
   const DevYunLiuTable({super.key});
