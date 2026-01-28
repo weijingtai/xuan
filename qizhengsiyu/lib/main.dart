@@ -1,12 +1,11 @@
 import 'dart:math' as math;
 
 import 'package:common/enums.dart';
-import 'package:common/enums/enum_stars.dart';
 import 'package:common/module.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
-import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/gong_12_dizhi.dart';
@@ -14,9 +13,40 @@ import 'package:qizhengsiyu/presentation/widgets/rings/gong_ming_li_ring.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
 import 'package:tuple/tuple.dart';
 
+import 'data/datasources/local/app_database.dart';
+import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
+import 'data/repositories/qizhengsiyu_pan_repository.dart';
+import 'domain/entities/models/body_life_model.dart';
+import 'domain/entities/models/naming_degree_pair.dart';
+import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
+import 'domain/usecases/save_calculated_panel_usecase.dart';
 import 'navigator.dart';
 
-void main() => runApp(const MyApp());
+void main() {
+  runApp(MultiProvider(
+    providers: [
+      Provider<AppDatabase>(
+        create: (ctx) => AppDatabase(),
+        dispose: (ctx, db) => db.close(),
+      ),
+      Provider<IQiZhengSiYuPanRepository>(
+        create: (ctx) => QiZhengSiYuPanRepository(
+          appDatabase: ctx.read<AppDatabase>(),
+        ),
+      ),
+      Provider<SaveCalculatedPanelUseCase>(
+          create: (ctx) => SaveCalculatedPanelUseCase(
+              qiZhengSiYuPanRepository:
+                  ctx.read<IQiZhengSiYuPanRepository>())),
+      ChangeNotifierProvider<BeautyPageViewModel>(
+          create: (ctx) => BeautyPageViewModel(
+              calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+              saveCalculatedPanelUseCase:
+                  ctx.read<SaveCalculatedPanelUseCase>())),
+    ],
+    child: const MyApp(),
+  ));
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
