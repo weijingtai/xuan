@@ -23,13 +23,10 @@ Map<String, dynamic> _$CalculationStrategyConfigToJson(
     };
 
 const _$ZiShiStrategyEnumMap = {
-<<<<<<< HEAD
   ZiShiStrategy.noDistinguishAt23: 'noDistinguishAt23',
   ZiShiStrategy.distinguishAt0FiveMouse: 'distinguishAt0FiveMouse',
   ZiShiStrategy.distinguishAt0Fixed: 'distinguishAt0Fixed',
   ZiShiStrategy.bandsStartAt0: 'bandsStartAt0',
-=======
->>>>>>> origin/master
   ZiShiStrategy.startFrom23: 'startFrom23',
   ZiShiStrategy.startFrom0: 'startFrom0',
   ZiShiStrategy.splitedZi: 'splitedZi',

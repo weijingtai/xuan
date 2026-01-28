@@ -1,11 +1,5 @@
-<<<<<<< HEAD:common/lib/enums/nine_star.dart
-
-import '../../enums/enum_hou_tian_gua.dart';
-=======
-import 'package:common/shared/shared.dart';
-
->>>>>>> origin/master:common/lib/shared/enums/nine_star.dart
 import 'enum_five_xing.dart';
+import 'enum_hou_tian_gua.dart';
 
 /// 九星枚举
 /// 对应三元九运中的九颗星，每一运对应一颗星
@@ -177,12 +171,16 @@ enum NineStarEnum {
 
   /// 根据五行属性获取对应的九星列表
   static List<NineStarEnum> getStarsByElement(FiveXing element) {
-    return NineStarEnum.values.where((star) => star.fiveXing == element).toList();
+    return NineStarEnum.values
+        .where((star) => star.fiveXing == element)
+        .toList();
   }
 
   /// 根据颜色获取对应的九星列表
   static List<NineStarEnum> getStarsByColor(String color) {
-    return NineStarEnum.values.where((star) => star.colorName == color).toList();
+    return NineStarEnum.values
+        .where((star) => star.colorName == color)
+        .toList();
   }
 
   /// 根据遁甲名称获取九星

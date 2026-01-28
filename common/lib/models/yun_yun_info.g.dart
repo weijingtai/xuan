@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'enum_three_yuan.dart';
+part of 'yun_yun_info.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator

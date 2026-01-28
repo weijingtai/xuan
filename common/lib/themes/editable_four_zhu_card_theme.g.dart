@@ -25,10 +25,10 @@ Map<String, dynamic> _$EditableFourZhuCardThemeToJson(
       'displayHeaderRow': instance.displayHeaderRow,
       'displayRowTitleColumn': instance.displayRowTitleColumn,
       'displayCellTitle': instance.displayCellTitle,
-      'card': instance.card,
-      'pillar': instance.pillar,
-      'cell': instance.cell,
-      'typography': instance.typography,
+      'card': instance.card.toJson(),
+      'pillar': instance.pillar.toJson(),
+      'cell': instance.cell.toJson(),
+      'typography': instance.typography.toJson(),
     };
 
 PillarSection _$PillarSectionFromJson(Map<String, dynamic> json) =>
@@ -102,6 +102,8 @@ const _$RowTypeEnumMap = {
   RowType.tenGod: 'ten_god_row',
   RowType.naYin: 'na_yin_row',
   RowType.kongWang: 'kong_wang_row',
+  RowType.gu: 'gu_row',
+  RowType.xu: 'xu_row',
   RowType.xunShou: 'xun_shou_row',
   RowType.yiMa: 'yi_ma_row',
   RowType.hiddenStems: 'hidden_stems_row',

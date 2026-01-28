@@ -1,24 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
-<<<<<<< HEAD
-import '../../enums/enum_jia_zi.dart';
-import '../../models/eight_chars.dart';
-import '../../models/jie_qi_info.dart';
-import 'enum_calculate_strategy.dart';
 import 'tai_yuan_model.dart';
 
-=======
-<<<<<<<< HEAD:common/lib/tai_yuan/tai_yuan_by_days_model.dart
-import '../enums/enum_jia_zi.dart';
-========
-import '../../models/eight_chars.dart';
-import '../../models/jie_qi_info.dart';
->>>>>>>> origin/master:common/lib/features/tai_yuan/tai_yuan_by_days_model.dart
-import 'enum_calculate_strategy.dart';
-import 'tai_yuan_model.dart';
-import '../models/eight_chars.dart';
-import '../models/jie_qi_info.dart';
->>>>>>> origin/master
 part 'tai_yuan_by_days_model.g.dart';
 
 @JsonSerializable()

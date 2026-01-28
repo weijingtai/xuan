@@ -25,6 +25,8 @@ const _$RowTypeEnumMap = {
   RowType.tenGod: 'ten_god_row',
   RowType.naYin: 'na_yin_row',
   RowType.kongWang: 'kong_wang_row',
+  RowType.gu: 'gu_row',
+  RowType.xu: 'xu_row',
   RowType.xunShou: 'xun_shou_row',
   RowType.yiMa: 'yi_ma_row',
   RowType.hiddenStems: 'hidden_stems_row',

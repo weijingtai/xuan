@@ -26,11 +26,7 @@ class CalculationStrategyConfig {
   /// 默认配置
   static const CalculationStrategyConfig defaultConfig =
       CalculationStrategyConfig(
-<<<<<<< HEAD
-    ziStrategy: ZiShiStrategy.noDistinguishAt23,
-=======
     ziStrategy: ZiShiStrategy.startFrom23,
->>>>>>> origin/master
     jieQiType: JieQiType.stabilizing,
     jieQiStrategy: JieQiStrategy.day,
   );

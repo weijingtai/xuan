@@ -2,17 +2,12 @@ import 'package:common/datamodel/location.dart' as my;
 import 'package:common/models/chinese_date_info.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:timezone/timezone.dart' as tz;
-import 'input_info_params.dart';
-<<<<<<< HEAD
 import 'calculation_strategy_config.dart';
-import 'processors/timezone_processor.dart';
-import 'zi_strategy_store.dart';
-=======
-import 'calculation_config.dart';
-import 'processors/timezone_processor.dart';
->>>>>>> origin/master
+import 'input_info_params.dart';
 import 'processors/dst_processor.dart';
 import 'processors/solar_time_processor.dart';
+import 'processors/timezone_processor.dart';
+import 'zi_strategy_store.dart';
 
 /// 出生时间计算参数类
 /// 封装所有计算所需的基础参数
@@ -106,28 +101,18 @@ class DateTimeDetailsBundleCalculation {
     params.validate();
 
     try {
-<<<<<<< HEAD
       // 使用全局运行期策略覆盖配置中的子时策略（开发阶段默认行为）
       config = config.copyWith(ziStrategy: ZiStrategyStore.current);
-=======
->>>>>>> origin/master
       // 1. 基础时区处理 - 获取UTC时间和ChineseDateInfo
       final timezoneData = await TimezoneProcessor.process(
         inputDateTime: params.inputDateTime,
         timezoneStr: params.timezoneStr,
-        ziStrategy: config.ziStrategy,
       );
 
       // 2. 检查是否为夏令时，只有在DST时才进行DSTProcessor处理
       DSTProcessResult? dstData;
-<<<<<<< HEAD
-      final locationTz = tz.getLocation(params.timezoneStr);
-      final tzDateTime = tz.TZDateTime.from(params.inputDateTime, locationTz);
-=======
       final location_tz = tz.getLocation(params.timezoneStr);
       final tzDateTime = tz.TZDateTime.from(params.inputDateTime, location_tz);
->>>>>>> origin/master
-
       if (tzDateTime.timeZone.isDst) {
         dstData = await DSTProcessor.process(
           standardDateTime: timezoneData.standardDateTime,
