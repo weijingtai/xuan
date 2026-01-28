@@ -25,4 +25,3 @@ export 'enums/enum_twenty_four_jie_qi.dart';
 export 'enums/enum_yin_yang.dart';
 export 'enums/enum_day_night.dart';
 export 'enums/enum_three_yuan.dart';
-export 'enums/nine_star.dart';
