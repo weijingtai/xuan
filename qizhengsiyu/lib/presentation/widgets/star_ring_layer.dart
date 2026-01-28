@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 
-import '../../pages/ui_star_model.dart';
 import 'ring_layer.dart';
 
 /// A reusable wrapper for rendering a star ring using RingLayer.

@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/fate_dong_wei_da_xian.dart';
 import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart';
+import 'package:qizhengsiyu/domain/managers/fate/dong_wei_child_xian_manager.dart';
+import 'package:qizhengsiyu/domain/managers/fate/dong_wei_da_xian_manager.dart';
+import 'package:qizhengsiyu/domain/managers/fate/dong_wei_fei_xian_manager.dart';
+import 'package:qizhengsiyu/domain/managers/fate/dong_wei_month_xian_manager.dart';
+import 'package:qizhengsiyu/domain/managers/fate/dong_wei_xiao_xian_manager.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/managers/fate/dong_wei_child_xian_manager.dart';
-import 'package:qizhengsiyu/managers/fate/dong_wei_da_xian_manager.dart';
-import 'package:qizhengsiyu/managers/fate/dong_wei_fei_xian_manager.dart';
-import 'package:qizhengsiyu/managers/fate/dong_wei_month_xian_manager.dart';
-import 'package:qizhengsiyu/managers/fate/dong_wei_xiao_xian_manager.dart';
 
 void main() {
   group("洞微大限（百六）", () {

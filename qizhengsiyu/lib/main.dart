@@ -2,18 +2,18 @@ import 'dart:math' as math;
 
 import 'package:common/enums.dart';
 import 'package:common/enums/enum_stars.dart';
+import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart'; // 使用domain层的模型
 import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 使用domain层的模型
+import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/gong_12_dizhi.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/gong_ming_li_ring.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
-import 'package:qizhengsiyu/widgets/rings/da_xian_ring.dart';
-import 'package:qizhengsiyu/widgets/rings/gong_12_dizhi.dart';
-import 'package:qizhengsiyu/widgets/rings/sector_painter.dart';
 import 'package:tuple/tuple.dart';
 
-import 'widgets/rings/circle_text_painter.dart';
-import 'widgets/rings/gong_ming_li_ring.dart';
 import 'navigator.dart';
 
 void main() => runApp(const MyApp());
@@ -30,8 +30,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       showSemanticsDebugger: false,
-      initialRoute: "/qizhengsiyu/panel",  // ⭐ 使用路由导航
-      onGenerateRoute: NavigatorGenerator.generateRoute,  // ⭐ 启用路由生成器
+      initialRoute: "/qizhengsiyu/panel", // ⭐ 使用路由导航
+      onGenerateRoute: NavigatorGenerator.generateRoute, // ⭐ 启用路由生成器
     );
   }
 }
@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       EnumTwelveGong.Xu: ["兄弟"],
                       EnumTwelveGong.Hai: ["财帛"],
                     },
+                    zhouTianModel: null,
                   ),
                   Normal12GongRing(
                     outerRadius: 150,
@@ -101,26 +102,27 @@ class _MyHomePageState extends State<MyHomePage> {
                       EnumTwelveGong.Xu: ["白羊"],
                       EnumTwelveGong.Hai: ["双鱼"],
                     },
+                    zhouTianModel: null,
                   ),
                   build12DiZhiGong(130, 80),
                   DaXianRing(
                       gongYearsMapper: {
-                        EnumTwelveGong.Zi: 10.25,
+                        EnumTwelveGong.Zi: YearMonth(10, 3),
                         // EnumTwelveGong.Chou: 4.5,
                         // EnumTwelveGong.Zi: 15,
-                        EnumTwelveGong.Chou: 10,
-                        EnumTwelveGong.Yin: 11,
-                        EnumTwelveGong.Mao: 15,
-                        EnumTwelveGong.Chen: 8,
-                        EnumTwelveGong.Si: 7,
-                        EnumTwelveGong.Wu: 11,
-                        EnumTwelveGong.Wei: 4.5,
-                        EnumTwelveGong.Shen: 4.5,
-                        EnumTwelveGong.You: 4.5,
+                        EnumTwelveGong.Chou: YearMonth.fromYear(10),
+                        EnumTwelveGong.Yin: YearMonth.fromYear(11),
+                        EnumTwelveGong.Mao: YearMonth.fromYear(15),
+                        EnumTwelveGong.Chen: YearMonth.fromYear(8),
+                        EnumTwelveGong.Si: YearMonth.fromYear(7),
+                        EnumTwelveGong.Wu: YearMonth.fromYear(11),
+                        EnumTwelveGong.Wei: YearMonth(4, 6),
+                        EnumTwelveGong.Shen: YearMonth(4, 6),
+                        EnumTwelveGong.You: YearMonth(4, 6),
                         // EnumTwelveGong.Shen: 5,
                         // EnumTwelveGong.You: 5,
-                        EnumTwelveGong.Xu: 5,
-                        EnumTwelveGong.Hai: 5,
+                        EnumTwelveGong.Xu: YearMonth.fromYear(5),
+                        EnumTwelveGong.Hai: YearMonth.fromYear(5),
                       },
                       outerRadius: 480,
                       innerRadius: 432,
@@ -381,6 +383,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Text("木", style: secondTextStyle)
         ],
       },
+      zhouTianModel: null,
     );
   }
 

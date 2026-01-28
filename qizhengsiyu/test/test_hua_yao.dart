@@ -5,7 +5,9 @@ import 'package:path/path.dart' as path;
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/domain/entities/models/hua_yao.dart';
-import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
+import 'package:qizhengsiyu/domain/managers/hua_yao_manager.dart';
+import 'package:qizhengsiyu/domain/services/hua_yao_service.dart';
+import 'package:qizhengsiyu/domain/repositories/hua_yao_repository.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
 void main() {
@@ -151,13 +153,15 @@ void main() {
   });
 
   group("化曜 all", () {
-    final huaYaoManger = HuaYaoManager(
+    final fakeRepository = FakeHuaYaoRepository(
       tianGanHuaYao: tianGanHuaYao,
       diZhiHuaYao: diZhiHuaYao,
       othersHuaYao: othersHuaYao,
     );
-    test("化曜总数 41 (多一个天官，即八字中的正官)", () {
-      final result = huaYaoManger.calculate(
+    final huaYaoService = HuaYaoService(repository: fakeRepository);
+    final huaYaoManger = HuaYaoManager(huaYaoService: huaYaoService);
+    test("化曜总数 41 (多一个天官，即八字中的正官)", () async {
+      final result = await huaYaoManger.calculate(
           mingGong: EnumTwelveGong.Zi,
           yearJiaZi: JiaZi.JIA_CHEN,
           monthJiaZi: JiaZi.WU_CHEN);
@@ -165,4 +169,31 @@ void main() {
           reason: result.keys.map((k) => k.name).toList().toString());
     });
   });
+}
+
+class FakeHuaYaoRepository implements HuaYaoRepository {
+  final List<TianGanHuaYao> tianGanHuaYao;
+  final List<DiZhiHuaYao> diZhiHuaYao;
+  final List<OthersHuaYao> othersHuaYao;
+
+  FakeHuaYaoRepository({
+    required this.tianGanHuaYao,
+    required this.diZhiHuaYao,
+    required this.othersHuaYao,
+  });
+
+  @override
+  Future<List<TianGanHuaYao>> getTianGanHuaYao() async {
+    return tianGanHuaYao;
+  }
+
+  @override
+  Future<List<DiZhiHuaYao>> getDiZhiHuaYao() async {
+    return diZhiHuaYao;
+  }
+
+  @override
+  Future<List<OthersHuaYao>> getOthersHuaYao() async {
+    return othersHuaYao;
+  }
 }

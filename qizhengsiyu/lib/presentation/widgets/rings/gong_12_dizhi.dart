@@ -29,14 +29,14 @@ class Gong12DiZhiRing extends StatelessWidget {
   final bool isXu;
   final double baseGongOffsetAngle;
 
-  final ZhouTianModel zhouTianModel;
+  final ZhouTianModel? zhouTianModel;
 
   const Gong12DiZhiRing({
     super.key,
     required this.shenShaMapper,
     required this.outerRadius,
     required this.innerRadius,
-    required this.zhouTianModel,
+    this.zhouTianModel,
     this.baseGongOffsetAngle = 60,
     this.shaTextDirection = RingTextDirection.gravity,
     this.textLayoutStyle = DiZhiTextLayoutStyle.triangle,
@@ -47,7 +47,10 @@ class Gong12DiZhiRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double itemSize = outerRadius * 2;
-    final List<GongDegree> gongs = zhouTianModel.gongDegreeSeq;
+    final List<GongDegree> gongs = zhouTianModel?.gongDegreeSeq ??
+        EnumTwelveGong.values
+            .map((e) => GongDegree(gong: e, degree: 30))
+            .toList();
     double cumulativeAngle = 0;
 
     return SizedBox(
@@ -62,8 +65,12 @@ class Gong12DiZhiRing extends StatelessWidget {
               shenShaList: shenShaMapper[gongs[i].gong]!,
               itemSize: itemSize,
               rotationAngle: cumulativeAngle,
+              gongIndex: i,
             ),
-            () { cumulativeAngle += gongs[i].degree; return const SizedBox.shrink(); }(), // This is a trick to update the cumulativeAngle in a declarative way.
+            () {
+              cumulativeAngle += gongs[i].degree;
+              return const SizedBox.shrink();
+            }(), // This is a trick to update the cumulativeAngle in a declarative way.
           ]
         ],
       ),
@@ -76,6 +83,7 @@ class Gong12DiZhiRing extends StatelessWidget {
     required List<Text> shenShaList,
     required double itemSize,
     required double rotationAngle,
+    required int gongIndex,
   }) {
     final double rotationRadian =
         (rotationAngle + baseGongOffsetAngle) * math.pi / 180;
@@ -99,7 +107,7 @@ class Gong12DiZhiRing extends StatelessWidget {
             shenShaList: shenShaList,
             outerRadius: outerRadius,
             innerRadius: innerRadius,
-            gongIndex: zhouTianModel.gongDegreeSeq.indexWhere((g) => g.gong == gong.gong),
+            gongIndex: gongIndex,
             textDirection: shaTextDirection,
             textLayoutStyle: textLayoutStyle,
             isShi: isShi,

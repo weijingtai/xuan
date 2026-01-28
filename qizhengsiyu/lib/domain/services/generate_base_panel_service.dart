@@ -43,6 +43,37 @@ class GenerateBasePanelService {
       required this.shenShaManager,
       required this.huaYaoManager});
 
+  // --- Zi Qi (Purple Gas) Calculation Constants & Methods ---
+
+  /// 基准时间: 2013-4-9 02:58 (Shanghai time) -> 2013-4-8 18:58 (UTC)
+  static final DateTime referenceDateTimeUtc = DateTime.utc(2013, 4, 8, 18, 58);
+
+  /// 基准位置: 284度
+  static const double referencePositionDegrees = 284.0;
+
+  /// 日速率: 0.0352 度/天
+  static const double dailyRateDegrees = 0.0352;
+
+  /// 计算紫气位置 (授时历/笨办法)
+  static double shouShiLiCalculateZiQiPosition(
+    DateTime dateTime, {
+    double circleDegrees = 360.0,
+  }) {
+    final Duration diff = dateTime.difference(referenceDateTimeUtc);
+    final double daysDiff = diff.inMinutes / (24 * 60.0);
+    final double angleDiff = daysDiff * dailyRateDegrees;
+
+    // Calculate raw position
+    double rawPosition = referencePositionDegrees + angleDiff;
+
+    // Normalize to [0, circleDegrees)
+    double result = rawPosition % circleDegrees;
+    if (result < 0) {
+      result += circleDegrees;
+    }
+    return result;
+  }
+
   Future<BasePanelModel> calculate({
     required ZhouTianModel zhouTianModel,
     required Map<EnumStars, StarAngleSpeed> starAngleMapper,

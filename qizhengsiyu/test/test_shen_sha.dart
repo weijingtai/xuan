@@ -8,7 +8,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:common/enums/enum_jia_zi.dart';
-import 'package:common/enums/enum_stars.dart';
+
 import 'package:common/models/shen_sha.dart';
 import 'package:common/models/shen_sha_bundled.dart';
 import 'package:common/models/shen_sha_gan_zhi.dart';
@@ -16,13 +16,15 @@ import 'package:common/utils/collections_utils.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:common/enums/enum_di_zhi.dart';
-import 'package:common/models/shen_sha_di_zhi.dart';
+
 import 'package:common/models/shen_sha_tian_gan.dart';
-import 'package:flutter/material.dart';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/domain/entities/models/di_zhi_shen_sha.dart';
-import 'package:qizhengsiyu/managers/hua_yao_manager.dart';
-import 'package:qizhengsiyu/managers/shen_sha_manager.dart';
+
+import 'package:qizhengsiyu/domain/services/shen_sha_service.dart';
+import 'package:qizhengsiyu/domain/managers/shen_sha_manager.dart';
+import 'package:qizhengsiyu/domain/repositories/shen_sha_repository.dart';
 import 'package:qizhengsiyu/enums/enum_hua_yao_shen_sha.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
@@ -187,7 +189,7 @@ void main() {
       File('$projectRoot/assets/shen_sha/74_shensha_dizhi_month.json');
   final monthDiZhiJsonString = monthDiZhiJsonFile.readAsStringSync();
   final monthDiZhiList = json.decode(monthDiZhiJsonString) as List;
-  List<DiZhiShenSha> monthDiZhiShenSha =
+  List<MonthDiZhiShenSha> monthDiZhiShenSha =
       monthDiZhiList.map((e) => MonthDiZhiShenSha.fromJson(e)).toList();
 
   final ganzhiJsonFile =
@@ -211,13 +213,19 @@ void main() {
   List<OtherShenSha> otherShenSha =
       otherShenShaList.map((e) => OtherShenSha.fromJson(e)).toList();
 
-  final ShenShaManager shenShaManager = ShenShaManager(
-      tianGanShenSha: tianGanShenSha,
-      yearDiZhiShenSha: yearDiZhiShenSha,
-      monthDiZhiShenSha: monthDiZhiShenSha,
-      ganZhiShenSha: ganzhiShenSha,
-      bundledShenSha: bundledShenSha,
-      otherShenSha: otherShenSha);
+  final fakeRepository = FakeShenShaRepository(
+    tianGanShenSha: tianGanShenSha,
+    yearDiZhiShenSha: yearDiZhiShenSha,
+    monthDiZhiShenSha: monthDiZhiShenSha,
+    ganZhiShenSha: ganzhiShenSha,
+    bundledShenSha: bundledShenSha,
+    otherShenSha: otherShenSha,
+  );
+
+  final shenShaService = ShenShaService(repository: fakeRepository);
+
+  final ShenShaManager shenShaManager =
+      ShenShaManager(shenShaService: shenShaService);
 
   group("天干神煞", () {
     // 加载天干神煞数据
@@ -227,13 +235,13 @@ void main() {
     // yearDiZhiShenSha: yearDiZhiShenSha,
     // monthDiZhiShenSha: monthDiZhiShenSha);
 
-    test("丁丑年", () {
+    test("丁丑年", () async {
       final Map<EnumTwelveGong, List<TianGanShenSha>> resultMapper =
-          shenShaManager.generateTianGanShenShaMapper(JiaZi.DING_CHOU);
+          await shenShaManager.generateTianGanShenShaMapper(JiaZi.DING_CHOU);
       // expect(resultMapper.length, equals(12));
       // expect(resultMapper[EnumTwelveGong.Chou]!.length, equals(1));
       final ganZhiMapper =
-          shenShaManager.generateGanZhiShenShaMapper(JiaZi.DING_CHOU);
+          await shenShaManager.generateGanZhiShenShaMapper(JiaZi.DING_CHOU);
       // expect(ganZhiMapper.keys.toSet(), {
       //   EnumTwelveGong.You,
       //   EnumTwelveGong.Mao,
@@ -267,11 +275,11 @@ void main() {
   });
 
   group("马前诸煞", () {
-    test("甲子年 驿马寅", () {
+    test("甲子年 驿马寅", () async {
       final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-          shenShaManager.generateBeforeHorse(
+          await shenShaManager.generateBeforeHorse(
               JiaZi.JIA_ZI,
-              shenShaManager.bundledShenSha
+              bundledShenSha
                   .where((t) => t.type == BundledShenShaType.beforeHorse)
                   .toList());
       expect(resultMapper.length, equals(12));
@@ -290,11 +298,11 @@ void main() {
       expect(resultMapper[EnumTwelveGong.Chou]!.first.name, "攀鞍");
     });
 
-    test("戊午年 驿马申", () {
+    test("戊午年 驿马申", () async {
       final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-          shenShaManager.generateBeforeHorse(
+          await shenShaManager.generateBeforeHorse(
               JiaZi.WU_XU,
-              shenShaManager.bundledShenSha
+              bundledShenSha
                   .where((t) => t.type == BundledShenShaType.beforeHorse)
                   .toList());
       expect(resultMapper.length, equals(12));
@@ -330,11 +338,11 @@ void main() {
     ];
     for (int i = 0; i < 12; i++) {
       final diZhi = DiZhi.values[i];
-      test("${diZhi.name}年", () {
+      test("${diZhi.name}年", () async {
         final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-            shenShaManager.generateBeforeTaiSui(
+            await shenShaManager.generateBeforeTaiSui(
                 EnumTwelveGong.values[i],
-                shenShaManager.bundledShenSha
+                bundledShenSha
                     .where((t) => t.type == BundledShenShaType.beforeJia)
                     .toList());
         expect(resultMapper.length, equals(12));
@@ -376,11 +384,11 @@ void main() {
       "攀鞍"
     ];
     for (int i = 0; i < 4; i++) {
-      test("驿马在${yiMaList[i].name}", () {
+      test("驿马在${yiMaList[i].name}", () async {
         final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-            shenShaManager.generateBeforeHorse(
+            await shenShaManager.generateBeforeHorse(
                 jiaZiList[i],
-                shenShaManager.bundledShenSha
+                bundledShenSha
                     .where((t) => t.type == BundledShenShaType.beforeHorse)
                     .toList());
         final DiZhi diZhi = yiMaList[i];
@@ -399,9 +407,9 @@ void main() {
   });
 
   group("干支神煞", () {
-    test("乙亥年", () {
+    test("乙亥年", () async {
       final Map<EnumTwelveGong, List<ShenSha>> resultMapper =
-          shenShaManager.generateGanZhiShenShaMapper(JiaZi.YI_HAI);
+          await shenShaManager.generateGanZhiShenShaMapper(JiaZi.YI_HAI);
       expect(resultMapper.length, equals(4));
       expect(resultMapper[EnumTwelveGong.Mao]!.first.name, "孤虚");
       expect(resultMapper[EnumTwelveGong.You]!.first.name, "空亡");
@@ -427,8 +435,8 @@ void main() {
       final suiDian = ShenShaManager.generateYueLian(JiaZi.GENG_CHEN);
       expect(suiDian, equals(EnumTwelveGong.Xu));
     });
-    test("全部 -", () {
-      final result = shenShaManager.calculate(
+    test("全部 -", () async {
+      final result = await shenShaManager.calculate(
           JiaZi.YI_HAI,
           JiaZi.WU_ZI,
           JiaZi.BING_WU,
@@ -442,8 +450,8 @@ void main() {
       });
     });
 
-    test("全部 - 庚申 庚辰 戊寅 壬子", () {
-      final result = shenShaManager.calculate(
+    test("全部 - 庚申 庚辰 戊寅 壬子", () async {
+      final result = await shenShaManager.calculate(
           JiaZi.GENG_SHEN,
           JiaZi.GENG_CHEN,
           JiaZi.REN_ZI,
@@ -457,4 +465,42 @@ void main() {
       });
     });
   });
+}
+
+class FakeShenShaRepository implements ShenShaRepository {
+  final List<TianGanShenSha> tianGanShenSha;
+  final List<YearDiZhiShenSha> yearDiZhiShenSha;
+  final List<MonthDiZhiShenSha> monthDiZhiShenSha;
+  final List<GanZhiShenSha> ganZhiShenSha;
+  final List<BundledShenSha> bundledShenSha;
+  final List<OtherShenSha> otherShenSha;
+
+  FakeShenShaRepository({
+    required this.tianGanShenSha,
+    required this.yearDiZhiShenSha,
+    required this.monthDiZhiShenSha,
+    required this.ganZhiShenSha,
+    required this.bundledShenSha,
+    required this.otherShenSha,
+  });
+
+  @override
+  Future<List<TianGanShenSha>> getTianGanShenSha() async => tianGanShenSha;
+
+  @override
+  Future<List<YearDiZhiShenSha>> getYearDiZhiShenSha() async =>
+      yearDiZhiShenSha;
+
+  @override
+  Future<List<MonthDiZhiShenSha>> getMonthDiZhiShenSha() async =>
+      monthDiZhiShenSha;
+
+  @override
+  Future<List<GanZhiShenSha>> getGanZhiShenSha() async => ganZhiShenSha;
+
+  @override
+  Future<List<BundledShenSha>> getBundledShenSha() async => bundledShenSha;
+
+  @override
+  Future<List<OtherShenSha>> getOtherShenSha() async => otherShenSha;
 }

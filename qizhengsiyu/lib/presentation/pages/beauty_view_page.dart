@@ -1,7 +1,6 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:ui' as ui;
-import 'package:common/utils/collections_utils.dart';
+
 import 'package:el_tooltip/el_tooltip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -14,10 +13,10 @@ import 'package:common/enums/enum_jia_zi.dart'; // JiaZi
 import 'package:common/module.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/passage_year_panel_model.dart';
-import 'package:qizhengsiyu/domain/entities/models/da_xian_panel_model.dart'; // UI层使用的旧模型类型别名
+
 import 'package:qizhengsiyu/domain/entities/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
-import 'package:qizhengsiyu/pages/ui_star_model.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 // import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart'; // 旧的 ViewModel,已废弃
 
@@ -33,25 +32,24 @@ import '../../painter/star_body_ring_painter.dart';
 import '../../painter/star_xiu_ring_painter.dart';
 import '../../qi_zheng_si_yu_ui_constant_resources.dart';
 import '../widgets/rings/gong_12_dizhi.dart';
-import '../widgets/rings/gong_ming_li_ring.dart';
+
 import '../widgets/rings/gong_shen_sha_ring.dart';
 // star_body.dart import no longer needed after extraction
 // import 'beauty_page_viewmodel.dart'; // 已替换为新的 MVVM ViewModel
 import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
-import 'package:qizhengsiyu/widgets/panel_widget.dart';
-import 'package:qizhengsiyu/widgets/ring_layer.dart';
-import 'package:qizhengsiyu/widgets/star_ring_layer.dart';
-import 'package:qizhengsiyu/widgets/star_track_ring.dart';
-import 'package:qizhengsiyu/widgets/star_body_ring.dart';
-import 'package:qizhengsiyu/widgets/twelve_gong_grid_ring.dart';
-import 'package:qizhengsiyu/widgets/twelve_gong_text_ring.dart';
-import 'package:qizhengsiyu/widgets/twelve_gong_default_ring.dart';
-import 'package:qizhengsiyu/widgets/destiny_twelve_gong_ring.dart';
-import 'package:qizhengsiyu/widgets/center_text_circle_widget.dart';
+import 'package:qizhengsiyu/presentation/widgets/panel_widget.dart';
+import 'package:qizhengsiyu/presentation/widgets/ring_layer.dart';
+import 'package:qizhengsiyu/presentation/widgets/star_ring_layer.dart';
+import 'package:qizhengsiyu/presentation/widgets/star_track_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/star_body_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/twelve_gong_grid_ring.dart';
+
+import 'package:qizhengsiyu/presentation/widgets/twelve_gong_default_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/destiny_twelve_gong_ring.dart';
+import 'package:qizhengsiyu/presentation/widgets/center_text_circle_widget.dart';
 import 'package:qizhengsiyu/controllers/panel_controller.dart';
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'; // UI层使用的PanelConfig
-import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
-    as DomainConfig; // domain层的BasePanelConfig
+
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/domain/entities/models/panel_ui_size.dart'; // UI模型,保留在原位置

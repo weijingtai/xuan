@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/pages/beauty_page_viewmodel.dart';
-import 'package:qizhengsiyu/pages/beauty_view_page.dart';
-import 'package:qizhengsiyu/pages/primary_page.dart';
-import 'package:qizhengsiyu/pages/qi_zheng_si_yu_viewmodel.dart';
+
+import 'package:qizhengsiyu/presentation/pages/beauty_view_page.dart';
+import 'package:qizhengsiyu/presentation/pages/primary_page.dart';
 
 import 'data/datasources/local/app_database.dart';
 import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'data/repositories/qizhengsiyu_pan_repository.dart';
 import 'di.dart';
-import 'domain/managers/hua_yao_manager.dart';
-import 'domain/managers/shen_sha_manager.dart';
-import 'domain/managers/zhou_tian_model_manager.dart';
-import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
+
 import 'domain/usecases/save_calculated_panel_usecase.dart';
 
 class NavigatorGenerator {
@@ -43,10 +39,6 @@ class NavigatorGenerator {
               create: (ctx) => SaveCalculatedPanelUseCase(
                   qiZhengSiYuPanRepository:
                       ctx.read<IQiZhengSiYuPanRepository>())),
-
-          // ViewModel - 旧的UI层 ViewModel (暂时保留无参数构造,等待后续重构)
-          ChangeNotifierProvider<BeautyPageViewModel>(
-              create: (ctx) => BeautyPageViewModel()),
         ], child: const BeautyViewPage() // ⭐ 使用 const 构造
             )
   };

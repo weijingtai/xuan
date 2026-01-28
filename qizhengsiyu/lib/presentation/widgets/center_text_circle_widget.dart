@@ -3,8 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:qizhengsiyu/domain/entities/models/body_life_model.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
+import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
-import 'package:qizhengsiyu/widgets/rings/circle_text_painter.dart';
 import 'package:tuple/tuple.dart';
 
 /// 命盘中心文本环组件

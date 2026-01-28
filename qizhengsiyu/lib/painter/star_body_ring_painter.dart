@@ -3,8 +3,8 @@ import 'dart:math';
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 
-import '../pages/ui_star_model.dart';
 import 'package:flutter/foundation.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 
 class OuterLifeStarRangePainter extends CustomPainter {
   double innerSize;

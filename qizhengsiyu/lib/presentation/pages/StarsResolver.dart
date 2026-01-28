@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:common/enums.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../pages/ui_star_model.dart';
+import '../models/ui_star_model.dart';
 
 class StarsResolver {
   static double calculateMinSafeAngle(double outerR, double innerR, double r) {

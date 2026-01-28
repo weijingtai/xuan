@@ -10,7 +10,7 @@ import 'package:qizhengsiyu/domain/managers/shen_sha_manager.dart';
 import 'package:qizhengsiyu/domain/managers/zhou_tian_model_manager.dart';
 import 'package:qizhengsiyu/domain/services/generate_base_panel_service.dart';
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
-import 'package:qizhengsiyu/pages/ui_star_model.dart'; // 使用UI分支的版本
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart'; // 使用UI分支的版本
 import 'package:qizhengsiyu/data/datasources/local/hua_yao_local_data_source.dart';
 import 'package:qizhengsiyu/data/repositories/hua_yao_repository_impl.dart';
 import 'package:qizhengsiyu/domain/services/hua_yao_service.dart';
@@ -22,7 +22,7 @@ import 'package:qizhengsiyu/domain/entities/models/star_position_raw_data.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_angle_speed.dart';
 import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
-import 'package:qizhengsiyu/pages/StarsResolver.dart';
+import 'package:qizhengsiyu/presentation/pages/StarsResolver.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:math';
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'

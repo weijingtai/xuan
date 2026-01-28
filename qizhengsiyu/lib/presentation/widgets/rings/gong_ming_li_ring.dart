@@ -24,8 +24,8 @@ class _CenterLayoutDelegate extends MultiChildLayoutDelegate {
         final childSize = layoutChild(i, BoxConstraints.loose(size));
         positionChild(
           i,
-          Offset(
-              center.dx - childSize.width / 2, center.dy - childSize.height / 2),
+          Offset(center.dx - childSize.width / 2,
+              center.dy - childSize.height / 2),
         );
       }
     }
@@ -44,7 +44,7 @@ class Normal12GongRing extends StatelessWidget {
   final double baseGongOffsetAngle;
 
   final List<EnumTwelveGong> gongOrderSeq;
-  final ZhouTianModel zhouTianModel;
+  final ZhouTianModel? zhouTianModel;
 
   const Normal12GongRing({
     super.key,
@@ -52,7 +52,7 @@ class Normal12GongRing extends StatelessWidget {
     required this.outerRadius,
     required this.innerRadius,
     required this.baseGongOffsetAngle,
-    required this.zhouTianModel,
+    this.zhouTianModel,
     this.shaTextDirection = RingTextDirection.gravity,
     this.gongOrderSeq = EnumTwelveGong.values,
   });
@@ -60,7 +60,10 @@ class Normal12GongRing extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double itemSize = outerRadius * 2;
-    final List<GongDegree> gongs = zhouTianModel.gongDegreeSeq;
+    final List<GongDegree> gongs = zhouTianModel?.gongDegreeSeq ??
+        EnumTwelveGong.values
+            .map((e) => GongDegree(gong: e, degree: 30))
+            .toList();
     final List<double> cumulativeAngles = [];
     double cumulativeAngle = 0;
     for (int i = 0; i < gongs.length; i++) {
@@ -78,7 +81,8 @@ class Normal12GongRing extends StatelessWidget {
             LayoutId(
               id: i,
               child: Transform.rotate(
-                angle: (cumulativeAngles[i] + baseGongOffsetAngle) * math.pi / 180,
+                angle:
+                    (cumulativeAngles[i] + baseGongOffsetAngle) * math.pi / 180,
                 child: CustomPaint(
                   size: Size(itemSize, itemSize),
                   painter: SectorPainter(
@@ -93,7 +97,8 @@ class Normal12GongRing extends StatelessWidget {
                     outerRadius: outerRadius,
                     innerRadius: innerRadius,
                     gongAngleOffset: 0,
-                    textGongAngleOffset: cumulativeAngles[i] + baseGongOffsetAngle,
+                    textGongAngleOffset:
+                        cumulativeAngles[i] + baseGongOffsetAngle,
                     shenShaList: shenShaMapper[gongs[i].gong]!,
                   ),
                 ),

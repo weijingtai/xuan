@@ -4,7 +4,7 @@ import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../../pages/ui_star_model.dart';
+import '../../../presentation/models/ui_star_model.dart';
 import 'star_hidden_type.dart';
 import 'star_inn_gong_degree.dart';
 

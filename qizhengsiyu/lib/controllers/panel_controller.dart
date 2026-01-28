@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/da_xian_panel_model.dart'; // 暂时保留UI层模型
-import 'package:qizhengsiyu/pages/ui_star_model.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart';
 
 /// 面板控制器的抽象接口：统一管理旋转、配置与各层数据通知器。
