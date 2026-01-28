@@ -1,13 +1,12 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:common/datamodel/datetime_divination_datamodel.dart';
+import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/models/divination_datetime.dart';
-import 'package:common/models/shen_sha_gan_zhi.dart';
 import 'package:common/module.dart';
 import 'package:flutter/foundation.dart'; // 使用 @visibleForTesting
 import 'package:flutter/material.dart'; // ChangeNotifier 仍然需要
@@ -24,8 +23,6 @@ import '../../data/datasources/local/shen_sha_local_data_source.dart';
 import '../../data/repositories/shen_sha_repository_impl.dart';
 import '../../domain/entities/models/base_panel_model.dart';
 import '../../domain/entities/models/body_life_model.dart';
-import '../../domain/entities/models/di_zhi_shen_sha.dart';
-import '../../domain/entities/models/hua_yao.dart';
 import '../../domain/entities/models/observer_position.dart';
 import '../../domain/entities/models/panel_config.dart';
 import '../../domain/entities/models/passage_year_panel_model.dart';
@@ -38,6 +35,8 @@ import '../../domain/services/generate_base_panel_service.dart';
 import '../../domain/usecases/calculate_fate_dong_wei_usecase.dart';
 import '../../domain/usecases/save_calculated_panel_usecase.dart';
 import '../models/ui_star_model.dart';
+import '../../domain/engines/calculation_engine_factory.dart';
+import '../../domain/entities/models/zhou_tian_model.dart';
 import 'StarsResolver.dart';
 
 /// 七政四余星盘计算和数据管理的 ViewModel。
@@ -281,8 +280,7 @@ class BeautyPageViewModel extends ChangeNotifier {
         panelConfig: panelConfig, // 默认配置
         shenShaManager: shenShaManager,
         huaYaoManager: huaYaoManager,
-        observerPosition: observerPosition,
-        zhouTianModelManager: ZhouTianModelManager.instance);
+        observerPosition: observerPosition);
 
     baseObserverPositionNotifier.value = observerPosition;
     debugPrint(
@@ -291,7 +289,39 @@ class BeautyPageViewModel extends ChangeNotifier {
     // 1. 计算本命盘
     BasePanelModel basicPanelModel;
     try {
-      basicPanelModel = await _generateBasePanelService.calculate();
+      // 1.1 创建计算引擎
+      final engine = CalculationEngineFactory.create(panelConfig);
+
+      // 1.2 获取周天模型定义
+      final ZhouTianModel zhouTianModel =
+          await engine.getSystemDefinition(panelConfig);
+
+      // 1.3 计算星体位置
+      final starPositions = await engine.calculateStarPositions(
+        observerPosition.dateTime,
+        observerPosition,
+        panelConfig,
+      );
+
+      // 1.4 转换星体位置为 starAngleMapper
+      final Map<EnumStars, StarAngleSpeed> starAngleMapper = {};
+      for (var pos in starPositions) {
+        final rawInfo = pos.angleRawInfoSet.firstWhere(
+          (info) =>
+              info.panelSystemType == panelConfig.panelSystemType &&
+              info.coordinateSystem == panelConfig.celestialCoordinateSystem,
+          orElse: () => pos.angleRawInfoSet.first,
+        );
+        starAngleMapper[pos.starType] = StarAngleSpeed(
+          angle: rawInfo.angle,
+          speed: rawInfo.speed,
+        );
+      }
+
+      basicPanelModel = await _generateBasePanelService.calculate(
+        zhouTianModel: zhouTianModel,
+        starAngleMapper: starAngleMapper,
+      );
       // print(jsonEncode(basicPanelModel.toJson()));
       // _basicLifeStarsAngle =
       // StarsAngle.fromMapper(basicPanelModel.starAngleMapper);
@@ -337,8 +367,42 @@ class BeautyPageViewModel extends ChangeNotifier {
 
     // DateTime fateLifeUtcTime = fateLifeTime.toUtc();
     try {
-      PassageYearPanelModel fatePanelModel = await _generateBasePanelService
-          .calculateDaXia(uiBasePanelNotifier.value!, fateObserver!);
+      // 1. 创建计算引擎
+      final engine = CalculationEngineFactory.create(panelConfig);
+
+      // 2. 获取周天模型
+      final ZhouTianModel zhouTianModel =
+          await engine.getSystemDefinition(panelConfig);
+
+      // 3. 计算星体位置
+      final starPositions = await engine.calculateStarPositions(
+        fateObserver!.dateTime,
+        fateObserver!,
+        panelConfig,
+      );
+
+      // 4. 转换
+      final Map<EnumStars, StarAngleSpeed> starAngleMapper = {};
+      for (var pos in starPositions) {
+        final rawInfo = pos.angleRawInfoSet.firstWhere(
+          (info) =>
+              info.panelSystemType == panelConfig.panelSystemType &&
+              info.coordinateSystem == panelConfig.celestialCoordinateSystem,
+          orElse: () => pos.angleRawInfoSet.first,
+        );
+        starAngleMapper[pos.starType] = StarAngleSpeed(
+          angle: rawInfo.angle,
+          speed: rawInfo.speed,
+        );
+      }
+
+      PassageYearPanelModel fatePanelModel =
+          await _generateBasePanelService.calculateDaXia(
+        uiBasePanelNotifier.value!,
+        fateObserver!,
+        zhouTianModel: zhouTianModel,
+        starAngleMapper: starAngleMapper,
+      );
 
       _uiFateLifeStars = _calculateUIStarsFromMapper(
           fatePanelModel.starAngleMapper,
@@ -583,7 +647,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    DatatimeDivinationDetailsDataModel _tmp =
+    BaseDivinationDatetimeDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -732,7 +796,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
+    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
@@ -792,7 +856,7 @@ class BeautyPageViewModel extends ChangeNotifier {
     debugPrint("Loading ShenSha data...");
     try {
       // 并行加载所有神煞数据文件
-      final List<String> jsonStrings = await Future.wait([
+      await Future.wait([
         rootBundle.loadString('assets/shen_sha/74_shensha_tiangan.json'),
         rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_year.json'),
         rootBundle.loadString('assets/shen_sha/74_shensha_dizhi_month.json'),
@@ -801,31 +865,11 @@ class BeautyPageViewModel extends ChangeNotifier {
         rootBundle.loadString('assets/shen_sha/74_shensha_others.json'),
       ]);
 
-      // 解析 JSON 字符串并映射到模型对象
-      final tianGanShenSha = (json.decode(jsonStrings[0]) as List)
-          .map((e) => TianGanShenSha.fromJson(e))
-          .toList();
-      final yearDiZhiShenSha = (json.decode(jsonStrings[1]) as List)
-          .map((e) => YearDiZhiShenSha.fromJson(e))
-          .toList();
-      final monthDiZhiShenSha = (json.decode(jsonStrings[2]) as List)
-          .map((e) => MonthDiZhiShenSha.fromJson(e))
-          .toList();
-      final ganzhiShenSha = (json.decode(jsonStrings[3]) as List)
-          .map((e) => GanZhiShenSha.fromJson(e))
-          .toList();
-      final bundledShenSha = (json.decode(jsonStrings[4]) as List)
-          .map((e) => BundledShenSha.fromJson(e))
-          .toList();
-      final otherShenSha = (json.decode(jsonStrings[5]) as List)
-          .map((e) => OtherShenSha.fromJson(e))
-          .toList();
-
+      debugPrint("ShenSha data loaded successfully.");
       return ShenShaManager(
           shenShaService: ShenShaService(
               repository: ShenShaRepositoryImpl(
                   localDataSource: ShenShaLocalDataSourceImpl())));
-      debugPrint("ShenSha data loaded successfully.");
       // return ShenShaManager(
       //     tianGanShenSha: tianGanShenSha,
       //     yearDiZhiShenSha: yearDiZhiShenSha,
@@ -846,24 +890,11 @@ class BeautyPageViewModel extends ChangeNotifier {
   Future<HuaYaoManager> _loadHuaYaoManager() async {
     debugPrint("Loading HuaYao data...");
     try {
-      final result = await Future.wait([
+      await Future.wait([
         rootBundle.loadString('assets/shen_sha/74_huayao_tiangan.json'),
         rootBundle.loadString('assets/shen_sha/74_huayao_dizhi.json'),
         rootBundle.loadString('assets/shen_sha/74_huayao_others.json'),
       ]);
-
-      // 解析 JSON 字符串并映射到模型对象
-      final tianGanHuaYao = (json.decode(result[0]) as List)
-          .map((e) => TianGanHuaYao.fromJson(e))
-          .toList();
-
-      final diZhiHuaYao = (json.decode(result[1]) as List)
-          .map((e) => DiZhiHuaYao.fromJson(e))
-          .toList();
-
-      final othersHuaYao = (json.decode(result[2]) as List)
-          .map((e) => OthersHuaYao.fromJson(e))
-          .toList();
 
       debugPrint("HuaYao data loaded successfully.");
 
@@ -899,8 +930,40 @@ class BeautyPageViewModel extends ChangeNotifier {
           'ViewModel not fully initialized before calling _calculatePanelWithService.');
     }
 
-    // 使用已初始化并更新了 observerPosition 的 _generateBasePanelService
-    return _generateBasePanelService.calculate();
+    // 1. 创建计算引擎
+    final engine = CalculationEngineFactory.create(panelConfig);
+
+    // 2. 获取周天模型定义
+    final ZhouTianModel zhouTianModel =
+        await engine.getSystemDefinition(panelConfig);
+
+    // 3. 计算星体位置
+    final observerPosition = baseObserverPositionNotifier.value!;
+    final starPositions = await engine.calculateStarPositions(
+      calculateTime,
+      observerPosition,
+      panelConfig,
+    );
+
+    // 4. 转换星体位置为 starAngleMapper
+    final Map<EnumStars, StarAngleSpeed> starAngleMapper = {};
+    for (var pos in starPositions) {
+      final rawInfo = pos.angleRawInfoSet.firstWhere(
+        (info) =>
+            info.panelSystemType == panelConfig.panelSystemType &&
+            info.coordinateSystem == panelConfig.celestialCoordinateSystem,
+        orElse: () => pos.angleRawInfoSet.first,
+      );
+      starAngleMapper[pos.starType] = StarAngleSpeed(
+        angle: rawInfo.angle,
+        speed: rawInfo.speed,
+      );
+    }
+
+    return _generateBasePanelService.calculate(
+      zhouTianModel: zhouTianModel,
+      starAngleMapper: starAngleMapper,
+    );
   }
 
   // late final App74Database _database;
