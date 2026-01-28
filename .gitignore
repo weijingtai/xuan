@@ -47,6 +47,10 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Flutter generated
+**/.android/
+**/.ios/
+
 .claude/
 .gemini/
 .specify/
