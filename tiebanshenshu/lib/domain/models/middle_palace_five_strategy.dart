@@ -1,5 +1,4 @@
 import 'package:common/enums.dart';
-import 'package:common/shared/enums/enum_three_yuan.dart';
 
 /// 后天八卦“中五宫”取数策略的抽象接口
 abstract class MiddlePalaceFiveStrategy {

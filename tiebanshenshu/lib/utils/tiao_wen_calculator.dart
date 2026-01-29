@@ -1,4 +1,4 @@
-import 'package:common/shared/shared.dart';
+import 'package:common/enums.dart';
 
 import '../features/six_yao_gua/pure_six_yao_gua.dart';
 import 'utils.dart' as GuaUtils;

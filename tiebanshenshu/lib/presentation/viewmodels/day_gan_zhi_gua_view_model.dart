@@ -1,5 +1,5 @@
+import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/shared/enums/enum_jia_zi.dart';
 
 import '../../usecases/day_gan_zhi_gua_tiao_wen_list_use_case.dart';
 import 'base_tiao_wen_list_view_model.dart';

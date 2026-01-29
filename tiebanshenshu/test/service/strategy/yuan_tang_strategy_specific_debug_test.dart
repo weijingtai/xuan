@@ -1,6 +1,5 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
 import 'package:tiebanshenshu/domain/models/yuan_tang_base_number_model.dart';

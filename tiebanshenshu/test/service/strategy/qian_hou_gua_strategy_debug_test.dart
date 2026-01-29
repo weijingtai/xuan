@@ -1,5 +1,4 @@
 import 'package:common/enums.dart';
-import 'package:common/shared/enums/enum_gender.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
