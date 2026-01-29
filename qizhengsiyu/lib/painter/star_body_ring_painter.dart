@@ -3,9 +3,8 @@ import 'dart:math';
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 
-import '../domain/entities/models/zhou_tian_model.dart';
-import '../presentation/models/ui_star_model.dart';
-
+import 'package:flutter/foundation.dart';
+import 'package:qizhengsiyu/presentation/models/ui_star_model.dart';
 
 class OuterLifeStarRangePainter extends CustomPainter {
   double innerSize;
@@ -180,8 +179,15 @@ class OuterLifeStarRangePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant OuterLifeStarRangePainter oldDelegate) {
+    return innerSize != oldDelegate.innerSize ||
+        trackSize != oldDelegate.trackSize ||
+        outerSize != oldDelegate.outerSize ||
+        showStarTrackLine != oldDelegate.showStarTrackLine ||
+        showText != oldDelegate.showText ||
+        textStyle != oldDelegate.textStyle ||
+        !listEquals(stars, oldDelegate.stars) ||
+        !mapEquals(starsColorMap, oldDelegate.starsColorMap);
   }
 }
 
@@ -383,20 +389,26 @@ class InnerLifeStarRangePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant InnerLifeStarRangePainter oldDelegate) {
+    return innerSize != oldDelegate.innerSize ||
+        trackSize != oldDelegate.trackSize ||
+        outerSize != oldDelegate.outerSize ||
+        innerPadding != oldDelegate.innerPadding ||
+        showStarTrackLine != oldDelegate.showStarTrackLine ||
+        showText != oldDelegate.showText ||
+        textStyle != oldDelegate.textStyle ||
+        !listEquals(stars, oldDelegate.stars) ||
+        !mapEquals(starsColorMap, oldDelegate.starsColorMap);
   }
 }
 
 class RingSheetPainter extends CustomPainter {
   double innerRadius;
   double outerRadius;
-  final ZhouTianModel zhouTianModel;
 
   RingSheetPainter({
     required this.innerRadius,
     required this.outerRadius,
-    required this.zhouTianModel,
   });
 
 // 定义一个函数来计算圆上某一角度对应的点的坐标
@@ -414,11 +426,11 @@ class RingSheetPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     canvas.translate(size.width / 2, size.height / 2);
     canvas.save();
-    double cumulativeAngle = 0;
-    for (int i = 0; i < zhouTianModel.gongDegreeSeq.length; i++) {
-      final double angle = cumulativeAngle;
-      final gong = zhouTianModel.gongDegreeSeq[i];
-      
+    for (int i = 0; i < 12; i++) {
+      final double angle = i * 30;
+      // paint guid line side dot at ring inner border
+      // UIStarModel star = stars[i];
+      // Color color = starsColorMap[star.star]!;
       Color color = Colors.black87;
       if (i == 0) {
         color = Colors.red;
@@ -432,14 +444,13 @@ class RingSheetPainter extends CustomPainter {
         ..style = PaintingStyle.stroke
         ..strokeWidth = .5;
       canvas.drawLine(inRingXY, outRingXY, zeroLinePaint);
-      cumulativeAngle += gong.degree;
     }
     canvas.restore();
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // TODO: implement shouldRepaint
-    return false;
+  bool shouldRepaint(covariant RingSheetPainter oldDelegate) {
+    return innerRadius != oldDelegate.innerRadius ||
+        outerRadius != oldDelegate.outerRadius;
   }
 }

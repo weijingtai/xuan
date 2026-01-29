@@ -1,5 +1,4 @@
 import 'package:common/module.dart';
-import 'package:json_annotation/json_annotation.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../enums/enum_xing_xian_type.dart';
 import 'da_xian_constellation_passage_info.dart';

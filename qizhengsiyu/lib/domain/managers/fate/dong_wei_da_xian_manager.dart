@@ -1,13 +1,12 @@
+import 'package:common/models/year_month.dart';
 import 'package:common/module.dart';
 import 'package:common/utils.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:tuple/tuple.dart';
 
-import '../../../enums/enum_dong_wei_type.dart';
 import '../../entities/models/body_life_model.dart';
 import '../../entities/models/fate_dong_wei_da_xian.dart';
 import '../../entities/models/naming_degree_pair.dart';
-
 
 class DongWeiDaXianManager {
   // 十二宫位年限配置

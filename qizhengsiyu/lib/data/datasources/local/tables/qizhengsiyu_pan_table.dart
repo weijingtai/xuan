@@ -6,7 +6,6 @@ import '../../../models/converters/divination_datetime_converter.dart';
 import '../../../models/converters/panel_config_converter.dart';
 import '../../../models/converters/panel_model_converter.dart';
 
-
 @UseRowClass(QiZhengSiYuPanEntity)
 class QizhengsiyuPanTable extends Table {
   @override

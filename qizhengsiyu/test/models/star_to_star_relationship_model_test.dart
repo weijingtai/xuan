@@ -1,10 +1,10 @@
 import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:qizhengsiyu/domain/entities/models/star_to_star_relationship_model.dart';
+import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/domain/entities/models/eleven_stars_info.dart';
 import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart';
-import 'package:qizhengsiyu/domain/entities/models/star_to_star_relationship_model.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import '../mock/mock_eleven_stars.dart';
 

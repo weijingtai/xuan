@@ -114,8 +114,8 @@ PalaceConstellationSegment _$PalaceConstellationSegmentFromJson(
       startInPalaceDeg: (json['startInPalaceDeg'] as num).toDouble(),
       endInPalaceDeg: (json['endInPalaceDeg'] as num).toDouble(),
       segmentLengthDeg: (json['segmentLengthDeg'] as num).toDouble(),
-      absStartDeg: (json['absStartDeg'] as num).toDouble(),
-      absEndDeg: (json['absEndDeg'] as num).toDouble(),
+      crossesConstellationAtPalaceDeg:
+          (json['crossesConstellationAtPalaceDeg'] as num?)?.toDouble(),
     );
 
 Map<String, dynamic> _$PalaceConstellationSegmentToJson(
@@ -128,17 +128,17 @@ Map<String, dynamic> _$PalaceConstellationSegmentToJson(
       'startInPalaceDeg': instance.startInPalaceDeg,
       'endInPalaceDeg': instance.endInPalaceDeg,
       'segmentLengthDeg': instance.segmentLengthDeg,
-      'absStartDeg': instance.absStartDeg,
-      'absEndDeg': instance.absEndDeg,
+      'crossesConstellationAtPalaceDeg':
+          instance.crossesConstellationAtPalaceDeg,
     };
 
 PalaceMappingResult _$PalaceMappingResultFromJson(Map<String, dynamic> json) =>
     PalaceMappingResult(
       palaceName: $enumDecode(_$EnumTwelveGongEnumMap, json['palaceName']),
-      totalWidthDeg: (json['totalWidthDeg'] as num).toDouble(),
       absStartDeg: (json['absStartDeg'] as num).toDouble(),
       absEndDeg: (json['absEndDeg'] as num).toDouble(),
-      constellationSegments: (json['constellationSegments'] as List<dynamic>)
+      totalWidthDeg: (json['totalWidthDeg'] as num).toDouble(),
+      segments: (json['segments'] as List<dynamic>)
           .map((e) =>
               PalaceConstellationSegment.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -148,8 +148,8 @@ Map<String, dynamic> _$PalaceMappingResultToJson(
         PalaceMappingResult instance) =>
     <String, dynamic>{
       'palaceName': _$EnumTwelveGongEnumMap[instance.palaceName]!,
-      'totalWidthDeg': instance.totalWidthDeg,
       'absStartDeg': instance.absStartDeg,
       'absEndDeg': instance.absEndDeg,
-      'constellationSegments': instance.constellationSegments,
+      'totalWidthDeg': instance.totalWidthDeg,
+      'segments': instance.segments,
     };

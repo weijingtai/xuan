@@ -39,6 +39,8 @@ class DaXianConstellationPassageInfo {
   /// 离开此段时的年龄(年月)
   final YearMonth exitAge;
 
+  List<ConstellationStarInfluenceModel>? constellationStarInfluences;
+
   DaXianConstellationPassageInfo({
     required this.constellation,
     required this.startDegreeInConstellation,
@@ -49,6 +51,7 @@ class DaXianConstellationPassageInfo {
     required this.exitTime,
     required this.entryAge,
     required this.exitAge,
+    this.constellationStarInfluences,
   });
 
   @override

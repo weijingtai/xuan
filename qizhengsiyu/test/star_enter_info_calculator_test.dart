@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:common/enums.dart';
 import 'package:path/path.dart' as path;
+import 'package:common/enums/enum_stars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart';
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
@@ -107,7 +108,9 @@ void main() {
       expect(res.degree, 15);
     });
     test('测试宫位查找 res2', () {
-      newZiGong15Sequence.forEach((e) => print(e.toJson()));
+      for (var e in newZiGong15Sequence) {
+        print(e.toJson());
+      }
       final res2 = StarEnterInfoCalculator.doFindGong(
         15,
         newZiGong15Sequence,

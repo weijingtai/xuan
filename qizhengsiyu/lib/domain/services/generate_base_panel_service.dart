@@ -12,7 +12,6 @@ import 'package:timezone/timezone.dart' as tz;
 import '../../enums/enum_panel_system_type.dart';
 import '../../enums/enum_qi_zheng.dart';
 import '../../enums/enum_settle_life_body.dart';
-import '../../presentation/widgets/rings/shen_sha_item.dart';
 import '../../utils/star_enter_info_calculator.dart';
 import '../entities/models/base_panel_model.dart';
 import '../entities/models/body_life_model.dart';
@@ -38,12 +37,42 @@ class GenerateBasePanelService {
   final ShenShaManager shenShaManager;
   final HuaYaoManager huaYaoManager;
 
-
   GenerateBasePanelService(
       {required this.panelConfig,
       required this.observerPosition,
       required this.shenShaManager,
       required this.huaYaoManager});
+
+  // --- Zi Qi (Purple Gas) Calculation Constants & Methods ---
+
+  /// 基准时间: 2013-4-9 02:58 (Shanghai time) -> 2013-4-8 18:58 (UTC)
+  static final DateTime referenceDateTimeUtc = DateTime.utc(2013, 4, 8, 18, 58);
+
+  /// 基准位置: 284度
+  static const double referencePositionDegrees = 284.0;
+
+  /// 日速率: 0.0352 度/天
+  static const double dailyRateDegrees = 0.0352;
+
+  /// 计算紫气位置 (授时历/笨办法)
+  static double shouShiLiCalculateZiQiPosition(
+    DateTime dateTime, {
+    double circleDegrees = 360.0,
+  }) {
+    final Duration diff = dateTime.difference(referenceDateTimeUtc);
+    final double daysDiff = diff.inMinutes / (24 * 60.0);
+    final double angleDiff = daysDiff * dailyRateDegrees;
+
+    // Calculate raw position
+    double rawPosition = referencePositionDegrees + angleDiff;
+
+    // Normalize to [0, circleDegrees)
+    double result = rawPosition % circleDegrees;
+    if (result < 0) {
+      result += circleDegrees;
+    }
+    return result;
+  }
 
   Future<BasePanelModel> calculate({
     required ZhouTianModel zhouTianModel,
@@ -83,8 +112,7 @@ class GenerateBasePanelService {
 
     final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
-      return MapEntry(
-          key, value.map((e) => e).toList());
+      return MapEntry(key, value.map((e) => e).toList());
     });
 
     // 将神煞从ShenSha 处理成 String
@@ -139,10 +167,11 @@ class GenerateBasePanelService {
   }
 
   Future<PassageYearPanelModel> calculateDaXia(
-      BasePanelModel basePanel, ObserverPosition daXianObserver, {
-      required ZhouTianModel zhouTianModel,
-      required Map<EnumStars, StarAngleSpeed> starAngleMapper,
-    }) async {
+    BasePanelModel basePanel,
+    ObserverPosition daXianObserver, {
+    required ZhouTianModel zhouTianModel,
+    required Map<EnumStars, StarAngleSpeed> starAngleMapper,
+  }) async {
     // 大限与 计算星命基础命盘一样，但是不计算 四主 与 命理十二宫的位置。
     // 在计算神煞时则是借用原局的命宫等位置进行计算
 
@@ -168,8 +197,7 @@ class GenerateBasePanelService {
             daXianObserver.isDayBirth);
     final Map<EnumTwelveGong, List<ShenSha>> shenShaItemMapper =
         shenShaMapper.map((key, value) {
-      return MapEntry(
-          key, value.map((e) => e).toList());
+      return MapEntry(key, value.map((e) => e).toList());
     });
     // 7. 计算化曜位置
     final Map<HuaYao, EnumStars> huaYaoMapper = await huaYaoManager.calculate(

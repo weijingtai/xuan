@@ -2,9 +2,8 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/enums/enum_settle_life_body.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 
-import '../../../enums/enum_dong_wei_type.dart';
 import '../../../enums/enum_panel_system_type.dart';
-
+import 'fate_dong_wei_da_xian.dart';
 
 part 'panel_config.g.dart';
 
@@ -85,7 +84,7 @@ class BasePanelConfig {
     HouseDivisionSystem? houseDivisionSystem,
 
     /// 立命方式
-    EnumSettleLifeType? settleLifeType,
+    EnumSettleLifeType? celestialSettleLifeType,
 
     /// 身宫方式
     EnumSettleBodyType? settleBodyType,
@@ -98,7 +97,7 @@ class BasePanelConfig {
       panelSystemType: panelSystemType ?? this.panelSystemType,
       constellationSystemType:
           constellationSystemType ?? this.constellationSystemType,
-      settleLifeType: settleLifeType ?? this.settleLifeType,
+      settleLifeType: celestialSettleLifeType ?? this.settleLifeType,
       settleBodyType: settleBodyType ?? this.settleBodyType,
       islifeGongBySunRealTimeLocation:
           lifeGongBySunRealTimeLocation ?? this.islifeGongBySunRealTimeLocation,
@@ -136,5 +135,37 @@ class FatePanelConfig {
   static FatePanelConfig defaultFatePanelConfig() {
     return FatePanelConfig(
         mingCountingType: DongWeiDaXianMingGongCountingType.Modern);
+  }
+}
+
+@JsonSerializable()
+class PanelConfig extends BasePanelConfig {
+  PanelConfig({
+    required super.celestialCoordinateSystem,
+    required super.houseDivisionSystem,
+    required super.panelSystemType,
+    required super.constellationSystemType,
+    required super.settleLifeType,
+    required super.settleBodyType,
+    required super.islifeGongBySunRealTimeLocation,
+    super.lifeCountingToGong,
+    super.bodyCountingToGong,
+  });
+
+  factory PanelConfig.fromJson(Map<String, dynamic> json) =>
+      _$PanelConfigFromJson(json);
+  @override
+  Map<String, dynamic> toJson() => _$PanelConfigToJson(this);
+
+  static PanelConfig defaultPanelConfig() {
+    return PanelConfig(
+      celestialCoordinateSystem: CelestialCoordinateSystem.ecliptic,
+      houseDivisionSystem: HouseDivisionSystem.equal,
+      panelSystemType: PanelSystemType.tropical,
+      constellationSystemType: ConstellationSystemType.classical,
+      settleLifeType: EnumSettleLifeType.Mao,
+      settleBodyType: EnumSettleBodyType.moon,
+      islifeGongBySunRealTimeLocation: true,
+    );
   }
 }

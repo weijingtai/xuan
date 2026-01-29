@@ -1,7 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:qizhengsiyu/enums/enum_panel_system_type.dart';
 import 'package:qizhengsiyu/theme/app_theme.dart';
 import 'package:slide_switcher/slide_switcher.dart';
 
@@ -642,6 +641,8 @@ class _QiZhengSiYuConfigPageState extends State<QiZhengSiYuConfigPage>
 
       // 调用回调函数
       // widget.onConfigComplete(config);
+      // 跳转到面板页并传递配置
+      Navigator.of(context).pushNamed('/qizhengsiyu/panel', arguments: config);
     } catch (e) {
       // 关闭加载对话框
       Navigator.of(context).pop();

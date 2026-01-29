@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:common/enums/enum_stars.dart';
 
-
 class QiZhengSiYuUIConstantResources {
   static final Map<EnumStars, Color> zhengColorMap = {
     EnumStars.Sun: const Color.fromRGBO(67, 60, 45, 1),

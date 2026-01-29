@@ -207,11 +207,11 @@ class BodyLifeCircleWidget extends StatelessWidget {
     String? secondPart;
 
     if (parts.length > 1) {
-      firstPart = parts[0] + ".";
-      secondPart = parts[1] + "°";
+      firstPart = "${parts[0]}.";
+      secondPart = "${parts[1]}°";
       return Tuple2(firstPart, secondPart);
     } else {
-      firstPart = parts[0] + "°";
+      firstPart = "${parts[0]}°";
       return Tuple2(firstPart, null);
     }
   }

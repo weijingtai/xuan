@@ -6,7 +6,6 @@ import 'package:qizhengsiyu/domain/entities/models/star_enter_info.dart';
 import 'package:qizhengsiyu/domain/services/an_shen_li_ming_service.dart';
 import 'package:qizhengsiyu/enums/enum_moon_phases.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 
 void main() {
   double testSunangle = 211.02;

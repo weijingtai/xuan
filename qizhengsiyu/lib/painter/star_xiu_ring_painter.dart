@@ -1,20 +1,16 @@
 import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'dart:math' as math;
 
-import '../domain/entities/models/naming_degree_pair.dart';
-import '../domain/entities/models/zhou_tian_model.dart';
-import '../domain/entities/models/star_inn_gong_degree.dart';
-
+import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
 
 class StarXiuRingPainter extends CustomPainter {
   double outerSize;
   double innerSize;
-  final ZhouTianModel zhouTianModel;
-  final List<ConstellationPosition> constellationPositions;
-  final Map<EnumStars, Color> sevenZhengColorMapper;
+  Map<Enum28Constellations, ConstellationGongDegreeInfo> mapper;
+  Map<EnumStars, Color> sevenZhengColorMapper;
 
   double tickLength;
   double longTickLength;
@@ -22,10 +18,10 @@ class StarXiuRingPainter extends CustomPainter {
 
   StarXiuRingPainter(
       {
+      // required this.ringWidth,
       required this.outerSize,
       required this.innerSize,
-      required this.zhouTianModel,
-      required this.constellationPositions,
+      required this.mapper,
       required this.sevenZhengColorMapper,
       this.tickLength = 5,
       this.longTickLength = 10});
@@ -57,18 +53,18 @@ class StarXiuRingPainter extends CustomPainter {
     final rectCircle = Rect.fromCircle(
         center: canvasCenter, radius: innerRadius + (ringWidth * .5));
 
-    for (ConstellationPosition starXiuType in constellationPositions) {
-      final double angle = (zhouTianModel.totalDegree - starXiuType.startAtDegree) * math.pi / 180;
-      final double sweepAngle = -starXiuType.degree * math.pi / 180;
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
+      final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
+      final double sweepAngle = -starXiuType.totalDegree * math.pi / 180;
 
       final path = Path()..addArc(rectCircle, angle, sweepAngle);
       final paint = Paint()
-        ..color = sevenZhengColorMapper[starXiuType.constellation.sevenZheng]!
+        ..color = sevenZhengColorMapper[starXiuType.starXiu.sevenZheng]!
         ..style = PaintingStyle.stroke
         ..strokeWidth = ringWidth - 10; // 调整线宽
       canvas.drawPath(path, paint);
     }
-    for (ConstellationPosition starXiuType in constellationPositions) {
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
       // double lineLength = ringWidth;
       drawXingXiuName(
           canvas, starXiuType, canvasCenter, outerRadius, ringWidth);
@@ -121,10 +117,10 @@ class StarXiuRingPainter extends CustomPainter {
     }
   }
 
-  void drawXingXiuName(Canvas canvas, ConstellationPosition starXiuType,
+  void drawXingXiuName(Canvas canvas, ConstellationGongDegreeInfo starXiuType,
       Offset canvasCenter, double outerRadius, double lineLength) {
     double angle =
-        (zhouTianModel.totalDegree - (starXiuType.startAtDegree + starXiuType.degree * .5)) *
+        (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
             math.pi /
             180;
     final double cosAngle = math.cos(angle);
@@ -140,7 +136,7 @@ class StarXiuRingPainter extends CustomPainter {
 
     final textPainter = TextPainter(
       text: TextSpan(
-          text: starXiuType.constellation.starName,
+          text: starXiuType.starXiu.starName,
           style: GoogleFonts.maShanZheng(
               fontSize: 16.0,
               height: 1,
@@ -167,12 +163,178 @@ class StarXiuRingPainter extends CustomPainter {
     canvas.restore();
   }
 
+  void paint_bak(Canvas canvas, Size size) {
+    final double centerX = size.width / 2;
+    final double centerY = size.height / 2;
+    final double outerRadius = size.width / 2;
+    final double innerRadius = outerRadius - ringWidth;
+    final Paint ringPaint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = .5
+      ..style = PaintingStyle.stroke;
 
+    // Draw outer ring
+    canvas.drawCircle(Offset(centerX, centerY), outerRadius, ringPaint);
 
+    // Draw inner ring
+    canvas.drawCircle(Offset(centerX, centerY), innerRadius, ringPaint);
 
+    final Paint scalePaint = Paint()
+      ..color = Colors.blueAccent
+      ..strokeWidth = .5
+      ..style = PaintingStyle.stroke;
+    for (ConstellationGongDegreeInfo starXiuType in mapper.values) {
+      final double angle = (360 - starXiuType.degreeStartAt) * math.pi / 180;
+      double lineLength = ringWidth;
+      final double outerX = centerX + outerRadius * math.cos(angle);
+      final double outerY = centerY + outerRadius * math.sin(angle);
+      final double innerX =
+          centerX + (outerRadius - lineLength) * math.cos(angle);
+      final double innerY =
+          centerY + (outerRadius - lineLength) * math.sin(angle);
+      if (starXiuType.starXiu == Enum28Constellations.Lou_Jin_Gou) {
+        canvas.drawLine(
+          Offset(outerX, outerY),
+          Offset(innerX, innerY),
+          Paint()
+            ..color = Colors.orange
+            ..strokeWidth = 1
+            ..style = PaintingStyle.stroke,
+        );
+
+        // double _angle = (360 - (15.9+5.2)) * math.pi / 180;
+        double angle0 =
+            (360 - (starXiuType.degreeStartAt + starXiuType.totalDegree * .5)) *
+                math.pi /
+                180;
+        final double outerX0 = centerX + outerRadius * math.cos(angle0);
+        final double outerY0 = centerY + outerRadius * math.sin(angle0);
+        final double innerX0 =
+            centerX + (outerRadius - lineLength) * math.cos(angle0);
+        final double innerY0 =
+            centerY + (outerRadius - lineLength) * math.sin(angle0);
+        // canvas.drawLine(
+        //   Offset(_outerX, _outerY),
+        //   Offset(_innerX, _innerY),
+        //   Paint()
+        //     ..color = Colors.green
+        //     ..strokeWidth = 1
+        //     ..style = PaintingStyle.stroke,
+        // );
+        Offset xingXiuArcRingCenter =
+            Offset((outerX0 + innerX0) * .5, (outerY0 + innerY0) * .5);
+        // canvas.drawCircle(Offset((_outerX+_innerX) * .5, (_outerY+_innerY) * .5), 3,  Paint()..color = Colors.black87);
+        final textPainter = TextPainter(
+          text: TextSpan(
+              text: starXiuType.starXiu.starName,
+              style: const TextStyle(fontSize: 16.0, height: 1)),
+          textDirection: TextDirection.ltr,
+        );
+        textPainter.layout();
+        // textPainter.paint(canvas, xingXiuArcRingCenter + offset);
+
+        // final center = Offset(size.width / 2, size.height / 2);
+        final offset = Offset(-textPainter.width / 2, -textPainter.height / 2);
+        canvas.save();
+        canvas.translate(xingXiuArcRingCenter.dx, xingXiuArcRingCenter.dy);
+        canvas.rotate(angle);
+        textPainter.paint(canvas, offset);
+        canvas.restore();
+      } else if (starXiuType.starXiu == Enum28Constellations.Wei_Tu_Zhi) {
+        canvas.drawLine(
+          Offset(outerX, outerY),
+          Offset(innerX, innerY),
+          Paint()
+            ..color = Colors.deepOrange
+            ..strokeWidth = 1
+            ..style = PaintingStyle.stroke,
+        );
+      } else {
+        canvas.drawLine(
+          Offset(outerX, outerY),
+          Offset(innerX, innerY),
+          scalePaint,
+        );
+      }
+    }
+
+    final center = Offset(size.width / 2, size.height / 2);
+    final averageRadius = (innerRadius + outerRadius) / 2;
+    const arcRadians = (360 - 10.4 + 15.9) * (math.pi / 180);
+    const centerPointAngle = arcRadians / 2;
+    final centerPointX = center.dx + averageRadius * math.cos(centerPointAngle);
+    final centerPointY = center.dy + averageRadius * math.sin(centerPointAngle);
+    canvas.drawCircle(
+        Offset(centerPointX, centerPointY), 2, Paint()..color = Colors.red);
+  }
+
+  void paint_helper_bak(
+      double angle,
+      double outerRadius,
+      double innerRadius,
+      double centerX,
+      double centerY,
+      ConstellationGongDegreeInfo starXiuType,
+      Canvas canvas) {
+    final double cosAngle = math.cos(angle);
+    final double sinAngle = math.sin(angle);
+
+    // double lineLength = ringWidth;
+    final double outerX = centerX + outerRadius * cosAngle;
+    final double outerY = centerY + outerRadius * sinAngle;
+    final double innerX = centerX + innerRadius * cosAngle;
+    final double innerY = centerY + innerRadius * sinAngle;
+
+    if (starXiuType.starXiu == Enum28Constellations.Lou_Jin_Gou) {
+      // 可以用来绘制 “选择框”
+      // canvas.drawArc(
+      //     Rect.fromCircle(
+      //         center: canvasCenter, radius: outerRadius),
+      //     angle,
+      //     sweepAngle,
+      //     true,
+      //     Paint()
+      //       ..color = Colors.blueAccent
+      //       ..strokeWidth = 2
+      //       ..style = PaintingStyle.stroke);
+
+      canvas.drawLine(
+        Offset(outerX, outerY),
+        Offset(innerX, innerY),
+        Paint()
+          ..color = Colors.orange
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke,
+      );
+    } else if (starXiuType.starXiu == Enum28Constellations.Wei_Tu_Zhi) {
+      canvas.drawLine(
+        Offset(outerX, outerY),
+        Offset(innerX, innerY),
+        Paint()
+          ..color = Colors.deepOrange
+          ..strokeWidth = 1
+          ..style = PaintingStyle.stroke,
+      );
+    } else {
+      Paint scalePaint = Paint()
+        ..color = Colors.black87
+        ..strokeWidth = .5
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(
+        Offset(outerX, outerY),
+        Offset(innerX, innerY),
+        scalePaint,
+      );
+    }
+  }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant StarXiuRingPainter oldDelegate) {
+    return outerSize != oldDelegate.outerSize ||
+        innerSize != oldDelegate.innerSize ||
+        tickLength != oldDelegate.tickLength ||
+        longTickLength != oldDelegate.longTickLength ||
+        !mapEquals(mapper, oldDelegate.mapper) ||
+        !mapEquals(sevenZhengColorMapper, oldDelegate.sevenZhengColorMapper);
   }
 }

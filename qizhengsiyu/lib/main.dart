@@ -2,20 +2,15 @@ import 'dart:math' as math;
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
-import 'package:common/database/app_database.dart' as rootDB;
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/presentation/pages/beauty_page_viewmodel.dart';
-import 'package:qizhengsiyu/presentation/viewmodels/qi_zheng_si_yu_viewmodel.dart';
-import 'package:qizhengsiyu/presentation/widgets/rings/body_life_circle_widget.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/circle_text_painter.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/da_xian_ring.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/gong_12_dizhi.dart';
 import 'package:qizhengsiyu/presentation/widgets/rings/gong_ming_li_ring.dart';
 import 'package:qizhengsiyu/qi_zheng_si_yu_ui_constant_resources.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:tuple/tuple.dart';
 
 import 'data/datasources/local/app_database.dart';
@@ -23,18 +18,34 @@ import 'data/repositories/interfaces/i_qizhengsiyu_pan_repository.dart';
 import 'data/repositories/qizhengsiyu_pan_repository.dart';
 import 'domain/entities/models/body_life_model.dart';
 import 'domain/entities/models/naming_degree_pair.dart';
-import 'domain/entities/models/panel_config.dart';
-import 'domain/entities/models/zhou_tian_model.dart';
-import 'domain/managers/hua_yao_manager.dart';
-import 'domain/managers/shen_sha_manager.dart';
-import 'domain/managers/zhou_tian_model_manager.dart';
 import 'domain/usecases/calculate_fate_dong_wei_usecase.dart';
 import 'domain/usecases/save_calculated_panel_usecase.dart';
 import 'navigator.dart';
-import 'di.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiProvider(
+    providers: [
+      Provider<AppDatabase>(
+        create: (ctx) => AppDatabase(),
+        dispose: (ctx, db) => db.close(),
+      ),
+      Provider<IQiZhengSiYuPanRepository>(
+        create: (ctx) => QiZhengSiYuPanRepository(
+          appDatabase: ctx.read<AppDatabase>(),
+        ),
+      ),
+      Provider<SaveCalculatedPanelUseCase>(
+          create: (ctx) => SaveCalculatedPanelUseCase(
+              qiZhengSiYuPanRepository:
+                  ctx.read<IQiZhengSiYuPanRepository>())),
+      ChangeNotifierProvider<BeautyPageViewModel>(
+          create: (ctx) => BeautyPageViewModel(
+              calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
+              saveCalculatedPanelUseCase:
+                  ctx.read<SaveCalculatedPanelUseCase>())),
+    ],
+    child: const MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -43,45 +54,14 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ...createProviders(),
-        Provider<AppDatabase>(
-          create: (ctx) => AppDatabase(),
-          dispose: (ctx, db) => db.close(),
-        ),
-        Provider<IQiZhengSiYuPanRepository>(
-          create: (ctx) => QiZhengSiYuPanRepository(
-            appDatabase: ctx.read<AppDatabase>(),
-          ),
-        ),
-        Provider<SaveCalculatedPanelUseCase>(
-            create: (ctx) => SaveCalculatedPanelUseCase(
-                qiZhengSiYuPanRepository: ctx.read<IQiZhengSiYuPanRepository>())),
-        ChangeNotifierProvider<BeautyPageViewModel>(
-            create: (ctx) => BeautyPageViewModel(
-                  calculateFateDongWeiUseCase: CalculateFateDongWeiUseCase(),
-                  saveCalculatedPanelUseCase:
-                      ctx.read<SaveCalculatedPanelUseCase>(),
-                  shenShaManager: ctx.read<ShenShaManager>(),
-                  huaYaoManager: ctx.read<HuaYaoManager>(),
-                  zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
-                )),
-        ChangeNotifierProvider<QiZhengSiYuViewModel>(
-            create: (ctx) => QiZhengSiYuViewModel(
-                  shenShaManager: ctx.read<ShenShaManager>(),
-                  huaYaoManager: ctx.read<HuaYaoManager>(),
-                  zhouTianModelManager: ctx.read<ZhouTianModelManager>(),
-                )),
-      ],
-      child: MaterialApp(
-        title: 'Flutter Demo',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        initialRoute: "/qizhengsiyu/panel",
-        onGenerateRoute: NavigatorGenerator.generateRoute,
+    return MaterialApp(
+      title: '七政四余',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
       ),
+      showSemanticsDebugger: false,
+      initialRoute: "/qizhengsiyu/panel", // ⭐ 使用路由导航
+      onGenerateRoute: NavigatorGenerator.generateRoute, // ⭐ 启用路由生成器
     );
   }
 }
@@ -98,104 +78,86 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final zhouTianModelManager = context.read<ZhouTianModelManager>();
-    zhouTianModelManager.load();
-    final zhouTianModel =
-        zhouTianModelManager.getZhouTianModelBy(BasePanelConfig.defaultBasicPanelConfig());
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Container(
+      body: SizedBox(
           height: 1300,
           width: 1400,
           child: Row(
             children: [
               // 在 build 方法中
-              Container(
+              SizedBox(
                 width: 480 * 2,
                 height: 480 * 2,
                 child: Stack(alignment: Alignment.center, children: [
-                  Normal12GongRing(
+                  const Normal12GongRing(
                     outerRadius: 190,
                     innerRadius: 150,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
-                      EnumTwelveGong.Chou: ["相貌"],
-                      EnumTwelveGong.Zi: ["命宫"],
-                      EnumTwelveGong.Yin: ["福德"],
-                      EnumTwelveGong.Mao: ["官禄"],
-                      EnumTwelveGong.Chen: ["迁移"],
-                      EnumTwelveGong.Si: ["疾厄"],
-                      EnumTwelveGong.Wu: ["夫妻"],
-                      EnumTwelveGong.Wei: ["奴仆"],
-                      EnumTwelveGong.Shen: ["男女"],
-                      EnumTwelveGong.You: ["田宅"],
-                      EnumTwelveGong.Xu: ["兄弟"],
-                      EnumTwelveGong.Hai: ["财帛"],
-                    }, zhouTianModel: zhouTianModel,
+                      EnumTwelveGong.Chou: const ["相貌"],
+                      EnumTwelveGong.Zi: const ["命宫"],
+                      EnumTwelveGong.Yin: const ["福德"],
+                      EnumTwelveGong.Mao: const ["官禄"],
+                      EnumTwelveGong.Chen: const ["迁移"],
+                      EnumTwelveGong.Si: const ["疾厄"],
+                      EnumTwelveGong.Wu: const ["夫妻"],
+                      EnumTwelveGong.Wei: const ["奴仆"],
+                      EnumTwelveGong.Shen: const ["男女"],
+                      EnumTwelveGong.You: const ["田宅"],
+                      EnumTwelveGong.Xu: const ["兄弟"],
+                      EnumTwelveGong.Hai: const ["财帛"],
+                    },
+                    zhouTianModel: null,
                   ),
-                  Normal12GongRing(
+                  const Normal12GongRing(
                     outerRadius: 150,
                     innerRadius: 130,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
-                      EnumTwelveGong.Zi: ["水瓶"],
-                      EnumTwelveGong.Chou: ["摩羯"],
-                      EnumTwelveGong.Yin: ["射手"],
-                      EnumTwelveGong.Mao: ["天蝎"],
-                      EnumTwelveGong.Chen: ["天枰"],
-                      EnumTwelveGong.Si: ["处女"],
-                      EnumTwelveGong.Wu: ["狮子"],
-                      EnumTwelveGong.Wei: ["巨蟹"],
-                      EnumTwelveGong.Shen: ["双子"],
-                      EnumTwelveGong.You: ["金牛"],
-                      EnumTwelveGong.Xu: ["白羊"],
-                      EnumTwelveGong.Hai: ["双鱼"],
-                    }, zhouTianModel: zhouTianModel,
+                      EnumTwelveGong.Zi: const ["水瓶"],
+                      EnumTwelveGong.Chou: const ["摩羯"],
+                      EnumTwelveGong.Yin: const ["射手"],
+                      EnumTwelveGong.Mao: const ["天蝎"],
+                      EnumTwelveGong.Chen: const ["天枰"],
+                      EnumTwelveGong.Si: const ["处女"],
+                      EnumTwelveGong.Wu: const ["狮子"],
+                      EnumTwelveGong.Wei: const ["巨蟹"],
+                      EnumTwelveGong.Shen: const ["双子"],
+                      EnumTwelveGong.You: const ["金牛"],
+                      EnumTwelveGong.Xu: const ["白羊"],
+                      EnumTwelveGong.Hai: const ["双鱼"],
+                    },
+                    zhouTianModel: null,
                   ),
-                  build12DiZhiGong(130, 80, zhouTianModel),
+                  build12DiZhiGong(130, 80),
                   DaXianRing(
                       gongYearsMapper: {
                         EnumTwelveGong.Zi: YearMonth(10, 3),
                         // EnumTwelveGong.Chou: 4.5,
                         // EnumTwelveGong.Zi: 15,
-                        EnumTwelveGong.Chou: YearMonth(10, 0),
-                        EnumTwelveGong.Yin: YearMonth(11, 0),
-                        EnumTwelveGong.Mao: YearMonth(15, 0),
-                        EnumTwelveGong.Chen: YearMonth(8, 0),
-                        EnumTwelveGong.Si: YearMonth(7, 0),
-                        EnumTwelveGong.Wu: YearMonth(11, 0),
+                        EnumTwelveGong.Chou: YearMonth.fromYear(10),
+                        EnumTwelveGong.Yin: YearMonth.fromYear(11),
+                        EnumTwelveGong.Mao: YearMonth.fromYear(15),
+                        EnumTwelveGong.Chen: YearMonth.fromYear(8),
+                        EnumTwelveGong.Si: YearMonth.fromYear(7),
+                        EnumTwelveGong.Wu: YearMonth.fromYear(11),
                         EnumTwelveGong.Wei: YearMonth(4, 6),
                         EnumTwelveGong.Shen: YearMonth(4, 6),
                         EnumTwelveGong.You: YearMonth(4, 6),
                         // EnumTwelveGong.Shen: 5,
                         // EnumTwelveGong.You: 5,
-                        EnumTwelveGong.Xu: YearMonth(5, 0),
-                        EnumTwelveGong.Hai: YearMonth(5, 0),
+                        EnumTwelveGong.Xu: YearMonth.fromYear(5),
+                        EnumTwelveGong.Hai: YearMonth.fromYear(5),
                       },
                       outerRadius: 480,
                       innerRadius: 432,
                       baseGongOffsetAngle: 30),
-                  // textCicle(),
-                  BodyLifeCircleWidget(
-                    bodyLifeModel: BodyLifeModel(
-                      lifeGongInfo:
-                          GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
-                      lifeConstellationInfo: ConstellationDegree(
-                          constellation: Enum28Constellations.Zhen_Shui_Yin,
-                          degree: 2.2),
-                      bodyGongInfo:
-                          GongDegree(gong: EnumTwelveGong.Chen, degree: 17.2),
-                      bodyConstellationInfo: ConstellationDegree(
-                          constellation: Enum28Constellations.Zhen_Shui_Yin,
-                          degree: 2.2),
-                    ),
-                    itemSize: 80,
-                    ringColor: Colors.blue,
-                  ),
+                  textCicle(),
                 ]),
               )
             ],
@@ -205,15 +167,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Tuple2<String, String?> toStringDegree(double degree) {
     var mingGongDegree = degree.toString();
-    List<String> _tmpList = mingGongDegree.split(".");
-    var mingGongDegreeFirstPart = _tmpList[0];
+    List<String> tmpList = mingGongDegree.split(".");
+    var mingGongDegreeFirstPart = tmpList[0];
     String? mingGongDegreeSecondPar;
-    if (_tmpList.length > 1) {
-      mingGongDegreeFirstPart = _tmpList[0] + ".";
-      mingGongDegreeSecondPar = _tmpList[1] + "°";
+    if (tmpList.length > 1) {
+      mingGongDegreeFirstPart = tmpList[0] + ".";
+      mingGongDegreeSecondPar = tmpList[1] + "°";
       return Tuple2(mingGongDegreeFirstPart, mingGongDegreeSecondPar);
     } else {
-      mingGongDegreeFirstPart = _tmpList[0] + "°";
+      mingGongDegreeFirstPart = tmpList[0] + "°";
       return Tuple2(mingGongDegreeFirstPart, null);
     }
   }
@@ -366,9 +328,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ));
   }
 
-  Widget build12DiZhiGong(double outerRadius, double innerRadius, ZhouTianModel zhouTianModel) {
+  Widget build12DiZhiGong(double outerRadius, double innerRadius) {
     TextStyle firstTextStyle =
-        TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
+        const TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),
@@ -376,7 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ]);
     TextStyle secondTextStyle =
-        TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
+        const TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),
@@ -388,7 +350,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Gong12DiZhiRing(
       outerRadius: outerRadius,
       innerRadius: innerRadius,
-      zhouTianModel: zhouTianModel,
       // angleOffset: 3,
       shenShaMapper: {
         EnumTwelveGong.Zi: [
@@ -452,6 +413,7 @@ class _MyHomePageState extends State<MyHomePage> {
           Text("木", style: secondTextStyle)
         ],
       },
+      zhouTianModel: null,
     );
   }
 

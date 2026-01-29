@@ -76,7 +76,7 @@ class DaXianRingPainter extends CustomPainter {
           starAngle: gongStartAngle,
           endAngle: gongEndAngle,
           slotDrawAngleList: generateDrawAngles[i],
-          slotYearMonthList: eachGongSlotsList[i]!,
+          slotYearMonthList: eachGongSlotsList[i],
           baseYear: prevBaseYear);
     }
   }

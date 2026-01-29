@@ -8,10 +8,10 @@ import '../../../domain/entities/models/panel_config.dart';
 /// 自定义配置部分
 class CustomConfigSection extends StatefulWidget {
   /// 配置变更回调
-  final Function(BasePanelConfig) onConfigChanged;
+  final Function(PanelConfig) onConfigChanged;
 
   /// 初始配置
-  final BasePanelConfig? initialConfig;
+  final PanelConfig? initialConfig;
 
   const CustomConfigSection({
     Key? key,
@@ -51,24 +51,30 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
         CelestialCoordinateSystem.ecliptic;
     _panelSystem =
         widget.initialConfig?.panelSystemType ?? PanelSystemType.tropical;
-    // _classicBook = widget.initialConfig?.classicBooks ?? [];
+    _classicBook = ["七政四余星道要诀"]; // 暂时硬编码，因为PanelConfig暂时不支持
     // _showGods = widget.initialConfig?.sh ?? true;
     // _showPalaces = widget.initialConfig?.showPalaces ?? true;
     // _useTraditionalCalculation =
     // widget.initialConfig?.useTraditionalCalculation ?? false;
+    _useTraditionalCalculation = false;
   }
 
   void _updateConfig() {
-    // final config = PanelConfig(
-    //   coordinateSystem: _coordinateSystem,
-    //   zodiacSystem: _zodiacSystem,
-    //   classicBook: _classicBook,
-    //   showGods: _showGods,
-    //   showPalaces: _showPalaces,
-    //   useTraditionalCalculation: _useTraditionalCalculation,
-    //   schoolType: widget.initialConfig?.schoolType ?? EnumSchoolType.QinTang,
-    // );
-    // widget.onConfigChanged(config);
+    final base = widget.initialConfig ?? PanelConfig.defaultPanelConfig();
+
+    final config = PanelConfig(
+      celestialCoordinateSystem: _coordinateSystem,
+      panelSystemType: _panelSystem,
+      // Fields we don't control, take from base
+      houseDivisionSystem: base.houseDivisionSystem,
+      constellationSystemType: base.constellationSystemType,
+      settleLifeType: base.settleLifeType,
+      settleBodyType: base.settleBodyType,
+      islifeGongBySunRealTimeLocation: base.islifeGongBySunRealTimeLocation,
+      lifeCountingToGong: base.lifeCountingToGong,
+      bodyCountingToGong: base.bodyCountingToGong,
+    );
+    widget.onConfigChanged(config);
   }
 
   @override
@@ -205,7 +211,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
               ),
               const SizedBox(height: AppTheme.spacing12),
               DropdownButtonFormField<String>(
-                value: _classicBook.first,
+                initialValue: _classicBook.first,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -302,7 +308,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                   _updateConfig();
                 },
                 contentPadding: EdgeInsets.zero,
-                activeColor: AppTheme.primaryColor,
+                activeThumbColor: AppTheme.primaryColor,
               ),
 
               if (_useTraditionalCalculation)

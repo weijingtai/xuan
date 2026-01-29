@@ -26,10 +26,6 @@ enum EnumInfluenceType {
   @JsonValue("同络")
   luo(false),
 
-  /// 其他宫位 - 其他剩余宫位
-  @JsonValue("其他")
-  other(false),
-
   /// 同经 - 同一经度（宿的概念）
   @JsonValue("同经")
   jing(true);
@@ -60,7 +56,7 @@ class StarInfluenceModel<E> {
 
   @override
   String toString() {
-    return 'StarInfluenceModel(influenceType: $influenceType, starName: ${star.starName}, location: ${location}, entryDegree: $entryDegree)';
+    return 'StarInfluenceModel(influenceType: $influenceType, starName: ${star.starName}, location: $location, entryDegree: $entryDegree)';
   }
 }
 
@@ -137,38 +133,4 @@ class DingStarInfluenceModel extends PalaceStarInfluenceModel {
       _$DingStarInfluenceModelFromJson(json);
   @override
   Map<String, dynamic> toJson() => _$DingStarInfluenceModelToJson(this);
-}
-
-@JsonSerializable()
-class StarGongInfluence {
-  // 同宫
-  final List<PalaceStarInfluenceModel>? sameGongInfluence;
-
-  // 对宫
-  final List<PalaceStarInfluenceModel>? oppositeGongInfluence;
-  // 三方
-  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>?
-      triangleGongInfluence;
-  // 四正
-  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>?
-      squareGongInfluence;
-
-  // 同络
-  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>? sameLuoInfluence;
-
-  // 其他剩余宫位的"顶"影响
-  final Map<EnumTwelveGong, List<PalaceStarInfluenceModel>>? otherGongInfluence;
-
-  StarGongInfluence({
-    this.sameGongInfluence,
-    this.oppositeGongInfluence,
-    this.triangleGongInfluence,
-    this.squareGongInfluence,
-    this.sameLuoInfluence,
-    this.otherGongInfluence,
-  });
-
-  factory StarGongInfluence.fromJson(Map<String, dynamic> json) =>
-      _$StarGongInfluenceFromJson(json);
-  Map<String, dynamic> toJson() => _$StarGongInfluenceToJson(this);
 }

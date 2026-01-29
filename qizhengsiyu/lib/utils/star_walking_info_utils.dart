@@ -4,9 +4,8 @@ import 'package:qizhengsiyu/qi_zheng_si_yu_constant_resources.dart';
 import 'package:sweph/sweph.dart';
 import 'package:tuple/tuple.dart';
 
-import '../domain/entities/models/observer_position.dart';
-import '../domain/entities/models/stars_angle.dart';
-
+import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition
+import '../domain/entities/models/stars_angle.dart'; // 使用domain层的模型
 
 class StarWalkingInfoUtils {
   static FiveStarWalkingInfo calculateStarWalkingInfo(

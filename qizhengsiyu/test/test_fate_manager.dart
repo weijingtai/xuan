@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:common/enums.dart';
 import 'package:common/models/year_month.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,9 +9,7 @@ import 'package:qizhengsiyu/domain/managers/fate/dong_wei_da_xian_manager.dart';
 import 'package:qizhengsiyu/domain/managers/fate/dong_wei_fei_xian_manager.dart';
 import 'package:qizhengsiyu/domain/managers/fate/dong_wei_month_xian_manager.dart';
 import 'package:qizhengsiyu/domain/managers/fate/dong_wei_xiao_xian_manager.dart';
-import 'package:qizhengsiyu/enums/enum_dong_wei_type.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
-import 'package:tuple/tuple.dart';
 
 void main() {
   group("洞微大限（百六）", () {
@@ -104,8 +100,7 @@ void main() {
   });
   group("洞微童限", () {
     test("童限计算", () {
-      final res = DongWeiChildXianManager()
-          .calculate(YearMonth( 15,  0));
+      final res = DongWeiChildXianManager().calculate(YearMonth(15, 0));
       expect(res, DongWeiChildXianManager.childXianGongSeq);
     });
   });
@@ -114,9 +109,9 @@ void main() {
       final res = DongWeiFeiXianManager().doCalculate(DaXianGong(
           order: 0,
           gong: EnumTwelveGong.Wu,
-          start: YearMonth( 1,  0),
-          end: YearMonth( 10,  0),
-          totalYears: YearMonth( 10,  0),
+          start: YearMonth(1, 0),
+          end: YearMonth(10, 0),
+          totalYears: YearMonth(10, 0),
           destinyGong: EnumDestinyTwelveGong.Ming));
       expect(res.length, 10);
 
@@ -157,9 +152,9 @@ void main() {
       final res = DongWeiFeiXianManager().doCalculate(DaXianGong(
           order: 1,
           gong: EnumTwelveGong.Wei,
-          start: YearMonth( 11,  0),
-          end: YearMonth( 20,  0),
-          totalYears: YearMonth( 10,  0),
+          start: YearMonth(11, 0),
+          end: YearMonth(20, 0),
+          totalYears: YearMonth(10, 0),
           destinyGong: EnumDestinyTwelveGong.XiangMao));
       expect(res.length, 10);
 
@@ -208,9 +203,9 @@ void main() {
       final res = DongWeiFeiXianManager().doCalculate(DaXianGong(
           order: 2,
           gong: EnumTwelveGong.Shen,
-          start: YearMonth( 21,  0),
-          end: YearMonth( 31,  0),
-          totalYears: YearMonth( 11,  0),
+          start: YearMonth(21, 0),
+          end: YearMonth(31, 0),
+          totalYears: YearMonth(11, 0),
           destinyGong: EnumDestinyTwelveGong.FuDe));
       expect(res.length, 11);
       expect(res[0].gong, EnumTwelveGong.Shen);
@@ -229,9 +224,9 @@ void main() {
       final res = DongWeiFeiXianManager().doCalculate(DaXianGong(
           order: 3,
           gong: EnumTwelveGong.Chou,
-          start: YearMonth( 73,  0),
-          end: YearMonth( 77,  6),
-          totalYears: YearMonth( 4,  6),
+          start: YearMonth(73, 0),
+          end: YearMonth(77, 6),
+          totalYears: YearMonth(4, 6),
           destinyGong: EnumDestinyTwelveGong.NuPu));
       expect(res.length, 5);
       expect(res[0].gong, EnumTwelveGong.Chou);
@@ -255,9 +250,9 @@ void main() {
       final res = DongWeiFeiXianManager().doCalculate(DaXianGong(
           order: 4,
           gong: EnumTwelveGong.Yin,
-          start: YearMonth( 77,  6),
-          end: YearMonth( 81,  6),
-          totalYears: YearMonth( 4,  6),
+          start: YearMonth(77, 6),
+          end: YearMonth(81, 6),
+          totalYears: YearMonth(4, 6),
           destinyGong: EnumDestinyTwelveGong.NuPu));
       expect(res.length, 5);
       expect(res[0].gong, EnumTwelveGong.Yin);
