@@ -71,79 +71,79 @@ class FeiXianCalculator {
     YearMonth triangleDuration = YearMonth.oneYear();
 
     int pointer = 0; // 0为本宫，1为对宫，2为三合宫第一，3为三合宫第二
-    YearMonth tmp = daXianPalace.durationYears;
+    YearMonth _tmp = daXianPalace.durationYears;
     List<FeiXianDetailPalace> result = [];
-    YearMonth tmpDuration = oppositeDuration;
-    while (tmp.year > 0 || tmp.month > 0) {
-      FeiXianDetailPalace feiGongPalace;
-      var tmpFeiGongPointer = pointer % 4;
-      if (tmpFeiGongPointer == 0) {
-        tmpDuration = currentDuration;
-        if (tmp.toTotalMonths() < currentDuration.toTotalMonths()) {
-          tmpDuration = YearMonth.fromMonths(tmp.toTotalMonths());
+    YearMonth _tmpDuration = oppositeDuration;
+    while (_tmp.year > 0 || _tmp.month > 0) {
+      var feiGongPalace;
+      var _tmpFeiGongPointer = pointer % 4;
+      if (_tmpFeiGongPointer == 0) {
+        _tmpDuration = currentDuration;
+        if (_tmp.toTotalMonths() < currentDuration.toTotalMonths()) {
+          _tmpDuration = YearMonth.fromMonths(_tmp.toTotalMonths());
         }
         feiGongPalace = FeiXianDetailPalace(
           order: pointer,
           palace: currentGong,
           startAge: startAge,
-          endAge: startAge + tmpDuration,
+          endAge: startAge + _tmpDuration,
           startTime: startTime,
-          durationYears: tmpDuration,
+          durationYears: _tmpDuration,
           feiXianGongType: FeiXianGongType.current,
-          endTime: startTime.add(Duration(hours: tmpDuration.toDaysInHour())),
+          endTime: startTime.add(Duration(hours: _tmpDuration.toDaysInHour())),
         );
-      } else if (tmpFeiGongPointer == 1) {
-        tmpDuration = oppositeDuration;
-        if (tmp.toTotalMonths() < oppositeDuration.toTotalMonths()) {
-          tmpDuration = YearMonth.fromMonths(tmp.toTotalMonths());
+      } else if (_tmpFeiGongPointer == 1) {
+        _tmpDuration = oppositeDuration;
+        if (_tmp.toTotalMonths() < oppositeDuration.toTotalMonths()) {
+          _tmpDuration = YearMonth.fromMonths(_tmp.toTotalMonths());
         }
         feiGongPalace = FeiXianDetailPalace(
           order: pointer,
           palace: currentGong.opposite,
           startAge: startAge,
-          endAge: startAge + tmpDuration,
+          endAge: startAge + _tmpDuration,
           startTime: startTime,
-          durationYears: tmpDuration,
+          durationYears: _tmpDuration,
           feiXianGongType: FeiXianGongType.opposite,
-          endTime: startTime.add(Duration(hours: tmpDuration.toDaysInHour())),
+          endTime: startTime.add(Duration(hours: _tmpDuration.toDaysInHour())),
         );
-      } else if (tmpFeiGongPointer == 2) {
-        tmpDuration = triangleDuration;
-        if (tmp.year < 1 && tmp.month > 0) {
-          tmpDuration = YearMonth.fromMonths(tmp.month);
+      } else if (_tmpFeiGongPointer == 2) {
+        _tmpDuration = triangleDuration;
+        if (_tmp.year < 1 && _tmp.month > 0) {
+          _tmpDuration = YearMonth.fromMonths(_tmp.month);
         }
         feiGongPalace = FeiXianDetailPalace(
           order: pointer,
           palace: EnumTwelveGong.getEnumTwelveGongByZhi(sanHeDiZhiList.first),
           startAge: startAge,
-          endAge: startAge + tmpDuration,
+          endAge: startAge + _tmpDuration,
           startTime: startTime,
-          durationYears: tmpDuration,
+          durationYears: _tmpDuration,
           feiXianGongType: triangleType,
           triangleIndex: 0,
-          endTime: startTime.add(Duration(hours: tmpDuration.toDaysInHour())),
+          endTime: startTime.add(Duration(hours: _tmpDuration.toDaysInHour())),
         );
       } else {
-        tmpDuration = triangleDuration;
-        if (tmp.year < 1 && tmp.month > 0) {
-          tmpDuration = YearMonth.fromMonths(tmp.month);
+        _tmpDuration = triangleDuration;
+        if (_tmp.year < 1 && _tmp.month > 0) {
+          _tmpDuration = YearMonth.fromMonths(_tmp.month);
         }
         feiGongPalace = FeiXianDetailPalace(
           order: pointer,
           palace: EnumTwelveGong.getEnumTwelveGongByZhi(sanHeDiZhiList.last),
           startAge: startAge,
-          endAge: startAge + tmpDuration,
+          endAge: startAge + _tmpDuration,
           startTime: startTime,
-          durationYears: tmpDuration,
+          durationYears: _tmpDuration,
           feiXianGongType: triangleType,
           triangleIndex: 1,
-          endTime: startTime.add(Duration(hours: tmpDuration.toDaysInHour())),
+          endTime: startTime.add(Duration(hours: _tmpDuration.toDaysInHour())),
         );
       }
       startTime = feiGongPalace.endTime;
       startAge = feiGongPalace.endAge;
       result.add(feiGongPalace);
-      tmp = tmp - feiGongPalace.durationYears;
+      _tmp = _tmp - feiGongPalace.durationYears;
       pointer++;
     }
 

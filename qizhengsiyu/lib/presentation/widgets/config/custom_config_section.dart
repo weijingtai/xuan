@@ -211,7 +211,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
               ),
               const SizedBox(height: AppTheme.spacing12),
               DropdownButtonFormField<String>(
-                initialValue: _classicBook.first,
+                value: _classicBook.first,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -308,7 +308,7 @@ class _CustomConfigSectionState extends State<CustomConfigSection> {
                   _updateConfig();
                 },
                 contentPadding: EdgeInsets.zero,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
               ),
 
               if (_useTraditionalCalculation)

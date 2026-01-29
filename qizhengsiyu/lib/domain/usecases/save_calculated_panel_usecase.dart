@@ -1,4 +1,4 @@
-import 'package:common/datamodel/divination_request_info_datamodel.dart';
+import 'package:common/datamodel/divination_data_model.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:flutter/rendering.dart';
 import 'package:uuid/uuid.dart';
@@ -30,7 +30,7 @@ class SaveCalculatedPanelUseCase {
     required BasePanelModel basicPanelModel,
     required BasePanelConfig panelConfig,
     required DivinationDatetimeModel divinationDatetimeModel,
-    required DivinationRequestInfoDataModel requestInfo,
+    required DivinationDataModel requestInfo,
   }) async {
     try {
       final uuid = _uuid.v4();
@@ -62,7 +62,7 @@ class SaveCalculatedPanelUseCase {
     required BasePanelModel basicPanelModel,
     required BasePanelConfig panelConfig,
     required DivinationDatetimeModel divinationDatetimeModel,
-    required DivinationRequestInfoDataModel requestInfo,
+    required DivinationDataModel requestInfo,
   }) async {
     try {
       final now = DateTime.now();

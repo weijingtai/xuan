@@ -1,9 +1,12 @@
+import 'dart:math';
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
+import 'package:json_annotation/json_annotation.dart';
 
 import 'package:qizhengsiyu/domain/entities/models/base_panel_model.dart'; // 使用domain层的模型
 
+import '../enums/enum_panel_system_type.dart';
 import '../enums/enum_twelve_gong.dart';
 import '../domain/managers/zhou_tian_calculator.dart'; // Using domain manager
 import '../domain/entities/models/observer_position.dart'; // 使用domain层的ObserverPosition

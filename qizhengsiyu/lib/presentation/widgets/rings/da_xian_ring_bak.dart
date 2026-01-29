@@ -218,7 +218,7 @@ class DaXianRing extends StatelessWidget {
         angle: 0,
         child: Text(
           i.toString(),
-          style: const TextStyle(height: 1, color: Colors.black),
+          style: TextStyle(height: 1, color: Colors.black),
           textAlign: TextAlign.center,
         ),
       ),
@@ -374,7 +374,7 @@ class _InteractiveDotState extends State<_InteractiveDot>
                     ],
                   ),
                   child: _isHovered
-                      ? const Icon(
+                      ? Icon(
                           Icons.star,
                           size: 8,
                           color: Colors.white,

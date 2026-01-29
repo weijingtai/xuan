@@ -99,7 +99,7 @@ class DaXianPalaceInfo {
   String toString() {
     String passagesStr =
         constellationPassages.map((p) => p.toString()).join('\n');
-    return 'Daxian $order: ${palace.name} ($durationYears)\n'
+    return 'Daxian ${order}: ${palace.name} ($durationYears)\n'
         '  Time: ${startTime.toIso8601String()} - ${endTime.toIso8601String()}\n'
         '  Age:  $startAge - $endAge\n'
         '  Rate: $rateYearsPerDegree yr/deg\n'

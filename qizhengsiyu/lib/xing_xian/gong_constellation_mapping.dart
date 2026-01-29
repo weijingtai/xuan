@@ -148,7 +148,7 @@ class PalaceConstellationSegment extends Equatable {
   final double segmentLengthDeg;
   final double? crossesConstellationAtPalaceDeg;
 
-  const PalaceConstellationSegment({
+  PalaceConstellationSegment({
     required this.constellationName,
     required this.startInConstellationDeg,
     required this.endInConstellationDeg,
@@ -201,7 +201,7 @@ class PalaceMappingResult extends Equatable {
   final double totalWidthDeg;
   final List<PalaceConstellationSegment> segments;
 
-  const PalaceMappingResult({
+  PalaceMappingResult({
     required this.palaceName,
     required this.absStartDeg,
     required this.absEndDeg,

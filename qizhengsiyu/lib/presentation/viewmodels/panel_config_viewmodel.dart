@@ -151,7 +151,9 @@ class PanelConfigViewModel extends ChangeNotifier {
   /// 构建完整的配置对象
   PanelConfig buildConfig() {
     // 如果位置信息为空，使用默认地址
-    _location ??= Address.defualtAddress;
+    if (_location == null) {
+      _location = Address.defualtAddress;
+    }
 
     if (_configType == EnumQueryType.destiny && _basicPersonInfo == null) {
       throw Exception('命理运势模式下，基本人物信息不能为空');

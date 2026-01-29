@@ -41,9 +41,9 @@ void main() {
       File('$projectRoot/assets/shen_sha/74_huayao_others.json');
   final othersHuaYaoJsonString = othersHuaYaoJsonFile.readAsStringSync();
   final othersHuaYaoList = json.decode(othersHuaYaoJsonString) as List;
-  for (var element in othersHuaYaoList) {
+  othersHuaYaoList.forEach((element) {
     print(element);
-  }
+  });
   List<OthersHuaYao> othersHuaYao =
       othersHuaYaoList.map((e) => OthersHuaYao.fromJson(e)).toList();
 

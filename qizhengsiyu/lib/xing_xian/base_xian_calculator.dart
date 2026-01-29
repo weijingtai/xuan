@@ -1,6 +1,8 @@
+import 'dart:math';
 
 import 'package:common/enums.dart';
 import 'package:common/module.dart';
+import 'package:json_annotation/json_annotation.dart';
 import 'package:qizhengsiyu/xing_xian/base_xian_palace.dart';
 
 import '../domain/entities/models/base_panel_model.dart';
@@ -8,6 +10,7 @@ import '../domain/entities/models/observer_position.dart';
 import '../domain/entities/models/star_enter_info.dart';
 import '../domain/entities/models/zhou_tian_model.dart';
 import '../domain/managers/zhou_tian_calculator.dart';
+import '../enums/enum_panel_system_type.dart';
 import '../enums/enum_twelve_gong.dart';
 import 'da_xian_constellation_passage_info.dart';
 import 'da_xian_palace_info.dart';

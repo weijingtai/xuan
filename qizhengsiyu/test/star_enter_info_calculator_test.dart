@@ -108,9 +108,7 @@ void main() {
       expect(res.degree, 15);
     });
     test('测试宫位查找 res2', () {
-      for (var e in newZiGong15Sequence) {
-        print(e.toJson());
-      }
+      newZiGong15Sequence.forEach((e) => print(e.toJson()));
       final res2 = StarEnterInfoCalculator.doFindGong(
         15,
         newZiGong15Sequence,

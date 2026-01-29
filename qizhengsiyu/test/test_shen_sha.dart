@@ -277,7 +277,7 @@ void main() {
   group("马前诸煞", () {
     test("甲子年 驿马寅", () async {
       final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-          shenShaManager.generateBeforeHorse(
+          await shenShaManager.generateBeforeHorse(
               JiaZi.JIA_ZI,
               bundledShenSha
                   .where((t) => t.type == BundledShenShaType.beforeHorse)
@@ -300,7 +300,7 @@ void main() {
 
     test("戊午年 驿马申", () async {
       final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-          shenShaManager.generateBeforeHorse(
+          await shenShaManager.generateBeforeHorse(
               JiaZi.WU_XU,
               bundledShenSha
                   .where((t) => t.type == BundledShenShaType.beforeHorse)
@@ -340,7 +340,7 @@ void main() {
       final diZhi = DiZhi.values[i];
       test("${diZhi.name}年", () async {
         final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-            shenShaManager.generateBeforeTaiSui(
+            await shenShaManager.generateBeforeTaiSui(
                 EnumTwelveGong.values[i],
                 bundledShenSha
                     .where((t) => t.type == BundledShenShaType.beforeJia)
@@ -386,7 +386,7 @@ void main() {
     for (int i = 0; i < 4; i++) {
       test("驿马在${yiMaList[i].name}", () async {
         final Map<EnumTwelveGong, List<BundledShenSha>> resultMapper =
-            shenShaManager.generateBeforeHorse(
+            await shenShaManager.generateBeforeHorse(
                 jiaZiList[i],
                 bundledShenSha
                     .where((t) => t.type == BundledShenShaType.beforeHorse)

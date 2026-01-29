@@ -508,9 +508,9 @@ class _BeautyViewPageState extends State<BeautyViewPage>
 
   Widget fourZhu(BodyLifeModel bodyLifeModel) {
     TextStyle titleTextStyle =
-        const TextStyle(fontSize: 14, height: 1.2, color: Colors.black38);
+        TextStyle(fontSize: 14, height: 1.2, color: Colors.black38);
     TextStyle infoTextStyle =
-        const TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.bold);
+        TextStyle(fontSize: 14, height: 1.2, fontWeight: FontWeight.bold);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -536,7 +536,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                             bodyLifeModel.lifeConstellatioin.sevenZheng]))
               ])),
             ]),
-        const SizedBox(
+        SizedBox(
           width: 24,
         ),
         Row(
@@ -574,8 +574,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
     //   return eigthChatPanel(position);
     // }),
 
-    TextStyle titleStyle = const TextStyle(fontSize: 12, height: 1.0);
-    TextStyle ganZhiStyle = const TextStyle(fontSize: 16, height: 1.0);
+    TextStyle titleStyle = TextStyle(fontSize: 12, height: 1.0);
+    TextStyle ganZhiStyle = TextStyle(fontSize: 16, height: 1.0);
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -592,7 +592,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             Text("卯", style: ganZhiStyle),
           ],
         ),
-        const SizedBox(
+        SizedBox(
           width: 6,
         ),
         Column(
@@ -604,7 +604,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             Text("丑", style: ganZhiStyle),
           ],
         ),
-        const SizedBox(
+        SizedBox(
           width: 6,
         ),
         Column(
@@ -619,7 +619,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             Text(observer.yearGanZhi.zhi.name, style: ganZhiStyle),
           ],
         ),
-        const SizedBox(
+        SizedBox(
           width: 6,
         ),
         Column(
@@ -631,7 +631,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             Text(observer.monthGanZhi.zhi.name, style: ganZhiStyle),
           ],
         ),
-        const SizedBox(
+        SizedBox(
           width: 6,
         ),
         Column(
@@ -646,7 +646,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
             Text(observer.dayGanZhi.zhi.name, style: ganZhiStyle),
           ],
         ),
-        const SizedBox(
+        SizedBox(
           width: 6,
         ),
         Column(
@@ -952,7 +952,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                     );
                   });
             },
-            child: SizedBox(
+            child: Container(
               width: panelSizeDataModel.innerShenShaSizeOuter,
               height: panelSizeDataModel.innerShenShaSizeOuter,
             ),
@@ -995,7 +995,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
                         );
                       });
                 },
-                child: SizedBox(
+                child: Container(
                   width: panelSizeDataModel.outerShenShaSizeOuter,
                   height: panelSizeDataModel.outerShenShaSizeOuter,
                 ));
@@ -1031,7 +1031,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   Widget build12DiZhiGong(
       double outerRadius, double innerRadius, ZhouTianModel zhouTianModel) {
     TextStyle firstTextStyle =
-        const TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
+        TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),
@@ -1039,7 +1039,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
       ),
     ]);
     TextStyle secondTextStyle =
-        const TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
+        TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),
@@ -1321,7 +1321,7 @@ class _BeautyViewPageState extends State<BeautyViewPage>
         height: height,
         width: 32,
         padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
             // border: BorderSide(color: Colors.black87, width: 1),
             // 底部 border
             border: Border(

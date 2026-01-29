@@ -56,7 +56,7 @@ class StarInfluenceModel<E> {
 
   @override
   String toString() {
-    return 'StarInfluenceModel(influenceType: $influenceType, starName: ${star.starName}, location: $location, entryDegree: $entryDegree)';
+    return 'StarInfluenceModel(influenceType: $influenceType, starName: ${star.starName}, location: ${location}, entryDegree: $entryDegree)';
   }
 }
 

@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:common/module.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import '../enums/enum_twelve_gong.dart';
 import 'star_influence_model.dart';
 
 part 'da_xian_constellation_passage_info.g.dart';

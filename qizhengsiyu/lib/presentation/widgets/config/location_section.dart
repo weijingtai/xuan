@@ -157,7 +157,7 @@ class _LocationSectionState extends State<LocationSection> {
                   _updateLocation();
                 },
                 contentPadding: EdgeInsets.zero,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
               ),
 
               // 真太阳时选项
@@ -172,7 +172,7 @@ class _LocationSectionState extends State<LocationSection> {
                   _updateLocation();
                 },
                 contentPadding: EdgeInsets.zero,
-                activeThumbColor: AppTheme.primaryColor,
+                activeColor: AppTheme.primaryColor,
               ),
 
               if (_isTrueSolarTime)

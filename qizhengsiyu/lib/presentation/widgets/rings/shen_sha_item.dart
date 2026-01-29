@@ -14,7 +14,7 @@ class ShenShaItem extends StatelessWidget {
   final double itemSize;
   final RingTextDirection shaTextDirection;
 
-  const ShenShaItem({super.key, 
+  const ShenShaItem({
     required this.name,
     required this.index,
     required this.totalCount,
@@ -25,7 +25,7 @@ class ShenShaItem extends StatelessWidget {
   });
 
   TextStyle getTextStyle() {
-    return const TextStyle(
+    return TextStyle(
       fontSize: 14,
       height: 1.2,
       color: Colors.black87,
@@ -78,7 +78,7 @@ class ShenShaItem extends StatelessWidget {
 
     // 2. 文字容器的旋转 (Transform.rotate around the text container itself):
     // 由于文字是横向的，并且我们希望它平行于起始半径（x轴），所以文字容器本身不需要旋转。
-    const double textContainerItselfRotation = 0; // 容器不旋转
+    final double textContainerItselfRotation = 0; // 容器不旋转
 
     // 3. 文字自身的旋转 (Transform.rotate for the Text widget):
     // a. 抵消父级 _ShenShaItem 的整体旋转
@@ -87,7 +87,7 @@ class ShenShaItem extends StatelessWidget {
     //    并且文字是横向的。如果希望文字朝向圆心，则需要旋转 pi 弧度。
     //    如果希望文字朝向外侧，则不需要额外旋转 (0 弧度)。
     //    这里我们让文字朝向外侧（即正常阅读方向，如果观察者在圆心外看）。
-    const double textOrientationRotation = 0; // 文字朝向外侧
+    final double textOrientationRotation = 0; // 文字朝向外侧
     // final double textOrientationRotation = math.pi; // 如果想让文字朝向圆心
 
     final double finalAngleForText =
@@ -151,7 +151,7 @@ class ShenShaItem extends StatelessWidget {
                     borderRadius: BorderRadius.circular(4), // 文字背景圆角
                     // color: Colors.blue.withOpacity(0.3), // 调试用
                     border: BoxBorder.fromLTRB(
-                        bottom: const BorderSide(color: Colors.black12, width: 1.0))),
+                        bottom: BorderSide(color: Colors.black12, width: 1.0))),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.start,

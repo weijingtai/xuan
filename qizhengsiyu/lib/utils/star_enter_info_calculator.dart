@@ -17,10 +17,10 @@ class StarEnterInfoCalculator {
     final newGongDegreeSeq = <GongDegree>[];
     Map<EnumTwelveGong, GongDegree> gongDegreeMap = Map.fromEntries(
         zhouTianModel.gongDegreeSeq.map((e) => MapEntry(e.gong, e)));
-    for (var element in reversedList) {
+    reversedList.forEach((element) {
       newGongDegreeSeq
           .add(gongDegreeMap[EnumTwelveGong.getEnumTwelveGongByZhi(element)]!);
-    }
+    });
   }
 
   List<EnteredInfo> calculate(List<StarDegree> starDegreeSeq) {
@@ -183,7 +183,7 @@ class StarEnterInfoCalculator {
     }
 
     print("starInnSeq: ${starInnSeq.map((e) => e).toList()}");
-    throw Exception('$targetDegree 未找到对应的星座');
+    throw Exception('${targetDegree} 未找到对应的星座');
   }
 
   static GongDegree doFindGong(double targetDegree, List<GongPosition> gongSeq,

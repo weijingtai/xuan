@@ -1,4 +1,3 @@
-import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/enums/enum_stars.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -162,7 +161,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// 从 DivinationInfoModel 生成 ObserverPosition
   ObserverPosition _generateLifeObserverPosition(
       DivinationInfoModel divinationInfoModel) {
-    DatatimeDivinationDetailsDataModel datetimeData =
+    BaseDivinationDatetimeDataModel datetimeData =
         divinationInfoModel.divinationDatetime;
 
     // 找到对应的占卜时间信息

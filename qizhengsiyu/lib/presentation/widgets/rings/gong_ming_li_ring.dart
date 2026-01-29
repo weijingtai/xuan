@@ -149,7 +149,7 @@ class GongShenShaRing extends StatelessWidget {
     // required this.angleOffset,
   }) {
     assert(outerRadius > innerRadius && innerRadius >= 0);
-    middleRadius = innerRadius + (outerRadius - innerRadius) / 2;
+    this.middleRadius = innerRadius + (outerRadius - innerRadius) / 2;
     isOdd = shenShaList.length % 2 != 0;
     halfCount = (shenShaList.length % 2 != 0)
         ? shenShaList.length ~/ 2 + 1
@@ -209,8 +209,8 @@ class GongShenShaRing extends StatelessWidget {
     // isOdd ? shenShaList.length ~/ 2 + 1 : shenShaList.length ~/ 2;
 
     bool isInner = j >= halfCount;
-    final currentOuterRadius = isInner ? middleRadius : outerRadius;
-    final currentInnerRadius = isInner ? innerRadius : middleRadius;
+    final _outerRadius = isInner ? middleRadius : outerRadius;
+    final _innerRadius = isInner ? innerRadius : middleRadius;
 
     final angleOffset = isInner ? innerAngleOffset : outerAngleOffset;
     final sweepRadians = isInner ? innerSweepRadians : outerSweepRadians;
@@ -225,8 +225,8 @@ class GongShenShaRing extends StatelessWidget {
         index: index,
         angleOffset: angleOffset,
         totalCount: shenShaList.length,
-        outerRadius: currentOuterRadius,
-        innerRadius: currentInnerRadius,
+        outerRadius: _outerRadius,
+        innerRadius: _innerRadius,
         itemSize: itemSize,
         textDirection: RingTextDirection.gravity,
         startAngle: (gongAngleOffset + eachAngleOffset) * math.pi / 180,
@@ -270,8 +270,8 @@ class GongShenShaRing extends StatelessWidget {
     for (var j = 0; j < shenShaList.length; j++) {
       // 确定神煞是在内圈还是外圈
       bool isInner = j > halfCount;
-      final currentOuterRadius = isInner ? middleRadius : outerRadius;
-      final currentInnerRadius = isInner ? innerRadius : middleRadius;
+      final _outerRadius = isInner ? middleRadius : outerRadius;
+      final _innerRadius = isInner ? innerRadius : middleRadius;
 
       final angleOffset = isInner ? innerAngleOffset : outerAngleOffset;
       final sweepRadians = isInner ? innerSweepRadians : outerSweepRadians;
@@ -283,8 +283,8 @@ class GongShenShaRing extends StatelessWidget {
           index: isInner ? j - halfCount - 1 : j,
           angleOffset: angleOffset,
           totalCount: shenShaList.length,
-          outerRadius: currentOuterRadius,
-          innerRadius: currentInnerRadius,
+          outerRadius: _outerRadius,
+          innerRadius: _innerRadius,
           itemSize: itemSize,
           textDirection: RingTextDirection.gravity,
           startAngle: (gongAngleOffset + eachAngleOffset) * math.pi / 180,
@@ -466,7 +466,7 @@ class _ShenShaItem extends StatelessWidget {
         startAngle ?? (2 * math.pi * index / totalCount);
 
     // 文字自身的旋转
-    const double textOrientationRotation = 0; // 文字朝向外侧
+    final double textOrientationRotation = 0; // 文字朝向外侧
     final double finalAngleForText =
         -baseItemRotation + textOrientationRotation;
     final Offset textOffset = Offset(offsetX, offsetY);

@@ -20,8 +20,8 @@ class DaXianCalculateHelper {
   static List<List<double>> transformNumbers(List<double> numbers) {
     List<List<double>> outputLists = [];
     double prevRemFrac = 0.0; // 用于记录前一个列表末尾剩余的小数部分
-    const double epsilon = 1e-9; // 用于浮点数比较的阈值
-    const double quarter = 0.25; // 明确最小小数单位，用于可能的浮点纠正
+    final double epsilon = 1e-9; // 用于浮点数比较的阈值
+    final double quarter = 0.25; // 明确最小小数单位，用于可能的浮点纠正
 
     for (int i = 0; i < numbers.length; i++) {
       double num = numbers[i];
@@ -168,7 +168,7 @@ class DaXianCalculateHelper {
   @Deprecated("请使用 transformNumbers")
   static List<List<double>> convertNumbers(List<double> numbers) {
     List<List<double>> result = [];
-    double aPrev = 0.0; // 上一个数字的结束小数
+    double a_prev = 0.0; // 上一个数字的结束小数
 
     for (int i = 0; i < numbers.length; i++) {
       double num = numbers[i];
@@ -180,17 +180,17 @@ class DaXianCalculateHelper {
         List<double> firstList = List.filled(integerPart, 1.0, growable: true);
         if (fractionalPart > 0) {
           firstList.add(fractionalPart);
-          aPrev = fractionalPart;
+          a_prev = fractionalPart;
         } else {
-          aPrev = 0.0;
+          a_prev = 0.0;
         }
         result.add(firstList);
       } else {
         // 处理后续数字
-        double b = 1.0 - aPrev;
-        double s = fractionalPart + aPrev;
+        double b = 1.0 - a_prev;
+        double s = fractionalPart + a_prev;
         int k = s.floor();
-        double aI = s - k; // 当前数字的结束小数
+        double a_i = s - k; // 当前数字的结束小数
 
         List<double> currentList = [b];
         int onesCount = integerPart - 1 + k;
@@ -199,12 +199,12 @@ class DaXianCalculateHelper {
           currentList.addAll(List.filled(onesCount, 1.0));
         }
 
-        if (aI > 0) {
-          currentList.add(aI);
+        if (a_i > 0) {
+          currentList.add(a_i);
         }
 
         result.add(currentList);
-        aPrev = aI; // 更新结束小数供下一个数字使用
+        a_prev = a_i; // 更新结束小数供下一个数字使用
       }
     }
 

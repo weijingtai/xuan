@@ -115,7 +115,7 @@ void main() {
       ZhouTianModel? zhouTianModel =
           ZhouTianModelManager.instance.getZhouTianModelBy(panelConfig);
       expect(zhouTianModel, isNotNull);
-      expect(zhouTianModel.panelSystemType, PanelSystemType.tropical);
+      expect(zhouTianModel!.panelSystemType, PanelSystemType.tropical);
       expect(zhouTianModel.constellationSystemType,
           ConstellationSystemType.classical);
       expect(zhouTianModel.systemType, CelestialCoordinateSystem.ecliptic);
@@ -504,13 +504,13 @@ void main() {
 }
 
 Future<Map<String, ZhouTianModel>> loadFromFiles(List<String> filePaths) async {
-  Map<String, ZhouTianModel> mapper = {};
+  Map<String, ZhouTianModel> _mapper = {};
   for (String filePath in filePaths) {
     File file = File(filePath);
     String jsonString = await file.readAsString();
     Map<String, dynamic> jsonMap = json.decode(jsonString);
     ZhouTianModel model = ZhouTianModel.fromJson(jsonMap);
-    mapper[model.epochCorrection] = model;
+    _mapper[model.epochCorrection] = model;
   }
-  return mapper; // Return the mapper as the resul
+  return _mapper; // Return the mapper as the resul
 }

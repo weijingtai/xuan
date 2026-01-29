@@ -82,55 +82,55 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: SizedBox(
+      body: Container(
           height: 1300,
           width: 1400,
           child: Row(
             children: [
               // 在 build 方法中
-              SizedBox(
+              Container(
                 width: 480 * 2,
                 height: 480 * 2,
                 child: Stack(alignment: Alignment.center, children: [
-                  const Normal12GongRing(
+                  Normal12GongRing(
                     outerRadius: 190,
                     innerRadius: 150,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
-                      EnumTwelveGong.Chou: const ["相貌"],
-                      EnumTwelveGong.Zi: const ["命宫"],
-                      EnumTwelveGong.Yin: const ["福德"],
-                      EnumTwelveGong.Mao: const ["官禄"],
-                      EnumTwelveGong.Chen: const ["迁移"],
-                      EnumTwelveGong.Si: const ["疾厄"],
-                      EnumTwelveGong.Wu: const ["夫妻"],
-                      EnumTwelveGong.Wei: const ["奴仆"],
-                      EnumTwelveGong.Shen: const ["男女"],
-                      EnumTwelveGong.You: const ["田宅"],
-                      EnumTwelveGong.Xu: const ["兄弟"],
-                      EnumTwelveGong.Hai: const ["财帛"],
+                      EnumTwelveGong.Chou: ["相貌"],
+                      EnumTwelveGong.Zi: ["命宫"],
+                      EnumTwelveGong.Yin: ["福德"],
+                      EnumTwelveGong.Mao: ["官禄"],
+                      EnumTwelveGong.Chen: ["迁移"],
+                      EnumTwelveGong.Si: ["疾厄"],
+                      EnumTwelveGong.Wu: ["夫妻"],
+                      EnumTwelveGong.Wei: ["奴仆"],
+                      EnumTwelveGong.Shen: ["男女"],
+                      EnumTwelveGong.You: ["田宅"],
+                      EnumTwelveGong.Xu: ["兄弟"],
+                      EnumTwelveGong.Hai: ["财帛"],
                     },
                     zhouTianModel: null,
                   ),
-                  const Normal12GongRing(
+                  Normal12GongRing(
                     outerRadius: 150,
                     innerRadius: 130,
                     baseGongOffsetAngle: 60,
                     // angleOffset: 3,
                     shenShaMapper: {
-                      EnumTwelveGong.Zi: const ["水瓶"],
-                      EnumTwelveGong.Chou: const ["摩羯"],
-                      EnumTwelveGong.Yin: const ["射手"],
-                      EnumTwelveGong.Mao: const ["天蝎"],
-                      EnumTwelveGong.Chen: const ["天枰"],
-                      EnumTwelveGong.Si: const ["处女"],
-                      EnumTwelveGong.Wu: const ["狮子"],
-                      EnumTwelveGong.Wei: const ["巨蟹"],
-                      EnumTwelveGong.Shen: const ["双子"],
-                      EnumTwelveGong.You: const ["金牛"],
-                      EnumTwelveGong.Xu: const ["白羊"],
-                      EnumTwelveGong.Hai: const ["双鱼"],
+                      EnumTwelveGong.Zi: ["水瓶"],
+                      EnumTwelveGong.Chou: ["摩羯"],
+                      EnumTwelveGong.Yin: ["射手"],
+                      EnumTwelveGong.Mao: ["天蝎"],
+                      EnumTwelveGong.Chen: ["天枰"],
+                      EnumTwelveGong.Si: ["处女"],
+                      EnumTwelveGong.Wu: ["狮子"],
+                      EnumTwelveGong.Wei: ["巨蟹"],
+                      EnumTwelveGong.Shen: ["双子"],
+                      EnumTwelveGong.You: ["金牛"],
+                      EnumTwelveGong.Xu: ["白羊"],
+                      EnumTwelveGong.Hai: ["双鱼"],
                     },
                     zhouTianModel: null,
                   ),
@@ -167,15 +167,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Tuple2<String, String?> toStringDegree(double degree) {
     var mingGongDegree = degree.toString();
-    List<String> tmpList = mingGongDegree.split(".");
-    var mingGongDegreeFirstPart = tmpList[0];
+    List<String> _tmpList = mingGongDegree.split(".");
+    var mingGongDegreeFirstPart = _tmpList[0];
     String? mingGongDegreeSecondPar;
-    if (tmpList.length > 1) {
-      mingGongDegreeFirstPart = tmpList[0] + ".";
-      mingGongDegreeSecondPar = tmpList[1] + "°";
+    if (_tmpList.length > 1) {
+      mingGongDegreeFirstPart = _tmpList[0] + ".";
+      mingGongDegreeSecondPar = _tmpList[1] + "°";
       return Tuple2(mingGongDegreeFirstPart, mingGongDegreeSecondPar);
     } else {
-      mingGongDegreeFirstPart = tmpList[0] + "°";
+      mingGongDegreeFirstPart = _tmpList[0] + "°";
       return Tuple2(mingGongDegreeFirstPart, null);
     }
   }
@@ -330,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget build12DiZhiGong(double outerRadius, double innerRadius) {
     TextStyle firstTextStyle =
-        const TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
+        TextStyle(fontSize: 18, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),
@@ -338,7 +338,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     ]);
     TextStyle secondTextStyle =
-        const TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
+        TextStyle(fontSize: 12, height: 1.0, color: Colors.black87, shadows: [
       Shadow(
         color: Colors.black26,
         offset: Offset(1, 1),

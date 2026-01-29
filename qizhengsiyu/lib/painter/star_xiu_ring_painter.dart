@@ -2,6 +2,7 @@ import 'package:common/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:qizhengsiyu/enums/enum_qi_zheng.dart';
 import 'dart:math' as math;
 
 import '../domain/entities/models/star_inn_gong_degree.dart'; // 使用domain层的模型
