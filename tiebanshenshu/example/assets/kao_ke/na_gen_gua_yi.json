@@ -1,0 +1,17 @@
+{
+    "name": "纳艮卦（乙表）",
+    "description": "用来推查儿子的生肖",
+    "zhiMapper": {
+        "子": {"chiperText": "甲丙甲丙戊", "chiperNumber": 12123},
+        "丑": {"chiperText": "甲丙甲戊戊", "chiperNumber": 12133},
+        "寅": {"chiperText": "申丙甲庚戊", "chiperNumber": 12143},
+        "卯": {"chiperText": "甲丙甲壬戊", "chiperNumber": 12153},
+        "辰": {"chiperText": "甲丙甲乙戊", "chiperNumber": 12163},
+        "巳": {"chiperText": "甲丙甲丁戊", "chiperNumber": 12173},
+        "午": {"chiperText": "甲丙甲己戊", "chiperNumber": 12183},
+        "未": {"chiperText": "甲丙甲辛戊", "chiperNumber": 12193},
+        "申": {"chiperText": "甲丙丙癸戊", "chiperNumber": 12203},
+        "酉": {"chiperText": "甲丙丙丙戊", "chiperNumber": 12213},
+        "亥": {"chiperText": "甲丙丙戊戊", "chiperNumber": 12233}
+    }
+}

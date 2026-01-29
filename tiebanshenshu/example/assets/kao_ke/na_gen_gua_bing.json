@@ -1,0 +1,18 @@
+{
+    "name": "纳艮卦（丙表）",
+    "description": "女儿相关密数表",
+    "zhiMapper": {
+        "子": {"chiperText": "甲丙丙庚戊", "chiperNumber": 12243},
+        "丑": {"chiperText": "甲丙丙壬戊", "chiperNumber": 12253},
+        "寅": {"chiperText": "甲丙丙乙戊", "chiperNumber": 12263},
+        "卯": {"chiperText": "甲丙丙丁戊", "chiperNumber": 12273},
+        "辰": {"chiperText": "甲丙丙己戊", "chiperNumber": 12283},
+        "巳": {"chiperText": "甲丙丙辛戊", "chiperNumber": 12293},
+        "午": {"chiperText": "甲丙丙癸戊", "chiperNumber": 12303},
+        "未": {"chiperText": "甲丙戊甲戊", "chiperNumber": 12313},
+        "申": {"chiperText": "甲丙戊丙戊", "chiperNumber": 12323},
+        "酉": {"chiperText": "甲丙戊戊戊", "chiperNumber": 12333},
+        "戌": {"chiperText": "甲丙戊庚戊", "chiperNumber": 12343},
+        "亥": {"chiperText": "甲丙戊壬戊", "chiperNumber": 12353}
+    }
+}

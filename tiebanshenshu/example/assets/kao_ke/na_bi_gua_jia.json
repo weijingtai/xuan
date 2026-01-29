@@ -1,0 +1,16 @@
+{
+    "name": "纳比卦（甲表）",
+    "description": "推查兄弟若干先天定数",
+    "gongEachList": [
+        {"chiperText": "丁丁乙庚", "chiperNumber": 7764},
+        {"chiperText": "丁壬庚甲", "chiperNumber": 7541},
+        {"chiperText": "丁乙壬辛", "chiperNumber": 7659},
+        {"chiperText": "丁辛丁戊", "chiperNumber": 7973},
+        {"chiperText": "丁丁庚戊", "chiperNumber": 7743},
+        {"chiperText": "戊庚己己", "chiperNumber": 8488},
+        {"chiperText": "戊壬甲丁", "chiperNumber": 3517},
+        {"chiperText": "戊壬庚辛", "chiperNumber": 3549},
+        {"chiperText": "戊乙壬乙", "chiperNumber": 3656},
+        {"chiperText": "戊庚乙己", "chiperNumber": 3468}
+    ]
+}
