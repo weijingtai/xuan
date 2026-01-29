@@ -1,7 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/qian_hou_gua_strategy.dart';
 import 'package:tiebanshenshu/domain/models/qian_hou_gua_base_number_model.dart';
 

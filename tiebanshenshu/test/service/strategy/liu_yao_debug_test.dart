@@ -2,7 +2,6 @@ import 'package:common/enums.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/liu_yao_gan_zhi_he_strategy.dart';
 
 void main() {

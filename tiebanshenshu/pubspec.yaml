@@ -62,15 +62,6 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  assets:
-    - assets/all_tiao_wen_v1.csv
-    - assets/formulas/
-    - assets/kao_ke/
-
-  # 添加着色器声明以支持fl_nodes包
-  shaders:
-    - packages/fl_nodes/shaders/grid.frag
-
   # To add Flutter specific assets to your application, add an assets section,
   # like this:
   # assets:

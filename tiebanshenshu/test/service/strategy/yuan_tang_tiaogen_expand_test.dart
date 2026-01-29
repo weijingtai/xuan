@@ -2,7 +2,6 @@ import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/yuan_tang_strategy.dart';
 
 /// 元堂卦取数法 - 条文扩展测试

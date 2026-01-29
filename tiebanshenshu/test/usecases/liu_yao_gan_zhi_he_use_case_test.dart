@@ -1,6 +1,5 @@
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/domain/models/base_number_model_result.dart';
 import 'package:tiebanshenshu/domain/models/liu_yao_gan_zhi_he_base_number_model.dart';
 import 'package:tiebanshenshu/repository/datamodels/tiao_wen_datamodel.dart';

@@ -1,7 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/gua_yao_gan_zhi_he_strategy.dart';
 import 'package:tiebanshenshu/domain/models/gua_yao_gan_zhi_he_base_number_model.dart';
 
@@ -39,8 +38,12 @@ void main() {
       print('\n=== Year Pillar DEBUG ===');
       print('GanZhi: ${yearModel.ganzhi.name}');
       print('Gua64: ${yearModel.gua64.name}');
-      print('Upper: ${yearModel.upperGua.name}, Lower: ${yearModel.lowerGua.name}');
-      print('LowerSum: ${yearModel.lowerGuaSum}, UpperSum: ${yearModel.upperGuaSum}');
+      print(
+        'Upper: ${yearModel.upperGua.name}, Lower: ${yearModel.lowerGua.name}',
+      );
+      print(
+        'LowerSum: ${yearModel.lowerGuaSum}, UpperSum: ${yearModel.upperGuaSum}',
+      );
       print('Formula: ${yearModel.formula}');
       print('BaseNumber: ${yearModel.baseNumber}');
       print('\nYaoDetails (with position check):');
@@ -51,36 +54,49 @@ void main() {
         final guaType = i < 3 ? 'LOWER' : 'UPPER';
         print('  Position $i [$guaType]: ${yao.toString()}');
         if (!yao.isFiltered) {
-          if (i < 3) lowerCalc += yao.yaoSum;
-          else upperCalc += yao.yaoSum;
+          if (i < 3)
+            lowerCalc += yao.yaoSum;
+          else
+            upperCalc += yao.yaoSum;
         }
       }
       print('\nManual calculation:');
       print('  Lower sum (positions 0-2, excluding filtered): $lowerCalc');
       print('  Upper sum (positions 3-5, excluding filtered): $upperCalc');
-      print('  Result: $upperCalc * 100 + $lowerCalc = ${upperCalc * 100 + lowerCalc}');
+      print(
+        '  Result: $upperCalc * 100 + $lowerCalc = ${upperCalc * 100 + lowerCalc}',
+      );
 
       print('\n=== Month Pillar ===');
       print('GanZhi: ${monthModel.ganzhi.name}');
       print('Gua64: ${monthModel.gua64.name}');
-      print('Upper: ${monthModel.upperGua.name}, Lower: ${monthModel.lowerGua.name}');
+      print(
+        'Upper: ${monthModel.upperGua.name}, Lower: ${monthModel.lowerGua.name}',
+      );
       print('BaseNumber: ${monthModel.baseNumber}');
 
       print('\n=== Day Pillar ===');
       print('GanZhi: ${dayModel.ganzhi.name}');
       print('Gua64: ${dayModel.gua64.name}');
-      print('Upper: ${dayModel.upperGua.name}, Lower: ${dayModel.lowerGua.name}');
+      print(
+        'Upper: ${dayModel.upperGua.name}, Lower: ${dayModel.lowerGua.name}',
+      );
       print('BaseNumber: ${dayModel.baseNumber}');
 
       print('\n=== Time Pillar ===');
       print('GanZhi: ${timeModel.ganzhi.name}');
       print('Gua64: ${timeModel.gua64.name}');
-      print('Upper: ${timeModel.upperGua.name}, Lower: ${timeModel.lowerGua.name}');
+      print(
+        'Upper: ${timeModel.upperGua.name}, Lower: ${timeModel.lowerGua.name}',
+      );
       print('BaseNumber: ${timeModel.baseNumber}');
 
-
       expect(yearModel.baseNumber, equals(3342), reason: 'Year should be 3342');
-      expect(monthModel.baseNumber, equals(3326), reason: 'Month should be 3326');
+      expect(
+        monthModel.baseNumber,
+        equals(3326),
+        reason: 'Month should be 3326',
+      );
       expect(dayModel.baseNumber, equals(3945), reason: 'Day should be 3945');
       expect(timeModel.baseNumber, equals(2648), reason: 'Time should be 2648');
     });

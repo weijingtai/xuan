@@ -3,7 +3,6 @@ import 'package:common/models/eight_chars.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/gua_zhong_strategy.dart';
 import 'package:tiebanshenshu/domain/models/gua_zhong_base_number_model.dart';
 
@@ -33,7 +32,9 @@ void main() {
       // 使用DevConstant.dev_usa的数据（年月卦上卦为震卦）
       final eightChars = DevConstant.dev_usa.standeredChineseInfo.eightChars;
 
-      print('四柱: ${eightChars.year} ${eightChars.month} ${eightChars.day} ${eightChars.time}');
+      print(
+        '四柱: ${eightChars.year} ${eightChars.month} ${eightChars.day} ${eightChars.time}',
+      );
 
       final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
@@ -42,17 +43,24 @@ void main() {
 
       final model = result.baseNumbers.first as GuaZhongBaseNumberModel;
 
-      print('年月卦上卦: ${model.nianYueUpperGuaName} (先天数: ${model.nianYueUpperGuaXiantianNumber})');
-      print('年月卦下卦: ${model.nianYueLowerGuaName} (先天数: ${model.nianYueLowerGuaXiantianNumber})');
+      print(
+        '年月卦上卦: ${model.nianYueUpperGuaName} (先天数: ${model.nianYueUpperGuaXiantianNumber})',
+      );
+      print(
+        '年月卦下卦: ${model.nianYueLowerGuaName} (先天数: ${model.nianYueLowerGuaXiantianNumber})',
+      );
 
       // 验证是否触发震卦场景
       if (model.nianYueUpperGuaXiantianNumber == 4) {
         print('✓ 年月卦上卦为震卦(4) - 触发千位=10场景!');
 
         // 验证三种方案的千位计算
-        final plan1Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan1 / 1000).floor();
-        final plan2Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan2 / 1000).floor();
-        final plan3Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan3 / 1000).floor();
+        final plan1Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan1 / 1000)
+            .floor();
+        final plan2Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan2 / 1000)
+            .floor();
+        final plan3Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan3 / 1000)
+            .floor();
 
         print('\n千位验证:');
         print('  方案1千位: $plan1Qianwei (预期: 1)');
@@ -69,8 +77,16 @@ void main() {
       // 验证总条文数量
       final allTiaoWen = model.allTiaoWenNumbers;
       print('\n总条文数: ${allTiaoWen.length}');
-      expect(allTiaoWen.length, greaterThanOrEqualTo(4), reason: '至少应该有4个去重后的条文编号');
-      expect(allTiaoWen.length, lessThanOrEqualTo(12), reason: '最多应该有12个条文编号（4个位置 × 3种方案）');
+      expect(
+        allTiaoWen.length,
+        greaterThanOrEqualTo(4),
+        reason: '至少应该有4个去重后的条文编号',
+      );
+      expect(
+        allTiaoWen.length,
+        lessThanOrEqualTo(12),
+        reason: '最多应该有12个条文编号（4个位置 × 3种方案）',
+      );
 
       // 验证所有12个原始条文编号都已生成
       print('\n年月卦主卦三种方案:');
@@ -123,7 +139,9 @@ void main() {
         time: JiaZi.getFromGanZhiValue('丁卯')!,
       );
 
-      print('四柱: ${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name}');
+      print(
+        '四柱: ${eightChars.year.name} ${eightChars.month.name} ${eightChars.day.name} ${eightChars.time.name}',
+      );
 
       final params = GuaZhongStrategyParams(eightChars: eightChars);
       final result = strategy.calculate(params);
@@ -132,8 +150,12 @@ void main() {
 
       final model = result.baseNumbers.first as GuaZhongBaseNumberModel;
 
-      print('年月卦上卦: ${model.nianYueUpperGuaName} (先天数: ${model.nianYueUpperGuaXiantianNumber})');
-      print('年月卦下卦: ${model.nianYueLowerGuaName} (先天数: ${model.nianYueLowerGuaXiantianNumber})');
+      print(
+        '年月卦上卦: ${model.nianYueUpperGuaName} (先天数: ${model.nianYueUpperGuaXiantianNumber})',
+      );
+      print(
+        '年月卦下卦: ${model.nianYueLowerGuaName} (先天数: ${model.nianYueLowerGuaXiantianNumber})',
+      );
 
       // 验证千位计算
       final xiantianNum = model.nianYueUpperGuaXiantianNumber;
@@ -143,9 +165,12 @@ void main() {
 
       if (xiantianNum != 4) {
         // 非震卦场景，三种方案应该结果相同
-        final plan1Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan1 / 1000).floor();
-        final plan2Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan2 / 1000).floor();
-        final plan3Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan3 / 1000).floor();
+        final plan1Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan1 / 1000)
+            .floor();
+        final plan2Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan2 / 1000)
+            .floor();
+        final plan3Qianwei = (model.nianYueZhuGuaTiaoWenNumber_Plan3 / 1000)
+            .floor();
 
         print('  方案1千位: $plan1Qianwei');
         print('  方案2千位: $plan2Qianwei');
@@ -197,7 +222,9 @@ void main() {
       // 验证每个位置都有三种方案
       final positions = ['年月卦主卦', '年月卦互卦', '日时卦主卦', '日时卦互卦'];
       for (final pos in positions) {
-        final posNumbers = numbersWithLabel.where((item) => item.$3 == pos).toList();
+        final posNumbers = numbersWithLabel
+            .where((item) => item.$3 == pos)
+            .toList();
         expect(posNumbers.length, 3, reason: '$pos 应该有3个方案');
 
         // 验证包含方案1, 2, 3
@@ -288,27 +315,42 @@ void main() {
 
         // 方案1: 千位=1
         final expectedPlan1 = 1 * 1000 + baiWei * 100 + shiWei * 10 + geWei;
-        print('  方案1预期: 1 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan1');
+        print(
+          '  方案1预期: 1 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan1',
+        );
 
         // 方案2: 千位=4
         final expectedPlan2 = 4 * 1000 + baiWei * 100 + shiWei * 10 + geWei;
-        print('  方案2预期: 4 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan2');
+        print(
+          '  方案2预期: 4 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan2',
+        );
 
         // 方案3: 千位=10
         final expectedPlan3 = 10 * 1000 + baiWei * 100 + shiWei * 10 + geWei;
-        print('  方案3预期: 10 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan3');
+        print(
+          '  方案3预期: 10 * 1000 + $baiWei * 100 + $shiWei * 10 + $geWei = $expectedPlan3',
+        );
 
         print('\n实际结果:');
         print('  方案1实际: ${model.nianYueZhuGuaTiaoWenNumber_Plan1}');
         print('  方案2实际: ${model.nianYueZhuGuaTiaoWenNumber_Plan2}');
         print('  方案3实际: ${model.nianYueZhuGuaTiaoWenNumber_Plan3}');
 
-        expect(model.nianYueZhuGuaTiaoWenNumber_Plan1, expectedPlan1,
-            reason: '方案1条文编号应该匹配手动计算');
-        expect(model.nianYueZhuGuaTiaoWenNumber_Plan2, expectedPlan2,
-            reason: '方案2条文编号应该匹配手动计算');
-        expect(model.nianYueZhuGuaTiaoWenNumber_Plan3, expectedPlan3,
-            reason: '方案3条文编号应该匹配手动计算');
+        expect(
+          model.nianYueZhuGuaTiaoWenNumber_Plan1,
+          expectedPlan1,
+          reason: '方案1条文编号应该匹配手动计算',
+        );
+        expect(
+          model.nianYueZhuGuaTiaoWenNumber_Plan2,
+          expectedPlan2,
+          reason: '方案2条文编号应该匹配手动计算',
+        );
+        expect(
+          model.nianYueZhuGuaTiaoWenNumber_Plan3,
+          expectedPlan3,
+          reason: '方案3条文编号应该匹配手动计算',
+        );
 
         print('✓ 精确计算验证通过');
       } else {

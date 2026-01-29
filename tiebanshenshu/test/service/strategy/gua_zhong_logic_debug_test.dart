@@ -3,7 +3,6 @@ import 'package:common/shared/enums/enum_jia_zi.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/service/strategy/gua_zhong_strategy.dart';
 
 void main() {
@@ -170,8 +169,8 @@ void main() {
       final eightChars = EightChars(
         year: JiaZi.getFromGanZhiValue('癸卯')!,
         month: JiaZi.getFromGanZhiValue('癸亥')!,
-        day: JiaZi.getFromGanZhiValue('癸亥')!,  // 癸(10) + 亥(3) = 13
-        time: JiaZi.getFromGanZhiValue('癸卯')!,  // 癸(10) + 卯(9) = 19
+        day: JiaZi.getFromGanZhiValue('癸亥')!, // 癸(10) + 亥(3) = 13
+        time: JiaZi.getFromGanZhiValue('癸卯')!, // 癸(10) + 卯(9) = 19
       );
 
       print('日柱: 癸亥 → 癸(10) + 亥(3) = 13');

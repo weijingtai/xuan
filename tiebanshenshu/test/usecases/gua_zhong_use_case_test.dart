@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:common/dev_constant.dart';
-import 'package:tiebanshenshu/domain/four_zhu.dart';
 import 'package:tiebanshenshu/repository/repository_factory.dart';
 import 'package:tiebanshenshu/service/strategy/gua_zhong_strategy.dart';
 import 'package:tiebanshenshu/usecases/gua_zhong_tiao_wen_list_use_case.dart';
