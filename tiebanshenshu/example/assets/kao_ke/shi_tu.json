@@ -1,0 +1,18 @@
+{
+    "name": "师徒爻密数",
+    "description": "推查师父生年的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "甲甲月庚壬", "chiperNumber": 11045, "yearGanZhi": "甲子"},
+        "丑": {"chiperText": "甲甲月辛壬", "chiperNumber": 11096, "yearGanZhi": "乙丑"},
+        "寅": {"chiperText": "甲甲甲庚壬", "chiperNumber": 11145, "yearGanZhi": "甲寅"},
+        "卯": {"chiperText": "甲甲甲辛壬", "chiperNumber": 11195, "yearGanZhi": "乙卯"},
+        "辰": {"chiperText": "甲甲丙庚壬", "chiperNumber": 11245, "yearGanZhi": "甲辰"},
+        "巳": {"chiperText": "甲甲丙辛壬", "chiperNumber": 11295, "yearGanZhi": "乙巳"},
+        "午": {"chiperText": "甲甲戊庚壬", "chiperNumber": 11345, "yearGanZhi": "甲午"},
+        "未": {"chiperText": "甲甲戊辛壬", "chiperNumber": 11395, "yearGanZhi": "乙未"},
+        "申": {"chiperText": "甲甲庚庚壬", "chiperNumber": 11445, "yearGanZhi": "甲申"},
+        "酉": {"chiperText": "甲甲庚辛壬", "chiperNumber": 11495, "yearGanZhi": "乙酉"},
+        "戌": {"chiperText": "甲甲壬庚壬", "chiperNumber": 11545, "yearGanZhi": "甲戌"},
+        "亥": {"chiperText": "甲甲壬辛壬", "chiperNumber": 11595, "yearGanZhi": "乙亥"}
+    }
+}

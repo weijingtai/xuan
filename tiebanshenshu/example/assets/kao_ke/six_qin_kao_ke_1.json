@@ -1,0 +1,129 @@
+{
+  "name": "六亲考刻一",
+  "source": "《图解易经铁板神数》",
+  "description": [
+    "出生时刻与父母、兄弟（姊妹）情况的对照表。可由出生时刻推知父母、兄弟（姊妹）的情况，也可由已知父母、兄弟（姊妹）的命运考定刻分"
+  ],
+  "shiChenKeMapper": {
+    "子": [
+      {"shiChen": "子", "ke": "first", "parentsInfo": "父母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "子", "ke": "second", "parentsInfo": "母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "子", "ke": "third", "parentsInfo": "父母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "子", "ke": "fourth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "子", "ke": "fifth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "子", "ke": "sixth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "子", "ke": "seventh", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "子", "ke": "eighth", "parentsInfo": "父丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "坎艮震"}
+    ],
+    "丑": [
+      {"shiChen": "丑", "ke": "first", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "丑", "ke": "second", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "乾上爻"},
+      {"shiChen": "丑", "ke": "third", "parentsInfo": "父丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "丑", "ke": "fourth", "parentsInfo": "母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "丑", "ke": "fifth", "parentsInfo": "母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "丑", "ke": "sixth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "丑", "ke": "seventh", "parentsInfo": "父母寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "丑", "ke": "eighth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "艮坎震"}
+    ],
+    "寅": [
+      {"shiChen": "寅", "ke": "first", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "寅", "ke": "second", "parentsInfo": "父母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "寅", "ke": "third", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "寅", "ke": "fourth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "寅", "ke": "fifth", "parentsInfo": "父丧", "siblingsInfo": "弟兄多", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "寅", "ke": "sixth", "parentsInfo": "母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "寅", "ke": "seventh", "parentsInfo": "父母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "寅", "ke": "eighth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "艮坎震"}
+    ],
+    "卯": [
+      {"shiChen": "卯", "ke": "first", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "卯", "ke": "second", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "卯", "ke": "third", "parentsInfo": "父母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "卯", "ke": "fourth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "卯", "ke": "fifth", "parentsInfo": "父丧", "siblingsInfo": "弟兄多", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "卯", "ke": "sixth", "parentsInfo": "母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "卯", "ke": "seventh", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "卯", "ke": "eighth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ],
+    "辰": [
+      {"shiChen": "辰", "ke": "first", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄三四", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "辰", "ke": "second", "parentsInfo": "父母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "辰", "ke": "third", "parentsInfo": "父母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "辰", "ke": "fourth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "辰", "ke": "fifth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "辰", "ke": "sixth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "辰", "ke": "seventh", "parentsInfo": "母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "辰", "ke": "eighth", "parentsInfo": "父丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "艮坎震"}
+    ],
+    "巳": [
+      {"shiChen": "巳", "ke": "first", "parentsInfo": "父母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "巳", "ke": "second", "parentsInfo": "母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "巳", "ke": "third", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "巳", "ke": "fourth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "巳", "ke": "fifth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "巳", "ke": "sixth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "巳", "ke": "seventh", "parentsInfo": "母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "巳", "ke": "eighth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "艮坎震"}
+    ],
+    "午": [
+      {"shiChen": "午", "ke": "first", "parentsInfo": "父母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "午", "ke": "second", "parentsInfo": "父丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "午", "ke": "third", "parentsInfo": "父母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "午", "ke": "fourth", "parentsInfo": "母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "午", "ke": "fifth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "午", "ke": "sixth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "午", "ke": "seventh", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "午", "ke": "eighth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ],
+    "未": [
+      {"shiChen": "未", "ke": "first", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "未", "ke": "second", "parentsInfo": "父母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "未", "ke": "third", "parentsInfo": "母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "未", "ke": "fourth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "未", "ke": "fifth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "未", "ke": "sixth", "parentsInfo": "母丧", "siblingsInfo": "弟兄多", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "未", "ke": "seventh", "parentsInfo": "父母爻", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "未", "ke": "eighth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ],
+    "申": [
+      {"shiChen": "申", "ke": "first", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "申", "ke": "second", "parentsInfo": "母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "申", "ke": "third", "parentsInfo": "父母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "申", "ke": "fourth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "申", "ke": "fifth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "申", "ke": "sixth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "申", "ke": "seventh", "parentsInfo": "父丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "申", "ke": "eighth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ],
+    "酉": [
+      {"shiChen": "酉", "ke": "first", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "酉", "ke": "second", "parentsInfo": "母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "酉", "ke": "third", "parentsInfo": "父母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "酉", "ke": "fourth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "酉", "ke": "fifth", "parentsInfo": "父丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "酉", "ke": "sixth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "酉", "ke": "seventh", "parentsInfo": "父母丧", "siblingsInfo": "弟兄少", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "酉", "ke": "eighth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "艮坎震"}
+    ],
+    "戌": [
+      {"shiChen": "戌", "ke": "first", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "戌", "ke": "second", "parentsInfo": "父丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "戌", "ke": "third", "parentsInfo": "父母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "戌", "ke": "fourth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "戌", "ke": "fifth", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "戌", "ke": "sixth", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄少", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "戌", "ke": "seventh", "parentsInfo": "父母寿", "siblingsInfo": "弟兄四五", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "戌", "ke": "eighth", "parentsInfo": "母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ],
+    "亥": [
+      {"shiChen": "亥", "ke": "first", "parentsInfo": "父母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得乾中爻"},
+      {"shiChen": "亥", "ke": "second", "parentsInfo": "父丧母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得乾上爻"},
+      {"shiChen": "亥", "ke": "third", "parentsInfo": "母丧", "siblingsInfo": "弟兄无", "guaYaoInfo": "得乾初爻"},
+      {"shiChen": "亥", "ke": "fourth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄无", "guaYaoInfo": "得坤初爻"},
+      {"shiChen": "亥", "ke": "fifth", "parentsInfo": "母丧父寿", "siblingsInfo": "弟兄多", "guaYaoInfo": "得坤中爻"},
+      {"shiChen": "亥", "ke": "sixth", "parentsInfo": "父丧", "siblingsInfo": "弟兄四五", "guaYaoInfo": "兑离巽"},
+      {"shiChen": "亥", "ke": "seventh", "parentsInfo": "父母丧", "siblingsInfo": "弟兄二三", "guaYaoInfo": "得坤上爻"},
+      {"shiChen": "亥", "ke": "eighth", "parentsInfo": "父母寿", "siblingsInfo": "弟兄二三", "guaYaoInfo": "艮坎震"}
+    ]
+  }
+}
