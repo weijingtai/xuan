@@ -40,6 +40,7 @@ import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'NavigatorGenerator.dart';
+import 'package:tiebanshenshu/infrastructure/di/strategy_providers.dart';
 
 bool _firebaseReady = false;
 String? _firestoreDeviceId;
@@ -1606,10 +1607,10 @@ class _AuthAwareApp extends StatelessWidget {
                 appFeatureModule: AppFeatureModule.Golabel),
           ),
           ListenableProvider<DevEnterPageViewModel>(
-            create: (ctx) =>
-                DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
-                  ..initState(),
-          ),
+              create: (ctx) =>
+                  DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
+                    ..initState()),
+          ...StrategyProviders.providers,
         ],
         child: store.isSignedIn
             ? const _SignedInSyncShell(child: MyApp())
@@ -1977,14 +1978,13 @@ class MyApp extends StatelessWidget {
       ),
       showSemanticsDebugger: false,
       onGenerateRoute: NavigatorGenerator.generateRoute,
-      // initialRoute: '/qizhengsiyu',
+      initialRoute: '/qizhengsiyu/panel',
       // initialRoute: '/one_year',
       // initialRoute: '/dev', // 七政四余
       // initialRoute: '/common/dev', // 占测记录
       // initialRoute: '/qizhengsiyu/panel', // 七政四余
       // initialRoute: '/taiyishenshu', // 太乙神数
-      initialRoute: '/daliuren', // 大六壬 (MVVM)
-      // initialRoute: '/daliuren/dev', // 大六壬
+      // initialRoute: '/tiebanshenshu/kao_ding_liu_qin',
       // initialRoute: '/qimendunjia', // 奇门遁甲
       // initialRoute: '/', // main
       // initialRoute: '/widget_dev', // 奇门遁甲

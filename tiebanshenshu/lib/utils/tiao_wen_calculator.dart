@@ -1,21 +1,26 @@
-import 'package:tiebanshenshu/utils/utils.dart' as GuaUtils;
+import 'package:common/shared/shared.dart';
+
+import '../features/six_yao_gua/pure_six_yao_gua.dart';
+import 'utils.dart' as GuaUtils;
 
 import '../constant/constants.dart' as NumberMaps;
 
+@Deprecated("使用TiaoWenCalculator")
 class TiaowenCalculator {
-  /// 加则法计算条文数字
+  /// 加则法计算条文数字（使用爻序法）
   ///
   /// 1. 加则法，将每爻配上地支，再累加计算地支对应的数字。
   /// 2. 上卦后天数*1000 + 累加基数 - 下卦后天数
+  /// 3. 使用爻序法：阳爻依次配子寅辰午申戌，阴爻依次配丑卯巳未酉亥
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByJiaZe(String guaName) {
+  static int getTiaowenNumberByJiaZe(Enum64Gua guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
-    // 将地支装到卦上
-    List<String> zhiTopToBottom = GuaUtils.najiaZhuangGua(guaName);
+    // 使用爻序法将地支装到卦上
+    List<String> zhiTopToBottom = GuaUtils.yaoxuZhuangGua(guaName);
 
     // 计算卦的总数
     int guaTotalNumber = 0;
@@ -25,8 +30,8 @@ class TiaowenCalculator {
 
     // 计算条文
     int tiaowenBaseNumber = calculateTiaowen(
-      guaName[0],
-      guaName[1],
+      guaName.top,
+      guaName.bottom,
       guaTotalNumber,
     );
 
@@ -40,7 +45,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaoWenNumberByNaJia(String guaName) {
+  static int getTiaoWenNumberByNaJia(Enum64Gua guaName) {
     // 将卦转换为二进制列表
     List<int> binaryGua = GuaUtils.guaToBinaryList(guaName);
 
@@ -55,8 +60,8 @@ class TiaowenCalculator {
 
     // 计算条文
     int tiaowenBaseNumber = calculateTiaowen(
-      guaName[0],
-      guaName[1],
+      guaName.top,
+      guaName.bottom,
       guaTotalNumber,
     );
 
@@ -70,7 +75,7 @@ class TiaowenCalculator {
   ///
   /// [guaName] 基本卦的名称 如 "坤艮" 之类
   /// 返回计算结果
-  static int getTiaowenNumberByTaixuan(String guaName) {
+  static int getTiaowenNumberByTaixuan(Enum64Gua guaName) {
     // 将地支装到卦上（纳甲方式）
     List<String> zhiTopToBottom = GuaUtils.najiaZhuangGua(guaName);
     List<String> ganTopToBottom = GuaUtils.najiaGanZhuangGua(guaName);
@@ -108,13 +113,13 @@ class TiaowenCalculator {
   /// [totalNumber] 总数
   /// 返回条文基础数字
   static int calculateTiaowen(
-    String upperGua,
-    String lowerGua,
+    Enum8Gua upperGua,
+    Enum8Gua lowerGua,
     int totalNumber,
   ) {
     // 获取上卦和下卦的后天数
-    int upperHoutianNumber = NumberMaps.houTianGuaNumberMapper[upperGua]!;
-    int lowerHoutianNumber = NumberMaps.houTianGuaNumberMapper[lowerGua]!;
+    int upperHoutianNumber = NumberMaps.houGuaNumberMapper[upperGua]!;
+    int lowerHoutianNumber = NumberMaps.houGuaNumberMapper[lowerGua]!;
 
     // 计算：上卦后天数*1000 + 累加基数 - 下卦后天数
     return upperHoutianNumber * 1000 + totalNumber - lowerHoutianNumber;
@@ -223,7 +228,8 @@ class TiaowenCalculator {
   /// [returnWithBase] 是否包含基数，默认为false
   /// 返回结果列表，包含递减后的结果列表
   static List<int> calculateTiaoWenListBySubMultipleFactorTimes(
-    int baseNumber, {
+    int baseNumber,
+    List<int> list, {
     List<int> multipleList = const [2, 4, 8, 16],
     int defaultFactor = 48,
     bool returnWithBase = false,
@@ -329,7 +335,7 @@ class TiaowenCalculator {
       result.addAll(
         calculateTiaoWenListBySubMultipleFactorTimes(
           baseNumber,
-          multipleList: [2, 4, 8, 16],
+          [2, 4, 8, 16],
           defaultFactor: 48,
           returnWithBase: false,
         ),

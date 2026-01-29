@@ -89,6 +89,8 @@ dependencies:
     path: ./taiyishenshu
   daliuren:
     path: ./daliuren
+  tiebanshenshu:
+    path: ./tiebanshenshu
 
 
   # The following adds the Cupertino Icons font to your application.

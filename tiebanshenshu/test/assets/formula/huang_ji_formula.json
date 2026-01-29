@@ -1,0 +1,797 @@
+[
+  {
+    "id": 1,
+    "name": "皇极取数法一",
+    "groups": [
+      {
+        "groupId": "yuanHuiBase",
+        "description": "预定义的元会基础数",
+        "baseNumberDefinition": {
+          "name": "元会基础数",
+          "description": "年+月互合成数顺左旋取数",
+          "source": "yuanHui",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "yunShiBase",
+        "description": "预定义的运世基础数",
+        "baseNumberDefinition": {
+          "name": "运世基础数",
+          "description": "日+时互合成数逆右旋取数",
+          "source": "yunShi",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "base_one",
+        "description": "根据初刻数选择的基础数一",
+        "baseNumberDefinition": {
+          "name": "基础数一",
+          "description": "次条文数为初刻数，如果符合则将此条文数作为基础数计算",
+          "initialCandidateFormula": {
+            "name": "初刻数",
+            "description": "元会基础数 + 年干太玄数(千位)",
+            "parentGroupId": "yuanHuiBase",
+            "parts": [
+              {
+                "name": "年干(千位)",
+                "description": "年干太玄数，置于千位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "year",
+                "numberPlace": "千",
+                "type": "singleNumber"
+              }
+            ],
+            "type": "derived"
+          },
+          "type": "selectable"
+        },
+        "formulas": [
+          {
+            "name": "加月干百位数",
+            "parts": [
+              {
+                "name": "月干(百位)",
+                "description": "月干太玄数，置于百位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加月支百位数",
+            "parts": [
+              {
+                "name": "月支(百位)",
+                "description": "月支太玄数，置于百位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加月干支互数",
+            "parts": [
+              {
+                "name": "月干支互数",
+                "description": "月干(十位) + 月支(个位)",
+                "components": [
+                  {
+                    "name": "月干(十位)",
+                    "description": "月干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "month",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "月支(个位)",
+                    "description": "月支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "month",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时支个位数",
+            "parts": [
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干支互合数及时干个位数",
+            "parts": [
+              {
+                "name": "日干支互合数",
+                "description": "日干(十位) + 日支(个位)",
+                "components": [
+                  {
+                    "name": "日干(十位)",
+                    "description": "日干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "day",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "日支(个位)",
+                    "description": "日支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "day",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              },
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干支互合数及时支个位数",
+            "parts": [
+              {
+                "name": "日干支互合数",
+                "description": "日干(十位) + 日支(个位)",
+                "components": [
+                  {
+                    "name": "日干(十位)",
+                    "description": "日干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "day",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "日支(个位)",
+                    "description": "日支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "day",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              },
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加年支千位数",
+            "parts": [
+              {
+                "name": "年支(千位)",
+                "description": "年支太玄数，置于千位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "year",
+                "numberPlace": "千",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "groupId": "base_two_yunshi",
+        "description": "围绕运世基础数的计算",
+        "baseNumberDefinition": {
+          "name": "运世基础数",
+          "description": "直接使用运世基础数进行计算",
+          "parentGroupId": "yunShiBase",
+          "parts": [],
+          "type": "derived"
+        },
+        "formulas": [
+          {
+            "name": "加日干支互合数",
+            "parts": [
+              {
+                "name": "日干支互合数",
+                "description": "日干(十位) + 日支(个位)",
+                "components": [
+                  {
+                    "name": "日干(十位)",
+                    "description": "日干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "day",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "日支(个位)",
+                    "description": "日支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "day",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时支个位数",
+            "parts": [
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干支互合数及时干个位数",
+            "parts": [
+              {
+                "name": "日干支互合数",
+                "description": "日干(十位) + 日支(个位)",
+                "components": [
+                  {
+                    "name": "日干(十位)",
+                    "description": "日干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "day",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "日支(个位)",
+                    "description": "日支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "day",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              },
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干支互合数及时支个位数",
+            "parts": [
+              {
+                "name": "日干支互合数",
+                "description": "日干(十位) + 日支(个位)",
+                "components": [
+                  {
+                    "name": "日干(十位)",
+                    "description": "日干太玄数，置于十位",
+                    "fourZhuGanZhiType": "gan",
+                    "fourZhuName": "day",
+                    "numberPlace": "十",
+                    "type": "singleNumber"
+                  },
+                  {
+                    "name": "日支(个位)",
+                    "description": "日支太玄数，置于个位",
+                    "fourZhuGanZhiType": "zhi",
+                    "fourZhuName": "day",
+                    "numberPlace": "个",
+                    "type": "singleNumber"
+                  }
+                ],
+                "type": "compositeNumber"
+              },
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "皇极取数法二",
+    "groups": [
+      {
+        "groupId": "yuanHuiBase",
+        "description": "预定义的元会基础数",
+        "baseNumberDefinition": {
+          "name": "元会基础数",
+          "description": "年+月互合成数顺左旋取数",
+          "source": "yuanHui",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "yunShiBase",
+        "description": "预定义的运世基础数",
+        "baseNumberDefinition": {
+          "name": "运世基础数",
+          "description": "日+时互合成数逆右旋取数",
+          "source": "yunShi",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "base_one",
+        "description": "根据初刻数选择的基础数一",
+        "baseNumberDefinition": {
+          "name": "基础数一",
+          "description": "次条文数为初刻数，如果符合则将此条文数作为基础数计算",
+          "initialCandidateFormula": {
+            "name": "初刻数",
+            "description": "元会基础数 + 年干太玄数(千位)",
+            "parentGroupId": "yuanHuiBase",
+            "parts": [
+              {
+                "name": "年干(千位)",
+                "description": "年干太玄数，置于千位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "year",
+                "numberPlace": "千",
+                "type": "singleNumber"
+              }
+            ],
+            "type": "derived"
+          },
+          "type": "selectable"
+        },
+        "formulas": [
+          {
+            "name": "加月干百位数",
+            "parts": [
+              {
+                "name": "月干(百位)",
+                "description": "月干太玄数，置于百位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干十位数",
+            "parts": [
+              {
+                "name": "日干(十位)",
+                "description": "日干太玄数，置于十位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "day",
+                "numberPlace": "十",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时支个位数",
+            "parts": [
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "groupId": "base_two",
+        "description": "围绕基础数二的计算",
+        "baseNumberDefinition": {
+          "name": "基础数二",
+          "description": "运世基础数 + 年干太玄数",
+          "parentGroupId": "yunShiBase",
+          "parts": [
+            {
+              "name": "年干(千位)",
+              "description": "年干太玄数，置于千位",
+              "fourZhuGanZhiType": "gan",
+              "fourZhuName": "year",
+              "numberPlace": "千",
+              "type": "singleNumber"
+            }
+          ],
+          "type": "derived"
+        },
+        "formulas": [
+          {
+            "name": "加月干百位数",
+            "parts": [
+              {
+                "name": "月干(百位)",
+                "description": "月干太玄数，置于百位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干十位数",
+            "parts": [
+              {
+                "name": "日干(十位)",
+                "description": "日干太玄数，置于十位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "day",
+                "numberPlace": "十",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加日干个位数",
+            "parts": [
+              {
+                "name": "日干(个位)",
+                "description": "日干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "day",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "皇极取数法三",
+    "groups": [
+      {
+        "groupId": "yuanHuiBase",
+        "description": "预定义的元会基础数",
+        "baseNumberDefinition": {
+          "name": "元会基础数",
+          "description": "年+月互合成数顺左旋取数",
+          "source": "yuanHui",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "yunShiBase",
+        "description": "预定义的运世基础数",
+        "baseNumberDefinition": {
+          "name": "运世基础数",
+          "description": "日+时互合成数逆右旋取数",
+          "source": "yunShi",
+          "type": "predefined"
+        },
+        "formulas": []
+      },
+      {
+        "groupId": "base_one",
+        "description": "根据初刻数选择的基础数一",
+        "baseNumberDefinition": {
+          "name": "基础数一",
+          "description": "次条文数为初刻数，如果符合则将此条文数作为基础数计算",
+          "initialCandidateFormula": {
+            "name": "初刻数",
+            "description": "元会基础数 + 年干太玄数(千位)",
+            "parentGroupId": "yuanHuiBase",
+            "parts": [
+              {
+                "name": "年干(千位)",
+                "description": "年干太玄数，置于千位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "year",
+                "numberPlace": "千",
+                "type": "singleNumber"
+              }
+            ],
+            "type": "derived"
+          },
+          "type": "selectable"
+        },
+        "formulas": [
+          {
+            "name": "加月干百位数",
+            "parts": [
+              {
+                "name": "月干(百位)",
+                "description": "月干太玄数，置于百位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加月支百位数",
+            "parts": [
+              {
+                "name": "月支(百位)",
+                "description": "月支太玄数，置于百位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "groupId": "base_two",
+        "description": "围绕基础数二的计算",
+        "baseNumberDefinition": {
+          "name": "基础数二",
+          "description": "基础数一 + 日干支合数",
+          "parentGroupId": "base_one",
+          "parts": [
+            {
+              "name": "日干支合数",
+              "description": "日干(十位) + 日支(个位)",
+              "components": [
+                {
+                  "name": "日干(十位)",
+                  "description": "日干太玄数，置于十位",
+                  "fourZhuGanZhiType": "gan",
+                  "fourZhuName": "day",
+                  "numberPlace": "十",
+                  "type": "singleNumber"
+                },
+                {
+                  "name": "日支(个位)",
+                  "description": "日支太玄数，置于个位",
+                  "fourZhuGanZhiType": "zhi",
+                  "fourZhuName": "day",
+                  "numberPlace": "个",
+                  "type": "singleNumber"
+                }
+              ],
+              "type": "compositeNumber"
+            }
+          ],
+          "type": "derived"
+        },
+        "formulas": [
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时支个位数",
+            "parts": [
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "groupId": "base_three",
+        "description": "围绕基础数三的计算",
+        "baseNumberDefinition": {
+          "name": "基础数三",
+          "description": "运世基本数 + 年干太玄千位",
+          "parentGroupId": "yunShiBase",
+          "parts": [
+            {
+              "name": "年干(千位)",
+              "description": "年干太玄数，置于千位",
+              "fourZhuGanZhiType": "gan",
+              "fourZhuName": "year",
+              "numberPlace": "千",
+              "type": "singleNumber"
+            }
+          ],
+          "type": "derived"
+        },
+        "formulas": [
+          {
+            "name": "加月干百位数",
+            "parts": [
+              {
+                "name": "月干(百位)",
+                "description": "月干太玄数，置于百位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加月支百位数",
+            "parts": [
+              {
+                "name": "月支(百位)",
+                "description": "月支太玄数，置于百位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "month",
+                "numberPlace": "百",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "groupId": "base_four",
+        "description": "围绕基础数四的计算",
+        "baseNumberDefinition": {
+          "name": "基础数四",
+          "description": "基础数三 + 日干支合数",
+          "parentGroupId": "base_three",
+          "parts": [
+            {
+              "name": "日干支合数",
+              "description": "日干(十位) + 日支(个位)",
+              "components": [
+                {
+                  "name": "日干(十位)",
+                  "description": "日干太玄数，置于十位",
+                  "fourZhuGanZhiType": "gan",
+                  "fourZhuName": "day",
+                  "numberPlace": "十",
+                  "type": "singleNumber"
+                },
+                {
+                  "name": "日支(个位)",
+                  "description": "日支太玄数，置于个位",
+                  "fourZhuGanZhiType": "zhi",
+                  "fourZhuName": "day",
+                  "numberPlace": "个",
+                  "type": "singleNumber"
+                }
+              ],
+              "type": "compositeNumber"
+            }
+          ],
+          "type": "derived"
+        },
+        "formulas": [
+          {
+            "name": "加时干个位数",
+            "parts": [
+              {
+                "name": "时干(个位)",
+                "description": "时干太玄数，置于个位",
+                "fourZhuGanZhiType": "gan",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          },
+          {
+            "name": "加时支个位数",
+            "parts": [
+              {
+                "name": "时支(个位)",
+                "description": "时支太玄数，置于个位",
+                "fourZhuGanZhiType": "zhi",
+                "fourZhuName": "time",
+                "numberPlace": "个",
+                "type": "singleNumber"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]

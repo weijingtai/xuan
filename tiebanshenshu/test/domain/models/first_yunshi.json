@@ -1,0 +1,144 @@
+{
+  "groupId": "运世基础数",
+  "description": "运世基础数 进行的相关条文数计算",
+  "baseNumberDefinition": {
+    "name": "运世基础数",
+    "description": "运世基础数",
+    "type": "predefined",
+    "isSelectable": false,
+    "source": "运世"
+  },
+  "formulas": [
+    {
+      "name": "日互合数",
+      "description": "运世基础数 + 日干支互合数",
+      "parts": [
+        {
+          "name": "日互合(干为十位+支为个位)",
+          "description": "日互合(干为十位+支为个位)",
+          "type": "compositeNumber",
+          "components": [
+            {
+              "name": "日干十位",
+              "description": "日干太玄数 * 10",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "天干",
+              "fourZhuName": "日柱",
+              "numberPlace": "十"
+            },
+            {
+              "name": "日支个位",
+              "description": "日支太玄数",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "地支",
+              "fourZhuName": "日柱",
+              "numberPlace": "个"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "时干个位",
+      "description": "运世基础数 + 时干个位数",
+      "parts": [
+        {
+          "name": "时干个位数",
+          "description": "时干太玄数",
+          "type": "singleNumber",
+          "fourZhuGanZhiType": "天干",
+          "fourZhuName": "时柱",
+          "numberPlace": "个"
+        }
+      ]
+    },
+    {
+      "name": "时支个位",
+      "description": "运世基础数 + 时支个位数",
+      "parts": [
+        {
+          "name": "时支个位数",
+          "description": "时支太玄数",
+          "type": "singleNumber",
+          "fourZhuGanZhiType": "地支",
+          "fourZhuName": "时柱",
+          "numberPlace": "个"
+        }
+      ]
+    },
+    {
+      "name": "日互合数+时干个位",
+      "description": "运世基础数 + 日干支互合数 + 时干个位数",
+      "parts": [
+        {
+          "name": "日互合(干为十位+支为个位)",
+          "description": "日互合(干为十位+支为个位)",
+          "type": "compositeNumber",
+          "components": [
+            {
+              "name": "日干十位",
+              "description": "日干太玄数 * 10",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "天干",
+              "fourZhuName": "日柱",
+              "numberPlace": "十"
+            },
+            {
+              "name": "日支个位",
+              "description": "日支太玄数",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "地支",
+              "fourZhuName": "日柱",
+              "numberPlace": "个"
+            }
+          ]
+        },
+        {
+          "name": "时干个位数",
+          "description": "时干太玄数",
+          "type": "singleNumber",
+          "fourZhuGanZhiType": "天干",
+          "fourZhuName": "时柱",
+          "numberPlace": "个"
+        }
+      ]
+    },
+    {
+      "name": "日互合数+时支个位",
+      "description": "运世基础数 + 日干支互合数 + 时支个位数",
+      "parts": [
+        {
+          "name": "日互合(干为十位+支为个位)",
+          "description": "日互合(干为十位+支为个位)",
+          "type": "compositeNumber",
+          "components": [
+            {
+              "name": "日干十位",
+              "description": "日干太玄数 * 10",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "天干",
+              "fourZhuName": "日柱",
+              "numberPlace": "十"
+            },
+            {
+              "name": "日支个位",
+              "description": "日支太玄数",
+              "type": "singleNumber",
+              "fourZhuGanZhiType": "地支",
+              "fourZhuName": "日柱",
+              "numberPlace": "个"
+            }
+          ]
+        },
+        {
+          "name": "时支个位数",
+          "description": "时支太玄数",
+          "type": "singleNumber",
+          "fourZhuGanZhiType": "地支",
+          "fourZhuName": "时柱",
+          "numberPlace": "个"
+        }
+      ]
+    }
+  ]
+}
