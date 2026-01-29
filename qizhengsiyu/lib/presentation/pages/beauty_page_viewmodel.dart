@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:math';
 
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
@@ -647,7 +647,7 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   void setLifeObserver(DivinationInfoModel divinationInfoModel) {
     _divinationInfoModel = divinationInfoModel;
-    BaseDivinationDatetimeDataModel _tmp =
+    DatatimeDivinationDetailsDataModel _tmp =
         divinationInfoModel.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
@@ -796,7 +796,7 @@ class BeautyPageViewModel extends ChangeNotifier {
   /// 返回: ObserverPosition 对象。
   ObserverPosition convertToObserverPosition(
       DivinationInfoModel divinationInfo) {
-    BaseDivinationDatetimeDataModel _tmp = divinationInfo.divinationDatetime;
+    DatatimeDivinationDetailsDataModel _tmp = divinationInfo.divinationDatetime;
     observer = _tmp.timingInfoListJson!
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;

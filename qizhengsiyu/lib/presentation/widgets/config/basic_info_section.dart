@@ -666,7 +666,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
   }
 
   @override
-  Future<List<AddressNode>> onDataLoad(int index, AddressNode? parent) {
+  Future<List<AddressNode>> onDataLoad(int index, String code, String name) {
     throw UnimplementedError("not imp");
   }
 

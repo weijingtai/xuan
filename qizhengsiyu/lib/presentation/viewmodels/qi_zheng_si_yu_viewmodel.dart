@@ -28,7 +28,7 @@ import 'dart:math';
 import 'package:qizhengsiyu/domain/entities/models/panel_config.dart'
     as UIPanelConfig; // UI层的PanelConfig
 import 'package:common/module.dart'; // DivinationInfoModel
-import 'package:common/datamodel/base_divination_datetime_datamodel.dart';
+import 'package:common/datamodel/datetime_divination_datamodel.dart';
 import 'package:common/models/divination_datetime.dart';
 import 'package:common/datamodel/location.dart';
 import 'package:common/enums.dart';
@@ -161,7 +161,7 @@ class QiZhengSiYuViewModel extends ChangeNotifier {
   /// 从 DivinationInfoModel 生成 ObserverPosition
   ObserverPosition _generateLifeObserverPosition(
       DivinationInfoModel divinationInfoModel) {
-    BaseDivinationDatetimeDataModel datetimeData =
+    DatatimeDivinationDetailsDataModel datetimeData =
         divinationInfoModel.divinationDatetime;
 
     // 找到对应的占卜时间信息
