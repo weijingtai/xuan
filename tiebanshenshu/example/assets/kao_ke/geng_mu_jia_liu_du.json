@@ -1,0 +1,18 @@
+{
+    "name": "庚木甲流度",
+    "description": "推查男的结四次婚，娶四妻的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "甲丙月月月丙", "chiperNumber": 12002, "yearGanZhi": "甲子"},
+        "丑": {"chiperText": "甲丙月壬丙", "chiperNumber": 12052, "yearGanZhi": "乙丑"},
+        "寅": {"chiperText": "甲丙甲月丙", "chiperNumber": 12102, "yearGanZhi": "甲寅"},
+        "卯": {"chiperText": "甲丙甲壬丙", "chiperNumber": 12252, "yearGanZhi": "乙卯"},
+        "辰": {"chiperText": "甲丙丙支丙", "chiperNumber": 12202, "yearGanZhi": "甲辰"},
+        "巳": {"chiperText": "甲丙丙壬丙", "chiperNumber": 12252, "yearGanZhi": "乙巳"},
+        "午": {"chiperText": "甲丙戊支丙", "chiperNumber": 12302, "yearGanZhi": "甲午"},
+        "未": {"chiperText": "甲丙戊壬丙", "chiperNumber": 12352, "yearGanZhi": "乙未"},
+        "申": {"chiperText": "甲丙庚月丙", "chiperNumber": 12402, "yearGanZhi": "甲申"},
+        "酉": {"chiperText": "甲丙庚壬丙", "chiperNumber": 12452, "yearGanZhi": "乙酉"},
+        "戌": {"chiperText": "甲丙壬月丙", "chiperNumber": 12502, "yearGanZhi": "甲戌"},
+        "亥": {"chiperText": "甲丙壬壬丙", "chiperNumber": 12552, "yearGanZhi": "乙亥"}
+    }
+}

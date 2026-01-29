@@ -1,0 +1,18 @@
+{
+    "name": "乾宫甲流度",
+    "description": "可用来查父亲的生年的先天定数",
+    "zhiMapper": {
+        "子":{"chiperText": "辛月月戊","chiperNumber": 9003},
+        "丑":{"chiperText": "辛月壬戊","chiperNumber": 9053},
+        "寅":{"chiperText": "辛甲月戊","chiperNumber": 9103},
+        "卯":{"chiperText": "辛甲壬戊","chiperNumber": 9153},
+        "辰":{"chiperText": "辛丙月戊","chiperNumber": 9203},
+        "巳":{"chiperText": "辛丙壬戊","chiperNumber": 9253},
+        "午":{"chiperText": "辛戊月戊","chiperNumber": 9303},
+        "未":{"chiperText": "辛戊壬戊","chiperNumber": 9353},
+        "申":{"chiperText": "辛庚月戊","chiperNumber": 9403},
+        "酉":{"chiperText": "辛庚壬戊","chiperNumber": 9453},
+        "戌":{"chiperText": "辛壬月戊","chiperNumber": 9503},
+        "亥":{"chiperText": "辛壬壬戊","chiperNumber": 9553}
+    }
+}
