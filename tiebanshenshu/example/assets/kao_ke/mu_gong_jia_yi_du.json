@@ -1,0 +1,18 @@
+{
+    "name": "木宫甲乙度",
+    "description": "用来推男子结第二次婚，妻子的生年",
+    "zhiMapper": {
+        "子": {"chiperText": "辛己甲己", "chiperNumber": 9818, "yearGanZhi": "甲子"},
+        "丑": {"chiperText": "辛己乙己", "chiperNumber": 9868, "yearGanZhi": "乙丑"},
+        "寅": {"chiperText": "辛辛甲己", "chiperNumber": 9918, "yearGanZhi": "甲寅"},
+        "卯": {"chiperText": "辛辛乙己", "chiperNumber": 9968, "yearGanZhi": "乙卯"},
+        "辰": {"chiperText": "甲月月甲己", "chiperNumber": 10018, "yearGanZhi": "甲辰"},
+        "巳": {"chiperText": "甲月月乙己", "chiperNumber": 10068, "yearGanZhi": "乙巳"},
+        "午": {"chiperText": "甲月甲甲己", "chiperNumber": 10118, "yearGanZhi": "甲午"},
+        "未": {"chiperText": "甲月甲乙己", "chiperNumber": 10168, "yearGanZhi": "乙未"},
+        "申": {"chiperText": "甲月丙甲己", "chiperNumber": 10218, "yearGanZhi": "甲申"},
+        "酉": {"chiperText": "甲月丙乙己", "chiperNumber": 10268, "yearGanZhi": "乙酉"},
+        "戌": {"chiperText": "甲月戊甲己", "chiperNumber": 10318, "yearGanZhi": "甲戌"},
+        "亥": {"chiperText": "甲月戊乙己", "chiperNumber": 10368, "yearGanZhi": "乙亥"}
+    }
+}

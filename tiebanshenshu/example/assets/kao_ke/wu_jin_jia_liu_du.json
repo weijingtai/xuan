@@ -1,0 +1,18 @@
+{
+    "name": "戊金甲流度",
+    "description": "推查女人第三任丈夫生年的先天定数",
+    "zhiMapper": {
+        "子": {"chiperText": "甲甲甲丙乙", "chiperNumber": 11126, "yearGanZhi": "甲子"},
+        "丑": {"chiperText": "甲甲甲丁乙", "chiperNumber": 11176, "yearGanZhi": "乙丑"},
+        "寅": {"chiperText": "甲甲丙丙乙", "chiperNumber": 11226, "yearGanZhi": "甲寅"},
+        "卯": {"chiperText": "甲甲丙丁乙", "chiperNumber": 11276, "yearGanZhi": "乙卯"},
+        "辰": {"chiperText": "甲甲戊丙乙", "chiperNumber": 11326, "yearGanZhi": "甲辰"},
+        "巳": {"chiperText": "甲甲戊丁乙", "chiperNumber": 11376, "yearGanZhi": "乙巳"},
+        "午": {"chiperText": "甲甲庚丙乙", "chiperNumber": 11426, "yearGanZhi": "甲午"},
+        "未": {"chiperText": "甲甲庚丁乙", "chiperNumber": 11476, "yearGanZhi": "乙未"},
+        "申": {"chiperText": "甲甲壬甲乙", "chiperNumber": 11526, "yearGanZhi": "甲申"},
+        "酉": {"chiperText": "甲甲壬丁乙", "chiperNumber": 11576, "yearGanZhi": "乙酉"},
+        "戌": {"chiperText": "甲甲乙丙乙", "chiperNumber": 11626, "yearGanZhi": "甲戌"},
+        "亥": {"chiperText": "甲甲乙丁乙", "chiperNumber": 11676, "yearGanZhi": "乙亥"}
+    }
+}

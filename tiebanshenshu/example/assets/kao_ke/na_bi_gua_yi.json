@@ -1,0 +1,18 @@
+{
+    "name": "纳比卦（乙表）",
+    "description": "纳比卦相关密数表",
+    "zhiMapper": {
+        "子": {"chiperText": "辛己乙戊", "chiperNumber": 9863},
+        "丑": {"chiperText": "辛己丁戊", "chiperNumber": 9873},
+        "寅": {"chiperText": "辛己己戊", "chiperNumber": 9883},
+        "卯": {"chiperText": "辛己辛戊", "chiperNumber": 9893},
+        "辰": {"chiperText": "辛辛癸戊", "chiperNumber": 9903},
+        "巳": {"chiperText": "辛辛甲戊", "chiperNumber": 9913},
+        "午": {"chiperText": "辛辛丙戊", "chiperNumber": 9923},
+        "未": {"chiperText": "辛辛戊戊", "chiperNumber": 9933},
+        "申": {"chiperText": "辛辛庚戊", "chiperNumber": 9943},
+        "酉": {"chiperText": "辛辛壬戊", "chiperNumber": 9953},
+        "戌": {"chiperText": "辛辛乙戊", "chiperNumber": 9963},
+        "亥": {"chiperText": "辛辛丁戊", "chiperNumber": 9973}
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "name": "升仙月爻密码",
+    "description": "推查死于何月",
+    "zhiMapper": {
+        "子": {"chiperText": "庚己丙丙", "chiperNumber": 4822},
+        "丑": {"chiperText": "戊丁庚丙", "chiperNumber": 3742},
+        "寅": {"chiperText": "甲乙支壬", "chiperNumber": 1605},
+        "卯": {"chiperText": "戊己辛辛", "chiperNumber": 3899},
+        "辰": {"chiperText": "甲庚庚甲", "chiperNumber": 1441},
+        "巳": {"chiperText": "壬乙乙己", "chiperNumber": 5668},
+        "午": {"chiperText": "丙甲壬庚", "chiperNumber": 2154},
+        "未": {"chiperText": "壬己乙己", "chiperNumber": 5868},
+        "申": {"chiperText": "庚壬乙辛", "chiperNumber": 4569},
+        "酉": {"chiperText": "丙庚丁丙", "chiperNumber": 2472},
+        "戌": {"chiperText": "丙丙丙壬", "chiperNumber": 2225},
+        "亥": {"chiperText": "庚丁庚戊", "chiperNumber": 4743}
+    }
+}
