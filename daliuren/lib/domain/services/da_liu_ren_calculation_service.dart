@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-=======
 import 'package:common/enums.dart';
->>>>>>> origin/master
 import 'package:daliuren/domain/services/calculators/lunar_calculator.dart';
 import 'package:daliuren/domain/services/calculators/tian_di_pan_calculator.dart';
 import 'package:daliuren/domain/services/calculators/gui_ren_calculator.dart';

@@ -627,7 +627,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           decoration: BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
-                                                      "$ICONS_ASSETS_PATH/tag_virt.png"))),
+                                                      "${ICONS_ASSETS_PATH}/tag_virt.png"))),
                                           // child:Image.asset("${ICONS_ASSETS_PATH}/tag_virt.png",),
                                         ),
                                         const Column(
@@ -748,7 +748,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           decoration: BoxDecoration(
                                               image: DecorationImage(
                                                   image: AssetImage(
-                                                      "$ICONS_ASSETS_PATH/tag_virt.png"))),
+                                                      "${ICONS_ASSETS_PATH}/tag_virt.png"))),
                                           // child:Image.asset("${ICONS_ASSETS_PATH}/tag_virt.png",),
                                         ),
                                         const Column(
@@ -1346,8 +1346,8 @@ class _MyHomePageState extends State<MyHomePage> {
                                 image: DecorationImage(
                                     fit: BoxFit.fill,
                                     image: AssetImage(
-                                        "$ICONS_ASSETS_PATH/chinese-red-ink-seal.png"),
-                                    colorFilter: const ColorFilter.mode(
+                                        "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
+                                    colorFilter: ColorFilter.mode(
                                         Color.fromRGBO(176, 31, 36, .8),
                                         BlendMode.srcIn))),
                             child: Column(
@@ -1539,8 +1539,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 image: DecorationImage(
                     fit: BoxFit.fill,
                     image: AssetImage(
-                        "$ICONS_ASSETS_PATH/chinese-red-ink-seal.png"),
-                    colorFilter: const ColorFilter.mode(
+                        "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
+                    colorFilter: ColorFilter.mode(
                         Color.fromRGBO(176, 31, 36, .8), BlendMode.srcIn))),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.start,
@@ -1631,8 +1631,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       image: DecorationImage(
                           fit: BoxFit.fill,
                           image: AssetImage(
-                              "$ICONS_ASSETS_PATH/chinese-red-ink-seal.png"),
-                          colorFilter: const ColorFilter.mode(
+                              "${ICONS_ASSETS_PATH}/chinese-red-ink-seal.png"),
+                          colorFilter: ColorFilter.mode(
                               Color.fromRGBO(176, 31, 36, .8),
                               BlendMode.srcIn))),
                   child: Column(
@@ -2531,7 +2531,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                   Color.fromRGBO(176, 31, 36, .7),
                                   BlendMode.srcIn),
                               child: Image.asset(
-                                "$ICONS_ASSETS_PATH/wide-black-ink-radian-line2.png",
+                                "${ICONS_ASSETS_PATH}/wide-black-ink-radian-line2.png",
                               )))
                       : const SizedBox(),
                   Text(
@@ -2623,7 +2623,7 @@ class _MyHomePageState extends State<MyHomePage> {
         colorFilter:
             ColorFilter.mode(color ?? Colors.blueGrey, BlendMode.srcIn),
         child: Image.asset(
-          "$ICONS_ASSETS_PATH/thin-black-ink-circle.png",
+          "${ICONS_ASSETS_PATH}/thin-black-ink-circle.png",
           width: size,
           height: size,
         ));
