@@ -1,14 +1,15 @@
+import 'package:account/account.dart';
 import 'package:common/main.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 
 import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
 import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
+import 'package:tiebanshenshu/navigator.dart' as TieBanShenShu;
 import 'package:taiyishenshu/navigator.dart' as TaiYiShenShu;
 import 'package:daliuren/navigator.dart' as DaLiuRen;
 import 'package:common/navigator.dart' as Common;
 import 'package:xuan/pages/one_year_circle.dart';
-import 'package:tiebanshenshu/navigator.dart' as TieBanShenShu;
 
 class NavigatorGenerator {
   static final RouteObserver<PageRoute> routeObserver =
@@ -24,7 +25,7 @@ class NavigatorGenerator {
     AuthPage.routeName: (context, {arguments}) => const AuthPage(),
     AccountProfilePage.routeName: (context, {arguments}) =>
         const AccountProfilePage(),
-        
+
     ...Common.NavigatorGenerator.routes,
     ...QiMenDunJia.NavigatorGenerator.routes,
     ...QiZhengSiYu.NavigatorGenerator.routes,

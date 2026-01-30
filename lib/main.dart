@@ -40,7 +40,6 @@ import 'ephe_web_helper.dart' if (dart.library.ffi) 'ephe_io_helper.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'NavigatorGenerator.dart';
-import 'package:tiebanshenshu/infrastructure/di/strategy_providers.dart';
 
 bool _firebaseReady = false;
 String? _firestoreDeviceId;
@@ -1610,7 +1609,7 @@ class _AuthAwareApp extends StatelessWidget {
               create: (ctx) =>
                   DevEnterPageViewModel(appDatabase: ctx.read<db.AppDatabase>())
                     ..initState()),
-          ...StrategyProviders.providers,
+          // ...StrategyProviders.providers,
         ],
         child: store.isSignedIn
             ? const _SignedInSyncShell(child: MyApp())
