@@ -48,16 +48,12 @@ class BeautifulPage extends StatefulWidget {
 
 class _BeautifulPageState extends State<BeautifulPage>
     with TickerProviderStateMixin {
-  // double baseEachGongSize = 180;
-  // Size panSize = Size(590, 590);
   double baseEachGongSize = 256;
   Offset panOffset = const Offset(0, 0);
   Size panSize = const Size(816, 816);
   double eachPaddingSize = 8;
 
   Map<HouTianGua, UITenGanKeYingGeJu> geJuMapper = {};
-  // double totalHeight = 256 * 3+ eachPaddingSize*6;
-  // double totalWidth= 256 * 3+ eachPaddingSize*6;
   final GlobalKey appBarGlobalKey = GlobalKey();
   final GlobalKey panelGlobalKey = GlobalKey();
 
@@ -142,10 +138,8 @@ class _BeautifulPageState extends State<BeautifulPage>
         BoxShadow(
             color: Colors.grey.withOpacity(.2), blurRadius: 5, spreadRadius: 5),
       ]);
-  // DateTime? selectedDateTime;
   ValueNotifier<DateTime?> selectedDateTimeNotifier =
       ValueNotifier(DateTime.now());
-  // double baseEachGongSize = 256;
 
   final ScrollController _scrollController = ScrollController();
   @override
@@ -203,8 +197,6 @@ class _BeautifulPageState extends State<BeautifulPage>
             appBarGlobalKey.currentContext!.findRenderObject() as RenderBox;
         panOffset =
             renderPan.localToGlobal(Offset(0, -appBarRender.size.height));
-        // panOffset = renderPan.localToGlobal(Offset(0,0));
-        // start = _getCenter(panKey);
       });
     });
   }
@@ -321,7 +313,6 @@ class _BeautifulPageState extends State<BeautifulPage>
                         width: 240,
                         height: 160,
                         // padding: EdgeInsets.symmetric(vertical: 8,horizontal: 12),
-                        // margin: EdgeInsets.symmetric(vertical: 12,horizontal: 24),
                         child: ValueListenableBuilder<ShiJiaQiMen?>(
                             valueListenable: shiJiaZhuanPanQiMenValueNotifier,
                             // builder: (ctx, dateTime, child) => dateTime != null ? Text(DateFormat("yyyy-MM-dd HH:mm").format(dateTime!)):child!,
@@ -352,7 +343,6 @@ class _BeautifulPageState extends State<BeautifulPage>
                         alignment: Alignment.center,
                         child: ValueListenableBuilder(
                           valueListenable: guaGongMapperNotifier,
-                          // child: Container(width:panSize.width,height:panSize.height),
                           child: buildCreatePan(),
                           builder: (ctx, guaGongMapper, child) {
                             if (guaGongMapper == null) {
@@ -482,7 +472,6 @@ class _BeautifulPageState extends State<BeautifulPage>
               ],
             )),
           ),
-          // buildPositionedGong(HouTianGua.Xun),
           ValueListenableBuilder(
               valueListenable: selectedGongWidgetNotifier,
               builder: (ctx, popup, child) {
@@ -769,7 +758,6 @@ class _BeautifulPageState extends State<BeautifulPage>
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        // buildExplainList(gua,gong.tianPan,gong.diPan,shiJiaZhuanPanQiMenValueNotifier.value!.xunHeaderTianGan,popupGongWidget.item2.value.door),
                                         FutureBuilder(
                                           future: loadTenGanKeyYing(context,
                                               gong.tianPan, gong.diPan),

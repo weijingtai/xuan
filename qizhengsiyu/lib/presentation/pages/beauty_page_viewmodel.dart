@@ -66,14 +66,6 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   // MARK: - Star Data
 
-  /// 本命盘的原始星体角度数据 (黄道坐标)。
-  // StarsAngle? _basicLifeStarsAngle;
-  // StarsAngle? get basicLifeStarsAngle => _basicLifeStarsAngle;
-
-  /// 行限盘（或起盘）的原始星体角度数据 (黄道坐标)。
-  // StarsAngle? _fateLifeStarsAngle;
-  // StarsAngle? get fateLifeStarsAngle => _fateLifeStarsAngle;
-
   // MARK: - UI Data
 
   /// 本命盘用于 UI 显示的星体列表，已调整位置避免重叠。
@@ -83,11 +75,6 @@ class BeautyPageViewModel extends ChangeNotifier {
   final ValueNotifier<List<UIStarModel>?> uiBasicLifeStarsNotifier =
       ValueNotifier<List<UIStarModel>?>(null);
 
-  // final ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?> uiShenShaNotifier =
-  // ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?>(null);
-  // final ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>
-  //     uiDestinyGongNotifier =
-  // ValueNotifier<Map<EnumTwelveGong, EnumDestinyTwelveGong>?>(null);
   final ValueNotifier<BasePanelModel?> uiBasePanelNotifier =
       ValueNotifier<BasePanelModel?>(null);
   final ValueNotifier<PassageYearPanelModel?> uiDaXianPanelNotifier =
@@ -107,14 +94,6 @@ class BeautyPageViewModel extends ChangeNotifier {
       ValueNotifier<List<UIStarModel>?>(null);
   // MARK: - Panel Information
 
-  /// 本命盘详细信息，包括落宫、落宿等（可能通过 Service 计算）。
-  // PanelStarsInfo? _basicLifePanelStarsInfo;
-  // PanelStarsInfo? get basicLifePanelStarsInfo => _basicLifePanelStarsInfo;
-
-  /// 行限盘（或起盘）详细信息（可能通过 Service 计算）。
-  // PanelStarsInfo? _fateLifePanelStarsInfo;
-  // PanelStarsInfo? get fateLifePanelStarsInfo => _fateLifePanelStarsInfo;
-
   /// 五星大限运行信息映射。
   Map<EnumStars, FiveStarWalkingInfo>? _daXianMapper;
   Map<EnumStars, FiveStarWalkingInfo>? get daXianMapper => _daXianMapper;
@@ -123,10 +102,6 @@ class BeautyPageViewModel extends ChangeNotifier {
   // ValueNotifier<Map<EnumTwelveGong, List<ShenSha>>?>(null);
 
   // MARK: - Configuration and Managers
-
-  /// 计算星盘时使用的观测者位置信息。
-  // ObserverPosition? _observerPosition;
-  // ObserverPosition? get observerPosition => _observerPosition;
 
   /// UI 绘制本命盘时星体所需的最小安全角度。
   double _baseMiniSafetyAngle = 5;
@@ -242,11 +217,6 @@ class BeautyPageViewModel extends ChangeNotifier {
 
   /// 重置 ViewModel 的所有计算结果和状态。
   void reset() {
-    // _basicLifeStarsAngle = null;
-    // _fateLifeStarsAngle = null;
-    // _fateLifePanelStarsInfo = null;
-    // _basicLifePanelStarsInfo = null;
-    // _observerPosition = null;
     _daXianMapper = null;
     _uiBasicLifeStars = [];
     _uiFateLifeStars = [];
@@ -322,16 +292,10 @@ class BeautyPageViewModel extends ChangeNotifier {
         zhouTianModel: zhouTianModel,
         starAngleMapper: starAngleMapper,
       );
-      // print(jsonEncode(basicPanelModel.toJson()));
-      // _basicLifeStarsAngle =
-      // StarsAngle.fromMapper(basicPanelModel.starAngleMapper);
-      // _uiBasicLifeStars = // 使用原始角度计算 UI 数据
+      // uiBasicLifeStars = // 使用原始角度计算 UI 数据
       uiBasicLifeStarsNotifier.value = _calculateUIStarsFromMapper(
           basicPanelModel.starAngleMapper, _baseMiniSafetyAngle);
-      // uiShenShaNotifier.value = basicPanelModel.shenShaMapper;
-      // uiDestinyGongNotifier.value = basicPanelModel.twelveGongMapper;
       uiBasePanelNotifier.value = basicPanelModel;
-      // gongShenShaNotifier.value = basicPanelModel.gongShenShaMapper;
 
       calculateDongWeiFate(bodyLifeModel: basicPanelModel.bodyLifeModel);
       debugPrint(
@@ -349,9 +313,6 @@ class BeautyPageViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error calculating basic panel: $e");
       // 根据需要处理错误
-      // _basicLifeStarsAngle = null;
-      // _basicLifePanelStarsInfo = null;
-      // _uiBasicLifeStars = [];
       uiBasicLifeStarsNotifier.value = null;
     }
 
@@ -414,8 +375,6 @@ class BeautyPageViewModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("Error calculating fate panel: $e");
       // 根据需要处理错误
-      // _fateLifeStarsAngle = null;
-      // _fateLifePanelStarsInfo = null;
       _uiFateLifeStars = [];
       uiFateLifeStarsNotifier.value = null;
     }

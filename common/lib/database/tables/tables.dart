@@ -6,9 +6,6 @@ import 'package:common/database/converters/divination_datetime_model_converter.d
 import 'package:common/datamodel/divination_request_info_datamodel.dart';
 import 'package:common/datamodel/divination_type_data_model.dart';
 import 'package:common/enums.dart';
-// import 'package:common/enums/enum_datetime_type.dart';
-// import 'package:common/enums/enum_gender.dart';
-// import 'package:common/enums/enum_panel_type.dart';
 import 'package:drift/drift.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -52,8 +49,6 @@ class Divinations extends Table {
       text().named('divination_type_uuid').references(DivinationTypes, #uuid)();
 
   TextColumn get fateYear => text().nullable().named("fate_year")();
-  // // 当前起卦使用的地理位置（起卦时间）是否为卦师自己的位置
-  // BoolColumn get isSeersLocation => boolean().named('is_seers_location')();
 
   TextColumn get question => text().nullable().named('question')();
   TextColumn get detail => text().nullable().named('detail')();
@@ -70,8 +65,6 @@ class Divinations extends Table {
   // 直断，12~24字内
   TextColumn get directlyPredict =>
       text().nullable().named('directly_predict')();
-
-  // TextColumn get panelUuid => text().nullable().named('panel_uuid')();
 
   @override
   Set<Column> get primaryKey => {uuid};
@@ -92,8 +85,6 @@ class SeekerDivinationMappers extends Table with AutoIncrementingPrimaryKey {
       text().named('divination_uuid').references(Divinations, #uuid)();
   TextColumn get seekerUuid =>
       text().named('seeker_uuid').references(Seekers, #uuid)();
-  // @override
-  // Set<Column> get primaryKey => {id};
 }
 
 @DataClassName('DivinationPanelMapper')
@@ -110,8 +101,6 @@ class DivinationPanelMappers extends Table with AutoIncrementingPrimaryKey {
 
   DateTimeColumn get createdAt => dateTime().named('created_at')();
   DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
-  // @override
-  // Set<Column> get primaryKey => {id};
 }
 
 @DataClassName('Panel')
@@ -142,7 +131,6 @@ class Panels extends Table {
 class PanelSkillClassMappers extends Table with AutoIncrementingPrimaryKey {
   @override
   String get tableName => "t_panel_skill_class_mapper";
-  // IntColumn get id => integer().autoIncrement()();
   TextColumn get panelUuid =>
       text().named('panel_uuid').references(Panels, #uuid)();
   TextColumn get skillClassUuid =>
@@ -160,7 +148,6 @@ mixin AutoIncrementingPrimaryKey on Table {
 class Skills extends Table {
   @override
   String get tableName => "t_skills";
-  // TextColumn get uuid => text().withLength(min: 1).named('uuid')();
   IntColumn get id => integer().autoIncrement().named('id')();
 
   DateTimeColumn get createdAt => dateTime().named('created_at')();
@@ -322,12 +309,9 @@ class DivinationTypes extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
   TextColumn get name => text().named('name')();
   TextColumn get description => text().named('description')();
-  // 使用的次数
-  // IntColumn get times => integer().named('times')();
 
   BoolColumn get isCustomized => boolean().named('is_customized')();
   BoolColumn get isAvailable => boolean().named('is_available')();
-  // TextColumn get subTypes => text().named('sub_types')();
 
   @override
   Set<Column> get primaryKey => {uuid};
@@ -343,9 +327,6 @@ class SubDivinationTypes extends Table {
   DateTimeColumn get deletedAt => dateTime().nullable().named('deleted_at')();
   DateTimeColumn get hiddenAt => dateTime().nullable().named('hidden_at')();
   TextColumn get name => text().named('name')();
-
-  // 使用的次数，每次被使用后次数+1
-  // IntColumn get times => integer().named('times')();
 
   BoolColumn get isCustomized => boolean().named('is_customized')();
   BoolColumn get isAvailable => boolean().named('is_available')();
@@ -371,7 +352,6 @@ class DivinationSubDivinationTypeMappers extends Table
 }
 
 @UseRowClass(TimingDivinationModel)
-// @DataClassName('TimingDivination')
 class TimingDivinations extends Table {
   @override
   String get tableName => "t_timing_divinations";
@@ -426,7 +406,6 @@ class TimingDivinations extends Table {
 }
 
 @UseRowClass(SeekerModel)
-// @DataClassName('Seeker')
 class Seekers extends Table {
   @override
   String get tableName => "t_seekers";

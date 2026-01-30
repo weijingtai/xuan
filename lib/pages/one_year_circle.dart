@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:math';
+
 import 'package:common/module.dart';
 import 'package:flutter/material.dart';
 
@@ -66,9 +67,6 @@ class _OneYearCircleState extends State<OneYearCircle> {
                           innerPadding: 4,
                           outerPadding: 2,
                           isReverseText: false,
-                          // textList: ['甲子金', '乙丑金', '甲寅金', '甲卯金', '甲辰金', '甲巳金', '甲午金', '甲未金', '甲申金', '甲酉金', '甲戌金', '甲亥金'],
-                          // textList: ['甲子', '乙丑', '甲寅', '甲卯', '甲辰', '甲巳', '甲午', '甲未', '甲申', '甲酉', '甲戌', '甲亥'],
-                          // textList: ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'],
                           textList: [
                             "甲甲",
                             "乙丑",
@@ -163,9 +161,6 @@ class _OneYearCircleState extends State<OneYearCircle> {
                         eachAngleDegree: 12.8,
                         isReverseText: true,
                         isHorizontalText: true,
-                        // textList: ['甲子金', '乙丑金', '甲寅金', '甲卯金', '甲辰金', '甲巳金', '甲午金', '甲未金', '甲申金', '甲酉金', '甲戌金', '甲亥金'],
-                        // textList: ['甲子', '乙丑', '甲寅', '甲卯', '甲辰', '甲巳', '甲午', '甲未', '甲申', '甲酉', '甲戌', '甲亥'],
-                        // textList: ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'],
                         textList: [
                           '斗',
                           "牛",
@@ -653,26 +648,7 @@ class _OneYearCircleState extends State<OneYearCircle> {
                         ),
                       ),
                     ),
-                    // Container(
-                    //   alignment: Alignment.center,
-                    //   height: 56 + 96,
-                    //   width: 56 + 96,
-                    //   decoration: BoxDecoration(
-                    //     color: Colors.blue.withOpacity(.6),
-                    //     borderRadius: BorderRadius.circular((56 + 96)/2),
-                    //   ),
-                    //   child: Transform.rotate(
-                    //     angle: 60 * math.pi / 180,
-                    //     origin: Offset.zero,
-                    //     child:CustomPaint(
-                    //       size: Size(56 + 96 , 56 + 96),
-                    //       painter: CompleteCirclePainter(
-                    //         color: Colors.brown,
-                    //         degree: 360 / 4,
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
+
                     Container(
                       alignment: Alignment.center,
                       height: 56,
@@ -725,32 +701,6 @@ class _OneYearCircleState extends State<OneYearCircle> {
     );
   }
 }
-// v1 没有文字
-// class MyPainter extends CustomPainter {
-//   final double innerRadius;
-//   final double outerRadius;
-//   final double sweepAngleDegree;
-//
-//   MyPainter({required this.innerRadius, required this.outerRadius, required this.sweepAngleDegree});
-//
-//   @override
-//   void paint(Canvas canvas, Size size) {
-//     final Offset center = Offset(size.width / 2, size.height / 2);
-//     final double startAngle = -math.pi / 2;
-//     final double sweepAngle = sweepAngleDegree * math.pi / 180;
-//     final Paint paint = Paint()
-//       ..color = Colors.orange
-//       ..style = PaintingStyle.stroke
-//       ..strokeWidth = outerRadius - innerRadius;
-//
-//     canvas.drawArc(Rect.fromCircle(center: center, radius: outerRadius), startAngle, sweepAngle, false, paint);
-//   }
-//
-//   @override
-//   bool shouldRepaint(CustomPainter old) {
-//     return false;
-//   }
-// }
 
 class CircleRingPainter extends CustomPainter {
   final double innerRadius;
