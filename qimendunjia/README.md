@@ -1,47 +1,58 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# 奇门遁甲 - 快速启动指南
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages).
+## 项目说明
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages).
--->
+本项目实现了两套完整的架构:
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+1. **传统架构** - ViewModel + UI 直接通信
+2. **MVVM+UseCase架构** - Clean Architecture 分层设计
 
-## Features
+## 快速启动
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+### 1. 安装依赖
 
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+```bash
+cd qimendunjia
+flutter pub get
 ```
 
-## Additional information
+### 2. 运行应用
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+```bash
+flutter run
+```
 
+### 3. 选择架构
 
-# 程序Bug
-1. 当前的程序无法准确的获取“节气”，以及详细的节气变更时间点 （考虑使用Pyhon进行数据库的开发,穷举）
-2. 当前仅完成了 转盘奇门 拆补法的计算，其他的奇门法暂未实现 
-    + 置润法，需要知道“置润”，以及“置润”的时间点，需要判断起局时间的”超神“”接气“等
-3. 当前奇门中没有实现 “人盘”的干支显示， 宫位的甲子干支显示
-4. 没有日期的输入
+启动后会看到架构选择页面,可以选择:
+- **传统架构版本** (蓝色卡片)
+- **MVVM+UseCase版本** (绿色卡片)
+
+## 路由配置
+
+应用支持以下路由:
+
+- `/` - 架构选择首页
+- `/qimendunjia` - 传统架构实现
+- `/qimendunjia/mvvm` - MVVM+UseCase 架构实现
+
+## 功能特性
+
+### 传统架构版本
+- ✓ 完整的奇门遁甲排盘功能
+- ✓ 支持转盘/飞盘
+- ✓ 支持拆补/置润/茅山/阴盘等算法
+- ✓ 九宫克应格局显示
+- ✓ 动画效果
+
+### MVVM+UseCase版本
+- ✓ 所有传统版本功能
+- ✓ Clean Architecture 设计
+- ✓ UseCase 业务封装
+- ✓ Repository 数据分离
+- ✓ 依赖注入管理
+- ✓ 状态可视化展示
+
+## 更多信息
+
+详细架构说明请查看: [ARCHITECTURE.md](./ARCHITECTURE.md)
