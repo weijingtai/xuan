@@ -2,6 +2,7 @@ import 'package:account/account.dart';
 import 'package:common/main.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
+import 'package:xuan/pages/demo_home_page.dart';
 
 import 'package:qimendunjia/navigator.dart' as QiMenDunJia;
 import 'package:qizhengsiyu/navigator.dart' as QiZhengSiYu;
@@ -18,6 +19,7 @@ class NavigatorGenerator {
   static final routes = {
     // "/": (context,{arguments}) => RootPage(),
     // "/": (context, {arguments}) => CityPickerPage(),
+    "/demo": (context, {arguments}) => const DemoHomePage(),
     "/one_year": (context, {arguments}) => OneYearCircle(),
     "/widget_dev": (context, {arguments}) => MyHomePage(
           title: 'widgets dev',

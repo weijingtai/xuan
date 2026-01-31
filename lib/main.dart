@@ -1977,7 +1977,7 @@ class MyApp extends StatelessWidget {
       ),
       showSemanticsDebugger: false,
       onGenerateRoute: NavigatorGenerator.generateRoute,
-      initialRoute: '/qizhengsiyu/panel',
+      initialRoute: '/demo',
       // initialRoute: '/one_year',
       // initialRoute: '/dev', // 七政四余
       // initialRoute: '/common/dev', // 占测记录
