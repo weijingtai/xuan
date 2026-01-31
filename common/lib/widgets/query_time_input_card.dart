@@ -1433,10 +1433,11 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
               doSelectCity(null);
             },
             child: DottedBorder(
-              borderType: BorderType.RRect,
-              radius: Radius.circular(12),
-              padding: EdgeInsets.all(6),
-              color: Colors.grey,
+              options: RoundedRectDottedBorderOptions(
+                radius: Radius.circular(12),
+                padding: EdgeInsets.all(6),
+                color: Colors.grey,
+              ),
               child: ClipRRect(
                   borderRadius: BorderRadius.all(Radius.circular(10)),
                   child: Column(
@@ -1476,10 +1477,11 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                   InkWell(
                       onTap: () => doSelectCity(null),
                       child: DottedBorder(
-                        borderType: BorderType.RRect,
-                        radius: Radius.circular(12),
-                        padding: EdgeInsets.all(6),
-                        color: Colors.grey,
+                        options: RoundedRectDottedBorderOptions(
+                          radius: Radius.circular(12),
+                          padding: EdgeInsets.all(6),
+                          color: Colors.grey,
+                        ),
                         child: ClipRRect(
                             borderRadius: BorderRadius.all(Radius.circular(10)),
                             child: Container(
@@ -1737,10 +1739,11 @@ class _QueryTimeInputCardState extends State<QueryTimeInputCard>
                   }
                 },
                 child: DottedBorder(
-                  borderType: BorderType.RRect,
-                  radius: Radius.circular(12),
-                  padding: EdgeInsets.all(6),
-                  color: Colors.grey,
+                  options: RoundedRectDottedBorderOptions(
+                    radius: Radius.circular(12),
+                    padding: EdgeInsets.all(6),
+                    color: Colors.grey,
+                  ),
                   child: ClipRRect(
                       borderRadius: BorderRadius.all(Radius.circular(10)),
                       child: birthTime == null

@@ -42,9 +42,9 @@ class ColorEntry extends $pb.GeneratedMessage {
       _omitMessageNames ? '' : 'ColorEntry',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'chinese_color'),
       createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU3)
+    ..aI(1, _omitFieldNames ? '' : 'id', fieldType: $pb.PbFieldType.OU3)
     ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..a<$core.int>(3, _omitFieldNames ? '' : 'argb', $pb.PbFieldType.OF3)
+    ..aI(3, _omitFieldNames ? '' : 'argb', fieldType: $pb.PbFieldType.OF3)
     ..hasRequiredFields = false;
 
   @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
@@ -124,7 +124,7 @@ class ColorDataset extends $pb.GeneratedMessage {
     ..aOS(1, _omitFieldNames ? '' : 'datasetId')
     ..aOS(2, _omitFieldNames ? '' : 'datasetName')
     ..aOS(3, _omitFieldNames ? '' : 'webAddress')
-    ..pc<ColorEntry>(4, _omitFieldNames ? '' : 'entries', $pb.PbFieldType.PM,
+    ..pPM<ColorEntry>(4, _omitFieldNames ? '' : 'entries',
         subBuilder: ColorEntry.create)
     ..hasRequiredFields = false;
 

@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cloud_firestore: ^6.1.1
-  firebase_database: ^12.1.1
+  cloud_firestore: ^6.1.2
+  firebase_database: ^12.1.2
   persistence_core:
     path: ../persistence_core
 
@@ -19,7 +19,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   fake_cloud_firestore: any
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

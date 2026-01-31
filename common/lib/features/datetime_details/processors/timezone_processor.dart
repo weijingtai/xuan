@@ -42,23 +42,23 @@ class TimezoneProcessor {
     final timeZone = dateTime.timeZone;
 
     // 获取标准偏移量（非夏令时偏移量）
-    int standardOffsetMilliseconds;
+    Duration standardOffset;
     if (timeZone.isDst) {
       // 如果当前是夏令时，查找同一年1月份的偏移量作为标准偏移量
       final winterDate = tz.TZDateTime(location, dateTime.year, 1, 1);
-      standardOffsetMilliseconds = winterDate.timeZone.offset;
+      standardOffset = winterDate.timeZone.offset;
     } else {
-      standardOffsetMilliseconds = timeZone.offset;
+      standardOffset = timeZone.offset;
     }
 
     return TimezoneInfo(
       name: location.name,
       abbreviation: timeZone.abbreviation,
-      offsetMilliseconds: timeZone.offset,
-      standardOffsetMilliseconds: standardOffsetMilliseconds,
+      offset: timeZone.offset,
+      standardOffset: standardOffset,
       isDST: timeZone.isDst,
-      offsetHours: timeZone.offset / (1000 * 60 * 60),
-      standardOffsetHours: standardOffsetMilliseconds / (1000 * 60 * 60),
+      offsetHours: timeZone.offset.inMilliseconds / (1000 * 60 * 60),
+      standardOffsetHours: standardOffset.inMilliseconds / (1000 * 60 * 60),
     );
   }
 
@@ -119,8 +119,8 @@ class TimezoneProcessResult {
 class TimezoneInfo {
   final String name;
   final String abbreviation;
-  final int offsetMilliseconds;
-  final int standardOffsetMilliseconds;
+  final Duration offset;
+  final Duration standardOffset;
   final bool isDST;
   final double offsetHours;
   final double standardOffsetHours;
@@ -128,8 +128,8 @@ class TimezoneInfo {
   TimezoneInfo({
     required this.name,
     required this.abbreviation,
-    required this.offsetMilliseconds,
-    required this.standardOffsetMilliseconds,
+    required this.offset,
+    required this.standardOffset,
     required this.isDST,
     required this.offsetHours,
     required this.standardOffsetHours,

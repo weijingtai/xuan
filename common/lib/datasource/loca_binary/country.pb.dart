@@ -1,13 +1,14 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: country.proto
-//
+// Generated from country.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
 
 import 'dart:core' as $core;
 
@@ -23,59 +24,48 @@ class Timezone extends $pb.GeneratedMessage {
     $core.String? abbreviation,
     $core.String? tzName,
   }) {
-    final $result = create();
-    if (zoneName != null) {
-      $result.zoneName = zoneName;
-    }
-    if (gmtOffset != null) {
-      $result.gmtOffset = gmtOffset;
-    }
-    if (gmtOffsetName != null) {
-      $result.gmtOffsetName = gmtOffsetName;
-    }
-    if (abbreviation != null) {
-      $result.abbreviation = abbreviation;
-    }
-    if (tzName != null) {
-      $result.tzName = tzName;
-    }
-    return $result;
+    final result = create();
+    if (zoneName != null) result.zoneName = zoneName;
+    if (gmtOffset != null) result.gmtOffset = gmtOffset;
+    if (gmtOffsetName != null) result.gmtOffsetName = gmtOffsetName;
+    if (abbreviation != null) result.abbreviation = abbreviation;
+    if (tzName != null) result.tzName = tzName;
+    return result;
   }
-  Timezone._() : super();
-  factory Timezone.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory Timezone.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  Timezone._();
+
+  factory Timezone.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Timezone.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Timezone',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'country'),
       createEmptyInstance: create)
     ..aOS(1, _omitFieldNames ? '' : 'zoneName')
-    ..a<$core.int>(2, _omitFieldNames ? '' : 'gmtOffset', $pb.PbFieldType.O3)
+    ..aI(2, _omitFieldNames ? '' : 'gmtOffset')
     ..aOS(3, _omitFieldNames ? '' : 'gmtOffsetName')
     ..aOS(4, _omitFieldNames ? '' : 'abbreviation')
     ..aOS(5, _omitFieldNames ? '' : 'tzName')
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Timezone clone() => Timezone()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Timezone clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   Timezone copyWith(void Function(Timezone) updates) =>
       super.copyWith((message) => updates(message as Timezone)) as Timezone;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Timezone create() => Timezone._();
+  @$core.override
   Timezone createEmptyInstance() => create();
-  static $pb.PbList<Timezone> createRepeated() => $pb.PbList<Timezone>();
   @$core.pragma('dart2js:noInline')
   static Timezone getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Timezone>(create);
@@ -84,10 +74,7 @@ class Timezone extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.String get zoneName => $_getSZ(0);
   @$pb.TagNumber(1)
-  set zoneName($core.String v) {
-    $_setString(0, v);
-  }
-
+  set zoneName($core.String value) => $_setString(0, value);
   @$pb.TagNumber(1)
   $core.bool hasZoneName() => $_has(0);
   @$pb.TagNumber(1)
@@ -96,10 +83,7 @@ class Timezone extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.int get gmtOffset => $_getIZ(1);
   @$pb.TagNumber(2)
-  set gmtOffset($core.int v) {
-    $_setSignedInt32(1, v);
-  }
-
+  set gmtOffset($core.int value) => $_setSignedInt32(1, value);
   @$pb.TagNumber(2)
   $core.bool hasGmtOffset() => $_has(1);
   @$pb.TagNumber(2)
@@ -108,10 +92,7 @@ class Timezone extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get gmtOffsetName => $_getSZ(2);
   @$pb.TagNumber(3)
-  set gmtOffsetName($core.String v) {
-    $_setString(2, v);
-  }
-
+  set gmtOffsetName($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasGmtOffsetName() => $_has(2);
   @$pb.TagNumber(3)
@@ -120,10 +101,7 @@ class Timezone extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get abbreviation => $_getSZ(3);
   @$pb.TagNumber(4)
-  set abbreviation($core.String v) {
-    $_setString(3, v);
-  }
-
+  set abbreviation($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasAbbreviation() => $_has(3);
   @$pb.TagNumber(4)
@@ -132,10 +110,7 @@ class Timezone extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.String get tzName => $_getSZ(4);
   @$pb.TagNumber(5)
-  set tzName($core.String v) {
-    $_setString(4, v);
-  }
-
+  set tzName($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasTzName() => $_has(4);
   @$pb.TagNumber(5)
@@ -149,55 +124,46 @@ class City extends $pb.GeneratedMessage {
     $core.double? latitude,
     $core.double? longitude,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (latitude != null) {
-      $result.latitude = latitude;
-    }
-    if (longitude != null) {
-      $result.longitude = longitude;
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    if (latitude != null) result.latitude = latitude;
+    if (longitude != null) result.longitude = longitude;
+    return result;
   }
-  City._() : super();
-  factory City.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory City.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  City._();
+
+  factory City.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory City.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'City',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'country'),
       createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.O3)
+    ..aI(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'latitude', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'longitude', $pb.PbFieldType.OD)
+    ..aD(4, _omitFieldNames ? '' : 'latitude')
+    ..aD(5, _omitFieldNames ? '' : 'longitude')
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  City clone() => City()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  City clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   City copyWith(void Function(City) updates) =>
       super.copyWith((message) => updates(message as City)) as City;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static City create() => City._();
+  @$core.override
   City createEmptyInstance() => create();
-  static $pb.PbList<City> createRepeated() => $pb.PbList<City>();
   @$core.pragma('dart2js:noInline')
   static City getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<City>(create);
@@ -207,10 +173,7 @@ class City extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.int get id => $_getIZ(0);
   @$pb.TagNumber(1)
-  set id($core.int v) {
-    $_setSignedInt32(0, v);
-  }
-
+  set id($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -219,10 +182,7 @@ class City extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get name => $_getSZ(1);
   @$pb.TagNumber(2)
-  set name($core.String v) {
-    $_setString(1, v);
-  }
-
+  set name($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
@@ -231,10 +191,7 @@ class City extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.double get latitude => $_getN(2);
   @$pb.TagNumber(4)
-  set latitude($core.double v) {
-    $_setDouble(2, v);
-  }
-
+  set latitude($core.double value) => $_setDouble(2, value);
   @$pb.TagNumber(4)
   $core.bool hasLatitude() => $_has(2);
   @$pb.TagNumber(4)
@@ -243,10 +200,7 @@ class City extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.double get longitude => $_getN(3);
   @$pb.TagNumber(5)
-  set longitude($core.double v) {
-    $_setDouble(3, v);
-  }
-
+  set longitude($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(5)
   $core.bool hasLongitude() => $_has(3);
   @$pb.TagNumber(5)
@@ -263,68 +217,52 @@ class State extends $pb.GeneratedMessage {
     $core.String? type,
     $core.Iterable<City>? cities,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (stateCode != null) {
-      $result.stateCode = stateCode;
-    }
-    if (latitude != null) {
-      $result.latitude = latitude;
-    }
-    if (longitude != null) {
-      $result.longitude = longitude;
-    }
-    if (type != null) {
-      $result.type = type;
-    }
-    if (cities != null) {
-      $result.cities.addAll(cities);
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    if (stateCode != null) result.stateCode = stateCode;
+    if (latitude != null) result.latitude = latitude;
+    if (longitude != null) result.longitude = longitude;
+    if (type != null) result.type = type;
+    if (cities != null) result.cities.addAll(cities);
+    return result;
   }
-  State._() : super();
-  factory State.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory State.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  State._();
+
+  factory State.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory State.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'State',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'country'),
       createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.O3)
+    ..aI(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'stateCode')
-    ..a<$core.double>(4, _omitFieldNames ? '' : 'latitude', $pb.PbFieldType.OD)
-    ..a<$core.double>(5, _omitFieldNames ? '' : 'longitude', $pb.PbFieldType.OD)
+    ..aD(4, _omitFieldNames ? '' : 'latitude')
+    ..aD(5, _omitFieldNames ? '' : 'longitude')
     ..aOS(6, _omitFieldNames ? '' : 'type')
-    ..pc<City>(7, _omitFieldNames ? '' : 'cities', $pb.PbFieldType.PM,
-        subBuilder: City.create)
+    ..pPM<City>(7, _omitFieldNames ? '' : 'cities', subBuilder: City.create)
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  State clone() => State()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  State clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   State copyWith(void Function(State) updates) =>
       super.copyWith((message) => updates(message as State)) as State;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static State create() => State._();
+  @$core.override
   State createEmptyInstance() => create();
-  static $pb.PbList<State> createRepeated() => $pb.PbList<State>();
   @$core.pragma('dart2js:noInline')
   static State getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<State>(create);
@@ -333,10 +271,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.int get id => $_getIZ(0);
   @$pb.TagNumber(1)
-  set id($core.int v) {
-    $_setSignedInt32(0, v);
-  }
-
+  set id($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -345,10 +280,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get name => $_getSZ(1);
   @$pb.TagNumber(2)
-  set name($core.String v) {
-    $_setString(1, v);
-  }
-
+  set name($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
@@ -357,10 +289,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get stateCode => $_getSZ(2);
   @$pb.TagNumber(3)
-  set stateCode($core.String v) {
-    $_setString(2, v);
-  }
-
+  set stateCode($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasStateCode() => $_has(2);
   @$pb.TagNumber(3)
@@ -369,10 +298,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.double get latitude => $_getN(3);
   @$pb.TagNumber(4)
-  set latitude($core.double v) {
-    $_setDouble(3, v);
-  }
-
+  set latitude($core.double value) => $_setDouble(3, value);
   @$pb.TagNumber(4)
   $core.bool hasLatitude() => $_has(3);
   @$pb.TagNumber(4)
@@ -381,10 +307,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.double get longitude => $_getN(4);
   @$pb.TagNumber(5)
-  set longitude($core.double v) {
-    $_setDouble(4, v);
-  }
-
+  set longitude($core.double value) => $_setDouble(4, value);
   @$pb.TagNumber(5)
   $core.bool hasLongitude() => $_has(4);
   @$pb.TagNumber(5)
@@ -393,10 +316,7 @@ class State extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get type => $_getSZ(5);
   @$pb.TagNumber(6)
-  set type($core.String v) {
-    $_setString(5, v);
-  }
-
+  set type($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasType() => $_has(5);
   @$pb.TagNumber(6)
@@ -426,101 +346,55 @@ class Country extends $pb.GeneratedMessage {
     $core.int? subregionId,
     $core.String? nationality,
     $core.Iterable<Timezone>? timezones,
-    $pb.PbMap<$core.String, $core.String>? translations,
+    $core.Iterable<$core.MapEntry<$core.String, $core.String>>? translations,
     $core.double? latitude,
     $core.double? longitude,
     $core.String? emoji,
     $core.String? emojiU,
     $core.Iterable<State>? states,
   }) {
-    final $result = create();
-    if (id != null) {
-      $result.id = id;
-    }
-    if (name != null) {
-      $result.name = name;
-    }
-    if (iso3 != null) {
-      $result.iso3 = iso3;
-    }
-    if (iso2 != null) {
-      $result.iso2 = iso2;
-    }
-    if (numericCode != null) {
-      $result.numericCode = numericCode;
-    }
-    if (phonecode != null) {
-      $result.phonecode = phonecode;
-    }
-    if (capital != null) {
-      $result.capital = capital;
-    }
-    if (currency != null) {
-      $result.currency = currency;
-    }
-    if (currencyName != null) {
-      $result.currencyName = currencyName;
-    }
-    if (currencySymbol != null) {
-      $result.currencySymbol = currencySymbol;
-    }
-    if (tld != null) {
-      $result.tld = tld;
-    }
-    if (native != null) {
-      $result.native = native;
-    }
-    if (region != null) {
-      $result.region = region;
-    }
-    if (regionId != null) {
-      $result.regionId = regionId;
-    }
-    if (subregion != null) {
-      $result.subregion = subregion;
-    }
-    if (subregionId != null) {
-      $result.subregionId = subregionId;
-    }
-    if (nationality != null) {
-      $result.nationality = nationality;
-    }
-    if (timezones != null) {
-      $result.timezones.addAll(timezones);
-    }
-    if (translations != null) {
-      $result.translations.addAll(translations);
-    }
-    if (latitude != null) {
-      $result.latitude = latitude;
-    }
-    if (longitude != null) {
-      $result.longitude = longitude;
-    }
-    if (emoji != null) {
-      $result.emoji = emoji;
-    }
-    if (emojiU != null) {
-      $result.emojiU = emojiU;
-    }
-    if (states != null) {
-      $result.states.addAll(states);
-    }
-    return $result;
+    final result = create();
+    if (id != null) result.id = id;
+    if (name != null) result.name = name;
+    if (iso3 != null) result.iso3 = iso3;
+    if (iso2 != null) result.iso2 = iso2;
+    if (numericCode != null) result.numericCode = numericCode;
+    if (phonecode != null) result.phonecode = phonecode;
+    if (capital != null) result.capital = capital;
+    if (currency != null) result.currency = currency;
+    if (currencyName != null) result.currencyName = currencyName;
+    if (currencySymbol != null) result.currencySymbol = currencySymbol;
+    if (tld != null) result.tld = tld;
+    if (native != null) result.native = native;
+    if (region != null) result.region = region;
+    if (regionId != null) result.regionId = regionId;
+    if (subregion != null) result.subregion = subregion;
+    if (subregionId != null) result.subregionId = subregionId;
+    if (nationality != null) result.nationality = nationality;
+    if (timezones != null) result.timezones.addAll(timezones);
+    if (translations != null) result.translations.addEntries(translations);
+    if (latitude != null) result.latitude = latitude;
+    if (longitude != null) result.longitude = longitude;
+    if (emoji != null) result.emoji = emoji;
+    if (emojiU != null) result.emojiU = emojiU;
+    if (states != null) result.states.addAll(states);
+    return result;
   }
-  Country._() : super();
-  factory Country.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory Country.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  Country._();
+
+  factory Country.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Country.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Country',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'country'),
       createEmptyInstance: create)
-    ..a<$core.int>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.O3)
+    ..aI(1, _omitFieldNames ? '' : 'id')
     ..aOS(2, _omitFieldNames ? '' : 'name')
     ..aOS(3, _omitFieldNames ? '' : 'iso3')
     ..aOS(4, _omitFieldNames ? '' : 'iso2')
@@ -533,42 +407,37 @@ class Country extends $pb.GeneratedMessage {
     ..aOS(11, _omitFieldNames ? '' : 'tld')
     ..aOS(12, _omitFieldNames ? '' : 'native')
     ..aOS(13, _omitFieldNames ? '' : 'region')
-    ..a<$core.int>(14, _omitFieldNames ? '' : 'regionId', $pb.PbFieldType.O3)
+    ..aI(14, _omitFieldNames ? '' : 'regionId')
     ..aOS(15, _omitFieldNames ? '' : 'subregion')
-    ..a<$core.int>(16, _omitFieldNames ? '' : 'subregionId', $pb.PbFieldType.O3)
+    ..aI(16, _omitFieldNames ? '' : 'subregionId')
     ..aOS(17, _omitFieldNames ? '' : 'nationality')
-    ..pc<Timezone>(18, _omitFieldNames ? '' : 'timezones', $pb.PbFieldType.PM,
+    ..pPM<Timezone>(18, _omitFieldNames ? '' : 'timezones',
         subBuilder: Timezone.create)
     ..m<$core.String, $core.String>(19, _omitFieldNames ? '' : 'translations',
         entryClassName: 'Country.TranslationsEntry',
         keyFieldType: $pb.PbFieldType.OS,
         valueFieldType: $pb.PbFieldType.OS,
         packageName: const $pb.PackageName('country'))
-    ..a<$core.double>(20, _omitFieldNames ? '' : 'latitude', $pb.PbFieldType.OD)
-    ..a<$core.double>(
-        21, _omitFieldNames ? '' : 'longitude', $pb.PbFieldType.OD)
+    ..aD(20, _omitFieldNames ? '' : 'latitude')
+    ..aD(21, _omitFieldNames ? '' : 'longitude')
     ..aOS(22, _omitFieldNames ? '' : 'emoji')
     ..aOS(23, _omitFieldNames ? '' : 'emojiU', protoName: 'emojiU')
-    ..pc<State>(24, _omitFieldNames ? '' : 'states', $pb.PbFieldType.PM,
-        subBuilder: State.create)
+    ..pPM<State>(24, _omitFieldNames ? '' : 'states', subBuilder: State.create)
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Country clone() => Country()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Country clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   Country copyWith(void Function(Country) updates) =>
       super.copyWith((message) => updates(message as Country)) as Country;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Country create() => Country._();
+  @$core.override
   Country createEmptyInstance() => create();
-  static $pb.PbList<Country> createRepeated() => $pb.PbList<Country>();
   @$core.pragma('dart2js:noInline')
   static Country getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Country>(create);
@@ -578,10 +447,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.int get id => $_getIZ(0);
   @$pb.TagNumber(1)
-  set id($core.int v) {
-    $_setSignedInt32(0, v);
-  }
-
+  set id($core.int value) => $_setSignedInt32(0, value);
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -590,10 +456,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get name => $_getSZ(1);
   @$pb.TagNumber(2)
-  set name($core.String v) {
-    $_setString(1, v);
-  }
-
+  set name($core.String value) => $_setString(1, value);
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
@@ -602,10 +465,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get iso3 => $_getSZ(2);
   @$pb.TagNumber(3)
-  set iso3($core.String v) {
-    $_setString(2, v);
-  }
-
+  set iso3($core.String value) => $_setString(2, value);
   @$pb.TagNumber(3)
   $core.bool hasIso3() => $_has(2);
   @$pb.TagNumber(3)
@@ -614,10 +474,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $core.String get iso2 => $_getSZ(3);
   @$pb.TagNumber(4)
-  set iso2($core.String v) {
-    $_setString(3, v);
-  }
-
+  set iso2($core.String value) => $_setString(3, value);
   @$pb.TagNumber(4)
   $core.bool hasIso2() => $_has(3);
   @$pb.TagNumber(4)
@@ -627,10 +484,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.String get numericCode => $_getSZ(4);
   @$pb.TagNumber(5)
-  set numericCode($core.String v) {
-    $_setString(4, v);
-  }
-
+  set numericCode($core.String value) => $_setString(4, value);
   @$pb.TagNumber(5)
   $core.bool hasNumericCode() => $_has(4);
   @$pb.TagNumber(5)
@@ -639,10 +493,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get phonecode => $_getSZ(5);
   @$pb.TagNumber(6)
-  set phonecode($core.String v) {
-    $_setString(5, v);
-  }
-
+  set phonecode($core.String value) => $_setString(5, value);
   @$pb.TagNumber(6)
   $core.bool hasPhonecode() => $_has(5);
   @$pb.TagNumber(6)
@@ -652,10 +503,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.String get capital => $_getSZ(6);
   @$pb.TagNumber(7)
-  set capital($core.String v) {
-    $_setString(6, v);
-  }
-
+  set capital($core.String value) => $_setString(6, value);
   @$pb.TagNumber(7)
   $core.bool hasCapital() => $_has(6);
   @$pb.TagNumber(7)
@@ -665,10 +513,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.String get currency => $_getSZ(7);
   @$pb.TagNumber(8)
-  set currency($core.String v) {
-    $_setString(7, v);
-  }
-
+  set currency($core.String value) => $_setString(7, value);
   @$pb.TagNumber(8)
   $core.bool hasCurrency() => $_has(7);
   @$pb.TagNumber(8)
@@ -677,10 +522,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.String get currencyName => $_getSZ(8);
   @$pb.TagNumber(9)
-  set currencyName($core.String v) {
-    $_setString(8, v);
-  }
-
+  set currencyName($core.String value) => $_setString(8, value);
   @$pb.TagNumber(9)
   $core.bool hasCurrencyName() => $_has(8);
   @$pb.TagNumber(9)
@@ -689,10 +531,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $core.String get currencySymbol => $_getSZ(9);
   @$pb.TagNumber(10)
-  set currencySymbol($core.String v) {
-    $_setString(9, v);
-  }
-
+  set currencySymbol($core.String value) => $_setString(9, value);
   @$pb.TagNumber(10)
   $core.bool hasCurrencySymbol() => $_has(9);
   @$pb.TagNumber(10)
@@ -702,10 +541,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   $core.String get tld => $_getSZ(10);
   @$pb.TagNumber(11)
-  set tld($core.String v) {
-    $_setString(10, v);
-  }
-
+  set tld($core.String value) => $_setString(10, value);
   @$pb.TagNumber(11)
   $core.bool hasTld() => $_has(10);
   @$pb.TagNumber(11)
@@ -715,10 +551,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   $core.String get native => $_getSZ(11);
   @$pb.TagNumber(12)
-  set native($core.String v) {
-    $_setString(11, v);
-  }
-
+  set native($core.String value) => $_setString(11, value);
   @$pb.TagNumber(12)
   $core.bool hasNative() => $_has(11);
   @$pb.TagNumber(12)
@@ -728,10 +561,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(13)
   $core.String get region => $_getSZ(12);
   @$pb.TagNumber(13)
-  set region($core.String v) {
-    $_setString(12, v);
-  }
-
+  set region($core.String value) => $_setString(12, value);
   @$pb.TagNumber(13)
   $core.bool hasRegion() => $_has(12);
   @$pb.TagNumber(13)
@@ -740,10 +570,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   $core.int get regionId => $_getIZ(13);
   @$pb.TagNumber(14)
-  set regionId($core.int v) {
-    $_setSignedInt32(13, v);
-  }
-
+  set regionId($core.int value) => $_setSignedInt32(13, value);
   @$pb.TagNumber(14)
   $core.bool hasRegionId() => $_has(13);
   @$pb.TagNumber(14)
@@ -752,10 +579,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(15)
   $core.String get subregion => $_getSZ(14);
   @$pb.TagNumber(15)
-  set subregion($core.String v) {
-    $_setString(14, v);
-  }
-
+  set subregion($core.String value) => $_setString(14, value);
   @$pb.TagNumber(15)
   $core.bool hasSubregion() => $_has(14);
   @$pb.TagNumber(15)
@@ -764,10 +588,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(16)
   $core.int get subregionId => $_getIZ(15);
   @$pb.TagNumber(16)
-  set subregionId($core.int v) {
-    $_setSignedInt32(15, v);
-  }
-
+  set subregionId($core.int value) => $_setSignedInt32(15, value);
   @$pb.TagNumber(16)
   $core.bool hasSubregionId() => $_has(15);
   @$pb.TagNumber(16)
@@ -776,10 +597,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(17)
   $core.String get nationality => $_getSZ(16);
   @$pb.TagNumber(17)
-  set nationality($core.String v) {
-    $_setString(16, v);
-  }
-
+  set nationality($core.String value) => $_setString(16, value);
   @$pb.TagNumber(17)
   $core.bool hasNationality() => $_has(16);
   @$pb.TagNumber(17)
@@ -795,10 +613,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(20)
   $core.double get latitude => $_getN(19);
   @$pb.TagNumber(20)
-  set latitude($core.double v) {
-    $_setDouble(19, v);
-  }
-
+  set latitude($core.double value) => $_setDouble(19, value);
   @$pb.TagNumber(20)
   $core.bool hasLatitude() => $_has(19);
   @$pb.TagNumber(20)
@@ -807,10 +622,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(21)
   $core.double get longitude => $_getN(20);
   @$pb.TagNumber(21)
-  set longitude($core.double v) {
-    $_setDouble(20, v);
-  }
-
+  set longitude($core.double value) => $_setDouble(20, value);
   @$pb.TagNumber(21)
   $core.bool hasLongitude() => $_has(20);
   @$pb.TagNumber(21)
@@ -819,10 +631,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(22)
   $core.String get emoji => $_getSZ(21);
   @$pb.TagNumber(22)
-  set emoji($core.String v) {
-    $_setString(21, v);
-  }
-
+  set emoji($core.String value) => $_setString(21, value);
   @$pb.TagNumber(22)
   $core.bool hasEmoji() => $_has(21);
   @$pb.TagNumber(22)
@@ -831,10 +640,7 @@ class Country extends $pb.GeneratedMessage {
   @$pb.TagNumber(23)
   $core.String get emojiU => $_getSZ(22);
   @$pb.TagNumber(23)
-  set emojiU($core.String v) {
-    $_setString(22, v);
-  }
-
+  set emojiU($core.String value) => $_setString(22, value);
   @$pb.TagNumber(23)
   $core.bool hasEmojiU() => $_has(22);
   @$pb.TagNumber(23)
@@ -848,44 +654,41 @@ class Countries extends $pb.GeneratedMessage {
   factory Countries({
     $core.Iterable<Country>? countryList,
   }) {
-    final $result = create();
-    if (countryList != null) {
-      $result.countryList.addAll(countryList);
-    }
-    return $result;
+    final result = create();
+    if (countryList != null) result.countryList.addAll(countryList);
+    return result;
   }
-  Countries._() : super();
-  factory Countries.fromBuffer($core.List<$core.int> i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromBuffer(i, r);
-  factory Countries.fromJson($core.String i,
-          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
-      create()..mergeFromJson(i, r);
+
+  Countries._();
+
+  factory Countries.fromBuffer($core.List<$core.int> data,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(data, registry);
+  factory Countries.fromJson($core.String json,
+          [$pb.ExtensionRegistry registry = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(json, registry);
 
   static final $pb.BuilderInfo _i = $pb.BuilderInfo(
       _omitMessageNames ? '' : 'Countries',
       package: const $pb.PackageName(_omitMessageNames ? '' : 'country'),
       createEmptyInstance: create)
-    ..pc<Country>(1, _omitFieldNames ? '' : 'countryList', $pb.PbFieldType.PM,
+    ..pPM<Country>(1, _omitFieldNames ? '' : 'countryList',
         protoName: 'countryList', subBuilder: Country.create)
     ..hasRequiredFields = false;
 
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-      'Will be removed in next major version')
-  Countries clone() => Countries()..mergeFromMessage(this);
-  @$core.Deprecated('Using this can add significant overhead to your binary. '
-      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-      'Will be removed in next major version')
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
+  Countries clone() => deepCopy();
+  @$core.Deprecated('See https://github.com/google/protobuf.dart/issues/998.')
   Countries copyWith(void Function(Countries) updates) =>
       super.copyWith((message) => updates(message as Countries)) as Countries;
 
+  @$core.override
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static Countries create() => Countries._();
+  @$core.override
   Countries createEmptyInstance() => create();
-  static $pb.PbList<Countries> createRepeated() => $pb.PbList<Countries>();
   @$core.pragma('dart2js:noInline')
   static Countries getDefault() =>
       _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Countries>(create);
@@ -895,6 +698,7 @@ class Countries extends $pb.GeneratedMessage {
   $pb.PbList<Country> get countryList => $_getList(0);
 }
 
-const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames =
+const $core.bool _omitFieldNames =
+    $core.bool.fromEnvironment('protobuf.omit_field_names');
+const $core.bool _omitMessageNames =
     $core.bool.fromEnvironment('protobuf.omit_message_names');

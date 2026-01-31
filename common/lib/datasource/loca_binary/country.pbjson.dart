@@ -1,13 +1,15 @@
+// This is a generated file - do not edit.
 //
-//  Generated code. Do not modify.
-//  source: country.proto
-//
+// Generated from country.proto.
+
 // @dart = 3.3
 
 // ignore_for_file: annotate_overrides, camel_case_types, comment_references
-// ignore_for_file: constant_identifier_names, library_prefixes
-// ignore_for_file: non_constant_identifier_names, prefer_final_fields
-// ignore_for_file: unnecessary_import, unnecessary_this, unused_import
+// ignore_for_file: constant_identifier_names
+// ignore_for_file: curly_braces_in_flow_control_structures
+// ignore_for_file: deprecated_member_use_from_same_package, library_prefixes
+// ignore_for_file: non_constant_identifier_names, prefer_relative_imports
+// ignore_for_file: unused_import
 
 import 'dart:convert' as $convert;
 import 'dart:core' as $core;
@@ -54,11 +56,26 @@ const State$json = {
   '2': [
     {'1': 'id', '3': 1, '4': 1, '5': 5, '10': 'id'},
     {'1': 'name', '3': 2, '4': 1, '5': 9, '10': 'name'},
-    {'1': 'state_code', '3': 3, '4': 1, '5': 9, '9': 0, '10': 'stateCode', '17': true},
+    {
+      '1': 'state_code',
+      '3': 3,
+      '4': 1,
+      '5': 9,
+      '9': 0,
+      '10': 'stateCode',
+      '17': true
+    },
     {'1': 'latitude', '3': 4, '4': 1, '5': 1, '10': 'latitude'},
     {'1': 'longitude', '3': 5, '4': 1, '5': 1, '10': 'longitude'},
     {'1': 'type', '3': 6, '4': 1, '5': 9, '10': 'type'},
-    {'1': 'cities', '3': 7, '4': 3, '5': 11, '6': '.country.City', '10': 'cities'},
+    {
+      '1': 'cities',
+      '3': 7,
+      '4': 3,
+      '5': 11,
+      '6': '.country.City',
+      '10': 'cities'
+    },
   ],
   '8': [
     {'1': '_state_code'},
@@ -89,17 +106,38 @@ const Country$json = {
     {'1': 'region_id', '3': 14, '4': 1, '5': 5, '10': 'regionId'},
     {'1': 'subregion', '3': 15, '4': 1, '5': 9, '10': 'subregion'},
     {'1': 'subregion_id', '3': 16, '4': 1, '5': 5, '10': 'subregionId'},
-    {'1': 'states', '3': 24, '4': 3, '5': 11, '6': '.country.State', '10': 'states'},
+    {
+      '1': 'states',
+      '3': 24,
+      '4': 3,
+      '5': 11,
+      '6': '.country.State',
+      '10': 'states'
+    },
     {'1': 'currency', '3': 8, '4': 1, '5': 9, '10': 'currency'},
     {'1': 'currency_name', '3': 9, '4': 1, '5': 9, '10': 'currencyName'},
     {'1': 'currency_symbol', '3': 10, '4': 1, '5': 9, '10': 'currencySymbol'},
     {'1': 'native', '3': 12, '4': 1, '5': 9, '10': 'native'},
     {'1': 'nationality', '3': 17, '4': 1, '5': 9, '10': 'nationality'},
-    {'1': 'translations', '3': 19, '4': 3, '5': 11, '6': '.country.Country.TranslationsEntry', '10': 'translations'},
+    {
+      '1': 'translations',
+      '3': 19,
+      '4': 3,
+      '5': 11,
+      '6': '.country.Country.TranslationsEntry',
+      '10': 'translations'
+    },
     {'1': 'tld', '3': 11, '4': 1, '5': 9, '10': 'tld'},
     {'1': 'emoji', '3': 22, '4': 1, '5': 9, '10': 'emoji'},
     {'1': 'emojiU', '3': 23, '4': 1, '5': 9, '10': 'emojiU'},
-    {'1': 'timezones', '3': 18, '4': 3, '5': 11, '6': '.country.Timezone', '10': 'timezones'},
+    {
+      '1': 'timezones',
+      '3': 18,
+      '4': 3,
+      '5': 11,
+      '6': '.country.Timezone',
+      '10': 'timezones'
+    },
   ],
   '3': [Country_TranslationsEntry$json],
 };
@@ -136,7 +174,14 @@ final $typed_data.Uint8List countryDescriptor = $convert.base64Decode(
 const Countries$json = {
   '1': 'Countries',
   '2': [
-    {'1': 'countryList', '3': 1, '4': 3, '5': 11, '6': '.country.Country', '10': 'countryList'},
+    {
+      '1': 'countryList',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.country.Country',
+      '10': 'countryList'
+    },
   ],
 };
 
@@ -144,4 +189,3 @@ const Countries$json = {
 final $typed_data.Uint8List countriesDescriptor = $convert.base64Decode(
     'CglDb3VudHJpZXMSMgoLY291bnRyeUxpc3QYASADKAsyEC5jb3VudHJ5LkNvdW50cnlSC2NvdW'
     '50cnlMaXN0');
-

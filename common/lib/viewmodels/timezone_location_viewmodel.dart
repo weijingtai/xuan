@@ -178,8 +178,9 @@ class TimezoneLocationViewModel extends ChangeNotifier {
     }
   }
 
-  Future<String> loadLocalTimezone() {
-    return FlutterTimezone.getLocalTimezone();
+  Future<String> loadLocalTimezone() async {
+    final timezoneInfo = await FlutterTimezone.getLocalTimezone();
+    return timezoneInfo.identifier;
   }
 
   Future<SPLocationDataModel?> loadLocation() async {

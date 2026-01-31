@@ -302,6 +302,7 @@ class _BasicInfoSectionState extends State<BasicInfoSection>
 // 处理选择结果
               if (selectedLocation != null) {
                 logger.d(selectedLocation.toJson().toString());
+                // logger.d('选中的地区: ${selectedLocation.name}');
                 // logger.d('编码: ${selectedLocation.code}');
                 // logger.d(
                 // '经纬度: (${selectedLocation.latitude}, ${selectedLocation.longitude})');

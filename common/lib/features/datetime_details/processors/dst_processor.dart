@@ -26,9 +26,9 @@ class DSTProcessor {
 
       // 精确计算夏令时偏移量
       final dstOffset =
-          tzDateTime.timeZone.offset - standardOffset.inMilliseconds;
+          tzDateTime.timeZone.offset - standardOffset;
       removeDSTDatetime =
-          standardDateTime.subtract(Duration(milliseconds: dstOffset));
+          standardDateTime.subtract(dstOffset);
 
       // 计算移除夏令时后的中国日期信息
       removeDSTChineseInfo = SolarLunarDateTimeHelper.cacluateChineseDateInfo(
@@ -44,8 +44,8 @@ class DSTProcessor {
       isDST: isDST,
       removeDSTDatetime: removeDSTDatetime,
       removeDSTChineseInfo: removeDSTChineseInfo,
-      dstOffsetMilliseconds:
-          isDST ? _calculateDSTOffset(location, standardDateTime) : 0,
+      dstOffset:
+          isDST ? _calculateDSTOffset(location, standardDateTime) : Duration.zero,
       transitionInfo: transitionInfo,
     );
   }
@@ -57,7 +57,7 @@ class DSTProcessor {
     var tzTestDate = tz.TZDateTime.from(testDate, location);
 
     if (!tzTestDate.timeZone.isDst) {
-      return Duration(milliseconds: tzTestDate.timeZone.offset);
+      return tzTestDate.timeZone.offset;
     }
 
     // 如果1月1日是夏令时，尝试7月1日
@@ -65,7 +65,7 @@ class DSTProcessor {
     tzTestDate = tz.TZDateTime.from(testDate, location);
 
     if (!tzTestDate.timeZone.isDst) {
-      return Duration(milliseconds: tzTestDate.timeZone.offset);
+      return tzTestDate.timeZone.offset;
     }
 
     // 如果两个日期都是夏令时，遍历每个月的1号找到非夏令时
@@ -74,26 +74,25 @@ class DSTProcessor {
       tzTestDate = tz.TZDateTime.from(testDate, location);
 
       if (!tzTestDate.timeZone.isDst) {
-        return Duration(milliseconds: tzTestDate.timeZone.offset);
+        return tzTestDate.timeZone.offset;
       }
     }
 
     // 如果整年都是夏令时（极少见情况），返回当前偏移量减去1小时作为估算
     final currentDate = DateTime(year, 6, 1);
     final currentTzDate = tz.TZDateTime.from(currentDate, location);
-    return Duration(milliseconds: currentTzDate.timeZone.offset - 3600000);
+    return currentTzDate.timeZone.offset - const Duration(hours: 1);
   }
 
   /// 计算夏令时偏移量
-  static int _calculateDSTOffset(tz.Location location, DateTime dateTime) {
+  static Duration _calculateDSTOffset(tz.Location location, DateTime dateTime) {
     final tzDateTime = tz.TZDateTime.from(dateTime, location);
     if (!tzDateTime.timeZone.isDst) {
-      return 0;
+      return Duration.zero;
     }
 
     final standardOffset = _getStandardOffset(location, dateTime.year);
-    final dstOffset =
-        tzDateTime.timeZone.offset - standardOffset.inMilliseconds;
+    final dstOffset = tzDateTime.timeZone.offset - standardOffset;
     return dstOffset;
   }
 
@@ -158,19 +157,19 @@ class DSTProcessResult {
   final bool isDST;
   final DateTime? removeDSTDatetime;
   final ChineseDateInfo? removeDSTChineseInfo;
-  final int dstOffsetMilliseconds;
+  final Duration dstOffset;
   final DSTTransitionInfo? transitionInfo;
 
   DSTProcessResult({
     required this.isDST,
     this.removeDSTDatetime,
     this.removeDSTChineseInfo,
-    required this.dstOffsetMilliseconds,
+    required this.dstOffset,
     this.transitionInfo,
   });
 
   /// 获取夏令时偏移小时数
-  double get dstOffsetHours => dstOffsetMilliseconds / (1000 * 60 * 60);
+  double get dstOffsetHours => dstOffset.inMilliseconds / (1000 * 60 * 60);
 
   /// 获取处理摘要
   Map<String, dynamic> getSummary() {
