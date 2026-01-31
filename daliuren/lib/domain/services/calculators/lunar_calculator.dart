@@ -1,5 +1,5 @@
 import 'package:common/enums.dart';
-import 'package:tyme/tyme.dart';
+import 'package:tyme/tyme.dart' hide YinYang;
 import 'base_calculator.dart';
 
 /// 农历计算器
@@ -35,7 +35,8 @@ class LunarCalculator extends BaseCalculator {
   /// 确定月将(根据节气)
   MonthGeneral calculateMonthGeneral(DateTime dateTime) {
     try {
-      final solarDay = SolarDay.fromYmd(dateTime.year, dateTime.month, dateTime.day);
+      final solarDay =
+          SolarDay.fromYmd(dateTime.year, dateTime.month, dateTime.day);
       final term = solarDay.getTerm();
       final termJd = term.getJulianDay();
       final termTime = termJd.getSolarTime();
@@ -71,7 +72,8 @@ class LunarCalculator extends BaseCalculator {
     try {
       final parts = baZiStr.trim().split(RegExp(r'\s+'));
       if (parts.length != 4) {
-        throw ArgumentError('Invalid BaZi format. Expected "年 月 日 时", got: $baZiStr');
+        throw ArgumentError(
+            'Invalid BaZi format. Expected "年 月 日 时", got: $baZiStr');
       }
 
       return [

@@ -16,7 +16,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:tyme/tyme.dart';
+import 'package:tyme/tyme.dart' hide YinYang;
 import 'package:tuple/tuple.dart';
 
 import '../model/da_liu_ren_gong.dart';
@@ -100,11 +100,17 @@ class _MyHomePageState extends State<MyHomePage> {
         } else {
           final dt = panDatetimeNotifier.value!;
           final solarTime = SolarTime.fromYmdHms(
-            dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+            dt.year,
+            dt.month,
+            dt.day,
+            dt.hour,
+            dt.minute,
+            dt.second,
           );
           final lunarHour = solarTime.getLunarHour();
           final eightChar = lunarHour.getEightChar();
-          final lunarDay = SolarDay.fromYmd(dt.year, dt.month, dt.day).getLunarDay();
+          final lunarDay =
+              SolarDay.fromYmd(dt.year, dt.month, dt.day).getLunarDay();
           lunarNotifier.value = lunarDay;
 
           final baZiStr = [
@@ -120,8 +126,12 @@ class _MyHomePageState extends State<MyHomePage> {
           final termJd = term.getJulianDay();
           final termTime = termJd.getSolarTime();
           final termAt = DateTime(
-            termTime.getYear(), termTime.getMonth(), termTime.getDay(),
-            termTime.getHour(), termTime.getMinute(), termTime.getSecond(),
+            termTime.getYear(),
+            termTime.getMonth(),
+            termTime.getDay(),
+            termTime.getHour(),
+            termTime.getMinute(),
+            termTime.getSecond(),
           );
           String prevQiName;
           if (termAt.isAfter(dt)) {
@@ -133,8 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
           var pan = DaLiuRenKePan(
             panDateTime: panDatetimeNotifier.value!,
             eightChatStr: baZiStr,
-            monthGeneral:
-                MonthGeneral.fromByStartAtJie(prevQiName),
+            monthGeneral: MonthGeneral.fromByStartAtJie(prevQiName),
           );
           daLiuRenGongNotifier.value = pan;
           checkPanJu(pan.dayJiaZi, pan.timeJiaZi,
@@ -1111,7 +1120,12 @@ class _MyHomePageState extends State<MyHomePage> {
     final lunarDay = solarDay.getLunarDay();
     final lunarMonth = lunarDay.getLunarMonth();
     final solarTime = SolarTime.fromYmdHms(
-      time.year, time.month, time.day, time.hour, time.minute, time.second,
+      time.year,
+      time.month,
+      time.day,
+      time.hour,
+      time.minute,
+      time.second,
     );
     final lunarHour = solarTime.getLunarHour();
     final eightChar = lunarHour.getEightChar();
@@ -1121,8 +1135,12 @@ class _MyHomePageState extends State<MyHomePage> {
     final termJd = term.getJulianDay();
     final termTime = termJd.getSolarTime();
     final termAt = DateTime(
-      termTime.getYear(), termTime.getMonth(), termTime.getDay(),
-      termTime.getHour(), termTime.getMinute(), termTime.getSecond(),
+      termTime.getYear(),
+      termTime.getMonth(),
+      termTime.getDay(),
+      termTime.getHour(),
+      termTime.getMinute(),
+      termTime.getSecond(),
     );
 
     String prevTermName;
@@ -1136,17 +1154,21 @@ class _MyHomePageState extends State<MyHomePage> {
       final prevJd = prevTerm.getJulianDay();
       final prevSt = prevJd.getSolarTime();
       prevTermName = prevTerm.getName();
-      prevTermTimeStr = '${prevSt.getYear()}/${_pad(prevSt.getMonth())}/${_pad(prevSt.getDay())} ${_pad(prevSt.getHour())}:${_pad(prevSt.getMinute())}:${_pad(prevSt.getSecond())}';
+      prevTermTimeStr =
+          '${prevSt.getYear()}/${_pad(prevSt.getMonth())}/${_pad(prevSt.getDay())} ${_pad(prevSt.getHour())}:${_pad(prevSt.getMinute())}:${_pad(prevSt.getSecond())}';
       nextTermName = term.getName();
-      nextTermTimeStr = '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
+      nextTermTimeStr =
+          '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
     } else {
       prevTermName = term.getName();
-      prevTermTimeStr = '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
+      prevTermTimeStr =
+          '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
       final nextTerm = term.next(1);
       final nextJd = nextTerm.getJulianDay();
       final nextSt = nextJd.getSolarTime();
       nextTermName = nextTerm.getName();
-      nextTermTimeStr = '${nextSt.getYear()}/${_pad(nextSt.getMonth())}/${_pad(nextSt.getDay())} ${_pad(nextSt.getHour())}:${_pad(nextSt.getMinute())}:${_pad(nextSt.getSecond())}';
+      nextTermTimeStr =
+          '${nextSt.getYear()}/${_pad(nextSt.getMonth())}/${_pad(nextSt.getDay())} ${_pad(nextSt.getHour())}:${_pad(nextSt.getMinute())}:${_pad(nextSt.getSecond())}';
     }
 
     // Year in GanZhi
@@ -1194,9 +1216,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(
-                        flex: 3,
-                        child: Text("$prevTermName:")),
+                    Flexible(flex: 3, child: Text("$prevTermName:")),
                     Flexible(
                         flex: 7,
                         child: Text(
@@ -1210,9 +1230,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Flexible(
-                        flex: 3,
-                        child: Text("$nextTermName:")),
+                    Flexible(flex: 3, child: Text("$nextTermName:")),
                     Flexible(
                         flex: 7,
                         child: Text(
