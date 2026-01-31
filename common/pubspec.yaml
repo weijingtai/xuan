@@ -40,7 +40,7 @@ dependencies:
   google_fonts: ^8.0.0
   auto_size_text: ^3.0.0
   sweph: ^3.2.1+2.10.3
-  lunar: ^1.2.3
+  tyme: ^1.4.1
   equatable: ^2.0.8
   slide_switcher: ^1.1.2
   board_datetime_picker: 2.8.5

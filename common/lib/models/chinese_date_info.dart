@@ -1,7 +1,6 @@
 // common/lib/models/chinese_date_info.dart
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:lunar/lunar.dart';
 
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_three_yuan.dart';

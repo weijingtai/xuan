@@ -1,7 +1,6 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:lunar/lunar.dart';
 import 'package:qizhengsiyu/enums/enum_twelve_gong.dart';
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 import 'package:tuple/tuple.dart';

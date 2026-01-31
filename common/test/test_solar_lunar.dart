@@ -1,8 +1,9 @@
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/helpers/solar_time_calculator.dart';
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/lunar.dart';
+import 'package:tyme/tyme.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
@@ -92,7 +93,7 @@ void main() {
       print(s.toIso8601String());
       print(DateTime.parse(s.toIso8601String()));
       print(tz.TZDateTime.from(DateTime.parse(s.toIso8601String()), t));
-      final lunar = Lunar.fromDate(DateTime.now());
+      final lunar = LunarAdapter.fromDate(DateTime.now());
       print(lunar);
       print(lunar.getMonth());
       print(lunar.getDay());
@@ -110,14 +111,6 @@ void main() {
       // expect(tomorrowLunar.getBaZi()[2], equals(todayLunar.getBaZi()[2]));
     });
     test('转换为utc', () {
-      // SolarLunarDateTimeHelper.fromEightChars(EightChars(
-      //     year: JiaZi.YI_SI,
-      //     month: JiaZi.JI_MAO,
-      //     day: JiaZi.JI_MAO,
-      //     hour: JiaZi.GUI_YOU));
-
-      // final shanghai = tz.getLocation('Asia/Shanghai');
-
       const timezoneString = 'America/Los_Angeles';
       final lasVegas = tz.getLocation(timezoneString);
       final tzNow = tz.TZDateTime.now(lasVegas);
@@ -126,12 +119,10 @@ void main() {
       final dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
       var now = DateTime.now();
       print("datetime: $now");
-      // now = now.toUtc();
-      // print("utc $now");
-      var solar = Solar.fromDate(now);
-      print(
-          "solar $solar ${solar.getHour()}:${solar.getMinute()}:${solar.getSecond()}");
-      var result = SolarLunarDateTimeHelper.solarToDateTime(solar);
+      // Using tyme SolarDay instead of lunar Solar
+      var solarDay = SolarDay.fromYmd(now.year, now.month, now.day);
+      print("solar $solarDay");
+      var result = DateTime(solarDay.getYear(), solarDay.getMonth(), solarDay.getDay(), now.hour, now.minute, now.second);
 
       expect(dateFormat.format(result), equals(dateFormat.format(now)));
     });
@@ -139,10 +130,19 @@ void main() {
 
   group('子时', () {
     test("子时", () {
-      Lunar lunar = Lunar.fromYmdHms(2025, 8, 11, 23, 10, 30);
-      print(lunar.getBaZi()); // [乙巳, 乙酉, 甲辰, 丙子]
-      lunar = Lunar.fromYmdHms(2025, 8, 12, 00, 10, 30);
-      print(lunar.getBaZi()); // [乙巳, 乙酉, 乙巳, 丙子]
+      // Using tyme: Lunar.fromYmdHms(lunarYear, lunarMonth, lunarDay, hour, min, sec)
+      // First create LunarDay from lunar date, then get solar date, then add time
+      LunarDay lunarDay1 = LunarDay.fromYmd(2025, 8, 11);
+      SolarDay solarDay1 = lunarDay1.getSolarDay();
+      SolarTime solarTime1 = SolarTime.fromYmdHms(solarDay1.getYear(), solarDay1.getMonth(), solarDay1.getDay(), 23, 10, 30);
+      EightChar ec1 = solarTime1.getLunarHour().getEightChar();
+      print([ec1.getYear().getName(), ec1.getMonth().getName(), ec1.getDay().getName(), ec1.getHour().getName()]); // [乙巳, 乙酉, 甲辰, 丙子]
+
+      LunarDay lunarDay2 = LunarDay.fromYmd(2025, 8, 12);
+      SolarDay solarDay2 = lunarDay2.getSolarDay();
+      SolarTime solarTime2 = SolarTime.fromYmdHms(solarDay2.getYear(), solarDay2.getMonth(), solarDay2.getDay(), 0, 10, 30);
+      EightChar ec2 = solarTime2.getLunarHour().getEightChar();
+      print([ec2.getYear().getName(), ec2.getMonth().getName(), ec2.getDay().getName(), ec2.getHour().getName()]); // [乙巳, 乙酉, 乙巳, 丙子]
     });
   });
 }

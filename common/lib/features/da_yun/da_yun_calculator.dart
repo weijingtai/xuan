@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:common/models/chinese_date_info.dart';
 import 'package:common/models/da_yun_pillar.dart';
-import 'package:lunar/lunar.dart';
+import 'package:tyme/tyme.dart' hide Gender;
 import 'package:intl/intl.dart';
 
 class DaYunCalculator {
@@ -23,16 +23,56 @@ class DaYunCalculator {
       isForward = !isYangYear; // Yin Female -> Forward
     }
 
-    // Step 2: Calculate Start Age
-    final lunar = Lunar.fromDate(birthDateTime);
-    final dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
+    // Step 2: Calculate Start Age using tyme
+    final solarDay = SolarDay.fromYmd(
+        birthDateTime.year, birthDateTime.month, birthDateTime.day);
+    final term = solarDay.getTerm();
 
-    // The lunar package finds the closest JieQi, which is what we need.
-    final nextJieQi = lunar.getNextJieQi(true);
-    final prevJieQi = lunar.getPrevJieQi(true);
+    // Get current term time
+    final termJd = term.getJulianDay();
+    final termTime = termJd.getSolarTime();
+    final termAt = DateTime(
+      termTime.getYear(),
+      termTime.getMonth(),
+      termTime.getDay(),
+      termTime.getHour(),
+      termTime.getMinute(),
+      termTime.getSecond(),
+    );
 
-    final nextJieQiTime = dateFormat.parse(nextJieQi.getSolar().toYmdHms());
-    final prevJieQiTime = dateFormat.parse(prevJieQi.getSolar().toYmdHms());
+    // Determine prev and next jieqi times
+    DateTime nextJieQiTime;
+    DateTime prevJieQiTime;
+
+    if (termAt.isAfter(birthDateTime)) {
+      // Term hasn't started yet
+      nextJieQiTime = termAt;
+      final prevTerm = term.next(-1);
+      final prevJd = prevTerm.getJulianDay();
+      final prevTime = prevJd.getSolarTime();
+      prevJieQiTime = DateTime(
+        prevTime.getYear(),
+        prevTime.getMonth(),
+        prevTime.getDay(),
+        prevTime.getHour(),
+        prevTime.getMinute(),
+        prevTime.getSecond(),
+      );
+    } else {
+      // Term already started
+      prevJieQiTime = termAt;
+      final nextTerm = term.next(1);
+      final nextJd = nextTerm.getJulianDay();
+      final nextTime = nextJd.getSolarTime();
+      nextJieQiTime = DateTime(
+        nextTime.getYear(),
+        nextTime.getMonth(),
+        nextTime.getDay(),
+        nextTime.getHour(),
+        nextTime.getMinute(),
+        nextTime.getSecond(),
+      );
+    }
 
     Duration timeDiff;
     if (isForward) {

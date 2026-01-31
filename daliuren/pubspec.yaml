@@ -39,7 +39,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   fpdart: ^2.0.0-dev.3
-  lunar: ^1.2.3
+  tyme: ^1.4.1
   json_serializable: ^6.12.0
   json_annotation: ^4.10.0
   board_datetime_picker: 2.8.5

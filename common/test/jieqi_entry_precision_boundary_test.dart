@@ -5,7 +5,7 @@ import 'package:common/features/datetime_details/jieqi_entry_strategy_store.dart
 import 'package:common/features/datetime_details/input_info_params.dart';
 import 'package:common/enums/enum_twenty_four_jie_qi.dart';
 import 'package:common/models/seventy_two_phenology.dart';
-import 'package:lunar/lunar.dart';
+import 'package:common/adapters/lunar_adapter.dart';
 
 void main() {
   group('JieQi entry precision boundary tests', () {
@@ -34,7 +34,7 @@ void main() {
       final start = DateTime(2025, 1, 1, 12, 0, 0);
       for (int i = 0; i < 365; i++) {
         final day = start.add(Duration(days: i));
-        final l = Lunar.fromDate(day);
+        final l = LunarAdapter.fromDate(day);
         final n = l.getNextJieQi(true);
         final b = df.parse(n.getSolar().toYmdHms());
         if (b.minute > 0 || b.second > 0) {
@@ -70,7 +70,7 @@ void main() {
       final start = DateTime(2025, 1, 1, 12, 0, 0);
       for (int i = 0; i < 365; i++) {
         final day = start.add(Duration(days: i));
-        final l = Lunar.fromDate(day);
+        final l = LunarAdapter.fromDate(day);
         final n = l.getNextJieQi(true);
         final b = df.parse(n.getSolar().toYmdHms());
         if (b.minute > 0 || b.second > 0) {
@@ -116,7 +116,7 @@ void main() {
     test('minute precision: same-minute enters next JieQi (when possible)', () {
       JieQiEntryStrategyStore.current = JieQiEntryPrecision.minute;
       final seed = DateTime(2025, 3, 10, 12, 0, 0);
-      final lunar = Lunar.fromDate(seed);
+      final lunar = LunarAdapter.fromDate(seed);
       final df = SolarLunarDateTimeHelper.dateFormat;
       final next = lunar.getNextJieQi(true);
       final boundary = df.parse(next.getSolar().toYmdHms());
@@ -142,7 +142,7 @@ void main() {
     test('minute precision stabilizing: same-minute before boundary enters', () {
       JieQiEntryStrategyStore.current = JieQiEntryPrecision.minute;
       final seed = DateTime(2025, 5, 1, 12, 0, 0);
-      final lunar = Lunar.fromDate(seed);
+      final lunar = LunarAdapter.fromDate(seed);
       final df = SolarLunarDateTimeHelper.dateFormat;
       final next = lunar.getNextJieQi(true);
       final boundary = df.parse(next.getSolar().toYmdHms());
@@ -190,7 +190,7 @@ void main() {
       final start = DateTime(2025, 1, 1, 12, 0, 0);
       for (int i = 0; i < 365; i++) {
         final day = start.add(Duration(days: i));
-        final l = Lunar.fromDate(day);
+        final l = LunarAdapter.fromDate(day);
         final n = l.getNextJieQi(true);
         final b = df.parse(n.getSolar().toYmdHms());
         if (b.hour == 23) {

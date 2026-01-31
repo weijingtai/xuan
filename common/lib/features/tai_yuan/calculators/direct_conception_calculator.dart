@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
 import 'package:common/models/eight_chars.dart';
-import 'package:lunar/calendar/Lunar.dart';
+import 'package:tyme/tyme.dart' hide Phenology;
 import 'package:tuple/tuple.dart';
 import '../../../datamodel/datetime_divination_datamodel.dart';
 import '../../../models/jie_qi_info.dart';
@@ -34,16 +34,18 @@ class DirectConceptionCalculator extends TaiYuanCalculator {
       throw ArgumentError('缺少受孕时间，无法使用受孕时间法计算胎元');
     }
 
-    Tuple4<EightChars, Lunar, Phenology, JieQiInfo> tuple4 =
+    Tuple4<EightChars, LunarDay, Phenology, JieQiInfo> tuple4 =
         SolarLunarDateTimeHelper.getEighthChars(conceptionDate!);
     JiaZi taiYuanGanZhi = tuple4.item1.month;
+
+    final lunarDay = tuple4.item2;
+    final lunarMonth = lunarDay.getLunarMonth();
 
     final taiYuanModel = TaiYuanModel(
       conceptionDateTime: conceptionDate,
       ganZhi: tuple4.item1,
-      // lunar: tuple4.item2,
-      lunarMonth: tuple4.item2.getMonth(),
-      lunarDay: tuple4.item2.getDay(),
+      lunarMonth: lunarMonth.getMonthWithLeap(),
+      lunarDay: lunarDay.getDay(),
       jieQiInfo: tuple4.item4,
       calculateStrategy: strategy,
       isTestTubeBaby: isTestTubeBaby,

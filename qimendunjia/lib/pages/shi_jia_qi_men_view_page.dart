@@ -18,7 +18,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:provider/provider.dart';
 import 'package:qimendunjia/enums/enum_eight_door.dart';
 import 'package:qimendunjia/enums/nine_dun.dart';
@@ -1333,7 +1333,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                           child: ValueListenableBuilder(
                               valueListenable: monthTokenTypeNotifier,
                               builder: (ctx, hint, _) {
-                                Lunar lunar = Lunar.fromDate(DateTime.now());
+                                LunarAdapter lunar = LunarAdapter.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 MonthToken monthToken =
                                     DiZhi.getFromValue(monthTokenStr)!
@@ -1443,7 +1443,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                           child: ValueListenableBuilder(
                               valueListenable: godWithGongTypeNotifier,
                               builder: (ctx, hint, _) {
-                                Lunar lunar = Lunar.fromDate(DateTime.now());
+                                LunarAdapter lunar = LunarAdapter.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 MonthToken monthToken =
                                     DiZhi.getFromValue(monthTokenStr)!
@@ -1515,7 +1515,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                           child: ValueListenableBuilder(
                               valueListenable: starGongTypeNotifier,
                               builder: (ctx, hint, _) {
-                                Lunar lunar = Lunar.fromDate(DateTime.now());
+                                LunarAdapter lunar = LunarAdapter.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 MonthToken monthToken =
                                     DiZhi.getFromValue(monthTokenStr)!
@@ -1587,7 +1587,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                           child: ValueListenableBuilder(
                               valueListenable: doorGongTypeNotifier,
                               builder: (ctx, hint, _) {
-                                Lunar lunar = Lunar.fromDate(DateTime.now());
+                                LunarAdapter lunar = LunarAdapter.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 // MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.toMonthToken;
                                 return RichText(
@@ -1657,7 +1657,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
                           child: ValueListenableBuilder(
                               valueListenable: ganGongTypeNotifier,
                               builder: (ctx, hint, _) {
-                                Lunar lunar = Lunar.fromDate(DateTime.now());
+                                LunarAdapter lunar = LunarAdapter.fromDate(DateTime.now());
                                 String monthTokenStr = lunar.getMonthZhi();
                                 // MonthToken monthToken = DiZhi.getFromValue(monthTokenStr)!.toMonthToken;
                                 return RichText(
@@ -3086,7 +3086,7 @@ class _ShiJiaQiMenViewPageState extends State<ShiJiaQiMenViewPage>
   }
 
   Widget buildCenterPanTime(DateTime time) {
-    Lunar lunar = Lunar.fromDate(time);
+    LunarAdapter lunar = LunarAdapter.fromDate(time);
     return Card(
         child: Container(
             alignment: Alignment.center,

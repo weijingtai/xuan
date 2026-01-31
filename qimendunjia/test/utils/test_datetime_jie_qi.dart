@@ -3,7 +3,7 @@
 // create test function
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Solar.dart';
+import 'package:tyme/tyme.dart';
 import 'package:qimendunjia/utils/datetime_jie_qi.dart';
 
 void main() {
@@ -19,10 +19,12 @@ void main() {
     String res = datetime.getSolarTerm();
     assert(res == "芒种",res);
   });
-  test('测试节气为“处暑”', () {
+  test('测试节气为"处暑"', () {
     String datetimeStr = "2023/08/31";
     DateTime datetime = DateFormat("yyyy/MM/dd").parse(datetimeStr);
-    String  res = Solar.fromDate(datetime).getLunar().toFullString();
+    // Using tyme to get the current solar term
+    SolarDay solarDay = SolarDay.fromYmd(datetime.year, datetime.month, datetime.day);
+    String res = solarDay.getTerm().getName();
     // String res = datetime.getSolarTerm();
     assert(res == "处暑","result is '$res' "); //
   });

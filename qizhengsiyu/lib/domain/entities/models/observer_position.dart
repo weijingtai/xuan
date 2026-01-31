@@ -2,7 +2,6 @@ import 'package:common/datamodel/location.dart';
 import 'package:common/datamodel/observer_datamodel.dart';
 import 'package:common/enums.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'package:lunar/calendar/Lunar.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 part 'observer_position.g.dart';
@@ -57,7 +56,6 @@ class ObserverPosition extends BaseObserverPosition {
     utcDateTime = toUtcTime(timezone, dateTime);
     //   fateLifeUtcTime = toUtcTime(timezone, fateLifeDateTime!);
     // }
-    Lunar lunar = Lunar.fromDate(utcDateTime);
     // dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
     // yearGanZhi = JiaZi.getFromGanZhiValue(lunar.getYearInGanZhi())!;
     // monthGanZhi = JiaZi.getFromGanZhiValue(lunar.getMonthInGanZhi())!;

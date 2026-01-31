@@ -1,7 +1,7 @@
 import 'package:common/enums.dart';
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
 import 'package:qimendunjia/enums/enum_three_yuan.dart';
 import 'package:qimendunjia/model/shi_jia_ju.dart';
 
@@ -335,7 +335,7 @@ void main() {
 
     test('置润法 2', () {
       DateTime zhengShouDongZhi = DateTime(2022, 12, 22); // 冬至 正授 上元第一天 阳一局
-      Lunar lunar = Lunar.fromDate(DateTime(2023, 5, 23, 12, 0, 0));
+      LunarAdapter lunar = LunarAdapter.fromDate(DateTime(2023, 5, 23, 12, 0, 0));
       String targetJieQiSt = "夏至";
       DateTime otherJieQiDateTime =
           dateFormatter.parse(lunar.getJieQiTable()[targetJieQiSt]!.toYmdHms());
@@ -351,7 +351,7 @@ void main() {
       DateTime targetJieQiDateTime =
           zhengShouDongZhi.add(Duration(days: toTargetDiffDays));
       print(
-          "${Lunar.fromDate(targetJieQiDateTime).getJieQi()} $targetJieQiDateTime");
+          "${LunarAdapter.fromDate(targetJieQiDateTime).getJieQi()} $targetJieQiDateTime");
 
       int fullXun = toTargetDiffDays ~/ 15; // 完整走过一节气 三候
       print("从正授开始到targetJieQiSt 共 $fullXun 个完整的节气三元");
@@ -424,8 +424,8 @@ void main() {
       // DateTime _tmpOther = DateTime(2023,1,20,);
       // print(_tmpOther.difference(zhengShouDongZhi).inDays);
 
-      Lunar lunar =
-          Lunar.fromDate(DateTime(zhengShouDongZhi.year + 1, 9, 12, 12, 0, 0));
+      LunarAdapter lunar =
+          LunarAdapter.fromDate(DateTime(zhengShouDongZhi.year + 1, 9, 12, 12, 0, 0));
       String targetJieQiSt = "大寒";
       print(lunar.getJieQiTable()[targetJieQiSt]!.toYmdHms());
       DateTime otherJieQiDateTime =
@@ -440,7 +440,7 @@ void main() {
       int diffInDays = otherJieQiDateTime.difference(zhengShouDongZhi).inDays;
       print("正授冬至 到 目标节气 $targetJieQiSt 共 $diffInDays 天");
       // DateTime dongZhiDateTime = zhengShouDongZhi.add(Duration(days: toDongZhiDays));
-      // print("${Lunar.fromDate(dongZhiDateTime).getJieQi()} $dongZhiDateTime");
+      // print("${LunarAdapter.fromDate(dongZhiDateTime).getJieQi()} $dongZhiDateTime");
 
       int fullXun = diffInDays ~/ 15; // 完整走过一节气 三候
       print("从正授开始到targetJieQiSt 共 $fullXun 完整的节气三元");

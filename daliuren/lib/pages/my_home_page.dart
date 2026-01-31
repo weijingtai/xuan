@@ -16,7 +16,7 @@ import 'package:flutter_shakemywidget/flutter_shakemywidget.dart';
 import 'package:flutter_sliding_toast/flutter_sliding_toast.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
+import 'package:tyme/tyme.dart';
 import 'package:tuple/tuple.dart';
 
 import '../model/da_liu_ren_gong.dart';
@@ -61,7 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ValueNotifier<DaLiuRenKePan?>(null);
   final ValueNotifier<DaLiuRenPanModel?> daLiuRenModelNotifier =
       ValueNotifier(null);
-  final ValueNotifier<Lunar?> lunarNotifier = ValueNotifier<Lunar?>(null);
+  final ValueNotifier<LunarDay?> lunarNotifier = ValueNotifier<LunarDay?>(null);
   final ValueNotifier<Tuple2<JiaZi, DiZhi>?> classNumberNotifier =
       ValueNotifier(null);
   final ValueNotifier<int?> juNumberNotifier = ValueNotifier(null);
@@ -98,13 +98,43 @@ class _MyHomePageState extends State<MyHomePage> {
           daLiuRenGongNotifier.value = null;
           juNumberNotifier.value = null;
         } else {
-          Lunar lunar = Lunar.fromDate(panDatetimeNotifier.value!);
-          lunarNotifier.value = lunar;
+          final dt = panDatetimeNotifier.value!;
+          final solarTime = SolarTime.fromYmdHms(
+            dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second,
+          );
+          final lunarHour = solarTime.getLunarHour();
+          final eightChar = lunarHour.getEightChar();
+          final lunarDay = SolarDay.fromYmd(dt.year, dt.month, dt.day).getLunarDay();
+          lunarNotifier.value = lunarDay;
+
+          final baZiStr = [
+            eightChar.getYear().getName(),
+            eightChar.getMonth().getName(),
+            eightChar.getDay().getName(),
+            eightChar.getHour().getName(),
+          ].join(" ");
+
+          // Get prev term for month general
+          final solarDay = SolarDay.fromYmd(dt.year, dt.month, dt.day);
+          final term = solarDay.getTerm();
+          final termJd = term.getJulianDay();
+          final termTime = termJd.getSolarTime();
+          final termAt = DateTime(
+            termTime.getYear(), termTime.getMonth(), termTime.getDay(),
+            termTime.getHour(), termTime.getMinute(), termTime.getSecond(),
+          );
+          String prevQiName;
+          if (termAt.isAfter(dt)) {
+            prevQiName = term.next(-1).getName();
+          } else {
+            prevQiName = term.getName();
+          }
+
           var pan = DaLiuRenKePan(
             panDateTime: panDatetimeNotifier.value!,
-            eightChatStr: lunar.getBaZi().join(" "),
+            eightChatStr: baZiStr,
             monthGeneral:
-                MonthGeneral.fromByStartAtJie(lunar.getPrevQi().getName()),
+                MonthGeneral.fromByStartAtJie(prevQiName),
           );
           daLiuRenGongNotifier.value = pan;
           checkPanJu(pan.dayJiaZi, pan.timeJiaZi,
@@ -1077,7 +1107,56 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildCenterPanTime(DateTime time) {
-    Lunar lunar = Lunar.fromDate(time);
+    final solarDay = SolarDay.fromYmd(time.year, time.month, time.day);
+    final lunarDay = solarDay.getLunarDay();
+    final lunarMonth = lunarDay.getLunarMonth();
+    final solarTime = SolarTime.fromYmdHms(
+      time.year, time.month, time.day, time.hour, time.minute, time.second,
+    );
+    final lunarHour = solarTime.getLunarHour();
+    final eightChar = lunarHour.getEightChar();
+
+    // Get term info
+    final term = solarDay.getTerm();
+    final termJd = term.getJulianDay();
+    final termTime = termJd.getSolarTime();
+    final termAt = DateTime(
+      termTime.getYear(), termTime.getMonth(), termTime.getDay(),
+      termTime.getHour(), termTime.getMinute(), termTime.getSecond(),
+    );
+
+    String prevTermName;
+    String prevTermTimeStr;
+    String nextTermName;
+    String nextTermTimeStr;
+
+    if (termAt.isAfter(time)) {
+      // Term hasn't started
+      final prevTerm = term.next(-1);
+      final prevJd = prevTerm.getJulianDay();
+      final prevSt = prevJd.getSolarTime();
+      prevTermName = prevTerm.getName();
+      prevTermTimeStr = '${prevSt.getYear()}/${_pad(prevSt.getMonth())}/${_pad(prevSt.getDay())} ${_pad(prevSt.getHour())}:${_pad(prevSt.getMinute())}:${_pad(prevSt.getSecond())}';
+      nextTermName = term.getName();
+      nextTermTimeStr = '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
+    } else {
+      prevTermName = term.getName();
+      prevTermTimeStr = '${termTime.getYear()}/${_pad(termTime.getMonth())}/${_pad(termTime.getDay())} ${_pad(termTime.getHour())}:${_pad(termTime.getMinute())}:${_pad(termTime.getSecond())}';
+      final nextTerm = term.next(1);
+      final nextJd = nextTerm.getJulianDay();
+      final nextSt = nextJd.getSolarTime();
+      nextTermName = nextTerm.getName();
+      nextTermTimeStr = '${nextSt.getYear()}/${_pad(nextSt.getMonth())}/${_pad(nextSt.getDay())} ${_pad(nextSt.getHour())}:${_pad(nextSt.getMinute())}:${_pad(nextSt.getSecond())}';
+    }
+
+    // Year in GanZhi
+    final yearGanZhi = eightChar.getYear().getName();
+    // Lunar month/day Chinese
+    final monthCn = lunarMonth.getName();
+    final dayCn = lunarDay.getName();
+    // Time Zhi
+    final timeZhi = eightChar.getHour().getName().substring(1);
+
     return Card(
         child: Padding(
             padding: const EdgeInsets.all(4.0),
@@ -1105,7 +1184,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     Flexible(
                         flex: 7,
                         child: Text(
-                          "${lunar.getYearInGanZhi()}年 ${lunar.getMonthInChinese()}月 ${lunar.getDayInChinese()} ${lunar.getTimeZhi()}时",
+                          "${yearGanZhi}年 ${monthCn}月 $dayCn ${timeZhi}时",
                           style: TextStyle(
                               fontSize: 14, color: Colors.blueGrey.shade800),
                         )),
@@ -1117,15 +1196,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   children: [
                     Flexible(
                         flex: 3,
-                        child: Text("${lunar.getPrevJieQi().getName()}:")),
+                        child: Text("$prevTermName:")),
                     Flexible(
                         flex: 7,
                         child: Text(
-                          lunar
-                              .getPrevJieQi()
-                              .getSolar()
-                              .toYmdHms()
-                              .replaceAll("-", "/"),
+                          prevTermTimeStr,
                           style: TextStyle(
                               fontSize: 14, color: Colors.blueGrey.shade800),
                         )),
@@ -1135,18 +1210,13 @@ class _MyHomePageState extends State<MyHomePage> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Flexible(flex:3,child: Text("值符门：")),
                     Flexible(
                         flex: 3,
-                        child: Text("${lunar.getNextJieQi().getName()}:")),
+                        child: Text("$nextTermName:")),
                     Flexible(
                         flex: 7,
                         child: Text(
-                          lunar
-                              .getNextJieQi()
-                              .getSolar()
-                              .toYmdHms()
-                              .replaceAll("-", "/"),
+                          nextTermTimeStr,
                           style: TextStyle(
                               fontSize: 14, color: Colors.blueGrey.shade800),
                         )),
@@ -1155,6 +1225,8 @@ class _MyHomePageState extends State<MyHomePage> {
               ]),
             )));
   }
+
+  static String _pad(int v) => v.toString().padLeft(2, '0');
 
   Widget yu_ding(YuDingDaLiuRen yuDing) {
     return Column(

@@ -26,7 +26,7 @@ dependencies:
   json_annotation: ^4.10.0
   google_fonts: ^8.0.0
   sweph: ^3.2.1+2.10.3
-  lunar: ^1.2.3
+  tyme: ^1.4.1
   board_datetime_picker: 2.8.5
   flutter_shakemywidget: ^1.0.5+1
   flutter_timezone: ^5.0.1

@@ -1,5 +1,5 @@
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:common/enums.dart';
-import 'package:lunar/calendar/Solar.dart';
 import 'package:qimendunjia/utils/datetime_jie_qi.dart';
 import 'package:tuple/tuple.dart';
 
@@ -27,15 +27,7 @@ class ArrangePlateUtils {
   /// tuple.item5 季节
   static Tuple5<String, String, String, String, String> getGanZhiDateString(
       DateTime utcDateTime) {
-    final lunarCalendar = Solar.fromYmdHms(
-            utcDateTime.year,
-            utcDateTime.month,
-            utcDateTime.day,
-            utcDateTime.hour,
-            utcDateTime.minute,
-            utcDateTime.second)
-        .getLunar();
-    // create date value  only
+    final lunarCalendar = LunarAdapter.fromDate(utcDateTime);
     String jieQi = utcDateTime.getSolarTerm().toString();
     return Tuple5(
         lunarCalendar.getYearInGanZhi(),

@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
 import 'package:qimendunjia/utils/zheng_shou_dong_zhi_list.dart';
 
 void main() {
@@ -45,10 +45,10 @@ void main() {
     DateFormat dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
     test("", () {
       // for (var i = 1; i < 9999;i++){
-      Lunar lunar = Lunar.fromDate(DateTime(1, 12, 30));
+      LunarAdapter lunar = LunarAdapter.fromDate(DateTime(1, 12, 30));
       DateTime dongZhiDateTime =
           dateFormatter.parse(lunar.getJieQiTable()["冬至"]!.toYmdHms());
-      String dayGanZhi = Lunar.fromDate(dongZhiDateTime).getDayInGanZhi();
+      String dayGanZhi = LunarAdapter.fromDate(dongZhiDateTime).getDayInGanZhi();
       if (["甲子", "己卯", "甲午", "己酉"].contains(dayGanZhi)) {
         print("$dayGanZhi $dongZhiDateTime");
       }

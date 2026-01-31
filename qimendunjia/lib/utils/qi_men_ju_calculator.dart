@@ -1,6 +1,6 @@
 import 'package:common/enums.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/calendar/Lunar.dart';
+import 'package:common/adapters/lunar_adapter.dart';
 import 'package:qimendunjia/enums/enum_three_yuan.dart';
 import 'package:qimendunjia/enums/enum_zhi_run_type.dart';
 import 'package:qimendunjia/model/shi_jia_ju.dart';
@@ -122,7 +122,7 @@ class ChaiBuCalculator extends ShiJiaQiMenJuCalculator {
   }
 
   ShiJiaJu _doCalculate() {
-    Lunar lunar = Lunar.fromDate(dateTime);
+    LunarAdapter lunar = LunarAdapter.fromDate(dateTime);
     JiaZi dayGanZhi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
 
     String jieQiName =
@@ -212,12 +212,12 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
 
   static final DateFormat dateFormatter = DateFormat("yyyy-MM-dd HH:mm:ss");
   ShiJiaJu _doCalculate() {
-    Lunar lunar = Lunar.fromDate(dateTime);
+    LunarAdapter lunar = LunarAdapter.fromDate(dateTime);
     String timeGanZhi = lunar.getTimeInGanZhi();
     if (dateTime.hour == 23) {
       // 时辰如果是23点之后 需要将日干支调整为下一天
       // 影响年月日的干支
-      lunar = Lunar.fromDate(dateTime.add(const Duration(hours: 1)));
+      lunar = LunarAdapter.fromDate(dateTime.add(const Duration(hours: 1)));
     }
 
     JiaZi dayJiaZi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
@@ -238,7 +238,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
     JiaZi fuTou = getFuTouByDayJiaZi(dayJiaZi);
 
     // 符头那天
-    Lunar fuTouLunar = lunar; // 当天是符头
+    LunarAdapter fuTouLunar= lunar; // 当天是符头
     DateTime fuTouDateTime = dateTime;
     if (fuTou != dayJiaZi) {
       // 当天不是符头，找到符头那天
@@ -250,7 +250,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
       print(dayJiaZi.name);
       print(dateTime);
       print("符头时间：$fuTouDateTime,当前节气为${jieQi.name}，开始于$jieQiStartAt");
-      fuTouLunar = Lunar.fromDate(fuTouDateTime);
+      fuTouLunar = LunarAdapter.fromDate(fuTouDateTime);
       print(fuTouLunar.getDayInGanZhi());
     }
     Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> tuple = doCa(dateTime);
@@ -322,12 +322,12 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> otherYears(
       DateTime zhengShouDongZhi, DateTime panDateTime) {
     // Tuple4<int,EnumThreeYuan,TwentyFourJieQi,int> otherYears(int diffInDays,DateTime findLunarByDateTime){
-    Lunar startLunar = Lunar.fromDate(zhengShouDongZhi);
+    LunarAdapter startLunar= LunarAdapter.fromDate(zhengShouDongZhi);
     DateTime targetDateTime = panDateTime;
     if (targetDateTime.hour == 23) {
       targetDateTime = targetDateTime.add(const Duration(hours: 1)); // 给为第二天
     }
-    Lunar targetLunar = Lunar.fromDate(targetDateTime);
+    LunarAdapter targetLunar= LunarAdapter.fromDate(targetDateTime);
 
     int yearStart = zhengShouDongZhi.year + 1; // 正授日冬至实为第二年冬至 所以“+1”
     int targetEnd = targetDateTime.year;
@@ -339,7 +339,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
     List<DateTime> dateTimes = [];
     for (var i = yearStart; i <= targetEnd; i++) {
       // print("第${i}年");
-      Lunar tmpLunar = Lunar.fromDate(DateTime(i, 1, 1));
+      LunarAdapter tmpLunar= LunarAdapter.fromDate(DateTime(i, 1, 1));
       DateTime thisYearDongZhi =
           dateFormatter.parse(tmpLunar.getJieQiTable()["冬至"]!.toYmdHms());
       DateTime thisYearXiaZhi =
@@ -381,7 +381,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
       // 如果目标日期为12月，则判断日期是否在在下一年冬至开始后，
       DateTime tmp2 = DateTime(
           targetDateTime.year, targetDateTime.month + 3, targetDateTime.day);
-      Lunar tmp2Lunar = Lunar.fromDate(tmp2);
+      LunarAdapter tmp2Lunar= LunarAdapter.fromDate(tmp2);
       DateTime theDongZhiDate =
           dateFormatter.parse(tmp2Lunar.getJieQiTable()["冬至"]!.toYmdHms());
       if (theDongZhiDate.isBefore(targetDateTime)) {
@@ -507,8 +507,8 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> otherYears2(
       DateTime zhengShouDongZhi, DateTime targetDateTime) {
     // Tuple4<int,EnumThreeYuan,TwentyFourJieQi,int> otherYears(int diffInDays,DateTime findLunarByDateTime){
-    Lunar startLunar = Lunar.fromDate(zhengShouDongZhi);
-    Lunar targetLunar = Lunar.fromDate(targetDateTime);
+    LunarAdapter startLunar= LunarAdapter.fromDate(zhengShouDongZhi);
+    LunarAdapter targetLunar= LunarAdapter.fromDate(targetDateTime);
 
     int yearStart = zhengShouDongZhi.year + 1; // 正授日冬至实为第二年冬至 所以“+1”
     int targetEnd = targetDateTime.year;
@@ -520,7 +520,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
     List<DateTime> dateTimes = [];
     for (var i = yearStart; i <= targetEnd; i++) {
       print("第$i年");
-      Lunar tmpLunar = Lunar.fromDate(DateTime(i, 1, 1));
+      LunarAdapter tmpLunar= LunarAdapter.fromDate(DateTime(i, 1, 1));
       DateTime thisYearDongZhi =
           dateFormatter.parse(tmpLunar.getJieQiTable()["冬至"]!.toYmdHms());
       DateTime thisYearXiaZhi =
@@ -562,7 +562,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
       // 如果目标日期为12月，则判断日期是否在在下一年冬至开始后，
       DateTime tmp2 = DateTime(
           targetDateTime.year, targetDateTime.month + 3, targetDateTime.day);
-      Lunar tmp2Lunar = Lunar.fromDate(tmp2);
+      LunarAdapter tmp2Lunar= LunarAdapter.fromDate(tmp2);
       DateTime theDongZhiDate =
           dateFormatter.parse(tmp2Lunar.getJieQiTable()["冬至"]!.toYmdHms());
       if (theDongZhiDate.isBefore(targetDateTime)) {
@@ -838,7 +838,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
   @Deprecated("")
   Tuple4<int, EnumThreeYuan, TwentyFourJieQi, int> insideOneYear2(
       int diffInDays, DateTime findLunarByDateTime) {
-    Lunar dateTimeInLunar = Lunar.fromDate(findLunarByDateTime);
+    LunarAdapter dateTimeInLunar= LunarAdapter.fromDate(findLunarByDateTime);
     var dongZhi =
         dateFormatter.parse(dateTimeInLunar.getJieQiTable()["冬至"]!.toYmdHms());
     var dongZhiJieDateOnly = DateTime(dongZhi.year, dongZhi.month, dongZhi.day);
@@ -1004,7 +1004,7 @@ class ZhiRunCalculator extends ShiJiaQiMenJuCalculator {
           lastZhengShouDongZhiDateTime.add(const Duration(days: 365));
       for (int i = 0; i < diffYears; i++) {
         var lunar =
-            Lunar.fromDate(getAllHelper.add(Duration(days: 365 * diffYears)));
+            LunarAdapter.fromDate(getAllHelper.add(Duration(days: 365 * diffYears)));
         twoZhiList.add(Tuple2(TwentyFourJieQi.DONG_ZHI,
             dateFormatter.parse(lunar.getJieQiTable()["冬至"]!.toYmdHms())));
         twoZhiList.add(Tuple2(TwentyFourJieQi.XIA_ZHI,
@@ -1051,12 +1051,12 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
   }
 
   ShiJiaJu _doCalculate() {
-    Lunar lunar = Lunar.fromDate(dateTime);
+    LunarAdapter lunar = LunarAdapter.fromDate(dateTime);
     String timeGanZhi = lunar.getTimeInGanZhi();
     if (dateTime.hour == 23) {
       // 时辰如果是23点之后 需要将日干支调整为下一天
       // 影响年月日的干支
-      lunar = Lunar.fromDate(dateTime.add(const Duration(hours: 1)));
+      lunar = LunarAdapter.fromDate(dateTime.add(const Duration(hours: 1)));
     }
 
     JiaZi dayJiaZi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
@@ -1116,7 +1116,7 @@ class MaoShanCalculator extends ShiJiaQiMenJuCalculator {
         panDateTime: dateTime,
         juNumber: juNumber,
         fuTouJiaZi: JiaZi.getFromGanZhiValue(
-            Lunar.fromDate(jieQiStartAt).getDayInGanZhi())!,
+            LunarAdapter.fromDate(jieQiStartAt).getDayInGanZhi())!,
         yinYangDun: jieQi.yinYangDun,
         jieQiAt: jieQi,
         jieQiStartAt: jieQiStartAt,
@@ -1142,12 +1142,12 @@ class YinPanCalculator extends ShiJiaQiMenJuCalculator {
   }
 
   ShiJiaJu _doCalculate() {
-    Lunar lunar = Lunar.fromDate(dateTime);
+    LunarAdapter lunar = LunarAdapter.fromDate(dateTime);
     String timeGanZhi = lunar.getTimeInGanZhi();
     if (dateTime.hour == 23) {
       // 时辰如果是23点之后 需要将日干支调整为下一天
       // 影响年月日的干支
-      lunar = Lunar.fromDate(dateTime.add(const Duration(hours: 1)));
+      lunar = LunarAdapter.fromDate(dateTime.add(const Duration(hours: 1)));
     }
 
     JiaZi dayJiaZi = JiaZi.getFromGanZhiValue(lunar.getDayInGanZhi())!;
@@ -1195,7 +1195,7 @@ class YinPanCalculator extends ShiJiaQiMenJuCalculator {
         panDateTime: dateTime,
         juNumber: juNumber,
         fuTouJiaZi: JiaZi.getFromGanZhiValue(
-            Lunar.fromDate(jieQiStartAt).getDayInGanZhi())!,
+            LunarAdapter.fromDate(jieQiStartAt).getDayInGanZhi())!,
         yinYangDun: jieQi.yinYangDun,
         jieQiAt: jieQi,
         jieQiStartAt: jieQiStartAt,

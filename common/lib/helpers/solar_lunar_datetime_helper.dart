@@ -9,7 +9,7 @@ import 'package:common/models/divination_datetime.dart';
 import 'package:common/models/seventy_two_phenology.dart';
 import 'package:common/enums.dart';
 import 'package:intl/intl.dart';
-import 'package:lunar/lunar.dart';
+import 'package:tyme/tyme.dart' hide Phenology;
 import 'package:sweph/sweph.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -37,23 +37,27 @@ class SolarLunarDateTimeHelper {
 
     final targetName = TwentyFourJieQi.CHUN_FEN.name;
     final df = dateFormat;
-    final pivot = DateTime(year, 3, 20, 12, 0, 0);
 
-    DateTime? found;
-    for (int i = -20; i <= 20 && found == null; i++) {
-      final d = pivot.add(Duration(days: i));
-      final l = Lunar.fromDate(d);
-      for (final jq in [l.getPrevJieQi(true), l.getNextJieQi(true)]) {
-        if (jq.getName() == targetName) {
-          found = df.parse(jq.getSolar().toYmdHms());
-          break;
-        }
-      }
+    // Use tyme to find Chun Fen (Spring Equinox) - index 0 is Xiao Han, Chun Fen is index 6
+    try {
+      final solarTerm = SolarTerm.fromIndex(year, 6); // 春分 is at index 6
+      final jd = solarTerm.getJulianDay();
+      final solarTime = jd.getSolarTime();
+      final found = DateTime(
+        solarTime.getYear(),
+        solarTime.getMonth(),
+        solarTime.getDay(),
+        solarTime.getHour(),
+        solarTime.getMinute(),
+        solarTime.getSecond(),
+      );
+      _chunFenCache[year] = found;
+      return found;
+    } catch (e) {
+      final fallback = DateTime(year, 3, 20, 0, 0, 0);
+      _chunFenCache[year] = fallback;
+      return fallback;
     }
-
-    found ??= DateTime(year, 3, 20, 0, 0, 0);
-    _chunFenCache[year] = found;
-    return found;
   }
 
   static DateTime _chunFenForCycle(DateTime time) {
@@ -87,7 +91,10 @@ class SolarLunarDateTimeHelper {
       ZiBoundary.at0 => const Day0BoundaryStrategy(),
     };
     final anchor = dayStrategy.decideDayAnchor(time);
-    final lunar = Lunar.fromDate(time);
+    final solarDay = SolarDay.fromYmd(time.year, time.month, time.day);
+    final lunarDay = solarDay.getLunarDay();
+    final lunarMonth = lunarDay.getLunarMonth();
+    final lunarYear = lunarMonth.getLunarYear();
 
     // 3) 计算四柱（八字）
     final ec = engine.calculate(time).eightChars;
@@ -98,33 +105,73 @@ class SolarLunarDateTimeHelper {
     final JieQiType jqType = JieQiPhenologyStore.jieQiType;
     final PhenologyStrategy phStrategy = JieQiPhenologyStore.phenologyStrategy;
 
-    // 计算稳定（定气法）节气边界：从库提供的多个候选中选“最近的前一交节点 / 最近的后一交节点”
+    // 计算稳定（定气法）节气边界：使用tyme的SolarTerm
     (String name, DateTime at) _prevJieQiBoundary(DateTime t) {
-      final out = <(String, DateTime)>[];
-      for (final jq in [lunar.getPrevJieQi(), lunar.getPrevJieQi(true)]) {
-        final at = dateFormat.parse(jq.getSolar().toYmdHms());
-        if (!at.isAfter(t)) out.add((jq.getName(), at));
+      final sd = SolarDay.fromYmd(t.year, t.month, t.day);
+      final term = sd.getTerm();
+      final termJd = term.getJulianDay();
+      final termTime = termJd.getSolarTime();
+      final termAt = DateTime(
+        termTime.getYear(),
+        termTime.getMonth(),
+        termTime.getDay(),
+        termTime.getHour(),
+        termTime.getMinute(),
+        termTime.getSecond(),
+      );
+
+      if (termAt.isAfter(t)) {
+        // Current term hasn't started yet, get previous
+        final prevTerm = term.next(-1);
+        final prevJd = prevTerm.getJulianDay();
+        final prevTime = prevJd.getSolarTime();
+        return (
+          prevTerm.getName(),
+          DateTime(
+            prevTime.getYear(),
+            prevTime.getMonth(),
+            prevTime.getDay(),
+            prevTime.getHour(),
+            prevTime.getMinute(),
+            prevTime.getSecond(),
+          )
+        );
       }
-      if (out.isEmpty) {
-        final jq = lunar.getPrevJieQi();
-        return (jq.getName(), dateFormat.parse(jq.getSolar().toYmdHms()));
-      }
-      out.sort((a, b) => a.$2.compareTo(b.$2));
-      return out.last;
+      return (term.getName(), termAt);
     }
 
     (String name, DateTime at) _nextJieQiBoundary(DateTime t) {
-      final out = <(String, DateTime)>[];
-      for (final jq in [lunar.getNextJieQi(), lunar.getNextJieQi(true)]) {
-        final at = dateFormat.parse(jq.getSolar().toYmdHms());
-        if (!at.isBefore(t)) out.add((jq.getName(), at));
+      final sd = SolarDay.fromYmd(t.year, t.month, t.day);
+      final term = sd.getTerm();
+      final termJd = term.getJulianDay();
+      final termTime = termJd.getSolarTime();
+      final termAt = DateTime(
+        termTime.getYear(),
+        termTime.getMonth(),
+        termTime.getDay(),
+        termTime.getHour(),
+        termTime.getMinute(),
+        termTime.getSecond(),
+      );
+
+      if (!termAt.isAfter(t)) {
+        // Current term already passed, get next
+        final nextTerm = term.next(1);
+        final nextJd = nextTerm.getJulianDay();
+        final nextTime = nextJd.getSolarTime();
+        return (
+          nextTerm.getName(),
+          DateTime(
+            nextTime.getYear(),
+            nextTime.getMonth(),
+            nextTime.getDay(),
+            nextTime.getHour(),
+            nextTime.getMinute(),
+            nextTime.getSecond(),
+          )
+        );
       }
-      if (out.isEmpty) {
-        final jq = lunar.getNextJieQi();
-        return (jq.getName(), dateFormat.parse(jq.getSolar().toYmdHms()));
-      }
-      out.sort((a, b) => a.$2.compareTo(b.$2));
-      return out.first;
+      return (term.getName(), termAt);
     }
 
     var (baseJieQiName, stabilizingStart) = _prevJieQiBoundary(time);
@@ -138,11 +185,21 @@ class SolarLunarDateTimeHelper {
     DateTime jieQiStartAt = stabilizingStart;
     DateTime jieQiEndAt = stabilizingEnd;
 
-    // 交节精度：若时刻与“交节边界”处于同一桶（时辰/小时/分钟），则视为已进入下一节气
+    // 交节精度：若时刻与"交节边界"处于同一桶（时辰/小时/分钟），则视为已进入下一节气
     DateTime _nextStabilizingEndAfter(DateTime start) {
-      final l = Lunar.fromDate(start.add(const Duration(days: 2)));
-      final next = l.getNextJieQi();
-      return dateFormat.parse(next.getSolar().toYmdHms());
+      final sd = SolarDay.fromYmd(start.year, start.month, start.day).next(2);
+      final term = sd.getTerm();
+      final nextTerm = term.next(1);
+      final nextJd = nextTerm.getJulianDay();
+      final nextTime = nextJd.getSolarTime();
+      return DateTime(
+        nextTime.getYear(),
+        nextTime.getMonth(),
+        nextTime.getDay(),
+        nextTime.getHour(),
+        nextTime.getMinute(),
+        nextTime.getSecond(),
+      );
     }
 
     bool _sameBucket(DateTime a, DateTime b) {
@@ -252,17 +309,16 @@ class SolarLunarDateTimeHelper {
     }
     final Phenology wuHou = candidates.isNotEmpty
         ? candidates[idx]
-        : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
-    var threeYuanNineYun = calculateThreeYuanNineYun(lunar.getYear());
+        : Phenology.phenologyList[WU_HOU.indexOf(solarDay.getPhenologyDay().getPhenology().getName())];
+    var threeYuanNineYun = calculateThreeYuanNineYun(lunarYear.getYear());
     return ChineseDateInfo(
         threeYuan: threeYuanNineYun.item1,
         nineYun: threeYuanNineYun.item2,
         eightChars: eightChars,
         phenology: wuHou,
-        lunarMonth: lunar.getMonth(),
-        lunarDay: lunar.getDay(),
-        isLeapMonth:
-            LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap(),
+        lunarMonth: lunarMonth.isLeap() ? -lunarMonth.getMonthWithLeap() : lunarMonth.getMonthWithLeap(),
+        lunarDay: lunarDay.getDay(),
+        isLeapMonth: lunarMonth.isLeap(),
         jieQiInfo: JieQiInfo(
           jieQi: chosenJieQi,
           startAt: jieQiStartAt,
@@ -320,7 +376,7 @@ class SolarLunarDateTimeHelper {
   // item1 八字
   // item2 月份
   // item3 日期
-  static Tuple4<EightChars, Lunar, Phenology, JieQiInfo> getEighthChars(
+  static Tuple4<EightChars, LunarDay, Phenology, JieQiInfo> getEighthChars(
       DateTime time) {
     // 使用全局子时策略映射到引擎和日界
     final (ZiBoundary boundary, ChildHourMode mode) =
@@ -334,8 +390,11 @@ class SolarLunarDateTimeHelper {
     };
     final anchor = dayStrategy.decideDayAnchor(time);
 
-    // 获取 Lunar 对应信息（用于月相、节气等）
-    final lunar = Lunar.fromDate(anchor.effectiveDateTime);
+    // 获取 LunarDay 对应信息（用于月相、节气等）
+    final solarDay = SolarDay.fromYmd(anchor.effectiveDateTime.year,
+        anchor.effectiveDateTime.month, anchor.effectiveDateTime.day);
+    final lunarDay = solarDay.getLunarDay();
+    final lunarMonth = lunarDay.getLunarMonth();
 
     // 通过引擎计算四柱
     final ec = engine.calculate(time).eightChars;
@@ -348,32 +407,69 @@ class SolarLunarDateTimeHelper {
     String baseJieQiName;
     DateTime stabilizingStart;
     DateTime stabilizingEnd;
-    if (lunar.getCurrentJieQi() == null) {
-      baseJieQiName = lunar.getPrevJieQi().getName();
-      stabilizingStart =
-          dateFormat.parse(lunar.getPrevJieQi().getSolar().toYmdHms());
-      stabilizingEnd =
-          dateFormat.parse(lunar.getNextJieQi().getSolar().toYmdHms());
+
+    final term = solarDay.getTerm();
+    final termJd = term.getJulianDay();
+    final termTime = termJd.getSolarTime();
+    final termAt = DateTime(
+      termTime.getYear(),
+      termTime.getMonth(),
+      termTime.getDay(),
+      termTime.getHour(),
+      termTime.getMinute(),
+      termTime.getSecond(),
+    );
+
+    final nextTerm = term.next(1);
+    final nextJd = nextTerm.getJulianDay();
+    final nextTime = nextJd.getSolarTime();
+    final nextAt = DateTime(
+      nextTime.getYear(),
+      nextTime.getMonth(),
+      nextTime.getDay(),
+      nextTime.getHour(),
+      nextTime.getMinute(),
+      nextTime.getSecond(),
+    );
+
+    if (termAt.isAfter(time)) {
+      // Term hasn't started yet
+      final prevTerm = term.next(-1);
+      final prevJd = prevTerm.getJulianDay();
+      final prevTime = prevJd.getSolarTime();
+      baseJieQiName = prevTerm.getName();
+      stabilizingStart = DateTime(
+        prevTime.getYear(),
+        prevTime.getMonth(),
+        prevTime.getDay(),
+        prevTime.getHour(),
+        prevTime.getMinute(),
+        prevTime.getSecond(),
+      );
+      stabilizingEnd = termAt;
     } else {
-      baseJieQiName = lunar.getCurrentJieQi()!.getName();
-      stabilizingStart =
-          dateFormat.parse(lunar.getCurrentJieQi()!.getSolar().toYmdHms());
-      stabilizingEnd = dateFormat.parse(lunar
-          .getCurrentJieQi()!
-          .getSolar()
-          .next(2)
-          .getLunar()
-          .getNextJieQi()
-          .getSolar()
-          .toYmdHms());
+      baseJieQiName = term.getName();
+      stabilizingStart = termAt;
+      stabilizingEnd = nextAt;
     }
 
     // 平气法：固定间隔（回归年/24）约 15.2184 天
     const double tropicalYearDays = 365.2422;
     final Duration levelingInterval = Duration(
         milliseconds: (tropicalYearDays / 24 * 24 * 60 * 60 * 1000).round());
-    final DateTime prevStabilizingStart =
-        dateFormat.parse(lunar.getPrevJieQi(true).getSolar().toYmdHms());
+
+    // Get previous term for leveling calculation
+    final prevTerm = term.next(-1);
+    final prevJd = prevTerm.getJulianDay();
+    final prevTime = prevJd.getSolarTime();
+    final DateTime prevStabilizingStart = DateTime(
+      prevTime.getYear(),
+      prevTime.getMonth(),
+      prevTime.getDay(),
+      prevTime.getHour(),
+      prevTime.getMinute(),
+      prevTime.getSecond(),
+    );
     final DateTime levelingStart = prevStabilizingStart.add(levelingInterval);
     final DateTime levelingEnd = levelingStart.add(levelingInterval);
 
@@ -383,9 +479,22 @@ class SolarLunarDateTimeHelper {
         jqType == JieQiType.stabilizing ? stabilizingEnd : levelingEnd;
 
     (DateTime nextStabilizingStart, String nextStabilizingName)
-        _nextStabilizing(Lunar l) {
-      final next = l.getNextJieQi();
-      return (dateFormat.parse(next.getSolar().toYmdHms()), next.getName());
+        _nextStabilizing(SolarDay sd) {
+      final t = sd.getTerm();
+      final nt = t.next(1);
+      final ntJd = nt.getJulianDay();
+      final ntTime = ntJd.getSolarTime();
+      return (
+        DateTime(
+          ntTime.getYear(),
+          ntTime.getMonth(),
+          ntTime.getDay(),
+          ntTime.getHour(),
+          ntTime.getMinute(),
+          ntTime.getSecond(),
+        ),
+        nt.getName()
+      );
     }
 
     DateTime nextLevelingStart = levelingStart.add(levelingInterval);
@@ -432,12 +541,22 @@ class SolarLunarDateTimeHelper {
     }
 
     if (jqType == JieQiType.stabilizing) {
-      final (DateTime nextStart, String nextName) = _nextStabilizing(lunar);
+      final (DateTime nextStart, String nextName) = _nextStabilizing(solarDay);
       if (!_entered(anchor.effectiveDateTime, stabilizingStart) &&
           _sameBucket(anchor.effectiveDateTime, stabilizingStart)) {
         jieQiStartAt = nextStart;
-        jieQiEndAt = dateFormat
-            .parse(lunar.getNextJieQi().getSolar().next(2).toYmdHms());
+        // Get term after next
+        final nt = term.next(2);
+        final ntJd = nt.getJulianDay();
+        final ntTime = ntJd.getSolarTime();
+        jieQiEndAt = DateTime(
+          ntTime.getYear(),
+          ntTime.getMonth(),
+          ntTime.getDay(),
+          ntTime.getHour(),
+          ntTime.getMinute(),
+          ntTime.getSecond(),
+        );
         baseJieQiName = nextName;
       }
     } else {
@@ -469,11 +588,11 @@ class SolarLunarDateTimeHelper {
     }
     final Phenology wuHou = candidates.isNotEmpty
         ? candidates[idx]
-        : Phenology.phenologyList[WU_HOU.indexOf(lunar.getWuHou())];
+        : Phenology.phenologyList[WU_HOU.indexOf(solarDay.getPhenologyDay().getPhenology().getName())];
 
     return Tuple4(
       ec,
-      lunar,
+      lunarDay,
       wuHou,
       JieQiInfo(
         jieQi: chosenJieQi,
@@ -490,20 +609,21 @@ class SolarLunarDateTimeHelper {
       required Location? location,
       required bool isDST,
       required bool isSeersLocation}) {
-    final Tuple4<EightChars, Lunar, Phenology, JieQiInfo> chineseDateInfo =
+    final Tuple4<EightChars, LunarDay, Phenology, JieQiInfo> chineseDateInfo =
         getEighthChars(dateTime);
 
-    final Lunar lunar = chineseDateInfo.item2;
-    bool isLeapMonth =
-        LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
+    final LunarDay lunarDay = chineseDateInfo.item2;
+    final lunarMonth = lunarDay.getLunarMonth();
+    bool isLeapMonth = lunarMonth.isLeap();
+    final monthValue = lunarMonth.getMonthWithLeap();
     final result = DivinationDatetimeModel.standard(
       uuid: Uuid().v4(),
       queryUuid: queryUuid,
       datetime: dateTime,
       timezoneStr: timezoneStr,
       bazi: chineseDateInfo.item1,
-      lunarMonth: monthMap[chineseDateInfo.item2.getMonthInChinese()]!,
-      lunarDay: dayMap[chineseDateInfo.item2.getDayInChinese()]!,
+      lunarMonth: monthValue,
+      lunarDay: lunarDay.getDay(),
       isLeapMonth: isLeapMonth,
       isSeersLocation: isSeersLocation,
       jieQiInfo: chineseDateInfo.item4,
@@ -523,9 +643,10 @@ class SolarLunarDateTimeHelper {
       required Location? location,
       required bool isSeersLocation}) {
     final chineseDateInfo = getEighthChars(dateTime);
-    final Lunar lunar = chineseDateInfo.item2;
-    bool isLeapMonth =
-        LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
+    final LunarDay lunarDay = chineseDateInfo.item2;
+    final lunarMonth = lunarDay.getLunarMonth();
+    bool isLeapMonth = lunarMonth.isLeap();
+    final monthValue = lunarMonth.getMonthWithLeap();
     return DivinationDatetimeModel.removeDST(
         uuid: Uuid().v4(),
         queryUuid: queryUuid,
@@ -533,8 +654,8 @@ class SolarLunarDateTimeHelper {
         datetime: dateTime,
         timezoneStr: timezoneStr,
         bazi: chineseDateInfo.item1,
-        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
-        lunarDay: dayMap[lunar.getDayInChinese()]!,
+        lunarMonth: monthValue,
+        lunarDay: lunarDay.getDay(),
         isLeapMonth: isLeapMonth,
         isSeersLocation: isSeersLocation,
         jieQiInfo: chineseDateInfo.item4,
@@ -546,23 +667,16 @@ class SolarLunarDateTimeHelper {
       tz.TZDateTime tzDateTime,
       my.Address address,
       bool isSeersLocation) {
-    // 1. 获取这个时间，时区归属的经纬度
-    // final tzMeanDateTime =
-    // calculateMeanSolarTZDateTime(tzDateTime, address.coordinates.longitude);
-
-    // print(
-    // "tzMeanDateTime: $tzMeanDateTime, longtitude: ${address.coordinates.longitude}");
-    // final meanDateTime = tzMeanDateTime.toDateTime();
     final meanDateTime = calculateMeanSolarTimeUtc(
         tzDateTime,
         address.city?.coordinates.longitude ??
             address.province.coordinates.longitude);
 
-    // print("meanDateTime: $meanDateTime");
     final chineseDateInfo = getEighthChars(meanDateTime);
-    final Lunar lunar = chineseDateInfo.item2;
-    bool isLeapMonth =
-        LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
+    final LunarDay lunarDay = chineseDateInfo.item2;
+    final lunarMonth = lunarDay.getLunarMonth();
+    bool isLeapMonth = lunarMonth.isLeap();
+    final monthValue = lunarMonth.getMonthWithLeap();
 
     return DivinationDatetimeModel.meanSolar(
         uuid: Uuid().v4(),
@@ -570,8 +684,8 @@ class SolarLunarDateTimeHelper {
         datetime: meanDateTime,
         timezoneStr: tzDateTime.timeZoneName,
         bazi: chineseDateInfo.item1,
-        lunarMonth: monthMap[lunar.getMonthInChinese()]!,
-        lunarDay: dayMap[lunar.getDayInChinese()]!,
+        lunarMonth: monthValue,
+        lunarDay: lunarDay.getDay(),
         isLeapMonth: isLeapMonth,
         isSeersLocation: isSeersLocation,
         address: address,
@@ -627,22 +741,21 @@ class SolarLunarDateTimeHelper {
       String timezoneStr,
       my.Coordinates coordinates,
       bool isSeersLocation) {
-    // DateTime trueSolarTime = calculateTrueSolarTimeByMeanSolarTimeV2(
-    // meanDateTime, coordinates.longitude);
     DateTime trueSolarTime = calculateTrueSolarTimeFromLocalClockTime(
         localDatetime, coordinates.longitude, timezoneStr);
     final chineseDateInfo = getEighthChars(trueSolarTime);
-    final Lunar lunar = chineseDateInfo.item2;
-    bool isLeapMonth =
-        LunarMonth.fromYm(lunar.getYear(), lunar.getMonth())!.isLeap();
+    final LunarDay lunarDay = chineseDateInfo.item2;
+    final lunarMonth = lunarDay.getLunarMonth();
+    bool isLeapMonth = lunarMonth.isLeap();
+    final monthValue = lunarMonth.getMonthWithLeap();
     return DivinationDatetimeModel.trueSolar(
       uuid: Uuid().v4(),
       queryUuid: queryUuid,
       datetime: trueSolarTime,
       timezoneStr: timezoneStr,
       bazi: chineseDateInfo.item1,
-      lunarMonth: monthMap[chineseDateInfo.item2.getMonthInChinese()]!,
-      lunarDay: dayMap[chineseDateInfo.item2.getDayInChinese()]!,
+      lunarMonth: monthValue,
+      lunarDay: lunarDay.getDay(),
       isLeapMonth: isLeapMonth,
       isSeersLocation: isSeersLocation,
       coordinates: coordinates,
@@ -1022,33 +1135,68 @@ class SolarLunarDateTimeHelper {
   };
 
   static List<DateTime> eightChars2DateTime(EightChars eightChars) {
-    List<Solar> solarList = Solar.fromBaZi(eightChars.year.name,
-        eightChars.month.name, eightChars.day.name, eightChars.time.name);
-    return solarList.map((e) => solarToDateTime(e)).toList();
+    // Use tyme's EightChar to find matching dates
+    final ec = EightChar.fromName(
+      eightChars.year.name,
+      eightChars.month.name,
+      eightChars.day.name,
+      eightChars.time.name,
+    );
+    // Search within a reasonable range (1900-2100)
+    final solarTimes = ec.getSolarTimes(1900, 2100);
+    return solarTimes.map((st) => DateTime(
+      st.getYear(),
+      st.getMonth(),
+      st.getDay(),
+      st.getHour(),
+      st.getMinute(),
+      st.getSecond(),
+    )).toList();
   }
 
   static List<tz.TZDateTime> eightChars2TZDateTime(
       EightChars eightChars, String utcTimezone) {
-    List<Solar> solarList = Solar.fromBaZi(eightChars.year.name,
-        eightChars.month.name, eightChars.day.name, eightChars.time.name);
-    return solarList.map((e) => solarToTZDateTime(e, utcTimezone)).toList();
+    final ec = EightChar.fromName(
+      eightChars.year.name,
+      eightChars.month.name,
+      eightChars.day.name,
+      eightChars.time.name,
+    );
+    final solarTimes = ec.getSolarTimes(1900, 2100);
+    return solarTimes.map((st) {
+      final dt = DateTime(
+        st.getYear(),
+        st.getMonth(),
+        st.getDay(),
+        st.getHour(),
+        st.getMinute(),
+        st.getSecond(),
+      );
+      return tz.TZDateTime.from(dt, tz.getLocation(utcTimezone));
+    }).toList();
   }
 
-  static DateTime solarToDateTime(Solar solar) {
-    String datetimeStr = solar.toYmdHms();
-    // print(datetimeStr);
-    // 根据 YYYY-MM-dd HH:mm.ss
-    final dateFormat = DateFormat("yyyy-MM-dd HH:mm:ss");
-    DateTime datetime = dateFormat.parse(datetimeStr);
-    return datetime;
+  static DateTime solarTimeToDateTime(SolarTime solarTime) {
+    return DateTime(
+      solarTime.getYear(),
+      solarTime.getMonth(),
+      solarTime.getDay(),
+      solarTime.getHour(),
+      solarTime.getMinute(),
+      solarTime.getSecond(),
+    );
   }
 
-  static tz.TZDateTime solarToTZDateTime(Solar solar, String utcTimezone) {
-    // print(datetimeStr);
-    // 根据 YYYY-MM-dd HH:mm.ss
-    DateTime datetime = dateFormat.parse(solar.toYmdHms());
+  static tz.TZDateTime solarTimeToTZDateTime(SolarTime solarTime, String utcTimezone) {
+    final datetime = DateTime(
+      solarTime.getYear(),
+      solarTime.getMonth(),
+      solarTime.getDay(),
+      solarTime.getHour(),
+      solarTime.getMinute(),
+      solarTime.getSecond(),
+    );
     return tz.TZDateTime.from(datetime, tz.getLocation(utcTimezone));
-    // return datetime;
   }
 }
 

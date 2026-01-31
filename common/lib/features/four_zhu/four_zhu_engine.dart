@@ -4,7 +4,7 @@ import 'package:common/enums/enum_tian_gan.dart';
 import 'package:common/enums/enum_twenty_four_jie_qi.dart';
 import 'package:common/models/eight_chars.dart';
 import 'package:common/helpers/solar_lunar_datetime_helper.dart';
-import 'package:lunar/lunar.dart';
+import 'package:tyme/tyme.dart';
 import 'package:tuple/tuple.dart';
 
 import 'strategies/day_pillar_strategy.dart';
@@ -68,30 +68,61 @@ class FourZhuEngine {
     // 1) 决定用于计算日柱的时间锚点
     final anchor = dayStrategy.decideDayAnchor(dt);
 
-    // 2) 基于锚点调用 Lunar 计算年/月/日柱
-    final lunar = Lunar.fromDate(anchor.effectiveDateTime);
-    final parts = lunar.getBaZi(); // [年, 月, 日, 时] 干支字符串
+    // 2) 基于锚点使用 tyme 计算年/月/日柱
+    final anchorDt = anchor.effectiveDateTime;
+    final solarTime = SolarTime.fromYmdHms(
+      anchorDt.year,
+      anchorDt.month,
+      anchorDt.day,
+      anchorDt.hour,
+      anchorDt.minute,
+      anchorDt.second,
+    );
+    final lunarHour = solarTime.getLunarHour();
+    final eightChar = lunarHour.getEightChar();
+    final parts = [
+      eightChar.getYear().getName(),
+      eightChar.getMonth().getName(),
+      eightChar.getDay().getName(),
+      eightChar.getHour().getName(),
+    ];
 
     final year = JiaZi.getFromGanZhiValue(parts[0])!;
     final month = JiaZi.getFromGanZhiValue(parts[1])!;
     final day = JiaZi.getFromGanZhiValue(parts[2])!;
 
-    // 3) 采用“生效日干”决定时柱：五鼠遁或固定
-    // 3.1 计算“用于时柱推算”的日柱
+    // 3) 采用"生效日干"决定时柱：五鼠遁或固定
+    // 3.1 计算"用于时柱推算"的日柱
     JiaZi dayForHour = day;
     final inChildHour = (dt.hour == 23 || dt.hour == 0);
     if (distinguishChildHour && inChildHour) {
       if (hourStrategy is HourFiveMouseDunStrategy) {
-        // 五鼠遁：晚/早子时均按“次日”日干
+        // 五鼠遁：晚/早子时均按"次日"日干
         final DateTime nextRef = dt.add(const Duration(hours: 1));
-        final nextParts = Lunar.fromDate(nextRef).getBaZi();
-        dayForHour = JiaZi.getFromGanZhiValue(nextParts[2])!;
+        final nextSolarTime = SolarTime.fromYmdHms(
+          nextRef.year,
+          nextRef.month,
+          nextRef.day,
+          nextRef.hour,
+          nextRef.minute,
+          nextRef.second,
+        );
+        final nextEc = nextSolarTime.getLunarHour().getEightChar();
+        dayForHour = JiaZi.getFromGanZhiValue(nextEc.getDay().getName())!;
       } else if (hourStrategy is HourFixedZiPingStrategy) {
         // 固定子平：23 点用当日日干；0 点用前一小时（晚子时）当日日干
         if (dt.hour == 0) {
           final prevRef = dt.subtract(const Duration(hours: 1));
-          final prevParts = Lunar.fromDate(prevRef).getBaZi();
-          dayForHour = JiaZi.getFromGanZhiValue(prevParts[2])!;
+          final prevSolarTime = SolarTime.fromYmdHms(
+            prevRef.year,
+            prevRef.month,
+            prevRef.day,
+            prevRef.hour,
+            prevRef.minute,
+            prevRef.second,
+          );
+          final prevEc = prevSolarTime.getLunarHour().getEightChar();
+          dayForHour = JiaZi.getFromGanZhiValue(prevEc.getDay().getName())!;
         } else {
           dayForHour = day;
         }
@@ -252,29 +283,64 @@ DateTime _findJieQiTimeNear({
   required DateTime around,
   required TwentyFourJieQi target,
 }) {
+  // Map TwentyFourJieQi to tyme SolarTerm index
+  // In tyme, index 0 is 小寒, 1 is 大寒, ..., 23 is 冬至
+  final termIndexMap = {
+    TwentyFourJieQi.XIAO_HAN: 0,
+    TwentyFourJieQi.DA_HAN: 1,
+    TwentyFourJieQi.LI_CHUN: 2,
+    TwentyFourJieQi.YU_SHUI: 3,
+    TwentyFourJieQi.JING_ZHE: 4,
+    TwentyFourJieQi.CHUN_FEN: 5,
+    TwentyFourJieQi.QING_MING: 6,
+    TwentyFourJieQi.GU_YU: 7,
+    TwentyFourJieQi.LI_XIA: 8,
+    TwentyFourJieQi.XIAO_MAN: 9,
+    TwentyFourJieQi.MANG_ZHONG: 10,
+    TwentyFourJieQi.XIA_ZHI: 11,
+    TwentyFourJieQi.XIAO_SHU: 12,
+    TwentyFourJieQi.DA_SHU: 13,
+    TwentyFourJieQi.LI_QIU: 14,
+    TwentyFourJieQi.CHU_SHU: 15,
+    TwentyFourJieQi.BAI_LU: 16,
+    TwentyFourJieQi.QIU_FEN: 17,
+    TwentyFourJieQi.HAN_LU: 18,
+    TwentyFourJieQi.SHUANG_JIANG: 19,
+    TwentyFourJieQi.LI_DONG: 20,
+    TwentyFourJieQi.XIAO_XUE: 21,
+    TwentyFourJieQi.DA_XUE: 22,
+    TwentyFourJieQi.DONG_ZHI: 23,
+  };
+
+  final targetIndex = termIndexMap[target];
+  if (targetIndex == null) return around;
+
   final matches = <DateTime>[];
-  final pivot = DateTime(around.year, around.month, around.day);
 
-  for (int i = -40; i <= 40; i++) {
-    final d = pivot.add(Duration(days: i));
-    final l = Lunar.fromDate(d);
-    final candidates = [
-      l.getPrevJieQi(),
-      l.getPrevJieQi(true),
-      l.getNextJieQi(),
-      l.getNextJieQi(true),
-    ];
-
-    for (final jq in candidates) {
-      if (jq.getName() != target.name) continue;
-      final str = jq.getSolar().toYmdHms();
-      final at = DateTime.parse(str.replaceFirst(' ', 'T'));
+  // Search in current year and adjacent years
+  for (int yearOffset = -1; yearOffset <= 1; yearOffset++) {
+    final year = around.year + yearOffset;
+    try {
+      final term = SolarTerm.fromIndex(year, targetIndex);
+      final jd = term.getJulianDay();
+      final st = jd.getSolarTime();
+      final at = DateTime(
+        st.getYear(),
+        st.getMonth(),
+        st.getDay(),
+        st.getHour(),
+        st.getMinute(),
+        st.getSecond(),
+      );
       matches.add(at);
+    } catch (e) {
+      // Skip if term cannot be found for this year
     }
   }
 
   if (matches.isEmpty) return around;
 
+  // Find the closest match
   matches.sort((a, b) {
     final da = a.difference(around).inMilliseconds.abs();
     final db = b.difference(around).inMilliseconds.abs();
