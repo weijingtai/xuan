@@ -1435,8 +1435,8 @@ class _BeautyViewPageState extends State<BeautyViewPage>
   // `InnerStarBodyRotatingWidget` and `OuterStarBodyRotatingWidget`.
 
   Widget outerStarTrackRing(List<UIStarModel> uiBasicLifeStarList) {
-    print("-------- ${uiBasicLifeStarList.length}");
-    print(
+    logger.d("-------- ${uiBasicLifeStarList.length}");
+    logger.d(
         "---- ${uiBasicLifeStarList.map((e) => e.star.singleName).join(",")}");
     return Container(
       width: basicLifeStarRingOuterSize,

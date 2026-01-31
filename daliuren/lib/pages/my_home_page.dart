@@ -5,6 +5,7 @@ import 'package:animated_custom_dropdown/custom_dropdown.dart';
 import 'package:board_datetime_picker/board_datetime_picker.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:common/widgets/const_ui_resources_mapper.dart';
 import 'package:common/widgets/four_zhu_eight_char.dart';
 import 'package:common/widgets/twenty_four_jie_qi_tag.dart';
@@ -602,7 +603,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           loadBy(tuple2.item1, tuple2.item2),
                                       builder: (ctx, snap) {
                                         if (snap.hasError) {
-                                          print(snap.error);
+                                          logger.e(snap.error.toString());
                                         }
                                         if (snap.hasData) {
                                           return yu_ding(snap.data!);
@@ -723,7 +724,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                           loadBy(tuple2.item1, tuple2.item2),
                                       builder: (ctx, snap) {
                                         if (snap.hasError) {
-                                          debugPrint(snap.error.toString());
+                                          logger.d(snap.error.toString());
                                         }
                                         if (snap.hasData) {
                                           return yu_ding(snap.data!);
@@ -1242,7 +1243,7 @@ class _MyHomePageState extends State<MyHomePage> {
           (y) => y.dayJiaZi == dayJiaZi && y.juName == dayUpperDiZhi);
       return result;
     } catch (e) {
-      print(e);
+      logger.e(e.toString());
       rethrow;
     }
   }
@@ -1310,20 +1311,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 children: [
                   InkWell(
                     onHover: (isHover) {
-                      print("isHover $isHover}");
+                      logger.d("isHover $isHover}");
                     },
                     onTap: () => showMonthlyGeneralJieQi(),
                     onLongPress: () {
-                      print("on long press ${_showMonthGeneralJieQi.value}");
+                      logger.d("on long press ${_showMonthGeneralJieQi.value}");
                       if (_showMonthGeneralJieQi.value) {
-                        print("on long press is true");
+                        logger.d("on long press is true");
                         if (_showMonthGeneralJieQiTimer != null) {
-                          print("on long press is with cancel timer");
+                          logger.d("on long press is with cancel timer");
                           _showMonthGeneralJieQiTimer!.cancel();
                           _showMonthGeneralJieQiTimer = null;
                           isLongSticky = true;
                         } else {
-                          print("on long press is with hidden");
+                          logger.d("on long press is with hidden");
                           hideMonthlyGeneralJieQi();
                           isLongSticky = false;
                         }
@@ -1414,7 +1415,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           duration: const Duration(milliseconds: 200),
                           transitionBuilder: (c, animation) {
                             if ((c.key as ValueKey).value == "jie_qi") {
-                              print("display jie_qi");
+                              logger.d("display jie_qi");
                               // display jie_qi
                               return c
                                   .animate()
@@ -1429,7 +1430,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                       begin: 0,
                                       end: 1);
                             } else {
-                              print("hidden jie_qi");
+                              logger.d("hidden jie_qi");
                               return c
                                   .animate()
                                   .moveY(

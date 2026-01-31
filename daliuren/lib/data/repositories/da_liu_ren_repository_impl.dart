@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:common/enums.dart';
+import 'package:common/module.dart';
 import 'package:common/const_resources_mapper.dart';
 import 'package:daliuren/domain/repositories/da_liu_ren_repository.dart';
 import 'package:daliuren/domain/services/da_liu_ren_calculation_service.dart';
@@ -24,7 +25,7 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
 
   @override
   Future<void> loadDivinationData() async {
-    print('🟡 [Repository] loadDivinationData() called');
+    logger.d('🟡 [Repository] loadDivinationData() called');
     try {
       await Future.wait([
         _loadYuDingData(),
@@ -32,9 +33,9 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
         _loadPanData(YinYang.YANG),
         _loadPanData(YinYang.YIN),
       ]);
-      print('🟡 [Repository] All divination data loaded successfully');
+      logger.d('🟡 [Repository] All divination data loaded successfully');
     } catch (e) {
-      print('🔴 [Repository] Failed to load some divination data: $e');
+      logger.e('🔴 [Repository] Failed to load some divination data: $e');
       // 允许部分数据加载失败，应用仍可继续运行
     }
   }
@@ -44,11 +45,10 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
     try {
       final jsonString = await rootBundle.loadString(_yuDingPath);
       final decoded = jsonDecode(jsonString);
-      _yuDingData = decoded is List<dynamic>
-          ? decoded
-          : List<dynamic>.from(decoded);
+      _yuDingData =
+          decoded is List<dynamic> ? decoded : List<dynamic>.from(decoded);
     } catch (e) {
-      print('Warning: Failed to load Yu Ding data: $e');
+      logger.w('Warning: Failed to load Yu Ding data: $e');
       _yuDingData = <dynamic>[];
     }
   }
@@ -62,7 +62,7 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
           ? decoded
           : Map<String, dynamic>.from(decoded);
     } catch (e) {
-      print('Warning: Failed to load Ju Mapper data: $e');
+      logger.w('Warning: Failed to load Ju Mapper data: $e');
       _juMapperData = <String, dynamic>{};
     }
   }
@@ -79,7 +79,7 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
         _yinPanData = panList;
       }
     } catch (e) {
-      print('Warning: Failed to load ${yinYang.name} pan data: $e');
+      logger.w('Warning: Failed to load ${yinYang.name} pan data: $e');
       // 设置空列表作为默认值
       if (yinYang.isYang) {
         _yangPanData = <DaLiuRenPanModel>[];
@@ -107,46 +107,47 @@ class DaLiuRenRepositoryImpl implements DaLiuRenRepository {
         }
       } else {
         // 非 Web 平台的正常处理
-        jsonList = decoded is List<dynamic> ? decoded : List<dynamic>.from(decoded);
+        jsonList =
+            decoded is List<dynamic> ? decoded : List<dynamic>.from(decoded);
       }
 
-      return jsonList
-          .map((item) {
-            Map<String, dynamic> itemMap;
-            if (kIsWeb && item.runtimeType.toString().contains('JSObject')) {
-              // Web 平台的 JSObject 转换
-              itemMap = Map<String, dynamic>.from(item);
-            } else if (item is Map<String, dynamic>) {
-              itemMap = item;
-            } else {
-              itemMap = Map<String, dynamic>.from(item);
-            }
-            return DaLiuRenPanModel.fromJson(itemMap);
-          })
-          .toList();
+      return jsonList.map((item) {
+        Map<String, dynamic> itemMap;
+        if (kIsWeb && item.runtimeType.toString().contains('JSObject')) {
+          // Web 平台的 JSObject 转换
+          itemMap = Map<String, dynamic>.from(item);
+        } else if (item is Map<String, dynamic>) {
+          itemMap = item;
+        } else {
+          itemMap = Map<String, dynamic>.from(item);
+        }
+        return DaLiuRenPanModel.fromJson(itemMap);
+      }).toList();
     } catch (e) {
-      print('Error converting JSON to DaLiuRenPanModel: $e');
-      print('Runtime type: ${jsonDecode(jsonString).runtimeType}');
+      logger.e('Error converting JSON to DaLiuRenPanModel: $e');
+      logger.e('Runtime type: ${jsonDecode(jsonString).runtimeType}');
       // 返回空列表而不是崩溃
       return <DaLiuRenPanModel>[];
     }
   }
 
   @override
-  Future<DaLiuRenKePan> calculateDivination(DateTime dateTime, {String? question}) async {
-    print('🟡 [Repository] calculateDivination() called for $dateTime');
+  Future<DaLiuRenKePan> calculateDivination(DateTime dateTime,
+      {String? question}) async {
+    logger.d('🟡 [Repository] calculateDivination() called for $dateTime');
     try {
       // Ensure data is loaded (for future use of YuDing data, etc.)
       await loadDivinationData();
 
-      print('🟡 [Repository] Calling CalculationService.calculate()...');
+      logger.d('🟡 [Repository] Calling CalculationService.calculate()...');
       // Use CalculationService to perform real calculation
       final kePan = calculationService.calculate(dateTime, question: question);
-      print('🟡 [Repository] CalculationService returned KePan successfully');
+      logger
+          .d('🟡 [Repository] CalculationService returned KePan successfully');
 
       return kePan;
     } catch (e) {
-      print('🔴 [Repository] Error in calculateDivination: $e');
+      logger.e('🔴 [Repository] Error in calculateDivination: $e');
       rethrow; // 不再吞掉异常,让上层处理
     }
   }

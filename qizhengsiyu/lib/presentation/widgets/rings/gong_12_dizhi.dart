@@ -1,4 +1,5 @@
 import 'dart:math' as math;
+import 'package:common/module.dart';
 
 import 'package:flutter/material.dart';
 import 'package:lunar/lunar.dart';
@@ -319,14 +320,14 @@ class ShenShaRingV2 extends StatelessWidget {
       radius = currentInnerRadius + 2;
       const double angleOffset = 30.0 * .5;
       angle = angleOffset * math.pi / 180;
-      print(
+      logger.d(
           '$innerRadius, $middleRadius, $outerRadius, radius: $radius, fontSize: ${style.fontSize}');
     } else {
       // 其余为三角形的另两个低角
       // 通过调整不同index的radius来避免重叠
       currentInnerRadius = innerRadius + 4;
       radius = currentInnerRadius + 2;
-      print(
+      logger.d(
           '$innerRadius, $middleRadius, $outerRadius, radius: $radius, fontSize: ${style.fontSize}');
 
       var angleOffset = 8;

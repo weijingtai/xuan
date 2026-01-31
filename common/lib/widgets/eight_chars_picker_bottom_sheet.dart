@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../enums/enum_di_zhi.dart';
 import '../enums/enum_jia_zi.dart';
 import '../enums/enum_tian_gan.dart';
+import 'package:common/module.dart';
 
 /// 显示八字选择器底部弹窗
 Future<EightChars?> showEightCharsPickerBottomSheet({
@@ -298,19 +299,19 @@ class _EightCharsPickerBottomSheetSheetState
   void selectYearJiaZi(JiaZi jiaZi) {
     _selectedYear.value = jiaZi;
     _monthListNotifier.value = generateMonthGanzhi(jiaZi);
-    print("选择的年干支： ${jiaZi.name}");
+    logger.d("选择的年干支： ${jiaZi.name}");
   }
 
   void selectMonthJiaZi(JiaZi jiaZi) {
-    print("选择的月干支： ${jiaZi.name}");
+    logger.d("选择的月干支： ${jiaZi.name}");
   }
 
   void selectDayJiaZi(JiaZi jiaZi) {
-    print("选择的日干支： ${jiaZi.name}");
+    logger.d("选择的日干支： ${jiaZi.name}");
   }
 
   void selectTimeJiaZi(JiaZi jiaZi) {
-    print("选择的时干支： ${jiaZi.name}");
+    logger.d("选择的时干支： ${jiaZi.name}");
   }
 
   /// 构建选择信息面板
@@ -418,7 +419,7 @@ class _EightCharsPickerBottomSheetSheetState
           itemCount: jiaZiList.length,
           itemBuilder: (context, index) {
             final jiaZi = jiaZiList[index];
-            print("selected $index --- ${jiaZi.name}");
+            logger.d("selected $index --- ${jiaZi.name}");
             final isSelected = selectedJiaZi == jiaZi;
 
             return ListTile(
@@ -464,7 +465,7 @@ class _EightCharsPickerBottomSheetSheetState
       result.addAll(JiaZi.listAll.sublist(0, 12).toList());
       result = result.sublist(0, 12);
     }
-    print(result.map((r) => r.name));
+    logger.d(result.map((r) => r.name).toString());
     return result;
   }
 }

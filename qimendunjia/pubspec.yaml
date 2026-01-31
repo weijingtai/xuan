@@ -25,7 +25,7 @@ dependencies:
   animated_read_more_text: ^0.0.6
   aura_box: ^1.0.2
 
-  provider: ^6.1.2
+  provider: ^6.1.4
   common:
     path: ../common
   dotlottie_loader: ^0.0.4

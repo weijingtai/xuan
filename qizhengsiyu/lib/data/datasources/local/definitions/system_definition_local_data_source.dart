@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:common/module.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart';
 
@@ -21,7 +22,7 @@ class SystemDefinitionLocalDataSource {
       return ZhouTianModel.fromJson(jsonMap);
     } catch (e) {
       // 如果文件加载或解析失败，可以进行错误处理
-      print('Error loading system definition: $e');
+      logger.e('Error loading system definition: $e');
       rethrow;
     }
   }

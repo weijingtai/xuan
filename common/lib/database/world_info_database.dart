@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'dart:io';
 
+import 'package:common/module.dart';
 import 'world_info_daos/city_dao.dart';
 import 'world_info_daos/country_dao.dart';
 import 'world_info_daos/region_dao.dart';
@@ -129,7 +130,7 @@ class WorldInfoDatabase extends _$WorldInfoDatabase {
                   driftWorker: Uri.parse('drift_worker.js'),
                   onResult: (result) {
                     if (result.missingFeatures.isNotEmpty) {
-                      print(
+                      logger.i(
                         'Using ${result.chosenImplementation} due to unsupported '
                         'browser features: ${result.missingFeatures}',
                       );

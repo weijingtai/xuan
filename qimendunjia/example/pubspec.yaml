@@ -17,7 +17,7 @@ dependencies:
     path: ../
   common:
     path: ../../common
-  provider: ^6.1.2
+  provider: ^6.1.4
   timezone: ^0.10.1
 
   cupertino_icons: ^1.0.8

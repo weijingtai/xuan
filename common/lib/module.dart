@@ -23,3 +23,5 @@ export 'models/chinese_date_info.dart';
 export 'viewmodels/dev_enter_page_view_model.dart';
 
 export 'database/connection.dart';
+
+export 'log/xuan_logger.dart';

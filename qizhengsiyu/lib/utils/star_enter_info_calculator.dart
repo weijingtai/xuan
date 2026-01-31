@@ -5,6 +5,7 @@ import 'package:qizhengsiyu/domain/entities/models/naming_degree_pair.dart'; // 
 import 'package:qizhengsiyu/domain/entities/models/zhou_tian_model.dart'; // 使用domain层的模型
 
 import '../domain/entities/models/star_enter_info.dart'; // 使用domain层的模型
+import 'package:common/module.dart';
 
 // 计算每个星体的进入宫位和星宿
 class StarEnterInfoCalculator {
@@ -33,7 +34,7 @@ class StarEnterInfoCalculator {
     // 计算每个星体的进入宫位和星宿
     final result = <EnteredInfo>[];
     for (final star in starDegreeSeq) {
-      print("${star.toJson()}");
+      logger.d("${star.toJson()}");
       final starInn = doFindConstellation(
         star.degree,
         adjuestedStarInnSeq,
@@ -182,7 +183,7 @@ class StarEnterInfoCalculator {
       }
     }
 
-    print("starInnSeq: ${starInnSeq.map((e) => e).toList()}");
+    logger.e("starInnSeq: ${starInnSeq.map((e) => e).toList()}");
     throw Exception('${targetDegree} 未找到对应的星座');
   }
 

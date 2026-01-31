@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:provider/provider.dart';
+import 'package:common/module.dart';
 
 import '../datamodel/geo_location.dart';
 import '../datamodel/location.dart';
@@ -100,7 +101,8 @@ class _CityPickerChineseWidgetState extends State<CityPickerChineseWidget> {
       }
     });
     _newSelectedAddressNotifier.addListener(() {
-      print(_newSelectedAddressNotifier.value?.toJson());
+      logger
+          .d(_newSelectedAddressNotifier.value?.toJson().toString() ?? "null");
       widget.selectedAddressNotifier.value = _newSelectedAddressNotifier.value;
     });
 

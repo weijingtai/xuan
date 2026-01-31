@@ -29,7 +29,7 @@ class MyCirclePainter extends CustomPainter {
     //   offsetTimes = 0;
     // }
     // Offset center = Offset(size.width*.5-(offsetTimes*size.width*.5),size.height*.5);
-    print("$starName - $starAngle");
+    // print("$starName - $starAngle");
     double centerX = size.width * .5 - (offsetTimes * size.width * .5);
     int subCenterHeightTimes = 0;
     if (offsetTimes != 0) {
@@ -302,7 +302,7 @@ class StarBodyPainter extends CustomPainter {
 
     int offsetTimes = 0;
     int subCenterHeightTimes = 0;
-    print("$starName - $starAngle");
+    // print("$starName - $starAngle");
     double centerX = size.width * .5 - (offsetTimes * size.width * .5);
 
     double centerY =

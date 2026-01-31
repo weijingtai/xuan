@@ -612,8 +612,7 @@ class BeautyPageViewModel extends ChangeNotifier {
         .firstWhere((t) => t.uuid == _tmp.timingInfoUuid)
         .observer;
     lifeObserver = generateLifeObserverPosition();
-
-    print(json.encode(lifeObserver));
+    logger.d(json.encode(lifeObserver));
   }
 
   ObserverPosition? lifeObserver;

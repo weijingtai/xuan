@@ -6,6 +6,7 @@ import '../../enums/enum_twelve_gong.dart';
 import '../../xing_xian/gong_constellation_mapping.dart';
 import '../entities/models/zhou_tian_model.dart';
 
+import 'package:common/module.dart';
 
 // --- 计算逻辑 ---
 class ZhouTianCalculator {
@@ -49,7 +50,7 @@ class ZhouTianCalculator {
                 .round();
       }
     } else {
-      print("警告: gongDegreeSeq 提供不完整或为空，假设为等宫制。");
+      logger.w("警告: gongDegreeSeq 提供不完整或为空，假设为等宫制。");
       int defaultPalaceWidthInt =
           (totalDegreesInt / palaceOrder.length).round();
       for (var gong in palaceOrder) {
@@ -334,7 +335,7 @@ class ZhouTianCalculator {
 
         if (segmentLengthInt < 1 && remainingInConstellationInt > 0) {
           // 避免长度为0卡死
-          print(
+          logger.w(
               "警告: segmentLengthInt 为0或负 ($segmentLengthInt), 但星宿 ${constellation.name} 尚余 $remainingInConstellationInt. 强制推进1单位.");
           segmentLengthInt = 1; // 推进最小单位
           if (segmentLengthInt > remainingInConstellationInt)
@@ -506,14 +507,15 @@ extension ZhouTianCalculatorStaticHelpers on ZhouTianCalculator {
                   ZhouTianCalculator.DEGREE_MULTIPLIER)
               .round();
         } else {
-          print("警告: 未在 gongDegreeSeq 中通过名称找到宫位 ${pNameKey.name} 的宽度，将使用默认值。");
+          logger
+              .w("警告: 未在 gongDegreeSeq 中通过名称找到宫位 ${pNameKey.name} 的宽度，将使用默认值。");
           int fallbackWidth =
               (this.totalDegreesInt / palaceOrder.length).round();
           palaceWidthsInt[pNameKey] = fallbackWidth;
         }
       }
     } else {
-      print("警告: gongDegreeSeq 提供不完整或为空，假设为等宫制。");
+      logger.w("警告: gongDegreeSeq 提供不完整或为空，假设为等宫制。");
       int defaultPalaceWidthInt =
           (this.totalDegreesInt / palaceOrder.length).round();
       for (var gong in palaceOrder) {

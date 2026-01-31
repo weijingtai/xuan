@@ -348,7 +348,7 @@ class _InteractiveDotState extends State<_InteractiveDot>
         child: GestureDetector(
           onTap: () {
             // 点击事件处理
-            print('点击了第 ${widget.dotIndex + 1} 个点，角度: ${widget.angle}°');
+            logger.d('点击了第 ${widget.dotIndex + 1} 个点，角度: ${widget.angle}°');
             // 这里可以添加更多的点击处理逻辑
           },
           child: AnimatedBuilder(

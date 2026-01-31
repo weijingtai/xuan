@@ -775,7 +775,7 @@ class SolarLunarDateTimeHelper {
     // 将以分钟为单位的 EoT 转换为 Duration，保持精度
     // 1 分钟 = 60 秒 = 60 * 1000 * 1000 微秒
     final int eotMicroseconds = (eotMinutes * 60 * 1000000).round();
-    print(eotMinutes);
+
     return meanSolarTime.add(Duration(microseconds: eotMicroseconds));
   }
 
