@@ -1117,21 +1117,21 @@ packages:
   persistence_core:
     dependency: "direct main"
     description:
-      path: persistence_core
+      path: "storage/core"
       relative: true
     source: path
     version: "0.0.1"
   persistence_drift:
     dependency: "direct main"
     description:
-      path: persistence_drift
+      path: "storage/drift"
       relative: true
     source: path
     version: "0.0.1"
   persistence_firebase:
     dependency: "direct main"
     description:
-      path: persistence_firebase
+      path: "storage/firebase"
       relative: true
     source: path
     version: "0.0.1"
