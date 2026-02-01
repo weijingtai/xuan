@@ -1,0 +1,24 @@
+[submodule "storage"]
+	path = storage
+	url = https://github.com/weijingtai/xuan-storage.git
+[submodule "common"]
+	path = common
+	url = https://github.com/weijingtai/xuan-common.git
+[submodule "account"]
+	path = account
+	url = https://github.com/weijingtai/xuan-account.git
+[submodule "qimendunjia"]
+	path = qimendunjia
+	url = https://github.com/weijingtai/xuan-qimendunjia.git
+[submodule "qizhengsiyu"]
+	path = qizhengsiyu
+	url = https://github.com/weijingtai/xuan-qizhengsiyu.git
+[submodule "taiyishenshu"]
+	path = taiyishenshu
+	url = https://github.com/weijingtai/xuan-taiyishenshu.git
+[submodule "daliuren"]
+	path = daliuren
+	url = https://github.com/weijingtai/xuan-daliuren.git
+[submodule "tiebanshenshu"]
+	path = tiebanshenshu
+	url = https://github.com/weijingtai/xuan-tiebanshenshu.git

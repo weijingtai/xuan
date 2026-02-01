@@ -75,11 +75,11 @@ dependencies:
     path: ./account
 
   persistence_core:
-    path: ./persistence_core
+    path: ./storage/core
   persistence_drift:
-    path: ./persistence_drift
+    path: ./storage/drift
   persistence_firebase:
-    path: ./persistence_firebase
+    path: ./storage/firebase
 
   qimendunjia:
     path: ./qimendunjia
