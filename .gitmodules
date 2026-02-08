@@ -22,3 +22,6 @@
 [submodule "tiebanshenshu"]
 	path = tiebanshenshu
 	url = https://github.com/weijingtai/xuan-tiebanshenshu.git
+[submodule "ai_core"]
+	path = ai_core
+	url = https://github.com/weijingtai/xuan-ai.git
